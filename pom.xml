@@ -48,24 +48,26 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jarsigner-plugin</artifactId>
-                <version>1.4</version>
-                <executions>
-                    <execution>
-                        <id>sign</id>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <keystore>file://${basedir}/.keystore/keystore.ks</keystore>
-                    <alias>cmu.philosophy.comodo.ca.limited.id</alias>
-                    <keypass>Knoppix 2007-1-4</keypass>
-                </configuration>
-            </plugin>
+
+            <!--This doesn't work because there's a single quote in the alias.-->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-jarsigner-plugin</artifactId>-->
+                <!--<version>1.4</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>sign</id>-->
+                        <!--<goals>-->
+                            <!--<goal>sign</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+                <!--<configuration>-->
+                    <!--<keystore>file://${basedir}/.keystore/keystore.ks</keystore>-->
+                    <!--<alias>cmu.philosophy.comodo.ca.limited.id</alias>-->
+                    <!--<keypass>Knoppix 2007-1-4</keypass>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
 
 
         </plugins>
