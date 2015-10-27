@@ -1,0 +1,96 @@
+This file lists notable changes to Tetrad IV since version 4.10-5.
+
+4.3.10-6
+
+* Fixed a bug in the PC adjacency search. Sometimes X _||_ Y | X was performed.
+* Fixed a bug preventing LOFS from launching on arbitrary machines.
+* Fixed the distribution (some references/jars were out of place).
+* Moved the code for pal.math.ConjugateDirectionSearch (kindly provided) inside of Tetrad to eliminate a System.exit()
+call. This seems to have improved the performance of the algorithm.
+* Fixed a bug in the ConjugateDirectionSearch in the PAL library. Some parameters were being ignored
+in estimation. Affects PAL CDS SEM estimator.
+* Fixed bug in adjacency search for PC, FCI, etc. Forbidding knowledge both ways was not removing
+the edge.
+
+4.3.10-7
+
+* Added a separate field to the BFF editor to allow zero edges to removed with an alpha
+level separate from that of the search itself.
+* For simulating from a covariance matrix, allowed the simulation to go through even if NaN or Infinity was produced,
+in order to aid debugging of the covariance matrix.
+* Took out code in BFF that was converting covariance matrices to random simulated coltData sets and passed
+covariance matrices directly into BFF.
+* Switch the adjacency search in PcPattern to Fas5, the same as the other searches that use the same adjacency search
+step.
+* Added three multi-dataset continuous independence tests to the interface: Fisher, Tippett, and Fisher Z with
+pooled residuals.
+* Added an exception (and error message) to IMaGES in case a residual of zero is detected, learing to an
+infinite BIC score. The error message points the user to the coltData set in which the multicollinearity
+occurs.
+* Fixed bug in PurifyTetradBasedD, in which cross clusters containing common children listed variables multiple times.
+* Fixed unit tests so they all pass.
+* Added a gadget to remove selected variables from a coltData set to coltData manip.
+* Added MIM random graph generator to graph initializer.
+* Added a graph manipulation to extract the structure graph (i.e. the graph over the latents) from a given graph.
+* If you add a Data box as output from a Mimbuild box you will get the estimated covariance matrix that Mimbuild
+uses as input to the pattern search, in case you want to try your own pattern search instead.
+* Added the latent reidentification algorithm from Silva et al (JMLR) to BPC, fixed several linkage problems so
+that the output of BPC/Mimbuild can be compared to the pattern of the generating Multiple Indicator Model (MIM).
+* Added logging of tetrads for BPC and Purify.
+* Fixed a problem in the PC adjacency search where for unfaithful distributions it would give different answers on
+differnet runs. Had to do with the order in which adjacent nodes to a node; this is now fixed.
+* Added FOFC (Find One Factor Clusters) to the BPC interface.
+* Fixed bug in GeneralizedSemPm to allow it to initialize models as linear, Gaussian.
+* Fixed layout issue that was arranging latents in a line when BPC was run.
+* Added logging of sextad values.
+* Added PC Adjacency Search ("fast" adjacency search, FAS) to the interface. Produces and undirected
+graph.
+* Added the Identifiability Bayes IM Updater to the interface.
+* Modified IMaGES so that when nodes have more than 10 (relevant) neighbors in the course of search,
+random subsets are selected from the powerset of these nodes. Allows searches over denser graphs.
+* Adjusted the stopping condition of PC to the condition in Causation, Prediction and Search.
+
+4.3.10-8
+* Changed from ProbUtils.chisqcdf to Probability.chisquare because of a blind spot in the former function for chisq = 0,
+df = 2. This was evaluating to NaN instead of to 0.
+* Fixed a problem with SEM Estimator Editor in which scrolling was out of control.
+* Added RICF (Recursive Iterative Conditional Fitting) as an estimation option in the SEM Estimator.
+* Fixed the EM estimator.
+* Improved the Random and CDF estimators.
+* Fixed consistency of model choice with parents, editor of intercepts saying "Intercepts" instead of "Mean."
+* Overrode ObjectInputStream in the session loader to use local UID's, to fix a problem in which the Java source code
+messed up serialization for one of its classes.
+* Fixed a bug in the conditional discrete histogram; it wasn't always matching variable values to variables.
+
+5.0.0.3
+* Fixed a bug in CCD in which the initial adjacency search was outputting --- graphs instead of o-o
+graphs.
+
+5.0.0.4
+* Fixed SEM Estimator so it remembers which optimizer you're using after you delete and recreate the estimator.
+* Optimized GES so that it can scale up to thousands of variables now with reasonable accuracy and speed for
+continuous variables. (Still a bit slow for very large models.)
+* Fixed standard error estimation in Sem Estiamtor for a corner case in which second derivatives could not be
+calculated.
+* Adjusted scoring procedure in GES and IMaGES to correct some minor bugs.
+
+5.0.0.5
+* Fixed a bug in SEM IM where information was not being displayed for all error terms.
+* More cleanup/optimizatiom of GES and IMaGES.
+* In the Paths action, added a field to bound the length of the paths found.
+* New feature to compare independence tests from multiple sources.
+
+5.0.0.6
+* Not different in any substantial way, except that it's signed with a legitimate cert (not self-signed).
+
+5.0.0.7
+* Fixed a bug in IMaGES; the clause allowing missing variables in data sets was missing.
+
+5.1.0-4
+* New scatterplot gadget. Allows conditioning on variables.
+* Added a new graph comparison--misclassification tables for endpoints and edges. Under Comparison.
+
+5.1.0-7
+* For Knowledge, menu items were added to load or save knowledge for text files, and the text pane for displaying
+text based knowledge was removed. This is to fix a number of bugs people found with loading knowledge through
+the text pane, especially with large knowledge sets.

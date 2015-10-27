@@ -1,0 +1,7 @@
+This package contains unit tests that need to refer to classes from a
+variety of packages inside of edu.cmu.tetrad. If a unit tests creates
+a cycle when put in some other package inside of edu.cmu.tetrad, please
+move it to this package. This package should be considered above all other
+packages inside of edu.cmu.edu, so that all package cycles can be avoided.
+
+J Ramsey 8/24/04

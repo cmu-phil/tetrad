@@ -1,0 +1,16 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <!--<servers>-->
+        <!--<server>-->
+            <!--<id>philserv</id>-->
+            <!--<username>tetrad</username>-->
+            <!--<password>barnesandnoble</password>-->
+            <!--<privateKey>${user.home}/.ssh/id_dsa</privateKey>-->
+            <!--<passphrase>tetrad</passphrase>-->
+            <!--<filePermissions>664</filePermissions>-->
+            <!--<directoryPermissions>775</directoryPermissions>-->
+        <!--</server>-->
+    <!--</servers>-->
+</settings>
