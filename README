@@ -5,11 +5,16 @@ can be found here:
 
 www.phil.cmu.edu/tetrad
 
+This is a Maven port of an existing Ant-based project
+that's been under development for many years in the
+Department of Philosophy at Carnegie Mellon University.
+
 By default, we will assume that this project is being
 set up in IntelliJ IDEA CE. To get IntelliJ IDEA CE, Google
 it. It's free and open source. Alternatively, you can
 use Maven commands at the command line. If there are other
-options that work, please let us know.
+options that work, please let us know and we will
+include them in this README.
 
 The file structure is set up so that if you open the
 project directory in IntelliJ IDEA CE, it will load right
@@ -26,7 +31,7 @@ The tetrad package contains the "model" code; the tetradapp
 package contains the "view" (GUI) code. If you'd like to
 launch the GUI in IntelliJ IDEA, from the dropdown at the
 top select "Edit Configurations"-->Plus-->Application, call
-it "Tetrad" and select the Tetrad class usign the ... field.
+it "Tetrad" and select the Tetrad class using the ... field.
 Then click OK and click the green arrow. Alternatively,
 you can run the lifecycle package target and launch the
 ejar that is built in the target directory, using the call

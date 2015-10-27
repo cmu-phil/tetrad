@@ -120,29 +120,14 @@
             <version>1.5.1</version>
         </dependency>
         <dependency>
-            <groupId>oli</groupId>
-            <artifactId>superactivity</artifactId>
-            <version>5.6</version>
-        </dependency>
-        <dependency>
             <groupId>com.googlecode.matrix-toolkits-java</groupId>
             <artifactId>mtj</artifactId>
             <version>1.0.1</version>
         </dependency>
         <dependency>
-            <groupId>org.rosuda.REngine</groupId>
-            <artifactId>Rserve</artifactId>
-            <version>1.8.1</version>
-        </dependency>
-        <dependency>
             <groupId>jdepend</groupId>
             <artifactId>jdepend</artifactId>
             <version>2.9.1</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sourceforge.jexcelapi</groupId>
-            <artifactId>jxl</artifactId>
-            <version>2.6.12</version>
         </dependency>
     </dependencies>
     <distributionManagement>
