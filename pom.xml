@@ -6,7 +6,7 @@
 
     <groupId>edu.cmu.tetrad</groupId>
     <artifactId>tetrad</artifactId>
-    <version>5.2.1-4-SNAPSHOT</version>
+    <version>5.2.1-5-SNAPSHOT</version>
 
     <repositories>
       <repository>
@@ -77,6 +77,11 @@
                 <artifactId>wagon-ssh</artifactId>
                 <version>2.4</version>
             </extension>
+            <!--<extension>-->
+                <!--<groupId>org.apache.maven.wagon</groupId>-->
+                <!--<artifactId>wagon-ssh-external</artifactId>-->
+                <!--<version>2.6</version>-->
+            <!--</extension>-->
         </extensions>
     </build>
 
