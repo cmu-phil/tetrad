@@ -9,17 +9,20 @@ This is a Maven port of an existing Ant-based project
 that's been under development for many years in the
 Department of Philosophy at Carnegie Mellon University.
 
-By default, we will assume that this project is being
-set up in IntelliJ IDEA CE. To get IntelliJ IDEA CE, Google
-it. It's free and open source. Alternatively, you can
-use Maven commands at the command line. If there are other
-options that work, please let us know and we will
-include them in this README.
+To set this project up in IntelliJ IDEA, fork it, clone
+it to your desktop, download IntelliJ IDEA CE (free),
+select File->New Project from Existing Sources), and
+click OK repeatedly until the project is set up.
 
-The file structure is set up so that if you open the
-project directory in IntelliJ IDEA CE, it will load right
-up. The Maven tab on the right will contain the lifecycle
-targets, which you can run by double clicking.
+If you'd like to launch the GUI in IntelliJ IDEA, 
+from the dropdown at the top select "Edit Configurations"
+-->Plus-->Application, call it "Tetrad" and select the 
+Tetrad class using the ... field. Then click OK and 
+click the green arrow. Alternatively, you can run the 
+lifecycle package target and launch the ejar that is 
+built in the target directory, using the call
+
+java -jar *-ejar.jar
 
 The project contains fairly well-developed code in these 
 packages:
@@ -28,15 +31,7 @@ tetrad
 tetradapp
 
 The tetrad package contains the "model" code; the tetradapp
-package contains the "view" (GUI) code. If you'd like to
-launch the GUI in IntelliJ IDEA, from the dropdown at the
-top select "Edit Configurations"-->Plus-->Application, call
-it "Tetrad" and select the Tetrad class using the ... field.
-Then click OK and click the green arrow. Alternatively,
-you can run the lifecycle package target and launch the
-ejar that is built in the target directory, using the call
-
-java -jar *-ejar.jar
+package contains the "view" (GUI) code.
 
 Contributions are welcome; we will handle these via the 
 GitHub pull-request procedure. As usual, please fork the
