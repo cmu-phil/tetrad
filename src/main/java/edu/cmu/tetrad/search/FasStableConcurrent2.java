@@ -32,6 +32,7 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
@@ -161,7 +162,7 @@ public class FasStableConcurrent2 implements IFas {
             _depth = 1000;
         }
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new ConcurrentHashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -292,7 +293,7 @@ public class FasStableConcurrent2 implements IFas {
             @Override
             protected Boolean compute() {
 
-                if (to - from <= chunk) {
+                if (to - from < chunk) {
                     for (int i = from; i < to; i++) {
                         if (verbose) {
                             if ((i + 1) % 100 == 0) out.println("Node # " + (i + 1));
@@ -443,7 +444,7 @@ public class FasStableConcurrent2 implements IFas {
 
             @Override
             protected Boolean compute() {
-                if (to - from <= chunk) {
+                if (to - from < chunk) {
                     for (int i = from; i < to; i++) {
                         if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
 

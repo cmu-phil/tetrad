@@ -2667,7 +2667,7 @@ public class PerformanceTests {
 
             out.println(graph);
 
-//            printDegreeDistribution(graph, out);
+//            printDegreeDistributiofn(graph, out);
 
             out.close();
         } catch (IOException e) {
@@ -2688,9 +2688,9 @@ public class PerformanceTests {
         PerformanceTests performanceTests = new PerformanceTests();
 
         if (args.length == 0) {
-            final int numVars = 1000;
+            final int numVars = 60000;
             final double edgeFactor = 1.0;
-            final int numCases = 2000;
+            final int numCases = 1000;
             final double penaltyDiscount = 4.0;
             final int numLatents = (int) (numVars * 0.001);
             final double alpha = 0.0001;
@@ -2699,17 +2699,17 @@ public class PerformanceTests {
             Graph dag = performanceTests.makeDag(numVars, edgeFactor);
             long time1 = System.currentTimeMillis();
 
-            performanceTests.init(new File("long.pc.stable" + numVars + ".txt"), "Tests performance of the PC Stable algorithm");
-            performanceTests.pcStableAfterDag(numCases, alpha, depth, time1, dag);
+//            performanceTests.init(new File("long.pc.stable" + numVars + ".txt"), "Tests performance of the PC Stable algorithm");
+//            performanceTests.pcStableAfterDag(numCases, alpha, depth, time1, dag);
 //f
 //            performanceTests.init(new File("long.cpc.stable" + numVars + ".txt"), "Tests performance of the CPC algorithm");
 //            performanceTests.cpcStableAfterDag(numCases, alpha, depth, time1, dag);
 
-            performanceTests.init(new File("long.pcmax." + numVars + "." + (int)(edgeFactor * numVars) + ".txt"), "Tests performance of the PC-Max algorithm");
-            performanceTests.pcmaxAfterDag(numCases, alpha, depth, time1, dag);
+//            performanceTests.init(new File("long.pcmax." + numVars + "." + (int)(edgeFactor * numVars) + ".txt"), "Tests performance of the PC-Max algorithm");
+//            performanceTests.pcmaxAfterDag(numCases, alpha, depth, time1, dag);
 
-//            performanceTests.init(new File("long.fastges." + numVars + ".txt"), "Tests performance of the FastGES algorithm");
-//            performanceTests.fastGesGivenDag(numCases, penaltyDiscount, time1, dag);
+            performanceTests.init(new File("long.fastges." + numVars + ".txt"), "Tests performance of the FastGES algorithm");
+            performanceTests.fastGesGivenDag(numCases, penaltyDiscount, time1, dag);
 
 //            new PerformanceTests().testFci(10000,                                                                                                                                                                                                                                                                                           edgeFactor, 1000);
 //            new PerformanceTests().testFciGes(numVars, edgeFactor, numCases);

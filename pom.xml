@@ -6,7 +6,7 @@
 
     <groupId>edu.cmu.tetrad</groupId>
     <artifactId>tetrad</artifactId>
-    <version>5.2.1-5-SNAPSHOT</version>
+    <version>5.2.1-4-SNAPSHOT</version>
 
     <repositories>
       <repository>
@@ -20,6 +20,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
@@ -48,28 +49,33 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!--This doesn't work because there's a single quote in the alias.-->
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-jarsigner-plugin</artifactId>-->
-                <!--<version>1.4</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>sign</id>-->
-                        <!--<goals>-->
-                            <!--<goal>sign</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-                <!--<configuration>-->
-                    <!--<keystore>file://${basedir}/.keystore/keystore.ks</keystore>-->
-                    <!--<alias>cmu.philosophy.comodo.ca.limited.id</alias>-->
-                    <!--<keypass>Knoppix 2007-1-4</keypass>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
-
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jarsigner-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <id>sign</id>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <keystore>file://${basedir}/.keystore/keystore.ks</keystore>
+                    <alias>cmu.philosophy.comodo.ca.limited.id</alias>
+                    <keypass>Knoppix 2007-1-4</keypass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.4</version>
+                <configuration>
+                    <port>9000</port>
+                    <tempWebappDirectory>${basedir}/target/site/tempdir</tempWebappDirectory>
+                </configuration>
+            </plugin>
         </plugins>
         <extensions>
             <extension>
@@ -77,11 +83,6 @@
                 <artifactId>wagon-ssh</artifactId>
                 <version>2.4</version>
             </extension>
-            <!--<extension>-->
-                <!--<groupId>org.apache.maven.wagon</groupId>-->
-                <!--<artifactId>wagon-ssh-external</artifactId>-->
-                <!--<version>2.6</version>-->
-            <!--</extension>-->
         </extensions>
     </build>
 
@@ -127,14 +128,29 @@
             <version>1.5.1</version>
         </dependency>
         <dependency>
+            <groupId>oli</groupId>
+            <artifactId>superactivity</artifactId>
+            <version>5.6</version>
+        </dependency>
+        <dependency>
             <groupId>com.googlecode.matrix-toolkits-java</groupId>
             <artifactId>mtj</artifactId>
             <version>1.0.1</version>
         </dependency>
         <dependency>
+            <groupId>org.rosuda.REngine</groupId>
+            <artifactId>Rserve</artifactId>
+            <version>1.8.1</version>
+        </dependency>
+        <dependency>
             <groupId>jdepend</groupId>
             <artifactId>jdepend</artifactId>
             <version>2.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.jexcelapi</groupId>
+            <artifactId>jxl</artifactId>
+            <version>2.6.12</version>
         </dependency>
     </dependencies>
     <distributionManagement>
