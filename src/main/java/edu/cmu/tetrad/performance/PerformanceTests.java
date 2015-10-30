@@ -2667,7 +2667,7 @@ public class PerformanceTests {
 
             out.println(graph);
 
-//            printDegreeDistribution(graph, out);
+//            printDegreeDistributiofn(graph, out);
 
             out.close();
         } catch (IOException e) {
