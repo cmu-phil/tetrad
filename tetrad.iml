@@ -24,6 +24,7 @@
     <orderEntry type="library" name="Maven: xerces:xercesImpl:2.8.0" level="project" />
     <orderEntry type="library" name="Maven: xalan:xalan:2.7.0" level="project" />
     <orderEntry type="library" name="Maven: pal:pal:1.5.1" level="project" />
+    <orderEntry type="library" name="Maven: oli:superactivity:5.6" level="project" />
     <orderEntry type="library" name="Maven: com.googlecode.matrix-toolkits-java:mtj:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: net.sourceforge.f2j:arpack_combined_all:0.1" level="project" />
     <orderEntry type="library" name="Maven: com.github.fommil.netlib:core:1.1.1" level="project" />
@@ -42,6 +43,10 @@
     <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_system-linux-armhf:natives:1.1" level="project" />
     <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_system-win-x86_64:natives:1.1" level="project" />
     <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_system-win-i686:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.rosuda.REngine:Rserve:1.8.1" level="project" />
+    <orderEntry type="library" name="Maven: org.rosuda.REngine:REngine:2.1.0" level="project" />
     <orderEntry type="library" name="Maven: jdepend:jdepend:2.9.1" level="project" />
+    <orderEntry type="library" name="Maven: net.sourceforge.jexcelapi:jxl:2.6.12" level="project" />
+    <orderEntry type="library" name="Maven: log4j:log4j:1.2.14" level="project" />
   </component>
 </module>
