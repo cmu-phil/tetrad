@@ -38,15 +38,15 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Replaces the FAS search in the previous version with GES followed by PC adjacency removals for more accuracy.
  * Uses conservative collider orientation. Gets sepsets for X---Y from among adjacents of X or of Y. -jdramsey 3/10/2015
- * <p/>
+ * <p>
  * Following an idea of Spirtes, now it uses more of the information in GES, to calculating possible dsep paths and to
  * utilize unshielded colliders found by GES. 5/31/2015
- * <p/>
+ * <p>
  * Previous:
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
- * <p/>
+ * <p>
  * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
@@ -206,7 +206,10 @@ public final class FciGes {
             ges.setLog(false);
             ges.setDepth(getDepth());
             ges.setNumPatternsToStore(0);
-            ges.setFaithfulnessAssumed(faithfulnessAssumed);
+            ges.setFaithfulnessAssumed(true);
+            Graph initialGraph = ges.search();
+            ges.setInitialGraph(initialGraph);
+            ges.setFaithfulnessAssumed(false);
             graph = ges.search();
             gesGraph = new EdgeListGraphSingleConnections(graph);
         } else if (dataSet.isDiscrete()) {
@@ -271,7 +274,7 @@ public final class FciGes {
                 sepsets.getSepset(i, k);
 
                 if (sepsets.getPValue() > getIndependenceTest().getAlpha()) {
-                    gesGraph.removeEdge(edge);
+                    graph.removeEdge(edge);
                 }
             }
         }
@@ -280,7 +283,7 @@ public final class FciGes {
         // Orientation phase.
 
         // Step CI C, modified collider orientation step for FCI-GES due to Spirtes.
-        ruleR0Special(graph, gesGraph, sepsets);
+        ruleR0Special(graph, gesGraph, sepsets, ges);
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setKnowledge(getKnowledge());
@@ -319,7 +322,7 @@ public final class FciGes {
         return false;
     }
 
-    public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets) {
+    public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets, FastGes ges) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
@@ -369,75 +372,13 @@ public final class FciGes {
                         logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
                         System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
                     }
-//                    else {
-//                        List<Node> _nodes = new ArrayList<>();
-//                        _nodes.add(a);
-//                        _nodes.add(b);
-//                        _nodes.add(c);
-//                        int[] rows = new int[3];
-//                        List<Node> variables = covarianceMatrix.getVariables();
-//                        rows[0] = variables.indexOf(a);
-//                        rows[1] = variables.indexOf(b);
-//                        rows[2] = variables.indexOf(c);
-//                        TetradMatrix _c1 = covarianceMatrix.getSelection(rows, rows);
-//                        CovarianceMatrix _c2 = new CovarianceMatrix(_nodes, _c1, covarianceMatrix.getSampleSize());
-//                        FastGes _ges = new FastGes(_c2);
-////                        IKnowledge k = new Knowledge2();
-////                        k.setForbidden(a.getName(), c.getName());
-////                        k.setForbidden(c.getName(), a.getName());
-////                        _ges.setKnowledge(knowledge);
-//                        Graph _g = _ges.search();
-//
-//                        if (_g.isDefCollider(a, b, c)) {
-//                            graph.setEndpoint(a, b, Endpoint.ARROW);
-//                            graph.setEndpoint(c, b, Endpoint.ARROW);
-//                            logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                            System.out.println("Calculating from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                        }
-//                    }
-//                    else if (sepsets.isCollider(a, b, c)) {
-//                        graph.setEndpoint(a, b, Endpoint.ARROW);
-//                        graph.setEndpoint(c, b, Endpoint.ARROW);
-//                        logger.log("colliderOrientations", "On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                        System.out.println("On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                    }
                 } else {
-
-//                    {
-//                        List<Node> _nodes = new ArrayList<>();
-//                        _nodes.add(a);
-//                        _nodes.add(b);
-//                        _nodes.add(c);
-//                        int[] rows = new int[3];
-//                        rows[0] = variables.indexOf(a);
-//                        rows[1] = variables.indexOf(b);
-//                        rows[2] = variables.indexOf(c);
-//                        TetradMatrix _c1 = covarianceMatrix.getSelection(rows, rows);
-//                        CovarianceMatrix _c2 = new CovarianceMatrix(_nodes, _c1, covarianceMatrix.getSampleSize());
-//                        FastGes _ges = new FastGes(_c2);
-//                        IKnowledge k = new Knowledge2();
-//                        k.setForbidden(a.getName(), c.getName());
-//                        k.setForbidden(c.getName(), a.getName());
-//                        _ges.setKnowledge(knowledge);
-//                        Graph _g = _ges.search();
-//
-//                        if (_g.isDefCollider(a, b, c)) {
-//                            graph.setEndpoint(a, b, Endpoint.ARROW);
-//                            graph.setEndpoint(c, b, Endpoint.ARROW);
-//                            logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                            System.out.println("Calculating from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                        }
-//
-//
-//                    }
-
-//                    // Otherwise, do a test to see if the collider can be oriented.
-//                    if (sepsets.isCollider(a, b, c)) {
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
-                    logger.log("colliderOrientations", "On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                    System.out.println("On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                    }
+                    if (sepsets.isCollider(a, b, c)) {
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                        logger.log("colliderOrientations", "On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                        System.out.println("On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                    }
                 }
             }
         }
