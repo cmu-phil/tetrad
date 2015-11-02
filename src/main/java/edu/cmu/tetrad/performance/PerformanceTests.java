@@ -2708,8 +2708,8 @@ public class PerformanceTests {
 //            performanceTests.init(new File("long.pcmax." + numVars + "." + (int)(edgeFactor * numVars) + ".txt"), "Tests performance of the PC-Max algorithm");
 //            performanceTests.pcmaxAfterDag(numCases, alpha, depth, time1, dag);
 
-            performanceTests.init(new File("long.fastges." + numVars + ".txt"), "Tests performance of the FastGES algorithm");
-            performanceTests.fastGesGivenDag(numCases, penaltyDiscount, time1, dag);
+//            performanceTests.init(new File("long.fastges." + numVars + ".txt"), "Tests performance of the FastGES algorithm");
+//            performanceTests.fastGesGivenDag(numCases, penaltyDiscount, time1, dag);
 
 //            new PerformanceTests().testFci(10000,                                                                                                                                                                                                                                                                                           edgeFactor, 1000);
 //            new PerformanceTests().testFciGes(numVars, edgeFactor, numCases);
@@ -2723,7 +2723,7 @@ public class PerformanceTests {
 //            new PerformanceTests().testFastGesSergey("d   ata_u2.csv", 2);
 //            new PerformanceTests().testFastGesDiscrete("tgen_1kvars.txt", 0.001, 10);
 //
-//            new PerformanceTests().testFciGesComparison(numVars, edgeFactor, numCases, numLatents);
+            new PerformanceTests().testFciGesComparison(numVars, edgeFactor, numCases, numLatents);
 //            new PerformanceTests().testCompareFciDagToPag(numVars, edgeFactor, numLatents);
 //            new PerformanceTests().testDagToPagOnly(numVars, edgeFactor, numLatents);
 
