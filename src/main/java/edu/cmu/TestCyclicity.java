@@ -47,9 +47,6 @@ public class TestCyclicity extends TestCase {
         try {
             jdepend.addDirectory(new File("target/classes/edu/cmu/tetrad").getAbsolutePath());
             jdepend.addDirectory(new File("target/classes/edu/cmu/tetradapp").getAbsolutePath());
-//            jdepend.addDirectory(new File("build/tetrad/classes/edu/cmu/causality2").getAbsolutePath());
-//            jdepend.addDirectory(new File("build/tetrad/classes/edu/cmu/oli").getAbsolutePath());
-//            jdepend.addDirectory(new File("build/tetrad/classes/edu/cmu/tetradproj").getAbsolutePath());
         }
         catch (IOException e) {
             fail(e.getMessage());
@@ -76,11 +73,8 @@ public class TestCyclicity extends TestCase {
     public void testAllPackagesCycle() {
         Collection packages = jdepend.analyze();
 
-        boolean printedCycle = false;
-
         for (Object aPackage : packages) {
             JavaPackage p = (JavaPackage) aPackage;
-//            if (p.getName().contains("causalityApp")) continue;
 
             if (p.containsCycle()) {
                 System.out.println("\n***Package: " + p.getName() + ".");
@@ -97,7 +91,6 @@ public class TestCyclicity extends TestCase {
                 for (int j = 0; j < l.size(); j++) {
                     JavaPackage pack = (JavaPackage) l.get(j);
                     System.out.println((j + 1) + ".\t" + pack.getName());
-                    printedCycle = true;
                 }
 
                 System.out.println();
@@ -107,10 +100,6 @@ public class TestCyclicity extends TestCase {
         if (jdepend.containsCycles()) {
             fail("Package cycle(s) found!");
         }
-
-//        if (printedCycle) {
-//            fail("Package cycle(s) found!");
-//        }
     }
 
     public static void main(String args[]) {
