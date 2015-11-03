@@ -35,39 +35,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Nov 28, 2008 Time: 11:52:24 AM
- * To change this template use File | Settings | File Templates.
+ * Sundry utilities for regression.
  */
 public class RegressionUtils {
-    public static DataSet residuals1(DataSet dataSet, Dag dag) {
-
-        Regression regression = new RegressionDataset(dataSet);
-
-        TetradMatrix residuals = new TetradMatrix(dataSet.getNumRows(), dataSet.getNumColumns());
-
-        for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            Node target = dataSet.getVariable(i);
-            Node _target = dag.getNode(target.getName());
-
-            if (!dag.containsNode(_target)) {
-                continue;
-            }
-
-            List<Node> _regressors = dag.getParents(_target);
-            List<Node> regressors = new LinkedList<Node>();
-
-            for (Node node : _regressors) {
-                regressors.add(dataSet.getVariable(node.getName()));
-            }
-
-            RegressionResult result = regression.regress(target, regressors);
-            TetradVector residualsColumn = result.getResiduals();
-//            residuals.viewColumn(i).assign(residualsColumn);
-            residuals.assignColumn(i, residualsColumn);
-        }
-
-        return ColtDataSet.makeContinuousData(dataSet.getVariables(), residuals);
-    }
 
     public static DataSet residuals(DataSet dataSet, Graph graph) {
         Regression regression = new RegressionDataset(dataSet);

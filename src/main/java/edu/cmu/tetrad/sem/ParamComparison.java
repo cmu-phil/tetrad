@@ -29,7 +29,7 @@ import java.io.ObjectStreamException;
  *
  * @author Joseph Ramsey
  */
-class ParamComparison {
+public class ParamComparison {
 
     /**
      * Indicates that the two freeParameters are not compared.

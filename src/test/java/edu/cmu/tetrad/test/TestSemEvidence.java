@@ -19,16 +19,18 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.sem;
+package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.SemEvidence;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 
 /**
  * Tests the MeasurementSimulator class using diagnostics devised by Richard
@@ -36,44 +38,24 @@ import junit.framework.TestSuite;
  *
  * @author Joseph Ramsey
  */
-public class TestDagScorer extends TestCase {
+public class TestSemEvidence extends TestCase {
 
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestDagScorer(String name) {
+    public TestSemEvidence(String name) {
         super(name);
     }
 
-    public void test1() {
-        Graph dag = new Dag(GraphUtils.randomGraph(10, 0, 10, 30, 15, 15, false));
+    public void testSemEvidence() {
+        Graph graph = constructGraph1();
+        SemPm semPm = new SemPm(graph);
+        SemIm semIm = new SemIm(semPm);
+        SemEvidence evidence = new SemEvidence(semIm);
 
-        SemPm pm = new SemPm(dag);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
-
-        GraphUtils.replaceNodes(dag, data.getVariables());
-
-        SemEstimator est = new SemEstimator(data, pm);
-        SemIm estSem = est.estimate();
-        System.out.println("FML = " + estSem.getScore());
-
-        dag = GraphUtils.replaceNodes(dag, data.getVariables());
-
-        System.out.println(estSem.getEdgeCoef());
-        System.out.println(estSem.getErrCovar());
-
-        Scorer scorer = new DagScorer(data);
-        double fml = scorer.score(dag);
-        System.out.println("FML (scorer) = " + fml);
-
-        System.out.println("BIC = " + scorer.getBicScore());
-        System.out.println("DOF = " + scorer.getDof());
-        System.out.println("# free params = " + scorer.getNumFreeParams());
-        System.out.println("est sem = " + scorer.getEstSem());
-
-        Graph newDag = new Dag(GraphUtils.randomDag(data.getVariables(), 0, 10, 30, 15, 15, false));
-        System.out.println("new FML " + scorer.score(newDag));
+        evidence.setManipulated(1, true);
+        assertTrue(evidence.isManipulated(1));
+        System.out.println(evidence);
     }
 
     /**
@@ -84,8 +66,35 @@ public class TestDagScorer extends TestCase {
 
         // Edit the name of the class in the parens to match the name
         // of this class.
-        return new TestSuite(TestDagScorer.class);
+        return new TestSuite(TestSemEvidence.class);
+    }
+
+    private Graph constructGraph1() {
+        Graph graph = new EdgeListGraph();
+
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
+
+        graph.addNode(x1);
+        graph.addNode(x2);
+        graph.addNode(x3);
+        graph.addNode(x4);
+        graph.addNode(x5);
+
+        graph.addDirectedEdge(x1, x2);
+        graph.addDirectedEdge(x2, x3);
+        graph.addDirectedEdge(x3, x4);
+        graph.addDirectedEdge(x1, x4);
+        graph.addDirectedEdge(x4, x5);
+
+        return graph;
     }
 }
+
+
+
 
 

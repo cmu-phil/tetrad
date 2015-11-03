@@ -2102,7 +2102,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable, Optimization
     }
 
     // For testing.
-    TetradVector simulateOneRecord(TetradVector e) {
+    public TetradVector simulateOneRecord(TetradVector e) {
         // Calculate inv(I - edgeCoefC)
         TetradMatrix edgeCoef = edgeCoef().copy().transpose();
 

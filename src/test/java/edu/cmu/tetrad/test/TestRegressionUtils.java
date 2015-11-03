@@ -19,76 +19,70 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.sem;
+package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.regression.RegressionUtils;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * Tests the MeasurementSimulator class using diagnostics devised by Richard
- * Scheines. The diagnostics are described in the Javadocs, below.
+ * Tests the new regression classes. There is a tabular linear regression
+ * model as well as a correlation linear regression model. (Space for more
+ * in the future.)
  *
  * @author Joseph Ramsey
  */
-public class TestSemManipulation extends TestCase {
+public class TestRegressionUtils extends TestCase {
+    DataSet data;
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSemManipulation(String name) {
+    public TestRegressionUtils(String name) {
         super(name);
     }
 
-    public void testEvidence() {
-        Graph graph = constructGraph1();
-        SemPm semPm = new SemPm(graph);
-        SemIm semIm = new SemIm(semPm);
-        SemManipulation manipulation = new SemManipulation(semIm);
-        System.out.println(manipulation);
+    // Residuals for guys with no parents should be identical to the original data values.
+    public void testRegresssionUtils() {
+        Dag graph = new Dag(new Dag(GraphUtils.randomGraph(5, 0, 3, 3,
+                3, 3, false)));
+
+        System.out.println(graph);
+
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        
+        DataSet dataSet = im.simulateData(1000, false);
+
+//        System.out.println(dataSet);
+
+        DataSet residuals = RegressionUtils.residuals(dataSet, graph);
+//
+//        System.out.println(residuals);
+
+//        for (Node node : graph.getNodes()) {
+//            if (!graph.getParents(node).isEmpty()) {
+//                continue;
+//            }
+//
+//            Node nodeDataSet = dataSet.getVariable(node.getName());
+//            int j = dataSet.getVariables().indexOf(nodeDataSet);
+//
+//            for (int i = 0; i < dataSet.getNumRows(); i++) {
+//                System.out.println(i);
+//
+//                assertEquals(dataSet.getDouble(i, j), residuals.getDouble(i, j), 0.001);
+//            }
+//        }
     }
 
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
     public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSemManipulation.class);
-    }
-
-    private Graph constructGraph1() {
-        Graph graph = new EdgeListGraph();
-
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
-
-        graph.addNode(x1);
-        graph.addNode(x2);
-        graph.addNode(x3);
-        graph.addNode(x4);
-        graph.addNode(x5);
-
-        graph.addDirectedEdge(x1, x2);
-        graph.addDirectedEdge(x2, x3);
-        graph.addDirectedEdge(x3, x4);
-        graph.addDirectedEdge(x1, x4);
-        graph.addDirectedEdge(x4, x5);
-
-        return graph;
+        return new TestSuite(TestRegressionUtils.class);
     }
 }
-
-
 
 
 
