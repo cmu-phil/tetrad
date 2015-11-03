@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.calculator.expression;
 
 /**
- * An abstract expression descriptor.
+ * Contains some common methods for Expression Descriptors (see).
  *
  * @author Tyler Gibson
  */

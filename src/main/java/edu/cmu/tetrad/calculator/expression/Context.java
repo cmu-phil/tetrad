@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.calculator.expression;
 
 /**
- * Tyler didn't document this.
+ * Looks up the value of a variable.
  *
  * @author Tyler Gibson
  */

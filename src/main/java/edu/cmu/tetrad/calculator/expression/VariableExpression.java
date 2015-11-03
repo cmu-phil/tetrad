@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Tyler didn't document this.
+ * An Expression for a variable.
  *
  * @author Tyler Gibson
  */

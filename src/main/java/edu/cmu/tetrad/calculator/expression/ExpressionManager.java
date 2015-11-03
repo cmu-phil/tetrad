@@ -28,7 +28,8 @@ import org.apache.commons.math3.random.RandomGenerator;
 import java.util.*;
 
 /**
- * Manager for expressions, this includes all implemenets of expression descriptors for the calculator.
+ * Manager for expressions, this includes all implementations of expression
+ * descriptors for the calculator.
  *
  * @author Tyler Gibson
  */
