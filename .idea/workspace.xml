@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7cc799f8-bac6-46de-a54e-8f56361f1fd9" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/metrics/Dissimilarity.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/metrics/Dissimilarity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Lingam.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Lingam.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java" />
+    <list default="true" id="7cc799f8-bac6-46de-a54e-8f56361f1fd9" name="Default" comment="Adjusted Version so that incremental versions are ignored, as per Maven protocol.">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/FastIca.java" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <list id="e4bd24ea-a30d-4d03-b624-a4bf3e9db2c0" name="New changelist" comment="" />
@@ -79,16 +77,6 @@
         </entry>
       </file>
       <file leaf-file-name="FastIca.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/FastIca.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="141" column="14" selection-start-line="141" selection-start-column="14" selection-end-line="141" selection-end-column="14" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="FastIca.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/FastIca.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
@@ -101,8 +89,8 @@
       <file leaf-file-name="Version.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5048701">
-              <caret line="103" column="9" selection-start-line="103" selection-start-column="9" selection-end-line="103" selection-end-column="9" />
+            <state vertical-scroll-proportion="0.6996753">
+              <caret line="111" column="0" selection-start-line="111" selection-start-column="0" selection-end-line="111" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -1203,7 +1191,13 @@
       <option name="project" value="LOCAL" />
       <updated>1446561728557</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="Adjusted Version so that incremental versions are ignored, as per Maven protocol.">
+      <created>1446564699655</created>
+      <option name="number" value="00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1446564699655</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1266,7 +1260,8 @@
     <MESSAGE value="Setting the next version to 5.2.2 in the POM file." />
     <MESSAGE value="Added some documentation for the bayes and calculator packages." />
     <MESSAGE value="Added some documentation for the data package. Deleted two classes taht were unused." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added some documentation for the data package. Deleted two classes taht were unused." />
+    <MESSAGE value="Adjusted Version so that incremental versions are ignored, as per Maven protocol." />
+    <option name="LAST_COMMIT_MESSAGE" value="Adjusted Version so that incremental versions are ignored, as per Maven protocol." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1671,18 +1666,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/FastIca.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="141" column="14" selection-start-line="141" selection-start-column="14" selection-end-line="141" selection-end-column="14" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5048701">
-          <caret line="103" column="9" selection-start-line="103" selection-start-column="9" selection-end-line="103" selection-end-column="9" />
+        <state vertical-scroll-proportion="0.6996753">
+          <caret line="111" column="0" selection-start-line="111" selection-start-column="0" selection-end-line="111" selection-end-column="0" />
           <folding />
         </state>
       </provider>
