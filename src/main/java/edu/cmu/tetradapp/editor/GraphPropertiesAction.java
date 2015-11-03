@@ -31,6 +31,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -95,7 +96,7 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
         }
 
         boolean cyclic = graph.existsDirectedCycle();
-        List<Node> cycle = GraphUtils.directedCycle(graph);
+        List<Node> cycle = new ArrayList<Node>(); //GraphUtils.directedCycle(graph);
 
         JTextArea textArea = new JTextArea();
         JScrollPane scroll = new JScrollPane(textArea);

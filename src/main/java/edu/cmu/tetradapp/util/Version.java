@@ -88,8 +88,6 @@ public class Version implements TetradSerializable {
             throw new NullPointerException();
         }
 
-        System.out.println(spec);
-
         Pattern pattern2 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)");
         Matcher matcher2 = pattern2.matcher(spec);
 
