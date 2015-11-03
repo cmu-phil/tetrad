@@ -465,7 +465,7 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
     }
 
     public boolean isAncestorOf(Node node1, Node node2) {
-        return GraphUtils.existsDirectedPathFromToBreathFirst(node1, node2, this);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node1, node2, this);
     }
 
     public boolean isDirectedFromTo(Node node1, Node node2) {
@@ -510,7 +510,7 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
     }
 
     public boolean isDescendentOf(Node node1, Node node2) {
-        return GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
     }
 
     /**

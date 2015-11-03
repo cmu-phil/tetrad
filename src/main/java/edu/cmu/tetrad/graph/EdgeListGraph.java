@@ -318,9 +318,13 @@ public class EdgeListGraph implements Graph {
 
     public boolean existsDirectedCycle() {
         for (Node node : getNodes()) {
-            if (existsDirectedPathFromTo(node, node)) {
+            if (GraphUtils.existsDirectedPathFromToBreathFirst(node, node, this)) {
                 return true;
             }
+
+//            if (existsDirectedPathFromTo(node, node)) {
+//                return true;
+//            }
         }
         return false;
     }
@@ -596,7 +600,7 @@ public class EdgeListGraph implements Graph {
      * Determines whether one node is an ancestor of another.
      */
     public boolean isAncestorOf(Node node1, Node node2) {
-        return (node1 == node2) || isProperAncestorOf(node1, node2);
+        return (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
     }
 
     public boolean possibleAncestor(Node node1, Node node2) {

@@ -330,9 +330,13 @@ public class EdgeListGraphSingleConnections implements Graph {
 
     public boolean existsDirectedCycle() {
         for (Node node : getNodes()) {
-            if (existsDirectedPathFromTo(node, node)) {
+            if (GraphUtils.existsDirectedPathFromToBreathFirst(node, node, this)) {
                 return true;
             }
+
+//            if (existsDirectedPathFromTo(node, node)) {
+//                return true;
+//            }
         }
         return false;
     }
@@ -454,14 +458,10 @@ public class EdgeListGraphSingleConnections implements Graph {
      * question.
      */
     public boolean existsTrek(Node node1, Node node2) {
-
-        for (Node node3 : getNodes()) {
-            Node node = (node3);
-
-            if (isAncestorOf(node, node1) && isAncestorOf(node, node2)) {
+        for (Node node : getNodes()) {
+            if (isAncestorOf((node), node1) && isAncestorOf((node), node2)) {
                 return true;
             }
-
         }
 
         return false;
@@ -591,7 +591,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * Determines whether one node is an ancestor of another.
      */
     public boolean isAncestorOf(Node node1, Node node2) {
-        return GraphUtils.existsDirectedPathFromToBreathFirst(node1, node2, this);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node1, node2, this);
 //        return DataGraphUtils.existsDirectedPathFromTo(node1, node2, this);
 //        return (node1 == node2) || isProperAncestorOf(node1, node2);
     }
@@ -644,7 +644,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * Determines whether one node is a descendent of another.
      */
     public boolean isDescendentOf(Node node1, Node node2) {
-        return GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
 //        return (node1 == node2) || isProperDescendentOf(node1, node2);
     }
 

@@ -3760,12 +3760,12 @@ public final class GraphUtils {
     }
 
     public static boolean existsDirectedPathFromTo(Node node1, Node node2, Graph graph) {
-        return existsDirectedPathFromToBreathFirst(node1, node2, graph);
+        return node1 == node2 || existsDirectedPathFromToBreathFirst(node1, node2, graph);
 //        return existsDirectedPathVisit(node1, node2, new LinkedList<Node>(), 1000, graph);
     }
 
     public static boolean existsDirectedPathFromTo(Node node1, Node node2, int depth, Graph graph) {
-        return existsDirectedPathVisit(node1, node2, new LinkedList<Node>(), depth, graph);
+        return node1 == node2 || existsDirectedPathVisit(node1, node2, new LinkedList<Node>(), depth, graph);
     }
 
     public static boolean existsSemidirectedPathFromTo(Node node1, Node node2, Graph graph) {
@@ -3805,7 +3805,11 @@ public final class GraphUtils {
         return false;
     }
 
-
+    /**
+     * Returns true just in case there is a nonempty path from one node to another. Because
+     * the path needs to be non-empty, this can distinguish cycles. The case where from = to
+     * but there is no cycle from from to to needs to be checked separately.
+     */
     public static boolean existsDirectedPathFromToBreathFirst(Node from, Node to, Graph G) {
         Queue<Node> Q = new LinkedList<Node>();
         Set<Node> V = new HashSet<Node>();
@@ -3814,13 +3818,14 @@ public final class GraphUtils {
 
         while (!Q.isEmpty()) {
             Node t = Q.remove();
-            if (t == to) return true;
+//            if (t == to) return true;
 
             for (Node u : G.getAdjacentNodes(t)) {
                 Edge edge = G.getEdge(t, u);
                 Node c = Edges.traverseDirected(t, edge);
 
                 if (c == null) continue;
+                if (c == to) return true;
                 if (V.contains(c)) continue;
 
                 V.add(c);
