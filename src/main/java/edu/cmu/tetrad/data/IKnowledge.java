@@ -28,11 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: josephramsey
- * Date: Jun 29, 2010
- * Time: 5:36:12 PM
- * To change this template use File | Settings | File Templates.
+ * Interface for knowledge of forbidden and required edges. Implemented
+ * in different ways. See implementations.
  */
 public interface IKnowledge extends TetradSerializable {
     static final long serialVersionUID = 23L;

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.session.SessionModel;
 
 
 /**
+ * Tags classes that can yield graphs as input to knowledge.
  * @author kaalpurush
  *
  */
