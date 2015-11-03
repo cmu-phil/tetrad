@@ -96,7 +96,7 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
         }
 
         boolean cyclic = graph.existsDirectedCycle();
-        List<Node> cycle = new ArrayList<Node>(); //GraphUtils.directedCycle(graph);
+//        List<Node> cycle = GraphUtils.directedCycle(graph);
 
         JTextArea textArea = new JTextArea();
         JScrollPane scroll = new JScrollPane(textArea);
@@ -115,9 +115,9 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
         textArea.append("\nNumber of latents: " + String.valueOf(numLatents));
         textArea.append("\n" + (cyclic ? "Cyclic": "Acyclic"));
 
-        if (cyclic) {
-            textArea.append("\nExample cycle: " + cycle.toString());
-        }
+//        if (cyclic) {
+//            textArea.append("\nExample cycle: " + cycle.toString());
+//        }
 
 
         Box b2 = Box.createHorizontalBox();
