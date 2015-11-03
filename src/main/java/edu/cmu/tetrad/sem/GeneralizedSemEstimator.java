@@ -352,7 +352,7 @@ public class GeneralizedSemEstimator {
     }
 
 
-    static class MyContext implements Context {
+    public static class MyContext implements Context {
         final Map<String, Double> variableValues = new HashMap<>();
         final Map<String, Double> parameterValues = new HashMap<>();
 

@@ -24,8 +24,7 @@ package edu.cmu.tetrad.cluster.metrics;
 import edu.cmu.tetrad.util.TetradVector;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Oct 1, 2007 Time: 11:47:19 AM
- * To change this template use File | Settings | File Templates.
+ * Interface for a dissilimarity metric.
  */
 public interface Dissimilarity {
     double dissimilarity(TetradVector v1, TetradVector v2);

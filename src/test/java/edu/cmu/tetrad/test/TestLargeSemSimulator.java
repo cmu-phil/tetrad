@@ -19,16 +19,17 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.sem;
+package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.sem.LargeSemSimulator;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,58 +38,43 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class TestSemProposition extends TestCase {
+public class TestLargeSemSimulator extends TestCase {
 
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestSemProposition(String name) {
+    public TestLargeSemSimulator(String name) {
         super(name);
     }
 
-    public void testEvidence() {
-        Graph graph = constructGraph1();
-        SemPm semPm = new SemPm(graph);
-        SemIm semIm = new SemIm(semPm);
-        List nodes = semIm.getVariableNodes();
+    public void test1() {
+        List<Node> nodes = new ArrayList<Node>();
+        for (int i = 1; i <= 10; i++) nodes.add(new ContinuousVariable("X" + i));
 
-        SemProposition proposition = SemProposition.tautology(semIm);
+        Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 5, 5, 5, false);
 
-        System.out.println(proposition);
-
-        for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
-            assertTrue(Double.isNaN(proposition.getValue(i)));
+        List<Node> nodes2 = graph.getCausalOrdering();
+        int[] tierIndices = new int[nodes2.size()];
+        for (int j = 0; j < nodes.size(); j++) {
+            tierIndices[j] = j;
         }
+        LargeSemSimulator simulator = new LargeSemSimulator(graph);
+        DataSet dataset = simulator.simulateDataAcyclicConcurrent(1000);
 
-        proposition.setValue(1, 0.5);
-        assertEquals(0.5, proposition.getValue(1), 0.0);
-        System.out.println(proposition);
-
-        Node node4 = (Node) nodes.get(3);
-        proposition.setValue(node4, 0.7);
-        assertEquals(0.7, proposition.getValue(node4), 0.0);
-        System.out.println(proposition);
+        System.out.println(dataset);
     }
 
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
+    private Dag constructGraph1() {
+        Dag graph = new Dag();
 
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSemProposition.class);
-    }
+        Node x1 = new ContinuousVariable("X1");
+        Node x2 = new ContinuousVariable("X2");
+        Node x3 = new ContinuousVariable("X3");
+        Node x4 = new ContinuousVariable("X4");
+        Node x5 = new ContinuousVariable("X5");
 
-    private Graph constructGraph1() {
-        Graph graph = new EdgeListGraph();
-
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
+        x1.setNodeType(NodeType.LATENT);
+        x2.setNodeType(NodeType.LATENT);
 
         graph.addNode(x1);
         graph.addNode(x2);
@@ -103,6 +89,41 @@ public class TestSemProposition extends TestCase {
         graph.addDirectedEdge(x4, x5);
 
         return graph;
+    }
+
+//    private Graph constructGraph2() {
+//        Graph graph = new EdgeListGraph();
+//
+//        Node x1 = new GraphNode("X1");
+//        Node x2 = new GraphNode("X2");
+//        Node x3 = new GraphNode("X3");
+//        Node x4 = new GraphNode("X4");
+//        Node x5 = new GraphNode("X5");
+//
+//        graph.addIndex(x1);
+//        graph.addIndex(x2);
+//        graph.addIndex(x3);
+//        graph.addIndex(x4);
+//        graph.addIndex(x5);
+//
+//        graph.addDirectedEdge(x1, x2);
+//        graph.addDirectedEdge(x2, x3);
+//        graph.addDirectedEdge(x3, x4);
+//        graph.addDirectedEdge(x1, x4);
+//        graph.addDirectedEdge(x4, x5);
+//
+//        return graph;
+//    }
+
+    /**
+     * This method uses reflection to collect up all of the test methods from
+     * this class and return them to the test runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestLargeSemSimulator.class);
     }
 }
 

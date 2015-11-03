@@ -88,7 +88,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @serial
      * @deprecated 7/8/09
      */
-    private Set<Pair> ambiguousPairs = new HashSet<Pair>();
+    private Set<NodePair> ambiguousPairs = new HashSet<>();
 
     /**
      * True iff nodes were removed since the last call to an accessor for ambiguous, underline, or dotted underline
@@ -2076,7 +2076,7 @@ public final class MatrixGraphSimplified implements Graph {
         }
 
         if (ambiguousPairs == null) {
-            ambiguousPairs = new HashSet<Pair>();
+            ambiguousPairs = new HashSet<NodePair>();
         }
 
         if (highlightedEdges == null) {

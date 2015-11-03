@@ -25,7 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 /**
- * An ordered pair of nodes.
+ * An ordered pair of objects. This does not serialize well, unfortunately.
  *
  * @author Tyler Gibson
  */

@@ -19,15 +19,20 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.sem;
+package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.sem.SemProposition;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import java.util.List;
 
 /**
  * Tests the MeasurementSimulator class using diagnostics devised by Richard
@@ -35,24 +40,37 @@ import junit.framework.TestSuite;
  *
  * @author Joseph Ramsey
  */
-public class TestSemEvidence extends TestCase {
+public class TestSemProposition extends TestCase {
 
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestSemEvidence(String name) {
+    public TestSemProposition(String name) {
         super(name);
     }
 
-    public void testSemEvidence() {
+    public void testEvidence() {
         Graph graph = constructGraph1();
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
-        SemEvidence evidence = new SemEvidence(semIm);
+        List nodes = semIm.getVariableNodes();
 
-        evidence.setManipulated(1, true);
-        assertTrue(evidence.isManipulated(1));
-        System.out.println(evidence);
+        SemProposition proposition = SemProposition.tautology(semIm);
+
+        System.out.println(proposition);
+
+        for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
+            assertTrue(Double.isNaN(proposition.getValue(i)));
+        }
+
+        proposition.setValue(1, 0.5);
+        assertEquals(0.5, proposition.getValue(1), 0.0);
+        System.out.println(proposition);
+
+        Node node4 = (Node) nodes.get(3);
+        proposition.setValue(node4, 0.7);
+        assertEquals(0.7, proposition.getValue(node4), 0.0);
+        System.out.println(proposition);
     }
 
     /**
@@ -63,7 +81,7 @@ public class TestSemEvidence extends TestCase {
 
         // Edit the name of the class in the parens to match the name
         // of this class.
-        return new TestSuite(TestSemEvidence.class);
+        return new TestSuite(TestSemProposition.class);
     }
 
     private Graph constructGraph1() {

@@ -1157,7 +1157,7 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
     }
 
 
-    TetradVector simulateOneRecord(TetradVector e) {
+    public TetradVector simulateOneRecord(TetradVector e) {
         final Map<String, Double> variableValues = new HashMap<String, Double>();
 
         final List<Node> variableNodes = pm.getVariableNodes();

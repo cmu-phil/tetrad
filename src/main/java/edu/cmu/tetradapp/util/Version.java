@@ -88,21 +88,24 @@ public class Version implements TetradSerializable {
             throw new NullPointerException();
         }
 
-        Pattern pattern = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)");
-        Matcher matcher = pattern.matcher(spec);
+        System.out.println(spec);
 
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("Spec not of form a.b.c-d");
+        Pattern pattern2 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)");
+        Matcher matcher2 = pattern2.matcher(spec);
+
+        if (matcher2.matches()) {
+            this.majorVersion = Integer.parseInt(matcher2.group(1));
+            this.minorVersion = Integer.parseInt(matcher2.group(2));
+            this.minorSubversion = Integer.parseInt(matcher2.group(3));
+            this.incrementalRelease = 0;
+        } else {
+            throw new IllegalArgumentException("Version should be either of the " +
+                    "form a.b.c (Maven) or a.b.c-d (old): " + spec);
         }
-
-        this.majorVersion = Integer.parseInt(matcher.group(1));
-        this.minorVersion = Integer.parseInt(matcher.group(2));
-        this.minorSubversion = Integer.parseInt(matcher.group(3));
-        this.incrementalRelease = Integer.parseInt(matcher.group(4));
     }
 
     public Version(int majorVersion, int minorVersion, int minorSubversion,
-            int incrementalRelease) {
+                   int incrementalRelease) {
         if (majorVersion < 0) {
             throw new IllegalArgumentException();
         }
@@ -138,8 +141,7 @@ public class Version implements TetradSerializable {
             String spec = bufReader.readLine();
             bufReader.close();
             return new Version(spec);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(
                     "Please correct the file project/resources/version " +
                             "\nso that it contains a version number of the form " +
@@ -172,8 +174,7 @@ public class Version implements TetradSerializable {
             bufReader.close();
 
             return new Version(spec);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

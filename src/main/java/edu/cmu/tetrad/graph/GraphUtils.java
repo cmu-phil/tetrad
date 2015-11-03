@@ -4059,7 +4059,7 @@ public final class GraphUtils {
         List<Graph> undirectedGraphs = new ArrayList<>();
 
         for (Graph graph : graphs) {
-            Graph graph2 = new EdgeListGraph2(graph);
+            Graph graph2 = new EdgeListGraph(graph);
             graph2.reorientAllWith(Endpoint.TAIL);
             undirectedGraphs.add(graph2);
         }

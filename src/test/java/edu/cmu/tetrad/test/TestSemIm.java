@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.sem;
+package edu.cmu.tetrad.test;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.TetradAlgebra;
 import edu.cmu.tetrad.util.TetradMatrix;
