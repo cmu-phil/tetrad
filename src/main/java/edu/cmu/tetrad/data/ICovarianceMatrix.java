@@ -28,11 +28,8 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jdramsey
- * Date: Jun 22, 2010
- * Time: 4:07:19 PM
- * To change this template use File | Settings | File Templates.
+ * Interface for covariance matrices. Implemented in different ways.
+ * See implementations.
  */
 public interface ICovarianceMatrix extends DataModel, TetradSerializable {
     List<Node> getVariables();

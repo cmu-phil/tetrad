@@ -24,11 +24,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jdramsey
- * Date: Jul 11, 2009
- * Time: 12:52:12 PM
- * To change this template use File | Settings | File Templates.
+ * Sundry methods for logging data.
  */
 public class LogDataUtils {
     public static void logDataModelList(String info, DataModelList list) {

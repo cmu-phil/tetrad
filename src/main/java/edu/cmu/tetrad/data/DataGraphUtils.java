@@ -28,7 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 10/23/15.
+ * Sundry graph utils that need to be located in the data package to
+ * avoid package cycles.
  */
 public class DataGraphUtils {
     public static Graph randomSingleFactorModel(int numStructuralNodes,
