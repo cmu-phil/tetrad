@@ -33,8 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Mar 1, 2005 Time: 5:37:28 PM
- * To change this template use File | Settings | File Templates.
+ * This adjusts copyright notices for all Java classes.
  */
 public class AdjustCopyrights {
 
