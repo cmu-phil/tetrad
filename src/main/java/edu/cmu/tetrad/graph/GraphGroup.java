@@ -22,8 +22,8 @@
 package edu.cmu.tetrad.graph;
 
 /**
- * I couldn't find a mechanism in place to manage algorithms that return potentially more than 1
- * graph. As such, this interface helps with that.
+ * I couldn't find a mechanism in place to manage algorithms that return
+ * potentially more than 1 graph. As such, this interface helps with that.
  *
  * Created by IntelliJ IDEA.
  * User: Mark Whitehouse
