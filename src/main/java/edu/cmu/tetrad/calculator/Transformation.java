@@ -34,7 +34,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents a transformation on some dataset.
+ * Represents a transformation on some dataset. For instance if the
+ * equation is X = Z + W, where Z and W are columns in the data set,
+ * returns a column that is the sum of Z and W row-wise.
  *
  * @author Tyler Gibson
  */

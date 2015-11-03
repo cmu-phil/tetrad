@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.calculator.parser;
 /**
- * Tyler didn't document this.
+ * Allowable tokens.
  *
  * @author Tyler Gibson
  */

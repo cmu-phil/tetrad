@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Abstract expression.
+ * Contains some common methods for Expressions (see).
  *
  * @author Tyler Gibson
  */

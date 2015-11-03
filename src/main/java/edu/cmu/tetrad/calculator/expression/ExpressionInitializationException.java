@@ -22,7 +22,8 @@
 package edu.cmu.tetrad.calculator.expression;
 
 /**
- *
+ * Thrown if the expression can't be parsed, for instance, if it has the
+ * wrong number of arguments.
  * @author Tyler Gibson
  */
 public class ExpressionInitializationException extends Exception{

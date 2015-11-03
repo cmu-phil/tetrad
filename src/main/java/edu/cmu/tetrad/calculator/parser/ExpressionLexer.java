@@ -31,7 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Tyler didn't document this.
+ * Parses the tokens of an expression.
  *
  * @author Tyler Gibson
  */

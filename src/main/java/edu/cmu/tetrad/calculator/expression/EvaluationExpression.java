@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Tyler didn't document this.
+ * An equation expression.
  *
  * @author Tyler Gibson
  */

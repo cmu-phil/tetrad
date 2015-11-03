@@ -72,7 +72,7 @@ import static java.lang.Math.pow;
  * index of a category, use the method <ul> <li> getCategoryIndex(Node node)
  * </ul> in BayesPm.  The rest of the methods in this class are easily
  * understood as variants of the methods above. </p> <p>Thanks to Pucktada
- * Treeratpituk, Frank Wimberly, and Willie Wheeler for advise and earlier
+ * Treeratpituk, Frank Wimberly, and Willie Wheeler for advice and earlier
  * versions.</p>
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
