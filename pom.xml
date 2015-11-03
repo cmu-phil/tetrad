@@ -6,7 +6,7 @@
 
     <groupId>edu.cmu.tetrad</groupId>
     <artifactId>tetrad</artifactId>
-    <version>5.2.1-4-SNAPSHOT</version>
+    <version>5.2.2-SNAPSHOT</version>
 
     <repositories>
       <repository>
