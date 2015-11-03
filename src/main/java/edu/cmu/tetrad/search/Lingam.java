@@ -28,7 +28,6 @@ import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.PlusMult;
-import edu.cmu.tetrad.cluster.FastIca;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;

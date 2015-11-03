@@ -2,13 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7cc799f8-bac6-46de-a54e-8f56361f1fd9" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/CrossValidation.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DataUtils2.java" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DataGraphUtils.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DataGraphUtils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/ICovarianceMatrix.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/ICovarianceMatrix.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/IKnowledge.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/IKnowledge.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/KnowledgeBoxInput.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/KnowledgeBoxInput.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/LogDataUtils.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/LogDataUtils.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/metrics/Dissimilarity.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/metrics/Dissimilarity.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Lingam.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Lingam.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <list id="e4bd24ea-a30d-4d03-b624-a4bf3e9db2c0" name="New changelist" comment="" />
@@ -32,86 +28,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="RegexTokenizer.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/RegexTokenizer.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="33" column="19" selection-start-line="33" selection-start-column="19" selection-end-line="33" selection-end-column="19" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ShortDataBox.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/ShortDataBox.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ShortTriangularMatrix.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/ShortTriangularMatrix.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="35" column="13" selection-start-line="35" selection-start-column="13" selection-end-line="35" selection-end-column="13" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SplitCasesSpec.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/SplitCasesSpec.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="40" column="19" selection-start-line="40" selection-start-column="19" selection-end-line="40" selection-end-column="19" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TimeSeriesData.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/TimeSeriesData.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="37" column="19" selection-start-line="37" selection-start-column="19" selection-end-line="37" selection-end-column="19" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TriangularMatrix.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/TriangularMatrix.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="30" column="17" selection-start-line="30" selection-start-column="17" selection-end-line="30" selection-end-column="17" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Variable.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/Variable.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="37" column="17" selection-start-line="37" selection-start-column="17" selection-end-line="37" selection-end-column="17" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="VariableSource.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/VariableSource.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="36" column="17" selection-start-line="36" selection-start-column="17" selection-end-line="36" selection-end-column="17" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="VerticalDoubleDataBox.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/VerticalDoubleDataBox.java">
           <provider selected="true" editor-type-id="text-editor">
@@ -122,11 +38,93 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="VerticalIntDataBox.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="VerticalIntDataBox.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/VerticalIntDataBox.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.39473686">
-              <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="40" column="7" selection-start-line="40" selection-start-column="7" selection-end-line="40" selection-end-column="7" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="KMeans.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/KMeans.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="93" column="12" selection-start-line="93" selection-start-column="12" selection-end-line="93" selection-end-column="12" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Dissimilarity.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/metrics/Dissimilarity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="26" column="40" selection-start-line="26" selection-start-column="40" selection-end-line="26" selection-end-column="40" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SquaredErrorLoss.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/metrics/SquaredErrorLoss.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="31" column="13" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="13" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="FastIca.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/FastIca.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="141" column="14" selection-start-line="141" selection-start-column="14" selection-end-line="141" selection-end-column="14" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="FastIca.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/FastIca.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="38" column="28" selection-start-line="38" selection-start-column="28" selection-end-line="38" selection-end-column="28" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Version.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.5048701">
+              <caret line="103" column="9" selection-start-line="103" selection-start-column="9" selection-end-line="103" selection-end-column="9" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Lingam.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Lingam.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="204" column="30" selection-start-line="204" selection-start-column="30" selection-end-line="204" selection-end-column="30" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ClusteringAlgorithm.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/ClusteringAlgorithm.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="36" column="17" selection-start-line="36" selection-start-column="17" selection-end-line="36" selection-end-column="17" />
               <folding />
             </state>
           </provider>
@@ -156,8 +154,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/test/java/edu/cmu/tetrad/test/TestDeltaSextadTest.java" />
-        <option value="$PROJECT_DIR$/src/test/java/edu/cmu/tetrad/test/TestIndTestGSquare.java" />
         <option value="$PROJECT_DIR$/src/test/java/edu/cmu/tetrad/test/TestBDeMetricCache.java" />
         <option value="$PROJECT_DIR$/src/test/java/edu/cmu/tetrad/test/TestCcd.java" />
         <option value="$PROJECT_DIR$/src/test/java/edu/cmu/tetrad/test/TestCpc.java" />
@@ -184,7 +180,6 @@
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/AdjustCopyrights.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/TestCyclicity.java" />
         <option value="$PROJECT_DIR$/src/main/resources/resources/version" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/TetradSerializableUtils.java" />
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/TestWatchedProcessDialogs.java" />
@@ -207,6 +202,9 @@
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/IKnowledge.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/KnowledgeBoxInput.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/LogDataUtils.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/metrics/Dissimilarity.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Lingam.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java" />
       </list>
     </option>
   </component>
@@ -523,7 +521,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="calculator" />
+              <option name="myItemId" value="cluster" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -561,53 +559,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="calculator" />
+              <option name="myItemId" value="cluster" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="parser" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tetrad" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tetrad-1" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="edu" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="cmu" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tetrad" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="calculator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="expression" />
+              <option name="myItemId" value="metrics" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -687,7 +643,7 @@
       <recent name="$PROJECT_DIR$/.keystore" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.PerformanceTests">
+  <component name="RunManager" selected="Application.Tetrad">
     <configuration default="false" name="PerformanceTests" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
@@ -1241,22 +1197,28 @@
       <option name="project" value="LOCAL" />
       <updated>1446559473642</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Added some documentation for the data package. Deleted two classes taht were unused.">
+      <created>1446561728557</created>
+      <option name="number" value="00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1446561728557</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1280" height="736" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.46187365" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.46118012" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.48508635" sideWeight="0.503231" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Maven Projects" active="true" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26332796" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26332796" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21507065" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.48447204" sideWeight="0.49676898" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.48447204" sideWeight="0.49676898" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3286385" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23344104" sideWeight="0.48795182" order="0" side_tool="false" content_ui="combo" />
@@ -1303,7 +1265,8 @@
     <MESSAGE value="Removing versioning code from the repository; version numbers for Maven are set by hand in the POM file." />
     <MESSAGE value="Setting the next version to 5.2.2 in the POM file." />
     <MESSAGE value="Added some documentation for the bayes and calculator packages." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added some documentation for the bayes and calculator packages." />
+    <MESSAGE value="Added some documentation for the data package. Deleted two classes taht were unused." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added some documentation for the data package. Deleted two classes taht were unused." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1314,70 +1277,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/ContinuousDiscretizationSpec.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="40" column="19" selection-start-line="40" selection-start-column="19" selection-end-line="40" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/ContinuousVariable.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="40" column="19" selection-start-line="40" selection-start-column="19" selection-end-line="40" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/CorrelationMatrix.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="38" column="19" selection-start-line="38" selection-start-column="19" selection-end-line="38" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/CovarianceMatrix.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="47" column="13" selection-start-line="47" selection-start-column="13" selection-end-line="47" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/CovarianceMatrix2.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="47" column="13" selection-start-line="47" selection-start-column="13" selection-end-line="47" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/CovarianceMatrixOnTheFly.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="46" column="13" selection-start-line="46" selection-start-column="13" selection-end-line="46" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DataFilter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="30" column="17" selection-start-line="30" selection-start-column="17" selection-end-line="30" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DataGraphUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="31" column="24" selection-start-line="31" selection-start-column="24" selection-end-line="31" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DataModel.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1716,8 +1615,74 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/VerticalIntDataBox.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.39473686">
-          <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="40" column="7" selection-start-line="40" selection-start-column="7" selection-end-line="40" selection-end-column="7" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/KMeans.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="93" column="12" selection-start-line="93" selection-start-column="12" selection-end-line="93" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/metrics/Dissimilarity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="26" column="40" selection-start-line="26" selection-start-column="40" selection-end-line="26" selection-end-column="40" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/metrics/SquaredErrorLoss.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="31" column="13" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/ClusteringAlgorithm.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="36" column="17" selection-start-line="36" selection-start-column="17" selection-end-line="36" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/FastIca.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="38" column="28" selection-start-line="38" selection-start-column="28" selection-end-line="38" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Lingam.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="204" column="30" selection-start-line="204" selection-start-column="30" selection-end-line="204" selection-end-column="30" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/cluster/FastIca.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="141" column="14" selection-start-line="141" selection-start-column="14" selection-end-line="141" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5048701">
+          <caret line="103" column="9" selection-start-line="103" selection-start-column="9" selection-end-line="103" selection-end-column="9" />
           <folding />
         </state>
       </provider>
