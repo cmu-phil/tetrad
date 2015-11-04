@@ -42,6 +42,7 @@
                                     <mainClass>edu.cmu.tetradapp.Tetrad</mainClass>
                                 </transformer>
                             </transformers>
+                            <!--Will have to optimize this by hand; minimizing it messes up the ejar launch.-->
                             <minimizeJar>false</minimizeJar>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>ejar</shadedClassifierName> <!-- Any name that makes sense -->

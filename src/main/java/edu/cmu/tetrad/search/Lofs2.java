@@ -27,9 +27,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.sem.ConjugateDirectionSearchLocal;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
+import pal.math.ConjugateDirectionSearch;
 import pal.math.MultivariateFunction;
 import pal.math.MultivariateMinimum;
 import pal.math.OrthogonalHints;
@@ -1088,7 +1088,7 @@ public class Lofs2 {
         final double func_tolerance = 10.0;
         final double param_tolerance = 0.00000001;
 
-        MultivariateMinimum search = new ConjugateDirectionSearchLocal();
+        MultivariateMinimum search = new ConjugateDirectionSearch();
         try {
             search.optimize(function, values, func_tolerance, param_tolerance);
         } catch (Exception e) {

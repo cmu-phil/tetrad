@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7cc799f8-bac6-46de-a54e-8f56361f1fd9" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/bayes/Identifiability.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/bayes/Identifiability.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/app/TetradApplicationConfig.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/app/TetradApplicationConfig.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/BoxDataSet.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/BoxDataSet.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/ContinuousTetradTest.java" afterPath="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/ContinuousTetradTest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <list id="e4bd24ea-a30d-4d03-b624-a4bf3e9db2c0" name="New changelist" comment="" />
@@ -28,110 +27,107 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="EdgeListGraphSingleConnections.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/graph/EdgeListGraphSingleConnections.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-5.740741">
-              <caret line="334" column="13" selection-start-line="334" selection-start-column="13" selection-end-line="334" selection-end-column="13" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GraphPropertiesAction.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/editor/GraphPropertiesAction.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-1.6666666">
-              <caret line="3" column="52" selection-start-line="3" selection-start-column="51" selection-end-line="3" selection-end-column="52" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TestGeneralizedSem.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/java/edu/cmu/tetrad/test/TestGeneralizedSem.java">
+      <file leaf-file-name="BoxDataSet.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/BoxDataSet.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="53" column="49" selection-start-line="53" selection-start-column="49" selection-end-line="53" selection-end-column="49" />
+              <caret line="874" column="9" selection-start-line="874" selection-start-column="9" selection-end-line="874" selection-end-column="9" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="pom.xml" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/pom.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.70652175">
-              <caret line="46" column="60" selection-start-line="46" selection-start-column="60" selection-end-line="46" selection-end-column="60" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Identifiability.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/bayes/Identifiability.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-9.407408">
-              <caret line="49" column="6" selection-start-line="49" selection-start-column="6" selection-end-line="49" selection-end-column="6" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TestStandardizedSem.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/java/edu/cmu/tetrad/test/TestStandardizedSem.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-5.0740743">
-              <caret line="359" column="0" selection-start-line="359" selection-start-column="0" selection-end-line="359" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TetradApplicationConfig.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/app/TetradApplicationConfig.java">
+      <file leaf-file-name="CovarianceMatrix.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/CovarianceMatrix.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="85" column="21" selection-start-line="85" selection-start-column="21" selection-end-line="85" selection-end-column="21" />
+              <caret line="104" column="11" selection-start-line="104" selection-start-column="11" selection-end-line="104" selection-end-column="11" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EdgeListGraph.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/graph/EdgeListGraph.java">
+      <file leaf-file-name="DoubleDataBox.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DoubleDataBox.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-4.6296296">
-              <caret line="320" column="27" selection-start-line="320" selection-start-column="27" selection-end-line="320" selection-end-column="27" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="129" column="19" selection-start-line="129" selection-start-column="19" selection-end-line="129" selection-end-column="19" />
               <folding>
-                <element signature="e#0#68995#0" expanded="true" />
-                <element signature="e#29357#29358#0" expanded="true" />
-                <element signature="e#29418#29419#0" expanded="true" />
-                <element signature="e#35247#35253#0" expanded="true" />
+                <element signature="e#0#4524#0" expanded="false" />
+                <element signature="e#2959#2960#0" expanded="false" />
+                <element signature="e#3026#3027#0" expanded="false" />
+                <element signature="e#3122#3123#0" expanded="false" />
+                <element signature="e#3156#3157#0" expanded="false" />
+                <element signature="e#3255#3256#0" expanded="false" />
+                <element signature="e#3292#3293#0" expanded="false" />
+                <element signature="e#4466#4467#0" expanded="false" />
+                <element signature="e#4518#4519#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GraphUtils.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/graph/GraphUtils.java">
+      <file leaf-file-name="ApproximateUpdater.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/bayes/ApproximateUpdater.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="1684" column="42" selection-start-line="1684" selection-start-column="42" selection-end-line="1684" selection-end-column="42" />
+              <caret line="195" column="23" selection-start-line="195" selection-start-column="23" selection-end-line="195" selection-end-column="23" />
               <folding>
-                <element signature="e#129442#129448#0" expanded="true" />
-                <element signature="e#129485#129491#0" expanded="true" />
+                <element signature="e#0#11911#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Dag.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/graph/Dag.java">
+      <file leaf-file-name="ContinuousTetradTest.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/ContinuousTetradTest.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="1.410072">
+              <caret line="155" column="29" selection-start-line="155" selection-start-column="29" selection-end-line="155" selection-end-column="29" />
+              <folding>
+                <element signature="e#28494#28495#0" expanded="true" />
+                <element signature="e#28536#28537#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MimSearchEditor2.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/editor/MimSearchEditor2.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="520" column="7" selection-start-line="520" selection-start-column="7" selection-end-line="520" selection-end-column="7" />
+              <caret line="237" column="0" selection-start-line="237" selection-start-column="0" selection-end-line="237" selection-end-column="0" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="CorrelationMatrix.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/CorrelationMatrix.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="57" column="38" selection-start-line="57" selection-start-column="38" selection-end-line="57" selection-end-column="38" />
+              <folding>
+                <element signature="e#0#5359#0" expanded="false" />
+                <element signature="imports" expanded="false" />
+                <element signature="e#4515#4516#0" expanded="false" />
+                <element signature="e#4560#4561#0" expanded="false" />
+                <element signature="e#4638#4639#0" expanded="false" />
+                <element signature="e#4697#4698#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="DataSet.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DataSet.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="97" column="17" selection-start-line="97" selection-start-column="17" selection-end-line="97" selection-end-column="17" />
+              <folding>
+                <element signature="e#0#10842#0" expanded="false" />
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -160,17 +156,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/FastGes.java" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/FciGes.java" />
-        <option value="$PROJECT_DIR$/fci.algorithms.comparison1000.1000.1000.txt" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/AdjustCopyrights.java" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/TestCyclicity.java" />
-        <option value="$PROJECT_DIR$/src/main/resources/resources/version" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/TetradSerializableUtils.java" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/TestWatchedProcessDialogs.java" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/bayes/MlBayesIm.java" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/calculator/expression/AbstractExpression.java" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/calculator/expression/AbstractExpressionDescriptor.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/calculator/expression/Context.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/calculator/expression/EvaluationExpression.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/calculator/expression/ExpressionInitializationException.java" />
@@ -194,11 +179,9 @@
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/regression/RegressionUtils.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/ReidentifyVariables.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/GeneralizedSemIm.java" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/GeneralizedSemEstimator.java" />
         <option value="$PROJECT_DIR$/src/test/java/edu/cmu/tetrad/test/ParamComparison.java" />
         <option value="$PROJECT_DIR$/src/test/java/edu/cmu/tetrad/test/TestDagScorer.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/ParamComparison.java" />
-        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/SemIm.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/DoNotAddOldModel.java" />
         <option value="$PROJECT_DIR$/src/site/apt/index.apt" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/util/Version.java" />
@@ -211,6 +194,19 @@
         <option value="$PROJECT_DIR$/src/test/java/edu/cmu/tetrad/test/TestStandardizedSem.java" />
         <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/app/TetradApplicationConfig.java" />
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/ConjugateDirectionSearchLocal.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/EmpiricalDistributionForExpression.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/GeneralizedSemEstimator.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/GeneralizedSemPm.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/ISemIm.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/IndTestFisherZ.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DoubleDataBox.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/bayes/ApproximateUpdater.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/SemIm.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Lofs2.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Ling.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/BoxDataSet.java" />
+        <option value="$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/ContinuousTetradTest.java" />
       </list>
     </option>
   </component>
@@ -260,7 +256,7 @@
   <component name="ProjectFrameBounds">
     <option name="y" value="23" />
     <option name="width" value="1280" />
-    <option name="height" value="734" />
+    <option name="height" value="736" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -367,15 +363,181 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="edu" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad-1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="edu" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="cmu" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad-1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="edu" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="cmu" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad-1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="edu" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="cmu" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sem" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad-1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="edu" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="cmu" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="cluster" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tetrad-1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value=".idea" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
       <pane id="PackagesPane" />
       <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -998,37 +1160,55 @@
       <option name="project" value="LOCAL" />
       <updated>1446584662956</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="Had to set minimizejar in shade plugin to false to get the tetrad ejar to launch correctly.">
+      <created>1446597679950</created>
+      <option name="number" value="00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1446597679950</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Added comment about minimizing jar.">
+      <created>1446633264204</created>
+      <option name="number" value="00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1446633264204</updated>
+    </task>
+    <task id="LOCAL-00032" summary="Got rid of the local conjugate direction search.">
+      <created>1446666084685</created>
+      <option name="number" value="00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1446666084685</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1280" height="734" extended-state="0" />
+    <frame x="0" y="23" width="1280" height="736" extended-state="6" />
     <editor active="false" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.46105918" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4602184" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.48508635" sideWeight="0.503231" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26655897" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21495327" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.48442367" sideWeight="0.49676898" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3271028" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21372855" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.48291925" sideWeight="0.49676898" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32605305" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23021002" sideWeight="0.48795182" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="JProfiler" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32866043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="JProfiler" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32917318" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24959612" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24959612" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.15266559" sideWeight="0.5120482" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.60747665" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.6068643" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32761312" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -1045,7 +1225,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="Trying to get the right iml to commit." />
     <MESSAGE value="Adding the dependency reduced pom." />
     <MESSAGE value="Put the resources back for main/resources. Moved test resources to test/resources." />
     <MESSAGE value="Fixed references in tests to resouces. Moved test_data to target. (These are automatically created.)" />
@@ -1068,7 +1247,10 @@
     <MESSAGE value="Added javadocs to site. Hooked these into the build. Linked to javadocs from the index.html page of site." />
     <MESSAGE value="Addressed issue #17 by adjusting the breadth first directed path checker in GraphUtils to check for non-empty directed paths. Adjusted code that relied on its finding empty paths. Now the Graph Properties dialog should be able to quickly tell whether a graph is cyclic." />
     <MESSAGE value="Removed the example cycle line from GraphProperties. To add it back in we will have to devise a breadth first way of recovering a cycle." />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed the example cycle line from GraphProperties. To add it back in we will have to devise a breadth first way of recovering a cycle." />
+    <MESSAGE value="Had to set minimizejar in shade plugin to false to get the tetrad ejar to launch correctly." />
+    <MESSAGE value="Added comment about minimizing jar." />
+    <MESSAGE value="Got rid of the local conjugate direction search." />
+    <option name="LAST_COMMIT_MESSAGE" value="Got rid of the local conjugate direction search." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1084,6 +1266,12 @@
           <properties />
           <option name="timeStamp" value="1" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/BoxDataSet.java</url>
+          <line>785</line>
+          <properties />
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/graph/Dag.java</url>
           <line>466</line>
@@ -1091,7 +1279,7 @@
           <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="3" />
+      <option name="time" value="4" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1100,259 +1288,10 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/CouldNotCreateModelException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="30" column="13" selection-start-line="30" selection-start-column="13" selection-end-line="30" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/DoNotAddOldModel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="25" column="3" selection-start-line="25" selection-start-column="3" selection-end-line="25" selection-end-column="3" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Executable.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="17" selection-start-line="29" selection-start-column="17" selection-end-line="29" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/ExecutionRestarter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="32" column="17" selection-start-line="32" selection-start-column="17" selection-end-line="32" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/ModificationRegistery.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="38" column="19" selection-start-line="38" selection-start-column="19" selection-end-line="38" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/ParamsResettable.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="17" selection-start-line="29" selection-start-column="17" selection-end-line="29" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Session.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="77" column="19" selection-start-line="77" selection-start-column="19" selection-end-line="77" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/SessionAdapter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/SessionEvent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="32" column="13" selection-start-line="32" selection-start-column="13" selection-end-line="32" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/SessionListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="31" column="17" selection-start-line="31" selection-start-column="17" selection-end-line="31" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/SessionModel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="34" column="17" selection-start-line="34" selection-start-column="17" selection-end-line="34" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/SessionNode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="59" column="13" selection-start-line="59" selection-start-column="13" selection-end-line="59" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/SessionSupport.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="31" column="13" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/SimulationStudy.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="34" column="19" selection-start-line="34" selection-start-column="19" selection-end-line="34" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type1.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type2.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type3.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type4.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type5.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type6.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type7.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type8.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type9.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type10.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type11.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/session/Type12.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="27" column="29" selection-start-line="27" selection-start-column="29" selection-end-line="27" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/target/site/apidocs/allclasses-frame.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/target/site/apidocs/overview-tree.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/target/site/plugin-management.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/target/site/distribution-management.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/target/site/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.0">
-          <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/target/surefire-reports/edu.cmu.tetrad.test.TestAndersonDarling.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="4" column="0" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1360,7 +1299,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="28" column="42" selection-start-line="28" selection-start-column="42" selection-end-line="28" selection-end-column="42" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1368,7 +1306,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-8.333333">
           <caret line="92" column="0" selection-start-line="92" selection-start-column="0" selection-end-line="92" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1376,7 +1313,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="56" column="9" selection-start-line="56" selection-start-column="9" selection-end-line="56" selection-end-column="9" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1392,7 +1328,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="62" column="54" selection-start-line="62" selection-start-column="54" selection-end-line="62" selection-end-column="54" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1400,7 +1335,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-5.0740743">
           <caret line="156" column="40" selection-start-line="156" selection-start-column="40" selection-end-line="156" selection-end-column="40" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1408,7 +1342,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="408" column="45" selection-start-line="408" selection-start-column="45" selection-end-line="408" selection-end-column="45" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1416,10 +1349,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="439" column="19" selection-start-line="439" selection-start-column="19" selection-end-line="439" selection-end-column="19" />
-          <folding>
-            <element signature="e#13216#13217#0" expanded="true" />
-            <element signature="e#13276#13277#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1444,10 +1373,10 @@
         <state vertical-scroll-proportion="-4.6296296">
           <caret line="320" column="27" selection-start-line="320" selection-start-column="27" selection-end-line="320" selection-end-column="27" />
           <folding>
-            <element signature="e#0#68995#0" expanded="true" />
-            <element signature="e#29357#29358#0" expanded="true" />
-            <element signature="e#29418#29419#0" expanded="true" />
-            <element signature="e#35247#35253#0" expanded="true" />
+            <element signature="e#0#68995#0" expanded="false" />
+            <element signature="e#29357#29358#0" expanded="false" />
+            <element signature="e#29418#29419#0" expanded="false" />
+            <element signature="e#35247#35253#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1456,7 +1385,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-5.740741">
           <caret line="334" column="13" selection-start-line="334" selection-start-column="13" selection-end-line="334" selection-end-column="13" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1465,8 +1393,8 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="1684" column="42" selection-start-line="1684" selection-start-column="42" selection-end-line="1684" selection-end-column="42" />
           <folding>
-            <element signature="e#129442#129448#0" expanded="true" />
-            <element signature="e#129485#129491#0" expanded="true" />
+            <element signature="e#129442#129448#0" expanded="false" />
+            <element signature="e#129485#129491#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1483,7 +1411,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="53" column="49" selection-start-line="53" selection-start-column="49" selection-end-line="53" selection-end-column="49" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1491,7 +1418,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-9.407408">
           <caret line="49" column="6" selection-start-line="49" selection-start-column="6" selection-end-line="49" selection-end-column="6" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1499,7 +1425,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-5.0740743">
           <caret line="359" column="0" selection-start-line="359" selection-start-column="0" selection-end-line="359" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1507,15 +1432,391 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="85" column="21" selection-start-line="85" selection-start-column="21" selection-end-line="85" selection-end-column="21" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.70652175">
-          <caret line="46" column="60" selection-start-line="46" selection-start-column="60" selection-end-line="46" selection-end-column="60" />
+        <state vertical-scroll-proportion="-6.111111">
+          <caret line="44" column="51" selection-start-line="44" selection-start-column="51" selection-end-line="44" selection-end-column="51" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/ConnectionFunction.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="29" column="17" selection-start-line="29" selection-start-column="17" selection-end-line="29" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/DagScorer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="49" column="19" selection-start-line="49" selection-start-column="19" selection-end-line="49" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/DistributionType.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="29" column="12" selection-start-line="29" selection-start-column="12" selection-end-line="29" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/EmpiricalCdf.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="35" column="13" selection-start-line="35" selection-start-column="13" selection-end-line="35" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/EmpiricalDistributionForExpression.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="42" column="24" selection-start-line="42" selection-start-column="24" selection-end-line="42" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/GeneralizedSemEstimator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="112" column="0" selection-start-line="112" selection-start-column="0" selection-end-line="112" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/GeneralizedSemPm.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="39" column="22" selection-start-line="39" selection-start-column="22" selection-end-line="39" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/ISemIm.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="31" column="0" selection-start-line="31" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/LargeSemSimulator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="51" column="19" selection-start-line="51" selection-start-column="19" selection-end-line="51" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/Mapping.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="37" column="13" selection-start-line="37" selection-start-column="13" selection-end-line="37" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/MimBuildEstimator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="70" column="0" selection-start-line="70" selection-start-column="0" selection-end-line="70" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/BuildPureClusters.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-7.2222223">
+          <caret line="55" column="20" selection-start-line="55" selection-start-column="19" selection-end-line="55" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/model/AbstractMimRunner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="211" column="53" selection-start-line="211" selection-start-column="53" selection-end-line="211" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/model/DataWrapper.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-11.111111">
+          <caret line="223" column="47" selection-start-line="223" selection-start-column="47" selection-end-line="223" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/model/MimBuildRunner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="78" column="46" selection-start-line="78" selection-start-column="46" selection-end-line="78" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/CovarianceMatrixOnTheFly.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="46" column="26" selection-start-line="46" selection-start-column="26" selection-end-line="46" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/IndTestFisherZ.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="100" column="53" selection-start-line="100" selection-start-column="53" selection-end-line="100" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/FindOneFactorClusters.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.2962962">
+          <caret line="104" column="11" selection-start-line="104" selection-start-column="11" selection-end-line="104" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/model/BuildPureClustersRunner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="51.48148">
+          <caret line="93" column="16" selection-start-line="93" selection-start-column="16" selection-end-line="93" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/VerticalDoubleDataBox.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="106" column="18" selection-start-line="106" selection-start-column="18" selection-end-line="106" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DoubleDataBox.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="129" column="19" selection-start-line="129" selection-start-column="19" selection-end-line="129" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#4524#0" expanded="false" />
+            <element signature="e#2959#2960#0" expanded="false" />
+            <element signature="e#3026#3027#0" expanded="false" />
+            <element signature="e#3122#3123#0" expanded="false" />
+            <element signature="e#3156#3157#0" expanded="false" />
+            <element signature="e#3255#3256#0" expanded="false" />
+            <element signature="e#3292#3293#0" expanded="false" />
+            <element signature="e#4466#4467#0" expanded="false" />
+            <element signature="e#4518#4519#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/sem/SemIm.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="74" column="66" selection-start-line="74" selection-start-column="66" selection-end-line="74" selection-end-column="66" />
+          <folding>
+            <element signature="e#0#104095#0" expanded="false" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#11615#11616#0" expanded="false" />
+            <element signature="e#11654#11655#0" expanded="false" />
+            <element signature="e#11869#11870#0" expanded="false" />
+            <element signature="e#11910#11911#0" expanded="false" />
+            <element signature="e#15966#15967#0" expanded="false" />
+            <element signature="e#16024#16025#0" expanded="false" />
+            <element signature="e#19266#19267#0" expanded="false" />
+            <element signature="e#19328#19329#0" expanded="false" />
+            <element signature="e#20509#20510#0" expanded="false" />
+            <element signature="e#20568#20569#0" expanded="false" />
+            <element signature="e#20691#20692#0" expanded="false" />
+            <element signature="e#20724#20725#0" expanded="false" />
+            <element signature="e#32736#32737#0" expanded="false" />
+            <element signature="e#32798#32799#0" expanded="false" />
+            <element signature="e#36338#36339#0" expanded="false" />
+            <element signature="e#36375#36376#0" expanded="false" />
+            <element signature="e#36479#36480#0" expanded="false" />
+            <element signature="e#36528#36529#0" expanded="false" />
+            <element signature="e#36672#36673#0" expanded="false" />
+            <element signature="e#36715#36716#0" expanded="false" />
+            <element signature="e#36765#36766#0" expanded="false" />
+            <element signature="e#36807#36808#0" expanded="false" />
+            <element signature="e#36911#36912#0" expanded="false" />
+            <element signature="e#36961#36962#0" expanded="false" />
+            <element signature="e#37097#37098#0" expanded="false" />
+            <element signature="e#37133#37134#0" expanded="false" />
+            <element signature="e#37258#37259#0" expanded="false" />
+            <element signature="e#37294#37295#0" expanded="false" />
+            <element signature="e#37464#37465#0" expanded="false" />
+            <element signature="e#37497#37498#0" expanded="false" />
+            <element signature="e#37865#37866#0" expanded="false" />
+            <element signature="e#37903#37904#0" expanded="false" />
+            <element signature="e#38311#38312#0" expanded="false" />
+            <element signature="e#38351#38352#0" expanded="false" />
+            <element signature="e#38848#38849#0" expanded="false" />
+            <element signature="e#38893#38894#0" expanded="false" />
+            <element signature="e#45028#45029#0" expanded="false" />
+            <element signature="e#45085#45086#0" expanded="false" />
+            <element signature="e#46441#46442#0" expanded="false" />
+            <element signature="e#46473#46474#0" expanded="false" />
+            <element signature="e#80959#80960#0" expanded="false" />
+            <element signature="e#81011#81012#0" expanded="false" />
+            <element signature="e#81741#81742#0" expanded="false" />
+            <element signature="e#81773#81774#0" expanded="false" />
+            <element signature="e#81824#81825#0" expanded="false" />
+            <element signature="e#81866#81867#0" expanded="false" />
+            <element signature="e#82081#82082#0" expanded="false" />
+            <element signature="e#82125#82126#0" expanded="false" />
+            <element signature="e#88073#88074#0" expanded="false" />
+            <element signature="e#88109#88110#0" expanded="false" />
+            <element signature="e#89368#89369#0" expanded="false" />
+            <element signature="e#89446#89447#0" expanded="false" />
+            <element signature="e#97945#97946#0" expanded="false" />
+            <element signature="e#97981#97982#0" expanded="false" />
+            <element signature="e#101741#101742#0" expanded="false" />
+            <element signature="e#101784#101785#0" expanded="false" />
+            <element signature="e#102861#102862#0" expanded="false" />
+            <element signature="e#102903#102904#0" expanded="false" />
+            <element signature="e#102945#102946#0" expanded="false" />
+            <element signature="e#102981#102982#0" expanded="false" />
+            <element signature="e#103033#103034#0" expanded="false" />
+            <element signature="e#103081#103082#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Lofs2.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1090" column="56" selection-start-line="1090" selection-start-column="56" selection-end-line="1090" selection-end-column="56" />
+          <folding>
+            <element signature="e#0#82628#0" expanded="false" />
+            <element signature="e#4365#4366#0" expanded="false" />
+            <element signature="e#4397#4398#0" expanded="false" />
+            <element signature="e#4437#4438#0" expanded="false" />
+            <element signature="e#4473#4474#0" expanded="false" />
+            <element signature="e#4520#4521#0" expanded="false" />
+            <element signature="e#4558#4559#0" expanded="false" />
+            <element signature="e#4601#4602#0" expanded="false" />
+            <element signature="e#4640#4641#0" expanded="false" />
+            <element signature="e#4704#4705#0" expanded="false" />
+            <element signature="e#4760#4761#0" expanded="false" />
+            <element signature="e#8565#8566#0" expanded="false" />
+            <element signature="e#8593#8594#0" expanded="false" />
+            <element signature="e#8848#8849#0" expanded="false" />
+            <element signature="e#8894#8895#0" expanded="false" />
+            <element signature="e#9106#9107#0" expanded="false" />
+            <element signature="e#9160#9161#0" expanded="false" />
+            <element signature="e#9202#9203#0" expanded="false" />
+            <element signature="e#9240#9241#0" expanded="false" />
+            <element signature="e#9276#9277#0" expanded="false" />
+            <element signature="e#9304#9305#0" expanded="false" />
+            <element signature="e#39652#39653#0" expanded="false" />
+            <element signature="e#39700#39701#0" expanded="false" />
+            <element signature="e#39750#39751#0" expanded="false" />
+            <element signature="e#39800#39801#0" expanded="false" />
+            <element signature="e#39850#39851#0" expanded="false" />
+            <element signature="e#39901#39902#0" expanded="false" />
+            <element signature="e#39960#39961#0" expanded="false" />
+            <element signature="e#40030#40031#0" expanded="false" />
+            <element signature="e#48604#48605#0" expanded="false" />
+            <element signature="e#48662#48663#0" expanded="false" />
+            <element signature="e#56752#56753#0" expanded="false" />
+            <element signature="e#56790#56791#0" expanded="false" />
+            <element signature="e#56830#56831#0" expanded="false" />
+            <element signature="e#56862#56863#0" expanded="false" />
+            <element signature="e#57091#57092#0" expanded="false" />
+            <element signature="e#57158#57159#0" expanded="false" />
+            <element signature="e#57202#57203#0" expanded="false" />
+            <element signature="e#57258#57259#0" expanded="false" />
+            <element signature="e#57742#57743#0" expanded="false" />
+            <element signature="e#57805#57806#0" expanded="false" />
+            <element signature="e#62310#62311#0" expanded="false" />
+            <element signature="e#62403#62404#0" expanded="false" />
+            <element signature="e#62698#62699#0" expanded="false" />
+            <element signature="e#62791#62792#0" expanded="false" />
+            <element signature="e#67067#67068#0" expanded="false" />
+            <element signature="e#67105#67106#0" expanded="false" />
+            <element signature="e#74886#74887#0" expanded="false" />
+            <element signature="e#74916#74917#0" expanded="false" />
+            <element signature="e#79146#79147#0" expanded="false" />
+            <element signature="e#79179#79180#0" expanded="false" />
+            <element signature="e#79276#79277#0" expanded="false" />
+            <element signature="e#79343#79344#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/CorrelationMatrix.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="57" column="38" selection-start-line="57" selection-start-column="38" selection-end-line="57" selection-end-column="38" />
+          <folding>
+            <element signature="e#0#5359#0" expanded="false" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#4515#4516#0" expanded="false" />
+            <element signature="e#4560#4561#0" expanded="false" />
+            <element signature="e#4638#4639#0" expanded="false" />
+            <element signature="e#4697#4698#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/DataSet.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="97" column="17" selection-start-line="97" selection-start-column="17" selection-end-line="97" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#10842#0" expanded="false" />
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/CovarianceMatrix.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="104" column="11" selection-start-line="104" selection-start-column="11" selection-end-line="104" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/data/BoxDataSet.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="874" column="9" selection-start-line="874" selection-start-column="9" selection-end-line="874" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/Ling.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="37" column="40" selection-start-line="37" selection-start-column="40" selection-end-line="37" selection-end-column="40" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/bayes/ApproximateUpdater.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="195" column="23" selection-start-line="195" selection-start-column="23" selection-end-line="195" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#11911#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetradapp/editor/MimSearchEditor2.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="237" column="0" selection-start-line="237" selection-start-column="0" selection-end-line="237" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/edu/cmu/tetrad/search/ContinuousTetradTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.410072">
+          <caret line="155" column="29" selection-start-line="155" selection-start-column="29" selection-end-line="155" selection-end-column="29" />
+          <folding>
+            <element signature="e#28494#28495#0" expanded="true" />
+            <element signature="e#28536#28537#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

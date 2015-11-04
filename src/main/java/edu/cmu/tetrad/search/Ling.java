@@ -34,17 +34,14 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphGroup;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.ConjugateDirectionSearchLocal;
 import edu.cmu.tetrad.util.LingUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.GaussianPower;
 import no.uib.cipr.matrix.*;
-import pal.math.BoundsCheckedFunction;
-import pal.math.MultivariateFunction;
-import pal.math.MultivariateMinimum;
-import pal.math.OrthogonalHints;
+import no.uib.cipr.matrix.Matrix;
+import pal.math.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -270,7 +267,7 @@ public class Ling implements GraphGroupSearch {
                 values[k] = W[mapping.getI()][mapping.getJ()];
             }
 
-            MultivariateMinimum search = new ConjugateDirectionSearchLocal();
+            MultivariateMinimum search = new ConjugateDirectionSearch();
             search.optimize(function, values, func_tolerance, param_tolerance);
         }
 

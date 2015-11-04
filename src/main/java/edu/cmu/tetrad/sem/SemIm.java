@@ -72,7 +72,7 @@ import java.util.*;
  * @author Ricardo Silva
  * @author Joseph Ramsey
  */
-public final class SemIm implements IM, ISemIm, TetradSerializable, OptimizationSemIm {
+public final class SemIm implements IM, ISemIm, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**

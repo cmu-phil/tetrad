@@ -62,7 +62,7 @@ public final class ContinuousTetradTest implements TetradTest {
     //    private double fourthMM[][][][];
     private boolean bvalues[], outputMessage;
     private ICovarianceMatrix covMatrix;
-    private CorrelationMatrix corrMatrix;
+//    private CorrelationMatrix corrMatrix;
     private TetradMatrix rho;
     private TestType sigTestType;
     private int sampleSize;
@@ -88,7 +88,7 @@ public final class ContinuousTetradTest implements TetradTest {
 
 //        deltaTest = new DeltaTetradTest(dataSet);
 
-        corrMatrix = new CorrelationMatrix(dataSet);
+        covMatrix = new CovarianceMatrix(dataSet);
         this.dataSet = dataSet;
         this.sigTestType = sigTestType;
         setSignificance(sig);
@@ -114,7 +114,7 @@ public final class ContinuousTetradTest implements TetradTest {
 
         deltaTest = new DeltaTetradTest(covMatrix);
 
-        this.corrMatrix = new CorrelationMatrix(covMatrix);
+//        this.corrMatrix = new CorrelationMatrix(covMatrix);
         this.setCovMatrix(covMatrix);
         this.sigTestType = sigTestType;
         setSignificance(sig);
@@ -137,7 +137,7 @@ public final class ContinuousTetradTest implements TetradTest {
         }
 
         this.dataSet = null;
-        this.corrMatrix = correlationMatrix;
+//        this.corrMatrix = correlationMatrix;
         this.setCovMatrix(correlationMatrix);
         this.sigTestType = sigTestType;
         setSignificance(sig);
@@ -162,9 +162,9 @@ public final class ContinuousTetradTest implements TetradTest {
         return this.dataSet;
     }
 
-    public CorrelationMatrix getCorrMatrix() {
-        return this.corrMatrix;
-    }
+//    public CorrelationMatrix getCorrMatrix() {
+//        return this.corrMatrix;
+//    }
 
     @Override
     public ICovarianceMatrix getCovMatrix() {
@@ -175,11 +175,12 @@ public final class ContinuousTetradTest implements TetradTest {
             this.covMatrix = new CovarianceMatrix(this.dataSet);
             return this.covMatrix;
         }
-        return corrMatrix;
+        throw new IllegalStateException();
+//        return corrMatrix;
     }
 
     public String[] getVarNames() {
-        return this.corrMatrix.getVariableNames().toArray(new String[0]);
+        return this.covMatrix.getVariableNames().toArray(new String[0]);
     }
 
     public List<Node> getVariables() {
@@ -203,20 +204,20 @@ public final class ContinuousTetradTest implements TetradTest {
     }
 
     private void initialization() {
-        sampleSize = corrMatrix.getSampleSize();
+        sampleSize = covMatrix.getSampleSize();
         outputMessage = false;
         prob = new double[3];
         bvalues = new boolean[3];
-        oneFactorEst4 = new OneFactorEstimator(corrMatrix, sig, 4);
-        oneFactorEst5 = new OneFactorEstimator(corrMatrix, sig, 5);
-        oneFactorEst6 = new OneFactorEstimator(corrMatrix, sig, 6);
-        twoFactorsEst4 = new TwoFactorsEstimator(corrMatrix, sig, 4);
-        twoFactorsEst5 = new TwoFactorsEstimator(corrMatrix, sig, 5);
-        twoFactorsEst6 = new TwoFactorsEstimator(corrMatrix, sig, 6);
+        oneFactorEst4 = new OneFactorEstimator(covMatrix, sig, 4);
+        oneFactorEst5 = new OneFactorEstimator(covMatrix, sig, 5);
+        oneFactorEst6 = new OneFactorEstimator(covMatrix, sig, 6);
+        twoFactorsEst4 = new TwoFactorsEstimator(covMatrix, sig, 4);
+        twoFactorsEst5 = new TwoFactorsEstimator(covMatrix, sig, 5);
+        twoFactorsEst6 = new TwoFactorsEstimator(covMatrix, sig, 6);
         bufferMatrix = new TetradMatrix(4, 4);
-        rho = corrMatrix.getMatrix();
+        rho = covMatrix.getMatrix();
 
-        int m = corrMatrix.getVariables().size();
+//        int m = covMatrix.getVariables().size();
 //        tetradDifference = new HashMap<Tetrad, Double>();
 
     }
