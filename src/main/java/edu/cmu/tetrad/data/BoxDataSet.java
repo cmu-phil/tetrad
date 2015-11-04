@@ -32,6 +32,8 @@ import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static java.lang.Math.sqrt;
+
 
 /**
  * Wraps a DataBox in such a way that mixed data sets can be storeds. The
@@ -827,23 +829,36 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             throw new IllegalStateException("Not a continuous data set.");
         }
 
-        TetradMatrix cov = new TetradMatrix(dataBox.numCols(), dataBox.numCols());
+        TetradMatrix corr =  getCovarianceMatrix();
 
-        double[] x = new double[dataBox.numRows()];
-        double[] y = new double[dataBox.numRows()];
-
-        for (int i = 0; i < dataBox.numCols(); i++) {
-            for (int j = 0; j < dataBox.numCols(); j++) {
-                for (int k = 0; k < dataBox.numRows(); k++) {
-                    x[k] = dataBox.get(k, i).doubleValue();
-                    y[k] = dataBox.get(k, j).doubleValue();
-
-                    cov.set(i, j, StatUtils.correlation(x, y));
-                }
+        for (int i = 0; i < corr.columns(); i++) {
+            for (int j = 0; j < corr.columns(); j++) {
+                if (i == j) continue;
+                corr.set(i, j, corr.get(i, j) / sqrt(corr.get(i, i) * corr.get(j, j)));
             }
         }
 
-        return cov;
+        for (int i = 0; i < corr.columns(); i++) {
+            corr.set(i, i, 1.0);
+        }
+
+//        TetradMatrix cov = new TetradMatrix(dataBox.numCols(), dataBox.numCols());
+//
+//        double[] x = new double[dataBox.numRows()];
+//        double[] y = new double[dataBox.numRows()];
+//
+//        for (int i = 0; i < dataBox.numCols(); i++) {
+//            for (int j = 0; j < dataBox.numCols(); j++) {
+//                for (int k = 0; k < dataBox.numRows(); k++) {
+//                    x[k] = dataBox.get(k, i).doubleValue();
+//                    y[k] = dataBox.get(k, j).doubleValue();
+//
+//                    cov.set(i, j, StatUtils.correlation(x, y));
+//                }
+//            }
+//        }
+
+        return corr;
     }
 
     /**
@@ -859,23 +874,25 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             throw new IllegalStateException("Not a continuous data set.");
         }
 
-        TetradMatrix cov = new TetradMatrix(dataBox.numCols(), dataBox.numCols());
+        return new CovarianceMatrix(this).getMatrix();
 
-        double[] x = new double[dataBox.numRows()];
-        double[] y = new double[dataBox.numRows()];
-
-        for (int i = 0; i < dataBox.numCols(); i++) {
-            for (int j = 0; j < dataBox.numCols(); j++) {
-                for (int k = 0; k < dataBox.numRows(); k++) {
-                    x[k] = dataBox.get(k, i).doubleValue();
-                    y[k] = dataBox.get(k, j).doubleValue();
-
-                    cov.set(i, j, StatUtils.covariance(x, y));
-                }
-            }
-        }
-
-        return cov;
+//        TetradMatrix cov = new TetradMatrix(dataBox.numCols(), dataBox.numCols());
+//
+//        double[] x = new double[dataBox.numRows()];
+//        double[] y = new double[dataBox.numRows()];
+//
+//        for (int i = 0; i < dataBox.numCols(); i++) {
+//            for (int j = 0; j < dataBox.numCols(); j++) {
+//                for (int k = 0; k < dataBox.numRows(); k++) {
+//                    x[k] = dataBox.get(k, i).doubleValue();
+//                    y[k] = dataBox.get(k, j).doubleValue();
+//
+//                    cov.set(i, j, StatUtils.covariance(x, y));
+//                }
+//            }
+//        }
+//
+//        return cov;
     }
 
     /**
