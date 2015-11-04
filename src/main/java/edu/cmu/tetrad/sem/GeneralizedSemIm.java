@@ -40,7 +40,11 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Represents a generalized SEM instantiated model. The parameteric form of this model allows arbitrary
+ * Represents a generalized SEM instantiated model. The parameteric form of this
+ * model allows arbitrary equations for variables. This instantiated model
+ * gives values for all of the parameters of the parameterized model.
+ *
+ * @author Joseph Ramsey
  */
 public class GeneralizedSemIm implements IM, TetradSerializable {
     static final long serialVersionUID = 23L;

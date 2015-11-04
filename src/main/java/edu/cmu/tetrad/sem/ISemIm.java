@@ -28,11 +28,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jdramsey
- * Date: Mar 20, 2009
- * Time: 2:58:09 PM
- * To change this template use File | Settings | File Templates.
+ * An interface for SemIM's; see implementations.
+ *
+ * @author Joseph Ramsey
  */
 public interface ISemIm extends TetradSerializable {
     static final long serialVersionUID = 23L;

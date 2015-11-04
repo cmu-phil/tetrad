@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 /**
+ * Optimizes a SEM using RICF (see that class).
  * @author Joseph Ramsey
  */
 public class SemOptimizerRicf implements SemOptimizer {

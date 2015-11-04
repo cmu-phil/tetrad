@@ -32,7 +32,7 @@ import java.util.*;
 import static java.lang.Math.abs;
 
 /**
- * Utility for reidentifying variables for latent structure searches.
+ * Utility for reidentifying variables for multiple indicator structure searches.
  */
 public class ReidentifyVariables {
     // This reidentifies a variable if all of its members belong to one of the clusters

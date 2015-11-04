@@ -29,6 +29,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.List;
 
 /**
+ * Optimizes a SEM by randomly selecting points in cubes of decreasing size about
+ * a given point.
  * @author Joseph Ramsey
  */
 public class SemOptimizerScattershot implements SemOptimizer {

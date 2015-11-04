@@ -26,6 +26,7 @@ import org.apache.commons.math3.exception.NumberIsTooLargeException;
 import org.apache.commons.math3.exception.OutOfRangeException;
 
 /**
+ * Represents a real distribution that is shifted along the independent axis.
  * Created by jdramsey on 8/28/15.
  */
 public class ShiftedRealDistribution implements RealDistribution {
