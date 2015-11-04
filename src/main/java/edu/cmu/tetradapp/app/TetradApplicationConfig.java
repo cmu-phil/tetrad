@@ -82,7 +82,7 @@ public class TetradApplicationConfig {
                 Class[] models = config.getModels();
                 for (Class model : models) {
                     if (classMap.containsKey(model)) {
-                        throw new IllegalStateException("Model " + model + " has two configuratoins");
+                        throw new IllegalStateException("Model " + model + " has two configurations");
                     }
                     this.classMap.put(model, config);
                 }
