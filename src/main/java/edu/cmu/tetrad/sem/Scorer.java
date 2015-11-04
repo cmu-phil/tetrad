@@ -30,11 +30,7 @@ import edu.cmu.tetrad.util.TetradMatrix;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: josephramsey
- * Date: Aug 30, 2010
- * Time: 6:43:40 PM
- * To change this template use File | Settings | File Templates.
+ * Interface for a class that represents a scoring of a SEM model.
  */
 public interface Scorer {
     double score(Graph dag);

@@ -34,7 +34,9 @@ import java.util.*;
 
 
 /**
- * Parametric model for Generalized SEM PM.
+ * Parametric model for Generalized SEM model. This contains all of the
+ * equations of the model with parameters represented symbolically (i.e.
+ * no values for parameters).
  *
  * @author Joseph Ramsey
  */

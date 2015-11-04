@@ -24,6 +24,7 @@ package edu.cmu.tetrad.util;
 import java.util.concurrent.ForkJoinPool;
 
 /**
+ * Static instance of a ForkJoinPool. Not sure this is necessary.
  * Created by josephramsey on 2/7/15.
  */
 public class ForkJoinPoolInstance {

@@ -32,11 +32,7 @@ import no.uib.cipr.matrix.Matrix;
 import no.uib.cipr.matrix.MatrixSingularException;
 
 /**
- * Created with IntelliJ IDEA.
- * User: josephramsey
- * Date: 5/2/13
- * Time: 4:01 PM
- * To change this template use File | Settings | File Templates.
+ * Sundry utilities for the Ling algorithm.
  */
 public class LingUtils {
     //Gustavo 7 May 2007
