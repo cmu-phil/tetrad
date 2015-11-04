@@ -29,8 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Jan 26, 2006 Time: 10:29:07 PM To change this template use File |
- * Settings | File Templates.
+ * Implements IAMB.
  */
 public class Iamb implements MbSearch {
 

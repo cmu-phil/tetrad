@@ -29,7 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Implements the IAMB algorithm.
+ * Implements the Inter-IAMB algorithm.
  */
 public class InterIamb implements MbSearch {
 
