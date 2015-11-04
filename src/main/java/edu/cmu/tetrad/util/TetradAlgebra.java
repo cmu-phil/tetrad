@@ -28,11 +28,7 @@ import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 
 /**
- * Created with IntelliJ IDEA.
- * User: josephramsey
- * Date: 5/2/13
- * Time: 9:29 AM
- * To change this template use File | Settings | File Templates.
+ * Some algebra methods.
  */
 public class TetradAlgebra {
 

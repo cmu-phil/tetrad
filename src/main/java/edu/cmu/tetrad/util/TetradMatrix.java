@@ -466,29 +466,6 @@ public class TetradMatrix implements TetradSerializable {
         return apacheData.getNorm();
     }
 
-    public TetradMatrix appendRows(TetradMatrix rows) {
-        RealMatrix m1 = new BlockRealMatrix3(apacheData.getRowDimension() + rows.apacheData.getRowDimension(),
-                apacheData.getColumnDimension());
-
-        for (int i = 0; i < apacheData.getRowDimension(); i++) {
-            for (int j = 0; j < apacheData.getColumnDimension(); j++) {
-                m1.setEntry(i, j, apacheData.getEntry(i, j));
-            }
-        }
-
-        for (int i = 0; i < rows.apacheData.getRowDimension(); i++) {
-            for (int j = 0; j < rows.apacheData.getColumnDimension(); j++) {
-                m1.setEntry(apacheData.getRowDimension() + i, j, rows.apacheData.getEntry(i, j));
-            }
-        }
-
-        return new TetradMatrix(m1);
-    }
-
-    public TetradMatrix toPower(int i) {
-        return new TetradMatrix(apacheData.power(i));
-    }
-
     public TetradVector diag() {
         double[] diag = new double[apacheData.getRowDimension()];
 

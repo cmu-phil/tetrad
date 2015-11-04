@@ -28,6 +28,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
+ * Fast data loader for continuous or discrete data.
  *
  * Jul 13, 2015 10:44:10 AM
  *
