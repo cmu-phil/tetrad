@@ -36,6 +36,9 @@ import java.util.List;
  * Identifiability 
  * based on RowSummingExactUpdater
  *
+ * Jin Tian and Judea Pearl.  On the Identification of Causal Effects. Technical Report R-290-L, Department of Computer
+ * Science, University of California, Los Angeles, 2002.
+ *
  * @author Choh Man Teng
  */
 

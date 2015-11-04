@@ -42,31 +42,31 @@
                                     <mainClass>edu.cmu.tetradapp.Tetrad</mainClass>
                                 </transformer>
                             </transformers>
-                            <minimizeJar>true</minimizeJar>
+                            <minimizeJar>false</minimizeJar>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>ejar</shadedClassifierName> <!-- Any name that makes sense -->
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jarsigner-plugin</artifactId>
-                <version>1.4</version>
-                <executions>
-                    <execution>
-                        <id>sign</id>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <keystore>file://${basedir}/.keystore/keystore.ks</keystore>
-                    <alias>cmu.philosophy.comodo.ca.limited.id</alias>
-                    <keypass>Knoppix 2007-1-4</keypass>
-                </configuration>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-jarsigner-plugin</artifactId>-->
+                <!--<version>1.4</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>sign</id>-->
+                        <!--<goals>-->
+                            <!--<goal>sign</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+                <!--<configuration>-->
+                    <!--<keystore>file://${basedir}/.keystore/keystore.ks</keystore>-->
+                    <!--<alias>cmu.philosophy.comodo.ca.limited.id</alias>-->
+                    <!--<keypass>Knoppix 2007-1-4</keypass>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
