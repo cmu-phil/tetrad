@@ -303,7 +303,9 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     }
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.RANDOM);
+
+        // Switching this to MANUAL since the initial values don't matter.
+        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.MANUAL);
     }
 
     private BayesPm createUpdatedBayesPm(Dag updatedGraph) {
