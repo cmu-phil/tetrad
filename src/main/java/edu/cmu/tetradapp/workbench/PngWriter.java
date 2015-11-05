@@ -35,11 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Created with IntelliJ IDEA.
- * User: josephramsey
- * Date: 5/1/13
- * Time: 9:21 AM
- * To change this template use File | Settings | File Templates.
+ * Writes PNG files.
  */
 public class PngWriter {
     public static void writePng(Graph graph, File file) {

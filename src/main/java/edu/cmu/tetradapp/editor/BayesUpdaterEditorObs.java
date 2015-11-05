@@ -38,10 +38,6 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-//import edu.cmu.tetradapp.model.ApproximateUpdaterWrapper;
-//import edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper;
-//import edu.cmu.tetradapp.model.RowSummingExactWrapper;
-
 /**
  * Lets the user calculate updated probabilities for a Bayes net.
  *

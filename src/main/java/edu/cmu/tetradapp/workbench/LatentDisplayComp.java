@@ -25,6 +25,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
+/**
+ * Eliptical variable display for a latent.
+ */
 public class LatentDisplayComp extends JComponent implements DisplayComp {
     private boolean selected = false;
 

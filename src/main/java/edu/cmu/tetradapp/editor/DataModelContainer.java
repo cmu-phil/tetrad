@@ -24,8 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Mar 15, 2005 Time: 3:08:51 PM
- * To change this template use File | Settings | File Templates.
+ * Tags a class that can return a data model.
  */
 public interface DataModelContainer {
 

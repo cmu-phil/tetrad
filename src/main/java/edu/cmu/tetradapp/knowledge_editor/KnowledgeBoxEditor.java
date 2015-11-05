@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 /**
+ * Edits knowledge of forbidden and required edges.
  * @author kaalpurush
  */
 public class KnowledgeBoxEditor extends JPanel {

@@ -26,6 +26,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.text.NumberFormat;
 
+/**
+ * Stores the result of an independence test.
+ */
 public final class IndependenceResult implements TetradSerializable {
     static final long serialVersionUID = 23L;
 

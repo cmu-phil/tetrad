@@ -27,8 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.awt.*;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Jun 7, 2004 Time: 5:09:49 PM
- * To change this template use File | Settings | File Templates.
+ * Interface for a workbench model.
  */
 public interface WorkbenchModel {
     /**

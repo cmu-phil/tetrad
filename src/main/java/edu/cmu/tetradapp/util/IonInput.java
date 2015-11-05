@@ -24,8 +24,7 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Created by IntelliJ IDEA. User: josephramsey Date: Oct 30, 2010 Time: 1:08:26 PM To change this template use File |
- * Settings | File Templates.
+ * Tags a class that can provide input to ION.
  */
 public interface IonInput {
     Graph getGraph();
