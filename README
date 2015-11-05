@@ -29,3 +29,11 @@ usual, please fork the repository if you'd like to work on
 it. Comments are also welcome.
 
 We will try to straighten out our websites soon. Sorry.
+
+Still in the process of cleaning up the code for general use,
+sorry. Some files may be removed in the process.
+
+IntelliJ IDEA files were removed from the repository; if
+these got removed in your fork, just set up the IntelliJ
+project again (without cloning it again, that is). See
+Wiki.
