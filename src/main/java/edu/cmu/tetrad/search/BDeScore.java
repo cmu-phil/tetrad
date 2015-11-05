@@ -29,8 +29,7 @@ import edu.cmu.tetrad.util.ProbUtils;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Apr 19, 2009 Time: 7:28:45 PM To change this template use File |
- * Settings | File Templates.
+ * Calculates the BDe score.
  */
 public class BDeScore implements LocalDiscreteScore {
     private DataSet dataSet;

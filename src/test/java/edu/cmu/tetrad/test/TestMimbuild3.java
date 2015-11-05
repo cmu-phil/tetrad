@@ -29,9 +29,7 @@ import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.search.Mimbuild3;
+import edu.cmu.tetrad.search.Mimbuild2;
 import junit.framework.TestCase;
 
 import java.io.IOException;
@@ -130,7 +128,7 @@ public class TestMimbuild3 extends TestCase {
 //                }
                 else if (mimbuildMethod == 3) {
                     System.out.println("Mimbuild 3\n");
-                    Mimbuild3 mimbuild = new Mimbuild3();
+                    Mimbuild2 mimbuild = new Mimbuild2();
                     mimbuild.setAlpha(0.001);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
@@ -255,7 +253,7 @@ public class TestMimbuild3 extends TestCase {
 
             Graph mimbuildStructure;
 
-            Mimbuild3 mimbuild = new Mimbuild3();
+            Mimbuild2 mimbuild = new Mimbuild2();
             mimbuild.setAlpha(0.001);
             mimbuild.setMinClusterSize(4);
 //            mimbuild.setFixOneLoadingPerCluster(true);
@@ -439,7 +437,7 @@ public class TestMimbuild3 extends TestCase {
 
             List<String> latentVarList = reidentifyVariables(mim, data, partition, 2);
 
-            Mimbuild3 mimbuild = new Mimbuild3();
+            Mimbuild2 mimbuild = new Mimbuild2();
 
             mimbuild.setAlpha(0.001);
 //            mimbuild.setMinimumSize(5);
@@ -536,7 +534,7 @@ public class TestMimbuild3 extends TestCase {
 
             Graph mimbuildStructure;
 
-            Mimbuild3 mimbuild = new Mimbuild3();
+            Mimbuild2 mimbuild = new Mimbuild2();
             mimbuild.setAlpha(0.001);
             mimbuild.setMinClusterSize(3);
 

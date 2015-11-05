@@ -1173,7 +1173,7 @@ public final class Ges implements GraphSearch, GraphScorer {
      * oriented, as well as arrows dictated by time order.*
      */
     private void meekOrient(Graph graph, IKnowledge knowledge) {
-        MeekRules3 rules = new MeekRules3();
+        MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
         rules.orientImplied(graph);
     }

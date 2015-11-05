@@ -24,8 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.GraphGroup;
 
 /**
- * Created by IntelliJ IDEA. User: Mark Whitehouse Date: Nov 28, 2008 Time: 7:45:48 PM To change this template use File
- * | Settings | File Templates.
+ * Interface for a search method that returns multiple graphs.
  */
 public interface GraphGroupSearch {
 

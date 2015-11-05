@@ -32,8 +32,7 @@ import edu.cmu.tetrad.data.VerticalIntDataBox;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Apr 19, 2009 Time: 7:28:45 PM To change this template use File |
- * Settings | File Templates.
+ * Calculates the BDeu score.
  */
 public class BDeuScore implements LocalDiscreteScore, GesScore {
     private List<Node> variables;

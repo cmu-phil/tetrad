@@ -39,6 +39,8 @@ import java.util.List;
  * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
  * search is different for different algorithms, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
+ * </p>
+ * This variant uses the Pc-Stable modification but is not concurrent.
  *
  * @author Joseph Ramsey.
  */

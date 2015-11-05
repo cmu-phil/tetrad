@@ -28,6 +28,9 @@ import java.util.Scanner;
 import static java.lang.Math.floor;
 import static java.lang.Math.round;
 
+/**
+ * The Hungarian algorithm for solving the N-Queens problem.
+ */
 public class Hungarian {
 
     //********************************//

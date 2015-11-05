@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Scores a pattern.
+ * Interface for a method that scores a DAG.
  *
  * @author Joseph Ramsey
  */

@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements the ICPC algorithm.
+ * Implements the JCPC algorithm.
  *
  * @author Joseph Ramsey (this version).
  */

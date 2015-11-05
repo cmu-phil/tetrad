@@ -28,6 +28,9 @@ import edu.cmu.tetrad.util.ProbUtils;
 
 import java.util.Arrays;
 
+/**
+ * Estimates the rank of a matrix.
+ */
 public class EstimateRank {
     double alpha;
     double[][] A;

@@ -37,8 +37,9 @@ import java.util.List;
 import java.util.Vector;
 
 
-//Dag plus edge weights     //later include distributions for the error terms
-
+/**
+ * Dag plus edge weights. Later include distributions for the error terms
+ */
 public class GraphWithParameters {
     //a Dag has a list of edges
     //therefore, Hashmap from edges to weights

@@ -26,8 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
 
 /**
- * Created by IntelliJ IDEA. User: josephramsey Date: Sep 27, 2010 Time: 1:14:21 PM To change this template use File |
- * Settings | File Templates.
+ * Interface for Bff (Best Fit Finder) algorithms. See implementations.
  */
 public interface Bff {
     void setAlpha(double alpha);

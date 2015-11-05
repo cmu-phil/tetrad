@@ -32,8 +32,7 @@ import java.util.Map;
 import java.util.SortedSet;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Mar 26, 2010 Time: 11:53:19 AM To change this template use File |
- * Settings | File Templates.
+ * An interface for Images algorithms.
  */
 public interface IImages extends GraphScorer {
     boolean isAggressivelyPreventCycles();

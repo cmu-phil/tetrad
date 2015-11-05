@@ -45,10 +45,12 @@ import static java.lang.Math.sqrt;
  * throws and exception then a CPC search. The penalty discount parameter is for the GES search; the alpha
  * value is for the CPC search. Or you can just grab the latent covariance matrix and run whatever search you
  * want to. (I don't know why GES sometimes fails, it is a mystery.)
+ * </p>
+ * Uses a different (better) algorithm from Mimbuild. Preferable.
  *
  * @author Joseph Ramsey
  */
-public class Mimbuild3 {
+public class Mimbuild2 {
 
     /**
      * The clustering from BPC or equivalent. Small clusters are removed.
@@ -90,7 +92,7 @@ public class Mimbuild3 {
     private int penaltyDiscount = 1;
     private int minClusterSize = 3;
 
-    public Mimbuild3() {
+    public Mimbuild2() {
     }
 
     //=================================== PUBLIC METHODS =========================================//
