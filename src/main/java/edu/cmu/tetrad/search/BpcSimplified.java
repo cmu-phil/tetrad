@@ -47,6 +47,7 @@ import java.util.*;
  * 16, 575-577.
  *
  * @author Joseph Ramsey
+ * @deprecated
  */
 public class BpcSimplified {
     private DataSet dataSet;

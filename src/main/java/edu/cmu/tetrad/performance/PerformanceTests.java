@@ -34,7 +34,6 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
-import edu.cmu.tetrad.search.GesConcurrent;
 
 import javax.swing.*;
 import java.io.*;
@@ -761,100 +760,6 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testGesConcurrent(int numVars, double edgesPerNode, int numCases) {
-        if (writeToFile) {
-            try {
-                out = new PrintStream(new File("long.ges." + numVars + ".txt"));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
-        }
-
-        out.println(new Date());
-        out.println("Tests performance of the GES algorithm");
-
-        long time1 = System.currentTimeMillis();
-
-        System.out.println("Making list of vars");
-
-        List<Node> vars = new ArrayList<Node>();
-
-        for (int i = 0; i < numVars; i++) {
-            vars.add(new ContinuousVariable("X" + i));
-        }
-
-        System.out.println("Finishing list of vars");
-
-        System.out.println("Making graph");
-
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode));
-
-        System.out.println("Graph done");
-
-        out.println("Graph done");
-
-        System.out.println("Starting simulation");
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
-        simulator.setOut(out);
-
-        DataSet data = simulator.simulateDataAcyclic(numCases);
-
-        System.out.println("Finishing simulation");
-
-        long time2 = System.currentTimeMillis();
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-
-        System.out.println("Making covariance matrix");
-
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
-//        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
-//        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-//        System.out.println(cov);
-
-        data = null;
-        System.gc();
-
-        System.out.println("Covariance matrix done");
-
-
-        long time3 = System.currentTimeMillis();
-
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-
-        GesConcurrent ges = new GesConcurrent(cov);
-        ges.setVerbose(true);
-        ges.setNumPatternsToStore(0);
-        ges.setPenaltyDiscount(2);
-        ges.setOut(out);
-
-        Graph outGraph = ges.search();
-
-        out.println(outGraph);
-
-        long time4 = System.currentTimeMillis();
-
-        out.println("# Vars = " + numVars);
-        out.println("# Edges = " + (int) (numVars * edgesPerNode));
-        out.println("# Cases = " + numCases);
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-        out.println("Elapsed (running GES) " + (time4 - time3) + " ms");
-
-        out.println("Total elapsed (cov + GES) " + (time4 - time2) + " ms");
-
-        SearchGraphUtils.graphComparison(outGraph, SearchGraphUtils.patternForDag(graph), out);
-
-        out.println(new Date());
-
-        out.close();
-    }
-
     public void testFastGes(int numVars, double edgesPerNode, int numCases, double penaltyDiscount) {
 //        numVars = 20000;
 //        edgesPerNode = 1;
@@ -986,171 +891,6 @@ public class PerformanceTests {
 
         out.close();
     }
-
-    public void testFastGesSpecialGraph() {
-        int numCases = 1000;
-        double penaltyDiscount = 3.0;
-
-        final int numEdges = 8;
-
-        if (writeToFile) {
-            try {
-                final File file = new File("long.FastGes.special.graph." + penaltyDiscount + ".txt");
-                out = new PrintStream(file);
-                System.out.println("Writing output to " + file.getName());
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
-        }
-
-        out.println("Tests performance of the GES algorithm");
-
-        long time1 = System.currentTimeMillis();
-
-        System.out.println("Making list of vars");
-
-        System.out.println("Finishing list of vars");
-
-        System.out.println("Making dag");
-        Graph dag;
-
-        if (true) {
-            dag = new EdgeListGraphSingleConnections();
-
-            Node x = new ContinuousVariable("x");
-            Node y1 = new ContinuousVariable("y1");
-            Node y2 = new ContinuousVariable("y2");
-            Node y3 = new ContinuousVariable("y3");
-            Node y4 = new ContinuousVariable("y4");
-            Node z = new ContinuousVariable("z");
-
-            dag.addNode(x);
-            dag.addNode(y1);
-            dag.addNode(y2);
-            dag.addNode(y3);
-            dag.addNode(y4);
-            dag.addNode(z);
-
-            dag.addDirectedEdge(x, y1);
-            dag.addDirectedEdge(x, y2);
-            dag.addDirectedEdge(x, y3);
-            dag.addDirectedEdge(x, y4);
-
-            dag.addDirectedEdge(y1, z);
-            dag.addDirectedEdge(y2, z);
-            dag.addDirectedEdge(y3, z);
-            dag.addDirectedEdge(y4, z);
-
-            printDegreeDistribution(dag, System.out);
-        }
-
-        System.out.println(dag);
-
-        List<Node> vars = dag.getNodes();
-        int[] causalOrdering = new int[vars.size()];
-
-        for (int i = 0; i < vars.size(); i++) {
-            causalOrdering[i] = i;
-        }
-
-        System.out.println("Graph done");
-
-        out.println("Graph done");
-
-        System.out.println("Starting simulation");
-
-        LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, causalOrdering);
-        simulator.setOut(out);
-
-        DataSet data = simulator.simulateDataAcyclic(numCases);
-
-//        SemPm pm = new SemPm(dag);
-//        SemIm im = new SemIm(pm);
-//
-//        DataSet data = im.simulateData(numCases, false);
-
-        System.out.println("Finishing simulation");
-
-        long time2 = System.currentTimeMillis();
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-
-        System.out.println("Making covariance matrix");
-
-//        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
-//        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = DataUtils.covarianceNonparanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-        System.out.println("Covariance matrix done");
-
-
-        long time3 = System.currentTimeMillis();
-
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
-
-//        List<String> names = cov.getVariableNames();
-//        Collections.shuffle(names);
-//        cov = cov.getSubmatrix(names);
-
-        GesBasic ges = new GesBasic(cov);
-        ges.setVerbose(true);
-        ges.setLog(true);
-        ges.setNumPatternsToStore(0);
-        ges.setPenaltyDiscount(penaltyDiscount);
-        ges.setOut(System.out);
-        ges.setFaithfulnessAssumed(true);
-        ges.setDepth(1);
-//        ges.setCycleBound(5);
-
-//        IKnowledge knowledge = new Knowledge2();
-//        knowledge.setForbidden("X1", "X2");
-
-        System.out.println("\nStarting GES");
-
-        Graph estPattern = ges.search();
-
-
-        System.out.println("Done with GES");
-
-//        ges.setKnowledge(knowledge);
-
-        printDegreeDistribution(estPattern, System.out);
-
-//        out.println(estPattern);
-
-        long time4 = System.currentTimeMillis();
-
-        out.println(new Date());
-
-        out.println("# Vars = " + 8);
-        out.println("# Edges = " + numEdges);
-        out.println("# Cases = " + numCases);
-        out.println("Penalty discount = " + penaltyDiscount);
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-        out.println("Elapsed (running GES/GES) " + (time4 - time3) + " ms");
-        out.println("Elapsed (cov + GES/GES) " + (time4 - time2) + " ms");
-
-        SearchGraphUtils.graphComparison(estPattern, SearchGraphUtils.patternForDag(dag), out);
-
-        final Graph truePattern = SearchGraphUtils.patternForDag(dag);
-
-        out.println("# edges in true pattern = " + truePattern.getNumEdges());
-        out.println("# edges in est pattern = " + estPattern.getNumEdges());
-
-        SearchGraphUtils.graphComparison(estPattern, truePattern, out);
-
-//        printDegreeDistribution(estPattern, System.out);
-
-        out.close();
-
-        System.out.println(estPattern);
-    }
-
 
     private List<Node> getParentsInOrdering(List<Node> ordering, int i, Graph graph) {
         Node n1 = ordering.get(i);
@@ -2688,8 +2428,8 @@ public class PerformanceTests {
         PerformanceTests performanceTests = new PerformanceTests();
 
         if (args.length == 0) {
-            final int numVars = 60000;
-            final double edgeFactor = 1.0;
+            final int numVars = 50000;
+            final double edgeFactor = 3.0;
             final int numCases = 1000;
             final double penaltyDiscount = 4.0;
             final int numLatents = (int) (numVars * 0.001);
@@ -2708,8 +2448,8 @@ public class PerformanceTests {
 //            performanceTests.init(new File("long.pcmax." + numVars + "." + (int)(edgeFactor * numVars) + ".txt"), "Tests performance of the PC-Max algorithm");
 //            performanceTests.pcmaxAfterDag(numCases, alpha, depth, time1, dag);
 
-//            performanceTests.init(new File("long.fastges." + numVars + ".txt"), "Tests performance of the FastGES algorithm");
-//            performanceTests.fastGesGivenDag(numCases, penaltyDiscount, time1, dag);
+            performanceTests.init(new File("long.fastges." + numVars + ".txt"), "Tests performance of the FastGES algorithm");
+            performanceTests.fastGesGivenDag(numCases, penaltyDiscount, time1, dag);
 
 //            new PerformanceTests().testFci(10000,                                                                                                                                                                                                                                                                                           edgeFactor, 1000);
 //            new PerformanceTests().testFciGes(numVars, edgeFactor, numCases);
@@ -2723,7 +2463,7 @@ public class PerformanceTests {
 //            new PerformanceTests().testFastGesSergey("d   ata_u2.csv", 2);
 //            new PerformanceTests().testFastGesDiscrete("tgen_1kvars.txt", 0.001, 10);
 //
-            new PerformanceTests().testFciGesComparison(numVars, edgeFactor, numCases, numLatents);
+//            new PerformanceTests().testFciGesComparison(numVars, edgeFactor, numCases, numLatents);
 //            new PerformanceTests().testCompareFciDagToPag(numVars, edgeFactor, numLatents);
 //            new PerformanceTests().testDagToPagOnly(numVars, edgeFactor, numLatents);
 
@@ -2751,12 +2491,7 @@ public class PerformanceTests {
                 throw new IllegalArgumentException("Not a configuration!");
             }
         } else if (args.length == 4) {
-            if (args[0].equals("GesConcurrent1")) {
-                final int numVars = Integer.parseInt(args[1]);
-                final double edgeFactor = Double.parseDouble(args[2]);
-                final int numCases = Integer.parseInt(args[3]);
-                performanceTests.testGesConcurrent(numVars, edgeFactor, numCases);
-            } else if (args[0].equals("FastGes")) {
+            if (args[0].equals("FastGes")) {
                 final int numVars = Integer.parseInt(args[1]);
                 final double edgeFactor = Double.parseDouble(args[2]);
                 final int numCases = Integer.parseInt(args[3]);

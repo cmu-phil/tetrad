@@ -30,7 +30,7 @@ import java.io.PrintStream;
 import java.util.List;
 
 /**
- * Created by josephramsey on 4/2/14.
+ * An interface for fast adjacency searches (i.e. PC adjacency searches).
  */
 public interface IFas {
     boolean isAggressivelyPreventCycles();

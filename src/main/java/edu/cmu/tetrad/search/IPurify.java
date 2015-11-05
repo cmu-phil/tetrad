@@ -27,8 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA. User: josephramsey Date: May 17, 2010 Time: 4:00:46 PM To change this template use File |
- * Settings | File Templates.
+ * An interface for Purify algorithms.
  */
 public interface IPurify {
     List<List<Node>> purify(List<List<Node>> partition);

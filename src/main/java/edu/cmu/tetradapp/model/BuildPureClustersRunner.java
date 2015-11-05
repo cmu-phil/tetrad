@@ -133,25 +133,26 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //                    FindOneFactorClusters.TestType.wishart :
 //                    FindOneFactorClusters.TestType.delta;
 
-            if (algorithm == BpcAlgorithmType.SIMPLIFIED_BPC) {
-                BpcSimplified bpc;
-                Object source = getData();
-
-                if (source instanceof DataSet) {
-                    bpc = new BpcSimplified(
-                            (DataSet) source,
-                            tetradTestType,
-                            getParams().getAlpha());
-
-                    bpc.setDepthOne(true);
-                } else {
-                    bpc = new BpcSimplified((ICovarianceMatrix) source,
-                            tetradTestType, getParams().getAlpha());
-                    bpc.setDepthOne(true);
-                }
-
-                searchGraph = bpc.search();
-            } else if (algorithm == BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN) {
+//            if (algorithm == BpcAlgorithmType.SIMPLIFIED_BPC) {
+//                BpcSimplified bpc;
+//                Object source = getData();
+//
+//                if (source instanceof DataSet) {
+//                    bpc = new BpcSimplified(
+//                            (DataSet) source,
+//                            tetradTestType,
+//                            getParams().getAlpha());
+//
+//                    bpc.setDepthOne(true);
+//                } else {
+//                    bpc = new BpcSimplified((ICovarianceMatrix) source,
+//                            tetradTestType, getParams().getAlpha());
+//                    bpc.setDepthOne(true);
+//                }
+//
+//                searchGraph = bpc.search();
+//            } else
+            if (algorithm == BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN) {
                 BpcTetradPurifyWashdown bpc;
                 Object source = getData();
 
@@ -243,7 +244,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
             List<String> variableNames = ReidentifyVariables.reidentifyVariables2(partition, trueGraph, (DataSet) getData());
             rename(searchGraph, partition, variableNames);
 //            searchGraph = reidentifyVariables2(searchGraph, semIm);
-        } else if (trueGraph != null){
+        } else if (trueGraph != null) {
             List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
             List<String> variableNames = ReidentifyVariables.reidentifyVariables1(partition, trueGraph);
             rename(searchGraph, partition, variableNames);

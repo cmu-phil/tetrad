@@ -599,7 +599,7 @@ public class FindOneFactorClusters {
             double max = Double.NEGATIVE_INFINITY;
 
             for (int i = 0; i < numRestarts; i++) {
-                Mimbuild3 mimbuild = new Mimbuild3();
+                Mimbuild2 mimbuild = new Mimbuild2();
 
                 List<List<Node>> clusters1 = new ArrayList<List<Node>>();
                 clusters1.add(variablesForIndices(new ArrayList<Integer>(cluster)));
@@ -658,7 +658,7 @@ public class FindOneFactorClusters {
             double max = Double.NEGATIVE_INFINITY;
 
             for (int i = 0; i < numRestarts; i++) {
-                Mimbuild3 mimbuild = new Mimbuild3();
+                Mimbuild2 mimbuild = new Mimbuild2();
 
                 List<List<Node>> _clusters = new ArrayList<List<Node>>();
 

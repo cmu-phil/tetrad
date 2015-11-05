@@ -41,6 +41,8 @@ import java.util.List;
  * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * </p>
+ * Converts a MAG to a PAG. (Not well-tested.)
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.search.Mimbuild3;
+import edu.cmu.tetrad.search.Mimbuild2;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -342,7 +342,7 @@ public class TestPurify extends TestCase {
             latentsNames.add(latents.get(i).getName());
         }
 
-        Mimbuild3 mimbuild = new Mimbuild3();
+        Mimbuild2 mimbuild = new Mimbuild2();
         mimbuild.setAlpha(0.0001);
         Graph _graph = mimbuild.search(purifiedClustering, latentsNames, new CovarianceMatrix(data));
 //        Graph _structuralModel = mimbuild.getStructuralModel();

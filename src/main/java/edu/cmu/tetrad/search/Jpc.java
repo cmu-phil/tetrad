@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * Implements the ICPC algorithm.
+ * Implements the JCPC algorithm.
  *
  * @author Joseph Ramsey (this version).
  */

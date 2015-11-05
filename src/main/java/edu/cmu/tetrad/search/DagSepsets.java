@@ -28,7 +28,10 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Created by josephramsey on 3/23/15.
+ * Determines sepsets, collider, and noncolliders by examining d-separation facts in
+ * a DAG.
+ *
+ * @author Joseph Ramsey
  */
 public class DagSepsets implements SepsetProducer {
     EdgeListGraphSingleConnections dag;
@@ -50,9 +53,9 @@ public class DagSepsets implements SepsetProducer {
 
     @Override
     public boolean isNoncollider(Node i, Node j, Node k) {
-        return true;
-//        List<Node> sepset = dag.getSepset(i, k);
-//        return sepset != null && sepset.contains(j);
+//        return true;
+        List<Node> sepset = dag.getSepset(i, k);
+        return sepset != null && sepset.contains(j);
     }
 
     @Override

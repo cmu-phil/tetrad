@@ -38,7 +38,7 @@ import java.util.concurrent.RecursiveTask;
 
 /**
  * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
- * locally.
+ * locally. Uses the Pc-Stable adjacency search.
  *
  * @author Joseph Ramsey (this version).
  */

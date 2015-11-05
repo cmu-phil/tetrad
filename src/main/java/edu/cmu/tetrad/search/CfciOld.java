@@ -36,6 +36,7 @@ import java.util.*;
  *
  * @author Erin Korber, June 2004
  * @author Joseph Ramsey, modifications 1/2005
+ * @cdeprecated
  */
 public final class CfciOld {
 

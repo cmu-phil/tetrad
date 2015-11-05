@@ -36,7 +36,9 @@ import pal.math.OrthogonalHints;
 import java.util.List;
 
 /**
+ * A tetrad test for binary variables.
  * @author Ricardo Silva
+ * @deprecated
  */
 public final class BinaryTetradTest implements TetradTest {
     private DataSet dataSet;

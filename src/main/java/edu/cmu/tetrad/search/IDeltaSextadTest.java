@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.util.List;
 
 /**
- * Created by josephramsey on 3/11/14.
+ * An interface for delta tests.
  */
 public interface IDeltaSextadTest extends TetradSerializable {
     double calcChiSquare(Sextad... sextads);

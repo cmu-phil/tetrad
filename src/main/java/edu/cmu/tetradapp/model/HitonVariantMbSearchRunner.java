@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.search.HitonVariant;
+import edu.cmu.tetrad.search.mb.HitonVariant;
 
 /**
  * @author Tyler Gibson

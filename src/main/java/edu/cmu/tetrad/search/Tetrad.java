@@ -29,8 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA. User: josephramsey Date: May 28, 2010 Time: 10:35:53 AM To change this template use File |
- * Settings | File Templates.
+ * Represents a tetrad of variables.
  */
 public class Tetrad {
     private Node i;

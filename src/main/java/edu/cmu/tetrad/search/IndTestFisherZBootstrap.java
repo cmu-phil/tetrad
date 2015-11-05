@@ -34,7 +34,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-
+/**
+ * Tests independence using a bootstrapped Fisher Z method.
+ */
 public class IndTestFisherZBootstrap implements IndependenceTest {
 
     /**

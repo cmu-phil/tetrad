@@ -44,6 +44,8 @@ import java.util.concurrent.RecursiveTask;
  * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
  * search is different for different algorithms, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
+ * </p>
+ * This version uses the Pc-Stable variant, calculating independencies in parallel for edach step.
  *
  * @author Joseph Ramsey.
  */

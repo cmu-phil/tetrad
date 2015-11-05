@@ -44,6 +44,8 @@ import static java.lang.Math.*;
 
 /**
  * LOFS = Ling Orientation Fixed Structure. Some additional algorithms.
+ * </p>
+ * Expands the set of algorithms from Lofs.
  *
  * @author Joseph Ramsey
  */
