@@ -1,0 +1,12 @@
+$Revision: 4340 $ $Date: 2005-11-29 17:11:43 -0500 (Tue, 29 Nov 2005) $
+
+Prerelease notes for Version 4.0:
+
+For a general overview of the functionality of the code, see the
+Manual. This file contains a breakdown of the programming goals of the
+project, where the project stands with respect to these goals, and
+what the plans are for fulfilling these goals in upcoming releases.
+
+A fairly major reworking of the architecture is planned for Summer,
+2002; after this reworking has been accomplished, the goal will be to
+release a new version, 4.1.

@@ -1,0 +1,64 @@
+List of tasks, updated af 3/21/07.
+
+Tyler:
+
+@ Allow updater to save its "state"?
+
+@ Logging Stuff:
+  - Graph manip log
+  - Data needs to log the dataset (sample size, etc)
+  - Make the log setup easier to understand.
+  - Save log config states.
+  - Updater should log something.
+
+@ Implement the ION algorithm.
+
+@ Add to simulation dialogs an option for including coltData from latent variables.
+
+@ Add popup displays of triad classifications for relevant
+algorithms. E.g., in CPC if you have X-->Y<--Z, W-->Z, it may be that
+according to sepsets W---Y---Z is unfaithful, despite how it
+appears. (Joe)
+
+@ Save/load Bayes nets in BIF format.
+
+@ Modify graph comparator so that it shows differences between two graphs
+only (and doesn't do a series of graph comparisons).
+
+
+Other:
+
+@ Begin the task of implementing better, more systematic unit tests of
+all algorithm pieces.
+
+@ Do simulation tests for the EM estimator.
+
+@ Implement the score-based PAG search.
+
+@ Double check consistency of SEM code with itself and against other
+SEM software.
+
+ - Check against the sem package in R.
+
+@ Fix the Prediction Editor and think of what do calculus
+functionality can be incorporated into Tetrad. (Peter will think about
+this.)
+
+@ Add a continuous "classifier," as a looping over cases of a dataset
+predicting continuous values for those cases, with statistics. Use
+regression and the continuous updater.
+
+@ Improve the Compare box so that it does a better job of making
+useful comparisons between graphs of the sort that we want. (Skip this
+for now.)
+
+@ Add all relevant examples from CPS to website as sessions. (Peter)
+
+@ Make sample sessions illustrating use of Tetrad boxes and post on
+website. (Peter)
+
+@ Write down input/output/pseudocode for Mimbuild-type algorithms.
+
+@ Write down formula (algorithm??) for Gaussian BIC in Mimbuild.
+
+
