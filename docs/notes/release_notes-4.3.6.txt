@@ -1,0 +1,11 @@
+8/9/02
+
+New feaures:
+
+* A "Note" button was added to the session. If you click on the "Note" button
+and click on the session workbench, a "Note" node will be added, which when
+double clicked lets a note be added to the workbench.
+
+Bug fixes:
+
+*

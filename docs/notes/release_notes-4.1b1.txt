@@ -1,0 +1,29 @@
+1/1/02
+
+Tetrad version 4.1 incorporates a number of new features and a number
+of cleanups.
+
+1. One major new feature is a new version of the Session. The new
+Session, which has been moved to edu.cmu.phil.tetrad.session, is now
+its own separate, general purpose component, capable of being
+configured for a wide variety of different session graph types. This
+will hopefully simplify the modification and elaboration of the
+session graph itself. It will also make it easy (which was impossible
+before) to have a version of Tetrad dedicated to just the core Tetrad
+models and a version dedicated to just the genetics models, which may
+help to clarify the two applications.
+
+2. Another pleasant side effect of using the new Session model is that
+a number of elements of the view aspect of the application which used
+to be down in the model are forced to be moved out of the model. This
+has forced a number of structural changes, one important change of
+which is that the configuration of the application is being moved out
+into configuration files. By the time 4.1 is released, it will be
+possible to change the particulars of the session configuration by
+simply editing an XML configuration file.
+
+3. The Session model and editor are redesigned.
+
+4. The Data model and editor are redesigned.
+
+5. The session toolbar is redesigned.

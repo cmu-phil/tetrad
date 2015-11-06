@@ -1,0 +1,21 @@
+8/9/02
+
+The main reason for incrementing the version number for Tetrad 4.2 is
+that the entire souce codebase was repackaged. There were two main
+changes:
+
+1. The link "phil" was removed from all package paths.
+
+2. The "tetrad_lib" packages were reintegrated into the "tetrad" packages.
+
+3. A gesture was made in the direction of separating extensions to the
+Tetrad packages into a separate set of packages called "tetradx". The
+gesture was to move the tetrad gene packages into tetradx.gene.??. I'm
+calling this a "gesture" because the actual dependencies between these
+packages and the rest of the tetrad packages is not yet correct, but it
+will be.
+
+Hopefully I'll get a chance to list the other major changes since 4.1
+soon.
+
+JR

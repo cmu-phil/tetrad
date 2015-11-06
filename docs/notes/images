@@ -1,0 +1,1 @@
+java -cp tetrad-4.3.10-5.jar edu.cmu.tetradproj.fmri.ImagesTool $@

@@ -1,0 +1,12 @@
+R0 (collider orientation) - <x, y, z> must be a collider.
+R1 (away from ancestor) - <a, b, c> must be a noncollider.
+R2 (away from ancestor) - None.
+R3 (double triangle) - <a, d, c> must be a noncollider.
+R4 (discriminating paths) - if <d, b, c> is a collider orient b-->c; if <d, b, c> is a noncollider, orient a<->b<->c.
+R5 All adjacent triples have to be noncolliders.
+R6 None.
+R7 <a, b, c> must be a noncollider.
+R8 None.
+R9 All adjacent triples along <a, b, d, ...c> must be noncolliders.
+R10 All adjacent triples along <a, ...,v,...,b> and <a,...,w,...,d>
+must be noncolliders.
