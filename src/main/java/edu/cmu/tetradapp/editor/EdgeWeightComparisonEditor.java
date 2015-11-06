@@ -27,11 +27,10 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- *
  * @author Michael Freenor
  */
 public class EdgeWeightComparisonEditor extends JPanel {
-       /**
+    /**
      * The model for the note.
      */
     private EdgeWeightComparison comparison;

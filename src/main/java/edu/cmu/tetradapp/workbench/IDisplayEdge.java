@@ -26,8 +26,7 @@ import edu.cmu.tetrad.graph.Edge;
 import java.awt.*;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Oct 15, 2004 Time: 1:20:54 PM
- * To change this template use File | Settings | File Templates.
+ * Interface for a display edge.
  */
 public interface IDisplayEdge {
     boolean isSelected();

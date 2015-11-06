@@ -51,11 +51,7 @@ import java.text.DecimalFormat;
 import java.util.Map;
 
 /**
- * Created by IntelliJ IDEA.
- * User: josephramsey
- * Date: May 27, 2010
- * Time: 11:42:36 AM
- * To change this template use File | Settings | File Templates.
+ * Edits BFF. (We used to call BFF the P Value Improver.)
  */
 public class PValueImproverEditor extends JPanel implements LayoutEditable {
     private GraphWorkbench graphWorkbench;

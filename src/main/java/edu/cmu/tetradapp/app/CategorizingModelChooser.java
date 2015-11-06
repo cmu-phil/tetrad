@@ -40,11 +40,10 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
- * Add description
+ * Lets you choose models from a categorized list.
  *
  * @author Tyler Gibson
  */
-@SuppressWarnings({"SuspiciousMethodCalls"})
 public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
 

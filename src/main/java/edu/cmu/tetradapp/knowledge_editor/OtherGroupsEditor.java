@@ -40,7 +40,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Tyler was lazy and didn't document this....
+ * Edits fobiddings or requirings of groups of node to other groups of nodes.
  *
  * @author Tyler Gibson
  */

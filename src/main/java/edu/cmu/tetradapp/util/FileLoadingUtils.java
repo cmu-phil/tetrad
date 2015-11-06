@@ -29,8 +29,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Mar 2, 2005 Time: 1:32:34 AM
- * To change this template use File | Settings | File Templates.
+ * Sundry utilities for loading files.
  */
 public class FileLoadingUtils {
     // Converts the contents of a file into a CharSequence

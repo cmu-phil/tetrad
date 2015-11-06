@@ -2428,10 +2428,10 @@ public class PerformanceTests {
         PerformanceTests performanceTests = new PerformanceTests();
 
         if (args.length == 0) {
-            final int numVars = 50000;
+            final int numVars = 100;
             final double edgeFactor = 3.0;
             final int numCases = 1000;
-            final double penaltyDiscount = 4.0;
+            final double penaltyDiscount = 1.0;
             final int numLatents = (int) (numVars * 0.001);
             final double alpha = 0.0001;
             int depth = 3;
