@@ -6,13 +6,13 @@
 
     <groupId>edu.cmu.tetrad</groupId>
     <artifactId>tetrad</artifactId>
-    <version>5.2.2-SNAPSHOT</version>
+    <version>5.3.0-SNAPSHOT</version>
 
     <repositories>
-      <repository>
-	<id>lib</id>
-	<url>file://${basedir}/lib</url>
-      </repository>
+        <repository>
+            <id>lib</id>
+            <url>file://${basedir}/lib</url>
+        </repository>
     </repositories>
 
     <build>
@@ -38,8 +38,12 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>edu.cmu.tetradapp.Tetrad</mainClass>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <mainClass>edu.cmu.tetradapp.Tetrad</mainClass>
+                                        <Permissions>all-permissions</Permissions>
+                                    </manifestEntries>
                                 </transformer>
                             </transformers>
                             <!--Will have to optimize this by hand; minimizing it messes up the ejar launch.-->
@@ -51,22 +55,22 @@
                 </executions>
             </plugin>
             <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-jarsigner-plugin</artifactId>-->
-                <!--<version>1.4</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>sign</id>-->
-                        <!--<goals>-->
-                            <!--<goal>sign</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-                <!--<configuration>-->
-                    <!--<keystore>file://${basedir}/.keystore/keystore.ks</keystore>-->
-                    <!--<alias>cmu.philosophy.comodo.ca.limited.id</alias>-->
-                    <!--<keypass>Knoppix 2007-1-4</keypass>-->
-                <!--</configuration>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-jarsigner-plugin</artifactId>-->
+            <!--<version>1.4</version>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<id>sign</id>-->
+            <!--<goals>-->
+            <!--<goal>sign</goal>-->
+            <!--</goals>-->
+            <!--</execution>-->
+            <!--</executions>-->
+            <!--<configuration>-->
+            <!--<keystore>file://${basedir}/.keystore/keystore.ks</keystore>-->
+            <!--<alias>cmu.philosophy.comodo.ca.limited.id</alias>-->
+            <!--<keypass>Knoppix 2007-1-4</keypass>-->
+            <!--</configuration>-->
             <!--</plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -92,7 +96,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh</artifactId>
-                <version>2.4</version>
+                <version>2.10</version>
             </extension>
         </extensions>
     </build>
