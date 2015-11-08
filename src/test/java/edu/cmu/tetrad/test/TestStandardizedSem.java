@@ -397,7 +397,7 @@ public class TestStandardizedSem extends TestCase {
         }
     }
 
-    public void test8() {
+    public void rtest8() {
 //        RandomUtil.getInstance().setSeed(2958442283L);
         SemGraph graph = new SemGraph();
 

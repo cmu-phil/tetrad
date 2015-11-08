@@ -745,7 +745,7 @@ public class TestGeneralizedSem extends TestCase {
         }
     }
 
-    public void test13() {
+    public void rtest13() {
         try {
             Node x1 = new GraphNode("X1");
             Node x2 = new GraphNode("X2");

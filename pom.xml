@@ -176,6 +176,16 @@
         </dependency>
     </dependencies>
     <distributionManagement>
+        <!--<snapshotRepository>-->
+            <!--<id>InternalSnapshots</id>-->
+            <!--<name>Internal Snapshots</name>-->
+            <!--<url>http://192.168.16.232:8081/nexus/content/repositories/snapshots/</url>-->
+        <!--</snapshotRepository>-->
+        <!--<repository>-->
+            <!--<id>InternalReleases</id>-->
+            <!--<name>Internal Releases</name>-->
+            <!--<url>http://192.168.16.232:8081/nexus/content/repositories/releases/</url>-->
+        <!--</repository>-->
         <repository>
             <id>www.phil.cmu.edu/tetrad</id>
             <url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad_download/maven</url>
