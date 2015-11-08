@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>edu.cmu.tetrad</groupId>
+    <groupId>edu.cmu</groupId>
     <artifactId>tetrad</artifactId>
     <version>5.3.0-SNAPSHOT</version>
 
@@ -154,11 +154,6 @@
             <groupId>pal</groupId>
             <artifactId>pal</artifactId>
             <version>1.5.1</version>
-        </dependency>
-        <dependency>
-            <groupId>oli</groupId>
-            <artifactId>superactivity</artifactId>
-            <version>5.6</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.matrix-toolkits-java</groupId>
