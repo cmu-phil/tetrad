@@ -53,39 +53,6 @@ public class TestSemEstimator extends TestCase {
         super(name);
     }
 
-    public static void rtestSet0() {
-        System.out.println("\n\nTest Set 0.");
-        Graph graph = constructGraph0();
-        SemPm semPm = new SemPm(graph);
-        ICovarianceMatrix covMatrix = constructCovMatrix0();
-        SemEstimator estimator =
-                new SemEstimator(covMatrix, semPm, new SemOptimizerNrPowell());
-        System.out.println();
-        System.out.println("... Before:");
-        System.out.println(estimator);
-        estimator.estimate();
-        System.out.println();
-        System.out.println("... After:");
-        System.out.println(estimator);
-
-        System.out.println("\n Parameters in order");
-        SemIm estSem = estimator.getEstimatedSem();
-        SemStdErrorEstimator stdErrEst = new SemStdErrorEstimator();
-        stdErrEst.computeStdErrors(estSem);
-
-        double[] params = estSem.getFreeParamValues();
-        List parameters = estSem.getFreeParameters();
-        double[] stdErrs = stdErrEst.getStdErrors();
-        for (int i = 0; i < params.length; i++) {
-            Parameter p = (Parameter) parameters.get(i);
-            System.out.println(" " + p.getName() + " " + p.getType() + " " +
-                    p.getNodeA() + " " + p.getNodeB());
-            System.out.print("Value of parameter " + i + " " + params[i]);
-            System.out.print(" Value of Std Err " + stdErrs[i] + "\n\n");
-        }
-
-    }
-
     public void testSet1() {
         System.out.println("\n\nTest Set 1.");
         Graph graph = constructGraph1();

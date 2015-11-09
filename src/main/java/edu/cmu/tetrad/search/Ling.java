@@ -41,7 +41,14 @@ import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.GaussianPower;
 import no.uib.cipr.matrix.*;
 import no.uib.cipr.matrix.Matrix;
-import pal.math.*;
+import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.optim.InitialGuess;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.PointValuePair;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
+import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
+import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -196,7 +203,7 @@ public class Ling implements GraphGroupSearch {
             }
 
             try {
-                optimizeNonGaussianity(i, matrix, min, max, W, allMappings);
+                optimizeNonGaussianity(i, matrix, W, allMappings);
 //                optimizeOrthogonality(i, min, max, W, allMappings, W.length);
             } catch (IllegalStateException e) {
                 e.printStackTrace();
@@ -220,11 +227,11 @@ public class Ling implements GraphGroupSearch {
     }
 
     private void optimizeNonGaussianity(final int rowIndex, final DoubleMatrix2D dataSetMatrix,
-                                        final double min, final double max, final double[][] W, List<Mapping> allMappings) {
+                                        final double[][] W, List<Mapping> allMappings) {
         final List<Mapping> mappings = mappingsForRow(rowIndex, allMappings);
 
         MultivariateFunction function = new MultivariateFunction() {
-            public double evaluate(double[] values) {
+            public double value(double[] values) {
                 for (int i = 0; i < values.length; i++) {
                     Mapping mapping = mappings.get(i);
                     W[mapping.getI()][mapping.getJ()] = values[i];
@@ -236,28 +243,7 @@ public class Ling implements GraphGroupSearch {
 
                 return -(v);
             }
-
-            public int getNumArguments() {
-                return mappings.size();
-            }
-
-            public double getLowerBound(int i) {
-                return min;
-            }
-
-            public double getUpperBound(int i) {
-                return max;
-            }
-
-            public OrthogonalHints getOrthogonalHints() {
-                return OrthogonalHints.Utils.getNull();
-            }
         };
-
-        function = new BoundsCheckedFunction(function, 10000);
-
-        final double func_tolerance = 0.0000001;
-        final double param_tolerance = 0.0000001;
 
         {
             double[] values = new double[mappings.size()];
@@ -267,8 +253,20 @@ public class Ling implements GraphGroupSearch {
                 values[k] = W[mapping.getI()][mapping.getJ()];
             }
 
-            MultivariateMinimum search = new ConjugateDirectionSearch();
-            search.optimize(function, values, func_tolerance, param_tolerance);
+            MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+
+            PointValuePair pair = search.optimize(
+                    new InitialGuess(values),
+                    new ObjectiveFunction(function),
+                    GoalType.MINIMIZE,
+                    new MaxEval(100000));
+
+            values = pair.getPoint();
+
+            for (int k = 0; k < mappings.size(); k++) {
+                Mapping mapping = mappings.get(k);
+                 W[mapping.getI()][mapping.getJ()] = values[k];
+            }
         }
 
     }
