@@ -72,6 +72,11 @@
                     <nohelp>true</nohelp>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+            </plugin>
         </plugins>
         <extensions>
             <extension>
@@ -181,4 +186,10 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <scm>
+        <connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>
+        <url>scm:git:git@github.com:cmu-phil/tetrad.git</url>
+        <developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>
+    </scm>
 </project>
