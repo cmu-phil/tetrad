@@ -35,10 +35,6 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
 
-//import pal.math.ConjugateDirectionSearch;
-//import pal.math.MultivariateFunction;
-//import pal.math.OrthogonalHints;
-
 /**
  * Optimizes a SEM using the ConjugateDirectionSearch class in the PAL library.
  *
@@ -64,14 +60,13 @@ public class SemOptimizerPowell implements SemOptimizer {
      * @see edu.cmu.TestSerialization
      * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    public static SemOptimizerCds serializableInstance() {
-        return new SemOptimizerCds();
+    public static SemOptimizerPowell serializableInstance() {
+        return new SemOptimizerPowell();
     }
 
     //=========================PUBLIC METHODS==========================//
 
     public void optimize(SemIm semIm) {
-//        double min = semIm.getChiSquare();
         double min = Double.POSITIVE_INFINITY;
         double[] point = null;
 
@@ -81,7 +76,6 @@ public class SemOptimizerPowell implements SemOptimizer {
 
             List<Parameter> freeParameters = _sem2.getFreeParameters();
 
-//            double[] initial = new double[semIm.getFreeParameters().size()];
             double[] p = new double[freeParameters.size()];
 
             for (int i = 0; i < freeParameters.size(); i++) {
@@ -94,7 +88,6 @@ public class SemOptimizerPowell implements SemOptimizer {
 
             _sem2.setFreeParamValues(p);
 
-            // 2.0D * FastMath.ulp(1.0D), 1e-8
             MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
             PointValuePair pair = search.optimize(
                     new InitialGuess(_sem2.getFreeParamValues()),
@@ -102,31 +95,6 @@ public class SemOptimizerPowell implements SemOptimizer {
                     GoalType.MINIMIZE,
                     new MaxEval(100000)
             );
-
-//            // 2.0D * FastMath.ulp(1.0D), 1e-8
-//            MultivariateOptimizer search = new NonLinearConjugateGradientOptimizer(
-//                    NonLinearConjugateGradientOptimizer.Formula.FLETCHER_REEVES,
-//                    new SimplePointChecker<PointValuePair>(0.1, 0.1)
-//            );
-//            PointValuePair pair = search.optimize(
-//                    new InitialGuess(_sem2.getFreeParamValues()),
-//                    new ObjectiveFunctionGradient(fittingFunction(semIm)),
-//                    GoalType.MINIMIZE,
-//                    new MaxEval(100000)
-//            );
-
-//            int dim = p.length;
-//            int additionalInterpolationPoints = 0;
-//            final int numIterpolationPoints = 2 * dim + 1 + additionalInterpolationPoints;
-//
-//            BOBYQAOptimizer search = new BOBYQAOptimizer(numIterpolationPoints);
-//            PointValuePair pair = search.optimize(
-//                    new MaxEval(100000),
-//                    new ObjectiveFunction(fittingFunction(semIm)),
-//                    GoalType.MINIMIZE,
-//                    new InitialGuess(p),
-//                    SimpleBounds.unbounded(dim)
-//            );
 
             double chisq = _sem2.getChiSquare();
             System.out.println("chisq = " + chisq);
@@ -191,26 +159,24 @@ public class SemOptimizerPowell implements SemOptimizer {
 
         @Override
         public double value(double[] parameters) {
-            sem.setFreeParamValues(parameters);
-
             for (int i = 0; i < parameters.length; i++) {
                 if (Double.isNaN(parameters[i]) || Double.isInfinite(parameters[i])) {
                     return 100000;
                 }
             }
 
+            for (int i = 0; i < parameters.length; i++) {
+                if (freeParameters.get(i).getType() == ParamType.VAR && parameters[i] <= 0.0) {
+                    return 100000;
+                }
+            }
+
+            sem.setFreeParamValues(parameters);
+
             double fml = sem.getScore();
 
             if (Double.isNaN(fml) || Double.isInfinite(fml)) {
                 return 100000;
-            }
-
-            if (true) {
-                for (int i = 0; i < parameters.length; i++) {
-                    if (freeParameters.get(i).getType() == ParamType.VAR && parameters[i] <= 0.0) {
-                        return 100000;
-                    }
-                }
             }
 
             if (Double.isNaN(fml)) {
@@ -222,32 +188,6 @@ public class SemOptimizerPowell implements SemOptimizer {
             }
 
             return fml;
-        }
-
-        /**
-         * Returns the number of arguments. Required by the MultivariateFunction
-         * interface.
-         */
-        public int getNumArguments() {
-            return this.sem.getNumFreeParams();
-        }
-
-        /**
-         * Returns the lower bound of argument n. Required by the
-         * MultivariateFunction interface.
-         */
-        public double getLowerBound(final int n) {
-            Parameter param = this.sem.getFreeParameters().get(n);
-            return (param.getType() == ParamType.COEF ||
-                    param.getType() == ParamType.COVAR) ? -10000.0 : 0.0001;
-        }
-
-        /**
-         * Returns the upper bound of argument n. Required by the
-         * MultivariateFunction interface.
-         */
-        public double getUpperBound(final int n) {
-            return 10000.0;
         }
     }
 

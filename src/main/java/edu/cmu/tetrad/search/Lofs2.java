@@ -28,11 +28,15 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.optim.InitialGuess;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.PointValuePair;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
+import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
+import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
-import pal.math.ConjugateDirectionSearch;
-import pal.math.MultivariateFunction;
-import pal.math.MultivariateMinimum;
-import pal.math.OrthogonalHints;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -947,6 +951,8 @@ public class Lofs2 {
     private void optimizeRow(final int rowIndex, final TetradMatrix data,
                              final double range, final List<List<Integer>> rows,
                              final List<List<Double>> parameters) {
+        System.out.println("A");
+
         final int numParams = rows.get(rowIndex).size();
 
         final double[] dLeftMin = new double[numParams];
@@ -998,8 +1004,7 @@ public class Lofs2 {
                 dRightMin[i] = range;
                 values[i] = maxParams.get(i);
             }
-        }
-        else if (false) {
+        } else if (false) {
             for (int i = 0; i < numParams; i++) {
                 parameters.get(rowIndex).set(i, -range);
                 double vLeft = scoreRow(rowIndex, data, rows, parameters);
@@ -1046,6 +1051,8 @@ public class Lofs2 {
             }
         } else {
 
+            System.out.println("B");
+
             // Default case: search for the maximum score over the entire range.
             for (int i = 0; i < numParams; i++) {
                 dLeftMin[i] = -range;
@@ -1056,7 +1063,9 @@ public class Lofs2 {
         }
 
         MultivariateFunction function = new MultivariateFunction() {
-            public double evaluate(double[] values) {
+            public double value(double[] values) {
+                System.out.println(Arrays.toString(values));
+
                 for (int i = 0; i < values.length; i++) {
                     parameters.get(rowIndex).set(i, values[i]);
                 }
@@ -1069,30 +1078,18 @@ public class Lofs2 {
 
                 return -v;
             }
-
-            public int getNumArguments() {
-                return numParams;
-            }
-
-            public double getLowerBound(int i) {
-                return dLeftMin[i];
-            }
-
-            public double getUpperBound(int i) {
-                return dRightMin[i];
-            }
-
-            public OrthogonalHints getOrthogonalHints() {
-                return OrthogonalHints.Utils.getNull();
-            }
         };
 
-        final double func_tolerance = 10.0;
-        final double param_tolerance = 0.00000001;
-
-        MultivariateMinimum search = new ConjugateDirectionSearch();
         try {
-            search.optimize(function, values, func_tolerance, param_tolerance);
+            MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+
+            PointValuePair pair = search.optimize(
+                    new InitialGuess(values),
+                    new ObjectiveFunction(function),
+                    GoalType.MINIMIZE,
+                    new MaxEval(100000));
+
+            values = pair.getPoint();
         } catch (Exception e) {
             e.printStackTrace();
 

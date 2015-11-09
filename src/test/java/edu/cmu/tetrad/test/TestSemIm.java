@@ -428,7 +428,7 @@ public class TestSemIm extends TestCase {
 
         DataSet data = im.simulateData(1000, false);
 
-        SemEstimator est = new SemEstimator(data, pm, new SemOptimizerCds());
+        SemEstimator est = new SemEstimator(data, pm, new SemOptimizerPowell());
 
         SemIm estSem = est.estimate();
 

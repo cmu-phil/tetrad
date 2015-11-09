@@ -135,9 +135,7 @@ public class ReidentifyVariables {
             SemPm pm = new SemPm(subgraph);
             pm.fixOneLoadingPerLatent();
 
-            SemOptimizerCds semOptimizer = new SemOptimizerCds();
-            semOptimizer.setfFxfracDigits(1);
-            semOptimizer.setXfracDigits(4);
+            SemOptimizer semOptimizer = new SemOptimizerPowell();
             SemEstimator est = new SemEstimator(data, pm, semOptimizer);
             est.setScoreType(SemIm.ScoreType.Fgls);
             SemIm im = est.estimate();

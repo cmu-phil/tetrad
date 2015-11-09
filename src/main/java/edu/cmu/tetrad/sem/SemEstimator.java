@@ -327,7 +327,7 @@ public final class SemEstimator implements TetradSerializable {
 
         if (containsFixedParam() || getSemPm().getGraph().existsDirectedCycle() ||
                 containsCovarParam(getSemPm())) {
-            optimizer = new SemOptimizerCds();
+            optimizer = new SemOptimizerPowell();
         } else if (containsLatent) {
             optimizer = new SemOptimizerEm();
         } else {

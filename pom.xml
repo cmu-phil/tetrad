@@ -124,7 +124,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>3.8.1</version>
+            <version>4.12</version>
         </dependency>
         <dependency>
             <groupId>gov.nist.math</groupId>
@@ -137,14 +137,9 @@
             <version>1.2.5</version>
         </dependency>
         <dependency>
-            <groupId>pal</groupId>
-            <artifactId>pal</artifactId>
-            <version>1.5.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.googlecode.matrix-toolkits-java</groupId>
             <artifactId>mtj</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.4</version>
         </dependency>
         <dependency>
             <groupId>org.rosuda.REngine</groupId>
@@ -160,6 +155,11 @@
             <groupId>net.sourceforge.jexcelapi</groupId>
             <artifactId>jxl</artifactId>
             <version>2.6.12</version>
+        </dependency>
+        <dependency>
+            <groupId>pal</groupId>
+            <artifactId>pal</artifactId>
+            <version>1.5.1</version>
         </dependency>
     </dependencies>
     <distributionManagement>

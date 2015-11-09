@@ -31,10 +31,14 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.distribution.RealDistribution;
-import pal.math.ConjugateDirectionSearch;
-import pal.math.MultivariateFunction;
-import pal.math.OrthogonalHints;
+import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.optim.InitialGuess;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.PointValuePair;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
+import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
+import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -550,7 +554,7 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
         MultivariateFunction function = new MultivariateFunction() {
             double metric;
 
-            public double evaluate(double[] doubles) {
+            public double value(double[] doubles) {
                 for (int i = 0; i < variableNodes.size(); i++) {
                     variableValues.put(variableNodes.get(i).getName(), doubles[i]);
                 }
@@ -582,30 +586,9 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
 
                 return metric;
             }
-
-            public int getNumArguments() {
-                return variableNodes.size();
-            }
-
-            public double getLowerBound(int i) {
-                return -10000;
-            }
-
-            public double getUpperBound(int i) {
-                return 10000;
-            }
-
-            public double getMetric() {
-                return -metric;
-            }
-
-            public OrthogonalHints getOrthogonalHints() {
-                return null;
-            }
         };
 
-        ConjugateDirectionSearch search = new ConjugateDirectionSearch();
-        search.step = 10.0;
+        MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
 
         // Do the simulation.
         ROW:
@@ -639,7 +622,13 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
                     values[i] = variableValues.get(variableNodes.get(i).getName());
                 }
 
-                search.optimize(function, values, func_tolerance, param_tolerance);
+                PointValuePair pair = search.optimize(
+                        new InitialGuess(values),
+                        new ObjectiveFunction(function),
+                        GoalType.MINIMIZE,
+                        new MaxEval(100000));
+
+                values = pair.getPoint();
 
                 for (int i = 0; i < variableNodes.size(); i++) {
                     if (isSimulatePositiveDataOnly() && values[i] < 0) {
