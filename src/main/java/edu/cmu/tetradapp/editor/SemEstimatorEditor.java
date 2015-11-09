@@ -328,9 +328,6 @@ public final class SemEstimatorEditor extends JPanel {
             optimizer = new SemOptimizerRegression();
         } else if ("EM".equals(type)) {
             optimizer = new SemOptimizerEm();
-        } else if ("CDS".equals(type)) {
-//            optimizer = new SemOptimizerCds();
-            optimizer = new SemOptimizerPalCdsGls();
         } else if ("Powell".equals(type)) {
             optimizer = new SemOptimizerPowell();
         } else if ("Random Search".equals(type)) {

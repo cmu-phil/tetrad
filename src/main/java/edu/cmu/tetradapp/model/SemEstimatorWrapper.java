@@ -337,8 +337,6 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
             }
         } else if ("EM".equals(type)) {
             optimizer = new SemOptimizerEm();
-        } else if ("CDS".equals(type)) {
-            optimizer = new SemOptimizerPalCdsGls();
         } else if ("Powell".equals(type)) {
             optimizer = new SemOptimizerPowell();
         } else if ("Random Search".equals(type)) {
@@ -371,8 +369,6 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
             _type = "Regression";
         } else if (optimizer instanceof SemOptimizerEm) {
             _type = "EM";
-        } else if (optimizer instanceof SemOptimizerPalCdsGls) {
-            _type = "CDS";
         } else if (optimizer instanceof SemOptimizerPowell) {
             _type = "Powell";
         } else if (optimizer instanceof SemOptimizerScattershot) {
@@ -435,7 +431,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 
         if (containsFixedParam(semPm) || semPm.getGraph().existsDirectedCycle() ||
                 containsCovarParam(semPm)) {
-            optimizer = new SemOptimizerCds();
+            optimizer = new SemOptimizerPowell();
         } else if (containsLatent) {
             optimizer = new SemOptimizerEm();
         } else {

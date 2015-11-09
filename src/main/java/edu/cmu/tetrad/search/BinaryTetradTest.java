@@ -29,11 +29,18 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-import pal.math.ConjugateDirectionSearch;
-import pal.math.MFWithGradient;
-import pal.math.OrthogonalHints;
 
 import java.util.List;
+
+import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.optim.InitialGuess;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.PointValuePair;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
+import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
+import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
+
 
 /**
  * A tetrad test for binary variables.
@@ -917,9 +924,17 @@ public final class BinaryTetradTest implements TetradTest {
             for (int c = 0; c < 11; c++) {
                 params[c] = RandomUtil.getInstance().nextDouble() / 2. + 0.2;
             }
-            new ConjugateDirectionSearch().optimize(new FittingFunction(this),
-                    params, FUNC_TOLERANCE, PARAM_TOLERANCE);
-            double newScore = scoreParams(params);
+
+            MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+
+            PointValuePair pair = search.optimize(
+                    new InitialGuess(params),
+                    new ObjectiveFunction(new FittingFunction(this)),
+                    GoalType.MINIMIZE,
+                    new MaxEval(100000));
+
+            double newScore = scoreParams(pair.getPoint());
+
             if (newScore < bestScore) {
                 System.arraycopy(params, 0, bestParams, 0, params.length);
                 bestScore = newScore;
@@ -932,7 +947,7 @@ public final class BinaryTetradTest implements TetradTest {
         //System.out.println();
     }
 
-    static class FittingFunction implements MFWithGradient {
+    static class FittingFunction implements MultivariateFunction {
 
         /**
          * The wrapped model.
@@ -950,7 +965,7 @@ public final class BinaryTetradTest implements TetradTest {
          * Computes the maximum likelihood function value for the given argument values as given by the optimizer. These
          * values are mapped to parameter values.
          */
-        public double evaluate(final double[] argument) {
+        public double value(final double[] argument) {
             return this.estimator.paramsLikelihood(argument);
         }
 
@@ -983,10 +998,6 @@ public final class BinaryTetradTest implements TetradTest {
          */
         public double getUpperBound(final int n) {
             return 0.99;
-        }
-
-        public OrthogonalHints getOrthogonalHints() {
-            return null;
         }
     }
 
