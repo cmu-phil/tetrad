@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>edu.cmu</groupId>
     <artifactId>tetrad</artifactId>
-    <version>5.3.0-SNAPSHOT</version>
+    <version>5.3.0</version>
 
     <repositories>
         <repository>
@@ -38,8 +36,7 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <mainClass>edu.cmu.tetradapp.Tetrad</mainClass>
                                         <Permissions>all-permissions</Permissions>
@@ -191,5 +188,6 @@
         <connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>
         <url>scm:git:git@github.com:cmu-phil/tetrad.git</url>
         <developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>
-    </scm>
+      <tag>tetrad-5.3.0</tag>
+  </scm>
 </project>
