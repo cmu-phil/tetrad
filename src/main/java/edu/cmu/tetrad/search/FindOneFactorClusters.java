@@ -588,7 +588,7 @@ public class FindOneFactorClusters {
 
 //            pm.fixOneLoadingPerLatent();
 
-            SemOptimizerCds semOptimizer = new SemOptimizerCds();
+            SemOptimizer semOptimizer = new SemOptimizerPowell();
             semOptimizer.setNumRestarts(numRestarts);
 
             SemEstimator est = new SemEstimator(cov, pm, semOptimizer);
@@ -647,7 +647,7 @@ public class FindOneFactorClusters {
 
 //            pm.fixOneLoadingPerLatent();
 
-            SemOptimizerCds semOptimizer = new SemOptimizerCds();
+            SemOptimizer semOptimizer = new SemOptimizerPowell();
             semOptimizer.setNumRestarts(numRestarts);
 
             SemEstimator est = new SemEstimator(cov, pm, semOptimizer);

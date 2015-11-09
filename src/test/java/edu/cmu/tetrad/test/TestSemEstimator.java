@@ -108,7 +108,7 @@ public class TestSemEstimator extends TestCase {
 
         DataSet data = im.simulateData(1000, false);
 
-        SemIm est = new SemEstimator(data, pm, new SemOptimizerCds()).estimate();
+        SemIm est = new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
 //        SemIm est = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
 
         System.out.println("\nCDS");
@@ -169,7 +169,7 @@ public class TestSemEstimator extends TestCase {
             DataSet data = im.simulateData(1000, false);
 
             System.out.println("CDS");
-            SemIm est1 = new SemEstimator(data, pm, new SemOptimizerCds()).estimate();
+            SemIm est1 = new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
             double[] imParamValues1 = est1.getFreeParamValues();
 
             System.out.println("Random");
@@ -386,7 +386,7 @@ public class TestSemEstimator extends TestCase {
         SemIm im2 = new SemIm(pm);
         im2.setDataSet(data);
 
-        SemOptimizerCds opt = new SemOptimizerCds();
+        SemOptimizer opt = new SemOptimizerPowell();
 
         opt.optimize(im2);
 
@@ -403,7 +403,7 @@ public class TestSemEstimator extends TestCase {
         SemIm im2 = new SemIm(pm);
         im2.setDataSet(data);
 
-        SemOptimizerCds opt = new SemOptimizerCds();
+        SemOptimizer opt = new SemOptimizerPowell();
 
         opt.optimize(im2);
 

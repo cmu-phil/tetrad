@@ -28,10 +28,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.SemEstimator;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemOptimizerCds;
-import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.TetradMatrix;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -369,7 +366,7 @@ public class TestPValueImprover extends TestCase {
             sumNewBid += GraphUtils.numBidirected(pattern2);
 
             double originalPValue = improver.scoreGraph(improver.getOriginalSemIm().getSemPm().getGraph()).getPValue();
-            SemEstimator estimator = new SemEstimator(data, pm, new SemOptimizerCds());
+            SemEstimator estimator = new SemEstimator(data, pm, new SemOptimizerPowell());
             SemIm im2 = estimator.estimate();
 
             double newPValue = improver.scoreGraph(dag(improver.getNewSemIm().getSemPm().getGraph())).getPValue();
