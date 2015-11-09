@@ -26,14 +26,15 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Cpc;
-import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import pal.math.ConjugateDirectionSearch;
-import pal.math.MultivariateFunction;
-import pal.math.MultivariateMinimum;
-import pal.math.OrthogonalHints;
+import org.apache.commons.math3.optim.InitialGuess;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.PointValuePair;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
+import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
+import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -402,8 +403,15 @@ public class Mimbuild2 {
         }
 
         Function1 function1 = new Function1(indicatorIndices, measurescov, loadings, latentscov, count);
-        MultivariateMinimum search1 = new ConjugateDirectionSearch();
-        minimum = search1.findMinimum(function1, values, 4, 4);
+        MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+
+        PointValuePair pair = search.optimize(
+                new InitialGuess(values),
+                new ObjectiveFunction(function1),
+                GoalType.MINIMIZE,
+                new MaxEval(100000));
+
+        minimum = pair.getValue();
     }
 
     private void optimizeNonMeasureVariancesConditionally(Node[][] indicators, TetradMatrix measurescov,
@@ -441,8 +449,15 @@ public class Mimbuild2 {
         }
 
         Function2 function2 = new Function2(indicatorIndices, measurescov, loadings, latentscov, delta, count);
-        MultivariateMinimum search3 = new ConjugateDirectionSearch();
-        minimum = search3.findMinimum(function2, values3, 4, 4);
+        MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+
+        PointValuePair pair = search.optimize(
+                new InitialGuess(values3),
+                new ObjectiveFunction(function2),
+                GoalType.MINIMIZE,
+                new MaxEval(100000));
+
+        minimum = pair.getValue();
     }
 
     private void optimizeMeasureVariancesConditionally(TetradMatrix measurescov, TetradMatrix latentscov, double[][] loadings,
@@ -454,9 +469,16 @@ public class Mimbuild2 {
             values2[count++] = delta[i];
         }
 
-        Function3 function3 = new Function3(indicatorIndices, measurescov, loadings, latentscov, delta, count);
-        MultivariateMinimum search2 = new ConjugateDirectionSearch();
-        minimum = search2.findMinimum(function3, values2, 4, 4);
+        Function2 function2 = new Function2(indicatorIndices, measurescov, loadings, latentscov, delta, count);
+        MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+
+        PointValuePair pair = search.optimize(
+                new InitialGuess(values2),
+                new ObjectiveFunction(function2),
+                GoalType.MINIMIZE,
+                new MaxEval(100000));
+
+        minimum = pair.getValue();
     }
 
     public int getNumParams() {
@@ -469,8 +491,15 @@ public class Mimbuild2 {
         double[] values = getAllParams(indicators, latentscov, loadings, delta);
 
         Function4 function = new Function4(indicatorIndices, measurescov, loadings, latentscov, delta);
-        MultivariateMinimum search = new ConjugateDirectionSearch();
-        minimum = search.findMinimum(function, values, 4, 4);
+        MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+
+        PointValuePair pair = search.optimize(
+                new InitialGuess(values),
+                new ObjectiveFunction(function),
+                GoalType.MINIMIZE,
+                new MaxEval(100000));
+
+        minimum = pair.getValue();
     }
 
     private double[] getAllParams(Node[][] indicators, TetradMatrix latentscov, double[][] loadings, double[] delta) {
@@ -531,7 +560,7 @@ public class Mimbuild2 {
         this.minClusterSize = minClusterSize;
     }
 
-    private class Function1 implements MultivariateFunction {
+    private class Function1 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
         private final TetradMatrix measurescov;
         private final double[][] loadings;
@@ -548,7 +577,7 @@ public class Mimbuild2 {
         }
 
         @Override
-        public double evaluate(double[] values) {
+        public double value(double[] values) {
             int count = 0;
 
             for (int i = 0; i < loadings.length; i++) {
@@ -569,27 +598,20 @@ public class Mimbuild2 {
             return sumOfDifferences(indicatorIndices, measurescov, loadings, latentscov);
         }
 
-        @Override
-        public int getNumArguments() {
-            return numParams;
-        }
-
-        @Override
-        public double getLowerBound(int i) {
-            return -100;
-        }
-
-        @Override
-        public double getUpperBound(int i) {
-            return 100;
-        }
-
-        public OrthogonalHints getOrthogonalHints() {
-            return OrthogonalHints.Utils.getNull();
-        }
+//        public int getNumArguments() {
+//            return numParams;
+//        }
+//
+//        public double getLowerBound(int i) {
+//            return -100;
+//        }
+//
+//        public double getUpperBound(int i) {
+//            return 100;
+//        }
     }
 
-    private class Function2 implements MultivariateFunction {
+    private class Function2 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
         private final TetradMatrix measurescov;
         private TetradMatrix measuresCovInverse;
@@ -626,7 +648,7 @@ public class Mimbuild2 {
         }
 
         @Override
-        public double evaluate(double[] values) {
+        public double value(double[] values) {
             int count = 0;
 
             for (int i = 0; i < loadings.length; i++) {
@@ -651,31 +673,9 @@ public class Mimbuild2 {
 
             return 0.5 * (diff.times(diff)).trace();
         }
-
-        @Override
-        public int getNumArguments() {
-            return numParams;
-        }
-
-        @Override
-        public double getLowerBound(int i) {
-            if (aboveZero.contains(i)) {
-                return 0;
-            }
-            return -100;
-        }
-
-        @Override
-        public double getUpperBound(int i) {
-            return 100;
-        }
-
-        public OrthogonalHints getOrthogonalHints() {
-            return OrthogonalHints.Utils.getNull();
-        }
     }
 
-    private class Function3 implements MultivariateFunction {
+    private class Function3 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
         private final TetradMatrix measurescov;
         private TetradMatrix measuresCovInverse;
@@ -703,8 +703,7 @@ public class Mimbuild2 {
             }
         }
 
-        @Override
-        public double evaluate(double[] values) {
+        public double value(double[] values) {
             int count = 0;
 
             for (int i = 0; i < delta.length; i++) {
@@ -719,31 +718,9 @@ public class Mimbuild2 {
 
             return 0.5 * (diff.times(diff)).trace();
         }
-
-        @Override
-        public int getNumArguments() {
-            return numParams;
-        }
-
-        @Override
-        public double getLowerBound(int i) {
-            if (aboveZero.contains(i)) {
-                return 0.00;
-            }
-            return -100;
-        }
-
-        @Override
-        public double getUpperBound(int i) {
-            return 100;
-        }
-
-        public OrthogonalHints getOrthogonalHints() {
-            return OrthogonalHints.Utils.getNull();
-        }
     }
 
-    private class Function4 implements MultivariateFunction {
+    private class Function4 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
         private final TetradMatrix measurescov;
         private TetradMatrix measuresCovInverse;
@@ -786,7 +763,7 @@ public class Mimbuild2 {
         }
 
         @Override
-        public double evaluate(double[] values) {
+        public double value(double[] values) {
             int count = 0;
 
             for (int i = 0; i < loadings.length; i++) {
@@ -815,28 +792,6 @@ public class Mimbuild2 {
             TetradMatrix diff = I.minus((implied.times(measuresCovInverse)));  // time hog. times().
 
             return 0.5 * (diff.times(diff)).trace();
-        }
-
-        @Override
-        public int getNumArguments() {
-            return numParams;
-        }
-
-        @Override
-        public double getLowerBound(int i) {
-            if (aboveZero.contains(i)) {
-                return 0;
-            }
-            return -100;
-        }
-
-        @Override
-        public double getUpperBound(int i) {
-            return 100;
-        }
-
-        public OrthogonalHints getOrthogonalHints() {
-            return OrthogonalHints.Utils.getNull();
         }
     }
 
