@@ -27,7 +27,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.CcdGes;
-import edu.cmu.tetrad.search.FastGes;
+import edu.cmu.tetrad.search.FGS;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
@@ -53,18 +53,18 @@ import static java.lang.Math.round;
  *
  * @author Joseph Ramsey
  */
-public class TestFastGes extends TestCase {
+public class TestFgs extends TestCase {
 
     private PrintStream out = System.out;
 
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestFastGes(String name) {
+    public TestFgs(String name) {
         super(name);
     }
 
-    public void testFastGes() {
+    public void testFgs() {
         int numVars = 1000;
         double edgesPerNode = 1.0;
         int numCases = 1000;
@@ -130,7 +130,7 @@ public class TestFastGes extends TestCase {
 
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
 
-        FastGes ges = new FastGes(cov);
+        FGS ges = new FGS(cov);
         ges.setVerbose(false);
         ges.setLog(false);
         ges.setNumPatternsToStore(0);
@@ -170,7 +170,7 @@ public class TestFastGes extends TestCase {
         graphComparison(estPattern, truePattern);
     }
 
-    public void testFastGesDiscrete() {
+    public void testFgsDiscrete() {
         int numVars = 40;
         double edgeFactor = 1.0;
         int numCases = 1000;
@@ -221,7 +221,7 @@ public class TestFastGes extends TestCase {
 
         long time3 = System.currentTimeMillis();
 
-        FastGes ges = new FastGes(data);
+        FGS ges = new FGS(data);
         ges.setVerbose(true);
         ges.setLog(false);
         ges.setNumPatternsToStore(0);
@@ -926,7 +926,7 @@ public class TestFastGes extends TestCase {
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-//        FastGes ges = new FastGes(data);
+//        FGS ges = new FGS(data);
 //        ges.setVerbose(true);
 //        ges.setPenaltyDiscount(1);
 //
@@ -945,7 +945,7 @@ public class TestFastGes extends TestCase {
         try {
             DataSet data = BigDataSetUtility.readInContinuousData(new File("/Users/jdramsey/Downloads/YeastNoDupe.csv"), ',');
 
-            FastGes ges = new FastGes(data);
+            FGS ges = new FGS(data);
             ges.setDepth(3);
             ges.setVerbose(true);
             Graph pattern = ges.search();
@@ -966,7 +966,7 @@ public class TestFastGes extends TestCase {
 
         // Edit the name of the class in the parens to match the name
         // of this class.
-        return new TestSuite(TestFastGes.class);
+        return new TestSuite(TestFgs.class);
     }
 }
 

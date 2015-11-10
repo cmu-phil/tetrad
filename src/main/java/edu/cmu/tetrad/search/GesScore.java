@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Interface for a score suitable for FastGES.
+ * Interface for a score suitable for FGS.
  */
 public interface GesScore {
     double localScore(int node, int parents[]);

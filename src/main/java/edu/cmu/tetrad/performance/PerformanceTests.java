@@ -24,7 +24,6 @@ package edu.cmu.tetrad.performance;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
-import edu.cmu.tetrad.bayes.ModeInterpolator;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -580,7 +579,7 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testFastGes(int numVars, double edgesPerNode, int numCases, double penaltyDiscount) {
+    public void testFgs(int numVars, double edgesPerNode, int numCases, double penaltyDiscount) {
 //        numVars = 20000;
 //        edgesPerNode = 1;
 //        numCases = 1000;
@@ -590,7 +589,7 @@ public class PerformanceTests {
 
         if (writeToFile) {
             try {
-                final File file = new File("long.FastGes." + numVars + "." + numEdges + "." + penaltyDiscount + ".txt");
+                final File file = new File("long.FGS." + numVars + "." + numEdges + "." + penaltyDiscount + ".txt");
                 out = new PrintStream(file);
                 System.out.println("Writing output to " + file.getName());
             } catch (FileNotFoundException e) {
@@ -611,10 +610,10 @@ public class PerformanceTests {
         Graph dag = makeDag(numVars, edgesPerNode);
 
 
-        fastGesGivenDag(numCases, numEdges, time1, dag);
+        fgsGivenDag(numCases, numEdges, time1, dag);
     }
 
-    private void fastGesGivenDag(int numCases, double penaltyDiscount, long time1, Graph dag) {
+    private void fgsGivenDag(int numCases, double penaltyDiscount, long time1, Graph dag) {
         List<Node> vars = dag.getNodes();
 
         int[] causalOrdering = new int[vars.size()];
@@ -659,7 +658,7 @@ public class PerformanceTests {
 //        Collections.shuffle(names);
 //        cov = cov.getSubmatrix(names);
 
-        FastGes ges = new FastGes(cov);
+        FGS ges = new FGS(cov);
         ges.setVerbose(false);
         ges.setLog(false);
         ges.setNumPatternsToStore(0);
@@ -712,15 +711,15 @@ public class PerformanceTests {
         out.close();
     }
 
-   public void testFastGesDiscrete(int numVars, double edgeFactor, int numCases,
-                                    double structurePrior, double samplePrior) {
+   public void testFgsDiscrete(int numVars, double edgeFactor, int numCases,
+                               double structurePrior, double samplePrior) {
 //        numVars = 5000;
 //        edgeFactor = 1.0;
 //        numCases = 1000;
 //        structurePrior = .001;
 //        samplePrior = 10;
 
-        init(new File("long.FastGesDiscrete." + numVars + ".txt"), "Tests performance of the GES algorithm");
+        init(new File("long.FGSDiscrete." + numVars + ".txt"), "Tests performance of the GES algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -759,7 +758,7 @@ public class PerformanceTests {
 
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
 
-        FastGes ges = new FastGes(score);
+        FGS ges = new FGS(score);
         ges.setVerbose(false);
         ges.setLog(false);
         ges.setNumPatternsToStore(0);
@@ -792,7 +791,7 @@ public class PerformanceTests {
         out.println("Sample prior = " + samplePrior);
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-        out.println("Elapsed (running FastGes) " + (time4 - time3) + " ms");
+        out.println("Elapsed (running FGS) " + (time4 - time3) + " ms");
 
 //        graphComparison(estPattern, SearchGraphUtils.patternForDag(dag));
 
@@ -809,7 +808,7 @@ public class PerformanceTests {
         System.out.println("See output file.");
     }
 
-    public void testFastGesDiscrete(String path, double structurePrior, double samplePrior) {
+    public void testFgsDiscrete(String path, double structurePrior, double samplePrior) {
 //        numVars = 2000;
 //        edgeFactor = 1.0;
 //        numCases = 1000;
@@ -819,7 +818,7 @@ public class PerformanceTests {
         if (writeToFile) {
             try {
                 File _path = new File(path);
-                final File file = new File("long.FastGesDiscrete." + _path.getName() + ".txt");
+                final File file = new File("long.FGSDiscrete." + _path.getName() + ".txt");
                 out = new PrintStream(file);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -843,7 +842,7 @@ public class PerformanceTests {
 
             long time2 = System.currentTimeMillis();
 
-            FastGes ges = new FastGes(dataSet);
+            FGS ges = new FGS(dataSet);
             ges.setVerbose(false);
             ges.setLog(false);
             ges.setNumPatternsToStore(0);
@@ -862,7 +861,7 @@ public class PerformanceTests {
 
             out.println("Num edges = " + graph.getNumEdges());
             out.println("Discretize elapsed " + (time2 - time1) + "ms");
-            out.println("FastGes elapsed " + (time3 - time2) + "ms");
+            out.println("FGS elapsed " + (time3 - time2) + "ms");
             out.println("Total elapsed " + (time3 - time1) + "ms");
 
             printDegreeDistribution(graph, out);
@@ -2030,17 +2029,17 @@ public class PerformanceTests {
 
         if (args.length == 4) {
             switch (args[0]) {
-                case "FastGes":
+                case "FGS":
                     final int numVars = Integer.parseInt(args[1]);
                     final double edgeFactor = Double.parseDouble(args[2]);
                     final int numCases = Integer.parseInt(args[3]);
-                    performanceTests.testFastGes(numVars, edgeFactor, numCases, 2.0);
+                    performanceTests.testFgs(numVars, edgeFactor, numCases, 2.0);
                     break;
-                case "FastGesDiscrete":
+                case "FGSDiscrete":
                     String path = args[1];
                     final double structurePrior = Double.parseDouble(args[2]);
                     final double samplePrior = Double.parseDouble(args[3]);
-                    performanceTests.testFastGesDiscrete(path, structurePrior, samplePrior);
+                    performanceTests.testFgsDiscrete(path, structurePrior, samplePrior);
                     break;
                 default:
                     throw new IllegalArgumentException("Not a configuration!");
@@ -2071,27 +2070,27 @@ public class PerformanceTests {
                     performanceTests.testCpcStable(numVars, edgeFactor, numCases, alpha);
                     break;
                 }
-                case "FastGes": {
+                case "FGS": {
                     final int numVars = Integer.parseInt(args[1]);
                     final double edgeFactor = Double.parseDouble(args[2]);
                     final int numCases = Integer.parseInt(args[3]);
                     final double penaltyDiscount = Double.parseDouble(args[4]);
 
-                    performanceTests.testFastGes(numVars, edgeFactor, numCases, penaltyDiscount);
+                    performanceTests.testFgs(numVars, edgeFactor, numCases, penaltyDiscount);
                     break;
                 }
                 default:
                     throw new IllegalArgumentException("Not a configuration: ");
             }
         } else if (args.length == 6) {
-            if (args[0].equals("FastGesDiscrete")) {
+            if (args[0].equals("FGSDiscrete")) {
                 final int numVars = Integer.parseInt(args[1]);
                 final double edgeFactor = Double.parseDouble(args[2]);
                 final int numCases = Integer.parseInt(args[3]);
                 final double structurePrior = Double.parseDouble(args[4]);
                 final double samplePrior = Double.parseDouble(args[5]);
 
-                performanceTests.testFastGesDiscrete(numVars, edgeFactor, numCases, structurePrior, samplePrior);
+                performanceTests.testFgsDiscrete(numVars, edgeFactor, numCases, structurePrior, samplePrior);
             } else {
                 throw new IllegalArgumentException("Not a configuration!");
             }

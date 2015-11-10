@@ -638,12 +638,12 @@ public final class TetradCmd {
             TetradLogger.getInstance().log("info", "Testing it.");
         }
 
-        FastGes ges;
+        FGS ges;
 
         if (useCovariance) {
-            ges = new FastGes(new SemBicScore(covarianceMatrix));
+            ges = new FGS(new SemBicScore(covarianceMatrix));
         } else {
-            ges = new FastGes(new SemBicScore(new CovarianceMatrixOnTheFly(data)));
+            ges = new FGS(new SemBicScore(new CovarianceMatrixOnTheFly(data)));
         }
 
         if (initialGraph != null) {

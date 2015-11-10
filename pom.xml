@@ -184,10 +184,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <scm>
-        <connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>
-        <url>scm:git:git@github.com:cmu-phil/tetrad.git</url>
-        <developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+    <!--<scm>-->
+        <!--<connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>-->
+        <!--<url>scm:git:git@github.com:cmu-phil/tetrad.git</url>-->
+        <!--<developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>-->
+      <!--<tag>HEAD</tag>-->
+  <!--</scm>-->
 </project>

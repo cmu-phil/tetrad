@@ -191,14 +191,14 @@ public final class TFciGes {
         double penaltyDiscount = getPenaltyDiscount();
 
         // Run GES to get an initial graph.
-        FastGes ges;
+        FGS ges;
         Graph gesGraph;
 
         System.out.println("A");
 
         if (dataSet == null || dataSet.isContinuous()) {
             covarianceMatrix = independenceTest.getCov();
-            ges = new FastGes(covarianceMatrix);
+            ges = new FGS(covarianceMatrix);
             ges.setKnowledge(getKnowledge());
             ges.setPenaltyDiscount(penaltyDiscount);
             ges.setVerbose(true);
@@ -209,7 +209,7 @@ public final class TFciGes {
             graph = ges.search();
             gesGraph = new EdgeListGraphSingleConnections(graph);
         } else if (dataSet.isDiscrete()) {
-            ges = new FastGes(dataSet);
+            ges = new FGS(dataSet);
             ges.setKnowledge(getKnowledge());
             ges.setPenaltyDiscount(penaltyDiscount);
             ges.setSamplePrior(samplePrior);

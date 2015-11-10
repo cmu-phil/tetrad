@@ -48,7 +48,7 @@ import java.util.concurrent.*;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class FastGes implements GraphSearch, GraphScorer {
+public final class FGS implements GraphSearch, GraphScorer {
 
     /**
      * Sample size, either from the data set or from the covariances.
@@ -169,7 +169,7 @@ public final class FastGes implements GraphSearch, GraphScorer {
     /**
      * The data set must either be all continuous or all discrete.
      */
-    public FastGes(DataSet dataSet) {
+    public FGS(DataSet dataSet) {
         out.println("GES constructor");
 
         if (dataSet.isDiscrete()) {
@@ -184,7 +184,7 @@ public final class FastGes implements GraphSearch, GraphScorer {
     /**
      * Continuous case--where a covariance matrix is already available.
      */
-    public FastGes(ICovarianceMatrix covMatrix) {
+    public FGS(ICovarianceMatrix covMatrix) {
         out.println("GES constructor");
 
         setGesScore(new SemBicScore(covMatrix));
@@ -192,7 +192,7 @@ public final class FastGes implements GraphSearch, GraphScorer {
         out.println("GES constructor done");
     }
 
-    public FastGes(GesScore gesScore) {
+    public FGS(GesScore gesScore) {
         if (gesScore == null) throw new NullPointerException();
         setGesScore(gesScore);
     }
