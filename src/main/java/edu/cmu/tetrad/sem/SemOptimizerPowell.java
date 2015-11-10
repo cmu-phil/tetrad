@@ -109,7 +109,7 @@ public class SemOptimizerPowell implements SemOptimizer {
     }
 
     public String toString() {
-        return "Sem Optimizer PAL CDS";
+        return "Sem Optimizer PAL Powell";
     }
 
     private FittingFunction fittingFunction(SemIm sem) {

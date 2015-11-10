@@ -111,7 +111,7 @@ public class TestSemEstimator extends TestCase {
         SemIm est = new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
 //        SemIm est = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
 
-        System.out.println("\nCDS");
+        System.out.println("\nPowell");
         printStats(im, est);
 
         SemIm est2 = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
@@ -195,7 +195,7 @@ public class TestSemEstimator extends TestCase {
 
         NumberFormat nf2 = new DecimalFormat("0.0000");
 
-        System.out.println("\n=====CDS=====");
+        System.out.println("\n=====POWELL=====");
 
         System.out.println("avg chi square = " + nf2.format(chisqAvg1));
         System.out.println("avg p = " + nf2.format(pValuesSum1));

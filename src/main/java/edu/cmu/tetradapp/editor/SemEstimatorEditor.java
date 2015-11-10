@@ -75,7 +75,6 @@ public final class SemEstimatorEditor extends JPanel {
         optimizerCombo = new JComboBox();
         optimizerCombo.addItem("Regression");
         optimizerCombo.addItem("EM");
-        optimizerCombo.addItem("CDS");
         optimizerCombo.addItem("Powell");
         optimizerCombo.addItem("Random Search");
         optimizerCombo.addItem("RICF");

@@ -2028,31 +2028,7 @@ public class PerformanceTests {
 
         PerformanceTests performanceTests = new PerformanceTests();
 
-        if (args.length == 0) {
-            final int numVars = 100;
-            final double edgeFactor = 1.0;
-            final int numCases = 1000;
-            final double penaltyDiscount = 1.0;
-            final int numLatents = (int) (numVars * 0.001);
-            final double alpha = 0.0001;
-            int depth = 3;
-
-            long time1 = System.currentTimeMillis();
-
-            performanceTests.testPc(numCases, alpha, depth, time1);
-//            performanceTests.testPcStable(numCases, alpha, depth, time1);
-//            performanceTests.testCpcStable(numCases, alpha, depth, time1);
-//            performanceTests.testFastGes(numCases, edgeFactor, numCases, penaltyDiscount);
-//            performanceTests.testFci(10000, edgeFactor, numCases);                                                                                                                                                                                                                                                                                         edgeFactor, 1000);
-//            performanceTests.testFciGes(numVars, edgeFactor, numCases);
-//            performanceTests.testCompareDagToPattern(numVars, edgeFactor, numLatents);
-//            performanceTests.testFastGesDiscrete(numVars, edgeFactor, numCases, 1, 10);
-//            performanceTests.testFciGesComparison(numVars, edgeFactor, numCases, numLatents);
-//            performanceTests.testDagToPagOnly(numVars, edgeFactor, numLatents);
-//            performanceTests.testCompareFasVersions(numVars, edgeFactor, numCases);
-//            performanceTests.testComparePcVersions(numVars, edgeFactor, numCases);
-//            performanceTests.testIcaOutputForDan();
-        } else if (args.length == 4) {
+        if (args.length == 4) {
             switch (args[0]) {
                 case "FastGes":
                     final int numVars = Integer.parseInt(args[1]);
