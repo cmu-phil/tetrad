@@ -23,7 +23,7 @@ package edu.pitt.csb.stability;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.FastGes;
+import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.search.PcStable;
 import edu.pitt.csb.mgm.MGM;
@@ -70,7 +70,7 @@ public class SearchWrappers {
         public GesWrapper copy() {return new GesWrapper(searchParams);}
 
         public Graph search(DataSet ds){
-            FastGes fg = new FastGes(MixedUtils.makeContinuousData(ds));
+            Fgs fg = new Fgs(MixedUtils.makeContinuousData(ds));
             fg.setPenaltyDiscount(searchParams[0]);
             return fg.search();
         }

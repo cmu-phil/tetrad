@@ -194,12 +194,12 @@ public final class FciGes {
         // Adjacency phase
 
         // Run GES to get an initial graph.
-        FastGes ges;
+        Fgs ges;
         Graph gesGraph;
 
         if (dataSet == null || dataSet.isContinuous()) {
             covarianceMatrix = independenceTest.getCov();
-            ges = new FastGes(covarianceMatrix);
+            ges = new Fgs(covarianceMatrix);
             ges.setKnowledge(getKnowledge());
             ges.setPenaltyDiscount(penaltyDiscount);
             ges.setVerbose(true);
@@ -213,7 +213,7 @@ public final class FciGes {
             graph = ges.search();
             gesGraph = new EdgeListGraphSingleConnections(graph);
         } else if (dataSet.isDiscrete()) {
-            ges = new FastGes(dataSet);
+            ges = new Fgs(dataSet);
             ges.setKnowledge(getKnowledge());
             ges.setPenaltyDiscount(penaltyDiscount);
             ges.setSamplePrior(samplePrior);
@@ -322,7 +322,7 @@ public final class FciGes {
         return false;
     }
 
-    public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets, FastGes ges) {
+    public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets, Fgs ges) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 

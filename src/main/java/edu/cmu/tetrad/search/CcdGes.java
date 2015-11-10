@@ -105,14 +105,14 @@ public final class CcdGes implements GraphSearch {
 
         DataSet dataSet = (DataSet) test.getData();
 
-        FastGes ges;
+        Fgs ges;
         Graph gesGraph;
         ICovarianceMatrix covarianceMatrix = test.getCov();
         Graph graph;
 
         if (dataSet == null || dataSet.isContinuous()) {
             covarianceMatrix = test.getCov();
-            ges = new FastGes(covarianceMatrix);
+            ges = new Fgs(covarianceMatrix);
             ges.setKnowledge(getKnowledge());
             ges.setPenaltyDiscount(getPenaltyDiscount());
             ges.setVerbose(true);
@@ -122,7 +122,7 @@ public final class CcdGes implements GraphSearch {
             ges.setFaithfulnessAssumed(isFaithfulnessAssumed());
             graph = ges.search();
         } else if (dataSet.isDiscrete()) {
-            ges = new FastGes(dataSet);
+            ges = new Fgs(dataSet);
             ges.setKnowledge(getKnowledge());
             ges.setPenaltyDiscount(getPenaltyDiscount());
             ges.setSamplePrior(samplePrior);

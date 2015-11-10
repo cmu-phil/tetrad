@@ -215,7 +215,7 @@ public final class RfciGes {
 //
         covarianceMatrix = independenceTest.getCov();
         sampleSize = covarianceMatrix.getSampleSize();
-        FastGes ges = new FastGes(covarianceMatrix);
+        Fgs ges = new Fgs(covarianceMatrix);
         ges.setKnowledge(getKnowledge());
         ges.setPenaltyDiscount(getPenaltyDiscount());
         ges.setFaithfulnessAssumed(true);

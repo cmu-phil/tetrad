@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements the continuous BIC score for FastGES.
+ * Implements the continuous BIC score for FGS.
  *
  * @author Joseph Ramsey
  */
@@ -52,7 +52,7 @@ public class SemBicScore implements GesScore {
     private double penaltyDiscount = 4.0;
 
     // True if linear dependencies should return NaN for the score, and hence be
-    // ignored by FastGes.
+    // ignored by FGS
     private boolean ignoreLinearDependent = false;
 
     // The printstream output should be sent to.

@@ -3045,7 +3045,7 @@ public final class SearchGraphUtils {
         else if (dataModel instanceof DataSet) {
             DataSet dataSet = (DataSet) dataModel;
 
-            FastGes ges = new FastGes(dataSet);
+            Fgs ges = new Fgs(dataSet);
 
             ges.setBoundGraph(graph);
             ges.setKnowledge(knowledge);
@@ -3054,7 +3054,7 @@ public final class SearchGraphUtils {
         else if (dataModel instanceof CovarianceMatrix) {
             ICovarianceMatrix cov = (CovarianceMatrix) dataModel;
 
-            FastGes ges = new FastGes(cov);
+            Fgs ges = new Fgs(cov);
 
             ges.setBoundGraph(graph);
             ges.setKnowledge(knowledge);

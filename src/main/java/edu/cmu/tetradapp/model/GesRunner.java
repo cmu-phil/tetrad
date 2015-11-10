@@ -101,12 +101,12 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
         GesParams gesParams = (GesParams) getParams();
         GesIndTestParams indTestParams = (GesIndTestParams) gesParams.getIndTestParams();
         double penalty = gesParams.getComplexityPenalty();
-        FastGes ges;
+        Fgs ges;
         boolean faithfulnessAssumed = false;
         boolean ignoreLinearDependent = false;
 
         if (source instanceof ICovarianceMatrix) {
-//            ges = new FastGes((ICovarianceMatrix) source);
+//            ges = new FGS((ICovarianceMatrix) source);
 //            ges.setKnowledge(getParams().getKnowledge());
 //            ges.setPenaltyDiscount(penalty);
 //            ges.setVerbose(true);
@@ -118,7 +118,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) source);
             gesScore.setIgnoreLinearDependent(ignoreLinearDependent);
             gesScore.setPenaltyDiscount(penalty);
-            ges = new FastGes(gesScore);
+            ges = new Fgs(gesScore);
             ges.setKnowledge(getParams().getKnowledge());
             ges.setPenaltyDiscount(penalty);
             ges.setDepth(2);
@@ -132,7 +132,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
 
             if (dataSet.isContinuous()) {
 
-//                ges = new FastGes(dataSet);
+//                ges = new FGSSet);
 //                ges.setKnowledge(getParams().getKnowledge());
 //                ges.setPenaltyDiscount(penalty);
 //                ges.setVerbose(true);
@@ -143,7 +143,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
 
 //                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
 //                gesScore.setPenaltyDiscount(penalty);
-//                ges = new FastGes(gesScore);
+//                ges = new FGS(gesScore);
 //                ges.setKnowledge(getParams().getKnowledge());
 //                ges.setDepth(-1);
 //                ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
@@ -153,7 +153,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) source));
                 gesScore.setIgnoreLinearDependent(ignoreLinearDependent);
                 gesScore.setPenaltyDiscount(penalty);
-                ges = new FastGes(gesScore);
+                ges = new Fgs(gesScore);
                 ges.setKnowledge(getParams().getKnowledge());
                 ges.setPenaltyDiscount(penalty);
                 ges.setDepth(2);
@@ -169,7 +169,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
 //                BDeScore score = new BDeScore(dataSet);
-                ges = new FastGes(score);
+                ges = new Fgs(score);
                 ges.setVerbose(true);
                 ges.setLog(true);
                 ges.setKnowledge(getParams().getKnowledge());
@@ -237,7 +237,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
         return index;
     }
 
-    private Map<Graph, Double> scoreGraphs(FastGes ges, Graph graph) {
+    private Map<Graph, Double> scoreGraphs(Fgs ges, Graph graph) {
         Map<Graph, Double> dagsToScores = new HashMap<Graph, Double>();
 
         if (false) {
