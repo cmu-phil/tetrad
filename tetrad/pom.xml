@@ -26,7 +26,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.1</version>
+                <version>2.3</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -43,7 +43,7 @@
                                 </transformer>
                             </transformers>
                             <!--Will have to optimize this by hand; minimizing it messes up the ejar launch.-->
-                            <minimizeJar>true</minimizeJar>
+                            <minimizeJar>false</minimizeJar>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>launch</shadedClassifierName> <!-- Any name that makes sense -->
                         </configuration>
