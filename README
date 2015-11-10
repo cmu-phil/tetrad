@@ -12,7 +12,7 @@ IntelliJ IDEA, see the Wiki. Alternatively, you can
 run the lifecycle package target and launch the ejar 
 that is  built in the target directory, using the call
 
-java -jar *-ejar.jar
+java -jar *-launch.jar
 
 The project contains fairly well-developed code in these 
 packages:
