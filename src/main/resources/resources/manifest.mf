@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Specification-Title:  Java API for Causal Reasoning
-Specification-Vendor: Sun Microsystems
-Main-Class: edu.cmu.tetradapp.Tetrad
-Created-By: 1.2.2 (Sun Microsystems Inc.)
-Specification-Version: 1.0.0
-Permissions: all-permissions
