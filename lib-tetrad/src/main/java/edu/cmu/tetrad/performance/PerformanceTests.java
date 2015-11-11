@@ -54,7 +54,7 @@ public class PerformanceTests {
     public void testPc(int numVars, double edgesPerNode, int numCases, double alpha) {
         int depth = -1;
 
-        init(new File("long.pc." + numVars + ".txt"), "Tests performance of the GES algorithm");
+        init(new File("long.pc." + numVars + ".txt"), "Tests performance of the FGS algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -223,7 +223,7 @@ public class PerformanceTests {
         double alpha = 0.0001;
         int depth = -1;
 
-        init(new File("long.cpc." + numVars + ".txt"), "Tests performance of the GES algorithm");
+        init(new File("long.cpc." + numVars + ".txt"), "Tests performance of the CPC algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -399,7 +399,7 @@ public class PerformanceTests {
         double alpha = 0.001;
         int depth = 3;
 
-        init(new File("long.fci." + numVars + ".txt"), "Tests performance of the GES algorithm");
+        init(new File("long.fci." + numVars + ".txt"), "Tests performance of the FCI algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -582,9 +582,7 @@ public class PerformanceTests {
     public void testFgs(int numVars, double edgesPerNode, int numCases, double penaltyDiscount) {
         final int numEdges = (int) (numVars * edgesPerNode);
 
-        init(new File("long.FGS." + numVars + "." + numEdges + "." + penaltyDiscount + ".txt"), "Tests performance of the FCI-GES algorithm");
-
-        out.println("Tests performance of the GES algorithm");
+        init(new File("long.FGS." + numVars + "." + numEdges + "." + penaltyDiscount + ".txt"), "Tests performance of the FGS algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -640,26 +638,26 @@ public class PerformanceTests {
 //        Collections.shuffle(names);
 //        cov = cov.getSubmatrix(names);
 
-        Fgs ges = new Fgs(cov);
-        ges.setVerbose(false);
-        ges.setLog(false);
-        ges.setNumPatternsToStore(0);
-        ges.setPenaltyDiscount(penaltyDiscount);
-        ges.setOut(System.out);
-        ges.setFaithfulnessAssumed(true);
-        ges.setDepth(-1);
-        ges.setCycleBound(5);
+        Fgs fgs = new Fgs(cov);
+        fgs.setVerbose(false);
+        fgs.setLog(false);
+        fgs.setNumPatternsToStore(0);
+        fgs.setPenaltyDiscount(penaltyDiscount);
+        fgs.setOut(System.out);
+        fgs.setFaithfulnessAssumed(true);
+        fgs.setDepth(-1);
+        fgs.setCycleBound(5);
 
 //        IKnowledge knowledge = new Knowledge2();
 //        knowledge.setForbidden("X1", "X2");
 
-        System.out.println("\nStarting GES");
+        System.out.println("\nStarting FGS");
 
-        Graph estPattern = ges.search();
+        Graph estPattern = fgs.search();
 
-        System.out.println("Done with GES");
+        System.out.println("Done with FGS");
 
-//        ges.setKnowledge(knowledge);
+//        fgs.setKnowledge(knowledge);
 
         printDegreeDistribution(estPattern, System.out);
 
@@ -676,8 +674,8 @@ public class PerformanceTests {
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-        out.println("Elapsed (running GES/GES) " + (time4 - time3) + " ms");
-        out.println("Elapsed (cov + GES/GES) " + (time4 - time2) + " ms");
+        out.println("Elapsed (running FGS) " + (time4 - time3) + " ms");
+        out.println("Elapsed (cov + FGS) " + (time4 - time2) + " ms");
 
 //        graphComparison(estPattern, SearchGraphUtils.patternForDag(dag));
 
@@ -701,7 +699,7 @@ public class PerformanceTests {
 //        structurePrior = .001;
 //        samplePrior = 10;
 
-        init(new File("long.FGSDiscrete." + numVars + ".txt"), "Tests performance of the GES algorithm");
+        init(new File("long.FGSDiscrete." + numVars + ".txt"), "Tests performance of the FGS algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -740,25 +738,25 @@ public class PerformanceTests {
 
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
 
-        Fgs ges = new Fgs(score);
-        ges.setVerbose(false);
-        ges.setLog(false);
-        ges.setNumPatternsToStore(0);
-        ges.setOut(out);
-        ges.setFaithfulnessAssumed(true);
-        ges.setDepth(3);
-//        ges.setNumProcessors(4);
+        Fgs fgs = new Fgs(score);
+        fgs.setVerbose(false);
+        fgs.setLog(false);
+        fgs.setNumPatternsToStore(0);
+        fgs.setOut(out);
+        fgs.setFaithfulnessAssumed(true);
+        fgs.setDepth(3);
+//        fgs.setNumProcessors(4);
 
 //        IKnowledge knowledge = new Knowledge2();
 //        knowledge.setForbidden("X1", "X2");
 
-        System.out.println("\nStarting GES");
+        System.out.println("\nStarting FGS");
 
-        Graph estPattern = ges.search();
+        Graph estPattern = fgs.search();
 
-        System.out.println("Done with GES");
+        System.out.println("Done with FGS");
 
-//        ges.setKnowledge(knowledge);
+//        fgs.setKnowledge(knowledge);
 
         out.println(estPattern);
 
@@ -824,18 +822,18 @@ public class PerformanceTests {
 
             long time2 = System.currentTimeMillis();
 
-            Fgs ges = new Fgs(dataSet);
-            ges.setVerbose(false);
-            ges.setLog(false);
-            ges.setNumPatternsToStore(0);
-            ges.setPenaltyDiscount(4);
-            ges.setOut(out);
-            ges.setFaithfulnessAssumed(true);
-            ges.setDepth(2);
-            ges.setStructurePrior(structurePrior);
-            ges.setSamplePrior(samplePrior);
+            Fgs fgs = new Fgs(dataSet);
+            fgs.setVerbose(false);
+            fgs.setLog(false);
+            fgs.setNumPatternsToStore(0);
+            fgs.setPenaltyDiscount(4);
+            fgs.setOut(out);
+            fgs.setFaithfulnessAssumed(true);
+            fgs.setDepth(2);
+            fgs.setStructurePrior(structurePrior);
+            fgs.setSamplePrior(samplePrior);
 
-            Graph graph = ges.search();
+            Graph graph = fgs.search();
 
             long time3 = System.currentTimeMillis();
 
@@ -1347,7 +1345,7 @@ public class PerformanceTests {
             PrintStream out12 = System.out;
 
             if (writeToFile) {
-                File dir0 = new File("fci..ges.output");
+                File dir0 = new File("fci.output");
                 dir0.mkdirs();
 
                 File dir = new File(dir0, "" + (run + 1));
@@ -1436,7 +1434,7 @@ public class PerformanceTests {
 
             final IndTestFisherZ independenceTestFciGes = new IndTestFisherZ(cov, alphaFciGes);
 
-            out6.println("FCI.GES.PAG");
+            out6.println("FCI.FGS.PAG");
 
             FciGes fciGes = new FciGes(independenceTestFciGes);
             fciGes.setVerbose(false);

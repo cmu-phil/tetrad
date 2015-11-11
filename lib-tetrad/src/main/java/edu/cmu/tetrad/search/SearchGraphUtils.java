@@ -2964,6 +2964,7 @@ public final class SearchGraphUtils {
         out.println(GraphUtils.edgeMisclassifications(counts));
 
         double adjRecall = adjTp / (double) (adjTp + adjFn);
+        
         double adjPrecision = adjTp / (double) (adjTp + adjFp);
 
         double arrowRecall = arrowptTp / (double) (arrowptTp + arrowptFn);
