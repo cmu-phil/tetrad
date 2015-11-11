@@ -580,23 +580,9 @@ public class PerformanceTests {
     }
 
     public void testFgs(int numVars, double edgesPerNode, int numCases, double penaltyDiscount) {
-//        numVars = 20000;
-//        edgesPerNode = 1;
-//        numCases = 1000;
-//        penaltyDiscount = 3;
-
         final int numEdges = (int) (numVars * edgesPerNode);
 
-        if (writeToFile) {
-            try {
-                final File file = new File("long.FGS." + numVars + "." + numEdges + "." + penaltyDiscount + ".txt");
-                out = new PrintStream(file);
-                System.out.println("Writing output to " + file.getName());
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
-        }
+        init(new File("long.FGS." + numVars + "." + numEdges + "." + penaltyDiscount + ".txt"), "Tests performance of the FCI-GES algorithm");
 
         out.println("Tests performance of the GES algorithm");
 
@@ -610,10 +596,6 @@ public class PerformanceTests {
         Graph dag = makeDag(numVars, edgesPerNode);
 
 
-        fgsGivenDag(numCases, numEdges, time1, dag);
-    }
-
-    private void fgsGivenDag(int numCases, double penaltyDiscount, long time1, Graph dag) {
         List<Node> vars = dag.getNodes();
 
         int[] causalOrdering = new int[vars.size()];
@@ -690,7 +672,7 @@ public class PerformanceTests {
 //        out.println("# Vars = " + numVars);
 //        out.println("# Edges = " + numEdges);
         out.println("# Cases = " + numCases);
-        out.println("Penalty discount = " + penaltyDiscount);
+        out.println("Penalty discount = " + (double) numEdges);
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
@@ -711,7 +693,7 @@ public class PerformanceTests {
         out.close();
     }
 
-   public void testFgsDiscrete(int numVars, double edgeFactor, int numCases,
+    public void testFgsDiscrete(int numVars, double edgeFactor, int numCases,
                                double structurePrior, double samplePrior) {
 //        numVars = 5000;
 //        edgeFactor = 1.0;
