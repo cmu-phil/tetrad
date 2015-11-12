@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.TFciGes;
+import edu.cmu.tetrad.search.TGFCI;
 import edu.cmu.tetradapp.util.IonInput;
 
 import java.util.ArrayList;
@@ -38,53 +38,53 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class TFciGesRunner extends AbstractAlgorithmRunner
+public class TGFciRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource, IonInput {
     static final long serialVersionUID = 23L;
 
     //=========================CONSTRUCTORS================================//
 
-    public TFciGesRunner(DataWrapper dataWrapper, FciGesSearchParams params) {
+    public TGFciRunner(DataWrapper dataWrapper, FciGesSearchParams params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public TFciGesRunner(GraphSource graphWrapper, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TGFciRunner(GraphSource graphWrapper, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
 
-    public TFciGesRunner(DataWrapper dataWrapper, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TGFciRunner(DataWrapper dataWrapper, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public TFciGesRunner(Graph graph, FciGesSearchParams params) {
+    public TGFciRunner(Graph graph, FciGesSearchParams params) {
         super(graph, params);
     }
 
-    public TFciGesRunner(Graph graph, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TGFciRunner(Graph graph, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
-    public TFciGesRunner(GraphWrapper graphWrapper, FciGesSearchParams params) {
+    public TGFciRunner(GraphWrapper graphWrapper, FciGesSearchParams params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public TFciGesRunner(DagWrapper dagWrapper, FciGesSearchParams params) {
+    public TGFciRunner(DagWrapper dagWrapper, FciGesSearchParams params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public TFciGesRunner(SemGraphWrapper dagWrapper, FciGesSearchParams params) {
+    public TGFciRunner(SemGraphWrapper dagWrapper, FciGesSearchParams params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public TFciGesRunner(IndependenceFactsModel model, FciGesSearchParams params) {
+    public TGFciRunner(IndependenceFactsModel model, FciGesSearchParams params) {
         super(model, params, null);
     }
 
-    public TFciGesRunner(IndependenceFactsModel model, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TGFciRunner(IndependenceFactsModel model, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -95,8 +95,8 @@ public class TFciGesRunner extends AbstractAlgorithmRunner
      * @see edu.cmu.TestSerialization
      * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    public static TFciGesRunner serializableInstance() {
-        return new TFciGesRunner(Dag.serializableInstance(),
+    public static TGFciRunner serializableInstance() {
+        return new TGFciRunner(Dag.serializableInstance(),
                 FciGesSearchParams.serializableInstance());
     }
 
@@ -124,7 +124,7 @@ public class TFciGesRunner extends AbstractAlgorithmRunner
 //            setResultGraph(graph);
         Graph graph;
 
-        TFciGes fci = new TFciGes(getIndependenceTest());
+        TGFCI fci = new TGFCI(getIndependenceTest());
         fci.setKnowledge(knowledge);
         fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
         fci.setPossibleDsepSearchDone(indTestParams.isPossibleDsepDone());

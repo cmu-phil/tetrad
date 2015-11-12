@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.FciGes;
+import edu.cmu.tetrad.search.GFCI;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
@@ -49,14 +49,14 @@ import static java.lang.Math.round;
  *
  * @author Joseph Ramsey
  */
-public class TestFciGes extends TestCase {
+public class TestGFci extends TestCase {
 
     private PrintStream out = System.out;
 
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestFciGes(String name) {
+    public TestGFci(String name) {
         super(name);
     }
 
@@ -123,7 +123,7 @@ public class TestFciGes extends TestCase {
         System.out.println("True PAG done");
         independenceTest.setAlpha(alpha);
 
-        FciGes fciGes = new FciGes(independenceTest);
+        GFCI fciGes = new GFCI(independenceTest);
         fciGes.setVerbose(false);
         fciGes.setPenaltyDiscount(penaltyDiscount);
         fciGes.setDepth(depth);
@@ -739,7 +739,7 @@ public class TestFciGes extends TestCase {
 
         // Edit the name of the class in the parens to match the name
         // of this class.
-        return new TestSuite(TestFciGes.class);
+        return new TestSuite(TestGFci.class);
     }
 }
 

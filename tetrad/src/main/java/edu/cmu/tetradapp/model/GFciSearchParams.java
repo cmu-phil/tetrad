@@ -39,7 +39,7 @@ import java.util.List;
  * @author Raul Salinas
  * @author Joseph Ramsey
  */
-public final class FciGesSearchParams implements SearchParams {
+public final class GFciSearchParams implements SearchParams {
     static final long serialVersionUID = 23L;
 
     /**
@@ -55,7 +55,7 @@ public final class FciGesSearchParams implements SearchParams {
     /**
      * @serial Cannot be null.
      */
-    private FciGesIndTestParams indTestParams2 = new FciGesIndTestParams();
+    private GFciIndTestParams indTestParams2 = new GFciIndTestParams();
 
     /**
      * @serial Cannot be null.
@@ -72,7 +72,7 @@ public final class FciGesSearchParams implements SearchParams {
     /**
      * Constructs a new parameter object. Must have a blank constructor.
      */
-    public FciGesSearchParams() {
+    public GFciSearchParams() {
         this.varNames = new ArrayList();
     }
 
@@ -82,8 +82,8 @@ public final class FciGesSearchParams implements SearchParams {
      * @see edu.cmu.TestSerialization
      * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    public static FciGesSearchParams serializableInstance() {
-        return new FciGesSearchParams();
+    public static GFciSearchParams serializableInstance() {
+        return new GFciSearchParams();
     }
 
     //=============================PUBLIC METHODS========================//
@@ -111,7 +111,7 @@ public final class FciGesSearchParams implements SearchParams {
         if (indTestParams2 == null) {
             throw new NullPointerException();
         }
-        this.indTestParams2 = (FciGesIndTestParams) indTestParams2;
+        this.indTestParams2 = (GFciIndTestParams) indTestParams2;
     }
 
     public List getVarNames() {

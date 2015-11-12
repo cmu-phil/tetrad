@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.FciGesIndTestParams;
+import edu.cmu.tetradapp.model.GFciIndTestParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -37,12 +37,12 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey
  */
-class FciGesIndTestParamsEditor extends JComponent {
+class GFciIndTestParamsEditor extends JComponent {
 
     /**
      * The parameters object being edited.
      */
-    private FciGesIndTestParams params = null;
+    private GFciIndTestParams params = null;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -84,7 +84,7 @@ class FciGesIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public FciGesIndTestParamsEditor(FciGesIndTestParams params) {
+    public GFciIndTestParamsEditor(GFciIndTestParams params) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
@@ -272,7 +272,7 @@ class FciGesIndTestParamsEditor extends JComponent {
      *
      * @return the stored simulation parameters model.
      */
-    private FciGesIndTestParams indTestParams() {
+    private GFciIndTestParams indTestParams() {
         return params;
     }
 }

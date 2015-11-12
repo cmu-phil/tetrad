@@ -33,20 +33,20 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class FciGesRunner extends AbstractAlgorithmRunner
+public class GFciRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
 
     //=========================CONSTRUCTORS================================//
 
-    public FciGesRunner(DataWrapper dataWrapper, FciGesSearchParams params) {
+    public GFciRunner(DataWrapper dataWrapper, FciGesSearchParams params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FciGesRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public GFciRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     /**
@@ -54,32 +54,32 @@ public class FciGesRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FciGesRunner(DataWrapper dataWrapper, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public GFciRunner(DataWrapper dataWrapper, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public FciGesRunner(Graph graph, FciSearchParams params) {
+    public GFciRunner(Graph graph, FciSearchParams params) {
         super(graph, params);
     }
 
 
-    public FciGesRunner(GraphWrapper graphWrapper, FciGesSearchParams params) {
+    public GFciRunner(GraphWrapper graphWrapper, FciGesSearchParams params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public FciGesRunner(DagWrapper dagWrapper, FciGesSearchParams params) {
+    public GFciRunner(DagWrapper dagWrapper, FciGesSearchParams params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public FciGesRunner(SemGraphWrapper dagWrapper, FciGesSearchParams params) {
+    public GFciRunner(SemGraphWrapper dagWrapper, FciGesSearchParams params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public FciGesRunner(IndependenceFactsModel model, FciGesSearchParams params) {
+    public GFciRunner(IndependenceFactsModel model, FciGesSearchParams params) {
         super(model, params, null);
     }
 
-    public FciGesRunner(IndependenceFactsModel model, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public GFciRunner(IndependenceFactsModel model, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -89,8 +89,8 @@ public class FciGesRunner extends AbstractAlgorithmRunner
      * @see edu.cmu.TestSerialization
      * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    public static FciGesRunner serializableInstance() {
-        return new FciGesRunner(Dag.serializableInstance(),
+    public static GFciRunner serializableInstance() {
+        return new GFciRunner(Dag.serializableInstance(),
                 FciSearchParams.serializableInstance());
     }
 
@@ -114,7 +114,7 @@ public class FciGesRunner extends AbstractAlgorithmRunner
             graph = dagToPag.convert();
         }
         else {
-            FciGes fci = new FciGes(getIndependenceTest());
+            GFCI fci = new GFCI(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
             fci.setPossibleDsepSearchDone(indTestParams.isPossibleDsepDone());

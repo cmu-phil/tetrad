@@ -30,7 +30,7 @@ import java.io.ObjectInputStream;
  *
  * @author Joseph Ramsey
  */
-public class FciGesIndTestParams implements IndTestParams {
+public class GFciIndTestParams implements IndTestParams {
     static final long serialVersionUID = 23L;
 
     /**
@@ -67,7 +67,7 @@ public class FciGesIndTestParams implements IndTestParams {
 
     //============================CONSTRUCTORS=========================//
 
-    public FciGesIndTestParams() {
+    public GFciIndTestParams() {
     }
 
     /**
@@ -76,8 +76,8 @@ public class FciGesIndTestParams implements IndTestParams {
      * @see edu.cmu.TestSerialization
      * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    public static FciGesIndTestParams serializableInstance() {
-        return new FciGesIndTestParams();
+    public static GFciIndTestParams serializableInstance() {
+        return new GFciIndTestParams();
     }
 
     //============================PUBLIC METHODS=======================//

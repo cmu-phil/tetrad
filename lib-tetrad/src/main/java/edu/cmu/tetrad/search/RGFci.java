@@ -55,7 +55,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Joseph Ramsey
  * @author Choh-Man Teng
  */
-public final class RfciGes {
+public final class RGFci {
 
     private double alpha1 = 0.001;
     /**
@@ -135,7 +135,7 @@ public final class RfciGes {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public RfciGes(IndependenceTest independenceTest) {
+    public RGFci(IndependenceTest independenceTest) {
         if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }
@@ -157,7 +157,7 @@ public final class RfciGes {
      * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
      * search over.
      */
-    public RfciGes(IndependenceTest independenceTest, List<Node> searchVars) {
+    public RGFci(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }
