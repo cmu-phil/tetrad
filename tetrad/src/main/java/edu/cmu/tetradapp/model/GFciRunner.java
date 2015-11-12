@@ -39,7 +39,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public GFciRunner(DataWrapper dataWrapper, FciGesSearchParams params) {
+    public GFciRunner(DataWrapper dataWrapper, GFciSearchParams params) {
         super(dataWrapper, params, null);
     }
 
@@ -54,7 +54,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public GFciRunner(DataWrapper dataWrapper, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public GFciRunner(DataWrapper dataWrapper, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -63,23 +63,23 @@ public class GFciRunner extends AbstractAlgorithmRunner
     }
 
 
-    public GFciRunner(GraphWrapper graphWrapper, FciGesSearchParams params) {
+    public GFciRunner(GraphWrapper graphWrapper, GFciSearchParams params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public GFciRunner(DagWrapper dagWrapper, FciGesSearchParams params) {
+    public GFciRunner(DagWrapper dagWrapper, GFciSearchParams params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public GFciRunner(SemGraphWrapper dagWrapper, FciGesSearchParams params) {
+    public GFciRunner(SemGraphWrapper dagWrapper, GFciSearchParams params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public GFciRunner(IndependenceFactsModel model, FciGesSearchParams params) {
+    public GFciRunner(IndependenceFactsModel model, GFciSearchParams params) {
         super(model, params, null);
     }
 
-    public GFciRunner(IndependenceFactsModel model, FciGesSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public GFciRunner(IndependenceFactsModel model, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -104,7 +104,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
         IKnowledge knowledge = getParams().getKnowledge();
         SearchParams searchParams = getParams();
 
-        FciGesIndTestParams indTestParams = (FciGesIndTestParams) searchParams.getIndTestParams();
+        GFciIndTestParams indTestParams = (GFciIndTestParams) searchParams.getIndTestParams();
 
         Graph graph;
 
@@ -157,7 +157,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
             testType = _params.getIndTestType();
         }
         else {
-            FciGesSearchParams _params = (FciGesSearchParams) params;
+            GFciSearchParams _params = (GFciSearchParams) params;
             testType = _params.getIndTestType();
         }
 

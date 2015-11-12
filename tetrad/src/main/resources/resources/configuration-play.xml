@@ -1650,7 +1650,7 @@
                 <params-class>edu.cmu.tetradapp.model.FciSearchParams
                 </params-class>
             </model>
-            <model name="FCI-GES" acronym="FCI-GES" help="fciges"
+            <model name="GFCI" acronym="GFCI" help="gfci"
                    category="PAG searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1661,10 +1661,10 @@
                     <event id="tripleClassifications" description="Triple Classifications" default="on"/>
                     <event id="graph" description="Graph" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.FciGesRunner</model-class>
+                <model-class>edu.cmu.tetradapp.model.GFciRunner</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
                 </editor-class>
-                <params-class>edu.cmu.tetradapp.model.FciGesSearchParams
+                <params-class>edu.cmu.tetradapp.model.GFciSearchParams
                 </params-class>
             </model>
             <model name="TFCI" acronym="TFCI" help="tfci"
@@ -1684,7 +1684,7 @@
                 <params-class>edu.cmu.tetradapp.model.FciSearchParams
                 </params-class>
             </model>
-            <model name="TFCIGES" acronym="TFCIGES" help="tfciges"
+            <model name="TGFCI" acronym="TGFCI" help="tgfci"
                    category="PAG searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1695,10 +1695,10 @@
                     <event id="tripleClassifications" description="Triple Classifications" default="on"/>
                     <event id="graph" description="Graph" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.TFciGesRunner</model-class>
+                <model-class>edu.cmu.tetradapp.model.TGFciRunner</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
                 </editor-class>
-                <params-class>edu.cmu.tetradapp.model.FciGesSearchParams
+                <params-class>edu.cmu.tetradapp.model.GFciSearchParams
                 </params-class>
             </model>
             <model name="ION" acronym="ION" help="ion" category="PAG searches">

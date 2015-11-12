@@ -73,14 +73,14 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         super(runner, "Result PAG");
     }
 
-    public FciCcdSearchEditor(FciGesRunner runner) {
+    public FciCcdSearchEditor(GFciRunner runner) {
         super(runner, "Result PAG");
     }
 
     public FciCcdSearchEditor(TFciRunner runner) {
         super(runner, "Result PAG");
     }
-    public FciCcdSearchEditor(TFciGesRunner runner) {
+    public FciCcdSearchEditor(TGFciRunner runner) {
         super(runner, "Result PAG");
     }
 
@@ -435,8 +435,8 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
             return new FciIndTestParamsEditor((FciIndTestParams) indTestParams);
         }
 
-        if (indTestParams instanceof FciGesIndTestParams) {
-            return new FciGesIndTestParamsEditor((FciGesIndTestParams) indTestParams);
+        if (indTestParams instanceof GFciIndTestParams) {
+            return new GFciIndTestParamsEditor((GFciIndTestParams) indTestParams);
         }
 
         return new IndTestParamsEditor(indTestParams);

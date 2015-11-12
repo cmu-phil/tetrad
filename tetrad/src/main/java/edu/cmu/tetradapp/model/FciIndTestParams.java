@@ -67,7 +67,7 @@ public class FciIndTestParams implements IndTestParams {
      * The maximum length of discriminating undirectedPaths, or -1 or unlimited.
      */
     private int maxReachablePathLength = -1;
-    private boolean fciGes;
+    private boolean gFci;
 
     //============================CONSTRUCTORS=========================//
 
@@ -191,8 +191,8 @@ public class FciIndTestParams implements IndTestParams {
         }
     }
 
-    public void setFciGes(boolean fciGes) {
-        this.fciGes = fciGes;
+    public void setGFci(boolean gFci) {
+        this.gFci = gFci;
     }
 }
 

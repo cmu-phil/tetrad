@@ -123,15 +123,15 @@ public class TestGFci extends TestCase {
         System.out.println("True PAG done");
         independenceTest.setAlpha(alpha);
 
-        GFCI fciGes = new GFCI(independenceTest);
-        fciGes.setVerbose(false);
-        fciGes.setPenaltyDiscount(penaltyDiscount);
-        fciGes.setDepth(depth);
-        fciGes.setMaxPathLength(maxPathLength);
-        fciGes.setPossibleDsepSearchDone(possibleDsepDone);
-        fciGes.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciGes.setFaithfulnessAssumed(faithfulnessAssumed);
-        Graph outGraph = fciGes.search();
+        GFCI gFci = new GFCI(independenceTest);
+        gFci.setVerbose(false);
+        gFci.setPenaltyDiscount(penaltyDiscount);
+        gFci.setDepth(depth);
+        gFci.setMaxPathLength(maxPathLength);
+        gFci.setPossibleDsepSearchDone(possibleDsepDone);
+        gFci.setCompleteRuleSetUsed(completeRuleSetUsed);
+        gFci.setFaithfulnessAssumed(faithfulnessAssumed);
+        Graph outGraph = gFci.search();
 
         final DagToPag dagToPag = new DagToPag(dag);
         dagToPag.setCompleteRuleSetUsed(false);

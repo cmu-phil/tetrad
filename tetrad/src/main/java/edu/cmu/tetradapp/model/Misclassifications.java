@@ -309,7 +309,7 @@ public final class Misclassifications implements SessionModel {
 
     }
 
-    public Misclassifications(FciGesRunner runner, PagFromDagGraphWrapper pagFromDag, GraphWrapper graphWrapper,
+    public Misclassifications(GFciRunner runner, PagFromDagGraphWrapper pagFromDag, GraphWrapper graphWrapper,
                               GraphComparisonParams params) {
         this.targetGraph = runner.getResultGraph();
         this.dag = graphWrapper.getGraph();
@@ -353,7 +353,7 @@ public final class Misclassifications implements SessionModel {
 
     }
 
-    public Misclassifications(FciGesRunner runner, PagFromDagGraphWrapper pagFromDag, DagWrapper graphWrapper,
+    public Misclassifications(GFciRunner runner, PagFromDagGraphWrapper pagFromDag, DagWrapper graphWrapper,
                               GraphComparisonParams params) {
         this.targetGraph = runner.getResultGraph();
         this.dag = graphWrapper.getGraph();

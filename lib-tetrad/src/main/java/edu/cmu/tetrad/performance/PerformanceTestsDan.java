@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.FciGes;
+import edu.cmu.tetrad.search.GFCI;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.sem.SemIm;
@@ -57,7 +57,7 @@ public class PerformanceTestsDan {
         int numRuns = 100;
 
         for (int run = 0; run < numRuns; run++) {
-            double alphaFciGes = 0.01;
+            double alphaGFci = 0.01;
             double alphaPc = 0.01;
             int penaltyDiscount = 1;
             int depth = 3;
@@ -113,7 +113,7 @@ public class PerformanceTestsDan {
             out1.println("Num edges = " + (int) (numVars * edgesPerNode));
             out1.println("Num cases = " + numCases);
             out1.println("Alpha for PC = " + alphaPc);
-            out1.println("Alpha for FFCI = " + alphaFciGes);
+            out1.println("Alpha for FFCI = " + alphaGFci);
             out1.println("Penalty discount = " + penaltyDiscount);
             out1.println("Depth = " + depth);
             out1.println("Maximum reachable path length for dsep search and discriminating undirectedPaths = " + maxPathLength);
@@ -171,19 +171,19 @@ public class PerformanceTestsDan {
 
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-            final IndTestFisherZ independenceTestFciGes = new IndTestFisherZ(cov, alphaFciGes);
+            final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
 
             out6.println("FCI.GES.PAG");
 
-            FciGes fciGes = new FciGes(independenceTestFciGes);
-            fciGes.setVerbose(false);
-            fciGes.setPenaltyDiscount(penaltyDiscount);
-            fciGes.setDepth(depth);
-            fciGes.setMaxPathLength(maxPathLength);
-            fciGes.setPossibleDsepSearchDone(true);
-            fciGes.setCompleteRuleSetUsed(true);
+            GFCI gFci = new GFCI(independenceTestGFci);
+            gFci.setVerbose(false);
+            gFci.setPenaltyDiscount(penaltyDiscount);
+            gFci.setDepth(depth);
+            gFci.setMaxPathLength(maxPathLength);
+            gFci.setPossibleDsepSearchDone(true);
+            gFci.setCompleteRuleSetUsed(true);
 
-            Graph pag = fciGes.search();
+            Graph pag = gFci.search();
 
             out6.println(pag);
 

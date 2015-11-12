@@ -477,11 +477,11 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testFciGes(int numVars, double edgesPerNode, int numCases) {
+    public void testGfci(int numVars, double edgesPerNode, int numCases) {
         double alpha = 0.001;
         int depth = 3;
 
-        init(new File("long.fciges." + numVars + ".txt"), "Tests performance of the FCI-GES algorithm");
+        init(new File("long.gfci." + numVars + ".txt"), "Tests performance of the FCI-GES algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -554,7 +554,7 @@ public class PerformanceTests {
         IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
         double penaltyDiscount = 2.0;
         int maxPathLength = 6;
-        FciGes fci = new FciGes(independenceTest);
+        GFCI fci = new GFCI(independenceTest);
         fci.setVerbose(false);
         fci.setPenaltyDiscount(penaltyDiscount);
         fci.setMaxPathLength(maxPathLength);
@@ -932,7 +932,7 @@ public class PerformanceTests {
         }
     }
 
-    public void testFciGesComparison(int numVars, double edgesPerNode, int numCases, int numLatents) {
+    public void testGFciComparison(int numVars, double edgesPerNode, int numCases, int numLatents) {
         numVars = 1000;
         edgesPerNode = 1.0;
         numLatents = 100;
@@ -1015,14 +1015,14 @@ public class PerformanceTests {
             long elapsed;
 
 //            out.println("\n\n\n========================FCI run " + (run + 1));
-            out.println("\n\n\n========================TFCIGES run " + (run + 1));
+            out.println("\n\n\n========================TGFCI run " + (run + 1));
 
             long ta1 = System.currentTimeMillis();
 
 //            Fci fci = new Fci(independenceTest);
-//            FciGes fci = new FciGes(independenceTest);
+//            GFCI fci = new GFCI(independenceTest);
 //            TFci fci = new TFci(independenceTest);
-            TFciGes fci = new TFciGes(independenceTest);
+            TGFCI fci = new TGFCI(independenceTest);
 //            fci.setVerbose(false);
             fci.setPenaltyDiscount(penaltyDiscount);
             fci.setDepth(depth);
@@ -1318,7 +1318,7 @@ public class PerformanceTests {
         int numRuns = 100;
 
         for (int run = 0; run < numRuns; run++) {
-            double alphaFciGes = 0.01;
+            double alphaGFci = 0.01;
             double alphaPc = 0.01;
             int penaltyDiscount = 1;
             int depth = 3;
@@ -1374,7 +1374,7 @@ public class PerformanceTests {
             out1.println("Num edges = " + (int) (numVars * edgesPerNode));
             out1.println("Num cases = " + numCases);
             out1.println("Alpha for PC = " + alphaPc);
-            out1.println("Alpha for FFCI = " + alphaFciGes);
+            out1.println("Alpha for FFCI = " + alphaGFci);
             out1.println("Penalty discount = " + penaltyDiscount);
             out1.println("Depth = " + depth);
             out1.println("Maximum reachable path length for dsep search and discriminating undirectedPaths = " + maxPathLength);
@@ -1432,19 +1432,19 @@ public class PerformanceTests {
 
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-            final IndTestFisherZ independenceTestFciGes = new IndTestFisherZ(cov, alphaFciGes);
+            final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
 
             out6.println("FCI.FGS.PAG");
 
-            FciGes fciGes = new FciGes(independenceTestFciGes);
-            fciGes.setVerbose(false);
-            fciGes.setPenaltyDiscount(penaltyDiscount);
-            fciGes.setDepth(depth);
-            fciGes.setMaxPathLength(maxPathLength);
-            fciGes.setPossibleDsepSearchDone(true);
-            fciGes.setCompleteRuleSetUsed(true);
+            GFCI GFci = new GFCI(independenceTestGFci);
+            GFci.setVerbose(false);
+            GFci.setPenaltyDiscount(penaltyDiscount);
+            GFci.setDepth(depth);
+            GFci.setMaxPathLength(maxPathLength);
+            GFci.setPossibleDsepSearchDone(true);
+            GFci.setCompleteRuleSetUsed(true);
 
-            Graph pag = fciGes.search();
+            Graph pag = GFci.search();
 
             pag = GraphUtils.replaceNodes(pag, _vars);
 

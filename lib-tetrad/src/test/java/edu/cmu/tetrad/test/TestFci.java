@@ -122,7 +122,7 @@ public class TestFci extends TestCase {
 //        FciMax fci = new FciMax(independenceTest);
 //        FciMax2 fci = new FciMax2(independenceTest);
         Fci fci = new Fci(independenceTest);
-//        FciGes fci = new FciGes(independenceTest);
+//        GFCI fci = new GFCI(independenceTest);
         fci.setVerbose(true);
         fci.setDepth(depth);
         fci.setMaxPathLength(maxPathLength);
