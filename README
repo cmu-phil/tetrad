@@ -7,7 +7,7 @@ This is a Maven port of an existing Ant-based project
 that's been under development for many years in the
 Department of Philosophy at Carnegie Mellon University.
 
-For istructions on how to set this project up in 
+For instructions on how to set this project up in 
 IntelliJ IDEA, see the Wiki. Alternatively, you can 
 run the lifecycle package target and launch the ejar 
 that is  built in the target directory, using the call
