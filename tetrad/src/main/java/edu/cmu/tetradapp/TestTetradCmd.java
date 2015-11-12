@@ -32,7 +32,7 @@ public class TestTetradCmd extends TestCase {
     }
 
     public void rtest1() {
-        new TetradCmd(new String[] {"-verbose", "-data", "sample_data/data1.txt",
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-verbose", "-data", "sample_data/data1.txt",
                      "-datatype", "continuous", "-algorithm", "pc", "-depth", "3",
                      "-significance", "0.001", "-knowledge", "sample_data/knowledge1.txt"});
 
@@ -41,7 +41,7 @@ public class TestTetradCmd extends TestCase {
 
 
     public void rtest2() {
-        new TetradCmd(new String[] {"-data", "sample_data/avatarwithdependencies.esv",
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "sample_data/avatarwithdependencies.esv",
                      "-datatype", "discrete", "-algorithm", "cpc", "-depth", "3",
                      "-significance", "0.001", "-knowledge", "sample_data/avatarknowledge.txt"});
 
@@ -49,7 +49,7 @@ public class TestTetradCmd extends TestCase {
     }
 
     public void test3() {
-        new TetradCmd(new String[] {"-data", "sample_data/eigenvox2.txt",
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "sample_data/eigenvox2.txt",
                      "-datatype", "continuous", "-algorithm", "cpc", "-depth", "3",
                      "-significance", "0.001", "-verbose", "-whitespace"});
 
@@ -57,7 +57,7 @@ public class TestTetradCmd extends TestCase {
     }
 
     public void test4() {
-        new TetradCmd(new String[] {"-covariance", "sample_data/lead.modified.txt",
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-covariance", "sample_data/lead.modified.txt",
                 "-algorithm", "cpc", "-depth", "3",
                 "-significance", "0.001", "-verbose", "-whitespace"});
 

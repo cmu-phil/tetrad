@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp;
+package edu.cmu.tetrad.cmd;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
@@ -481,8 +481,7 @@ public final class TetradCmd {
 
         if ("pc".equalsIgnoreCase(algorithmName)) {
             runPc();
-        }
-        if ("pc.stable".equalsIgnoreCase(algorithmName)) {
+        } else if ("pc.stable".equalsIgnoreCase(algorithmName)) {
             runPcStable();
         } else if ("cpc".equalsIgnoreCase(algorithmName)) {
             runCpc();
@@ -733,8 +732,7 @@ public final class TetradCmd {
             out.println(resultGraph);
 
             writeGraph(resultGraph);
-        }
-        else {
+        } else {
             Fci fci = new Fci(getIndependenceTest());
             fci.setDepth(getDepth());
             fci.setKnowledge(getKnowledge());
