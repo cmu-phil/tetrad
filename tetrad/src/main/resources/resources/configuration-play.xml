@@ -1735,24 +1735,6 @@
                 <params-class>edu.cmu.tetradapp.model.BasicSearchParams
                 </params-class>
             </model>
-            <model name="CCDGES" acronym="CCDGES" help="ccdges" category="PAG searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <!--<event id="knowledgeOrientations" description = "Knowledge orientations"/>-->
-                    <event id="colliderOrientations"
-                           description="Collider Orientations" default="on"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="underlines" description="Underlines" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.CcdGesRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
-                </editor-class>
-                <params-class>edu.cmu.tetradapp.model.BasicSearchParams
-                </params-class>
-            </model>
             <model name="GES" acronym="GES" help="ges"
                    category="Pattern Searches">
                 <logger>

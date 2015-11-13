@@ -26,14 +26,9 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.CcdGes;
 import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -884,61 +879,6 @@ public class TestFgs extends TestCase {
 
             out.println();
         }
-    }
-
-    public void test3() {
-        RandomUtil.getInstance().setSeed(1048284L);
-
-        Graph graph = new EdgeListGraph();
-
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
-        Node x6 = new GraphNode("X6");
-        Node x7 = new GraphNode("X7");
-        Node x8 = new GraphNode("X8");
-        Node x9 = new GraphNode("X9");
-
-        graph.addNode(x1);
-        graph.addNode(x2);
-        graph.addNode(x3);
-        graph.addNode(x4);
-        graph.addNode(x5);
-        graph.addNode(x6);
-        graph.addNode(x7);
-        graph.addNode(x8);
-        graph.addNode(x9);
-
-        graph.addDirectedEdge(x1, x2);
-        graph.addDirectedEdge(x2, x3);
-        graph.addDirectedEdge(x3, x4);
-        graph.addDirectedEdge(x4, x5);
-        graph.addDirectedEdge(x5, x1);
-
-        graph.addDirectedEdge(x5, x6);
-        graph.addDirectedEdge(x6, x7);
-        graph.addDirectedEdge(x7, x8);
-        graph.addDirectedEdge(x8, x5);
-
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
-
-//        FGS new FGS(data);
-//        ges.setVerbose(true);
-//        ges.setPenaltyDiscount(1);
-//
-//        Graph pattern = ges.search();
-//        System.out.println(pattern);
-
-        CcdGes ccd = new CcdGes(new IndTestFisherZ(data, 0.001));
-        ccd.setPenaltyDiscount(1.0);
-        ccd.setVerbose(true);
-        Graph graph2 = ccd.search();
-        System.out.println(graph2);
-
     }
 
     public void rtest5() {

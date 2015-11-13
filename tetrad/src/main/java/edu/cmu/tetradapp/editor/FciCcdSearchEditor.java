@@ -90,9 +90,6 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     public FciCcdSearchEditor(CcdRunner runner) {
         super(runner, "Result PAG");
     }
-    public FciCcdSearchEditor(CcdGesRunner runner) {
-        super(runner, "Result PAG");
-    }
 
     /**
      * Opens up an editor to let the user view the given GesRunner.
