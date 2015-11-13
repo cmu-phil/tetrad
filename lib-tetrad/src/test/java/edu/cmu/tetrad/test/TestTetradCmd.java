@@ -31,6 +31,8 @@ public class TestTetradCmd extends TestCase {
         super(name);
     }
 
+    // These files are in the wrong place...need to fix... TODO.
+
     public void rtest1() {
         new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-verbose", "-data", "sample_data/data1.txt",
                      "-datatype", "continuous", "-algorithm", "pc", "-depth", "3",
@@ -48,16 +50,16 @@ public class TestTetradCmd extends TestCase {
 
     }
 
-    public void test3() {
-        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "sample_data/eigenvox2.txt",
+    public void rtest3() {
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "eigenvox2.txt",
                      "-datatype", "continuous", "-algorithm", "cpc", "-depth", "3",
                      "-significance", "0.001", "-verbose", "-whitespace"});
 
 
     }
 
-    public void test4() {
-        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-covariance", "sample_data/lead.modified.txt",
+    public void rtest4() {
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-covariance", "lead.modified.txt",
                 "-algorithm", "cpc", "-depth", "3",
                 "-significance", "0.001", "-verbose", "-whitespace"});
 

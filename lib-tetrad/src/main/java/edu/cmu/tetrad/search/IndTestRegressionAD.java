@@ -32,12 +32,9 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.sem.EmpiricalCdf;
 import edu.cmu.tetrad.util.*;
-import edu.cmu.tetrad.util.dist.Distribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
-import org.apache.commons.math3.random.EmpiricalDistribution;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -45,7 +42,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.tanh;
 
 /**
