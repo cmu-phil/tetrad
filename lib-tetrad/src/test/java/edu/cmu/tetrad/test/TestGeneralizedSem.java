@@ -145,8 +145,8 @@ public class TestGeneralizedSem extends TestCase {
         }
     }
 
-    public void rtest2() {
-        RandomUtil.getInstance().setSeed(29483L);
+    public void test2() {
+        RandomUtil.getInstance().setSeed(29999483L);
 
         int sampleSize = 1000;
 
@@ -361,6 +361,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test5() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
@@ -389,6 +391,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test6() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         int numVars = 5;
 
         List<Node> nodes = new ArrayList<>();
@@ -419,6 +423,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test7() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         List<Node> nodes = new ArrayList<>();
         int numVars = 10;
 
@@ -441,6 +447,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test8() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         Node x = new GraphNode("X");
         Node y = new GraphNode("Y");
 
@@ -482,6 +490,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test9() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         try {
             Node x1 = new GraphNode("X1");
             Node x2 = new GraphNode("X2");
@@ -549,6 +559,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test10() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         try {
             Node x1 = new GraphNode("X1");
             Node x2 = new GraphNode("X2");
@@ -616,6 +628,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test11() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         try {
             Node x1 = new GraphNode("X1");
             Node x2 = new GraphNode("X2");
@@ -675,6 +689,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test12() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         try {
             Node x1 = new GraphNode("X1");
             Node x2 = new GraphNode("X2");
@@ -745,7 +761,9 @@ public class TestGeneralizedSem extends TestCase {
         }
     }
 
-    public void rtest13() {
+    public void test13() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         try {
             Node x1 = new GraphNode("X1");
             Node x2 = new GraphNode("X2");
@@ -815,6 +833,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test14() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         try {
             Node x1 = new GraphNode("X1");
             Node x2 = new GraphNode("X2");
@@ -878,6 +898,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test15() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         try {
             Node x1 = new GraphNode("X1");
             Node x2 = new GraphNode("X2");
@@ -938,6 +960,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test16() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         try {
             Node x1 = new GraphNode("X1");
             Node x2 = new GraphNode("X2");
@@ -1011,6 +1035,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test17() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         try {
             Node x1 = new GraphNode("X1");
             Node x2 = new GraphNode("X2");
@@ -1084,6 +1110,8 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test18() {
+        RandomUtil.getInstance().setSeed(29999483L);
+
         NumberFormat nf = new DecimalFormat("0.0000");
 
         try {

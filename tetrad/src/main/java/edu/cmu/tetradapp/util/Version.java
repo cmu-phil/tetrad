@@ -254,8 +254,8 @@ public class Version implements TetradSerializable {
 
 
     public String toString() {
-        return majorVersion() + "." + minorVersion() + "." + minorSubversion() +
-                "-" + incrementalRelease();
+        return majorVersion() + "." + minorVersion() + "." + minorSubversion()
+                + "-" + incrementalRelease();
     }
 
     //===========================PRIVATE METHODS=========================//

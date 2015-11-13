@@ -31,42 +31,38 @@ public class TestTetradCmd extends TestCase {
         super(name);
     }
 
-    // These files are in the wrong place...need to fix... TODO.
-
-    public void rtest1() {
-        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-verbose", "-data", "sample_data/data1.txt",
-                     "-datatype", "continuous", "-algorithm", "pc", "-depth", "3",
-                     "-significance", "0.001", "-knowledge", "sample_data/knowledge1.txt"});
+    public void test1() {
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "resources/avatarwithdependencies.esv",
+                "-datatype", "discrete", "-algorithm", "pc", "-depth", "3",
+                "-significance", "0.001", "-knowledge", "resources/avatarknowledge.txt"});
 
 
     }
 
 
-    public void rtest2() {
-        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "sample_data/avatarwithdependencies.esv",
+    public void test2() {
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "resources/avatarwithdependencies.esv",
                      "-datatype", "discrete", "-algorithm", "cpc", "-depth", "3",
-                     "-significance", "0.001", "-knowledge", "sample_data/avatarknowledge.txt"});
+                     "-significance", "0.001", "-knowledge", "resources/avatarknowledge.txt"});
 
 
     }
 
-    public void rtest3() {
-        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "eigenvox2.txt",
+    public void test3() {
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-data", "resources/eigenvox2.txt",
                      "-datatype", "continuous", "-algorithm", "cpc", "-depth", "3",
                      "-significance", "0.001", "-verbose", "-whitespace"});
 
 
     }
 
-    public void rtest4() {
-        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-covariance", "lead.modified.txt",
+    public void test4() {
+        new edu.cmu.tetrad.cmd.TetradCmd(new String[] {"-covariance", "resources/lead.modified.txt",
                 "-algorithm", "cpc", "-depth", "3",
                 "-significance", "0.001", "-verbose", "-whitespace"});
 
 
     }
-
-    public void test1() {}
 
     public static Test suite() {
         return new TestSuite(TestTetradCmd.class);

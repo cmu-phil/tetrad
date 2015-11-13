@@ -28,6 +28,9 @@ minor subversion. For example:
 No other string types are permitted; anything else will cause
 the lifecycle package goal to fail.
 
+This currently needs to be coordinated manually with the POM file.
+Might have to give this up.
+
 The configuration file that Tetrad uses is configuration.xml. The file
 configuration-post contains the version that's used for posting;
 configuration-play contains experimental items. Trying to figure out

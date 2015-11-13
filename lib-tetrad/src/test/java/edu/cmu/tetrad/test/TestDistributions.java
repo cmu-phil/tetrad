@@ -19,8 +19,11 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.util.dist;
+package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.util.dist.Distribution;
+import edu.cmu.tetrad.util.dist.Normal;
+import edu.cmu.tetrad.util.dist.Uniform;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
