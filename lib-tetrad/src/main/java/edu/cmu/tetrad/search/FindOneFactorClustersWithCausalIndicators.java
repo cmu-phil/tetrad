@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import com.sun.tools.jdi.IntegerValueImpl;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -193,7 +192,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 
     public Set<Set<Integer>> ESeeds = new HashSet<Set<Integer>>();
 
-    public List<Set<Integer>> CSeeds = new ArrayList<Set<Integer>>(Collections.nCopies(variables.size(),new HashSet()));
+    public List<Set<Integer>> CSeeds = new ArrayList<Set<Integer>>();
 
     public double CIparameter = .8;
 
