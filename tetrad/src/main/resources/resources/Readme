@@ -18,49 +18,18 @@ upload task is executed.
 The 'version' file normally contains a string of this form as
 its first line:
 
-    a.b.c-d
+    a.b.c
 
 where a is the major version, b the minor version, c the
-minor subversion, and d the incremental release. For example:
+minor subversion. For example:
 
-    4.3.1-5
-
-If it contains a string of this form, then the next time
-the upload task is called, the incremental release will be
-updated--e.g.:
-
-    4.3.1-6
-
-If some other version number should be updated, the string
-after that version number should be deleted. For instance,
-if the major version should be updated, the string should
-be modified to this:
-
-    4
-
-and at next upload this will become:
-
-    5.0.0-0
-
-and similarly if the minor version should be updated, the
-string should be truncated to this:
-
-    4.3
-
-and on upload this will become:
-
-    4.4.0-0
-
-and if the minor subversion should be updated, the string
-should be truncated to this:
-
-    4.3.1
-
-and on update this will become:
-
-    4.3.2-0
+    5.3.0
 
 No other string types are permitted; anything else will cause
-the upload task to fail.
+the lifecycle package goal to fail.
 
-Joseph Ramsey, jdramsey@andrew.cmu.edu
+The configuration file that Tetrad uses is configuration.xml. The file
+configuration-post contains the version that's used for posting;
+configuration-play contains experimental items. Trying to figure out
+how to get Tetrad to automatically choose between the latter using
+Maven but haven't figured it out yet.
