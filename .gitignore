@@ -3,4 +3,6 @@
 
 # IntelliJ IDEA files.
 .idea/**
-tetrad.iml
+tetrad/tetrad.iml
+lib-tetrad/lib-tetrad.iml
+tetrad-parent.iml
