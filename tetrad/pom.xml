@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!--<groupId>edu.cmu</groupId>-->
     <artifactId>tetrad</artifactId>
     <version>5.3.0-SNAPSHOT</version>
 
     <parent>
-      <groupId>edu.cmu</groupId>
-      <artifactId>tetrad-parent</artifactId>
-      <version>5.3.0-SNAPSHOT</version>
+        <groupId>edu.cmu</groupId>
+        <artifactId>tetrad-parent</artifactId>
+        <version>5.3.0-SNAPSHOT</version>
     </parent>
 
     <build>
@@ -35,7 +35,8 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>edu.cmu.tetradapp.Tetrad</Main-Class>
                                         <Permissions>all-permissions</Permissions>
@@ -124,16 +125,6 @@
         </dependency>
     </dependencies>
     <distributionManagement>
-        <!--<snapshotRepository>-->
-            <!--<id>InternalSnapshots</id>-->
-            <!--<name>Internal Snapshots</name>-->
-            <!--<url>http://192.168.16.232:8081/nexus/content/repositories/snapshots/</url>-->
-        <!--</snapshotRepository>-->
-        <!--<repository>-->
-            <!--<id>InternalReleases</id>-->
-            <!--<name>Internal Releases</name>-->
-            <!--<url>http://192.168.16.232:8081/nexus/content/repositories/releases/</url>-->
-        <!--</repository>-->
         <repository>
             <id>www.phil.cmu.edu_tetrad</id>
             <url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad_download/maven</url>
@@ -152,6 +143,6 @@
         <connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>
         <url>scm:git:git@github.com:cmu-phil/tetrad.git</url>
         <developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 </project>

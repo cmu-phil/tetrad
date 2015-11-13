@@ -10,15 +10,14 @@
         <version>5.3.0-SNAPSHOT</version>
     </parent>
 
-    <!--<groupId>edu.cmu</groupId>-->
     <artifactId>lib-tetrad</artifactId>
     <version>5.3.0-SNAPSHOT</version>
 
     <repositories>
-      <repository>
-	<id>lib</id>
-	<url>file://${basedir}/lib</url>
-      </repository>
+        <repository>
+            <id>lib</id>
+            <url>file://${basedir}/lib</url>
+        </repository>
     </repositories>
 
     <build>
@@ -44,7 +43,8 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>edu.cmu.tetrad.cmd.TetradCmd</Main-Class>
                                         <Permissions>all-permissions</Permissions>
@@ -59,6 +59,13 @@
                 </executions>
             </plugin>
         </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>2.10</version>
+            </extension>
+        </extensions>
     </build>
 
     <dependencies>
@@ -82,7 +89,6 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.4</version>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -108,13 +114,13 @@
             <artifactId>superactivity</artifactId>
             <version>5.6</version>
         </dependency>
-        <dependency>        <!-- -->
+        <dependency>
             <groupId>com.googlecode.matrix-toolkits-java</groupId>
             <artifactId>mtj</artifactId>
             <version>1.0.1</version>
         </dependency>
-
     </dependencies>
+
     <distributionManagement>
         <repository>
             <id>www.phil.cmu.edu_tetrad</id>
@@ -125,4 +131,16 @@
             <url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad/maven</url>
         </site>
     </distributionManagement>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <scm>
+        <connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>
+        <url>scm:git:git@github.com:cmu-phil/tetrad.git</url>
+        <developerConnection>scm:git:git@github.com:cmu-phil/tetrad.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
 </project>
