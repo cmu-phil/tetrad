@@ -75,9 +75,6 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static DiscreteDiscretizationSpec serializableInstance() {
         return new DiscreteDiscretizationSpec(new int[0],

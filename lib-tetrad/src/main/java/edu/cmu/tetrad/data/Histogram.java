@@ -142,7 +142,7 @@ public class Histogram {
     }
 
     /**
-     * Returns the counts for the histogram, one count for each target, in an integer array.
+     * @return the counts for the histogram, one count for each target, in an integer array.
      */
     public int[] getFrequencies() {
         if (target instanceof ContinuousVariable) {
@@ -232,21 +232,21 @@ public class Histogram {
     }
 
     /**
-     * Returns the data set for this histogram.
+     * @return the data set for this histogram.
      */
     public DataSet getDataSet() {
         return dataSet;
     }
 
     /**
-     * Returns the target node being histogrammed. Could be continuous or discrete.
+     * @return the target node being histogrammed. Could be continuous or discrete.
      */
     public String getTarget() {
         return target.getName();
     }
 
     /**
-     * Returns the number of bins for a continuous target.
+     * @return the number of bins for a continuous target.
      */
     public int getNumBins() {
         if (target instanceof DiscreteVariable) {

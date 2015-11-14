@@ -70,7 +70,7 @@ public class MultiDimIntTable {
     }
 
     /**
-     * Returns the index in the cells array for the cell at the given
+     * @return the index in the cells array for the cell at the given
      * coordinates.
      *
      * @param coords The coordinates of the cell. Each value must be less
@@ -91,7 +91,7 @@ public class MultiDimIntTable {
     }
 
     /**
-     * Returns an array containing the coordinates of the cell at the given
+     * @return an array containing the coordinates of the cell at the given
      * index in the cells array.
      *
      * @param cellIndex an <code>int</code> value
@@ -147,7 +147,7 @@ public class MultiDimIntTable {
     }
 
     /**
-     * Returns the value at the given coordinates.
+     * @return the value at the given coordinates.
      *
      * @param coords The coordinates of the table cell to update.
      * @return the new value at that table cell.
@@ -163,7 +163,7 @@ public class MultiDimIntTable {
     }
 
     /**
-     * Returns the number of cells.
+     * @return the number of cells.
      *
      * @return this number.
      */
@@ -172,7 +172,7 @@ public class MultiDimIntTable {
     }
 
     /**
-     * Returns the dimension array.
+     * @return the dimension array.
      *
      * @return this number.
      */
@@ -192,7 +192,7 @@ public class MultiDimIntTable {
     }
 
     /**
-     * Returns the number of dimensions.
+     * @return the number of dimensions.
      *
      * @return an <code>int</code> value
      */

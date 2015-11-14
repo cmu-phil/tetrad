@@ -383,7 +383,7 @@ public class FactorAnalysis {
     //================= MATRIX FUNCTIONS =================//
 
     /*
-     * Returns a vector that runs along the diagonal of the supplied 2D matrix.
+     * @return a vector that runs along the diagonal of the supplied 2D matrix.
      * If the matrix is not a square matrix, then it compiles what WOULD be the
      * diagonal if it were, starting from the upper-left corner.
      */

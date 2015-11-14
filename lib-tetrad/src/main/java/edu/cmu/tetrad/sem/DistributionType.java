@@ -62,7 +62,7 @@ public enum DistributionType {
     }
 
     /**
-     * Returns the name of the distribution. E.g. "Normal."
+     * @return the name of the distribution. E.g. "Normal."
      * @return the name of the distribution.
      */
     public String getName() {
@@ -70,7 +70,7 @@ public enum DistributionType {
     }
 
     /**
-     * Returns the function symbol. (For normal this is "N.")
+     * @return the function symbol. (For normal this is "N.")
      * @return the function symbol.
      */
     public String getFunctionSymbol() {
@@ -78,7 +78,7 @@ public enum DistributionType {
     }
 
     /**
-     * Returns the number of argument of the function. (For normal, this is 2.)
+     * @return the number of argument of the function. (For normal, this is 2.)
      * @return The number of arguments.
      */
     public int getNumArgs() {

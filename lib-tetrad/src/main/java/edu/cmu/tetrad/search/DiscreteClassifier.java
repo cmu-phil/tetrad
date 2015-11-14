@@ -30,12 +30,12 @@ package edu.cmu.tetrad.search;
 public interface DiscreteClassifier {
 
     /**
-     * Returns an array with a classification (estimated value) of a target variable for each case in a DataSet.
+     * @return an array with a classification (estimated value) of a target variable for each case in a DataSet.
      */
     int[] classify();
 
     /**
-     * Returns the double subscripted int array containing the "confusion matrix" of coefs of estimated versus observed
+     * @return the double subscripted int array containing the "confusion matrix" of coefs of estimated versus observed
      * values of the target variable.
      */
     int[][] crossTabulation();

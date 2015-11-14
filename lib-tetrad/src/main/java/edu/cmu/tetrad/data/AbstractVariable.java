@@ -72,7 +72,7 @@ public abstract class AbstractVariable implements Variable {
     }
 
     /**
-     * Returns the missing value marker as an Object.
+     * @return the missing value marker as an Object.
      */
     public abstract Object getMissingValueMarker();
 
@@ -99,7 +99,7 @@ public abstract class AbstractVariable implements Variable {
     }
 
     /**
-     * Returns the name of this variable.
+     * @return the name of this variable.
      */
     public final String getName() {
         return name;
@@ -127,7 +127,7 @@ public abstract class AbstractVariable implements Variable {
     }
 
     /**
-     * Returns a String representation of this variable.  Specifically, the name
+     * @return a String representation of this variable.  Specifically, the name
      * of the variable is returned.
      */
     public String toString() {

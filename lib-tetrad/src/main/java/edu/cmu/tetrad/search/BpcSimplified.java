@@ -543,7 +543,7 @@ public class BpcSimplified {
 
 
     /**
-     * Returns the converted search graph, or null if there is no model.
+     * @return the converted search graph, or null if there is no model.
      */
     private Graph convertSearchGraph(List<int[]> clusters) {
         Graph graph = new EdgeListGraph(variables);
@@ -829,7 +829,7 @@ public class BpcSimplified {
 //    }
 
 //    /**
-//     * Returns true iff "newClique" is contained in some element of "clustering".
+//     * @return true iff "newClique" is contained in some element of "clustering".
 //     */
 //
 //    private boolean cliqueContained(int newClique[], int size, List clustering) {

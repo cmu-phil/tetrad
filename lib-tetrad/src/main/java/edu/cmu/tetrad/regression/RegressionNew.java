@@ -51,7 +51,7 @@ public interface RegressionNew {
     RegressionResult regress(Node target, List<Node> regressors);
 
     /**
-     * Returns the graph of significant regressors into the target.
+     * @return the graph of significant regressors into the target.
      * @return This graph.
      */
     Graph getGraph();

@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Returns a sample empirical distribution for a particular expression.
+ * @return a sample empirical distribution for a particular expression.
  */
 public class EmpiricalDistributionForExpression {
     private GeneralizedSemPm semPm;

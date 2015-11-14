@@ -93,7 +93,7 @@ public class RegressionDatasetGeneralized implements Regression {
     }
 
     /**
-     * Returns the graph of signifiocant regressors into the target.
+     * @return the graph of signifiocant regressors into the target.
      * @return This graph.
      */
     public Graph getGraph() {

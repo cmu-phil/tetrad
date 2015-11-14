@@ -103,9 +103,6 @@ public class StandardizedSemIm implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static StandardizedSemIm serializableInstance() {
         return new StandardizedSemIm(SemIm.serializableInstance());
@@ -619,14 +616,14 @@ public class StandardizedSemIm implements TetradSerializable {
     }
 
     /**
-     * Returns a copy of the implied covariance matrix over all the variables.
+     * @return a copy of the implied covariance matrix over all the variables.
      */
     public TetradMatrix getImplCovar() {
         return implCovar().copy();
     }
 
     /**
-     * Returns a copy of the implied covariance matrix over the measured
+     * @return a copy of the implied covariance matrix over the measured
      * variables only.
      */
     public TetradMatrix getImplCovarMeas() {
@@ -802,9 +799,6 @@ public class StandardizedSemIm implements TetradSerializable {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
-         *
-         * @see edu.cmu.TestSerialization
-         * @see edu.cmu.tetradapp.util.TetradSerializableUtils
          */
         public static ParameterRange serializableInstance() {
             return new ParameterRange(Edge.serializableInstance(), 1.0, 1.0, 1.0);

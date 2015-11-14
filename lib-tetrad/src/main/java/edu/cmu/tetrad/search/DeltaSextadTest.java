@@ -129,9 +129,6 @@ public class DeltaSextadTest implements IDeltaSextadTest {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static IDeltaSextadTest serializableInstance() {
         return new DeltaSextadTest(ColtDataSet.serializableInstance());
@@ -398,7 +395,7 @@ public class DeltaSextadTest implements IDeltaSextadTest {
     }
 
     /**
-     * Returns the p value for the most recent test.
+     * @return the p value for the most recent test.
      */
     @Override
     public double getPValue() {

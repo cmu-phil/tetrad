@@ -124,7 +124,7 @@ public class TetradLogger {
 
 
     /**
-     * Returns the singleton instance of the <code>TetradLogger</code>.
+     * @return the singleton instance of the <code>TetradLogger</code>.
      *
      * @return - instance
      */
@@ -229,7 +229,7 @@ public class TetradLogger {
 
 
     /**
-     * Returns the <code>TetradLoggerConfig</code> associated with the given model.
+     * @return the <code>TetradLoggerConfig</code> associated with the given model.
      *
      * @param clazz
      * @return - config
@@ -474,7 +474,7 @@ public class TetradLogger {
     }
 
     /**
-     * Returns the logging prefix.
+     * @return the logging prefix.
      *
      * @return - prefix
      */
@@ -561,7 +561,7 @@ public class TetradLogger {
 
 
     /**
-     * Returns the the default logging directory.
+     * @return the the default logging directory.
      *
      * @return - logging directory.
      */
@@ -678,9 +678,6 @@ public class TetradLogger {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
-         *
-         * @see edu.cmu.TestSerialization
-         * @see edu.cmu.tetradapp.util.TetradSerializableUtils
          */
         public static EmptyConfig serializableInstance() {
             return new EmptyConfig(true);

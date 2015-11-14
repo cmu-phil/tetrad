@@ -35,18 +35,18 @@ public interface ManipulatingBayesUpdater extends BayesUpdater {
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns the Bayes instantiated model after manipulations have been
+     * @return the Bayes instantiated model after manipulations have been
      * applied.
      */
     BayesIm getManipulatedBayesIm();
 
     /**
-     * Returns the graph for the manipulated BayesIm.
+     * @return the graph for the manipulated BayesIm.
      */
     Graph getManipulatedGraph();
 
     /**
-     * Returns a defensive copy of the evidence.
+     * @return a defensive copy of the evidence.
      */
     Evidence getEvidence();
 
@@ -57,14 +57,14 @@ public interface ManipulatingBayesUpdater extends BayesUpdater {
     void setEvidence(Evidence evidence);
 
     /**
-     * Returns the updated Bayes IM--that is, the Bayes IM in which all
+     * @return the updated Bayes IM--that is, the Bayes IM in which all
      * probabilities of variables conditional on their parents have been
      * updated.
      */
     BayesIm getUpdatedBayesIm();
 
     /**
-     * Returns P(variable==category | evidence) where evience is getEvidence().
+     * @return P(variable==category | evidence) where evience is getEvidence().
      */
     double getMarginal(int variable, int category);
 

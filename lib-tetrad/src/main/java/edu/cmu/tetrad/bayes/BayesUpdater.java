@@ -41,18 +41,18 @@ public interface BayesUpdater extends TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns P(variable=value | evidence), where evidence is
+     * @return P(variable=value | evidence), where evidence is
      * getEvidence().
      */
     double getMarginal(int variable, int category);
 
     /**
-     * Returns true if the getJointMarginal() method is supported.
+     * @return true if the getJointMarginal() method is supported.
      */
     boolean isJointMarginalSupported();
 
     /**
-     * Returns P(variables[i] == values[i] | evidence), where evidence is
+     * @return P(variables[i] == values[i] | evidence), where evidence is
      * getEvidence().
      */
     double getJointMarginal(int[] variables, int[] values);
@@ -64,7 +64,7 @@ public interface BayesUpdater extends TetradSerializable {
     void setEvidence(Evidence evidence);
 
     /**
-     * Returns the Bayes instantiated model that is being updated.
+     * @return the Bayes instantiated model that is being updated.
      */
     BayesIm getBayesIm();
 

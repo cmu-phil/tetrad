@@ -31,7 +31,7 @@ package edu.cmu.tetrad.util;
 public interface Function {
 
     /**
-     * Returns the value of the function at the given point.
+     * @return the value of the function at the given point.
      *
      * @param x the domain value
      * @return the range value
@@ -39,7 +39,7 @@ public interface Function {
     double valueAt(double x);
 
     /**
-     * Returns a string name or description of the function.
+     * @return a string name or description of the function.
      *
      * @return this name or description.
      */

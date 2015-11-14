@@ -14,4 +14,28 @@
         <module>tetrad</module>
         <module>lib-tetrad</module>
     </modules>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+                <configuration>
+                    <aggregate>true</aggregate>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <distributionManagement>
+        <repository>
+            <id>www.phil.cmu.edu_tetrad</id>
+            <url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad_download/maven</url>
+        </repository>
+        <site>
+            <id>www.phil.cmu.edu_tetrad</id>
+            <url>scp://tetrad@www.phil.cmu.edu/home/tetrad/public_html/tetrad/maven</url>
+        </site>
+    </distributionManagement>
 </project>

@@ -39,7 +39,7 @@ public interface DataModel
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns the name of the data model (may be null).
+     * @return the name of the data model (may be null).
      */
     String getName();
 

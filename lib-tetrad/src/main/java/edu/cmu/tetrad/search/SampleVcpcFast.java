@@ -202,7 +202,7 @@ public final class SampleVcpcFast implements GraphSearch {
     }
 
     /**
-     * Returns true just in case edges will not be added if they would create cycles.
+     * @return true just in case edges will not be added if they would create cycles.
      */
     public boolean isAggressivelyPreventCycles() {
         return this.aggressivelyPreventCycles;
@@ -233,14 +233,14 @@ public final class SampleVcpcFast implements GraphSearch {
     }
 
     /**
-     * Returns the elapsed time of search in milliseconds, after <code>search()</code> has been run.
+     * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
     public final long getElapsedTime() {
         return this.elapsedTime;
     }
 
     /**
-     * Returns the knowledge specification used in the search. Non-null.
+     * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
         return knowledge;
@@ -254,7 +254,7 @@ public final class SampleVcpcFast implements GraphSearch {
     }
 
     /**
-     * Returns the independence test used in the search, set in the constructor. This is not returning a copy, for fear
+     * @return the independence test used in the search, set in the constructor. This is not returning a copy, for fear
      * of duplicating the data set!
      */
     public IndependenceTest getIndependenceTest() {
@@ -262,7 +262,7 @@ public final class SampleVcpcFast implements GraphSearch {
     }
 
     /**
-     * Returns the depth of the search--that is, the maximum number of variables conditioned on in any conditional
+     * @return the depth of the search--that is, the maximum number of variables conditioned on in any conditional
      * independence test.
      */
     public int getDepth() {
@@ -270,7 +270,7 @@ public final class SampleVcpcFast implements GraphSearch {
     }
 
     /**
-     * Returns the set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
+     * @return the set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
     public Set<Triple> getAmbiguousTriples() {
@@ -279,7 +279,7 @@ public final class SampleVcpcFast implements GraphSearch {
 
 
     /**
-     * Returns the set of collider triples found during the most recent run of the algorithm. Non-null after a call to
+     * @return the set of collider triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
     public Set<Triple> getColliderTriples() {
@@ -287,7 +287,7 @@ public final class SampleVcpcFast implements GraphSearch {
     }
 
     /**
-     * Returns the set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
+     * @return the set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
      * to <code>search()</code>.
      */
     public Set<Triple> getNoncolliderTriples() {
@@ -295,7 +295,7 @@ public final class SampleVcpcFast implements GraphSearch {
     }
 
     /**
-     * Returns the set of all triples found during the most recent run of the algorithm. Non-null after a call to
+     * @return the set of all triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
     public Set<Triple> getAllTriples() {

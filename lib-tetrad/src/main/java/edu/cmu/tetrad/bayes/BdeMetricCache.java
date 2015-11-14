@@ -799,7 +799,7 @@ public final class BdeMetricCache {
     }
 
     /**
-     * Returns the index of that variable (column) in the dataset associated
+     * @return the index of that variable (column) in the dataset associated
      * with the String in the argument.  Usually in the above code the name
      * comes from a node in the graph of the BayesPm.
      */

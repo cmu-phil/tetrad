@@ -85,7 +85,7 @@ public final class Parameter implements TetradSerializable {
     private boolean fixed = false;
 
     /**
-     * Returns true iff this parameter should be initialized randomly.
+     * @return true iff this parameter should be initialized randomly.
      *
      * @serial Any value.
      */
@@ -152,9 +152,6 @@ public final class Parameter implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Parameter serializableInstance() {
         return new Parameter("X", ParamType.COEF, new GraphNode("X"),
@@ -164,7 +161,7 @@ public final class Parameter implements TetradSerializable {
     //================================PUBLIC METHODS===================//
 
     /**
-     * Returns the name of the parameter.
+     * @return the name of the parameter.
      */
     public String getName() {
         return name;
@@ -190,7 +187,7 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
-     * Returns a string representation for this parameter.
+     * @return a string representation for this parameter.
      */
     public String toString() {
         return "<" + this.name + ", " + this.type + ", " + this.nodeA + ", " +
@@ -198,21 +195,21 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
-     * Returns the "from" node for the edge this parameter is associated with.
+     * @return the "from" node for the edge this parameter is associated with.
      */
     public Node getNodeA() {
         return nodeA;
     }
 
     /**
-     * Returns the "to" node for the edge this parameter is associated with.
+     * @return the "to" node for the edge this parameter is associated with.
      */
     public Node getNodeB() {
         return nodeB;
     }
 
     /**
-     * Returns the type of this parameter--ParamType.COEF or ParamType.COVAR.
+     * @return the type of this parameter--ParamType.COEF or ParamType.COVAR.
      * This is set at construction time.
      */
     public ParamType getType() {
@@ -220,7 +217,7 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
-     * Returns the distributions that initial values should be drawn from for
+     * @return the distributions that initial values should be drawn from for
      * this parameter.
      */
     public Distribution getDistribution() {
@@ -242,7 +239,7 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
-     * Returns true iff this parameter should be held fixed during estimation.
+     * @return true iff this parameter should be held fixed during estimation.
      */
     public boolean isFixed() {
         return fixed;
@@ -258,7 +255,7 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
-     * Returns the starting value if this is a fixed parameter.
+     * @return the starting value if this is a fixed parameter.
      */
     public double getStartingValue() {
         return startingValue;
@@ -272,7 +269,7 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
-     * Returns true iff this parameter should be initialized randomly by drawing
+     * @return true iff this parameter should be initialized randomly by drawing
      * an initial value from its preset random distribution.
      */
     public boolean isInitializedRandomly() {

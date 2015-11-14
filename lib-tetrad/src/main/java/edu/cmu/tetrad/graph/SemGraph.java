@@ -221,9 +221,6 @@ public final class SemGraph implements Graph, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemGraph serializableInstance() {
         return new SemGraph();
@@ -232,7 +229,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     //============================PUBLIC METHODS==========================//
 
     /**
-     * Returns the error node associated with the given node, or null if the
+     * @return the error node associated with the given node, or null if the
      * node has no associated error node.
      */
     public Node getErrorNode(Node node) {
@@ -381,7 +378,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     /**
-     * Returns true iff either node associated with edge is an error term.
+     * @return true iff either node associated with edge is an error term.
      */
     public static boolean isErrorEdge(Edge edge) {
         return (edge.getNode1().getNodeType() == NodeType.ERROR ||
@@ -389,7 +386,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     /**
-     * Returns the variable node for this node--that is, the associated node, if
+     * @return the variable node for this node--that is, the associated node, if
      * this is an error node, or the node itself, if it is not.
      */
     public Node getVarNode(Node node) {
@@ -412,7 +409,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     /**
-     * Returns the exogenous node for the given node--either the error node for
+     * @return the exogenous node for the given node--either the error node for
      * the node, if there is one, or else the node itself, it it's exogenous.
      * @param node the node you want the exogenous node for.
      * @return the exogenous node for that node.
@@ -1062,7 +1059,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     /**
-     * Returns true iff the given (non-error) term ought to be exogenous.
+     * @return true iff the given (non-error) term ought to be exogenous.
      */
     private boolean shouldBeExogenous(Node node) {
         List<Node> parents = getGraph().getParents(node);

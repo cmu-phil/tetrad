@@ -256,7 +256,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     /**
-     * Returns true if it is assumed that all path pairs with one length 1 path do not cancel.
+     * @return true if it is assumed that all path pairs with one length 1 path do not cancel.
      */
     public boolean isFaithfulnessAssumed() {
         return this.faithfulnessAssumed;
@@ -318,7 +318,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     /**
-     * Returns the background knowledge.
+     * @return the background knowledge.
      */
     public IKnowledge getKnowledge() {
         return knowledge;
@@ -383,21 +383,21 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     /**
-     * Returns the score of the given DAG, up to a constant.
+     * @return the score of the given DAG, up to a constant.
      */
     public double getScore(Graph dag) {
         return scoreDag(dag);
     }
 
     /**
-     * Returns the list of top scoring graphs.
+     * @return the list of top scoring graphs.
      */
     public SortedSet<ScoredGraph> getTopGraphs() {
         return topGraphs;
     }
 
     /**
-     * Returns the number of patterns to store.
+     * @return the number of patterns to store.
      */
     public int getNumPatternsToStore() {
         return numPatternsToStore;
@@ -415,7 +415,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     /**
-     * Returns the discrete scoring function being used. By default, BDeu.
+     * @return the discrete scoring function being used. By default, BDeu.
      */
     public LocalDiscreteScore getDiscreteScore() {
         return discreteScore;
@@ -443,7 +443,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     /**
-     * Returns the initial graph for the search. The search is initialized to this graph and
+     * @return the initial graph for the search. The search is initialized to this graph and
      * proceeds from there.
      */
     public Graph getInitialGraph() {
@@ -482,14 +482,14 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     /**
-     * Returns the output stream that output (except for log output) should be sent to.
+     * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
         return out;
     }
 
     /**
-     * Returns the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
+     * @return the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
      * will not be added.
      */
     public Graph getAdjacencies() {
@@ -505,7 +505,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     /**
-     * Returns the depth for the forward reevaluation step.
+     * @return the depth for the forward reevaluation step.
      */
     public int getDepth() {
         return depth;

@@ -39,9 +39,6 @@ public final class MeasuredLatentOnly implements GraphConstraint {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static MeasuredLatentOnly serializableInstance() {
         return new MeasuredLatentOnly();
@@ -50,14 +47,14 @@ public final class MeasuredLatentOnly implements GraphConstraint {
     //=============================PUBLIC METHODS=========================//
 
     /**
-     * Returns true.
+     * @return true.
      */
     public boolean isEdgeAddable(Edge edge, Graph graph) {
         return true;
     }
 
     /**
-     * Returns true iff the given node is either an observed or a latent node.
+     * @return true iff the given node is either an observed or a latent node.
      */
     public boolean isNodeAddable(Node node, Graph graph) {
         NodeType type = node.getNodeType();
@@ -65,21 +62,21 @@ public final class MeasuredLatentOnly implements GraphConstraint {
     }
 
     /**
-     * Returns true;
+     * @return true;
      */
     public boolean isEdgeRemovable(Edge edge, Graph graph) {
         return true;
     }
 
     /**
-     * Returns true.
+     * @return true.
      */
     public boolean isNodeRemovable(Node node, Graph graph) {
         return true;
     }
 
     /**
-     * Returns a string representation of the constraint.
+     * @return a string representation of the constraint.
      */
     public String toString() {
         return "<Measured and latent nodes only.>";

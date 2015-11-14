@@ -55,9 +55,6 @@ public final class Endpoint implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Endpoint serializableInstance() {
         return Endpoint.TAIL;

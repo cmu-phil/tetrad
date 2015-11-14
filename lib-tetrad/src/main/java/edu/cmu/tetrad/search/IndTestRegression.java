@@ -209,7 +209,7 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
-     * Returns the probability associated with the most recently computed independence test.
+     * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fishersZ)));
@@ -235,7 +235,7 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinine independence
+     * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
@@ -243,7 +243,7 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
-     * Returns the variable with the given name.
+     * @return the variable with the given name.
      */
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
@@ -258,7 +258,7 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variable varNames.
+     * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();

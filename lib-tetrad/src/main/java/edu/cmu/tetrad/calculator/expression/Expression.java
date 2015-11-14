@@ -45,17 +45,17 @@ public interface Expression extends TetradSerializable {
     double evaluate(Context context);
 
     /**
-     * Returns the token for this expression=="+".
+     * @return the token for this expression=="+".
      */
     String getToken();
 
     /**
-     * Returns the position, infix or not.
+     * @return the position, infix or not.
      */
     ExpressionDescriptor.Position getPosition();
 
     /**
-     * Returns the sub expressions of this expression.     
+     * @return the sub expressions of this expression.
      */
     List<Expression> getExpressions();
 

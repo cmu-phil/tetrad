@@ -102,8 +102,6 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
      */
     public static CptInvariantUpdater serializableInstance() {
         return new CptInvariantUpdater(MlBayesIm.serializableInstance());

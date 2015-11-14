@@ -298,7 +298,7 @@ public class Ricf {
     }
 
     /**
-     * Returns an enumeration of the cliques of the given graph considered as undirected.
+     * @return an enumeration of the cliques of the given graph considered as undirected.
      */
     public List<List<Node>> cliques(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -594,7 +594,7 @@ public class Ricf {
     }
 
     /**
-     * Returns true if j is adjacent to all the nodes in l1.
+     * @return true if j is adjacent to all the nodes in l1.
      */
     private boolean addable(int j, SortedSet<Integer> L1, Graph graph, List<Node> nodes) {
         for (int k : L1) {

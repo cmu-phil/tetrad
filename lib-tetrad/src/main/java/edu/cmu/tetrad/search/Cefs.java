@@ -305,42 +305,42 @@ public final class Cefs {
     }
 
     /**
-     * Returns the set of triples identified as ambiguous by the CPC algorithm during the most recent search.
+     * @return the set of triples identified as ambiguous by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<Triple>(ambiguousTriples);
     }
 
     /**
-     * Returns the set of triples identified as colliders by the CPC algorithm during the most recent search.
+     * @return the set of triples identified as colliders by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getColliderTriples() {
         return colliderTriples;
     }
 
     /**
-     * Returns the set of triples identified as noncolliders by the CPC algorithm during the most recent search.
+     * @return the set of triples identified as noncolliders by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getNoncolliderTriples() {
         return noncolliderTriples;
     }
 
     /**
-     * Returns the number of independence tests performed during the most recent search.
+     * @return the number of independence tests performed during the most recent search.
      */
     public long getNumIndependenceTests() {
         return numIndependenceTests;
     }
 
     /**
-     * Returns the target of the most recent search.
+     * @return the target of the most recent search.
      */
     public Node getTarget() {
         return target;
     }
 
     /**
-     * Returns the elapsed time of the most recent search.
+     * @return the elapsed time of the most recent search.
      */
     public double getElapsedTime() {
         return elapsedTime;
@@ -361,21 +361,21 @@ public final class Cefs {
     }
 
     /**
-     * Returns the depth of the most recent search.
+     * @return the depth of the most recent search.
      */
     public int getDepth() {
         return this.depth;
     }
 
     /**
-     * Returns the result graph of the most recent search.
+     * @return the result graph of the most recent search.
      */
     public Graph resultGraph() {
         return resultGraph;
     }
 
     /**
-     * Returns just the Markov blanket (not the Markov blanket DAG).
+     * @return just the Markov blanket (not the Markov blanket DAG).
      */
     public List<Node> findMb(String targetName) {
         Graph graph = search(targetName);
@@ -385,14 +385,14 @@ public final class Cefs {
     }
 
     /**
-     * Returns the independence test set in the constructor.
+     * @return the independence test set in the constructor.
      */
     public IndependenceTest getTest() {
         return test;
     }
 
     /**
-     * Returns the most recently set Knowledge object.
+     * @return the most recently set Knowledge object.
      */
     public IKnowledge getKnowledge() {
         return knowledge;
@@ -736,7 +736,7 @@ public final class Cefs {
     }
 
     /**
-     * Returns true just in case z is a possible parent of x, in the sense that edges are not forbidden from z to x, and
+     * @return true just in case z is a possible parent of x, in the sense that edges are not forbidden from z to x, and
      * edges are not required from either x to z, according to background knowledge.
      */
     private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {

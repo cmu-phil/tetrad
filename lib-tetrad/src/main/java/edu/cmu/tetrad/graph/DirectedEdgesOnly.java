@@ -38,9 +38,6 @@ public final class DirectedEdgesOnly implements GraphConstraint {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static DirectedEdgesOnly serializableInstance() {
         return new DirectedEdgesOnly();
@@ -50,35 +47,35 @@ public final class DirectedEdgesOnly implements GraphConstraint {
 
 
     /**
-     * Returns true iff the given edge is a directed edge.
+     * @return true iff the given edge is a directed edge.
      */
     public boolean isEdgeAddable(Edge edge, Graph graph) {
         return Edges.isDirectedEdge(edge);
     }
 
     /**
-     * Returns true;
+     * @return true;
      */
     public boolean isNodeAddable(Node node, Graph graph) {
         return true;
     }
 
     /**
-     * Returns true;
+     * @return true;
      */
     public boolean isEdgeRemovable(Edge edge, Graph graph) {
         return true;
     }
 
     /**
-     * Returns true;
+     * @return true;
      */
     public boolean isNodeRemovable(Node node, Graph graph) {
         return true;
     }
 
     /**
-     * Returns a string representation of the constraint.
+     * @return a string representation of the constraint.
      */
     public String toString() {
         return "<Directed edges only.>";

@@ -304,7 +304,7 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     /**
-     * Returns true if the edge parent-->child exists in the graph.
+     * @return true if the edge parent-->child exists in the graph.
      */
     private boolean edgeExists() {
         for (int i = 1; i < parentMatrix[randomChild][0]; i++) {
@@ -316,7 +316,7 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     /**
-     * Returns true if the graph is still acyclic after the last edge was added.
+     * @return true if the graph is still acyclic after the last edge was added.
      * This method only works after adding an edge, not after removing an edge.
      */
     private boolean isAcyclic() {

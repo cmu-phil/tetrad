@@ -45,22 +45,22 @@ public interface ExpressionDescriptor extends  TetradSerializable {
     }
 
     /**
-     * Returns the name that the expressions is known under.
+     * @return the name that the expressions is known under.
      */
     public String getName();
 
     /**
-     * Returns the token that represents the expression, such as "+".
+     * @return the token that represents the expression, such as "+".
      */
     public String getToken();
 
     /**
-     * Returns the signature that should be used.
+     * @return the signature that should be used.
      */
     public ExpressionSignature getSignature();
 
     /**
-     * Returns the position that the expression can occur in.     
+     * @return the position that the expression can occur in.
      */
     Position getPosition();
 

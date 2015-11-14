@@ -178,8 +178,6 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
      */
     public static BayesPm serializableInstance() {
         return new BayesPm(Dag.serializableInstance());
@@ -188,14 +186,14 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     //=========================PUBLIC METHODS=============================//
 
     /**
-     * Returns the DAG as a Graph.
+     * @return the DAG as a Graph.
      */
     public Dag getDag() {
         return this.dag;
     }
 
     /**
-     * Returns the number of values for the given node.
+     * @return the number of values for the given node.
      */
     public int getNumCategories(Node node) {
         DiscreteVariable variable = nodesToVariables.get(node);
@@ -208,7 +206,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     }
 
     /**
-     * Returns the index'th value for the given node.
+     * @return the index'th value for the given node.
      */
     public String getCategory(Node node, int index) {
         DiscreteVariable variable = nodesToVariables.get(node);
@@ -231,7 +229,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     }
 
     /**
-     * Returns the index of the given category for the given node.
+     * @return the index of the given category for the given node.
      */
     public int getCategoryIndex(Node node, String category) {
         DiscreteVariable variable = nodesToVariables.get(node);
@@ -324,7 +322,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     }
 
     /**
-     * Returns the list of measured variableNodes.
+     * @return the list of measured variableNodes.
      */
     public List<Node> getMeasuredNodes() {
         List<Node> measuredNodes = new ArrayList<Node>();

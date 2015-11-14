@@ -64,11 +64,7 @@ public class Uniform implements Distribution {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public static Uniform serializableInstance() {
         return new Uniform(0, 1);
     }
@@ -90,7 +86,7 @@ public class Uniform implements Distribution {
     }
 
     /**
-     * Returns the value of the ith parameter.
+     * @return the value of the ith parameter.
      */
     public double getParameter(int index) {
         if (index == 0) {
@@ -113,14 +109,14 @@ public class Uniform implements Distribution {
     }
 
     /**
-     * Returns the number of parameters = 2.
+     * @return the number of parameters = 2.
      */
     public int getNumParameters() {
         return 2;
     }
 
     /**
-     * Returns the next random sample from the distribution.
+     * @return the next random sample from the distribution.
      */
     public double nextRandom() {
         return RandomUtil.getInstance().nextUniform(a, b);

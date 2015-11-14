@@ -192,7 +192,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Returns the probability associated with the most recently computed independence test.
+     * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
         return this.pValue;
@@ -218,7 +218,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinine independence
+     * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
@@ -226,7 +226,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Returns the variable with the given name.
+     * @return the variable with the given name.
      */
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
@@ -240,7 +240,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variable varNames.
+     * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
@@ -291,7 +291,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Returns a string representation of this test.
+     * @return a string representation of this test.
      */
     public String toString() {
         return "Fisher Z, Fisher P Value Percent = " + round(percent * 100);

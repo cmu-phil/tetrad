@@ -93,9 +93,6 @@ public final class DataModelList extends AbstractList<DataModel>
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static DataModelList serializableInstance() {
         return new DataModelList();
@@ -104,7 +101,7 @@ public final class DataModelList extends AbstractList<DataModel>
     //===========================PUBLIC METHODS (see AbstractList too)===//
 
     /**
-     * Returns the model at the given index. Required for AbstractList.
+     * @return the model at the given index. Required for AbstractList.
      *
      * @return this model, as an Object.
      */
@@ -113,7 +110,7 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
-     * Returns the size of the getModel list. Required for AbstractList.
+     * @return the size of the getModel list. Required for AbstractList.
      */
     public int size() {
         return modelList.size();
@@ -136,7 +133,7 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
-     * Returns the list of variable names for columns, in order.
+     * @return the list of variable names for columns, in order.
      */
     public List<String> getVariableNames() {
         return getSelectedModel().getVariableNames();
@@ -172,7 +169,7 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
-     * Returns the model that is currently selected. The default is the first
+     * @return the model that is currently selected. The default is the first
      * model. If there are no models in the list, null is returned.
      */
     public DataModel getSelectedModel() {
@@ -214,7 +211,7 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
-     * Returns a string representation of the data model list.
+     * @return a string representation of the data model list.
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();

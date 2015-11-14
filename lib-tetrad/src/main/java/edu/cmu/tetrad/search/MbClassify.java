@@ -384,14 +384,14 @@ public class MbClassify implements DiscreteClassifier {
     }
 
     /**
-     * Returns the cross-tabulation from the classify method. The classify method must be run first.
+     * @return the cross-tabulation from the classify method. The classify method must be run first.
      */
     public int[][] crossTabulation() {
         return crossTabulation;
     }
 
     /**
-     * Returns the percent correct from the classify method. The classify method must be run first.
+     * @return the percent correct from the classify method. The classify method must be run first.
      */
     public double getPercentCorrect() {
         return percentCorrect;

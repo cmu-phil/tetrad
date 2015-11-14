@@ -102,7 +102,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     //===========================PUBLIC METHODS=========================//
 
     /**
-     * Returns the estimated probability for the given cell. The order of the
+     * @return the estimated probability for the given cell. The order of the
      * variable values is the order of the variables in getVariable().
      */
     public double getCellProb(int[] variableValues) {
@@ -131,7 +131,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * Returns the estimated probability of the given proposition.
+     * @return the estimated probability of the given proposition.
      */
     public double getProb(Proposition assertion) {
         int[] point = new int[dims.length];
@@ -159,7 +159,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * Returns the estimated conditional probability for the given assertion
+     * @return the estimated conditional probability for the given assertion
      * conditional on the given condition.
      */
     public double getConditionalProb(Proposition assertion,
@@ -259,14 +259,14 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * Returns the dataset that this is estimating probabilities for.
+     * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
         return dataSet;
     }
 
     /**
-     * Returns the list of variables for the dataset that this is estimating
+     * @return the list of variables for the dataset that this is estimating
      * probabilities for.
      */
     public List<Node> getVariables() {

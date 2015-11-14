@@ -151,9 +151,6 @@ public final class BayesUpdaterClassifier
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static BayesUpdaterClassifier serializableInstance() {
         return new BayesUpdaterClassifier(MlBayesIm.serializableInstance(),

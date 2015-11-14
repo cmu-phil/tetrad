@@ -72,9 +72,6 @@ public class ParamConstraint implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static ParamConstraint serializableInstance() {
         //return new ParamConstraint(SemIm.serializableInstance(), new Parameter("X", ParamType.COEF, new GraphNode("X"),

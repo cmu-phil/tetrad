@@ -66,8 +66,6 @@ public class PointXy implements TetradSerializable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      * @return the examplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     @SuppressWarnings({"UnusedDeclaration"})
     public static PointXy serializableInstance() {
@@ -77,7 +75,7 @@ public class PointXy implements TetradSerializable {
     //=============================PUBLIC METHODS====================//
 
     /**
-     * Returns the x coordinate of the point.
+     * @return the x coordinate of the point.
      * @return Ibid.
      */
     public int getX() {
@@ -85,7 +83,7 @@ public class PointXy implements TetradSerializable {
     }
 
     /**
-     * Returns the y coordinate of the point.
+     * @return the y coordinate of the point.
      * @return Ibid.
      */
     public int getY() {
@@ -93,7 +91,7 @@ public class PointXy implements TetradSerializable {
     }
 
     /**
-     * Returns true just in case o is a Point with the same x and y
+     * @return true just in case o is a Point with the same x and y
      * coordinates.
      */
     public boolean equals(Object o) {
@@ -110,7 +108,7 @@ public class PointXy implements TetradSerializable {
     }
 
     /**
-     * Returns a string representation of a point.
+     * @return a string representation of a point.
      */
     public String toString() {
         return "Point<" + x + "," + y + ">";

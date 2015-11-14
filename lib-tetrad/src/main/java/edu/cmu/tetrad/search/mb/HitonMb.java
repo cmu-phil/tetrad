@@ -268,7 +268,7 @@ public class HitonMb implements MbSearch {
     }
 
     /**
-     * Returns a supserset of PC, or, if the symmetric algorithm is used, PC.
+     * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      */
     private List<Node> getPc(Node t) {
         if (!pc.containsKey(t)) {

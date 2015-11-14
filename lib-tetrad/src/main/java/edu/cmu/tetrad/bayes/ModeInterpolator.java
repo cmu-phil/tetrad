@@ -32,7 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Returns a data set in which missing values in each column are filled using
+ * Creates a data set in which missing values in each column are filled using
  * the mode of that column.
  *
  * @author Joseph Ramsey

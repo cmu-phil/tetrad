@@ -437,9 +437,6 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static GeneralizedSemPm serializableInstance() {
         Dag dag = new Dag();
@@ -790,7 +787,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the structural model graph this SEM PM is using.
+     * @return the structural model graph this SEM PM is using.
      */
     public SemGraph getGraph() {
         return new SemGraph(this.graph);
@@ -805,7 +802,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the list of variable nodes--that is, node that are not error
+     * @return the list of variable nodes--that is, node that are not error
      * nodes.
      */
     public List<Node> getVariableNodes() {
@@ -820,14 +817,14 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the list of exogenous variableNodes.
+     * @return the list of exogenous variableNodes.
      */
     public List<Node> getErrorNodes() {
         return new ArrayList<Node>(this.errorNodes);
     }
 
     /**
-     * Returns the variable node for the given error node.
+     * @return the variable node for the given error node.
      * @param errorNode the error node.
      */
     public Node getVariableNode(Node errorNode) {
@@ -995,7 +992,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns a relatively brief String representation of this SEM PM--the equations and distributions
+     * @return a relatively brief String representation of this SEM PM--the equations and distributions
      * of the model. Initial value distributions for freeParameters are not printed.
      */
     public String toString() {

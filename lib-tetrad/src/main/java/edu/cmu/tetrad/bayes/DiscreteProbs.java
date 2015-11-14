@@ -34,13 +34,13 @@ import java.util.List;
 public interface DiscreteProbs {
 
     /**
-     * Returns the variables over which probabilities and conditional
+     * @return the variables over which probabilities and conditional
      * probabilities will be calculated.
      */
     public List<Node> getVariables();
 
     /**
-     * Returns the probability in a given cell.
+     * @return the probability in a given cell.
      */
     public double getCellProb(int[] cell);
 
@@ -68,7 +68,7 @@ public interface DiscreteProbs {
     double getConditionalProb(Proposition assertion, Proposition condition);
 
     /**
-     * Returns true if a missing values case was encountered during the last
+     * @return true if a missing values case was encountered during the last
      * method call.
      */
     boolean isMissingValueCaseFound();

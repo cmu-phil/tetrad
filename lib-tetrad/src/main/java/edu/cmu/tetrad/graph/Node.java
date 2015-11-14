@@ -36,7 +36,7 @@ public interface Node extends TetradSerializable, Comparable {
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns the name of the node.
+     * @return the name of the node.
      */
     String getName();
 
@@ -46,7 +46,7 @@ public interface Node extends TetradSerializable, Comparable {
     void setName(String name);
 
     /**
-     * Returns the node type for this node.
+     * @return the node type for this node.
      */
     NodeType getNodeType();
 
@@ -56,12 +56,12 @@ public interface Node extends TetradSerializable, Comparable {
     void setNodeType(NodeType nodeType);
 
     /**
-     * Returns a string representation of the node.
+     * @return a string representation of the node.
      */
     String toString();
 
     /**
-     * Returns the x coordinate of the center of the node.
+     * @return the x coordinate of the center of the node.
      */
     int getCenterX();
 
@@ -71,7 +71,7 @@ public interface Node extends TetradSerializable, Comparable {
     void setCenterX(int centerX);
 
     /**
-     * Returns the y coordinate of the center of the node.
+     * @return the y coordinate of the center of the node.
      */
     int getCenterY();
 
@@ -91,12 +91,12 @@ public interface Node extends TetradSerializable, Comparable {
     void addPropertyChangeListener(PropertyChangeListener l);
 
     /**
-     * Returns a hashcode for this variable.
+     * @return a hashcode for this variable.
      */
     int hashCode();
 
     /**
-     * Returns true iff this variable is equal to the given variable.
+     * @return true iff this variable is equal to the given variable.
      */
     boolean equals(Object o);
 

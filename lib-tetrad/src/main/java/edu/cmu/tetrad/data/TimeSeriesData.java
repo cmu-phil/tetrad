@@ -98,9 +98,6 @@ public final class TimeSeriesData implements DataModel {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static TimeSeriesData serializableInstance() {
         List<String> varNames = new ArrayList<String>();
@@ -146,7 +143,7 @@ public final class TimeSeriesData implements DataModel {
     }
 
     /**
-     * Returns (a copy of) the List of Variables for the data set, in the order
+     * @return (a copy of) the List of Variables for the data set, in the order
      * of their columns.
      */
     public final List<String> getVariableNames() {

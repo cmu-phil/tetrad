@@ -99,9 +99,6 @@ public final class SemProposition implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemProposition serializableInstance() {
         return new SemProposition(SemIm.serializableInstance());
@@ -110,21 +107,21 @@ public final class SemProposition implements TetradSerializable {
     //===========================PUBLIC METHODS=========================//
 
     /**
-     * Returns the Bayes IM that this is a proposition for.
+     * @return the Bayes IM that this is a proposition for.
      */
     public SemIm getSemIm() {
         return this.semIm;
     }
 
     /**
-     * Returns the number of variables for the proposition.
+     * @return the number of variables for the proposition.
      */
     public int getNumVariables() {
         return values.length;
     }
 
     /**
-     * Returns the index of the variable with the given name, or -1 if such a
+     * @return the index of the variable with the given name, or -1 if such a
      * variable does not exist.
      */
     public int getNodeIndex(String name) {

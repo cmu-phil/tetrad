@@ -193,7 +193,7 @@ public class ChiSquareTest {
     }
 
     /**
-     * Returns true if the variable at index 0 is determined by the variables at the other indices at the given
+     * @return true if the variable at index 0 is determined by the variables at the other indices at the given
      * probability p.
      *
      * @param testIndices An array of indices for variables in the dataset supplied in the constructor.
@@ -253,7 +253,7 @@ public class ChiSquareTest {
     }
 
     /**
-     * Returns true if the variables at index 0 and 1 are each determined by the variables at the other indices at the
+     * @return true if the variables at index 0 and 1 are each determined by the variables at the other indices at the
      * given probability p.
      *
      * @param testIndices An array of indices for variables in the dataset supplied in the constructor.
@@ -335,7 +335,7 @@ public class ChiSquareTest {
     }
 
     /**
-     * Returns the getModel significance level being used for tests.
+     * @return the getModel significance level being used for tests.
      */
     public double getAlpha() {
         return this.alpha;

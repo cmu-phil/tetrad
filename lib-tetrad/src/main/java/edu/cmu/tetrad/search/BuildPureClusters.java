@@ -232,7 +232,7 @@ public final class BuildPureClusters {
      */
 
     /**
-     * Returns the result search graph, or null if there is no mocel.
+     * @return the result search graph, or null if there is no mocel.
      */
     public Graph search() {
         long start = System.currentTimeMillis();
@@ -297,7 +297,7 @@ public final class BuildPureClusters {
     }
 
     /**
-     * Returns the converted search graph, or null if there is no model.
+     * @return the converted search graph, or null if there is no model.
      */
     private Graph convertSearchGraph(List clusters) {
         List<Node> nodes = tetradTest.getVariables();
@@ -1061,7 +1061,7 @@ public final class BuildPureClusters {
     }
 
     /**
-     * Returns true iff "newClique" is contained in some element of "clustering".
+     * @return true iff "newClique" is contained in some element of "clustering".
      */
 
     private boolean cliqueContained(int newClique[], int size, List clustering) {

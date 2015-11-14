@@ -117,9 +117,6 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static UpdatedBayesIm serializableInstance() {
         return new UpdatedBayesIm(MlBayesIm.serializableInstance());

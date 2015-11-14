@@ -42,7 +42,7 @@ public interface Regression {
     void setAlpha(double alpha);
 
     /**
-     * Returns the graph of significant regressors into the target.
+     * @return the graph of significant regressors into the target.
      * @return This graph.
      */
     Graph getGraph();

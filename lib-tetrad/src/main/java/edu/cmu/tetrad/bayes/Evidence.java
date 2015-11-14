@@ -119,8 +119,6 @@ public final class Evidence implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
      */
     public static Evidence serializableInstance() {
         return new Evidence(MlBayesIm.serializableInstance());
@@ -129,7 +127,7 @@ public final class Evidence implements TetradSerializable {
     //===========================PUBLIC METHODS=========================//
 
     /**
-     * Returns the Bayes IM that this is evidence for.
+     * @return the Bayes IM that this is evidence for.
      */
     public VariableSource getVariableSource() {
         return proposition.getVariableSource();
@@ -198,7 +196,7 @@ public final class Evidence implements TetradSerializable {
     }
 
     /**
-     * Returns the variable for which there is evidence.
+     * @return the variable for which there is evidence.
      */
     public List<Node> getVariablesInEvidence() {
         List<Node> nodes = new ArrayList<Node>();

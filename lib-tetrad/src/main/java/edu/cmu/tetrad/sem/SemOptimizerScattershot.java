@@ -47,9 +47,6 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemOptimizerScattershot serializableInstance() {
         return new SemOptimizerScattershot();
@@ -166,7 +163,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
     }
 
     /**
-     * Returns true iff a new point was found with a lower score.
+     * @return true iff a new point was found with a lower score.
      */
     private boolean findLowerRandom(FittingFunction fcn, double[] p,
                                     double width, int numPoints) {
@@ -261,13 +258,13 @@ public class SemOptimizerScattershot implements SemOptimizer {
     static interface FittingFunction {
 
         /**
-         * Returns the value of the function for the given array of parameter
+         * @return the value of the function for the given array of parameter
          * values.
          */
         double evaluate(double[] argument);
 
         /**
-         * Returns the number of freeParameters.
+         * @return the number of freeParameters.
          */
         int getNumParameters();
 
@@ -337,7 +334,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
         }
 
         /**
-         * Returns the number of arguments. Required by the MultivariateFunction
+         * @return the number of arguments. Required by the MultivariateFunction
          * interface.
          */
         public int getNumParameters() {

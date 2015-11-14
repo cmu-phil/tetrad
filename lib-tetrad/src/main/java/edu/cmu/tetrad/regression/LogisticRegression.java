@@ -81,9 +81,6 @@ public class LogisticRegression implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static LogisticRegression serializableInstance() {
         return new LogisticRegression(ColtDataSet.serializableInstance());
@@ -376,7 +373,7 @@ public class LogisticRegression implements TetradSerializable {
     }
 
     /**
-     * Returns the alpha level.
+     * @return the alpha level.
      */
     public double getAlpha() {
         return alpha;
@@ -482,9 +479,6 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
-         *
-         * @see edu.cmu.TestSerialization
-         * @see edu.cmu.tetradapp.util.TetradSerializableUtils
          */
         public static Result serializableInstance() {
             return new Result("X1", new ArrayList<String>(), new double[1], new double[1], 0, 0, 0,

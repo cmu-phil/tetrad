@@ -95,14 +95,14 @@ public final class RegexTokenizer {
     }
 
     /**
-     * Returns true iff more tokens exist in the line.
+     * @return true iff more tokens exist in the line.
      */
     public final boolean hasMoreTokens() {
         return !finalTokenParsed;
     }
 
     /**
-     * Returns the next token in the line.
+     * @return the next token in the line.
      */
     public final String nextToken() {
         if (position != chars.length() && quoteSensitive && chars.charAt(position) == quoteChar) {

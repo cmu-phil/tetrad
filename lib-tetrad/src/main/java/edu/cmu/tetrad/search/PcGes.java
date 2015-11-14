@@ -161,14 +161,14 @@ public class PcGes implements GraphSearch {
     }
 
     /**
-     * Returns the independence test being used in the search.
+     * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
     }
 
     /**
-     * Returns the knowledge specification used in the search. Non-null.
+     * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
         return knowledge;
@@ -186,7 +186,7 @@ public class PcGes implements GraphSearch {
     }
 
     /**
-     * Returns the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
+     * @return the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
      */
     public SepsetMap getSepsets() {
         return this.sepsets;
@@ -386,14 +386,14 @@ public class PcGes implements GraphSearch {
     }
 
     /**
-     * Returns the elapsed time of the search, in milliseconds.
+     * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
         return elapsedTime;
     }
 
     /**
-     * Returns the set of unshielded colliders in the graph returned by <code>search()</code>. Non-null after
+     * @return the set of unshielded colliders in the graph returned by <code>search()</code>. Non-null after
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedColliders() {
@@ -401,7 +401,7 @@ public class PcGes implements GraphSearch {
     }
 
     /**
-     * Returns the set of unshielded noncolliders in the graph returned by <code>search()</code>. Non-null after
+     * @return the set of unshielded noncolliders in the graph returned by <code>search()</code>. Non-null after
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedNoncolliders() {

@@ -207,9 +207,6 @@ public class RegressionResult implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static RegressionResult serializableInstance() {
         return new RegressionResult(true, new String[0],
@@ -226,35 +223,35 @@ public class RegressionResult implements TetradSerializable {
     }
 
     /**
-     * Returns the number of data points.
+     * @return the number of data points.
      */
     public int getN() {
         return n;
     }
 
     /**
-     * Returns the number of regressors.
+     * @return the number of regressors.
      */
     public int getNumRegressors() {
         return regressorNames.length;
     }
 
     /**
-     * Returns the array of regression coeffients.
+     * @return the array of regression coeffients.
      */
     public double[] getCoef() {
         return b;
     }
 
     /**
-     * Returns the array of t-statistics for the regression coefficients.
+     * @return the array of t-statistics for the regression coefficients.
      */
     public double[] getT() {
         return t;
     }
 
     /**
-     * Returns the array of p-values for the regression coefficients.
+     * @return the array of p-values for the regression coefficients.
      */
     public double[] getP() {
         return p;

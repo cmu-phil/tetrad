@@ -153,7 +153,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
     }
 
     /**
-     * Returns the probability associated with the most recently computed independence test.
+     * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
         return 0.0;
@@ -179,7 +179,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinine independence
+     * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
@@ -187,7 +187,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
     }
 
     /**
-     * Returns the variable with the given name.
+     * @return the variable with the given name.
      */
     public Node getVariable(String name) {
         for (Node node : variables) {
@@ -200,7 +200,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variable varNames.
+     * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
@@ -220,7 +220,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
     }
 
     /**
-     * Returns the data set being analyzed.
+     * @return the data set being analyzed.
      */
     public DataSet getData() {
         return dataSet;
@@ -247,7 +247,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
     }
 
     /**
-     * Returns a string representation of this test.
+     * @return a string representation of this test.
      */
     public String toString() {
         return "Conditional Correlation, alpha = " + nf.format(getAlpha());

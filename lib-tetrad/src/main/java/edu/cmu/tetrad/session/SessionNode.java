@@ -247,9 +247,6 @@ public class SessionNode implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SessionNode serializableInstance() {
         return new SessionNode(Type1.class);
@@ -403,14 +400,14 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns the set of parents.
+     * @return the set of parents.
      */
     public Set<SessionNode> getParents() {
         return new HashSet<SessionNode>(this.parents);
     }
 
     /**
-     * Returns the number of parents.
+     * @return the number of parents.
      */
     public int getNumParents() {
         return parents.size();
@@ -434,7 +431,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns true iff the given node is child of this node.
+     * @return true iff the given node is child of this node.
      */
     public boolean containsChild(SessionNode child) {
         return this.children.contains(child);
@@ -458,14 +455,14 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns the set of children.
+     * @return the set of children.
      */
     public Set<SessionNode> getChildren() {
         return new HashSet<SessionNode>(this.children);
     }
 
     /**
-     * Returns the number of children.
+     * @return the number of children.
      */
     public int getNumChildren() {
         return this.children.size();
@@ -655,7 +652,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns the class of the model.
+     * @return the class of the model.
      */
     public Class[] getModelClasses() {
         return this.modelClasses;
@@ -676,7 +673,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns those model classes among the possible model classes that are at
+     * @return those model classes among the possible model classes that are at
      * least consistent with the model class of the parent session nodes, in the
      * sense that possibly with the addition of more parent session nodes, and
      * assuming that the models of the parent session nodes are non-null, it is
@@ -718,14 +715,14 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns the model, or null if no model has been created yet.
+     * @return the model, or null if no model has been created yet.
      */
     public SessionModel getModel() {
         return this.model;
     }
 
     /**
-     * Returns the class of the last model that was created, or null if no model
+     * @return the class of the last model that was created, or null if no model
      * has been created yet.
      */
     public Class getLastModelClass() {
@@ -747,7 +744,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns true iff this node is in a freshly created state. A node that is
+     * @return true iff this node is in a freshly created state. A node that is
      * in a freshly created state has no model, no parents, no children, and no
      * listeners. It does, however, have the array of possible model classes
      * that it was constructed with, and it may or may not have a name.
@@ -1229,7 +1226,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns an array with a combination of particular values for variables
+     * @return an array with a combination of particular values for variables
      * given an array indicating the number of values for each variable.
      */
     public int[] getValueCombination(int index, int[] numValues) {
@@ -1245,7 +1242,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns the product of the entries in the given array.
+     * @return the product of the entries in the given array.
      */
     public int getProduct(int[] arr) {
         int n = 1;
@@ -1258,7 +1255,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns the saved session handler if such exists; otherwise, creates one
+     * @return the saved session handler if such exists; otherwise, creates one
      * and returns it.
      */
     SessionHandler getSessionHandler() {
@@ -1272,14 +1269,14 @@ public class SessionNode implements TetradSerializable {
     //==============================PRIVATE METHODS=======================//
 
     /**
-     * Returns true iff the given node is parent of this node.
+     * @return true iff the given node is parent of this node.
      */
     private boolean containsParent(SessionNode parent) {
         return this.parents.contains(parent);
     }
 
     /**
-     * Returns the parameter types used to construct the model.
+     * @return the parameter types used to construct the model.
      */
     private Class[] getModelParamTypes() {
         return this.modelParamTypes;
@@ -1510,7 +1507,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     /**
-     * Returns the saved session support if such exists; otherwise, creates a
+     * @return the saved session support if such exists; otherwise, creates a
      * new session support adding all of the child session nodes of this node as
      * listeners.
      */

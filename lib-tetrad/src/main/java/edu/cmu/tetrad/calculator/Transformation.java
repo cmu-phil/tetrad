@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * Represents a transformation on some dataset. For instance if the
  * equation is X = Z + W, where Z and W are columns in the data set,
- * returns a column that is the sum of Z and W row-wise.
+ * @return a column that is the sum of Z and W row-wise.
  *
  * @author Tyler Gibson
  */
@@ -111,7 +111,7 @@ public class Transformation {
 
 
     /**
-     * Returns the variables used in the expression.
+     * @return the variables used in the expression.
      */
     private static List<String> getContextVariables(Expression exp) {
         List<String> variables = new ArrayList<String>();

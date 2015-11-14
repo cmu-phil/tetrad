@@ -66,14 +66,14 @@ public class IndTestLogisticRegression implements IndependenceTest {
     }
 
     /**
-     * Returns an Independence test for a subset of the variables.
+     * @return an Independence test for a subset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns true if the given independence question is judged true, false if not. The independence question is of the
+     * @return true if the given independence question is judged true, false if not. The independence question is of the
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
@@ -228,7 +228,7 @@ public class IndTestLogisticRegression implements IndependenceTest {
     }
 
     /**
-     * Returns true if the given independence question is judged false, true if not. The independence question is of the
+     * @return true if the given independence question is judged false, true if not. The independence question is of the
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
@@ -242,7 +242,7 @@ public class IndTestLogisticRegression implements IndependenceTest {
     }
 
     /**
-     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
+     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
      * not meaningful for tis test.
      */
     public double getPValue() {
@@ -250,7 +250,7 @@ public class IndTestLogisticRegression implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinining independence
+     * @return the list of variables over which this independence checker is capable of determinining independence
      * relations.
      */
     public List<Node> getVariables() {
@@ -258,7 +258,7 @@ public class IndTestLogisticRegression implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variable varNames.
+     * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
@@ -281,14 +281,14 @@ public class IndTestLogisticRegression implements IndependenceTest {
     }
 
     /**
-     * Returns true if y is determined the variable in z.
+     * @return true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
 
     /**
-     * Returns the significance level of the independence test.
+     * @return the significance level of the independence test.
      *
      * @throws UnsupportedOperationException if there is no significance level.
      */

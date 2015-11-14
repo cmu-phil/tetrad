@@ -154,7 +154,7 @@ public class SessionEvent extends EventObject {
     }
 
     /**
-     * Returns the session node set, if this event was constructed using one
+     * @return the session node set, if this event was constructed using one
      * session node.
      */
     public SessionNode getNode() {
@@ -162,7 +162,7 @@ public class SessionEvent extends EventObject {
     }
 
     /**
-     * Returns the parent session node set, if this is an event constructed
+     * @return the parent session node set, if this is an event constructed
      * using two session nodes.
      */
     public SessionNode getParent() {
@@ -170,7 +170,7 @@ public class SessionEvent extends EventObject {
     }
 
     /**
-     * Returns the child session node set, if this is an event constructed using
+     * @return the child session node set, if this is an event constructed using
      * two session nodes
      */
     public SessionNode getChild() {
@@ -178,7 +178,7 @@ public class SessionEvent extends EventObject {
     }
 
     /**
-     * Returns the type of this event--one of NODE_ADDED, NODE_REMOVED,
+     * @return the type of this event--one of NODE_ADDED, NODE_REMOVED,
      * PARENT_ADDED, PARENT_REMOVED, MODEL_CREATED, MODEL_DESTROYED,
      * MODEL_UNCLEAR.
      */

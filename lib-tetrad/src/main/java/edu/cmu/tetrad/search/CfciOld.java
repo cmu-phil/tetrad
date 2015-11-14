@@ -101,7 +101,7 @@ public final class CfciOld {
     private TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * Returns the maximum size of conditioning sets for independence tests.
+     * @return the maximum size of conditioning sets for independence tests.
      */
     private int getDepth() {
         return depth;

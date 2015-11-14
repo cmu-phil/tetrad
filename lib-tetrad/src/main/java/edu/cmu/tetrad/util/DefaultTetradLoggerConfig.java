@@ -82,9 +82,6 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static DefaultTetradLoggerConfig serializableInstance() {
         return new DefaultTetradLoggerConfig();
@@ -160,9 +157,6 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
-         *
-         * @see edu.cmu.TestSerialization
-         * @see edu.cmu.tetradapp.util.TetradSerializableUtils
          */
         public static DefaultEvent serializableInstance() {
             return new DefaultEvent("", "");

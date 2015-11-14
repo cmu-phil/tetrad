@@ -49,7 +49,7 @@ public class TemplateExpander {
     }
 
     /**
-     * Returns the expanded template, which needs to be checked to make sure it can be used. Try setting it as the
+     * @return the expanded template, which needs to be checked to make sure it can be used. Try setting it as the
      * expression for the node or freeParameters you wish to use it for.
      *
      * @param template A template formula, which includes the functions TSUM and TPROD, which are not nestable,

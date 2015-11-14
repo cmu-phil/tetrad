@@ -50,10 +50,7 @@ public class SingleValue implements Distribution {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return The exemplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public static SingleValue serializableInstance() {
         return new SingleValue(0.5);
     }
@@ -89,7 +86,7 @@ public class SingleValue implements Distribution {
     //============================PUBLIC METHODS========================//
 
     /**
-     * Returns the value that was set.
+     * @return the value that was set.
      */
     public double nextRandom() {
         return getValue();

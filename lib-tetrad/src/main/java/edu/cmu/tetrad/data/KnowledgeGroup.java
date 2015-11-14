@@ -113,9 +113,6 @@ public final class KnowledgeGroup implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static KnowledgeGroup serializableInstance() {
         return new KnowledgeGroup(REQUIRED, new HashSet<String>(0), new HashSet<String>(0));
@@ -123,7 +120,7 @@ public final class KnowledgeGroup implements TetradSerializable {
 
 
     /**
-     * Returns the type of group, currently either REQUIRED or FORBIDDEN.
+     * @return the type of group, currently either REQUIRED or FORBIDDEN.
      *
      * @return
      */
@@ -145,7 +142,7 @@ public final class KnowledgeGroup implements TetradSerializable {
 
 
     /**
-     * Returns all the "from" variables in the group.
+     * @return all the "from" variables in the group.
      *
      * @return
      */
@@ -155,7 +152,7 @@ public final class KnowledgeGroup implements TetradSerializable {
 
 
     /**
-     * Returns all the "to" variables in the group.
+     * @return all the "to" variables in the group.
      *
      * @return
      */
@@ -165,7 +162,7 @@ public final class KnowledgeGroup implements TetradSerializable {
 
 
     /**
-     * Returns all the edges created in this group.
+     * @return all the edges created in this group.
      *
      * @return - edges.
      */

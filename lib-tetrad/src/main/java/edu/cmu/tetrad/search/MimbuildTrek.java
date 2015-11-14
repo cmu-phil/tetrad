@@ -205,7 +205,7 @@ public class MimbuildTrek {
 
     /**
      *
-     * Returns the full discovered graph, with latents and indicators.
+     * @return the full discovered graph, with latents and indicators.
      */
     public Graph getFullGraph() {
         Graph graph = new EdgeListGraph(structureGraph);

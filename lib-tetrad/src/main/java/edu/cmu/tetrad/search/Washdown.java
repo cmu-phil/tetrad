@@ -198,7 +198,7 @@ public class Washdown {
     }
 
     /**
-     * Returns the p value of the given model.
+     * @return the p value of the given model.
      */
 
     private double gof(List<List<Node>> clusters) {

@@ -36,7 +36,7 @@ public interface GraphGroupSearch {
     public GraphGroup search();
 
     /**
-     * Returns the amount of time used when the search algorithm processes.
+     * @return the amount of time used when the search algorithm processes.
      *
      * @return long
      */

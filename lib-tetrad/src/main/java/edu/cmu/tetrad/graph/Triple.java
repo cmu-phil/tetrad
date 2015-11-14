@@ -57,9 +57,6 @@ public final class Triple implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Triple serializableInstance() {
         return new Triple(new GraphNode("X"), new GraphNode("Y"), new GraphNode("Z"));

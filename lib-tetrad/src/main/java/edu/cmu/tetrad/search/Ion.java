@@ -690,7 +690,7 @@ public class Ion {
     }
 
     /*
-     * Returns all triples in a graph
+     * @return all triples in a graph
      */
 
     private Set<Triple> getAllTriples(Graph graph) {
@@ -707,7 +707,7 @@ public class Ion {
     }
 
     /*
-     * Returns variable pairs that are not in the intersection of the variable
+     * @return variable pairs that are not in the intersection of the variable
      * sets for any two input PAGs
      */
 
@@ -824,7 +824,7 @@ public class Ion {
     }
 
     /**
-     * Returns all the triples in the graph that can be either oriented as a collider or non-collider.
+     * @return all the triples in the graph that can be either oriented as a collider or non-collider.
      */
     private Set<Triple> getPossibleTriples(Graph pag) {
         Set<Triple> possibleTriples = new HashSet<Triple>();
@@ -1586,7 +1586,7 @@ public class Ion {
     }
 
     /**
-     * Returns the path of the first directed path found from node1 to node2, if any.
+     * @return the path of the first directed path found from node1 to node2, if any.
      */
     private static void treks(Graph graph, Node node1, Node node2,
                               LinkedList<Node> path, List<List<Node>> paths) {

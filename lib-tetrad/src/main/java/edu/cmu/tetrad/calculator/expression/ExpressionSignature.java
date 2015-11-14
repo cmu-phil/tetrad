@@ -33,18 +33,18 @@ public interface ExpressionSignature extends TetradSerializable {
 
 
     /**
-     * Returns the sigature as a string.
+     * @return the sigature as a string.
      */
     public String getSignature();
 
     /**
-     * Returns the number o f arguments.
+     * @return the number o f arguments.
      */
     public int getNumberOfArguments();
 
 
     /**
-     * Returns the argument type at the given index.
+     * @return the argument type at the given index.
      */
     public String getArgument(int index);
 

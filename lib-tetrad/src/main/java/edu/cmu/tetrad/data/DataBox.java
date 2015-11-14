@@ -33,12 +33,12 @@ public interface DataBox extends TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns the (fixed) number of rows of the dataset.
+     * @return the (fixed) number of rows of the dataset.
      */
     int numRows();
 
     /**
-     * Returnse the (fixed) number of columns of the dataset.
+     * @returne the (fixed) number of columns of the dataset.
      */
     int numCols();
 
@@ -53,18 +53,18 @@ public interface DataBox extends TetradSerializable {
     void set(int row, int col, Number value) throws IllegalArgumentException;
 
     /**
-     * Returns the value at the given row and column as a Number. If the
+     * @return the value at the given row and column as a Number. If the
      * value is missing, null is uniformly returned.
      */
     Number get(int row, int col);
 
     /**
-     * Returns a copy of this data box.
+     * @return a copy of this data box.
      */
     DataBox copy();
 
     /**
-     * Returns a new data box of the same type as this one with the given
+     * @return a new data box of the same type as this one with the given
      * dimensions.
      */
     DataBox like(int rows, int cols);

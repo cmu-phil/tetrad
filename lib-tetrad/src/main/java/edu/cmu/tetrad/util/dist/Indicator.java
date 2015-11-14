@@ -33,7 +33,7 @@ public class Indicator implements Distribution {
     private double p;
 
     /**
-     * Returns 0 with probably 1 - p and 1 with probability p.
+     * @return 0 with probably 1 - p and 1 with probability p.
      * @param p Ibid.
      */
     public Indicator(double p) {
@@ -45,10 +45,7 @@ public class Indicator implements Distribution {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return The exemplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
-     */
-    @SuppressWarnings({"UnusedDeclaration"})
+f     */
     public static Indicator serializableInstance() {
         return new Indicator(0.5);
     }

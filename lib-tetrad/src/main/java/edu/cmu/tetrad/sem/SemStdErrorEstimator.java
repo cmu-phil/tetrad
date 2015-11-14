@@ -237,7 +237,7 @@ public class SemStdErrorEstimator {
     }
 
     /**
-     * Returns the array of standard errors for the free paramaeters of the
+     * @return the array of standard errors for the free paramaeters of the
      * SEM.
      */
     public double[] getStdErrors() {
@@ -413,13 +413,13 @@ public class SemStdErrorEstimator {
     static interface FittingFunction {
 
         /**
-         * Returns the value of the function for the given array of parameter
+         * @return the value of the function for the given array of parameter
          * values.
          */
         double evaluate(double[] argument);
 
         /**
-         * Returns the number of freeParameters.
+         * @return the number of freeParameters.
          */
         int getNumParameters();
     }
@@ -470,7 +470,7 @@ public class SemStdErrorEstimator {
         }
 
         /**
-         * Returns the number of arguments. Required by the MultivariateFunction
+         * @return the number of arguments. Required by the MultivariateFunction
          * interface.
          */
         public int getNumParameters() {

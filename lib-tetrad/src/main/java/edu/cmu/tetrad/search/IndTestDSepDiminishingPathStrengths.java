@@ -111,7 +111,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     }
 
     /**
-     * Returns the list of observed nodes in the given graph.
+     * @return the list of observed nodes in the given graph.
      */
     private List<Node> calcVars(Graph graph, boolean keepLatents) {
         if (keepLatents) {
@@ -230,7 +230,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     }
 
     /**
-     * Returns the list of TetradNodes over which this independence checker is capable of determinine independence
+     * @return the list of TetradNodes over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
@@ -238,7 +238,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variable varNames.
+     * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
         List<Node> nodes = _observedVars;
@@ -383,7 +383,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     }
 
     /**
-     * Returns the underlying graph.
+     * @return the underlying graph.
      */
     public Graph getGraph() {
         return this.graph;

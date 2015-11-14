@@ -54,10 +54,7 @@ public class Exponential implements Distribution {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return The exemplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public static Exponential serializableInstance() {
         return new Exponential(.5);
     }

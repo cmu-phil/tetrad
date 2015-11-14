@@ -57,9 +57,6 @@ public final class NodeType implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static NodeType serializableInstance() {
         return NodeType.MEASURED;

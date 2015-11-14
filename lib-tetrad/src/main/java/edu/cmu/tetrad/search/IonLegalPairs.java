@@ -55,7 +55,7 @@ class IonLegalPairs implements LegalPairs {
     }
 
     /**
-     * Returns true iff x is adjacent to y.
+     * @return true iff x is adjacent to y.
      */
     public boolean isLegalFirstEdge(Node x, Node y) {
         return this.graph.isAdjacentTo(x, y);

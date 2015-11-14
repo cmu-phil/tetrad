@@ -42,7 +42,7 @@ public class JOptionUtils {
     }
 
     /**
-     * Returns the centering component used throughout for JOptionPanes.
+     * @return the centering component used throughout for JOptionPanes.
      *
      * @return Ibid.
      */

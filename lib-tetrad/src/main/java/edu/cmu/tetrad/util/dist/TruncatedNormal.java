@@ -78,8 +78,6 @@ public class TruncatedNormal implements Distribution {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return The exemplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static TruncatedNormal serializableInstance() {
         return new TruncatedNormal(0, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -131,14 +129,14 @@ public class TruncatedNormal implements Distribution {
     }
 
     /**
-     * Returns the number of parameters = 2.
+     * @return the number of parameters = 2.
      */
     public int getNumParameters() {
         return 4;
     }
 
     /**
-     * Returns the next random sample from the distribution.
+     * @return the next random sample from the distribution.
      */
     public double nextRandom() {
         return RandomUtil.getInstance().nextTruncatedNormal(mean, sd, low, high);

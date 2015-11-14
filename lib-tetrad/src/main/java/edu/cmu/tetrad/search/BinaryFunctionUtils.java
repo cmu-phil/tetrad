@@ -267,7 +267,7 @@ public class BinaryFunctionUtils {
     }
 
     /**
-     * Returns true if f1 is equal to f2 under some column permutation.
+     * @return true if f1 is equal to f2 under some column permutation.
      */
     private boolean equalsUnderSomePermutation(BinaryFunction f1, BinaryFunction f2) {
         PermutationGenerator pg = new PermutationGenerator(f1.getNumArgs());

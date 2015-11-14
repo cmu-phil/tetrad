@@ -301,7 +301,7 @@ public class PatternToDag {
     }
 
     /**
-     * Returns a boolean which indicates whether a list of nodes forms a clique. That is, is the subgraph determined by
+     * @return a boolean which indicates whether a list of nodes forms a clique. That is, is the subgraph determined by
      * those nodes complete.  If so, every pair of the nodes is adjacent.
      *
      * @param g a graph

@@ -165,9 +165,6 @@ public class LogisticRegressionResult implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static LogisticRegressionResult serializableInstance() {
         double[] values = new double[]{1.0, 2.0};
@@ -186,56 +183,56 @@ public class LogisticRegressionResult implements TetradSerializable {
     }
 
     /**
-     * Returns the number of regressors.
+     * @return the number of regressors.
      */
     public int getNumRegressors() {
         return numRegressors;
     }
 
     /**
-     * Returns the number of cases with target = 0.
+     * @return the number of cases with target = 0.
      */
     public int getNy0() {
         return ny0;
     }
 
     /**
-     * Returns the number of cases with target = 1.
+     * @return the number of cases with target = 1.
      */
     public int getNy1() {
         return ny1;
     }
 
     /**
-     * Returns the total number of cases.
+     * @return the total number of cases.
      */
     public int getnCases() {
         return ny0 + ny1;
     }
 
     /**
-     * Returns the array of strings containing the variable names.
+     * @return the array of strings containing the variable names.
      */
     public String[] getVariableNames() {
         return variableNames;
     }
 
     /**
-     * Returns the array of regression coeffients.
+     * @return the array of regression coeffients.
      */
     public double[] getCoefs() {
         return coefs;
     }
 
     /**
-     * Returns the array of coefT-statistics for the regression coefficients.
+     * @return the array of coefT-statistics for the regression coefficients.
      */
     public double[] getStdErrs() {
         return stdErrs;
     }
 
     /**
-     * Returns the array of coefP-values for the regression coefficients.
+     * @return the array of coefP-values for the regression coefficients.
      */
     public double[] getProbs() {
         return probs;
@@ -258,7 +255,7 @@ public class LogisticRegressionResult implements TetradSerializable {
     }
 
     /**
-     * Returns -2LogLiklihood
+     * @return -2LogLiklihood
      */
     public double getLogLikelihood() {
         return logLikelihood;

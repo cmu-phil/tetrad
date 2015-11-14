@@ -45,9 +45,6 @@ public class SemOptimizerRicf implements SemOptimizer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemOptimizerRicf serializableInstance() {
         return new SemOptimizerRicf();

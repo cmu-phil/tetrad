@@ -96,9 +96,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
+     * @return a simple exemplar of this class to test serialization.
      */
     public static ApproximateUpdater serializableInstance() {
         return new ApproximateUpdater(MlBayesIm.serializableInstance());
@@ -107,14 +105,14 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     //============================PUBLIC METHODS==========================//
 
     /**
-     * Returns the Bayes instantiated model that is being updated.
+     * @return the Bayes instantiated model that is being updated.
      */
     public BayesIm getBayesIm() {
         return bayesIm;
     }
 
     /**
-     * Returns the Bayes instantiated model after manipulations have been
+     * @return the Bayes instantiated model after manipulations have been
      * applied.
      */
     public BayesIm getManipulatedBayesIm() {
@@ -122,21 +120,21 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * Returns the graph for getManipulatedBayesIm().
+     * @return the graph for getManipulatedBayesIm().
      */
     public Graph getManipulatedGraph() {
         return this.manipulatedBayesIm.getDag();
     }
 
     /**
-     * Returns the updated Bayes IM, or null if there is no updated Bayes IM.
+     * @return the updated Bayes IM, or null if there is no updated Bayes IM.
      */
     public BayesIm getUpdatedBayesIm() {
         return null;
     }
 
     /**
-     * Returns a copy of the getModel evidence.
+     * @return a copy of the getModel evidence.
      */
     public Evidence getEvidence() {
         return new Evidence(this.evidence);
@@ -181,7 +179,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * @throws UnsupportedOperationException
+     * @return the joint maringal.
      */
     public double getJointMarginal(int[] variables, int[] values) {
         throw new UnsupportedOperationException();

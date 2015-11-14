@@ -39,7 +39,7 @@ public class Discrete implements Distribution {
     private final double[] p;
 
     /**
-     * Returns 0 with probably 1 - p and 1 with probability p. Each of the
+     * @return 0 with probably 1 - p and 1 with probability p. Each of the
      * supplied values must be in (0, 1), and each must be less than its
      * successor (if it has one).
      */
@@ -51,8 +51,6 @@ public class Discrete implements Distribution {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return The exemplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     @SuppressWarnings({"UnusedDeclaration"})
     public static Discrete serializableInstance() {

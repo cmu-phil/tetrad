@@ -114,7 +114,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns true iff <code>m</code> is square.
+     * @return true iff <code>m</code> is square.
      *
      * @param m A 2D double matrix.
      * @return Ibid.
@@ -125,7 +125,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns true iff <code>m</code> is symmetric to within the given
+     * @return true iff <code>m</code> is symmetric to within the given
      * tolerance--that is, Math.abs(m[i][j] - m[j][i]) <= tolernance for each i,
      * j.
      *
@@ -147,7 +147,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the determinant of a (square) m.
+     * @return the determinant of a (square) m.
      *
      * @param m The matrix whose determinant is sought. Must be square.
      * @return Ibid.
@@ -177,7 +177,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the inverse of the given square matrix if it is nonsingular,
+     * @return the inverse of the given square matrix if it is nonsingular,
      * otherwise the pseudoinverse.
      */
     public static double[][] inverse(double[][] m) {
@@ -203,7 +203,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the outerProduct of ma and mb. The dimensions of ma and mb must
+     * @return the outerProduct of ma and mb. The dimensions of ma and mb must
      * be compatible for multiplication.
      */
     public static double[][] product(double[][] ma, double[][] mb) {
@@ -233,14 +233,14 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the transpose of the given matrix.
+     * @return the transpose of the given matrix.
      */
     public static double[][] transpose(double[][] m) {
         return new TetradMatrix(m).transpose().toArray();
     }
 
     /**
-     * Returns the trace of the given (square) m.
+     * @return the trace of the given (square) m.
      */
     public static double trace(double[][] m) {
         return new TetradMatrix(m).trace();
@@ -252,14 +252,14 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the identity matrix of the given order.
+     * @return the identity matrix of the given order.
      */
     public static double[][] identity(int size) {
         return TetradAlgebra.identity(size).toArray();
     }
 
     /**
-     * Returns the sum of ma and mb.
+     * @return the sum of ma and mb.
      */
     public static double[][] sum(double[][] ma, double[][] mb) {
         TetradMatrix _ma = new TetradMatrix(ma);
@@ -346,7 +346,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the vector as a 1 x n row matrix.
+     * @return the vector as a 1 x n row matrix.
      */
     public static double[][] asRow(double[] v) {
         double[][] arr = new double[1][v.length];
@@ -355,7 +355,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the vector as an n x 1 column matrix.
+     * @return the vector as an n x 1 column matrix.
      */
     public static double[][] asCol(double[] v) {
         double[][] arr = new double[v.length][1];
@@ -366,7 +366,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the implied covariance matrix for a structural equation model
+     * @return the implied covariance matrix for a structural equation model
      * with measured and possibly latent variables. ErrCovar should be
      * positive definite for this method to work properly, though this is
      * not checked. To check it, call <code>MatrixUtils.isSymmetricPositiveDefinite(errCovar)</code>.
@@ -458,7 +458,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns vech of the given array. (This is what you get when you stack all
+     * @return vech of the given array. (This is what you get when you stack all
      * of the elements of m in the lower triangular of m to form a vector. The
      * elements are stacked in columns left to right, top to bottom.)
      */
@@ -482,7 +482,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the symmetric matrix for which the given array is the vech.
+     * @return the symmetric matrix for which the given array is the vech.
      */
     public static double[][] invVech(double[] vech) {
 
@@ -504,7 +504,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns vech of the given array. (This is what you get when you stack all
+     * @return vech of the given array. (This is what you get when you stack all
      * of the elements of m to form a vector. The elements are stacked in
      * columns left to right, top to bottom.)
      */
@@ -526,7 +526,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the sum of integers from 0 up to n.
+     * @return the sum of integers from 0 up to n.
      */
     public static int sum0ToN(int n) {
         if (n < 0) {
@@ -562,7 +562,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns true just in case the given matrix has the given dimensions
+     * @return true just in case the given matrix has the given dimensions
      * --that is, just in case m.length == i and m[0].length == j.
      */
     public static boolean hasDimensions(double[][] m, int i, int j) {
@@ -912,7 +912,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Returns the order of the matrix for which this is the vech.
+     * @return the order of the matrix for which this is the vech.
      *
      * @throws IllegalArgumentException in case this matrix does not have
      *                                  dimension n x 1 for some n = 0 + 1 + 2 +

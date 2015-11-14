@@ -87,14 +87,14 @@ public class ConstantExpression implements Expression {
 
 
     /**
-     * Returns the name of the constant or null if there isn't one.
+     * @return the name of the constant or null if there isn't one.
      */
     public String getName(){
         return this.name;
     }
 
     /**
-     * Returns the constant value.
+     * @return the constant value.
      */
     public double evaluate(Context context) {
         return this.value;

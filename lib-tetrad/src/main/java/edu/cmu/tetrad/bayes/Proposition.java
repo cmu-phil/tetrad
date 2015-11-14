@@ -150,9 +150,6 @@ public final class Proposition implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Proposition serializableInstance() {
         return new Proposition(MlBayesIm.serializableInstance());
@@ -198,14 +195,14 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Returns true iff all categories for the given variable are allowed.
+     * @return true iff all categories for the given variable are allowed.
      */
     public boolean isUnconditioned(int variable) {
         return !isConditioned(variable);
     }
 
     /**
-     * Returns true iff the given point is true for this proposition.
+     * @return true iff the given point is true for this proposition.
      */
     public boolean isPermissibleCombination(int[] point) {
         for (int i = 0; i < allowedCategories.length; i++) {
@@ -218,7 +215,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Returns true iff there is some combination of categories for all the
+     * @return true iff there is some combination of categories for all the
      * variables of the proposition that is allowed.
      */
     public boolean existsCombination() {
@@ -249,7 +246,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Returns the single category selected for the given variable, or -1 if it
+     * @return the single category selected for the given variable, or -1 if it
      * is not the case that a single value is selected.
      */
     public int getSingleCategory(int variable) {
@@ -308,7 +305,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Returns the index of the variable with the given name, or -1 if such a
+     * @return the index of the variable with the given name, or -1 if such a
      * variable does not exist.
      */
     public int getNodeIndex(String name) {
@@ -335,21 +332,21 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Returns the Bayes IM that this is a proposition for.
+     * @return the Bayes IM that this is a proposition for.
      */
     public VariableSource getVariableSource() {
         return this.variableSource;
     }
 
     /**
-     * Returns the number of variables for the proposition.
+     * @return the number of variables for the proposition.
      */
     public int getNumVariables() {
         return allowedCategories.length;
     }
 
     /**
-     * Returns the number of categories for the given variable.
+     * @return the number of categories for the given variable.
      */
     public int getNumCategories(int variable) {
         return allowedCategories[variable].length;
@@ -377,14 +374,14 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Returns true iff the given category for the given variable is allowed.
+     * @return true iff the given category for the given variable is allowed.
      */
     public boolean isAllowed(int variable, int category) {
         return allowedCategories[variable][category];
     }
 
     /**
-     * Returns true iff some category for the given variable is disallowed.
+     * @return true iff some category for the given variable is disallowed.
      */
     public boolean isConditioned(int variable) {
         for (int j = 0; j < getNumCategories(variable); j++) {

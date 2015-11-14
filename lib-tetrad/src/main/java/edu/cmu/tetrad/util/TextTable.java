@@ -96,28 +96,28 @@ public class TextTable {
     }
 
     /**
-     * Returns the token at the given row and column.
+     * @return the token at the given row and column.
      */
     public String getTokenAt(int row, int column) {
         return tokens[row][column];
     }
 
     /**
-     * Returns the number of rows, as set in the constructor.
+     * @return the number of rows, as set in the constructor.
      */
     public int getNumRows() {
         return tokens.length;
     }
 
     /**
-     * Returns the number of rows, as set in the constructor.
+     * @return the number of rows, as set in the constructor.
      */
     public int getNumColumns() {
         return tokens[0].length;
     }
 
     /**
-     * Returns the number of spaces between columns, by default 2.
+     * @return the number of spaces between columns, by default 2.
      */
     public int getColumnSpacing() {
         return columnSpacing;
@@ -135,7 +135,7 @@ public class TextTable {
     }
 
     /**
-     * Returns the justification, either LEFT_JUSTIFIED or RIGHT_JUSTIFIED.
+     * @return the justification, either LEFT_JUSTIFIED or RIGHT_JUSTIFIED.
      */
     public int getJustification() {
         return justification;

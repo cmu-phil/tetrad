@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * Returns one line at a time, with a method to determine whether another
+ * @return one line at a time, with a method to determine whether another
  * line is available. Blank lines and lines beginning with the given comment
  * marker are skipped.
  *
@@ -73,7 +73,7 @@ public final class Lineizer {
     }
 
     /**
-     * Returns true iff more tokens exist in the line.
+     * @return true iff more tokens exist in the line.
      */
     public final boolean hasMoreLines() {
         if (tempLine == null) {

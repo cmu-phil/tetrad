@@ -298,7 +298,7 @@ public class ClusterUtils {
     }
 
     /**
-     * Returns the top fraction threshold for the entire data set--that is,
+     * @return the top fraction threshold for the entire data set--that is,
      * if all of the values in the dataset were sorted bottom to top, the
      * value the tresholds the top fraction is given.
      * @param data A 2D real data set.
@@ -331,7 +331,7 @@ public class ClusterUtils {
     }
 
     /**
-     * Returns a list of view of the data corresponding to the given clusters.
+     * @return a list of view of the data corresponding to the given clusters.
      */
     public static List<TetradMatrix> getClusterViews(TetradMatrix xyzData,
                                                        List<List<Integer>> clusters) {

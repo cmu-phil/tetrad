@@ -317,7 +317,7 @@ public class Dci {
     }
 
     /**
-     * Returns maximum memory usage
+     * @return maximum memory usage
      */
     public double getMaxMemUsage() {
         return maxMemory;
@@ -960,7 +960,7 @@ public class Dci {
     }
 
     /*
-     * Returns all triples in a graph
+     * @return all triples in a graph
      */
 
     private Set<Triple> getAllTriples(Graph graph) {

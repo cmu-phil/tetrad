@@ -125,7 +125,7 @@ public class Discretizer {
     }
 
     /**
-     * Returns a new data set that has been discretized.
+     * @return a new data set that has been discretized.
      *
      * @return - Discretized dataset.
      */
@@ -239,7 +239,7 @@ public class Discretizer {
     }
 
     /**
-     * Returns an array of breakpoints that divides the data into equal sized buckets.
+     * @return an array of breakpoints that divides the data into equal sized buckets.
      *
      * @param _data
      * @param numberOfCategories
@@ -415,7 +415,7 @@ public class Discretizer {
         //============================ Public Methods =================================//
 
         /**
-         * Returns the discretized varaible.
+         * @return the discretized varaible.
          *
          * @return - discretized variable.
          */
@@ -424,7 +424,7 @@ public class Discretizer {
         }
 
         /**
-         * Returns the discretized data.
+         * @return the discretized data.
          *
          * @return - discretized data.
          */

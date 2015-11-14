@@ -68,9 +68,6 @@ public final class SepsetMapDci {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SepsetMap serializableInstance() {
         return new SepsetMap();

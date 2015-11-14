@@ -125,9 +125,6 @@ public final class Session implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Session serializableInstance() {
         return new Session("X");
@@ -259,7 +256,7 @@ public final class Session implements TetradSerializable {
     }
 
     /**
-     * Returns the getModel set of session nodes.
+     * @return the getModel set of session nodes.
      */
     public Set<SessionNode> getNodes() {
         return new HashSet<SessionNode>(nodes);
@@ -330,7 +327,7 @@ public final class Session implements TetradSerializable {
     //==========================PRIVATE METHODS===========================//
 
     /**
-     * Returns true iff a node exists in the session with the given name.
+     * @return true iff a node exists in the session with the given name.
      */
     private boolean existsNodeByName(String name) {
         if (name == null) {

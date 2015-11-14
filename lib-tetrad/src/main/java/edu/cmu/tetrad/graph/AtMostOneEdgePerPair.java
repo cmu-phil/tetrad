@@ -39,9 +39,6 @@ public final class AtMostOneEdgePerPair implements GraphConstraint {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static AtMostOneEdgePerPair serializableInstance() {
         return new AtMostOneEdgePerPair();
@@ -50,7 +47,7 @@ public final class AtMostOneEdgePerPair implements GraphConstraint {
     //=============================PUBLIC METHODS=========================//
 
     /**
-     * Returns true iff the new edge may be added.
+     * @return true iff the new edge may be added.
      */
     public boolean isEdgeAddable(Edge edge, Graph graph) {
         Node node1 = edge.getNode1();
@@ -60,28 +57,28 @@ public final class AtMostOneEdgePerPair implements GraphConstraint {
     }
 
     /**
-     * Returns true iff the node may be added.
+     * @return true iff the node may be added.
      */
     public boolean isNodeAddable(Node node, Graph graph) {
         return true;
     }
 
     /**
-     * Returns true;
+     * @return true;
      */
     public boolean isEdgeRemovable(Edge edge, Graph graph) {
         return true;
     }
 
     /**
-     * Returns true.
+     * @return true.
      */
     public boolean isNodeRemovable(Node node, Graph graph) {
         return true;
     }
 
     /**
-     * Returns a string representation of the constraint.
+     * @return a string representation of the constraint.
      *
      * @return this representation.
      */

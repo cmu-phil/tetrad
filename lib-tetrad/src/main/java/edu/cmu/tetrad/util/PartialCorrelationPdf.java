@@ -91,8 +91,6 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return the examplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     @SuppressWarnings({"UnusedDeclaration"})
     public static PartialCorrelationPdf serializableInstance() {
@@ -126,7 +124,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     }
 
     /**
-     * Returns a description of the function.
+     * @return a description of the function.
      */
     public String toString() {
         return "Zero partial correlation distribution with n = " + getN() +
@@ -138,7 +136,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     }
 
     /**
-     * Returns the number of compared variables = 2 + # conditioning variables.
+     * @return the number of compared variables = 2 + # conditioning variables.
      * @return Ibid.
      */
     public int getK() {

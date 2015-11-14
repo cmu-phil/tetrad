@@ -59,24 +59,24 @@ import java.util.List;
 public interface BayesIm extends VariableSource, IM {
 
     /**
-     * Returns the underlying Bayes PM.
+     * @return the underlying Bayes PM.
      *
      * @return this PM.
      */
     BayesPm getBayesPm();
 
     /**
-     * Returns the underlying DAG.
+     * @return the underlying DAG.
      */
     Dag getDag();
 
     /**
-     * Returns the number of nodes in the model.
+     * @return the number of nodes in the model.
      */
     int getNumNodes();
 
     /**
-     * Returns the node corresponding to the given node index.
+     * @return the node corresponding to the given node index.
      *
      * @param nodeIndex
      * @return this node.
@@ -84,7 +84,7 @@ public interface BayesIm extends VariableSource, IM {
     Node getNode(int nodeIndex);
 
     /**
-     * Returns the node with the given name in the associated graph.
+     * @return the node with the given name in the associated graph.
      *
      * @param name the name of the node.
      * @return the node.
@@ -92,7 +92,7 @@ public interface BayesIm extends VariableSource, IM {
     Node getNode(String name);
 
     /**
-     * Returns the node index for the given node.
+     * @return the node index for the given node.
      *
      * @param node the given node.
      * @return the index for that node, or -1 if the node is not in the
@@ -101,23 +101,23 @@ public interface BayesIm extends VariableSource, IM {
     int getNodeIndex(Node node);
 
     /**
-     * Returns the list of variable for this Bayes net.
+     * @return the list of variable for this Bayes net.
      */
     List<Node> getVariables();
 
     /**
-     * Returns the list of variable names for this Bayes net.
+     * @return the list of variable names for this Bayes net.
      */
     List<String> getVariableNames();
 
     /**
-     * Returns the list of measured variableNodes.
+     * @return the list of measured variableNodes.
      */
     public List<Node> getMeasuredNodes();
 
 
     /**
-     * Returns the number of columns in the table of the given node N with index
+     * @return the number of columns in the table of the given node N with index
      * 'nodeIndex'--that is, the number of possible values that N can take on.
      * That is, if P(N=v0 | P1=v1, P2=v2, ... Pn=vn) is a conditional
      * probability stored in 'probs', then the maximum number of rows in the
@@ -130,7 +130,7 @@ public interface BayesIm extends VariableSource, IM {
     int getNumColumns(int nodeIndex);
 
     /**
-     * Returns the number of rows in the table of the given node, which would be
+     * @return the number of rows in the table of the given node, which would be
      * the total number of possible combinations of parent values for a given
      * node.  That is, if P(N=v0 | P1=v1, P2=v2, ... Pn=vn) is a conditional
      * probability stored in 'probs', then the maximum number of rows in the
@@ -144,7 +144,7 @@ public interface BayesIm extends VariableSource, IM {
     int getNumRows(int nodeIndex);
 
     /**
-     * Returns the number of parents of the given node.
+     * @return the number of parents of the given node.
      *
      * @param nodeIndex the given node.
      * @return the number of parents for this node.
@@ -152,17 +152,17 @@ public interface BayesIm extends VariableSource, IM {
     int getNumParents(int nodeIndex);
 
     /**
-     * Returns the given parent of the given node.
+     * @return the given parent of the given node.
      */
     int getParent(int nodeIndex, int parentIndex);
 
     /**
-     * Returns the dimension of the given parent for the given node.
+     * @return the dimension of the given parent for the given node.
      */
     int getParentDim(int nodeIndex, int parentIndex);
 
     /**
-     * Returns (a defensive copy of) the array representing the dimensionality
+     * @return (a defensive copy of) the array representing the dimensionality
      * of each parent of a node, that is, the number of values which that node
      * can take on.  The order of entries in this array is the same as the order
      * of entries of nodes returned by getParents() for that node.
@@ -173,7 +173,7 @@ public interface BayesIm extends VariableSource, IM {
     int[] getParentDims(int nodeIndex);
 
     /**
-     * Returns (a defensive copy of) the array containing all of the parents of
+     * @return (a defensive copy of) the array containing all of the parents of
      * a given node in the order in which they are stored internally.
      *
      * @see #getParentDims
@@ -181,7 +181,7 @@ public interface BayesIm extends VariableSource, IM {
     int[] getParents(int nodeIndex);
 
     /**
-     * Returns an array containing the combination of parent values for a given
+     * @return an array containing the combination of parent values for a given
      * node and given row in the probability table for that node.  To get the
      * combination of parent values from the row number, the row number is
      * represented using a variable-base place value system, where the bases
@@ -204,13 +204,13 @@ public interface BayesIm extends VariableSource, IM {
     int[] getParentValues(int nodeIndex, int rowIndex);
 
     /**
-     * Returns the value in the probability table for the given node, at the
+     * @return the value in the probability table for the given node, at the
      * given row and column.
      */
     int getParentValue(int nodeIndex, int rowIndex, int colIndex);
 
     /**
-     * Returns the probability for the given node at the given row and column in
+     * @return the probability for the given node at the given row and column in
      * the table for that node.  To get the node index, use getNodeIndex().  To
      * get the row index, use getRowIndex().  To get the column index, use
      * getCategoryIndex() from the underlying BayesPm().  The value returned
@@ -231,7 +231,7 @@ public interface BayesIm extends VariableSource, IM {
     double getProbability(int nodeIndex, int rowIndex, int colIndex);
 
     /**
-     * Returns the row in the table at which the given combination of parent
+     * @return the row in the table at which the given combination of parent
      * values is represented for the given node.  The row is calculated as a
      * variable-base place-value number.  For instance, if the array of
      * parent dimensions is [3, 5, 7] and the parent value combination is [2,
@@ -285,7 +285,7 @@ public interface BayesIm extends VariableSource, IM {
             double value);
 
     /**
-     * Returns the index of the node with the given name in the specified
+     * @return the index of the node with the given name in the specified
      * BayesIm.
      */
     int getCorrespondingNodeIndex(int nodeIndex, BayesIm otherBayesIm);
@@ -332,12 +332,12 @@ public interface BayesIm extends VariableSource, IM {
     void clearTable(int nodeIndex);
 
     /**
-     * Returns true iff one of the values in the given row is Double.NaN.
+     * @return true iff one of the values in the given row is Double.NaN.
      */
     boolean isIncomplete(int nodeIndex, int rowIndex);
 
     /**
-     * Returns true iff any value in the table for the given node is
+     * @return true iff any value in the table for the given node is
      * Double.NaN.
      */
     boolean isIncomplete(int nodeIndex);
@@ -370,13 +370,13 @@ public interface BayesIm extends VariableSource, IM {
     DataSet simulateData(DataSet dataSet, boolean latentDataSaved);
 
     /**
-     * Returns true iff this bayes net is equal to the given Bayes net. The
+     * @return true iff this bayes net is equal to the given Bayes net. The
      * sense of equality may vary depending on the type of Bayes net.
      */
     boolean equals(Object o);
 
     /**
-     * Returns a string representation for this Bayes net.
+     * @return a string representation for this Bayes net.
      */
     String toString();
 }

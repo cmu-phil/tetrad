@@ -542,7 +542,7 @@ public final class DiscreteTetradTest implements TetradTest {
     }
 
     /**
-     * Returns the position of a specific value in a natural (0, 1, 2, ...) scale for a given variable.
+     * @return the position of a specific value in a natural (0, 1, 2, ...) scale for a given variable.
      */
 
     private int getValuePosition(int value, int varNumber) {

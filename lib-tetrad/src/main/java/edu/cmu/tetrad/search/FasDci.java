@@ -259,7 +259,7 @@ public class FasDci {
     }
 
     /**
-     * Returns true just in case z is a possible parent of x, in the sense that edges are not forbidden from z to x, and
+     * @return true just in case z is a possible parent of x, in the sense that edges are not forbidden from z to x, and
      * edges are not required from either x to z, according to background knowledge.
      */
     private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {

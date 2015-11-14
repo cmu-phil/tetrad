@@ -115,9 +115,6 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Knowledge3 serializableInstance() {
         return new Knowledge3();
@@ -177,7 +174,7 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
 
 
     /**
-     * Returns a shallow copy of the list of group rules.
+     * @return a shallow copy of the list of group rules.
      */
     public List<KnowledgeGroup> getKnowledgeGroups() {
         return new ArrayList<KnowledgeGroup>(this.knowledgeGroups);
@@ -281,7 +278,7 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns the list of edges not in any tier.
+     * @return the list of edges not in any tier.
      */
     public final List<String> getVariablesNotInTiers() {
         List<String> notInTier = new ArrayList<String>(variables);
@@ -296,7 +293,7 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns (a copy of) the given tier.
+     * @return (a copy of) the given tier.
      *
      * @param tier the index of the desired tier.
      * @return a copy of this tier.
@@ -307,7 +304,7 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns the number of temporal tiers.
+     * @return the number of temporal tiers.
      */
     public final int getNumTiers() {
         return tierSpecs.size();
@@ -399,7 +396,7 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
 
 
     /**
-     * Returns true iff no edge between x and y is required.
+     * @return true iff no edge between x and y is required.
      */
     public final boolean noEdgeRequired(String x, String y) {
         return !(isRequired(x, y) || isRequired(y, x));
@@ -422,7 +419,7 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns true if there is no background knowledge recorded.
+     * @return true if there is no background knowledge recorded.
      */
     public final boolean isEmpty() {
         return forbiddenRulesSpecs.isEmpty() && requiredRulesSpecs.isEmpty() && tierSpecs.isEmpty();
@@ -671,7 +668,7 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns the largest indes of a tier in which every variable is forbidden by every
+     * @return the largest indes of a tier in which every variable is forbidden by every
      * other variable, or -1 if there is not such tier.
      */
     public final int getMaxTierForbiddenWithin() {
@@ -729,7 +726,7 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns the contents of this Knowledge object in String form.
+     * @return the contents of this Knowledge object in String form.
      */
     public final String toString() {
         try {
@@ -812,7 +809,7 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns a copy of the list of variable, in alphabetical order.
+     * @return a copy of the list of variable, in alphabetical order.
      */
     public List<String> getVariables() {
         return new ArrayList<String>(variables);

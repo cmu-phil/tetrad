@@ -76,7 +76,7 @@ abstract class AbstractExpression implements Expression {
     }
 
     /**
-     * Returns the sub expressions (unmodifiable).f
+     * @return the sub expressions (unmodifiable).f
      */
     public List<Expression> getExpressions(){
         return this.expressions;

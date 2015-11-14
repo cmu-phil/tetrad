@@ -464,7 +464,7 @@ public final class UniformGraphGenerator {
     }
 
     /**
-     * Returns true if the edge parent-->child exists in the graph.
+     * @return true if the edge parent-->child exists in the graph.
      */
     private boolean edgeExists() {
         for (int i = 1; i < parentMatrix[randomChild][0]; i++) {
@@ -476,7 +476,7 @@ public final class UniformGraphGenerator {
     }
 
     /**
-     * Returns true if the degree of the getModel nodes randomParent and
+     * @return true if the degree of the getModel nodes randomParent and
      * randomChild do not exceed maxDegree.
      */
     private boolean maxDegreeNotExceeded() {
@@ -488,7 +488,7 @@ public final class UniformGraphGenerator {
     }
 
     /**
-     * Returns true if the degrees of the getModel nodes randomParent and
+     * @return true if the degrees of the getModel nodes randomParent and
      * randomChild do not exceed maxIndegree.
      */
     private boolean maxIndegreeNotExceeded() {
@@ -496,7 +496,7 @@ public final class UniformGraphGenerator {
     }
 
     /**
-     * Returns true if the degrees of the getModel nodes randomParent and
+     * @return true if the degrees of the getModel nodes randomParent and
      * randomChild do not exceed maxOutdegree.
      */
     private boolean maxOutdegreeNotExceeded() {
@@ -504,7 +504,7 @@ public final class UniformGraphGenerator {
     }
 
     /**
-     * Returns true iff the random edge randomParent-->randomChild would be
+     * @return true iff the random edge randomParent-->randomChild would be
      * disconnecting were it to be removed.
      */
     private boolean isDisconnecting() {
@@ -560,7 +560,7 @@ public final class UniformGraphGenerator {
 
 
     /**
-     * Returns true if the graph is still acyclic after the last edge was added.
+     * @return true if the graph is still acyclic after the last edge was added.
      * This method only works before adding the random edge, not after removing
      * an edge.
      */

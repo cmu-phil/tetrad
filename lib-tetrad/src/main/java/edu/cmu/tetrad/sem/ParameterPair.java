@@ -69,9 +69,6 @@ public class ParameterPair implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static ParameterPair serializableInstance() {
         return new ParameterPair();
@@ -119,7 +116,7 @@ public class ParameterPair implements TetradSerializable {
     }
 
     /**
-     * Returns a hashcode such that the hashcode of (a1, b1) == the hashcode of
+     * @return a hashcode such that the hashcode of (a1, b1) == the hashcode of
      * (a2, b2) just in case a1 == a2 and b1 == b2.
      *
      * @return this hashcode.

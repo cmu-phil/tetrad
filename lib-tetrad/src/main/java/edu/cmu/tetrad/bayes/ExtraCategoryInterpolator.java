@@ -28,7 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Returns a data set in variables for columns with missing values are augmented
+ * @return a data set in variables for columns with missing values are augmented
  * with an extra category that represents the missing values, with missing
  * values being reported as belong this category.
  *

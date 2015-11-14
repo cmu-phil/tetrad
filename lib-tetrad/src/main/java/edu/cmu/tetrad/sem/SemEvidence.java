@@ -117,9 +117,6 @@ public final class SemEvidence implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemEvidence serializableInstance() {
         return new SemEvidence(SemIm.serializableInstance());
@@ -128,7 +125,7 @@ public final class SemEvidence implements TetradSerializable {
     //===========================PUBLIC METHODS=========================//
 
     /**
-     * Returns the Bayes IM that this is evidence for.
+     * @return the Bayes IM that this is evidence for.
      */
     public SemIm getSemIm() {
         return this.semIm;
@@ -201,7 +198,7 @@ public final class SemEvidence implements TetradSerializable {
     }
 
     /**
-     * Returns the variable for which there is evidence.
+     * @return the variable for which there is evidence.
      */
     public List<Node> getNodesInEvidence() {
         List<Node> nodes = semIm.getVariableNodes();

@@ -82,10 +82,7 @@ public class Split implements Distribution {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return the exemplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public static Split serializableInstance() {
         return new Split(0.5, 1.5);
     }
@@ -93,7 +90,7 @@ public class Split implements Distribution {
     //==========================PUBLIC METHODS==========================//
 
     /**
-     * Returns a random value from [-b, -a] U [a, b].
+     * @return a random value from [-b, -a] U [a, b].
      */
     public double nextRandom() {
         double c = RandomUtil.getInstance().nextDouble();

@@ -141,7 +141,7 @@ public final class DepthChoiceGenerator {
     }
 
     /**
-     * Returns the next combination in the series, or null if the series is
+     * @return the next combination in the series, or null if the series is
      * finished.  The array that is produced should not be altered by the user,
      * as it is reused by the choice generator.
      * <p/>
@@ -226,7 +226,7 @@ public final class DepthChoiceGenerator {
     }
 
     /**
-     * Returns the number of objects being chosen from.
+     * @return the number of objects being chosen from.
      *
      * @return Ibid.
      */
@@ -236,7 +236,7 @@ public final class DepthChoiceGenerator {
     }
 
     /**
-     * Returns the number of objects being chosen.
+     * @return the number of objects being chosen.
      *
      * @return Ibid.
      */

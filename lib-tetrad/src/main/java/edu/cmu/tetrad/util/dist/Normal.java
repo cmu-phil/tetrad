@@ -62,8 +62,6 @@ public class Normal implements Distribution {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return The exemplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Normal serializableInstance() {
         return new Normal(0, 1);
@@ -107,14 +105,14 @@ public class Normal implements Distribution {
     }
 
     /**
-     * Returns the number of parameters = 2.
+     * @return the number of parameters = 2.
      */
     public int getNumParameters() {
         return 2;
     }
 
     /**
-     * Returns the next random sample from the distribution.
+     * @return the next random sample from the distribution.
      */
     public double nextRandom() {
         return RandomUtil.getInstance().nextNormal(mean, sd);

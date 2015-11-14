@@ -82,9 +82,6 @@ public final class Clusters implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Clusters serializableInstance() {
         return new Clusters();
@@ -118,7 +115,7 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
-     * Returns the list of edges not in any tier.
+     * @return the list of edges not in any tier.
      */
     public final List<String> getVarsNotInCluster(List<String> varNames) {
         List<String> notInCluster = new ArrayList<String>(varNames);
@@ -132,7 +129,7 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
-     * Returns the number of measurement clusters for use in Purify and MIM
+     * @return the number of measurement clusters for use in Purify and MIM
      * Build. </p> R. Silva (04/2003)
      */
     public final int getNumClusters() {
@@ -156,7 +153,7 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
-     * Returns a copy of the cluster map, which is a map from variable names to
+     * @return a copy of the cluster map, which is a map from variable names to
      * integers.
      */
     public final Map<String, Integer> getClusters() {
@@ -164,7 +161,7 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
-     * Returns (a copy of) the given index.
+     * @return (a copy of) the given index.
      *
      * @param index the index of the desired index.
      * @return a copy of this index.
@@ -259,7 +256,7 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
-     * Returns the contents of this Knowledge object in String form.
+     * @return the contents of this Knowledge object in String form.
      */
     public final String toString() {
         StringBuilder buf = new StringBuilder();

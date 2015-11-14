@@ -353,7 +353,7 @@ public class PcSearchRsch implements GraphSearch {
     }
 
     /**
-     * Returns true if x-->y<--z is an unshielded collider, tested locally.
+     * @return true if x-->y<--z is an unshielded collider, tested locally.
      */
     private boolean isCollider(Node x, Node y, Node z) {
         if (graph.isAdjacentTo(x, z)) {
@@ -598,7 +598,7 @@ public class PcSearchRsch implements GraphSearch {
 //    }
 
     /**
-     * Returns the string in nodelist which matches string in BK.
+     * @return the string in nodelist which matches string in BK.
      */
     public Node translate(String a, List<Node> nodes) {
         for (Node node : nodes) {

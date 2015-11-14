@@ -126,7 +126,7 @@ public final class CellTableProbs implements DiscreteProbs {
     //===========================PUBLIC METHODS=========================//
 
     /**
-     * Returns the estimated probability for the given cell. The order of the
+     * @return the estimated probability for the given cell. The order of the
      * variable values is the order of the variables in getVariable().
      */
     public double getCellProb(int[] variableValues) {
@@ -136,7 +136,7 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
-     * Returns the estimated probability of the given proposition.
+     * @return the estimated probability of the given proposition.
      */
     public double getProb(Proposition assertion) {
 
@@ -179,7 +179,7 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
-     * Returns the estimated conditional probability for the given assertion
+     * @return the estimated conditional probability for the given assertion
      * conditional on the given condition.
      */
     public double getConditionalProb(Proposition assertion,
@@ -255,14 +255,14 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
-     * Returns the dataset that this is estimating probabilities for.
+     * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
         return dataSet;
     }
 
     /**
-     * Returns the list of variables for the dataset that this is estimating
+     * @return the list of variables for the dataset that this is estimating
      * probabilities for.
      */
     public List<Node> getVariables() {
@@ -286,7 +286,7 @@ public final class CellTableProbs implements DiscreteProbs {
     //===========================PRIVATE METHODS===========================//
 
     /**
-     * Returns the index in the cells array for the cell at the given
+     * @return the index in the cells array for the cell at the given
      * coordinates.
      *
      * @param coords The coordinates of the cell. Each value must be less

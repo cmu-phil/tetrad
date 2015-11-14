@@ -53,9 +53,6 @@ public class ColtDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static BoxDataSet serializableInstance() {
         return new BoxDataSet(new ShortDataBox(4, 4), null);
@@ -69,14 +66,14 @@ public class ColtDataBox implements DataBox {
     }
 
     /**
-     * Returns the number of rows in this data box.
+     * @return the number of rows in this data box.
      */
     public int numRows() {
         return data.rows();
     }
 
     /**
-     * Returns the number of columns in this data box.n
+     * @return the number of columns in this data box.n
      */
     public int numCols() {
         return data.columns();
@@ -95,7 +92,7 @@ public class ColtDataBox implements DataBox {
     }
 
     /**
-     * Returns the Number value at the given row and column. If the value
+     * @return the Number value at the given row and column. If the value
      * is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
@@ -110,7 +107,7 @@ public class ColtDataBox implements DataBox {
     }
 
     /**
-     * Returns a copy of this data box.
+     * @return a copy of this data box.
      */
     public DataBox copy() {
         ColtDataBox box = new ColtDataBox(numRows(), numCols());
@@ -125,7 +122,7 @@ public class ColtDataBox implements DataBox {
     }
 
     /**
-     * Returns a DataBox of type ShortDataBox, but with the given dimensions.
+     * @return a DataBox of type ShortDataBox, but with the given dimensions.
      */
     public DataBox like(int rows, int cols) {
         return new ColtDataBox(rows, cols);

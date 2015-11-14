@@ -67,9 +67,6 @@ public class TimeLagGraph implements Graph {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static TimeLagGraph serializableInstance() {
         return new TimeLagGraph();
@@ -796,7 +793,7 @@ public class TimeLagGraph implements Graph {
     }
 
     /**
-     * Returns the existing property change support object for this class, if
+     * @return the existing property change support object for this class, if
      * there is one, or else creates a new one and returns that.
      *
      * @return this object.

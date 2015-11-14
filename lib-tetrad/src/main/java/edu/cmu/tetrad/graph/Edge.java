@@ -99,9 +99,6 @@ public class Edge implements TetradSerializable, Comparable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Edge serializableInstance() {
         return new Edge(GraphNode.serializableInstance(),
@@ -112,28 +109,28 @@ public class Edge implements TetradSerializable, Comparable {
     //==========================PUBLIC METHODS===========================//
 
     /**
-     * Returns the A node.
+     * @return the A node.
      */
     public final Node getNode1() {
         return this.node1;
     }
 
     /**
-     * Returns the B node.
+     * @return the B node.
      */
     public final Node getNode2() {
         return this.node2;
     }
 
     /**
-     * Returns the endpoint of the edge at the A node.
+     * @return the endpoint of the edge at the A node.
      */
     public final Endpoint getEndpoint1() {
         return this.endpoint1;
     }
 
     /**
-     * Returns the endpoint of the edge at the B node.
+     * @return the endpoint of the edge at the B node.
      */
     public final Endpoint getEndpoint2() {
         return this.endpoint2;
@@ -149,7 +146,7 @@ public class Edge implements TetradSerializable, Comparable {
 
 
     /**
-     * Returns the endpoint nearest to the given node.
+     * @return the endpoint nearest to the given node.
      *
      * @throws IllegalArgumentException if the given node is not along the
      *                                  edge.
@@ -165,7 +162,7 @@ public class Edge implements TetradSerializable, Comparable {
     }
 
     /**
-     * Returns the endpoint furthest from the given node.
+     * @return the endpoint furthest from the given node.
      *
      * @throws IllegalArgumentException if the given node is not along the
      *                                  edge.
@@ -198,7 +195,7 @@ public class Edge implements TetradSerializable, Comparable {
 
 
     /**
-     * Returns true just in case this edge is directed. (Gustavo 7 May 2007.)
+     * @return true just in case this edge is directed. (Gustavo 7 May 2007.)
      *
      * @return true just in case this edge is directed.
      */
@@ -207,7 +204,7 @@ public class Edge implements TetradSerializable, Comparable {
     }
 
     /**
-     * Returns true just in case the edge is pointing toward the given node--
+     * @return true just in case the edge is pointing toward the given node--
      * that is, x --> node or x o--> node.
      */
     public boolean pointsTowards(Node node) {
@@ -218,7 +215,7 @@ public class Edge implements TetradSerializable, Comparable {
     }
 
     /**
-     * Returns the edge with endpoints reversed.
+     * @return the edge with endpoints reversed.
      */
     public Edge reverse() {
         return new Edge(getNode2(), getNode1(), getEndpoint1(), getEndpoint2());

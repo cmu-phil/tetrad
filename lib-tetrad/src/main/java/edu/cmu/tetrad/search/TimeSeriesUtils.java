@@ -44,7 +44,7 @@ import java.util.List;
 public class TimeSeriesUtils {
 
     /**
-     * Returns the VAR residuals of the given time series with the given number of lags. That is, every variable at the
+     * @return the VAR residuals of the given time series with the given number of lags. That is, every variable at the
      * model lag is regressed onto every variable at previous lags, up to the given number of lags, and the residuals
      * of these regressions for each variable are returned.
      */

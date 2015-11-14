@@ -1644,7 +1644,7 @@ public class Lofs2 {
     }
 
     /**
-     * Returns the probability associated with the most recently computed independence test.
+     * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue(double fisherZ) {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));

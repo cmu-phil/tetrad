@@ -94,9 +94,6 @@ public class GraphNode implements Node, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static GraphNode serializableInstance() {
         return new GraphNode("X");
@@ -105,14 +102,14 @@ public class GraphNode implements Node, TetradSerializable {
     //============================PUBLIC METHODS========================//
 
     /**
-     * Returns the name of the variable.
+     * @return the name of the variable.
      */
     public final String getName() {
         return this.name;
     }
 
     /**
-     * Returns the node type.
+     * @return the node type.
      *
      * @see edu.cmu.tetrad.graph.NodeType
      */
@@ -151,7 +148,7 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     /**
-     * Returns the x coordinate of the center of the node.
+     * @return the x coordinate of the center of the node.
      */
     public final int getCenterX() {
         return this.centerX;
@@ -165,7 +162,7 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     /**
-     * Returns the y coordinate of the center of the node.
+     * @return the y coordinate of the center of the node.
      */
     public final int getCenterY() {
         return this.centerY;
@@ -187,7 +184,7 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     /**
-     * Returns the existing property change support object for this class, if
+     * @return the existing property change support object for this class, if
      * there is one, or else creates a new one and returns that.
      */
     private PropertyChangeSupport getPcs() {
@@ -212,7 +209,7 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     /**
-     * Returns the name of the node as its string representation.
+     * @return the name of the node as its string representation.
      */
     public String toString() {
         return name;

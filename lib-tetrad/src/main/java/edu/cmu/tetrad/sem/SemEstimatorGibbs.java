@@ -102,7 +102,7 @@ public final class SemEstimatorGibbs {
     //=============================CONSTRUCTORS============================//
 
     /**
-     * Returns a new SemEstimator for the given SemPm and continuous data set.
+     * @return a new SemEstimator for the given SemPm and continuous data set.
      * (Uses a default optimizer.)
      *
      * @param semPm  		a SemPm specifying the graph and parameterization for the
@@ -136,9 +136,6 @@ public final class SemEstimatorGibbs {
 
 	/**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
 //    public static SemEstimatorGibbs serializableInstance() {
  //       return new SemEstimatorGibbs(null, null);
@@ -511,7 +508,7 @@ public final class SemEstimatorGibbs {
     }
 
     /**
-     * Returns the estimated SemIm. If the <code>estimate</code> method has not
+     * @return the estimated SemIm. If the <code>estimate</code> method has not
      * yet been called, <code>null</code> is returned.
 	 *
 	 * @return SemIm
@@ -521,7 +518,7 @@ public final class SemEstimatorGibbs {
     }
 
     /**
-     * Returns a string representation of the Sem.
+     * @return a string representation of the Sem.
      */
     public String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();

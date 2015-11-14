@@ -219,9 +219,6 @@ public final class NumberObjectDataSet
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static NumberObjectDataSet serializableInstance() {
         return new NumberObjectDataSet(0, new LinkedList<Node>());
@@ -247,14 +244,14 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the number of variables in the data set.
+     * @return the number of variables in the data set.
      */
     public final int getNumColumns() {
         return variables.size();
     }
 
     /**
-     * Returns the number of rows in the rectangular data set, which is the
+     * @return the number of rows in the rectangular data set, which is the
      * maximum of the number of rows in the list of wrapped columns.
      */
     public final int getNumRows() {
@@ -338,7 +335,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the value at the given row and column as an Object. The type
+     * @return the value at the given row and column as an Object. The type
      * returned is deliberately vague, allowing for variables of any type.
      * Primitives will be returned as corresponding wrapping objects (for
      * example, doubles as Doubles).
@@ -366,7 +363,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the value at the given row and column as an Object. The type
+     * @return the value at the given row and column as an Object. The type
      * returned is deliberately vague, allowing for variables of any type.
      * Primitives will be returned as corresponding wrapping objects (for
      * example, doubles as Doubles).
@@ -390,7 +387,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the indices of the currently selected variables.
+     * @return the indices of the currently selected variables.
      */
     public final int[] getSelectedIndices() {
         List<Node> variables = getVariables();
@@ -409,7 +406,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the set of currently selected variables.
+     * @return the set of currently selected variables.
      */
     public final Set<Node> getSelectedVariables() {
         return new HashSet<Node>(selection);
@@ -475,14 +472,14 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the variable at the given column.
+     * @return the variable at the given column.
      */
     public final Node getVariable(int col) {
         return variables.get(col);
     }
 
     /**
-     * Returns the index of the column of the given variable. You can also get
+     * @return the index of the column of the given variable. You can also get
      * this by calling getVariables().indexOf(variable).
      */
     public final int getColumn(Node variable) {
@@ -542,7 +539,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the variable with the given name.
+     * @return the variable with the given name.
      */
     public final Node getVariable(String varName) {
         for (Node variable1 : variables) {
@@ -555,7 +552,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns (a copy of) the List of Variables for the data set, in the order
+     * @return (a copy of) the List of Variables for the data set, in the order
      * of their columns.
      */
     public final List<Node> getVariables() {
@@ -564,7 +561,7 @@ public final class NumberObjectDataSet
 
 
     /**
-     * Returns a copy of the knowledge associated with this data set. (Cannot be
+     * @return a copy of the knowledge associated with this data set. (Cannot be
      * null.)
      */
     public final IKnowledge getKnowledge() {
@@ -583,7 +580,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns (a copy of) the List of Variables for the data set, in the order
+     * @return (a copy of) the List of Variables for the data set, in the order
      * of their columns.
      */
     public final List<String> getVariableNames() {
@@ -654,7 +651,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns true iff the given column has been marked as selected.
+     * @return true iff the given column has been marked as selected.
      */
     public final boolean isSelected(Node variable) {
         return getSelection().contains(variable);
@@ -764,14 +761,14 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns true if case multipliers are being used for this data set.
+     * @return true if case multipliers are being used for this data set.
      */
     public final boolean isMulipliersCollapsed() {
         return !getMultipliers().keySet().isEmpty();
     }
 
     /**
-     * Returns the case multiplise for the given case (i.e. row) in the data
+     * @return the case multiplise for the given case (i.e. row) in the data
      * set. Is this is n > 1, the interpretation is that the data set
      * effectively contains n copies of that case.
      */
@@ -797,14 +794,14 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the case ID for the given case number.
+     * @return the case ID for the given case number.
      */
     public final String getCaseId(int caseNumber) {
         return caseIds.get(caseNumber);
     }
 
     /**
-     * Returns true iff this is a continuous data set--that is, if every column
+     * @return true iff this is a continuous data set--that is, if every column
      * in it is continuous. (By implication, empty datasets are both discrete
      * and continuous.)
      */
@@ -821,7 +818,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns true iff this is a discrete data set--that is, if every column in
+     * @return true iff this is a discrete data set--that is, if every column in
      * it is discrete. (By implication, empty datasets are both discrete and
      * continuous.)
      */
@@ -838,7 +835,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns true if this is a mixed data set--that is, if it contains at
+     * @return true if this is a mixed data set--that is, if it contains at
      * least one continuous column and one discrete columnn.
      */
     public final boolean isMixed() {
@@ -863,7 +860,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the correlation matrix for this dataset. Defers to
+     * @return the correlation matrix for this dataset. Defers to
      * <code>Statistic.covariance()</code> in the COLT matrix library, so it
      * inherits the handling of missing values from that library--that is, any
      * off-diagonal correlation involving a column with a missing value is
@@ -896,7 +893,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the covariance matrix for this dataset. Defers to
+     * @return the covariance matrix for this dataset. Defers to
      * <code>Statistic.covariance()</code> in the COLT matrix library, so it
      * inherits the handling of missing values from that library--that is, any
      * covariance involving a column with a missing value is Double.NaN. If
@@ -928,7 +925,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the value at the given row and column, rounded to the nearest
+     * @return the value at the given row and column, rounded to the nearest
      * integer, or DiscreteVariable.MISSING_VALUE if the value is missing.
      */
     public final int getInt(int row, int column) {
@@ -943,7 +940,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the double value at the given row and column. For discrete
+     * @return the double value at the given row and column. For discrete
      * variables, this returns an int cast to a double. The double value at the
      * given row and column may be missing, in which case Double.NaN is
      * returned.
@@ -982,7 +979,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns a string, suitable for printing, of the dataset. Lines are
+     * @return a string, suitable for printing, of the dataset. Lines are
      * separated by '\n', tokens in the line by whatever character is set in the
      * <code>setOutputDelimiter()<code> method. The list of variables is printed
      * first, followed by one line for each case.
@@ -1062,7 +1059,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns a copy of the underlying COLT TetradMatrix matrix, containing
+     * @return a copy of the underlying COLT TetradMatrix matrix, containing
      * all of the data in this dataset, discrete data included. Discrete data
      * will be represented by ints cast to doubles. Rows in this matrix are
      * cases, and columns are variables. The list of variable, in the order in
@@ -1090,7 +1087,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns a new data set in which the the column at indices[i] is placed at
+     * @return a new data set in which the the column at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (Moved over from Purify.)
      */
     public final DataSet subsetColumns(int indices[]) {
@@ -1238,7 +1235,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns true iff <code>obj</code> is a continuous RectangularDataSet with
+     * @return true iff <code>obj</code> is a continuous RectangularDataSet with
      * corresponding variables of the same name and corresponding data values
      * equal, when rendered using the number format at <code>NumberFormatUtil.getInstance().getNumberFormat()</code>.
      */
@@ -1303,7 +1300,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns true iff this variable is set to accomodate new categories
+     * @return true iff this variable is set to accomodate new categories
      * encountered.
      *
      * @deprecated This is set in DiscreteVariable now.
@@ -1399,7 +1396,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the set of case multipliers..
+     * @return the set of case multipliers..
      */
     private Map<Integer, Integer> getMultipliers() {
         return multipliers;
@@ -1424,7 +1421,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the set of selected nodes, creating a new set if necessary.
+     * @return the set of selected nodes, creating a new set if necessary.
      */
     private Set<Node> getSelection() {
         if (selection == null) {
@@ -1612,7 +1609,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Returns the number format, which by default is the one at
+     * @return the number format, which by default is the one at
      * <code>NumberFormatUtil.getInstance().getNumberFormat()</code>, but can be
      * set by the user if desired.
      *
@@ -1628,7 +1625,7 @@ public final class NumberObjectDataSet
 
 
     /**
-     * Returns the index of the last row of the data that does not consist
+     * @return the index of the last row of the data that does not consist
      * entirely of missing values (that is, Double.NaN's), or -1, if there are
      * no rows in the data that do not consist entirely of missing values.
      */

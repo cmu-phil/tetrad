@@ -135,9 +135,6 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Dag serializableInstance() {
         Dag dag = new Dag();

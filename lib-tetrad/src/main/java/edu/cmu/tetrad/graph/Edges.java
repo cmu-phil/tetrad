@@ -79,7 +79,7 @@ public final class Edges {
     }
 
     /**
-     * Returns true iff an edge is a bidirected edge (<->).
+     * @return true iff an edge is a bidirected edge (<->).
      */
     public static boolean isBidirectedEdge(Edge edge) {
         return (edge.getEndpoint1() == Endpoint.ARROW) &&
@@ -87,7 +87,7 @@ public final class Edges {
     }
 
     /**
-     * Returns true iff the given edge is a directed edge (-->).
+     * @return true iff the given edge is a directed edge (-->).
      */
     public static boolean isDirectedEdge(Edge edge) {
         if (edge.getEndpoint1() == Endpoint.TAIL) {
@@ -105,7 +105,7 @@ public final class Edges {
     }
 
     /**
-     * Returns true iff the given edge is a partially oriented edge (o->)
+     * @return true iff the given edge is a partially oriented edge (o->)
      */
     public static boolean isPartiallyOrientedEdge(Edge edge) {
         if (edge.getEndpoint1() == Endpoint.CIRCLE) {
@@ -123,7 +123,7 @@ public final class Edges {
     }
 
     /**
-     * Returns true iff some edge is an nondirected edge (o-o).
+     * @return true iff some edge is an nondirected edge (o-o).
      */
     public static boolean isNondirectedEdge(Edge edge) {
         return ((edge.getEndpoint1() == Endpoint.CIRCLE) &&
@@ -131,7 +131,7 @@ public final class Edges {
     }
 
     /**
-     * Returns true iff some edge is an undirected edge (-).
+     * @return true iff some edge is an undirected edge (-).
      */
     public static boolean isUndirectedEdge(Edge edge) {
         return ((edge.getEndpoint1() == Endpoint.TAIL) &&
@@ -148,7 +148,7 @@ public final class Edges {
     }
 
     /**
-     * Returns the node opposite the given node along the given edge.
+     * @return the node opposite the given node along the given edge.
      */
     public static Node traverse(Node node, Edge edge) {
         if(node == null){

@@ -53,7 +53,7 @@ public class CombinationIterator implements Iterator {
     }
 
     /**
-     * Returns true iff there is still a combination that has not been returned
+     * @return true iff there is still a combination that has not been returned
      * by the next() method.
      */
     public boolean hasNext() {
@@ -61,7 +61,7 @@ public class CombinationIterator implements Iterator {
     }
 
     /**
-     * Returns an int[] array with the next combination.
+     * @return an int[] array with the next combination.
      */
     public Object next() {
         int[] clone = new int[numValues];

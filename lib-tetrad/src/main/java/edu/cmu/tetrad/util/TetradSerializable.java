@@ -49,9 +49,9 @@ import java.io.Serializable;
  * TestSerialization, which in turn uses methods in TetradSerializableUtils.
  * More details can be find there.</p>
  *
+ * <p>See TestSerialization and TestSerializiableUtils.</p>
+ *
  * @author Joseph Ramsey
- * @see edu.cmu.TestSerialization
- * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
 public interface TetradSerializable extends Serializable {
 }

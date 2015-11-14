@@ -97,7 +97,7 @@ public class IndTestSepset implements IndependenceTest {
     }
 
     /**
-     * Returns the list of observed nodes in the given graph.
+     * @return the list of observed nodes in the given graph.
      */
     private List<Node> calcObservedVars(List<Node> nodes) {
         List<Node> observedVars = new ArrayList<Node>();
@@ -178,7 +178,7 @@ public class IndTestSepset implements IndependenceTest {
     }
 
     /**
-     * Returns the list of TetradNodes over which this independence checker is capable of determinine independence
+     * @return the list of TetradNodes over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
@@ -186,7 +186,7 @@ public class IndTestSepset implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variable varNames.
+     * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
         List<Node> nodes = getVariables();
@@ -222,14 +222,14 @@ public class IndTestSepset implements IndependenceTest {
     }
 
     /**
-     * Returns the variable associated with the given node in the graph.
+     * @return the variable associated with the given node in the graph.
      */
     public Node getVariable(Node node) {
         return nodesToVariables.get(node);
     }
 
     /**
-     * Returns the node associated with the given variable in the graph.
+     * @return the node associated with the given variable in the graph.
      */
     public Node getNode(Node variable) {
         return variablesToNodes.get(variable);

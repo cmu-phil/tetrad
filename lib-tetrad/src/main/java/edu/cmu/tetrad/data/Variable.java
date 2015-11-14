@@ -43,7 +43,7 @@ public interface Variable extends Node, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns the missing value marker as an Object.
+     * @return the missing value marker as an Object.
      *
      * @return the missing value marker as an object--i.e. a double if
      *         continuous, an Integer if discrete, etc.

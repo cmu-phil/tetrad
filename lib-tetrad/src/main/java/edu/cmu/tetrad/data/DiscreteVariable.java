@@ -183,9 +183,6 @@ public final class DiscreteVariable extends AbstractVariable
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static DiscreteVariable serializableInstance() {
         return new DiscreteVariable("X");
@@ -202,7 +199,7 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Returns the index of the given String category, or -1 if the category is
+     * @return the index of the given String category, or -1 if the category is
      * not a category for this variable.
      */
     public final int getIndex(String category) {
@@ -210,7 +207,7 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Returns the number of possible categories for this variable. If
+     * @return the number of possible categories for this variable. If
      * categories are associated, this is just the number of string categories.
      * If no categories are associated, this is the maximum integer in the
      * column.
@@ -220,14 +217,14 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Returns the missing value marker as an Integer.
+     * @return the missing value marker as an Integer.
      */
     public final Object getMissingValueMarker() {
         return MISSING_VALUE;
     }
 
     /**
-     * Returns the variable category specified by the given category.
+     * @return the variable category specified by the given category.
      */
     public final String getCategory(int category) {
         if (category == MISSING_VALUE) {
@@ -238,7 +235,7 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Returns a copy of the array containing the categories for this variable.
+     * @return a copy of the array containing the categories for this variable.
      * The string at index i is the category for index i.
      */
     public final List<String> getCategories() {
@@ -249,7 +246,7 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Returns <tt>true</tt> if the given category represents an integer inside
+     * @return <tt>true</tt> if the given category represents an integer inside
      * the range of acceptable categories for <tt>this</tt> variable.  If the
      * variable has <i>n</i> possible categories, then the given category should
      * represent an integer from 0 to <i>n</i>-1.
@@ -284,7 +281,7 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Returns true iff categories for this variable should be displayed.
+     * @return true iff categories for this variable should be displayed.
      */
     public final boolean isCategoryNamesDisplayed() {
         return this.categoryNamesDisplayed;
@@ -331,7 +328,7 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Returns true iff the given object is a discrete variable with the same
+     * @return true iff the given object is a discrete variable with the same
      * number of categories and the same categories.
      */
     public final boolean equals(Object o) {
@@ -421,7 +418,7 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Returns the x coordinate of the center of the node.
+     * @return the x coordinate of the center of the node.
      */
     public final int getCenterX() {
         return this.centerX;
@@ -435,7 +432,7 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Returns the y coordinate of the center of the node.
+     * @return the y coordinate of the center of the node.
      */
     public final int getCenterY() {
         return this.centerY;
@@ -464,7 +461,7 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * Returns the name of the variable followed by its list of categories.
+     * @return the name of the variable followed by its list of categories.
      */
     public final String toString() {
         return getName();

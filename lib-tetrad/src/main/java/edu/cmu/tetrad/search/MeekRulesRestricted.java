@@ -526,7 +526,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
     }
 
     /**
-     * Returns true if orienting x-->y would create a cycle.
+     * @return true if orienting x-->y would create a cycle.
      */
     private boolean createsCycle(Node x, Node y, Graph graph) {
         if (aggressivelyPreventCycles) {

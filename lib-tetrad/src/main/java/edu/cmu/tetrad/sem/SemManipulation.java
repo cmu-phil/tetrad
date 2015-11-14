@@ -100,9 +100,6 @@ public final class SemManipulation implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemManipulation serializableInstance() {
         return new SemManipulation(SemIm.serializableInstance());
@@ -111,7 +108,7 @@ public final class SemManipulation implements TetradSerializable {
     //===========================PUBLIC METHODS=========================//
 
     /**
-     * Returns the Bayes IM that this is evidence for.
+     * @return the Bayes IM that this is evidence for.
      */
     public SemIm getSemIm() {
         return this.semIm;

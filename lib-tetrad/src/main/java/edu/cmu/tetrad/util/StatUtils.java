@@ -901,7 +901,7 @@ public final class StatUtils {
     }
 
     /**
-     * Returns the Pearson correlation of the first N values in array1 and
+     * @return the Pearson correlation of the first N values in array1 and
      * array2.
      *
      * @param array1 a double array.
@@ -1673,7 +1673,7 @@ public final class StatUtils {
     }
 
     /**
-     * Returns the index, >=, in the sorted list of p values of which all p values are rejected. It
+     * @return the index, >=, in the sorted list of p values of which all p values are rejected. It
      * the index is -1, all p values are rejected.
      */
     public static int fdr(double alpha, List<Double> pValues, boolean negativelyCorrelated) {
@@ -1785,7 +1785,7 @@ public final class StatUtils {
     }
 
     /**
-     * Returns the partial covariance(x, y | z) where these represent the column/row indices
+     * @return the partial covariance(x, y | z) where these represent the column/row indices
      * of the desired variables in <code>covariance</code>
      */
     public static double partialCovariance(TetradMatrix covariance, int x, int y, int... z) {
@@ -1861,7 +1861,7 @@ public final class StatUtils {
     }
 
     /**
-     * Returns the partial correlation(x, y | z) where these represent the column/row indices
+     * @return the partial correlation(x, y | z) where these represent the column/row indices
      * of the desired variables in <code>covariance</code>
      */
     public static double partialCorrelation(TetradMatrix covariance, int x, int y, int... z) {

@@ -49,7 +49,7 @@ public interface ClusteringAlgorithm {
     void cluster(TetradMatrix data);
 
     /**
-     * Returns a list of clusters, each consisting of a list of indices in the
+     * @return a list of clusters, each consisting of a list of indices in the
      * dataset provided as an argument to <code>cluster</code>, or null if the
      * data has not yet been clustered.
      *
@@ -58,7 +58,7 @@ public interface ClusteringAlgorithm {
     List<List<Integer>> getClusters();
 
     /**
-     * Returns the list of prototypes for clusters as a 2D array, or null if
+     * @return the list of prototypes for clusters as a 2D array, or null if
      * there are not prototypes or the data has not yet been clustered. The
      * array at (k, j) is the jth element of the kth prototype. The number of
      * columns in this array is equal to the number of columns in the dataset

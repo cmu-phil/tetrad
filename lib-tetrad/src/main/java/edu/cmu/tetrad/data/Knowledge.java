@@ -187,9 +187,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static IKnowledge serializableInstance() {
         return new Knowledge2();
@@ -271,7 +268,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 
 
     /**
-     * Returns an unmodifiable list of all the knowledge groups.
+     * @return an unmodifiable list of all the knowledge groups.
      *
      * @return - all the knowledge groups.
      */
@@ -369,7 +366,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns an iterator over the forbidden common causes.
+     * @return an iterator over the forbidden common causes.
      */
     public final Iterator<KnowledgeEdge> forbiddenCommonCausesIterator() {
         return Collections.unmodifiableSet(forbiddenCommonCauses).iterator();
@@ -393,7 +390,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 
 
     /**
-     * Returns the list of edges not in any tier.
+     * @return the list of edges not in any tier.
      */
     public final List<String> getVariablesNotInTiers() {
         List<String> notInTier = new ArrayList<String>(variables);
@@ -407,7 +404,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns (a copy of) the given tier.
+     * @return (a copy of) the given tier.
      *
      * @param tier the index of the desired tier.
      * @return a copy of this tier.
@@ -428,7 +425,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns the number of temporal tiers.
+     * @return the number of temporal tiers.
      */
     public final int getNumTiers() {
         List<Integer> s = new ArrayList<Integer>(tierMap.values());
@@ -525,7 +522,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 
 
     /**
-     * Returns true iff no edge between x and y is required.
+     * @return true iff no edge between x and y is required.
      */
     public final boolean noEdgeRequired(String x, String y) {
         return !(isCommonCauseRequired(x, y) || isRequired(x, y) ||
@@ -563,7 +560,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns true if there is no background knowledge recorded.
+     * @return true if there is no background knowledge recorded.
      */
     public final boolean isEmpty() {
         return this.allRequiredEdges.isEmpty() && getForbiddenEdges().isEmpty() &&
@@ -872,7 +869,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Returns the contents of this Knowledge object in String form.
+     * @return the contents of this Knowledge object in String form.
      */
     public final String toString() {
         try {

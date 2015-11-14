@@ -66,23 +66,20 @@ public class VerticalDoubleDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static BoxDataSet serializableInstance() {
         return new BoxDataSet(new ShortDataBox(4, 4), null);
     }
 
     /**
-     * Returns the number of rows in this data box.
+     * @return the number of rows in this data box.
      */
     public int numRows() {
         return data[0].length;
     }
 
     /**
-     * Returns the number of columns in this data box.
+     * @return the number of columns in this data box.
      */
     public int numCols() {
         return data.length;
@@ -101,7 +98,7 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
-     * Returns the Number value at the given row and column. If the value
+     * @return the Number value at the given row and column. If the value
      * is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
@@ -120,7 +117,7 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
-     * Returns a copy of this data box.
+     * @return a copy of this data box.
      */
     public DataBox copy() {
         VerticalDoubleDataBox box = new VerticalDoubleDataBox(numRows(), numCols());
@@ -135,7 +132,7 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
-     * Returns a DataBox of type DoubleDataBox, but with the given dimensions.
+     * @return a DataBox of type DoubleDataBox, but with the given dimensions.
      */
     public DataBox like(int rows, int cols) {
         return new VerticalDoubleDataBox(rows, cols);

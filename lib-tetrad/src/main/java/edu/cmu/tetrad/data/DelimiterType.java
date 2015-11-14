@@ -67,16 +67,13 @@ public final class DelimiterType implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static DelimiterType serializableInstance() {
         return DelimiterType.TAB;
     }
 
     /**
-     * Returns the pattern representing this delimiter type. This pattern can be
+     * @return the pattern representing this delimiter type. This pattern can be
      * used to parse, using a matcher.
      */
     public final Pattern getPattern() {

@@ -99,9 +99,6 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static StoredCellProbsObs serializableInstance() {
         return new StoredCellProbsObs(new ArrayList<Node>());
@@ -174,7 +171,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     //=============================PUBLIC METHODS=========================//
 
     /**
-     * Returns the probability for the given cell, specified as a particular
+     * @return the probability for the given cell, specified as a particular
      * combination of variable values, for the list of variables (in order)
      * returned by get
      */
@@ -384,7 +381,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     //============================PRIVATE METHODS==========================//
 
     /**
-     * Returns the row in the table at which the given combination of parent
+     * @return the row in the table at which the given combination of parent
      * values is represented for the given node.  The row is calculated as a
      * variable-base place-value number.  For instance, if the array of
      * parent dimensions is [3, 5, 7] and the parent value combination is [2,
@@ -413,7 +410,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     }
 
     /**
-     * Returns an array containing the number of values, in order, of each
+     * @return an array containing the number of values, in order, of each
      * variable.
      */
     private int[] getParentDims() {

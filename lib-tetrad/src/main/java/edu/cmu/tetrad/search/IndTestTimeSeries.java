@@ -188,7 +188,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns true iff according to the test var(indices[0]) _||_ var(indices[1] | var(indices[2], ...,
+     * @return true iff according to the test var(indices[0]) _||_ var(indices[1] | var(indices[2], ...,
      * var(indices[indices.length - 1]).
      */
     public boolean isIndependent(int[] indices) {
@@ -245,7 +245,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
 //    }
 
     /**
-     * Returns the list of variable varNames.
+     * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
@@ -280,7 +280,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns the (unmodifiable) list of vars.
+     * @return the (unmodifiable) list of vars.
      */
     public List<Node> getVariables() {
         return this.vars;
@@ -306,7 +306,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns the number of lags.
+     * @return the number of lags.
      */
     public int getNumLags() {
         return numLags;
@@ -342,7 +342,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns the number of time steps in the data.
+     * @return the number of time steps in the data.
      */
     public int getNumTimeSteps() {
         return numTimeSteps;
@@ -417,7 +417,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns the row of the data indexed so that the last row has index numReps and the first row has index numReps -
+     * @return the row of the data indexed so that the last row has index numReps and the first row has index numReps -
      * numTimeSteps + 1.
      *
      * @param tIndex an int in the range [numReps - numTimeSteps + 1, numReps].
@@ -484,7 +484,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns Sigma_u.
+     * @return Sigma_u.
      */
     private double[][] sigmaU() {
         if (this.sigmaU == null) {
@@ -617,7 +617,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     //    }
 
     /**
-     * Returns the chi square cutoff value for the given degrees of freedom and significance level.
+     * @return the chi square cutoff value for the given degrees of freedom and significance level.
      */
     public double chiSquareCutoff() {
         double d = 0.0;
@@ -659,21 +659,21 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns tau for indArr = [1 2] (one-indexed). From Mathematica.
+     * @return tau for indArr = [1 2] (one-indexed). From Mathematica.
      */
     private double tau0() {
         return s(1, 2);
     }
 
     /**
-     * Returns tau for indArr = [1 2 3] (one-indexed). From Mathematica.
+     * @return tau for indArr = [1 2 3] (one-indexed). From Mathematica.
      */
     private double tau1() {
         return -s(1, 3) * s(2, 3) + s(1, 2) * s(3, 3);
     }
 
     /**
-     * Returns tau for indArr = [1 2 3 4] (one-indexed). From Mathematica.
+     * @return tau for indArr = [1 2 3 4] (one-indexed). From Mathematica.
      */
     private double tau2() {
         return -s(1, 4) * s(2, 4) * s(3, 3) + s(1, 4) * s(2, 3) * s(3, 4) +
@@ -682,7 +682,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns tau for indArr = [1 2 3 4 5] (one-indexed). From Mathematica.
+     * @return tau for indArr = [1 2 3 4 5] (one-indexed). From Mathematica.
      */
     private double tau3() {
         return s(1, 5) * s(2, 5) * s(3, 4) * s(3, 4) -
@@ -711,7 +711,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns tau for indArr = [1 2 3 4 5 6] (one-indexed). From Mathematica.
+     * @return tau for indArr = [1 2 3 4 5 6] (one-indexed). From Mathematica.
      */
     private double tau4() {
         return s(1, 6) * s(2, 6) * s(3, 5) * s(3, 5) * s(4, 4) -
@@ -866,7 +866,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns grad(tau) for numTimeSteps = 2, indArr = [1 2] (one-indexed). From Mathematica. </p> Examples of the
+     * @return grad(tau) for numTimeSteps = 2, indArr = [1 2] (one-indexed). From Mathematica. </p> Examples of the
      * gradients of the tau functions were calculated using the following Mathematica script (in this case comparing v1
      * and v4 given v2 and v3). These were then modified using Xemacs into Java formulas. (In case anyone needs to do it
      * again.)</p>
@@ -897,14 +897,14 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns grad(tau) for numTimeSteps = 3, indArr = [1 2 3] (one-indexed). From Mathematica.
+     * @return grad(tau) for numTimeSteps = 3, indArr = [1 2 3] (one-indexed). From Mathematica.
      */
     private double[] gradTau1() {
         return new double[]{0, s(3, 3), -s(2, 3), 0, -s(1, 3), s(1, 2)};
     }
 
     /**
-     * Returns grad(tau) for numTimeSteps = 4, indArr = [1 2 3 4] (one-indexed). From Mathematica.
+     * @return grad(tau) for numTimeSteps = 4, indArr = [1 2 3 4] (one-indexed). From Mathematica.
      */
     private double[] gradTau2() {
         return new double[]{0, -s(3, 4) * s(3, 4) + s(3, 3) * s(4, 4),
@@ -918,7 +918,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns grad(tau) for numTimeSteps = 5, indArr = [1 2 3 4 5] (one-indexed). From Mathematica.
+     * @return grad(tau) for numTimeSteps = 5, indArr = [1 2 3 4 5] (one-indexed). From Mathematica.
      */
     private double[] gradTau3() {
         return new double[]{0, -s(3, 5) * s(3, 5) * s(4, 4) +
@@ -971,7 +971,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns grad(tau) for numTimeSteps = 6, indArr = [1 2 3 4 5 6] (one-indexed). From Mathematica.
+     * @return grad(tau) for numTimeSteps = 6, indArr = [1 2 3 4 5 6] (one-indexed). From Mathematica.
      */
     private double[] gradTau4() {
         return new double[]{0, s(3, 6) * s(3, 6) * s(4, 5) * s(4, 5) -
@@ -1469,7 +1469,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
-     * Returns the sample correlation of var(i) with var(j) (one-indexed).
+     * @return the sample correlation of var(i) with var(j) (one-indexed).
      */
     private double s(int i, int j) {
         return indexedCorr().getValue(i - 1, j - 1);

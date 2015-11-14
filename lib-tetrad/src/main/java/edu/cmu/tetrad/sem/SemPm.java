@@ -162,9 +162,6 @@ public final class SemPm implements PM, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemPm serializableInstance() {
         return new SemPm(Dag.serializableInstance());
@@ -220,14 +217,14 @@ public final class SemPm implements PM, TetradSerializable {
     //============================PUBLIC METHODS========================//
 
     /**
-     * Returns the structural model graph this SEM PM is using.
+     * @return the structural model graph this SEM PM is using.
      */
     public SemGraph getGraph() {
         return this.graph;
     }
 
     /**
-     * Returns a list of all the freeParameters, including variance, covariance,
+     * @return a list of all the freeParameters, including variance, covariance,
      * coefficient, and mean freeParameters.
      */
     public List<Parameter> getParameters() {
@@ -235,7 +232,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the list of variable nodes--that is, node that are not error
+     * @return the list of variable nodes--that is, node that are not error
      * nodes.
      */
     public List<Node> getVariableNodes() {
@@ -243,7 +240,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the list of exogenous variableNodes.
+     * @return the list of exogenous variableNodes.
      */
     public List<Node> getErrorNodes() {
         List<Node> errorNodes = new ArrayList<Node>();
@@ -258,7 +255,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the list of measured variableNodes.
+     * @return the list of measured variableNodes.
      */
     public List<Node> getMeasuredNodes() {
         List<Node> measuredNodes = new ArrayList<Node>();
@@ -273,7 +270,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the list of latent variableNodes.
+     * @return the list of latent variableNodes.
      */
     public List<Node> getLatentNodes() {
         List<Node> latentNodes = new ArrayList<Node>();
@@ -288,7 +285,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the first parameter encountered with the given name, or null if
+     * @return the first parameter encountered with the given name, or null if
      * there is no such parameter.
      */
     public Parameter getParameter(String name) {
@@ -409,7 +406,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the list of measured variable names in the order in which they
+     * @return the list of measured variable names in the order in which they
      * appear in the list of nodes. (This order is fixed.)
      */
     public String[] getMeasuredVarNames() {
@@ -426,7 +423,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the comparison of parmeter a to parameter b.
+     * @return the comparison of parmeter a to parameter b.
      */
     public ParamComparison getParamComparison(Parameter a, Parameter b) {
         if (a == null || b == null) {
@@ -446,7 +443,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the comparison of parmeter a to parameter b.
+     * @return the comparison of parmeter a to parameter b.
      */
     public void setParamComparison(Parameter a, Parameter b,
                                    ParamComparison comparison) {
@@ -485,7 +482,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the degrees of freedom for the model.
+     * @return the degrees of freedom for the model.
      */
     public int getDof() {
         int numMeasured = getMeasuredNodes().size();
@@ -766,7 +763,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns a unique (for this PM) parameter name beginning with the Greek
+     * @return a unique (for this PM) parameter name beginning with the Greek
      * letter theta.
      */
     private String newTName() {
@@ -774,7 +771,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns a unique (for this PM) parameter name beginning with the Greek
+     * @return a unique (for this PM) parameter name beginning with the Greek
      * letter mu.
      */
     private String newMName() {
@@ -782,7 +779,7 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns a unique (for this PM) parameter name beginning with the letter
+     * @return a unique (for this PM) parameter name beginning with the letter
      * "B".
      */
     private String newBName() {

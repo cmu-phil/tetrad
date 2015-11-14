@@ -253,9 +253,6 @@ public class EdgeListGraphSingleConnections implements Graph {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static EdgeListGraphSingleConnections serializableInstance() {
         return new EdgeListGraphSingleConnections();
@@ -435,7 +432,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns true iff there is a directed path from node1 to node2.
+     * @return true iff there is a directed path from node1 to node2.
      * a
      */
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
@@ -468,7 +465,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the list of children for a node.
+     * @return the list of children for a node.
      */
     public List<Node> getChildren(Node node) {
         List<Node> children = new ArrayList<Node>(2);
@@ -512,7 +509,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the edge connecting node1 and node2, provided a unique such edge
+     * @return the edge connecting node1 and node2, provided a unique such edge
      * exists.
      */
     public Edge getEdge(Node node1, Node node2) {
@@ -546,7 +543,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the list of parents for a node.
+     * @return the list of parents for a node.
      */
     public List<Node> getParents(Node node) {
         List<Node> parents = new ArrayList<Node>();
@@ -567,14 +564,14 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the number of edges into the given node.
+     * @return the number of edges into the given node.
      */
     public int getIndegree(Node node) {
         return getParents(node).size();
     }
 
     /**
-     * Returns the number of edges out of the given node.
+     * @return the number of edges out of the given node.
      */
     public int getOutdegree(Node node) {
         return getChildren(node).size();
@@ -974,7 +971,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the set of nodes adjacent to the given node. If there are multiple edges between X and Y, Y will show
+     * @return the set of nodes adjacent to the given node. If there are multiple edges between X and Y, Y will show
      * up twice in the list of adjacencies for X, for optimality; simply create a list an and array from these to
      * eliminate the duplication.
      */
@@ -1018,7 +1015,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the endpoint along the edge from node to node2 at the node2 end.
+     * @return the endpoint along the edge from node to node2 at the node2 end.
      */
     public Endpoint getEndpoint(Node node1, Node node2) {
         Edge edge = getEdge(node1, node2);
@@ -1086,7 +1083,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns a matrix of endpoints for the nodes in this graph, with nodes in
+     * @return a matrix of endpoints for the nodes in this graph, with nodes in
      * the same order as getNodes().
      */
     public Endpoint[][] getEndpointMatrix() {
@@ -1180,7 +1177,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the list of edges in the graph.  No particular ordering of the
+     * @return the list of edges in the graph.  No particular ordering of the
      * edges in the list is guaranteed.
      */
     public Set<Edge> getEdges() {
@@ -1202,7 +1199,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the list of edges connected to a particular node. No particular
+     * @return the list of edges connected to a particular node. No particular
      * ordering of the edges in the list is guaranteed.
      */
     public synchronized List<Edge> getEdges(Node node) {
@@ -1231,7 +1228,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns true iff the given object is a graph that is equal to this graph,
+     * @return true iff the given object is a graph that is equal to this graph,
      * in the sense that it contains the same nodes and the edges are
      * isomorphic.
      */
@@ -1293,7 +1290,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the node with the given name, or null if no such node exists.
+     * @return the node with the given name, or null if no such node exists.
      */
     public Node getNode(String name) {
         Node node = namesHash.get(name);
@@ -1322,21 +1319,21 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the number of nodes in the graph.
+     * @return the number of nodes in the graph.
      */
     public int getNumNodes() {
         return nodes.size();
     }
 
     /**
-     * Returns the number of edges in the (entire) graph.
+     * @return the number of edges in the (entire) graph.
      */
     public int getNumEdges() {
         return edgesSet.size();
     }
 
     /**
-     * Returns the number of edges connected to a particular node in the graph.
+     * @return the number of edges connected to a particular node in the graph.
      */
     public int getNumEdges(Node node) {
         List<Edge> list = edgeLists.get(node);
@@ -1344,14 +1341,14 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the list of graph constraints for this graph.
+     * @return the list of graph constraints for this graph.
      */
     public List<GraphConstraint> getGraphConstraints() {
         return new LinkedList<GraphConstraint>(graphConstraints);
     }
 
     /**
-     * Returns true iff graph constraints will be checked for future graph
+     * @return true iff graph constraints will be checked for future graph
      * modifications.
      */
     public boolean isGraphConstraintsChecked() {
@@ -1518,7 +1515,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns a string representation of the graph.
+     * @return a string representation of the graph.
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -1597,7 +1594,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns the edges connecting node1 and node2.
+     * @return the edges connecting node1 and node2.
      */
     public List<Edge> getEdges(Node node1, Node node2) {
         Edge edge = getEdge(node1, node2);
@@ -1978,7 +1975,7 @@ public class EdgeListGraphSingleConnections implements Graph {
 //    }
 
     /**
-     * Returns the existing property change support object for this class, if
+     * @return the existing property change support object for this class, if
      * there is one, or else creates a new one and returns that.
      *
      * @return this object.
@@ -1991,7 +1988,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     /**
-     * Returns true iff there is a directed path from node1 to node2.
+     * @return true iff there is a directed path from node1 to node2.
      */
     private boolean existsUndirectedPathVisit(Node node1, Node node2, Set<Node> path) {
         path.add(node1);

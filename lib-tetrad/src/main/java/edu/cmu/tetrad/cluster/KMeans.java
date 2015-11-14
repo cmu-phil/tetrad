@@ -298,7 +298,7 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     /**
-     * Returns the getModel iteration.
+     * @return the getModel iteration.
      *
      * @return the number of iterations.
      */
@@ -341,7 +341,7 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     /**
-     * Returns a string representation of the cluster result.
+     * @return a string representation of the cluster result.
      */
     public String toString() {
         NumberFormat n1 = NumberFormatUtil.getInstance().getNumberFormat();

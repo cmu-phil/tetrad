@@ -104,7 +104,7 @@ public final class CellTable {
     }
 
     /**
-     * Returns the number of values for the given variable.
+     * @return the number of values for the given variable.
      *
      * @param varIndex the index of the variable in question.
      * @return the number of dimensions of the variable.

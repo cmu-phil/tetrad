@@ -132,7 +132,7 @@ public class RandomUtil2 {
     //=======================================PUBLIC METHODS=================================//
 
     /**
-     * Returns an integer in the range 0 to n - 1, inclusive.
+     * @return an integer in the range 0 to n - 1, inclusive.
      *
      * @param n Ibid.
      * @return Ibid.
@@ -151,7 +151,7 @@ public class RandomUtil2 {
 
     /**
      * 
-     * Returns a random double from U(low, high).
+     * @return a random double from U(low, high).
      *
      * @param low  Ibid.
      * @param high Ibid.
@@ -162,7 +162,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns a random gaussian from N(mean, sd).
+     * @return a random gaussian from N(mean, sd).
      *
      * @param mean The mean of the Normal.
      * @param sd   The standard deviation of the Normal.
@@ -177,7 +177,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns a random gaussian from N(mean, sd).
+     * @return a random gaussian from N(mean, sd).
      *
      * @param mean The mean of the Normal.
      * @param sd   The standard deviation of the Normal.
@@ -203,7 +203,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the getModel seed.
+     * @return the getModel seed.
      *
      * @return Ibid.
      */
@@ -223,7 +223,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from a Poisson distribution with the given mean.
+     * @return the next random number drawn from a Poisson distribution with the given mean.
      *
      * @param lambda A positive real number equal to the expected number of occurrences during a given interval. See
      *               Wikipedia.
@@ -234,7 +234,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns Normal PDF value for a normal with the given mean and standard deviation.
+     * @return Normal PDF value for a normal with the given mean and standard deviation.
      *
      * @param mean  The mean of the normal to be used.
      * @param sd    The standard deviation of the normal to be used.
@@ -246,7 +246,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns Normal CDF value for a normal with the given mean and standard deviation.
+     * @return Normal CDF value for a normal with the given mean and standard deviation.
      *
      * @param mean  The mean of the normal to be used.
      * @param sd    The standard deviation of the normal to be used.
@@ -261,7 +261,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from the Beta distribution with the given alpha and beta values. By changing
+     * @return the next random number drawn from the Beta distribution with the given alpha and beta values. By changing
      * the alpha and beta parameters, radically different distibutions can be achieved. The Beta function is related to
      * order statistics.
      *
@@ -274,7 +274,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from the von Mises distrbution with the given degrees of freedom. Note that
+     * @return the next random number drawn from the von Mises distrbution with the given degrees of freedom. Note that
      * mu is assumed to be zero. See Wikipedia.
      *
      * @param kappa The measure of concentration.
@@ -285,7 +285,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from the Student T distribution with the given degrees of freedom.
+     * @return the next random number drawn from the Student T distribution with the given degrees of freedom.
      *
      * @param df The degrees of freedom. See any stats book.
      * @return Ibid.
@@ -295,7 +295,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from the Exponential distribution with the given lambda.
+     * @return the next random number drawn from the Exponential distribution with the given lambda.
      *
      * @param lambda The rate parameter. See Wikipedia.
      * @return Ibid.
@@ -305,7 +305,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from the Eponential Power distribution with the given tau.
+     * @return the next random number drawn from the Eponential Power distribution with the given tau.
      *
      * @param tau The shape parameter. See Wikipedia.
      * @return Ibid.
@@ -316,7 +316,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from the given Chi Square distrubution with the given degrees of freedom.
+     * @return the next random number drawn from the given Chi Square distrubution with the given degrees of freedom.
      *
      * @param df The degrees of freedom.
      * @return Ibid.
@@ -326,7 +326,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from the Gamma distribution with the given alpha and lambda.
+     * @return the next random number drawn from the Gamma distribution with the given alpha and lambda.
      *
      * @param shape The shape parameter.
      * @param scale The scale parameter.
@@ -337,7 +337,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from the Logarithmic distribution, with the given p.
+     * @return the next random number drawn from the Logarithmic distribution, with the given p.
      *
      * @param p Between 0 and 1.
      * @return Ibid.
@@ -347,7 +347,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from the Breit Wigner distribution with the given mean, gamma, and cut. I'm
+     * @return the next random number drawn from the Breit Wigner distribution with the given mean, gamma, and cut. I'm
      * not sure of the identity of these parameters, sorry.
      *
      * @param mean  Center of mass energy?
@@ -360,7 +360,7 @@ public class RandomUtil2 {
     }
 
     /**
-     * Returns the next random number drawn from the given Hyperbolic distribution with the given alpha and gamma.
+     * @return the next random number drawn from the given Hyperbolic distribution with the given alpha and gamma.
      *
      * @param alpha Real.
      * @param gamma Assymmetry parameter.

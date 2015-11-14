@@ -78,7 +78,7 @@ public interface GraphConstraint extends TetradSerializable {
     boolean isNodeRemovable(Node node, Graph graph);
 
     /**
-     * Returns a string representation of the graph constraint, of the form
+     * @return a string representation of the graph constraint, of the form
      * "<[Some sentence.]>.
      *
      * @return this string.

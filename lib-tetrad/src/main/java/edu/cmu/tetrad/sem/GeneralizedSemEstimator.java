@@ -557,7 +557,7 @@ public class GeneralizedSemEstimator {
         }
 
         /**
-         * Returns the number of arguments. Required by the MultivariateFunction
+         * @return the number of arguments. Required by the MultivariateFunction
          * interface.
          */
         public int getNumArguments() {
@@ -565,7 +565,7 @@ public class GeneralizedSemEstimator {
         }
 
         /**
-         * Returns the lower bound of argument n. Required by the
+         * @return the lower bound of argument n. Required by the
          * MultivariateFunction interface.
          */
         public double getLowerBound(final int n) {
@@ -574,7 +574,7 @@ public class GeneralizedSemEstimator {
         }
 
         /**
-         * Returns the upper bound of argument n. Required by the
+         * @return the upper bound of argument n. Required by the
          * MultivariateFunction interface.
          */
         public double getUpperBound(final int n) {

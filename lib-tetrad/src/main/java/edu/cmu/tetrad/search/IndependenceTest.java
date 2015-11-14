@@ -39,67 +39,67 @@ import java.util.List;
 public interface IndependenceTest {
 
     /**
-     * Returns an Independence test for a subset of the variables.
+     * @return an Independence test for a subset of the variables.
      */
     IndependenceTest indTestSubset(List<Node> vars);
 
     /**
-     * Returns true if the given independence question is judged true, false if not. The independence question is of the
+     * @return true if the given independence question is judged true, false if not. The independence question is of the
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     boolean isIndependent(Node x, Node y, List<Node> z);
 
     /**
-     * Returns true if the given independence question is judged true, false if not. The independence question is of the
+     * @return true if the given independence question is judged true, false if not. The independence question is of the
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     boolean isIndependent(Node x, Node y, Node... z);
 
     /**
-     * Returns true if the given independence question is judged false, true if not. The independence question is of the
+     * @return true if the given independence question is judged false, true if not. The independence question is of the
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     boolean isDependent(Node x, Node y, List<Node> z);
 
     /**
-     * Returns true if the given independence question is judged false, true if not. The independence question is of the
+     * @return true if the given independence question is judged false, true if not. The independence question is of the
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     boolean isDependent(Node x, Node y, Node... z);
 
     /**
-     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
+     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
      * not meaningful for tis test.
      */
     double getPValue();
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinining independence
+     * @return the list of variables over which this independence checker is capable of determinining independence
      * relations.
      */
     List<Node> getVariables();
 
     /**
-     * Returns the variable by the given name.
+     * @return the variable by the given name.
      */
     Node getVariable(String name);
 
     /**
-     * Returns the list of names for the variables in getNodesInEvidence.
+     * @return the list of names for the variables in getNodesInEvidence.
      */
     List<String> getVariableNames();
 
     /**
-     * Returns true if y is determined the variable in z.
+     * @return true if y is determined the variable in z.
      */
     boolean determines(List<Node> z, Node y);
 
     /**
-     * Returns the significance level of the independence test.
+     * @return the significance level of the independence test.
      *
      * @throws UnsupportedOperationException if there is no significance level.
      */

@@ -353,7 +353,7 @@ public class FastIca {
 
     /**
      * Runs the Fast ICA algorithm (following the R version) and returns the list of result items that the R version
-     * returns.
+     * @return.
      *
      * @return this list, as an FastIca.IcaResult object.
      */

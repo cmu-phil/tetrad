@@ -43,9 +43,6 @@ public final class InArrowImpliesNonancestor implements GraphConstraint {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static InArrowImpliesNonancestor serializableInstance() {
         return new InArrowImpliesNonancestor();
@@ -54,7 +51,7 @@ public final class InArrowImpliesNonancestor implements GraphConstraint {
     //=============================PUBLIC METHODS=========================//
 
     /**
-     * Returns true for edge A *-> B iff B is not an ancestor of A.
+     * @return true for edge A *-> B iff B is not an ancestor of A.
      */
     public boolean isEdgeAddable(Edge edge, Graph graph) {
         if (edge.getEndpoint1() == Endpoint.ARROW) {
@@ -73,28 +70,28 @@ public final class InArrowImpliesNonancestor implements GraphConstraint {
     }
 
     /**
-     * Returns true.
+     * @return true.
      */
     public boolean isNodeAddable(Node node, Graph graph) {
         return true;
     }
 
     /**
-     * Returns true.
+     * @return true.
      */
     public boolean isEdgeRemovable(Edge edge, Graph graph) {
         return true;
     }
 
     /**
-     * Returns true.
+     * @return true.
      */
     public boolean isNodeRemovable(Node node, Graph graph) {
         return true;
     }
 
     /**
-     * Returns a string representation of the constraint.
+     * @return a string representation of the constraint.
      */
     public String toString() {
         return "<Arrow implies non-ancestor.>";

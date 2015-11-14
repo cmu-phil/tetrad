@@ -1104,7 +1104,7 @@ public final class GesMulti implements GraphSearch, GraphScorer {
     }
 
     /**
-     * Returns true iif the given set forms a clique in the given graph.
+     * @return true iif the given set forms a clique in the given graph.
      */
     private static boolean isClique(List<Node> nodes, Graph graph) {
         for (int i = 0; i < nodes.size() - 1; i++) {
@@ -1467,7 +1467,7 @@ public final class GesMulti implements GraphSearch, GraphScorer {
 
 
     /**
-     * Returns the submatrix of m with variables in the order of the x variables.
+     * @return the submatrix of m with variables in the order of the x variables.
      */
     public static TetradMatrix subMatrix(List<Node> nodes, TetradMatrix m, List<Node> x, List<Node> y) {
 

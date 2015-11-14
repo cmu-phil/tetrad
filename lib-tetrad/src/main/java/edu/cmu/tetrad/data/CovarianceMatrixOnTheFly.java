@@ -250,9 +250,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static ICovarianceMatrix serializableInstance() {
         List<Node> variables = new ArrayList<Node>();
@@ -265,14 +262,14 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     //============================PUBLIC METHODS=========================//
 
     /**
-     * Returns the list of variables (unmodifiable).
+     * @return the list of variables (unmodifiable).
      */
     public final List<Node> getVariables() {
         return this.variables;
     }
 
     /**
-     * Returns the variable names, in order.
+     * @return the variable names, in order.
      */
     public final List<String> getVariableNames() {
         List<String> names = new ArrayList<String>();
@@ -286,7 +283,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * Returns the variable name at the given index.
+     * @return the variable name at the given index.
      */
     public final String getVariableName(int index) {
         if (index >= getVariables().size()) {
@@ -298,7 +295,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * Returns the dimension of the covariance matrix.
+     * @return the dimension of the covariance matrix.
      */
     public final int getDimension() {
         return variables.size();
@@ -328,7 +325,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * Returns the knowledge associated with this data.
+     * @return the knowledge associated with this data.
      */
     public final IKnowledge getKnowledge() {
         return this.knowledge.copy();
@@ -346,7 +343,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * Returns a submatrix of the covariance matrix with variables in the
+     * @return a submatrix of the covariance matrix with variables in the
      * given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
@@ -371,7 +368,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * Returns a submatrix of this matrix, with variables in the given
+     * @return a submatrix of this matrix, with variables in the given
      * order.
      */
     public final CovarianceMatrixOnTheFly getSubmatrix(String[] submatrixVarNames) {
@@ -405,7 +402,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * Returns the value of element (i,j) in the matrix
+     * @return the value of element (i,j) in the matrix
      */
     public final double getValue(int i, int j) {
         if (i == j) {
@@ -440,14 +437,14 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * Returns the size of the square matrix.
+     * @return the size of the square matrix.
      */
     public final int getSize() {
         return matrix.rows();
     }
 
     /**
-     * Returns a copy of the covariance matrix.
+     * @return a copy of the covariance matrix.
      */
     public final TetradMatrix getMatrix() {
         return matrix;

@@ -155,7 +155,7 @@ public class MimBuildEstimator {
     }
 
     /**
-     * Returns a new SemEstimator for the given SemPm and continuous data set.
+     * @return a new SemEstimator for the given SemPm and continuous data set.
      *
      * @param semPm   a SemPm specifying the graph and parameterization for the
      *                model.
@@ -182,7 +182,7 @@ public class MimBuildEstimator {
 
 
     /**
-     * Returns a new SemEstimator for the given SemPm and covariance matrix.
+     * @return a new SemEstimator for the given SemPm and covariance matrix.
      *
      * @param semPm     a SemPm specifying the graph and parameterization for
      *                  the model.
@@ -889,7 +889,7 @@ public class MimBuildEstimator {
     }
 
     /**
-     * Returns the estimated SemIm. If the <code>estimate</code> method has not
+     * @return the estimated SemIm. If the <code>estimate</code> method has not
      * yet been called, <code>null</code> is returned.
      */
     public SemIm getEstimatedSem() {
@@ -898,7 +898,7 @@ public class MimBuildEstimator {
 
 
     /**
-     * Returns a string representation of the Sem.
+     * @return a string representation of the Sem.
      */
     public String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -974,7 +974,7 @@ public class MimBuildEstimator {
         }
 
         /**
-         * Returns the number of arguments. Required by the MultivariateFunction
+         * @return the number of arguments. Required by the MultivariateFunction
          * interface.
          */
         public int getNumArguments() {
@@ -982,7 +982,7 @@ public class MimBuildEstimator {
         }
 
         /**
-         * Returns the lower bound of argument n. Required by the
+         * @return the lower bound of argument n. Required by the
          * MultivariateFunction interface.
          */
         public double getLowerBound(final int n) {
@@ -993,7 +993,7 @@ public class MimBuildEstimator {
         }
 
         /**
-         * Returns the upper bound of argument n. Required by the
+         * @return the upper bound of argument n. Required by the
          * MultivariateFunction interface.
          */
         public double getUpperBound(final int n) {

@@ -97,9 +97,6 @@ public final class ContinuousVariable extends AbstractVariable
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static ContinuousVariable serializableInstance() {
         return new ContinuousVariable("X");
@@ -139,7 +136,7 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     /**
-     * Returns the double value that represents missing data for this
+     * @return the double value that represents missing data for this
      * variable, wrapped in a Double.  The default is Double.NaN.
      *
      * @return the missing value marker, wrapped as a Double.
@@ -149,7 +146,7 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     /**
-     * Returns the double value that represents missing data for this
+     * @return the double value that represents missing data for this
      * variable. The default is Double.NaN.
      *
      * @return the missing value marker.
@@ -224,7 +221,7 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     /**
-     * Returns the x coordinate of the center of the node.
+     * @return the x coordinate of the center of the node.
      */
     public int getCenterX() {
         return this.centerX;
@@ -238,7 +235,7 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     /**
-     * Returns the y coordinate of the center of the node.
+     * @return the y coordinate of the center of the node.
      */
     public int getCenterY() {
         return this.centerY;

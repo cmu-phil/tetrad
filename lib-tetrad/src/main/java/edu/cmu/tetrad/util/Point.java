@@ -42,7 +42,7 @@ public class Point implements Comparable {
     }
 
     /**
-     * Returns the coordinate at the given index.
+     * @return the coordinate at the given index.
      * @param index Ibid.
      * @return Ibid.
      */
@@ -51,7 +51,7 @@ public class Point implements Comparable {
     }
 
     /**
-     * Returns the size of the vector.
+     * @return the size of the vector.
      * @return Ibid.
      */
     public int getSize() {
@@ -81,7 +81,7 @@ public class Point implements Comparable {
     }
 
     /**
-     * Returns a string representation of this point.
+     * @return a string representation of this point.
      * @return Ibid.
      */
     public String toString() {
@@ -102,7 +102,7 @@ public class Point implements Comparable {
     }
 
     /**
-     * Returns the vector of coordinates.
+     * @return the vector of coordinates.
      * @return Ibid.
      */
     public TetradVector getVector() {

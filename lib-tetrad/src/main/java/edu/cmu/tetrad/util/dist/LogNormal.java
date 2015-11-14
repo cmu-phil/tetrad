@@ -41,10 +41,7 @@ public class LogNormal implements Distribution {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return The exemplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public static LogNormal serializableInstance() {
         return new LogNormal(.5);
     }

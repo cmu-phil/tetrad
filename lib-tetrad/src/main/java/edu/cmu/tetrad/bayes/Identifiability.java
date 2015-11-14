@@ -100,9 +100,6 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Identifiability serializableInstance() {
             return new Identifiability(MlBayesIm.serializableInstance());
@@ -143,7 +140,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
  	/////////////////////////////////////////////////////////////////
    /**
-     * Returns the updated BayesIm.
+     * @return the updated BayesIm.
      */
     public BayesIm getManipulatedBayesIm() {
         return this.manipulatedBayesIm;
@@ -166,7 +163,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
 	/////////////////////////////////////////////////////////////////
     /**
-     * Returns a defensive copy of the evidence.
+     * @return a defensive copy of the evidence.
      */
     public Evidence getEvidence() {
         return new Evidence(this.evidence);

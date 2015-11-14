@@ -1490,7 +1490,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the node associated with a given error node. This should be the
+     * @return the node associated with a given error node. This should be the
      * only child of the error node, E --> N.
      */
     public static Node getAssociatedNode(Node errorNode, Graph graph) {
@@ -1516,7 +1516,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns true if <code>set</code> is a clique in <code>graph</code>. </p>
+     * @return true if <code>set</code> is a clique in <code>graph</code>. </p>
      * R. Silva, June 2004
      */
 
@@ -1637,7 +1637,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the connected components of the given graph, as a list of lists
+     * @return the connected components of the given graph, as a list of lists
      * of nodes.
      */
     public static List<List<Node>> connectedComponents(Graph graph) {
@@ -1674,7 +1674,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the first directed cycle encountered, or null if none is
+     * @return the first directed cycle encountered, or null if none is
      * encountered.
      *
      * @param graph The graph in which a directed cycle is sought.
@@ -1693,7 +1693,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the first directed path encountered from <code>node1</code>
+     * @return the first directed path encountered from <code>node1</code>
      * to <code>node2</code>, or null if no such path is found.
      *
      * @param graph The graph in which a directed path is sought.
@@ -1707,7 +1707,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the path of the first directed path found from node1 to node2,
+     * @return the path of the first directed path found from node1 to node2,
      * if any.
      */
     private static List<Node> directedPathVisit(Graph graph, Node node1, Node node2,
@@ -1826,7 +1826,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the path of the first directed path found from node1 to node2, if
+     * @return the path of the first directed path found from node1 to node2, if
      * any.
      */
     public static void directedPathsFromToVisit(Graph graph, Node node1, Node node2,
@@ -1878,7 +1878,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the path of the first directed path found from node1 to node2, if
+     * @return the path of the first directed path found from node1 to node2, if
      * any.
      */
     public static void semidirectedPathsFromToVisit(Graph graph, Node node1, Node node2,
@@ -1932,7 +1932,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the path of the first directed path found from node1 to node2, if
+     * @return the path of the first directed path found from node1 to node2, if
      * any.
      */
     public static void allPathsFromToVisit(Graph graph, Node node1, Node node2,
@@ -1974,7 +1974,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the path of the first directed path found from node1 to node2, if
+     * @return the path of the first directed path found from node1 to node2, if
      * any.
      */
     public static void allDirectedPathsFromToVisit(Graph graph, Node node1, Node node2,
@@ -2016,7 +2016,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the path of the first directed path found from node1 to node2, if
+     * @return the path of the first directed path found from node1 to node2, if
      * any.
      */
     public static void allPathsFromToExcludingVisit(Graph graph, Node node1, Node node2,
@@ -2269,7 +2269,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the edges that are in <code>graph1</code> but not in <code>graph2</code>.
+     * @return the edges that are in <code>graph1</code> but not in <code>graph2</code>.
      *
      * @param graph1 An arbitrary graph.
      * @param graph2 Another arbitrary graph with the same number of nodes
@@ -2319,7 +2319,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the edges up to endpoints that are in graph1 but not in graph2.
+     * @return the edges up to endpoints that are in graph1 but not in graph2.
      *
      * @param graph1 An arbitrary graph.
      * @param graph2 Another arbitrary graph with the same number of nodes
@@ -2347,7 +2347,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the edges that are in <code>graph1</code> but not in
+     * @return the edges that are in <code>graph1</code> but not in
      * <code>graph2</code>, as a list of undirected edges..
      */
     public static List<Edge> adjacenciesComplement(Graph graph1, Graph graph2) {
@@ -2466,7 +2466,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the number of directed edges in graph 1 whose orientations are different from the
+     * @return the number of directed edges in graph 1 whose orientations are different from the
      * corresponding edges in graph2, when the corresponding edges exist.
      */
     public static int numDifferentOrientationsDirected(Graph graph1, Graph graph2) {
@@ -2501,7 +2501,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the total number of edges in graph 1 whose orientations are different from the
+     * @return the total number of edges in graph 1 whose orientations are different from the
      * corresponding edges in graph2, when the corresponding edges exist.
      */
     public static int numDifferentOrientations(Graph graph1, Graph graph2) {
@@ -2523,7 +2523,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns a new graph in which the bidirectred edges of the given
+     * @return a new graph in which the bidirectred edges of the given
      * graph have been changed to undirected edges.
      */
     public static Graph bidirectedToUndirected(Graph graph) {
@@ -2540,7 +2540,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns a new graph in which the undirectred edges of the given
+     * @return a new graph in which the undirectred edges of the given
      * graph have been changed to bidirected edges.
      */
     public static Graph undirectedToBidirected(Graph graph) {
@@ -2570,7 +2570,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns a new graph in which the bidirectred edges of the given
+     * @return a new graph in which the bidirectred edges of the given
      * graph have been changed to bidirected edges.
      */
     public static Graph bidirectedToTwoCycle(Graph graph) {
@@ -3003,7 +3003,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns an empty graph with the given number of nodes.
+     * @return an empty graph with the given number of nodes.
      */
     public static Graph emptyGraph(int numNodes) {
         List<Node> nodes = new ArrayList<Node>();
@@ -3056,7 +3056,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns an XML element representing the given graph. (Well, only a
+     * @return an XML element representing the given graph. (Well, only a
      * basic graph for now...)
      */
     public static Element convertToXml(Graph graph) {
@@ -3709,7 +3709,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns a matrix suitable for reading into R--e.g.
+     * @return a matrix suitable for reading into R--e.g.
      * <pre>
      *   V1 V2 V3 V4 V5
      * 1  0  1  0  0 -1
@@ -3806,7 +3806,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns true just in case there is a nonempty path from one node to another. Because
+     * @return true just in case there is a nonempty path from one node to another. Because
      * the path needs to be non-empty, this can distinguish cycles. The case where from = to
      * but there is no cycle from from to to needs to be checked separately.
      */

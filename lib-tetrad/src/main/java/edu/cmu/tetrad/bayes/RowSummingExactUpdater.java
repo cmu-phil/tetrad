@@ -103,9 +103,6 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static RowSummingExactUpdater serializableInstance() {
         return new RowSummingExactUpdater(MlBayesIm.serializableInstance());
@@ -122,7 +119,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * Returns the updated BayesIm.
+     * @return the updated BayesIm.
      */
     public BayesIm getManipulatedBayesIm() {
         return this.manipulatedBayesIm;
@@ -146,7 +143,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * Returns a defensive copy of the evidence.
+     * @return a defensive copy of the evidence.
      */
     public Evidence getEvidence() {
         return new Evidence(this.evidence);
@@ -200,7 +197,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * Returns P(variable==value | evidence) where evience is getEvidence().
+     * @return P(variable==value | evidence) where evience is getEvidence().
      */
     public double getMarginal(int variable, int value) {
         Proposition assertion = Proposition.tautology(manipulatedBayesIm);

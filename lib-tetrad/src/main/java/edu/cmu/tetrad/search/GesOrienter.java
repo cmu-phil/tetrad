@@ -1087,7 +1087,7 @@ public final class GesOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     /**
-     * Returns true iif the given set forms a clique in the given graph.
+     * @return true iif the given set forms a clique in the given graph.
      */
     private static boolean isClique(List<Node> nodes, Graph graph) {
         for (int i = 0; i < nodes.size() - 1; i++) {

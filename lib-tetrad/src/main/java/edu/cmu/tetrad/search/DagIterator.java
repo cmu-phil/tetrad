@@ -74,7 +74,7 @@ public class DagIterator {
      * unoriented edge is picked, oriented one way, and so on, until a DAG is obtained, and then by backtracking the
      * other orientation of each chosen edge is tried. Nonrecursive, obviously.
      * <p/>
-     * Returns a Graph instead of a DAG because sometimes, due to faulty patterns, a cyclic graph is produced, and the
+     * @return a Graph instead of a DAG because sometimes, due to faulty patterns, a cyclic graph is produced, and the
      * end-user may need to decide what to do with it. The simplest thing is to construct a DAG (Dag(graph)) and catch
      * an exception.
      */
@@ -139,7 +139,7 @@ public class DagIterator {
     }
 
     /**
-     * Returns true just in case there is still a DAG remaining in the enumeration of DAGs for this pattern.
+     * @return true just in case there is still a DAG remaining in the enumeration of DAGs for this pattern.
      */
     public boolean hasNext() {
         if (storedDag == null) {

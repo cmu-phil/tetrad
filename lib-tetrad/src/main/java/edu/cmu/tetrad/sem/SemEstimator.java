@@ -174,9 +174,6 @@ public final class SemEstimator implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemEstimator serializableInstance() {
         return new SemEstimator(CovarianceMatrix.serializableInstance(),
@@ -251,7 +248,7 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     /**
-     * Returns the estimated SemIm. If the <code>estimate</code> method has not
+     * @return the estimated SemIm. If the <code>estimate</code> method has not
      * yet been called, <code>null</code> is returned.
      */
     public SemIm getEstimatedSem() {
@@ -284,7 +281,7 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     /**
-     * Returns a string representation of the Sem.
+     * @return a string representation of the Sem.
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();

@@ -115,12 +115,12 @@ public interface Graph extends TetradSerializable {
     boolean containsNode(Node node);
 
     /**
-     * Returns true iff there is a directed cycle in the graph.
+     * @return true iff there is a directed cycle in the graph.
      */
     boolean existsDirectedCycle();
 
     /**
-     * Returns true iff there is a directed path from node1 to node2 in the
+     * @return true iff there is a directed path from node1 to node2 in the
      * graph.
      */
     boolean existsDirectedPathFromTo(Node node1, Node node2);
@@ -151,7 +151,7 @@ public interface Graph extends TetradSerializable {
     boolean existsInducingPath(Node node1, Node node2);
 
     /**
-     * Returns true iff a trek exists between two nodes in the graph.  A trek
+     * @return true iff a trek exists between two nodes in the graph.  A trek
      * exists if there is a directed path between the two nodes or else, for
      * some third node in the graph, there is a path to each of the two nodes in
      * question.
@@ -181,32 +181,32 @@ public interface Graph extends TetradSerializable {
     void reorientAllWith(Endpoint endpoint);
 
     /**
-     * Returns a mutable list of nodes adjacent to the given node.
+     * @return a mutable list of nodes adjacent to the given node.
      */
     List<Node> getAdjacentNodes(Node node);
 
     /**
-     * Returns a mutable list of ancestors for the given nodes.
+     * @return a mutable list of ancestors for the given nodes.
      */
     List<Node> getAncestors(List<Node> nodes);
 
     /**
-     * Returns a mutable list of children for a node.
+     * @return a mutable list of children for a node.
      */
     List<Node> getChildren(Node node);
 
     /**
-     * Returns the connectivity of the graph.
+     * @return the connectivity of the graph.
      */
     int getConnectivity();
 
     /**
-     * Returns a mutable list of descendants for the given nodes.
+     * @return a mutable list of descendants for the given nodes.
      */
     List<Node> getDescendants(List<Node> nodes);
 
     /**
-     * Returns the edge connecting node1 and node2, provided a unique such edge
+     * @return the edge connecting node1 and node2, provided a unique such edge
      * exists.
      *
      * @throws UnsupportedOperationException if the graph allows multiple edges
@@ -215,7 +215,7 @@ public interface Graph extends TetradSerializable {
     Edge getEdge(Node node1, Node node2);
 
     /**
-     * Returns the directed edge from node1 to node2, if there is one.
+     * @return the directed edge from node1 to node2, if there is one.
      *
      * @throws UnsupportedOperationException if the graph allows multiple edges
      *                                       between node pairs.
@@ -223,52 +223,52 @@ public interface Graph extends TetradSerializable {
     Edge getDirectedEdge(Node node1, Node node2);
 
     /**
-     * Returns the list of edges connected to a particular node. No particular
+     * @return the list of edges connected to a particular node. No particular
      * ordering of the edges in the list is guaranteed.
      */
     List<Edge> getEdges(Node node);
 
     /**
-     * Returns the edges connecting node1 and node2.
+     * @return the edges connecting node1 and node2.
      */
     List<Edge> getEdges(Node node1, Node node2);
 
     /**
-     * Returns the list of edges in the graph.  No particular ordering of the
+     * @return the list of edges in the graph.  No particular ordering of the
      * edges in the list is guaranteed.
      */
     Set<Edge> getEdges();
 
     /**
-     * Returns the endpoint along the edge from node to node2 at the node2 end.
+     * @return the endpoint along the edge from node to node2 at the node2 end.
      */
     Endpoint getEndpoint(Node node1, Node node2);
 
     /**
-     * Returns a matrix of endpoints for the nodes in this graph, with nodes in
+     * @return a matrix of endpoints for the nodes in this graph, with nodes in
      * the same order as getNodes().
      */
     Endpoint[][] getEndpointMatrix();
 
     /**
-     * Returns the list of graph constraints for this graph.
+     * @return the list of graph constraints for this graph.
      */
     List<GraphConstraint> getGraphConstraints();
 
     /**
-     * Returns the number of arrow endpoints adjacent to a node.
+     * @return the number of arrow endpoints adjacent to a node.
      */
     int getIndegree(Node node);
 
     /**
-     * Returns the node with the given string name.  In case of accidental
+     * @return the node with the given string name.  In case of accidental
      * duplicates, the first node encountered with the given name is returned.
      * In case no node exists with the given name, null is returned.
      */
     Node getNode(String name);
 
     /**
-     * Returns the list of nodes for the graph.
+     * @return the list of nodes for the graph.
      */
     List<Node> getNodes();
 
@@ -278,33 +278,33 @@ public interface Graph extends TetradSerializable {
     List<String> getNodeNames();
 
     /**
-     * Returns the number of edges in the (entire) graph.
+     * @return the number of edges in the (entire) graph.
      */
     int getNumEdges();
 
     /**
-     * Returns the number of edges in the graph which are connected to a
+     * @return the number of edges in the graph which are connected to a
      * particular node.
      */
     int getNumEdges(Node node);
 
     /**
-     * Returns the number of nodes in the graph.
+     * @return the number of nodes in the graph.
      */
     int getNumNodes();
 
     /**
-     * Returns the number of null endpoints adjacent to an edge.
+     * @return the number of null endpoints adjacent to an edge.
      */
     int getOutdegree(Node node);
 
     /**
-     * Returns the list of parents for a node.
+     * @return the list of parents for a node.
      */
     List<Node> getParents(Node node);
 
     /**
-     * Returns true iff node1 is adjacent to node2 in the graph.
+     * @return true iff node1 is adjacent to node2 in the graph.
      */
     boolean isAdjacentTo(Node node1, Node node2);
 
@@ -321,7 +321,7 @@ public interface Graph extends TetradSerializable {
     boolean possibleAncestor(Node node1, Node node2);
 
     /**
-     * Returns true iff node1 is a child of node2 in the graph.
+     * @return true iff node1 is a child of node2 in the graph.
      */
     boolean isChildOf(Node node1, Node node2);
 
@@ -341,7 +341,7 @@ public interface Graph extends TetradSerializable {
     boolean isProperDescendentOf(Node node1, Node node2);
 
     /**
-     * Returns true iff node1 is a (non-proper) descendant of node2.
+     * @return true iff node1 is a (non-proper) descendant of node2.
      */
     boolean isDescendentOf(Node node1, Node node2);
 
@@ -400,13 +400,13 @@ public interface Graph extends TetradSerializable {
     boolean possDConnectedTo(Node node1, Node node2, List<Node> z);
 
     /**
-     * Returns true iff there is a single directed edge from node1 to node2 in
+     * @return true iff there is a single directed edge from node1 to node2 in
      * the graph.
      */
     boolean isDirectedFromTo(Node node1, Node node2);
 
     /**
-     * Returns true iff there is a single undirected edge from node1 to node2 in
+     * @return true iff there is a single undirected edge from node1 to node2 in
      * the graph.
      */
     boolean isUndirectedFromTo(Node node1, Node node2);
@@ -423,7 +423,7 @@ public interface Graph extends TetradSerializable {
     boolean defVisible(Edge edge);
 
     /**
-     * Returns true iff the given node is exogenous in the graph.
+     * @return true iff the given node is exogenous in the graph.
      */
     boolean isExogenous(Node node);
 
@@ -495,7 +495,7 @@ public interface Graph extends TetradSerializable {
     boolean setEndpoint(Node from, Node to, Endpoint endPoint);
 
     /**
-     * Returns true iff graph constraints will be checked for future graph
+     * @return true iff graph constraints will be checked for future graph
      * modifications.
      */
     boolean isGraphConstraintsChecked();
@@ -513,7 +513,7 @@ public interface Graph extends TetradSerializable {
     Graph subgraph(List<Node> nodes);
 
     /**
-     * Returns a string representation of the graph.
+     * @return a string representation of the graph.
      */
     String toString();
 
@@ -633,23 +633,23 @@ public interface Graph extends TetradSerializable {
     void setHighlighted(Edge edge, boolean highlighted);
 
     /**
-     * Returns true just in case the given edge is highlighted.
+     * @return true just in case the given edge is highlighted.
      * @throws IllegalArgumentException if the given edge is not in the graph.
      */
     boolean isHighlighted(Edge edge);
 
     /**
-     * Returns true if the given node is parameterizable.
+     * @return true if the given node is parameterizable.
      */
     boolean isParameterizable(Node node);
 
     /**
-     * Returns true if this is a time lag model, in which case getTimeLagGraph() returns the graph.
+     * @return true if this is a time lag model, in which case getTimeLagGraph() returns the graph.
      */
     boolean isTimeLagModel();
 
     /**
-     * Returns the underlying time lag model, if there is one; otherwise, returns null.
+     * @return the underlying time lag model, if there is one; otherwise, returns null.
      */
     TimeLagGraph getTimeLagGraph();
 

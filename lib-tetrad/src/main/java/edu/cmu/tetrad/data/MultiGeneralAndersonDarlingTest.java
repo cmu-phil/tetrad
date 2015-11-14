@@ -87,14 +87,14 @@ public class MultiGeneralAndersonDarlingTest {
     //============================PUBLIC METHODS=========================//
 
     /**
-     * Returns the A^2 statistic.
+     * @return the A^2 statistic.
      */
     public double getASquared() {
         return aSquared;
     }
 
     /**
-     * Returns the A^2* statistic, which is the A^2 statistic adjusted
+     * @return the A^2* statistic, which is the A^2 statistic adjusted
      * heuristically for sample size.
      */
     public double getASquaredStar() {
@@ -102,7 +102,7 @@ public class MultiGeneralAndersonDarlingTest {
     }
 
     /**
-     * Returns the p value of the A^2* statistic, which is interpolated using
+     * @return the p value of the A^2* statistic, which is interpolated using
      * exponential functions.
      */
     public double getP() {

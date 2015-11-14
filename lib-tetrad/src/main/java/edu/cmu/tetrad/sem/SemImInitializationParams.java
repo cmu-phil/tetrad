@@ -110,9 +110,6 @@ public class SemImInitializationParams implements Params, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemImInitializationParams serializableInstance() {
         return new SemImInitializationParams();
@@ -139,7 +136,7 @@ public class SemImInitializationParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns the low positive coeffient parameter range for random values.
+     * @return the low positive coeffient parameter range for random values.
      */
     public double getCoefLow() {
         return coefLow;
@@ -162,14 +159,14 @@ public class SemImInitializationParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns the high positive coeffient parameter range for random values./
+     * @return the high positive coeffient parameter range for random values./
      */
     public double getCoefHigh() {
         return coefHigh;
     }
 
     /**
-     * Returns the low positive covariance parameter range for random values./
+     * @return the low positive covariance parameter range for random values./
      */
     public double getCovLow() {
         return covLow;
@@ -192,14 +189,14 @@ public class SemImInitializationParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns the high positive covariance parameter range for random values./
+     * @return the high positive covariance parameter range for random values./
      */
     public double getCovHigh() {
         return covHigh;
     }
 
     /**
-     * Returns the low positive variance parameter range for random values./
+     * @return the low positive variance parameter range for random values./
      */
     public double getVarLow() {
         return varLow;
@@ -222,14 +219,14 @@ public class SemImInitializationParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns the high positive variance parameter range for random values./
+     * @return the high positive variance parameter range for random values./
      */
     public double getVarHigh() {
         return varHigh;
     }
 
     /**
-     * Returns true if random coefficients are chosen from (-high, -low) U (low, high),
+     * @return true if random coefficients are chosen from (-high, -low) U (low, high),
      * false if they are chosen from (low, high).
      */
     public boolean isCoefSymmetric() {
@@ -246,7 +243,7 @@ public class SemImInitializationParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns true if random covariances are chosen form (-high, -low) U (low, high);
+     * @return true if random covariances are chosen form (-high, -low) U (low, high);
      * false if they are chosen from (low, high).
      */
     public boolean isCovSymmetric() {
@@ -262,7 +259,7 @@ public class SemImInitializationParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns true iff values from the old SEM IM (if available) are retained (where
+     * @return true iff values from the old SEM IM (if available) are retained (where
      * possible).
      */
     public boolean isRetainPreviousValues() {
@@ -270,7 +267,7 @@ public class SemImInitializationParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns true iff values from the old SEM IM (if available) are retained (where
+     * @return true iff values from the old SEM IM (if available) are retained (where
      * possible).
      */
     public void setRetainPreviousValues(boolean retainPreviousValues) {

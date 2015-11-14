@@ -39,9 +39,6 @@ public final class DirectedUndirectedOnly implements GraphConstraint {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static DirectedUndirectedOnly serializableInstance() {
         return new DirectedUndirectedOnly();
@@ -90,7 +87,7 @@ public final class DirectedUndirectedOnly implements GraphConstraint {
     }
 
     /**
-     * Returns a string representation of the constraint.
+     * @return a string representation of the constraint.
      *
      * @return this representation.
      */

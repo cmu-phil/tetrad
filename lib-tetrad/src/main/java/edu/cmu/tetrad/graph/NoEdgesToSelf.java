@@ -39,9 +39,6 @@ public final class NoEdgesToSelf implements GraphConstraint {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static NoEdgesToSelf serializableInstance() {
         return new NoEdgesToSelf();
@@ -91,7 +88,7 @@ public final class NoEdgesToSelf implements GraphConstraint {
     }
 
     /**
-     * Returns a string representation of this constraint.
+     * @return a string representation of this constraint.
      *
      * @return this representation.
      */

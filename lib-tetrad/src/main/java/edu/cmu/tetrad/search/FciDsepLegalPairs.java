@@ -55,14 +55,14 @@ class FciDsepLegalPairs implements LegalPairs {
     }
 
     /**
-     * Returns true iff x is adjacent to y.
+     * @return true iff x is adjacent to y.
      */
     public boolean isLegalFirstEdge(Node x, Node y) {
         return this.graph.isAdjacentTo(x, y);
     }
 
     /**
-     * Returns true iff x-->y<--z or else x is adjacent to z.
+     * @return true iff x-->y<--z or else x is adjacent to z.
      *
      * @throws IllegalArgumentException if x is not adjacent to y or y is not adjacent to z.
      */

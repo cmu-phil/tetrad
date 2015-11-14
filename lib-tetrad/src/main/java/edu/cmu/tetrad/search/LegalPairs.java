@@ -34,12 +34,12 @@ import java.util.List;
 public interface LegalPairs {
 
     /**
-     * Returns true iff x*-*y is a legal first edge for the base case.
+     * @return true iff x*-*y is a legal first edge for the base case.
      */
     boolean isLegalFirstEdge(Node x, Node y);
 
     /**
-     * Returns true iff n1---center---n2 is a legal pair.
+     * @return true iff n1---center---n2 is a legal pair.
      */
     boolean isLegalPair(Node x, Node y, Node z, List<Node> c, List<Node> d);
 }

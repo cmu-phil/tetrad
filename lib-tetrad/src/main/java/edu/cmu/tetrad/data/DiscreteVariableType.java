@@ -57,9 +57,6 @@ public final class DiscreteVariableType implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static DiscreteVariableType serializableInstance() {
         return DiscreteVariableType.NOMINAL;

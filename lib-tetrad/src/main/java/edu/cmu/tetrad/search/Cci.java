@@ -109,7 +109,7 @@ public final class Cci {
     //=================PUBLIC METHODS====================//
 
     /**
-     * Returns true iff x is independent of y conditional on z.
+     * @return true iff x is independent of y conditional on z.
      */
     public boolean isIndependent(String x, String y, List<String> z) {
         double[] rXZ = residuals(x, z);
@@ -118,7 +118,7 @@ public final class Cci {
     }
 
     /**
-     * Returns the minimal p value calculated by the method for the most
+     * @return the minimal p value calculated by the method for the most
      * recent independence check.
      */
     public double getMinP() {
@@ -126,7 +126,7 @@ public final class Cci {
     }
 
     /**
-     * Returns FDR Q, if calculated, otherwise Double.NaN.
+     * @return FDR Q, if calculated, otherwise Double.NaN.
      */
     private double getQ(List<Double> p) {
         return calculateFdrQ(p);
@@ -137,7 +137,7 @@ public final class Cci {
     }
 
     /**
-     * Returns true just in the case the x and y vectors are independent,
+     * @return true just in the case the x and y vectors are independent,
      * once undefined values have been removed. Left public so it can be
      * accessed separately.
      */

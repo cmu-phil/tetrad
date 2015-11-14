@@ -60,9 +60,6 @@ public final class KnowledgeEdge implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static KnowledgeEdge serializableInstance() {
         return new KnowledgeEdge("X", "Y");
@@ -71,14 +68,14 @@ public final class KnowledgeEdge implements TetradSerializable {
     //===============================PUBLIC METHODS======================//
 
     /**
-     * Returns the tail node of the edge.
+     * @return the tail node of the edge.
      */
     public final String getFrom() {
         return from;
     }
 
     /**
-     * Returns the head node of the edge.
+     * @return the head node of the edge.
      */
     public final String getTo() {
         return to;
@@ -101,7 +98,7 @@ public final class KnowledgeEdge implements TetradSerializable {
     }
 
     /**
-     * Returns a good hashcode.
+     * @return a good hashcode.
      */
     public final int hashCode() {
         int hashCode = 31 + from.hashCode();

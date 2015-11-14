@@ -65,9 +65,6 @@ public class SemUpdater implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemUpdater serializableInstance() {
         return new SemUpdater(SemIm.serializableInstance());
@@ -90,7 +87,7 @@ public class SemUpdater implements TetradSerializable {
     }
 
     /**
-     * Returns the Bayes instantiated model that is being updated.
+     * @return the Bayes instantiated model that is being updated.
      */
     public SemIm getSemIm() {
         return this.semIm;

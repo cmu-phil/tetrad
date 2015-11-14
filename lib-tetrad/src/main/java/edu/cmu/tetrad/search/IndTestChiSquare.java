@@ -148,7 +148,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns the value of the G Square statistic associated with the most recent call of isIndependent.
+     * @return the value of the G Square statistic associated with the most recent call of isIndependent.
      *
      * @return the G Square value.
      */
@@ -157,7 +157,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns degrees of freedom associated with the most recent call of isIndependent
+     * @return degrees of freedom associated with the most recent call of isIndependent
      *
      * @ return degrees of freedom
      */
@@ -166,7 +166,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns the p value associated with the most recent call of isIndependent.
+     * @return the p value associated with the most recent call of isIndependent.
      */
     public double getPValue() {
         return pValue;
@@ -259,7 +259,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns true iff z determines x or z, with lower bound percentage p. Taht is, iff for either v = x or v = y, the
+     * @return true iff z determines x or z, with lower bound percentage p. Taht is, iff for either v = x or v = y, the
      * percentage p of some category c of y is >= p, for each assignment of values of z1,...,zn.
      *
      * @param z  The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
@@ -335,7 +335,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinine independence
+     * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
@@ -343,7 +343,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variable varNames.
+     * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();

@@ -136,9 +136,6 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static GeneralizedSemIm serializableInstance() {
         return new GeneralizedSemIm(GeneralizedSemPm.serializableInstance());
@@ -259,7 +256,7 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
     }
 
     /**
-     * Returns a String representation of the IM, in this case a lsit of freeParameters and their values.
+     * @return a String representation of the IM, in this case a lsit of freeParameters and their values.
      */
     public String toString() {
         List<String> parameters = new ArrayList<String>(pm.getParameters());

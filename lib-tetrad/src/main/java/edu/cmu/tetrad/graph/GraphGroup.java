@@ -35,7 +35,7 @@ package edu.cmu.tetrad.graph;
 public interface GraphGroup {
 
 	/**
-	 * Returns the number of graphs that the class is storing
+	 * @return the number of graphs that the class is storing
 	 *
 	 * @return int
 	 */

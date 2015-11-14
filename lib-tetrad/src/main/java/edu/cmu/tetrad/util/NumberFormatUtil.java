@@ -46,7 +46,7 @@ public class NumberFormatUtil {
     }
 
     /**
-     * Returns the singleton instance of this class.
+     * @return the singleton instance of this class.
      *
      * @return Ibid.
      */
@@ -69,7 +69,7 @@ public class NumberFormatUtil {
     }
 
     /**
-     * Returns the stored number format.
+     * @return the stored number format.
      *
      * @return Ibid.
      */

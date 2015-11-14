@@ -38,7 +38,7 @@ public interface ParamsResettable {
     void resetParams(Object params);
 
     /**
-     * Returns the parameter object of a non-cloned model so that it can be set
+     * @return the parameter object of a non-cloned model so that it can be set
      * on the cloned model.
      */
     Object getResettableParams();

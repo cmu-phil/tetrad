@@ -145,9 +145,6 @@ public final class OnTheFlyMarginalCalculator
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static OnTheFlyMarginalCalculator serializableInstance() {
         return new OnTheFlyMarginalCalculator(BayesPm.serializableInstance(),
@@ -170,7 +167,7 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * Returns the node index for the given node.
+     * @return the node index for the given node.
      *
      * @param node the given node.
      * @return the index for that node, or -1 if the node is not in the
@@ -209,7 +206,7 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * Returns (a defensive copy of) the array representing the dimensionality
+     * @return (a defensive copy of) the array representing the dimensionality
      * of each parent of a node, that is, the number of values which that node
      * can take on.  The order of entries in this array is the same as the order
      * of entries of nodes returned by getParents() for that node.
@@ -224,7 +221,7 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * Returns the updated marginal for the given category of the given variable
+     * @return the updated marginal for the given category of the given variable
      * with respect to the evidence set via the setEvidence() method, as
      * predicted by a Bayes net with the given parameterization, where all of
      * the relevant conditional probabilities are computed on the fly from the
@@ -279,14 +276,14 @@ public final class OnTheFlyMarginalCalculator
     //=============================PRIVATE METHODS=======================//
 
     /**
-     * Returns the underlying Bayes PM.
+     * @return the underlying Bayes PM.
      */
     private BayesPm getBayesPm() {
         return bayesPm;
     }
 
     /**
-     * Returns an evidence object containing the proposition in evidence, with
+     * @return an evidence object containing the proposition in evidence, with
      * null Bayes IM and null manipulation.
      */
     private Evidence getEvidence() {
@@ -294,14 +291,14 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * Returns the number of nodes in the model.
+     * @return the number of nodes in the model.
      */
     private int getNumNodes() {
         return nodes.length;
     }
 
     /**
-     * Returns the node corresponding to the given node index.
+     * @return the node corresponding to the given node index.
      *
      * @param nodeIndex
      * @return this node.
@@ -311,7 +308,7 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * Returns the number of columns in the table of the given node N with index
+     * @return the number of columns in the table of the given node N with index
      * 'nodeIndex'--that is, the number of possible values that N can take on.
      * That is, if P(N=v0 | P1=v1, P2=v2, ... Pn=vn) is a conditional
      * probability stored in 'probs', then the maximum number of rows in the
@@ -326,7 +323,7 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * Returns (a defensive copy of) the array containing all of the parents of
+     * @return (a defensive copy of) the array containing all of the parents of
      * a given node in the order in which they are stored internally.
      *
      * @see #getParentDims
@@ -339,7 +336,7 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * Returns the class being used to calculate discrete probabilities from the
+     * @return the class being used to calculate discrete probabilities from the
      * underlying data set.
      */
     private DiscreteProbs getDiscreteProbs() {
@@ -399,7 +396,7 @@ public final class OnTheFlyMarginalCalculator
     }
 
 //    /**
-//     * Returns the probability that the given variable has the given value,
+//     * @return the probability that the given variable has the given value,
 //     * given the evidence.
 //     */
 //    private double getUpdatedMarginalFromModel1(int variable, int category) {

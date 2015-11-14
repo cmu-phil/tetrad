@@ -75,9 +75,6 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static IndependenceFact serializableInstance() {
         return new IndependenceFact(new GraphNode("X"), new GraphNode("Y"));

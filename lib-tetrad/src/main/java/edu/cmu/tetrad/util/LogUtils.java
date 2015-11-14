@@ -64,7 +64,7 @@ public class LogUtils {
     }
 
     /**
-     * Returns singleton instance.
+     * @return singleton instance.
      *
      * @return Ibid.
      */

@@ -54,10 +54,7 @@ public class Beta implements Distribution {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public static Beta serializableInstance() {
         return new Beta(.5, .5);
     }

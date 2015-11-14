@@ -110,9 +110,6 @@ public class Mapping implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Mapping serializableInstance() {
         return new Mapping(SemIm.serializableInstance(),
@@ -141,21 +138,21 @@ public class Mapping implements TetradSerializable {
     }
 
     /**
-     * Returns the value of the array element at (i, j).
+     * @return the value of the array element at (i, j).
      */
     public double getValue() {
         return a.get(i, j);
     }
 
     /**
-     * Returns the paramter that this mapping maps.
+     * @return the paramter that this mapping maps.
      */
     public Parameter getParameter() {
         return this.parameter;
     }
 
     /**
-     * Returns a String containing information (array name and values of
+     * @return a String containing information (array name and values of
      * subscripts) about the array element associated with this mapping.
      */
     public String toString() {

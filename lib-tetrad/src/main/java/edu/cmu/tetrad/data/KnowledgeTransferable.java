@@ -34,7 +34,7 @@ public interface KnowledgeTransferable extends TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns a copy of the knowledge for this class.
+     * @return a copy of the knowledge for this class.
      */
     IKnowledge getKnowledge();
 

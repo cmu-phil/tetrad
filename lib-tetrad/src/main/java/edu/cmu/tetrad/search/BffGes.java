@@ -696,7 +696,7 @@ public final class BffGes implements Bff {
     }
 
     /**
-     * Returns true iif the given set forms a clique in the given graph.
+     * @return true iif the given set forms a clique in the given graph.
      */
     private static boolean isClique(List<Node> set, Graph graph) {
         List<Node> setv = new LinkedList<Node>(set);
@@ -1039,12 +1039,12 @@ public final class BffGes implements Bff {
     static interface FittingFunction {
 
         /**
-         * Returns the value of the function for the given array of parameter values.
+         * @return the value of the function for the given array of parameter values.
          */
         double evaluate(double[] argument);
 
         /**
-         * Returns the number of parameters.
+         * @return the number of parameters.
          */
         int getNumParameters();
     }
@@ -1080,7 +1080,7 @@ public final class BffGes implements Bff {
         }
 
         /**
-         * Returns the number of arguments. Required by the MultivariateFunction interface.
+         * @return the number of arguments. Required by the MultivariateFunction interface.
          */
         public int getNumParameters() {
             return this.sem.getNumFreeParams();

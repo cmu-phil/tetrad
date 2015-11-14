@@ -330,7 +330,7 @@ public final class IndTestMimBuild implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinine independence
+     * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return this list of variables.
@@ -632,7 +632,7 @@ public final class IndTestMimBuild implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variable varNames.
+     * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();

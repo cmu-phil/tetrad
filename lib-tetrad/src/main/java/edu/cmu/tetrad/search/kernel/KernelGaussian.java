@@ -58,7 +58,7 @@ public final class KernelGaussian implements Kernel {
     }
 
     /**
-     * Returns the bandwidth
+     * @return the bandwidth
      */
     public double getBandwidth() {
         return this.sigma;

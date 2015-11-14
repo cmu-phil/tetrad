@@ -81,12 +81,12 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     void ensureRows(int rows);
 
     /**
-     * Returns the case multiplier for the given case.
+     * @return the case multiplier for the given case.
      */
     int getMultiplier(int caseNumber);
 
     /**
-     * Returns the column index of the given variable.
+     * @return the column index of the given variable.
      */
     int getColumn(Node variable);
 
@@ -105,20 +105,20 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     TetradMatrix getCovarianceMatrix();
 
     /**
-     * Returns the value at the given row and column as a double. For
+     * @return the value at the given row and column as a double. For
      * discrete data, returns the integer value cast to a double.
      */
     double getDouble(int row, int column);
 
     /**
-     * Returns the underlying data matrix as a TetradMatrix.
+     * @return the underlying data matrix as a TetradMatrix.
      *
      * @throws IllegalStateException if this is not a continuous data set.
      */
     TetradMatrix getDoubleData();
 
     /**
-     * Returns the value at the given row and column as an int, rounding if
+     * @return the value at the given row and column as an int, rounding if
      * necessary. For discrete variables, this returns the category index
      * of the datum for the variable at that column. Returns
      * DiscreteVariable.MISSING_VALUE for missing values.
@@ -126,22 +126,22 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     int getInt(int row, int column);
 
     /**
-     * Returns the name of the data set.
+     * @return the name of the data set.
      */
     String getName();
 
     /**
-     * Returns the number of columns in the data set.
+     * @return the number of columns in the data set.
      */
     int getNumColumns();
 
     /**
-     * Returns the number of rows in the data set.
+     * @return the number of rows in the data set.
      */
     int getNumRows();
 
     /**
-     * Returns the value at the given row and column as an Object. The type
+     * @return the value at the given row and column as an Object. The type
      * returned is deliberately vague, allowing for variables of any type.
      * Primitives will be returned as corresponding wrapping objects (for
      * example, doubles as Doubles).
@@ -152,57 +152,57 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     Object getObject(int row, int col);
 
     /**
-     * Returns the currently selected variables.
+     * @return the currently selected variables.
      */
     int[] getSelectedIndices();
 
     /**
-     * Returns the variable at the given column.
+     * @return the variable at the given column.
      */
     Node getVariable(int column);
 
     /**
-     * Returns the variable with the given name.
+     * @return the variable with the given name.
      */
     Node getVariable(String name);
 
     /**
-     * Returns (a copy of) the List of Variables for the data set, in the order
+     * @return (a copy of) the List of Variables for the data set, in the order
      * of their columns.
      */
     List<String> getVariableNames();
 
     /**
-     * Returns (a copy of) the List of Variables for the data set, in the order
+     * @return (a copy of) the List of Variables for the data set, in the order
      * of their columns.
      */
     List<Node> getVariables();
 
     /**
-     * Returns true if case multipliers are being used in this data set.
+     * @return true if case multipliers are being used in this data set.
      */
     boolean isMulipliersCollapsed();
 
     /**
-     * Returns true if this is a continuous data set--that is, if it contains at
+     * @return true if this is a continuous data set--that is, if it contains at
      * least one column and all of the columns are continuous.
      */
     boolean isContinuous();
 
     /**
-     * Returns true if this is a discrete data set--that is, if it contains at
+     * @return true if this is a discrete data set--that is, if it contains at
      * least one column and all of the columns are discrete.
      */
     boolean isDiscrete();
 
     /**
-     * Returns true if this is a continuous data set--that is, if it contains at
+     * @return true if this is a continuous data set--that is, if it contains at
      * least one continuous column and one discrete columnn.
      */
     boolean isMixed();
 
     /**
-     * Returns true iff the given column has been marked as selected.
+     * @return true iff the given column has been marked as selected.
      */
     boolean isSelected(Node variable);
 
@@ -239,7 +239,7 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     void setCaseId(int caseNumber, String id);
 
     /**
-     * Returns the case ID for the given case number.
+     * @return the case ID for the given case number.
      */
     String getCaseId(int caseNumber);
 
@@ -289,24 +289,24 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     DataSet subsetColumns(List<Node> vars);
 
     /**
-     * Returns a new data set in which the the column at indices[i] is placed at
+     * @return a new data set in which the the column at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (View instead?)
      */
     DataSet subsetColumns(int columns[]);
 
     /**
-     * Returns a new data set in which the the row at indices[i] is placed at
+     * @return a new data set in which the the row at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (View instead?)
      */
     DataSet subsetRows(int rows[]);
 
     /**
-     * Returns a string representation of this dataset.
+     * @return a string representation of this dataset.
      */
     String toString();
 
     /**
-     * Returns true iff this variable is set to accomodate new categories
+     * @return true iff this variable is set to accomodate new categories
      * encountered.
      */
     boolean isNewCategoriesAccommodated();

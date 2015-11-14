@@ -71,21 +71,21 @@ public class ExpressionManager {
 
 
     /**
-     * Returns an instanceo of the manager.
+     * @return an instanceo of the manager.
      */
     public static ExpressionManager getInstance() {
         return INSTANCE;
     }
 
     /**
-     * Returns a list of all the descriptions.
+     * @return a list of all the descriptions.
      */
     public List<ExpressionDescriptor> getDescriptors() {
         return Collections.unmodifiableList(this.descriptors);
     }
 
     /**
-     * Returns the descriptor to use for the given token.
+     * @return the descriptor to use for the given token.
      */
     public ExpressionDescriptor getDescriptorFromToken(String token) {
         return this.tokenMap.get(token);

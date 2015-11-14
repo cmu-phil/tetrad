@@ -457,7 +457,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns a variant of the getModel model with the given covariance matrix
+     * @return a variant of the getModel model with the given covariance matrix
      * and means. Used for updating.
      */
     public SemIm updatedIm(TetradMatrix covariances, TetradVector means) {
@@ -537,9 +537,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static SemIm serializableInstance() {
         return new SemIm(SemPm.serializableInstance());
@@ -579,14 +576,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the Digraph which describes the causal structure of the Sem.
+     * @return the Digraph which describes the causal structure of the Sem.
      */
     public SemPm getSemPm() {
         return this.semPm;
     }
 
     /**
-     * Returns an array containing the getModel values for the free freeParameters,
+     * @return an array containing the getModel values for the free freeParameters,
      * in the order in which the freeParameters appear in getFreeParameters(). That
      * is, getFreeParamValues()[i] is the value for getFreeParameters()[i].
      */
@@ -834,7 +831,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the intercept. For acyclic SEMs only.
+     * @return the intercept. For acyclic SEMs only.
      *
      * @return the intercept, for acyclic models, or Double.NaN otherwise.
      * @throws UnsupportedOperationException if called on a cyclic SEM.
@@ -870,7 +867,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the value of the mean assoc iated with the given node.
+     * @return the value of the mean assoc iated with the given node.
      */
     public double getMean(Node node) {
         int index = variableNodes.indexOf(node);
@@ -878,7 +875,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the means for variables in order.
+     * @return the means for variables in order.
      */
     public double[] getMeans() {
         double[] means = new double[variableMeans.length];
@@ -887,7 +884,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the value of the mean associated with the given node.
+     * @return the value of the mean associated with the given node.
      */
     public double getMeanStdDev(Node node) {
         int index = variableNodes.indexOf(node);
@@ -895,7 +892,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the value of the variance associated with the given node.
+     * @return the value of the variance associated with the given node.
      */
     public double getVariance(Node node, TetradMatrix implCovar) {
         if (getSemPm().getGraph().isExogenous(node)) {
@@ -917,7 +914,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the value of the standard deviation associated with the given
+     * @return the value of the standard deviation associated with the given
      * node.
      */
     public double getStdDev(Node node, TetradMatrix implCovar) {
@@ -1014,7 +1011,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the (unmodifiable) list of free freeParameters in the model.
+     * @return the (unmodifiable) list of free freeParameters in the model.
      */
 
     public List<Parameter> getFreeParameters() {
@@ -1023,14 +1020,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
 
     /**
-     * Returns the number of free freeParameters.
+     * @return the number of free freeParameters.
      */
     public int getNumFreeParams() {
         return getFreeParameters().size();
     }
 
     /**
-     * Returns the (unmodifiable) list of fixed freeParameters in the model.
+     * @return the (unmodifiable) list of fixed freeParameters in the model.
      */
     public List<Parameter> getFixedParameters() {
         return this.fixedParameters;
@@ -1041,7 +1038,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the number of free freeParameters.
+     * @return the number of free freeParameters.
      */
     public int getNumFixedParams() {
         return getFixedParameters().size();
@@ -1062,7 +1059,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the sample size (that is, the sample size of the CovarianceMatrix
+     * @return the sample size (that is, the sample size of the CovarianceMatrix
      * provided at construction time).
      */
     public int getSampleSize() {
@@ -1070,7 +1067,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns a copy of the matrix of edge coefficients. Note that
+     * @return a copy of the matrix of edge coefficients. Note that
      * edgeCoefC[i][j] is the coefficient of the edge from
      * getVariableNodes().get(i) to getVariableNodes().get(j), or 0.0 if this
      * edge is not in the graph. The values of these may be changed, but the
@@ -1081,7 +1078,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns a copy of the matrix of error covariances. Note that
+     * @return a copy of the matrix of error covariances. Note that
      * errCovar[i][j] is the covariance of the error term of
      * getExoNodes().get(i) and getExoNodes().get(j), with the special case
      * (duh!) that errCovar[i][i] is the variance of getExoNodes.get(i). The
@@ -1092,7 +1089,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns a copy of the implied covariance matrix over all the variables.
+     * @return a copy of the implied covariance matrix over all the variables.
      * @param recalculate
      */
     public TetradMatrix getImplCovar(boolean recalculate) {
@@ -1105,7 +1102,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns a copy of the implied covariance matrix over the measured
+     * @return a copy of the implied covariance matrix over the measured
      * variables only.
      */
     public TetradMatrix getImplCovarMeas() {
@@ -1113,7 +1110,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns a copy of the sample covariance matrix.
+     * @return a copy of the sample covariance matrix.
      */
     public TetradMatrix getSampleCovar() {
 //        return sampleCovar() == null ? null : sampleCovar().copy();
@@ -1262,7 +1259,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns BIC score, calculated as chisq - dof. This is equal to getFullBicScore() up to a constant.
+     * @return BIC score, calculated as chisq - dof. This is equal to getFullBicScore() up to a constant.
      */
     public double getBicScore() {
         int dof = getSemPm().getDof();
@@ -1287,7 +1284,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the BIC score, without subtracting constant terms.
+     * @return the BIC score, without subtracting constant terms.
      */
     public double getFullBicScore() {
 //        int dof = getEstIm().getDof();
@@ -1307,14 +1304,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the chi square value for the model.
+     * @return the chi square value for the model.
      */
     public double getChiSquare() {
         return (getSampleSize() - 1) * getScore();
     }
 
     /**
-     * Returns the p-value for the model.
+     * @return the p-value for the model.
      */
     public double getPValue() {
         double chiSquare = getChiSquare();
@@ -2221,7 +2218,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //    }
 
     /**
-     * Returns the standard error for the given parameter
+     * @return the standard error for the given parameter
      *
      * @param parameter
      * @param maxFreeParams
@@ -2357,7 +2354,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the variable by the given name, or null if none exists.
+     * @return the variable by the given name, or null if none exists.
      *
      * @throws NullPointerException if name is null.
      */
@@ -2378,7 +2375,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns a string representation of the Sem (pretty detailed).
+     * @return a string representation of the Sem (pretty detailed).
      */
     public String toString() {
         List<String> varNames = new ArrayList<String>();
@@ -2588,7 +2585,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns a random value from the appropriate distribution for the given
+     * @return a random value from the appropriate distribution for the given
      * parameter.
      */
     private double initialValue(Parameter parameter) {
@@ -2624,7 +2621,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * Returns the (unmodifiable) list of freeParameters (type Param).
+     * @return the (unmodifiable) list of freeParameters (type Param).
      */
     private List<Mapping> freeMappings
     () {

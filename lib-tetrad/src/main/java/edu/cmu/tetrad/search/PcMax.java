@@ -125,14 +125,14 @@ public class PcMax implements GraphSearch {
     }
 
     /**
-     * Returns the independence test being used in the search.
+     * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
     }
 
     /**
-     * Returns the knowledge specification used in the search. Non-null.
+     * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
         return knowledge;
@@ -393,7 +393,7 @@ public class PcMax implements GraphSearch {
 
 
     /**
-     * Returns the elapsed time of the search, in milliseconds.
+     * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
         return elapsedTime;

@@ -56,7 +56,7 @@ public class VariableExpression implements Expression {
     //======================== Public methods ===================//
 
     /**
-     * Returns the variable.     
+     * @return the variable.
      */
     public String getVariable(){
         return this.variable;

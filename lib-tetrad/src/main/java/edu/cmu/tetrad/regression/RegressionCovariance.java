@@ -68,7 +68,7 @@ public class RegressionCovariance implements Regression {
     private double alpha = 0.05;
 
     /**
-     * Returns the graph of significant regressors into the target
+     * @return the graph of significant regressors into the target
      */
     private Graph graph = null;
 
@@ -140,7 +140,7 @@ public class RegressionCovariance implements Regression {
     }
 
     /**
-     * Returns the graph of significant regressors into the target
+     * @return the graph of significant regressors into the target
      * @return This graph.
      */
     public Graph getGraph() {

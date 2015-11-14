@@ -146,7 +146,7 @@ public class TestGeneralizedSem extends TestCase {
     }
 
     public void test2() {
-        RandomUtil.getInstance().setSeed(29999483L);
+        RandomUtil.getInstance().setSeed(2999983L);
 
         int sampleSize = 1000;
 

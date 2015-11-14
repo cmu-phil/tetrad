@@ -55,8 +55,6 @@ public class ChiSquare implements Distribution {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return the exemplar.
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     @SuppressWarnings({"UnusedDeclaration"})
     public static ChiSquare serializableInstance() {

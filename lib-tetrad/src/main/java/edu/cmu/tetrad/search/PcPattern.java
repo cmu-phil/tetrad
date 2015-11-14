@@ -315,7 +315,7 @@ public class PcPattern implements GraphSearch {
     }
 
     /**
-     * Returns the first directed cycle encountered, or null if none is encountered.
+     * @return the first directed cycle encountered, or null if none is encountered.
      *
      * @param graph The graph in which a directed cycle is sought.
      * @return the first directed cycle encountered in <code>graph</code>.
@@ -331,7 +331,7 @@ public class PcPattern implements GraphSearch {
     }
 
     /**
-     * Returns the first directed path encountered from <code>node1</code> to <code>node2</code>, or null if no such
+     * @return the first directed path encountered from <code>node1</code> to <code>node2</code>, or null if no such
      * path is found.
      *
      * @param graph The graph in which a directed path is sought.
@@ -344,7 +344,7 @@ public class PcPattern implements GraphSearch {
     }
 
     /**
-     * Returns the path of the first directed path found from node1 to node2, if any.
+     * @return the path of the first directed path found from node1 to node2, if any.
      */
     private void directablePathVisit(Graph graph, Node node1, Node node2,
                                      LinkedList<Node> path) {
@@ -397,7 +397,7 @@ public class PcPattern implements GraphSearch {
     }
 
     /**
-     * Returns true just in case the given undirected cycle contains a chord.
+     * @return true just in case the given undirected cycle contains a chord.
      */
     private boolean containsChord(LinkedList<Node> path, Graph graph) {
         for (int i = 0; i < path.size() / 2 + 1; i++) {
@@ -504,7 +504,7 @@ public class PcPattern implements GraphSearch {
     }
 
     /**
-     * Returns true if orienting x-->y would create a cycle.
+     * @return true if orienting x-->y would create a cycle.
      */
     private boolean createsCycle(Node x, Node y, Graph graph) {
         return graph.isAncestorOf(y, x);

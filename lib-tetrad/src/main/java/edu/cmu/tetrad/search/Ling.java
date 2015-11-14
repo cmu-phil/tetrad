@@ -130,7 +130,7 @@ public class Ling implements GraphGroupSearch {
     //==============================PUBLIC METHODS=========================//
 
     /**
-     * Returns the DataSet that was either provided to the class or the DataSet that the class generated.
+     * @return the DataSet that was either provided to the class or the DataSet that the class generated.
      *
      * @return DataSet   Returns a dataset of the data used by the algorithm.
      */
@@ -1153,7 +1153,7 @@ public class Ling implements GraphGroupSearch {
         }
 
         /**
-         * Returns a specific graph at index g.
+         * @return a specific graph at index g.
          *
          * @param g The index of the graph to be returned
          * @return Returns a Graph
@@ -1163,7 +1163,7 @@ public class Ling implements GraphGroupSearch {
         }
 
         /**
-         * Returns the data for a specific graph at index d.
+         * @return the data for a specific graph at index d.
          *
          * @param d The index of the graph for which the DataSet is being returned
          * @return Returns a DataSet
@@ -1173,7 +1173,7 @@ public class Ling implements GraphGroupSearch {
         }
 
         /**
-         * Returns whether or not the graph at index s is stable.
+         * @return whether or not the graph at index s is stable.
          *
          * @param s The index of the graph at which to return the boolean stability information for the permutation
          * @return Returns the shriknig variable value for a specific graph.

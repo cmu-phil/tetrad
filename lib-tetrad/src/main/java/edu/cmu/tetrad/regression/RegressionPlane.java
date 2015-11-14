@@ -134,35 +134,35 @@ public class RegressionPlane {
     }
 
     /**
-     * Returns the number of data points.
+     * @return the number of data points.
      */
     public int getSampleSize() {
         return sampleSize;
     }
 
     /**
-     * Returns the number of regressors.
+     * @return the number of regressors.
      */
     public int getNumRegressors() {
         return numRegressors;
     }
 
     /**
-     * Returns the array of regression coeffients.
+     * @return the array of regression coeffients.
      */
     public double[] getCoef() {
         return coefs;
     }
 
     /**
-     * Returns the array of coefT-statistics for the regression coefficients.
+     * @return the array of coefT-statistics for the regression coefficients.
      */
     public double[] getCoefT() {
         return coefT;
     }
 
     /**
-     * Returns the array of coefP-values for the regression coefficients.
+     * @return the array of coefP-values for the regression coefficients.
      */
     public double[] getCoefP() {
         return coefP;

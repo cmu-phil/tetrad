@@ -980,21 +980,21 @@ public final class BinaryTetradTest implements TetradTest {
         }
 
         /**
-         * Returns the number of arguments. Required by the MultivariateFunction interface.
+         * @return the number of arguments. Required by the MultivariateFunction interface.
          */
         public int getNumArguments() {
             return 11;
         }
 
         /**
-         * Returns the lower bound of argument n. Required by the MultivariateFunction interface.
+         * @return the lower bound of argument n. Required by the MultivariateFunction interface.
          */
         public double getLowerBound(final int n) {
             return 0.01;
         }
 
         /**
-         * Returns the upper bound of argument n. Required by the MultivariateFunction interface.
+         * @return the upper bound of argument n. Required by the MultivariateFunction interface.
          */
         public double getUpperBound(final int n) {
             return 0.99;

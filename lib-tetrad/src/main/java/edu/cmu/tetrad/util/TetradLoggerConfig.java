@@ -53,7 +53,7 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
 
     /**
-     * Returns all the events that are supported.
+     * @return all the events that are supported.
      *
      * @return - events
      */
@@ -74,7 +74,7 @@ public interface TetradLoggerConfig extends TetradSerializable {
     TetradLoggerConfig copy();
 
     /**
-     * Returns a string representation.
+     * @return a string representation.
      */
     String toString();
 
@@ -85,7 +85,7 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
 
         /**
-         * Returns the id of the event (should be unique).
+         * @return the id of the event (should be unique).
          *
          * @return
          */
@@ -93,7 +93,7 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
 
         /**
-         * Returns a brief description for the event.
+         * @return a brief description for the event.
          *
          * @return
          */

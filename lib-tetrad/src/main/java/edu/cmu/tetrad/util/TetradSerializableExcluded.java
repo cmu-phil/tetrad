@@ -29,10 +29,9 @@ import java.io.Serializable;
  * interface. This is needed because some interface need to implement
  * TetradSerializable for reasons of sanity, but certain rogue implementations
  * of those interfaces are not actually serialized.</p>
+ * <p>See TestSerialization and TestSerializiableUtils.</p>
  *
  * @author Joseph Ramsey
- * @see edu.cmu.TestSerialization
- * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
 public interface TetradSerializableExcluded extends Serializable {
 }

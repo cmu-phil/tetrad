@@ -102,7 +102,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns the default category for index i. (The default category should
+     * @return the default category for index i. (The default category should
      * ALWAYS be obtained by calling this method.)
      *
      * @param index Ond plus the given index.
@@ -242,7 +242,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns true iff the data sets contains a missing value.
+     * @return true iff the data sets contains a missing value.
      */
     public static boolean containsMissingValue(TetradMatrix data) {
         for (int i = 0; i < data.rows(); i++) {
@@ -501,7 +501,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns the submatrix of m with variables in the order of the x variables.
+     * @return the submatrix of m with variables in the order of the x variables.
      */
     public static TetradMatrix subMatrix(ICovarianceMatrix m, Node x, Node y, List<Node> z) {
         if (x == null) {
@@ -547,7 +547,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns the submatrix of m with variables in the order of the x variables.
+     * @return the submatrix of m with variables in the order of the x variables.
      */
     public static TetradMatrix subMatrix(TetradMatrix m, List<Node> variables, Node x, Node y, List<Node> z) {
         if (x == null) {
@@ -589,7 +589,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns the submatrix of m with variables in the order of the x variables.
+     * @return the submatrix of m with variables in the order of the x variables.
      */
     public static TetradMatrix subMatrix(TetradMatrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
         if (x == null) {
@@ -634,7 +634,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns the submatrix of m with variables in the order of the x variables.
+     * @return the submatrix of m with variables in the order of the x variables.
      */
     public static TetradMatrix subMatrix(ICovarianceMatrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
 //        if (x == null) {
@@ -672,7 +672,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns a new data sets, copying the given on but with the columns shuffled.
+     * @return a new data sets, copying the given on but with the columns shuffled.
      *
      * @param dataSet The data set to shuffle.
      * @return Ibid.
@@ -1316,7 +1316,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns a simulation from the given covariance matrix, zero means.
+     * @return a simulation from the given covariance matrix, zero means.
      *
      * @param cov The variables and covariance matrix over the variables.
      * @return The simulated data.
@@ -1375,7 +1375,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns a sample with replacement with the given sample size from the
+     * @return a sample with replacement with the given sample size from the
      * given dataset.
      */
     public static TetradMatrix getBootstrapSample(TetradMatrix data, int sampleSize) {
@@ -1395,7 +1395,7 @@ public final class DataUtils {
 
 
     /**
-     * Returns a sample with replacement with the given sample size from the
+     * @return a sample with replacement with the given sample size from the
      * given dataset.
      */
     public static DataSet getBootstrapSample(DataSet data, int sampleSize) {
@@ -1414,7 +1414,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns a sample without replacement with the given sample size from the
+     * @return a sample without replacement with the given sample size from the
      * given dataset. May return a sample of less than the given size; makes
      * sampleAttempts attempts to sample.
      */
@@ -1469,7 +1469,7 @@ public final class DataUtils {
     }
 
     /**
-     * Returns the covariance matrix of the data sets, for the given variable indices, over just the rows in
+     * @return the covariance matrix of the data sets, for the given variable indices, over just the rows in
      * the data with no missing values.
      *
      * @param dataSet The data; missing values are permitted.

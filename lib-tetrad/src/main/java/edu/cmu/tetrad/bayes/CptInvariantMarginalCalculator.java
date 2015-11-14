@@ -89,8 +89,6 @@ public final class CptInvariantMarginalCalculator
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
      */
     public static CptInvariantMarginalCalculator serializableInstance() {
         MlBayesIm bayesIm = MlBayesIm.serializableInstance();
@@ -101,7 +99,7 @@ public final class CptInvariantMarginalCalculator
     //=============================PUBLIC METHODS========================//
 
     /**
-     * Returns P(variable=category).
+     * @return P(variable=category).
      */
     public double getMarginal(int variable, int category) {
         if (this.storedMarginals[variable][category] != -99.0) {
@@ -185,7 +183,7 @@ public final class CptInvariantMarginalCalculator
     }
 
     /**
-     * Returns true iff conditioning on parents 0 through i - 1 would change any
+     * @return true iff conditioning on parents 0 through i - 1 would change any
      * of the conditional probability tables relevant to calculating P(node i =
      * value i).
      */

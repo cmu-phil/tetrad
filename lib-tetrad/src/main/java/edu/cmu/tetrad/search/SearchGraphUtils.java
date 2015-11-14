@@ -1370,7 +1370,7 @@ public final class SearchGraphUtils {
     }
 
     /**
-     * Returns the pattern to which the given DAG belongs.
+     * @return the pattern to which the given DAG belongs.
      */
     public static Graph patternFromDag(Graph dag) {
 //        IndTestDSep test = new IndTestDSep(dag);
@@ -1505,7 +1505,7 @@ public final class SearchGraphUtils {
     }
 
     /**
-     * Returns the set of nodes reachable from the given set of initial nodes in the given graph according to the
+     * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
      * criteria in the given legal pairs object.
      * <p/>
      * A variable V is reachable from initialNodes iff for some variable X in initialNodes thers is a path U [X, Y1,
@@ -1574,7 +1574,7 @@ public final class SearchGraphUtils {
 
 
     /**
-     * Returns the string in nodelist which matches string in BK.
+     * @return the string in nodelist which matches string in BK.
      */
     public static Node translate(String a, List<Node> nodes) {
         for (Node node : nodes) {

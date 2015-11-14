@@ -57,7 +57,7 @@ public class Type1 implements SessionModel, TetradSerializableExcluded {
     }
 
     /**
-     * Returns the name of the session model.
+     * @return the name of the session model.
      */
     public String getName() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.

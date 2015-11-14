@@ -480,7 +480,7 @@ public class ExpressionParser {
 
 
     /**
-     * Returns the descriptor represented by the getModel token or throws an exception if there isn't one.
+     * @return the descriptor represented by the getModel token or throws an exception if there isn't one.
      */
     private ExpressionDescriptor getDescriptor() throws ParseException {
         String tokenString = lexer.getTokenString();

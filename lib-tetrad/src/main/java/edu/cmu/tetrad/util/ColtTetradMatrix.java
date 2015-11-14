@@ -77,9 +77,6 @@ public class ColtTetradMatrix implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static ColtTetradMatrix serializableInstance() {
         return new ColtTetradMatrix(0, 0);

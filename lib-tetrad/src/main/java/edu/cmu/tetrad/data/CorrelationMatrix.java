@@ -76,9 +76,6 @@ public final class CorrelationMatrix extends CovarianceMatrix
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static CorrelationMatrix serializableInstance() {
         return new CorrelationMatrix(new LinkedList<Node>(),
@@ -114,7 +111,7 @@ public final class CorrelationMatrix extends CovarianceMatrix
     }
 
     /**
-     * Returns a submatrix, returning as a correlation matrix, with variables
+     * @return a submatrix, returning as a correlation matrix, with variables
      * in the given order.
      */
     public CorrelationMatrix getSubCorrMatrix(String[] submatrixVarNames) {
@@ -123,7 +120,7 @@ public final class CorrelationMatrix extends CovarianceMatrix
     }
 
     /**
-     * Returns a submatrix, returning as a correlation matrix, with variables
+     * @return a submatrix, returning as a correlation matrix, with variables
      * in the given order.
      */
     public CorrelationMatrix getSubCorrMatrix(int[] indices) {

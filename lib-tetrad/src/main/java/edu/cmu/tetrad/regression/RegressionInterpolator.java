@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Returns a data set in which missing values in each column are filled using
+ * @return a data set in which missing values in each column are filled using
  * the mean of that column.
  *
  * @author Joseph Ramsey

@@ -242,7 +242,7 @@ public class DeltaTetradTest {
     }
 
     /**
-     * Returns the p value for the most recent test.
+     * @return the p value for the most recent test.
      */
     public double getPValue() {
 //        double cdf = ProbUtils.chisqCdf(this.cdf, this.df);

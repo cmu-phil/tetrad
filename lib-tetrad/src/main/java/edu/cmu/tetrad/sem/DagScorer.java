@@ -100,9 +100,6 @@ public final class DagScorer implements TetradSerializable, Scorer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Scorer serializableInstance() {
         return new DagScorer(CovarianceMatrix.serializableInstance());
@@ -213,7 +210,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     /**
-     * Returns a string representation of the Sem.
+     * @return a string representation of the Sem.
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -328,7 +325,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     /**
-     * Returns BIC score, calculated as chisq - dof. This is equal to getFullBicScore() up to a constant.
+     * @return BIC score, calculated as chisq - dof. This is equal to getFullBicScore() up to a constant.
      */
     public double getBicScore() {
         int dof = getDof();
@@ -349,14 +346,14 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     /**
-     * Returns the chi square value for the model.
+     * @return the chi square value for the model.
      */
     public double getChiSquare() {
         return (getSampleSize() - 1) * getFml();
     }
 
     /**
-     * Returns the p-value for the model.
+     * @return the p-value for the model.
      */
     public double getPValue() {
         return 1.0 - ProbUtils.chisqCdf(getChiSquare(), getDof());

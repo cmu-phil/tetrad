@@ -96,7 +96,7 @@ public class ExpressionLexer {
     //=================================== Public Methods =====================================//
 
     /**
-     * Returns the type of the next token. For words and quoted charSequence
+     * @return the type of the next token. For words and quoted charSequence
      * tokens, the charSequence that the token represents can be fetched by
      * calling the getString method.
      */
@@ -128,7 +128,7 @@ public class ExpressionLexer {
     }
 
     /**
-     * Returns the string corresponding to the last token lexed.
+     * @return the string corresponding to the last token lexed.
      */
     public String getTokenString() {
         if (this.lastMatcher == null) {
@@ -142,14 +142,14 @@ public class ExpressionLexer {
     }
 
     /**
-     * Returns the previous offset, before the getModel token was read (i.e. the offset of the getModel token.
+     * @return the previous offset, before the getModel token was read (i.e. the offset of the getModel token.
      */
     public int getCurrentOffset() {
         return this.currentOffset;
     }
 
     /**
-     * Returns the getModel offset.
+     * @return the getModel offset.
      */
     public int getNextOffset() {
         return this.nextOffset;

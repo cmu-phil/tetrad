@@ -250,7 +250,7 @@ public final class MmmbGraphRestricted implements MbSearch {
     }
 
     /**
-     * Returns a supserset of PC, or, if the symmetric algorithm is used, PC.
+     * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      */
     public List<Node> getPc(Node t) {
         if (!pc.containsKey(t)) {

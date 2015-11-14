@@ -46,9 +46,6 @@ public class CalculatorParams implements Params {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static CalculatorParams serializableInstance() {
         return new CalculatorParams();
@@ -58,7 +55,7 @@ public class CalculatorParams implements Params {
 
 
     /**
-     * Returns the equations used in the calculator.
+     * @return the equations used in the calculator.
      */
     public List<String> getEquations(){
         return this.equations;
