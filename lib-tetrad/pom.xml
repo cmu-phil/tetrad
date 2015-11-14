@@ -110,11 +110,6 @@
             <version>1.5.1</version>
         </dependency>
         <dependency>
-            <groupId>oli</groupId>
-            <artifactId>superactivity</artifactId>
-            <version>5.6</version>
-        </dependency>
-        <dependency>
             <groupId>com.googlecode.matrix-toolkits-java</groupId>
             <artifactId>mtj</artifactId>
             <version>1.0.1</version>

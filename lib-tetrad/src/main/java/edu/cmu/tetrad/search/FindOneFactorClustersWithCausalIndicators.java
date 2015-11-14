@@ -149,7 +149,8 @@ public class FindOneFactorClustersWithCausalIndicators {
         ClusterUtils.logClusters(clusters, variables);
         long stop = System.currentTimeMillis();
         long elapsed = stop - start;
-        TetradLogger.getInstance().log("elapsed", "Elapsed " + elapsed + " ms");
+        TetradLogger.getInstance().log("ela
+        psed", "Elapsed " + elapsed + " ms");
         return convertToGraph(clusters);
     }*/
 
