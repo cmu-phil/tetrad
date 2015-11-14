@@ -30,9 +30,9 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
-import pal.math.ConjugateGradientSearch;
-import pal.math.MFWithGradient;
-import pal.math.OrthogonalHints;
+//import pal.math.ConjugateGradientSearch;
+//import pal.math.MFWithGradient;
+//import pal.math.OrthogonalHints;
 
 import java.rmi.MarshalledObject;
 import java.text.NumberFormat;
@@ -842,50 +842,51 @@ public class MimBuildEstimator {
      * constructor.
      */
     public void estimate() {
+        throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 
-        // Forget any previous estimation results. (It the estimation fails,
-        // the estimatedSem should be null.)
-        this.estimatedSem = null;
-
-        int iter = 0;
-        double bestScore = Double.MAX_VALUE, score;
-
-        initializeByTSLS();
-        double thetaTSLS[] = new double[theta.length];
-        System.arraycopy(theta, 0, thetaTSLS, 0, theta.length);
-        do {
-            if (iter < numIterTsls) {
-                if (iter > 0) {
-                    System.arraycopy(thetaTSLS, 0, theta, 0, theta.length);
-                    randomizeVariancesOnly();
-                }
-            }
-            else {
-                randomizeParameters();
-            }
-            double start[] = new double[theta.length];
-
-            System.arraycopy(theta, 0, start, 0, theta.length);
-
-            try {
-                new ConjugateGradientSearch().optimize(
-                        new MimBuildFittingFunction(this), start, FUNC_TOLERANCE,
-                        PARAM_TOLERANCE);
-            } catch (Exception e) {
-                continue;
-            }
-
-            System.arraycopy(start, 0, theta, 0, theta.length);
-
-            score = getFittingScore();
-
-            if (score < bestScore) {
-                estimatedSem = getOptimizedSem();
-                bestScore = score;
-            }
-
-            iter++;
-        } while (iter < numIter);
+//        // Forget any previous estimation results. (It the estimation fails,
+//        // the estimatedSem should be null.)
+//        this.estimatedSem = null;
+//
+//        int iter = 0;
+//        double bestScore = Double.MAX_VALUE, score;
+//
+//        initializeByTSLS();
+//        double thetaTSLS[] = new double[theta.length];
+//        System.arraycopy(theta, 0, thetaTSLS, 0, theta.length);
+//        do {
+//            if (iter < numIterTsls) {
+//                if (iter > 0) {
+//                    System.arraycopy(thetaTSLS, 0, theta, 0, theta.length);
+//                    randomizeVariancesOnly();
+//                }
+//            }
+//            else {
+//                randomizeParameters();
+//            }
+//            double start[] = new double[theta.length];
+//
+//            System.arraycopy(theta, 0, start, 0, theta.length);
+//
+//            try {
+//                new ConjugateGradientSearch().optimize(
+//                        new MimBuildFittingFunction(this), start, FUNC_TOLERANCE,
+//                        PARAM_TOLERANCE);
+//            } catch (Exception e) {
+//                continue;
+//            }
+//
+//            System.arraycopy(start, 0, theta, 0, theta.length);
+//
+//            score = getFittingScore();
+//
+//            if (score < bestScore) {
+//                estimatedSem = getOptimizedSem();
+//                bestScore = score;
+//            }
+//
+//            iter++;
+//        } while (iter < numIter);
     }
 
     /**
@@ -931,79 +932,81 @@ public class MimBuildEstimator {
         return buf.toString();
     }
 
-    /**
-     * Wraps the MIM Build maximum likelihood fitting function for purposes of
-     * being evaluated using the PAL ConjugateGradient optimizer.
-     *
-     * @author Ricardo Silva
-     */
-
-    static class MimBuildFittingFunction implements MFWithGradient {
-        static final long serialVersionUID = 23L;
-
-        /**
-         * The wrapped model.
-         */
-        private final MimBuildEstimator mim;
-
-        /**
-         * Constructs a new CoefFittingFunction for the given Sem.
-         */
-        public MimBuildFittingFunction(MimBuildEstimator mim) {
-            this.mim = mim;
-        }
-
-        /**
-         * Computes the maximum likelihood function value for the given
-         * argument values as given by the optimizer. These values are mapped to
-         * parameter values.
-         */
-        public double evaluate(final double[] argument) {
-            System.arraycopy(argument, 0, mim.theta, 0, mim.theta.length);
-            return mim.getFittingScore();
-        }
-
-        public double evaluate(final double[] argument, double gradient[]) {
-            computeGradient(argument, gradient);
-            return mim.getFittingScore();
-        }
-
-        public void computeGradient(final double[] argument, double[] gradient) {
-            System.arraycopy(argument, 0, mim.theta, 0, mim.theta.length);
-            mim.computeGradient(gradient);
-        }
-
-        /**
-         * @return the number of arguments. Required by the MultivariateFunction
-         * interface.
-         */
-        public int getNumArguments() {
-            return mim.theta.length;
-        }
-
-        /**
-         * @return the lower bound of argument n. Required by the
-         * MultivariateFunction interface.
-         */
-        public double getLowerBound(final int n) {
-            if (n >= mim.indicatorErrorsIndex) {
-                return 0.0001;
-            }
-            return -1000.;
-        }
-
-        /**
-         * @return the upper bound of argument n. Required by the
-         * MultivariateFunction interface.
-         */
-        public double getUpperBound(final int n) {
-            return 1000.0;
-        }
-
-        public OrthogonalHints getOrthogonalHints() {
-            return null;
-        }
-    }
+    // Need to remove dependence on PAL. this is the crux of it--this gradient
+    // search needs to be rewritten using another library.
+//    /**
+//     * Wraps the MIM Build maximum likelihood fitting function for purposes of
+//     * being evaluated using the PAL ConjugateGradient optimizer.
+//     *
+//     * @author Ricardo Silva
+//     */
+//
+//    static class MimBuildFittingFunction implements MFWithGradient {
+//        static final long serialVersionUID = 23L;
+//
+//        /**
+//         * The wrapped model.
+//         */
+//        private final MimBuildEstimator mim;
+//
+//        /**
+//         * Constructs a new CoefFittingFunction for the given Sem.
+//         */
+//        public MimBuildFittingFunction(MimBuildEstimator mim) {
+//            this.mim = mim;
+//        }
+//
+//        /**
+//         * Computes the maximum likelihood function value for the given
+//         * argument values as given by the optimizer. These values are mapped to
+//         * parameter values.
+//         */
+//        public double evaluate(final double[] argument) {
+//            System.arraycopy(argument, 0, mim.theta, 0, mim.theta.length);
+//            return mim.getFittingScore();
+//        }
+//
+//        public double evaluate(final double[] argument, double gradient[]) {
+//            computeGradient(argument, gradient);
+//            return mim.getFittingScore();
+//        }
+//
+//        public void computeGradient(final double[] argument, double[] gradient) {
+//            System.arraycopy(argument, 0, mim.theta, 0, mim.theta.length);
+//            mim.computeGradient(gradient);
+//        }
+//
+//        /**
+//         * @return the number of arguments. Required by the MultivariateFunction
+//         * interface.
+//         */
+//        public int getNumArguments() {
+//            return mim.theta.length;
+//        }
+//
+//        /**
+//         * @return the lower bound of argument n. Required by the
+//         * MultivariateFunction interface.
+//         */
+//        public double getLowerBound(final int n) {
+//            if (n >= mim.indicatorErrorsIndex) {
+//                return 0.0001;
+//            }
+//            return -1000.;
+//        }
+//
+//        /**
+//         * @return the upper bound of argument n. Required by the
+//         * MultivariateFunction interface.
+//         */
+//        public double getUpperBound(final int n) {
+//            return 1000.0;
+//        }
+//
+//        public OrthogonalHints getOrthogonalHints() {
+//            return null;
+//        }
+//    }
 
 }
 

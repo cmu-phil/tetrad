@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.MimBuildEstimator;
+//import edu.cmu.tetrad.sem.MimBuildEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ProbUtils;
@@ -856,12 +856,13 @@ public final class ContinuousTetradTest implements TetradTest {
         }
 
         public boolean isSignificant() {
-            MimBuildEstimator estimator =
-                    MimBuildEstimator.newInstance(subSampleCov, semPm, 3, 1);
-            estimator.estimate();
-            SemIm semIm = estimator.getEstimatedSem();
-            //System.out.println("Model p-value: " + semIm.getLikelihoodRatioP());
-            return semIm.getPValue() > sig;
+            throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
+//            MimBuildEstimator estimator =
+//                    MimBuildEstimator.newInstance(subSampleCov, semPm, 3, 1);
+//            estimator.estimate();
+//            SemIm semIm = estimator.getEstimatedSem();
+//            //System.out.println("Model p-value: " + semIm.getLikelihoodRatioP());
+//            return semIm.getPValue() > sig;
         }
 
         protected abstract SemPm buildSemPm(int indices[]);

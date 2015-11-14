@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
-import edu.cmu.tetrad.sem.MimBuildEstimator;
+//import edu.cmu.tetrad.sem.MimBuildEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.*;
@@ -348,41 +348,42 @@ public final class IndTestMimBuild implements IndependenceTest {
      * @return true iff x _||_ y | z.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        //TODO: remove this
-        /*int indices0[] = {0, 5, 6, 7, 10, 11};
-        int indices1[] = {1, 2, 4};
-        int indices2[] = {3, 9};
-        double corr = 0;
-        for (int p = 0; p < indices0.length; p++)
-            for (int q = 0; q < indices0.length; q++)
-                corr += covMatrix.getValue(indices0[p], indices0[q]);
-        System.out.println(corr / (indices0.length * indices0.length));
-        corr = 0;
-        for (int p = 0; p < indices1.length; p++)
-            for (int q = 0; q < indices0.length; q++)
-                corr += covMatrix.getValue(indices1[p], indices0[q]);
-        System.out.print(corr / (indices1.length * indices0.length) + " ");
-        corr = 0;
-        for (int p = 0; p < indices1.length; p++)
-            for (int q = 0; q < indices1.length; q++)
-                corr += covMatrix.getValue(indices1[p], indices1[q]);
-        System.out.println(corr / (indices1.length * indices1.length));
-        corr = 0;
-        for (int p = 0; p < indices2.length; p++)
-            for (int q = 0; q < indices0.length; q++)
-                corr += covMatrix.getValue(indices2[p], indices0[q]);
-        System.out.print(corr / (indices2.length * indices0.length) + " ");
-        corr = 0;
-        for (int p = 0; p < indices2.length; p++)
-            for (int q = 0; q < indices1.length; q++)
-                corr += covMatrix.getValue(indices2[p], indices1[q]);
-        System.out.print(corr / (indices2.length * indices1.length) + " ");
-        corr = 0;
-        for (int p = 0; p < indices2.length; p++)
-            for (int q = 0; q < indices2.length; q++)
-                corr += covMatrix.getValue(indices2[p], indices2[q]);
-        System.out.println(corr / (indices2.length * indices2.length));
-        System.exit(0);*/
+        throw new UnsupportedOperationException(); // Need to remove dependendence on PAL.
+//        //TODO: remove this
+//        /*int indices0[] = {0, 5, 6, 7, 10, 11};
+//        int indices1[] = {1, 2, 4};
+//        int indices2[] = {3, 9};
+//        double corr = 0;
+//        for (int p = 0; p < indices0.length; p++)
+//            for (int q = 0; q < indices0.length; q++)
+//                corr += covMatrix.getValue(indices0[p], indices0[q]);
+//        System.out.println(corr / (indices0.length * indices0.length));
+//        corr = 0;
+//        for (int p = 0; p < indices1.length; p++)
+//            for (int q = 0; q < indices0.length; q++)
+//                corr += covMatrix.getValue(indices1[p], indices0[q]);
+//        System.out.print(corr / (indices1.length * indices0.length) + " ");
+//        corr = 0;
+//        for (int p = 0; p < indices1.length; p++)
+//            for (int q = 0; q < indices1.length; q++)
+//                corr += covMatrix.getValue(indices1[p], indices1[q]);
+//        System.out.println(corr / (indices1.length * indices1.length));
+//        corr = 0;
+//        for (int p = 0; p < indices2.length; p++)
+//            for (int q = 0; q < indices0.length; q++)
+//                corr += covMatrix.getValue(indices2[p], indices0[q]);
+//        System.out.print(corr / (indices2.length * indices0.length) + " ");
+//        corr = 0;
+//        for (int p = 0; p < indices2.length; p++)
+//            for (int q = 0; q < indices1.length; q++)
+//                corr += covMatrix.getValue(indices2[p], indices1[q]);
+//        System.out.print(corr / (indices2.length * indices1.length) + " ");
+//        corr = 0;
+//        for (int p = 0; p < indices2.length; p++)
+//            for (int q = 0; q < indices2.length; q++)
+//                corr += covMatrix.getValue(indices2[p], indices2[q]);
+//        System.out.println(corr / (indices2.length * indices2.length));
+//        System.exit(0);*/
 
         // precondition:  this.varNames, this.latents properly set up.
         //                also, all these variables belong to latents.
@@ -410,144 +411,144 @@ public final class IndTestMimBuild implements IndependenceTest {
 //        System.out.println();
 //        System.out.println("************************************************");
 
-        if (testType == MIMBUILD_BOOTSTRAP) {
-            return isIndependentBootstrap(x, y, z);
-        }
-
-        List<String> subset = new ArrayList<String>();
-
-        Node node_x, node_y, node_z[], measured;
-        String z_names[] = new String[z.size()];
-
-        node_z = new Node[z.size()];
-
-        //        graph = new ProtoSemGraph();
-        graph = new SemGraph();
-
-        // Plug in the latent variables
-        node_x = new GraphNode(x.getName());
-        node_x.setNodeType(NodeType.LATENT);
-        graph.addNode(node_x);
-        node_y = new GraphNode(y.getName());
-        node_y.setNodeType(NodeType.LATENT);
-        graph.addNode(node_y);
-        Iterator it = z.iterator();
-        int i = 0;
-        while (it.hasNext()) {
-            String current_z = it.next().toString();
-            node_z[i] = new GraphNode(current_z);
-            node_z[i].setNodeType(NodeType.LATENT);
-            z_names[i] = current_z;
-            graph.addNode(node_z[i]);
-            graph.addDirectedEdge(node_z[i], node_x);
-            graph.addDirectedEdge(node_z[i], node_y);
-            i++;
-        }
-        for (int p = 0; p < z.size() - 1; p++) {
-            for (int q = p + 1; q < z.size(); q++) {
-                graph.addDirectedEdge(node_z[p], node_z[q]);
-            }
-        }
-
-        // Plug in the observed variables
-        it = ((List) measureTable.get(x.toString())).iterator();
-        while (it.hasNext()) {
-            String next_measure = (String) it.next();
-            measured = new GraphNode(next_measure);
-            measured.setNodeType(NodeType.MEASURED);
-            graph.addNode(measured);
-            graph.addDirectedEdge(node_x, measured);
-            subset.add(next_measure);
-        }
-        it = ((List) measureTable.get(y.toString())).iterator();
-        while (it.hasNext()) {
-            String next_measure = (String) it.next();
-            measured = new GraphNode(next_measure);
-            measured.setNodeType(NodeType.MEASURED);
-            graph.addNode(measured);
-            graph.addDirectedEdge(node_y, measured);
-            subset.add(next_measure);
-        }
-        for (i = 0; i < z.size(); i++) {
-            it = ((List) measureTable.get(z_names[i])).iterator();
-            while (it.hasNext()) {
-                String next_measure = (String) it.next();
-                measured = new GraphNode(next_measure);
-                measured.setNodeType(NodeType.MEASURED);
-                graph.addNode(measured);
-                graph.addDirectedEdge(node_z[i], measured);
-                subset.add(next_measure);
-            }
-        }
-
-        // Finally, compute the chi-squared statistics
-        String v[] = new String[graph.getNodes().size()];
-        int count = 0;
-        for (Node node : graph.getNodes()) {
-            v[count++] = node.getName();
-        }
-        String variables[] = new String[subset.size()];
-        for (int j = 0; j < subset.size(); j++) {
-            variables[j] = subset.get(j);
-        }
-        ICovarianceMatrix newCov = covMatrix.getSubmatrix(variables);
-
-        if (testType == MIMBUILD_MLE) {
-            SemPm pm = new SemPm(new SemGraph(graph));
-            MimBuildEstimator estimator =
-                    MimBuildEstimator.newInstance(newCov, pm);
-//            System.out.println("\nEvaluating model without edge, MLE...");
-            estimator.estimate();
-            SemIm sem = estimator.getEstimatedSem();
-            double prob_wo_edge = sem.getPValue();
-//            System.out.println("Prob significance = " + prob_wo_edge);
-
-            graph.addDirectedEdge(node_x, node_y);
-            //            pm = new SemPm(new SemGraph(graph));
-            pm = new SemPm(graph);
-            estimator = MimBuildEstimator.newInstance(newCov, pm);
-//            System.out.println("Evaluating model with edge, MLE...");
-            estimator.estimate();
-            SemIm sem2 = estimator.getEstimatedSem();
-            double prob_w_edge = sem2.getPValue();
-//            System.out.println("Prob significance = " + prob_w_edge);
-
-            /*if (prob_wo_edge > sig) {
-                System.out.println("Independent!");
-            }
-            else {
-                System.out.println("NOT independent!");
-            }
-            return (prob_wo_edge > sig);*/
-            double pValue = 1. - ProbUtils.chisqCdf(
-                    sem.getChiSquare() - sem2.getChiSquare(), 1);
-            if (pValue > sig) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+//        if (testType == MIMBUILD_BOOTSTRAP) {
+//            return isIndependentBootstrap(x, y, z);
+//        }
+//
+//        List<String> subset = new ArrayList<String>();
+//
+//        Node node_x, node_y, node_z[], measured;
+//        String z_names[] = new String[z.size()];
+//
+//        node_z = new Node[z.size()];
+//
+//        //        graph = new ProtoSemGraph();
+//        graph = new SemGraph();
+//
+//        // Plug in the latent variables
+//        node_x = new GraphNode(x.getName());
+//        node_x.setNodeType(NodeType.LATENT);
+//        graph.addNode(node_x);
+//        node_y = new GraphNode(y.getName());
+//        node_y.setNodeType(NodeType.LATENT);
+//        graph.addNode(node_y);
+//        Iterator it = z.iterator();
+//        int i = 0;
+//        while (it.hasNext()) {
+//            String current_z = it.next().toString();
+//            node_z[i] = new GraphNode(current_z);
+//            node_z[i].setNodeType(NodeType.LATENT);
+//            z_names[i] = current_z;
+//            graph.addNode(node_z[i]);
+//            graph.addDirectedEdge(node_z[i], node_x);
+//            graph.addDirectedEdge(node_z[i], node_y);
+//            i++;
+//        }
+//        for (int p = 0; p < z.size() - 1; p++) {
+//            for (int q = p + 1; q < z.size(); q++) {
+//                graph.addDirectedEdge(node_z[p], node_z[q]);
+//            }
+//        }
+//
+//        // Plug in the observed variables
+//        it = ((List) measureTable.get(x.toString())).iterator();
+//        while (it.hasNext()) {
+//            String next_measure = (String) it.next();
+//            measured = new GraphNode(next_measure);
+//            measured.setNodeType(NodeType.MEASURED);
+//            graph.addNode(measured);
+//            graph.addDirectedEdge(node_x, measured);
+//            subset.add(next_measure);
+//        }
+//        it = ((List) measureTable.get(y.toString())).iterator();
+//        while (it.hasNext()) {
+//            String next_measure = (String) it.next();
+//            measured = new GraphNode(next_measure);
+//            measured.setNodeType(NodeType.MEASURED);
+//            graph.addNode(measured);
+//            graph.addDirectedEdge(node_y, measured);
+//            subset.add(next_measure);
+//        }
+//        for (i = 0; i < z.size(); i++) {
+//            it = ((List) measureTable.get(z_names[i])).iterator();
+//            while (it.hasNext()) {
+//                String next_measure = (String) it.next();
+//                measured = new GraphNode(next_measure);
+//                measured.setNodeType(NodeType.MEASURED);
+//                graph.addNode(measured);
+//                graph.addDirectedEdge(node_z[i], measured);
+//                subset.add(next_measure);
+//            }
+//        }
+//
+//        // Finally, compute the chi-squared statistics
+//        String v[] = new String[graph.getNodes().size()];
+//        int count = 0;
+//        for (Node node : graph.getNodes()) {
+//            v[count++] = node.getName();
+//        }
+//        String variables[] = new String[subset.size()];
+//        for (int j = 0; j < subset.size(); j++) {
+//            variables[j] = subset.get(j);
+//        }
+//        ICovarianceMatrix newCov = covMatrix.getSubmatrix(variables);
+//
+//        if (testType == MIMBUILD_MLE) {
+//            SemPm pm = new SemPm(new SemGraph(graph));
+//            MimBuildEstimator estimator =
+//                    MimBuildEstimator.newInstance(newCov, pm);
+////            System.out.println("\nEvaluating model without edge, MLE...");
+//            estimator.estimate();
+//            SemIm sem = estimator.getEstimatedSem();
+//            double prob_wo_edge = sem.getPValue();
+////            System.out.println("Prob significance = " + prob_wo_edge);
+//
+//            graph.addDirectedEdge(node_x, node_y);
+//            //            pm = new SemPm(new SemGraph(graph));
+//            pm = new SemPm(graph);
+//            estimator = MimBuildEstimator.newInstance(newCov, pm);
+////            System.out.println("Evaluating model with edge, MLE...");
+//            estimator.estimate();
+//            SemIm sem2 = estimator.getEstimatedSem();
+//            double prob_w_edge = sem2.getPValue();
+////            System.out.println("Prob significance = " + prob_w_edge);
+//
+//            /*if (prob_wo_edge > sig) {
 //                System.out.println("Independent!");
-            } else {
-                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+//            }
+//            else {
 //                System.out.println("NOT independent!");
-            }
-            return (pValue > sig);
-        } else if (testType == MIMBUILD_2SLS) {
-            /*graph.addDirectedEdge(node_x, node_y);
-            SemPm pm = new SemPm(new SemGraph(graph));
-            Tsls tsls = new Tsls(pm, covMatrix, y.getName());
-            System.out.println("\nEvaluating model with edge, 2SLS...\n");
-            tsls.estimate();
-            double prob_edge = tsls.getEdgePValue(x.getName());
-            System.out.println("Prob significance = " + prob_edge);
-            if (prob_edge > sig) {
-                System.out.println("Independent!");
-            }
-            else {
-                System.out.println("NOT independent!");
-            }
-            return (prob_edge > sig);*/
-            throw new RuntimeException("Not currently supported!");
-        }
-
-        return true;
+//            }
+//            return (prob_wo_edge > sig);*/
+//            double pValue = 1. - ProbUtils.chisqCdf(
+//                    sem.getChiSquare() - sem2.getChiSquare(), 1);
+//            if (pValue > sig) {
+//                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+////                System.out.println("Independent!");
+//            } else {
+//                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+////                System.out.println("NOT independent!");
+//            }
+//            return (pValue > sig);
+//        } else if (testType == MIMBUILD_2SLS) {
+//            /*graph.addDirectedEdge(node_x, node_y);
+//            SemPm pm = new SemPm(new SemGraph(graph));
+//            Tsls tsls = new Tsls(pm, covMatrix, y.getName());
+//            System.out.println("\nEvaluating model with edge, 2SLS...\n");
+//            tsls.estimate();
+//            double prob_edge = tsls.getEdgePValue(x.getName());
+//            System.out.println("Prob significance = " + prob_edge);
+//            if (prob_edge > sig) {
+//                System.out.println("Independent!");
+//            }
+//            else {
+//                System.out.println("NOT independent!");
+//            }
+//            return (prob_edge > sig);*/
+//            throw new RuntimeException("Not currently supported!");
+//        }
+//
+//        return true;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -710,108 +711,109 @@ public final class IndTestMimBuild implements IndependenceTest {
     }
 
     private double[][][] getBootstrapSamples(int numSamples) {
-        //        ProtoSemGraph graph = new ProtoSemGraph();
-        SemGraph graph = new SemGraph();
-        DataSet dataContinuous = getData();
-        int totalLatents = latents.size();
-        Node latentsArray[] = new Node[totalLatents];
-        double samples[][][] =
-                new double[numSamples][totalLatents][totalLatents];
-
-        // Insert the latents
-        int count = 0;                   //
-        Iterator it = latents.iterator();
-
-        while (it.hasNext()) {
-            String current_z = (String) it.next();
-            latentsArray[count] = new GraphNode(current_z);
-            latentsArray[count].setNodeType(NodeType.LATENT);
-            graph.addNode(latentsArray[count]);
-            count++;
-        }
-
-        for (int p = 0; p < latents.size() - 1; p++) {
-            for (int q = p + 1; q < latents.size(); q++) {
-                graph.addDirectedEdge(latentsArray[p], latentsArray[q]);
-            }
-        }
-        //Insert the indicators
-        for (Node aLatentsArray : latentsArray) {
-            String key = aLatentsArray.toString();
-            List list = (List) measureTable.get(key);
-            it = list.iterator();
-
-            while (it.hasNext()) {
-                String next_measure = (String) it.next();
-                Node measured = new GraphNode(next_measure);
-                measured.setNodeType(NodeType.MEASURED);
-                graph.addNode(measured);
-                graph.addDirectedEdge(aLatentsArray, measured);
-            }
-        }
-
-        //        SemPm pm = new SemPm(new SemGraph(graph));
-        SemPm pm = new SemPm(graph);
-
-        fixLatentOrder(pm);
-
-        int sampleSize = dataContinuous.getNumRows(), numColumns =
-                dataContinuous.getNumColumns();
-//        double dummyData[][] = new double[numColumns][sampleSize];
-        DataSet dummyDataSet =
-                new ColtDataSet(sampleSize, getVariables());
-//        count = 0;
-//        it = getVariables().iterator();
+        throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
+//        //        ProtoSemGraph graph = new ProtoSemGraph();
+//        SemGraph graph = new SemGraph();
+//        DataSet dataContinuous = getData();
+//        int totalLatents = latents.size();
+//        Node latentsArray[] = new Node[totalLatents];
+//        double samples[][][] =
+//                new double[numSamples][totalLatents][totalLatents];
+//
+//        // Insert the latents
+//        int count = 0;                   //
+//        Iterator it = latents.iterator();
+//
 //        while (it.hasNext()) {
-//            ContinuousVariable variable = (ContinuousVariable) it.next();
-//            dummyDataSet.addVariable(variable);
+//            String current_z = (String) it.next();
+//            latentsArray[count] = new GraphNode(current_z);
+//            latentsArray[count].setNodeType(NodeType.LATENT);
+//            graph.addNode(latentsArray[count]);
+//            count++;
 //        }
-
-        // Maybe a row shuffle like this could take advantage of COLT...
-        // don't know how quite yet... jdramsey 7/4/05
-        for (int iter = 0; iter < numSamples; iter++) {
-            for (int i = 0; i < sampleSize; i++) {
-                int row =
-                        RandomUtil.getInstance().nextInt(sampleSize);
-                for (int j = 0; j < numColumns; j++) {
-//                    Column column = dataContinuous.getColumnObject(j);
-//                    double[] rawData = (double[]) column.getRawData();
-//                    dummyData[j][i] = rawData[row];
-
-                    dummyDataSet.setDouble(row, j,
-                            dataContinuous.getDouble(row, j));
-                }
-            }
-//            System.out.println(
-//                    "********\n Estimating latent covariance matrix #" + iter +
-//                            "...");
-            MimBuildEstimator estimator =
-                    MimBuildEstimator.newInstance(dummyDataSet, pm);
-            estimator.estimate();
-            // Copy only the latent covariance matrix
-            int row = 0, i = 0;
-            TetradMatrix implCovarC =
-                    estimator.getEstimatedSem().getImplCovar(true);
-            double implCov[][] = implCovarC.toArray();
-            Iterator<Node> vi1 = pm.getVariableNodes().iterator();
-            while (vi1.hasNext()) {
-                Node pmNext1 = vi1.next();
-                if (pmNext1.getNodeType() == NodeType.LATENT) {
-                    int column = 0, j = 0;
-                    Iterator<Node> vi2 = pm.getVariableNodes().iterator();
-                    while (vi2.hasNext()) {
-                        Node pmNext2 = vi2.next();
-                        if (pmNext2.getNodeType() == NodeType.LATENT) {
-                            samples[iter][i][j++] = implCov[row][column];
-                        }
-                        column++;
-                    }
-                    i++;
-                }
-                row++;
-            }
-        }
-        return samples;
+//
+//        for (int p = 0; p < latents.size() - 1; p++) {
+//            for (int q = p + 1; q < latents.size(); q++) {
+//                graph.addDirectedEdge(latentsArray[p], latentsArray[q]);
+//            }
+//        }
+//        //Insert the indicators
+//        for (Node aLatentsArray : latentsArray) {
+//            String key = aLatentsArray.toString();
+//            List list = (List) measureTable.get(key);
+//            it = list.iterator();
+//
+//            while (it.hasNext()) {
+//                String next_measure = (String) it.next();
+//                Node measured = new GraphNode(next_measure);
+//                measured.setNodeType(NodeType.MEASURED);
+//                graph.addNode(measured);
+//                graph.addDirectedEdge(aLatentsArray, measured);
+//            }
+//        }
+//
+//        //        SemPm pm = new SemPm(new SemGraph(graph));
+//        SemPm pm = new SemPm(graph);
+//
+//        fixLatentOrder(pm);
+//
+//        int sampleSize = dataContinuous.getNumRows(), numColumns =
+//                dataContinuous.getNumColumns();
+////        double dummyData[][] = new double[numColumns][sampleSize];
+//        DataSet dummyDataSet =
+//                new ColtDataSet(sampleSize, getVariables());
+////        count = 0;
+////        it = getVariables().iterator();
+////        while (it.hasNext()) {
+////            ContinuousVariable variable = (ContinuousVariable) it.next();
+////            dummyDataSet.addVariable(variable);
+////        }
+//
+//        // Maybe a row shuffle like this could take advantage of COLT...
+//        // don't know how quite yet... jdramsey 7/4/05
+//        for (int iter = 0; iter < numSamples; iter++) {
+//            for (int i = 0; i < sampleSize; i++) {
+//                int row =
+//                        RandomUtil.getInstance().nextInt(sampleSize);
+//                for (int j = 0; j < numColumns; j++) {
+////                    Column column = dataContinuous.getColumnObject(j);
+////                    double[] rawData = (double[]) column.getRawData();
+////                    dummyData[j][i] = rawData[row];
+//
+//                    dummyDataSet.setDouble(row, j,
+//                            dataContinuous.getDouble(row, j));
+//                }
+//            }
+////            System.out.println(
+////                    "********\n Estimating latent covariance matrix #" + iter +
+////                            "...");
+//            MimBuildEstimator estimator =
+//                    MimBuildEstimator.newInstance(dummyDataSet, pm);
+//            estimator.estimate();
+//            // Copy only the latent covariance matrix
+//            int row = 0, i = 0;
+//            TetradMatrix implCovarC =
+//                    estimator.getEstimatedSem().getImplCovar(true);
+//            double implCov[][] = implCovarC.toArray();
+//            Iterator<Node> vi1 = pm.getVariableNodes().iterator();
+//            while (vi1.hasNext()) {
+//                Node pmNext1 = vi1.next();
+//                if (pmNext1.getNodeType() == NodeType.LATENT) {
+//                    int column = 0, j = 0;
+//                    Iterator<Node> vi2 = pm.getVariableNodes().iterator();
+//                    while (vi2.hasNext()) {
+//                        Node pmNext2 = vi2.next();
+//                        if (pmNext2.getNodeType() == NodeType.LATENT) {
+//                            samples[iter][i][j++] = implCov[row][column];
+//                        }
+//                        column++;
+//                    }
+//                    i++;
+//                }
+//                row++;
+//            }
+//        }
+//        return samples;
     }
 
     /**

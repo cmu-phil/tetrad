@@ -139,6 +139,8 @@ public final class SessionEditor extends JComponent
      * Pastes a consistent list of model nodes into the workbench. Note that the
      * responsivity of the toolbar to events needs to be turned off during this
      * operation.
+     * @param sessionElements the list of model nodes.
+     * @param point the upper left corner of the first node.
      */
     public void pasteSubsession(List sessionElements, Point point) {
         getToolbar().setRespondingToEvents(false);
