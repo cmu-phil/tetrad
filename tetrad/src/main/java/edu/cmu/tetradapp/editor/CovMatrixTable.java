@@ -75,7 +75,7 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of rows in the wrapper table model. Guarantees that
+     * @return the number of rows in the wrapper table model. Guarantees that
      * this number will be at least 100.
      *
      * @return the row count of the wrapped model or 100, whichever is larger.
@@ -85,7 +85,7 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of columns in the wrapper table model. Guarantees that
+     * @return the number of columns in the wrapper table model. Guarantees that
      * this number will be at least 30.
      *
      * @return the column count of the wrapped model or 30, whichever is
@@ -96,7 +96,7 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the value at the given (row, column) coordinates of the table
+     * @return the value at the given (row, column) coordinates of the table
      * as an Object.  If the variable for the column is a DiscreteVariable, the
      * String value (as opposed to the integer index value) is extracted
      * and returned.  If the coordinates are out of range of the wrapped table

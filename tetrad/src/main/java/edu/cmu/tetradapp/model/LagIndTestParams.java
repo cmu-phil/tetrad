@@ -39,12 +39,12 @@ public class LagIndTestParams implements IndTestParams {
     private double alpha = 0.05;
 
     /**
-     * @serial Range >= -1.
+     * @serial Range greater than or equal to -1.
      */
     private int depth = -1;
 
     /**
-     * @serial Range >= 2.
+     * @serial Range greater than or equal to 2.
      */
     private int numTimePoints = 2;
 
@@ -95,7 +95,7 @@ public class LagIndTestParams implements IndTestParams {
     }
 
     /**
-     * Returns the depth of the search.
+     * @return the depth of the search.
      */
     public int getDepth() {
         return this.depth;

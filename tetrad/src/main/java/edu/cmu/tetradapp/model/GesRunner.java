@@ -224,7 +224,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
             return;
         } else {
             if (index < -1) {
-                throw new IllegalArgumentException("Must be >= -1: " + index);
+                throw new IllegalArgumentException("Must be greater than or equal to -1: " + index);
             }
         }
 

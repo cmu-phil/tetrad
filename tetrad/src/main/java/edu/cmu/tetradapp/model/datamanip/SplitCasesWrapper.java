@@ -77,7 +77,7 @@ public class SplitCasesWrapper extends DataWrapper {
 
 
     /**
-     * Returns the splitNames selected by the editor.
+     * @return the splitNames selected by the editor.
      */
     public static DataModel createSplits(DataSet dataSet, SplitCasesParams params) {
         List<Integer> indices = new ArrayList<Integer>(dataSet.getNumRows());

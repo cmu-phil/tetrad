@@ -39,7 +39,7 @@ public final class IndTestChooser {
     }
 
     /**
-     * Returns an independence checker appropriate to the given data source.
+     * @return an independence checker appropriate to the given data source.
      * Also sets the IndTestParams on the params to an appropriate type object
      * (using the existing one if it's of the right type).
      */
@@ -300,7 +300,7 @@ public final class IndTestChooser {
     }
 
     /**
-     * Returns an independence checker appropriate to the given data source.
+     * Finds an independence checker appropriate to the given data source.
      * Also sets the IndTestParams on the params to an appropriate type
      * dataSource (using the existing one if it's of the right type).
      */

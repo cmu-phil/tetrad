@@ -397,7 +397,7 @@ final class ClusterRenderer extends JPanel {
         }
 
         /**
-         * Returns an object which represents the data to be transferred.  The
+         * @return an object which represents the data to be transferred.  The
          * class of the object returned is defined by the representation class
          * of the flavor.
          *
@@ -419,7 +419,7 @@ final class ClusterRenderer extends JPanel {
         }
 
         /**
-         * Returns whether or not the specified data flavor is supported for
+         * @return whether or not the specified data flavor is supported for
          * this object.
          *
          * @param flavor the requested flavor for the data
@@ -431,7 +431,7 @@ final class ClusterRenderer extends JPanel {
         }
 
         /**
-         * Returns an array of DataFlavor objects indicating the flavors the
+         * @return an array of DataFlavor objects indicating the flavors the
          * data can be provided in.  The array should be ordered according to
          * preference for providing the data (from most richly descriptive to
          * least descriptive).

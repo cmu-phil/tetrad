@@ -113,7 +113,7 @@ public class Rubberband extends JComponent {
     }
 
     /**
-     * Returns the shape of the rubberband, which can be used to determine which
+     * @return the shape of the rubberband, which can be used to determine which
      * components it intersects.
      */
     public Shape getShape() {

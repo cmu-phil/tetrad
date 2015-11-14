@@ -197,7 +197,7 @@ final class FontSelectionAction extends AbstractAction
         int size = Integer.parseInt(sizeString);
 
         if (size < 1) {
-            throw new IllegalArgumentException("Size must be >= 1: " + size);
+            throw new IllegalArgumentException("Size Must be greater than or equal to 1: " + size);
         }
 
         font = new Font(family, style, size);

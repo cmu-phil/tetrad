@@ -38,13 +38,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This version (in the urchin/newdata directory) differs from the version in
+ * <p>This version (in the urchin/newdata directory) differs from the version in
  * the batchsearch directory.  It will create both a doc file and an xls file.
  * The latter corresponds to the "verbose = false" segments of the earlier
  * version.  Also this version will deal with the situation where there are many
  * time steps, which raises question about the time interval used to decide
  * whether there is an adjacency between two variables (= gene/time pairs). </p>
- * Also all the GA code has been removed.
+ * <p>Also all the GA code has been removed.</p>
  */
 
 public class YeastPcCcdSearchWrapper {

@@ -554,12 +554,12 @@ public class RandomGraphEditor extends JPanel {
 
     private void setNumMeasuredNodes(int numMeasuredNodes) {
         if (numMeasuredNodes + getNumLatents() < 2) {
-            throw new IllegalArgumentException("Number of nodes must be >= 2.");
+            throw new IllegalArgumentException("Number of nodes Must be greater than or equal to 2.");
         }
 
 //        if (numNodes < getNumLatents()) {
 //            throw new IllegalArgumentException(
-//                    "Number of nodes must be >= number " + "of latent nodes.");
+//                    "Number of nodes Must be greater than or equal to number " + "of latent nodes.");
 //        }
 
         Preferences.userRoot().putInt("newGraphNumMeasuredNodes", numMeasuredNodes);
@@ -601,7 +601,7 @@ public class RandomGraphEditor extends JPanel {
 
         if (!isConnected() && numEdges < 0) {
             throw new IllegalArgumentException(
-                    "Number of edges must be >= 0: " + numEdges);
+                    "Number of edges Must be greater than or equal to 0: " + numEdges);
         }
 
         int maxNumEdges = getNumNodes() * (getNumNodes() - 1) / 2;

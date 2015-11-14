@@ -77,7 +77,7 @@ public class SemImParams implements Params, TetradSerializable {
     //============================PUBLIC METHODS==========================//
 
     /**
-     * Returns the low positive coeffient parameter range for random values.
+     * @return the low positive coeffient parameter range for random values.
      */
     public double getCoefLow() {
         return getSemImInitializionParams().getCoefLow();
@@ -91,14 +91,14 @@ public class SemImParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns the high positive coeffient parameter range for random values./
+     * @return the high positive coeffient parameter range for random values./
      */
     public double getCoefHigh() {
         return getSemImInitializionParams().getCoefHigh();
     }
 
     /**
-     * Returns the low positive covariance parameter range for random values./
+     * @return the low positive covariance parameter range for random values./
      */
     public double getCovLow() {
         return getSemImInitializionParams().getCovLow();
@@ -112,14 +112,14 @@ public class SemImParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns the high positive covariance parameter range for random values./
+     * @return the high positive covariance parameter range for random values./
      */
     public double getCovHigh() {
         return getSemImInitializionParams().getCovHigh();
     }
 
     /**
-     * Returns the low positive variance parameter range for random values./
+     * @return the low positive variance parameter range for random values./
      */
     public double getVarLow() {
         return getSemImInitializionParams().getVarLow();
@@ -133,14 +133,14 @@ public class SemImParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns the high positive variance parameter range for random values./
+     * @return the high positive variance parameter range for random values./
      */
     public double getVarHigh() {
         return getSemImInitializionParams().getVarHigh();
     }
 
     /**
-     * Returns true if random coefficients are chosen from (-high, -low) U (low, high),
+     * @return true if random coefficients are chosen from (-high, -low) U (low, high),
      * false if they are chosen from (low, high).
      */
     public boolean isCoefSymmetric() {
@@ -156,7 +156,7 @@ public class SemImParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns true if random covariances are chosen form (-high, -low) U (low, high);
+     * @return true if random covariances are chosen form (-high, -low) U (low, high);
      * false if they are chosen from (low, high).
      */
     public boolean isCovSymmetric() {
@@ -172,7 +172,7 @@ public class SemImParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns true iff values from the old SEM IM (if available) are retained (where
+     * @return true iff values from the old SEM IM (if available) are retained (where
      * possible).
      */
     public boolean isRetainPreviousValues() {
@@ -180,7 +180,7 @@ public class SemImParams implements Params, TetradSerializable {
     }
 
     /**
-     * Returns true iff values from the old SEM IM (if available) are retained (where
+     * Sets whether values from the old SEM IM (if available) are retained (where
      * possible).
      */
     public void setRetainPreviousValues(boolean retainPreviousValues) {

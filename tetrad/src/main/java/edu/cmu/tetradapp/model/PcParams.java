@@ -46,7 +46,7 @@ public final class PcParams implements SearchParams {
     private IKnowledge knowledge = new Knowledge2();
 
     /**
-     * @serial Range >= -1.
+     * @serial Range greater than or equal to -1.
      */
     private int depth;
 

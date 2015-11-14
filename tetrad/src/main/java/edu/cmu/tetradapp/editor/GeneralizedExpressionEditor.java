@@ -560,7 +560,7 @@ public class GeneralizedExpressionEditor extends JComponent {
     //==================================================PUBLIC METHODS==========================================//
 
     /**
-     * Returns the expression string (that is, the edited string, with error term appended if necessary, without
+     * @return the expression string (that is, the edited string, with error term appended if necessary, without
      * "variable = " or "parameter ~". This is the final product of the editing.
      */
     public String getExpressionString() {

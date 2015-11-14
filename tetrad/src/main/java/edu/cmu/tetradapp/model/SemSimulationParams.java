@@ -37,7 +37,7 @@ public class SemSimulationParams implements TetradSerializable {
     /**
      * The sample size to generate.
      *
-     * @serial Range > 0.
+     * @serial Range greater than 0.
      */
     private int sampleSize = 1000;
 
@@ -62,7 +62,7 @@ public class SemSimulationParams implements TetradSerializable {
     //===========================PUBLIC METHODS========================//
 
     /**
-     * Returns the number of samples to simulate.
+     * @return the number of samples to simulate.
      */
     public int getSampleSize() {
         return this.sampleSize;

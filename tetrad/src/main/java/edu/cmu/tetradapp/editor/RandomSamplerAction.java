@@ -150,7 +150,7 @@ final class RandomSamplerAction extends AbstractAction {
 
     private void setSampleSize(int sampleSize) {
         if (sampleSize < 1) {
-            throw new IllegalArgumentException("Sample size must be >= 1.");
+            throw new IllegalArgumentException("Sample size Must be greater than or equal to 1.");
         }
         this.sampleSize = sampleSize;
     }

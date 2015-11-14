@@ -127,7 +127,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
 
     /**
-     * Returns the work bench of null if there isn't one.
+     * @return the work bench of null if there isn't one.
      */
     public GraphWorkbench getWorkbench() {
         return this.workbench;
@@ -143,7 +143,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
 
     /**
-     * Returns the graph.
+     * @return the graph.
      */
     public Graph getGraph() {
         if (this.workbench != null) {
@@ -154,7 +154,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
 
     /**
-     * Returns a list of all the SessionNodeWrappers (TetradNodes) and
+     * @return a list of all the SessionNodeWrappers (TetradNodes) and
      * SessionNodeEdges that are model components for the respective
      * SessionNodes and SessionEdges selected in the workbench. Note that the
      * workbench, not the SessionEditorNodes themselves, keeps track of the
@@ -207,7 +207,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     /**
      * Executes the algorithm. The execution takes place inside a thread, so one
      * cannot count on a result graph having been found when the method
-     * returns.
      */
     public void execute() {
         Window owner = (Window) getTopLevelAncestor();

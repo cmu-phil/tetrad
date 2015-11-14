@@ -66,7 +66,7 @@ public class DiscretizationParams implements Params {
 
 
     /**
-     * Returns the specs.
+     * @return the specs.
      *
      * @return - specs.
      */

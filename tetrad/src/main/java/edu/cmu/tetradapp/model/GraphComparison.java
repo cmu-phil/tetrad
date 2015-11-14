@@ -93,42 +93,42 @@ public final class GraphComparison implements SessionModel {
     /**
      * The number of correct edges the last time they were counted.
      *
-     * @serial Range >= 0.
+     * @serial Range greater than or equal to 0.
      */
     private int adjCorrect;
 
     /**
      * The number of errors of commission that last time they were counted.
      *
-     * @serial Range >= 0.
+     * @serial Range greater than or equal to 0.
      */
     private int adjFp;
 
     /**
      * The number of errors of omission the last time they were counted.
      *
-     * @serial Range >= 0.                                   GraphParams param
+     * @serial Range greater than or equal to 0.                                   GraphParams param
      */
     private int adjFn;
 
     /**
      * The number of correct edges the last time they were counted.
      *
-     * @serial Range >= 0.
+     * @serial Range greater than or equal to 0.
      */
     private int arrowptCorrect;
 
     /**
      * The number of errors of commission that last time they were counted.
      *
-     * @serial Range >= 0.
+     * @serial Range greater than or equal to 0.
      */
     private int arrowptFp;
 
     /**
      * The number of errors of omission the last time they were counted.
      *
-     * @serial Range >= 0.
+     * @serial Range greater than or equal to 0.
      */
     private int arrowptFn;
 
@@ -570,14 +570,14 @@ public final class GraphComparison implements SessionModel {
     }
 
     /**
-     * Returns the number of correct edges last time they were counted.
+     * @return the number of correct edges last time they were counted.
      */
     private int getAdjCorrect() {
         return adjCorrect;
     }
 
     /**
-     * Returns the number of errors of omission (in the reference workbench but
+     * @return the number of errors of omission (in the reference workbench but
      * not in the target workbench) the last time they were counted.
      */
     private int getAdjFn() {

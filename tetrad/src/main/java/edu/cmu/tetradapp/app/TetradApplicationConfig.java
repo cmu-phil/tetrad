@@ -97,7 +97,7 @@ public class TetradApplicationConfig {
 
 
     /**
-     * Returns an instance of the session configuration.
+     * @return an instance of the session configuration.
      *
      * @return - instance of the session config.
      */
@@ -107,7 +107,7 @@ public class TetradApplicationConfig {
 
 
     /**
-     * Returns the <code>SessionNodeConfig</code> to be used for the given id,
+     * @return the <code>SessionNodeConfig</code> to be used for the given id,
      * or null if there isn't one defined for the given id.
      *
      * @param id - The id of the session config (e.g., "Graph" etc)
@@ -119,7 +119,7 @@ public class TetradApplicationConfig {
 
 
     /**
-     * Returns the <code>SessionNodeConfig</code> that the given model is part
+     * @return the <code>SessionNodeConfig</code> that the given model is part
      * of.
      *
      * @param model
@@ -172,7 +172,7 @@ public class TetradApplicationConfig {
     }
 
     /**
-     * Returns the value of the elemnt, will return null if its an empty
+     * @return the value of the elemnt, will return null if its an empty
      * string.
      */
     private static String getValue(Element value) {
@@ -291,7 +291,7 @@ public class TetradApplicationConfig {
 
 
     /**
-     * Returns a class loader to use.
+     * @return a class loader to use.
      */
     private static ClassLoader getClassLoader() {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();

@@ -39,7 +39,7 @@ public class BayesDataParams implements Params, HasCalculatorParams {
 
     /**
      * The number of cases to generate for the new data set.
-     * @serial Must be > 0.
+     * @serial Must be greater than 0.
      */
     private int sampleSize = Preferences.userRoot().getInt("sampleSize", 1000);
 
@@ -82,7 +82,7 @@ public class BayesDataParams implements Params, HasCalculatorParams {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * Returns the number of samples to simulate (> 0).
+     * @return the number of samples to simulate (greater than 0).
      */
     public int getSampleSize() {
         return this.sampleSize;
@@ -94,7 +94,7 @@ public class BayesDataParams implements Params, HasCalculatorParams {
     public void setSampleSize(int sampleSize) {
         if (!(sampleSize > 0)) {
             throw new IllegalArgumentException(
-                    "Sample size must be > 0: " + sampleSize);
+                    "Sample size Must be greater than 0: " + sampleSize);
         }
 
         this.sampleSize = sampleSize;

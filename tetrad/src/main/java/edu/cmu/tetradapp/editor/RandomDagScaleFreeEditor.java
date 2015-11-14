@@ -215,7 +215,7 @@ public class RandomDagScaleFreeEditor extends JPanel {
 
     private void setNumMeasuredNodes(int numMeasuredNodes) {
         if (numMeasuredNodes + getNumLatents() < 2) {
-            throw new IllegalArgumentException("Number of nodes must be >= 2.");
+            throw new IllegalArgumentException("Number of nodes Must be greater than or equal to 2.");
         }
 
         Preferences.userRoot().putInt("newGraphNumMeasuredNodes", numMeasuredNodes);

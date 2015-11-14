@@ -36,7 +36,7 @@ public class MimBuildIndTestParams implements MimIndTestParams {
     static final long serialVersionUID = 23L;
 
     /**
-     * @serial Range >= 1.
+     * @serial Range greater than or equal to 1.
      */
     private int numClusters;
 

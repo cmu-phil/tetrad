@@ -44,8 +44,6 @@ import java.util.Map;
  * node, adding a node of a particular type, or adding an edge.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
- * @see edu.cmu.tetradapp.app.SessionEditor
- * @see edu.cmu.tetradapp.app.SessionEditorToolbar
  */
 public class KnowledgeEditorToolbar extends JPanel {
 

@@ -55,7 +55,7 @@ public final class MbSearchParams implements MeekSearchParams {
     private String targetName;
 
     /**
-     * @serial Range >= -1.
+     * @serial Range greater than or equal to -1.
      */
     private int depth = -1;
 
@@ -175,7 +175,7 @@ public final class MbSearchParams implements MeekSearchParams {
     }
 
     /*
-     * Returns the target variable for the search.
+     * @return the target variable for the search.
      */
     public String getTargetName() {
         return targetName;
@@ -189,7 +189,7 @@ public final class MbSearchParams implements MeekSearchParams {
     }
 
     /**
-     * Returns the significance level for the search.
+     * @return the significance level for the search.
      */
     public double getAlpha() {
         return getIndTestParams().getAlpha();

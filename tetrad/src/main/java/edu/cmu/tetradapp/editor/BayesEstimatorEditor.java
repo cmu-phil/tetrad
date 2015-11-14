@@ -153,7 +153,7 @@ public class BayesEstimatorEditor extends JPanel {
     }
 
     /**
-     * Returns a reference to this editor.
+     * @return a reference to this editor.
      */
     private BayesEstimatorEditorWizard getWizard() {
         return wizard;

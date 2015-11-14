@@ -194,7 +194,6 @@ public class LingSearchEditor extends AbstractSearchEditor
     /**
      * Executes the algorithm. The execution takes place inside a thread, so one
      * cannot count on a result graph having been found when the method
-     * returns.
      */
     public void execute() {
         Window owner = (Window) getTopLevelAncestor();

@@ -140,7 +140,7 @@ public class RocPlot extends JPanel implements PropertyChangeListener {
     }
 
     /**
-     * Returns the rectangle in which the graph is plotted.  Labels for the
+     * @return the rectangle in which the graph is plotted.  Labels for the
      * graph are drawn in the margin.
      *
      * @param size the size of this component with respect to which the plot
@@ -230,21 +230,21 @@ public class RocPlot extends JPanel implements PropertyChangeListener {
     }
 
     /**
-     * Returns the stored plot rectangle.
+     * @return the stored plot rectangle.
      */
     private Rectangle getPlotRect() {
         return plotRect;
     }
 
     /**
-     * Returns the preferred size of this component.
+     * @return the preferred size of this component.
      */
     public Dimension getPreferredSize() {
         return new Dimension(600, 600);
     }
 
     /**
-     * Returns a pixel x position which is the proportion x / (range from pi_e
+     * @return a pixel x position which is the proportion x / (range from pi_e
      * to 1.0) from the left side of the unit square to the right.
      *
      * @param x the value of x (between pi_c and 1.0).
@@ -258,7 +258,7 @@ public class RocPlot extends JPanel implements PropertyChangeListener {
     }
 
     /**
-     * Returns a pixel y position which is the proportion x / 1.0 from the
+     * @return a pixel y position which is the proportion x / 1.0 from the
      * bottom of the unit square to the top.
      *
      * @param y a value between 0.0 and 1.0, inclusive.

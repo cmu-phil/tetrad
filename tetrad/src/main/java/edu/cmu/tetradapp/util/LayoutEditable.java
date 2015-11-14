@@ -38,7 +38,7 @@ import java.util.Map;
 public interface LayoutEditable {
 
     /**
-     * Returns the getModel graph. (Not necessarily a copy.)
+     * @return the getModel graph. (Not necessarily a copy.)
      */
     Graph getGraph();
 
@@ -50,12 +50,12 @@ public interface LayoutEditable {
     Map<Node, Object> getModelNodesToDisplay();
 
     /**
-     * Returns the getModel knowledge.
+     * @return the getModel knowledge.
      */
     IKnowledge getKnowledge();
 
     /**
-     * Returns the source graph.
+     * @return the source graph.
      */
     Graph getSourceGraph();
 
@@ -70,7 +70,7 @@ public interface LayoutEditable {
     void layoutByKnowledge();
 
     /**
-     * Returns the preferred size of the layout.
+     * @return the preferred size of the layout.
      */
     Rectangle getVisibleRect();
 }

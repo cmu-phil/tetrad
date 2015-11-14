@@ -36,7 +36,7 @@ public class DiscreteBootstrapSamplerParams implements Params {
 
     /**
      *
-     * @serial Range > 0.
+     * @serial Range greater than 0.
      */
     private int sampleSize = 100;
 
@@ -67,7 +67,7 @@ public class DiscreteBootstrapSamplerParams implements Params {
     public void setSampleSize(int sampleSize) {
         if (sampleSize < 1) {
             throw new IllegalArgumentException(
-                    "Sample size must be > 0: " + sampleSize);
+                    "Sample size Must be greater than 0: " + sampleSize);
         }
 
         this.sampleSize = sampleSize;

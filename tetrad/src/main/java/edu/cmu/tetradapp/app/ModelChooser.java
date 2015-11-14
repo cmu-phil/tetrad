@@ -37,40 +37,30 @@ public interface ModelChooser {
 
 
     /**
-     * Returns the title of the chooser.
-     *
-     * @return - title.
+     * @return the title of the chooser.
      */
     public String getTitle();
 
 
     /**
-     * Returns the model class that was selected or null if nothing was selected.
-     *
-     * @return - selected model class.
+     * @return the model class that was selected or null if nothing was selected.
      */
     public Class getSelectedModel();
 
 
     /**
      * The title to use for the chooser.
-     *
-     * @param title
      */
     public void setTitle(String title);
 
     /**
      * Sets the models that this chooser should display.
-     *
-     * @param configs
      */
     public void setModelConfigs(List<SessionNodeModelConfig> configs);
 
 
     /**
      * Sets the id for the node.
-     *
-     * @param id
      */
     public void setNodeId(String id);
 

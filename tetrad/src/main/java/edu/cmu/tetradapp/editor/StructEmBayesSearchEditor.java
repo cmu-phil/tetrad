@@ -158,7 +158,7 @@ public class StructEmBayesSearchEditor extends JPanel {
     }
 
     /**
-     * Returns a reference to this editor.
+     * @return a reference to this editor.
      */
     private StructEMBayesSearchEditorWizard getWizard() {
         return wizard;

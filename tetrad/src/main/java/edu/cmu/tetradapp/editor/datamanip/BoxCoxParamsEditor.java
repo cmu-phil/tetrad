@@ -93,7 +93,7 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
     }
 
     /**
-     * Returns true.
+     * @return true.
      *
      * @return true
      */

@@ -24,16 +24,16 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetrad.session.Session;
 
 /**
- * Indirect control for the desktop to avoid package cycles. The reference to
+ * <p>Indirect control for the desktop to avoid package cycles. The reference to
  * the desktop is set using the <code>activate</code> method, as a
  * DesktopControllable. Once set, the method calls in the DesktopControllable
- * interface are passed on to it.
- * <p/>
- * Note that all argument types are interface-tagged as well to avoid further
- * package cycles.
- * <p/>
- * Not pretty, but easier and cleaner by far than passing the reference to the
- * desktop down through all of the relevant classes in tetradapp.
+ * interface are passed on to it.</p>
+ *
+ * <p>Note that all argument types are interface-tagged as well to avoid further
+ * package cycles.</p>
+ *
+ * <p>Not pretty, but easier and cleaner by far than passing the reference to the
+ * desktop down through all of the relevant classes in tetradapp.</p>
  *
  * @author Joseph Ramsey
  */

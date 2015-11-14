@@ -39,7 +39,7 @@ import java.util.List;
 public interface MimParams extends Params, KnowledgeTransferable, TetradSerializable {
 
     /**
-     * Returns a copy of the knowledge for these params.
+     * @return a copy of the knowledge for these params.
      */
     IKnowledge getKnowledge();
 
@@ -49,24 +49,24 @@ public interface MimParams extends Params, KnowledgeTransferable, TetradSerializ
     void setKnowledge(IKnowledge knowledge);
 
     /**
-     * Returns the clusters to edit (for some algorithms).
+     * @return the clusters to edit (for some algorithms).
      */
     Clusters getClusters();
 
     void setClusters(Clusters clusters);
 
     /**
-     * Returns the independence test parameters for this search.
+     * @return the independence test parameters for this search.
      */
     MimIndTestParams getMimIndTestParams();
 
     /**
-     * Returns a copy of the latest workbench graph.
+     * @return a copy of the latest workbench graph.
      */
     Graph getSourceGraph();
 
     /**
-     * Returns the list of variable names.
+     * @return the list of variable names.
      */
     List<String> getVarNames();
 
@@ -81,7 +81,7 @@ public interface MimParams extends Params, KnowledgeTransferable, TetradSerializ
     void setSourceGraph(Graph graph);
 
     /**
-     * Returns the significance level.
+     * @return the significance level.
      */
     double getAlpha();
 

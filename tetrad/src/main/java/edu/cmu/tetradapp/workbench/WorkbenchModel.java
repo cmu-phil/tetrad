@@ -31,28 +31,28 @@ import java.awt.*;
  */
 public interface WorkbenchModel {
     /**
-     * Returns a new model node of type GraphNode.
+     * @return a new model node of type GraphNode.
      */
     Node getNewModelNode();
 
     /**
-     * Returns a new display node of type AbstractGraphNode given a model node
+     * @return a new display node of type AbstractGraphNode given a model node
      * of type modelNode.
      */
     DisplayNode getNewDisplayNode(Node modelNode);
 
     /**
-     * Returns a new display edge for the given model edge.
+     * @return a new display edge for the given model edge.
      */
     IDisplayEdge getNewDisplayEdge(Edge modelEdge);
 
     /**
-     * Returns a new model edge connecting the given nodes.
+     * @return a new model edge connecting the given nodes.
      */
     Edge getNewModelEdge(Node node1, Node node2);
 
     /**
-     * Returns a new tracking edge for the given display node at the given
+     * @return a new tracking edge for the given display node at the given
      * location.
      */
     IDisplayEdge getNewTrackingEdge(DisplayNode displayNode, Point mouseLoc);

@@ -46,7 +46,7 @@ public final class LingamParams implements SearchParams {
     private IKnowledge knowledge = new Knowledge2();
 
     /**
-     * @serial Range >= -1.
+     * @serial Range greater than or equal to -1.
      */
     private int depth;
 
@@ -166,7 +166,7 @@ public final class LingamParams implements SearchParams {
 
     public void setPruneFactor(double pruneFactor) {
         if (pruneFactor <= 0) {
-            throw new IllegalArgumentException("Prune factor must be >= 0.");
+            throw new IllegalArgumentException("Prune factor Must be greater than or equal to 0.");
         }
 
         System.out.println("set prune factor = " + pruneFactor);

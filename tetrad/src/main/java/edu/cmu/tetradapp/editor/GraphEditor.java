@@ -143,7 +143,7 @@ public final class GraphEditor extends JPanel
     }
 
     /**
-     * Returns a list of all the SessionNodeWrappers (TetradNodes) and
+     * @return a list of all the SessionNodeWrappers (TetradNodes) and
      * SessionNodeEdges that are model components for the respective
      * SessionNodes and SessionEdges selected in the workbench. Note that the
      * workbench, not the SessionEditorNodes themselves, keeps track of the

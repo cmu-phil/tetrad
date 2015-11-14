@@ -90,7 +90,7 @@ public class ArResidualsParamsEditor extends JPanel implements ParameterEditor {
     }
 
     /**
-     * Returns true.
+     * @return true.
      *
      * @return true
      */

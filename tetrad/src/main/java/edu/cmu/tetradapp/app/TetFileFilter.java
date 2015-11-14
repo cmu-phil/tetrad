@@ -39,7 +39,7 @@ final class TetFileFilter extends FileFilter {
     }
 
     /**
-     * Returns the description of this file filter that will be displayed in a
+     * @return the description of this file filter that will be displayed in a
      * JFileChooser.
      */
     public String getDescription() {

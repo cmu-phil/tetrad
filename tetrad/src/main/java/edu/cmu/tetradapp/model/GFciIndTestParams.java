@@ -39,7 +39,7 @@ public class GFciIndTestParams implements IndTestParams {
     private double alpha = 0.05;
 
     /**
-     * @serial Range > -1.
+     * @serial Range greater than -1.
      */
     private int depth = -1;
 
@@ -107,7 +107,7 @@ public class GFciIndTestParams implements IndTestParams {
     }
 
     /**
-     * Returns the depth of the search.
+     * @return the depth of the search.
      *
      * @return depth
      */

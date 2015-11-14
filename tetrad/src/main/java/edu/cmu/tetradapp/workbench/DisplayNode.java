@@ -82,7 +82,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     /**
-     * Returns the model node corresponding to this workbench node. May be
+     * @return the model node corresponding to this workbench node. May be
      * null.
      */
     public final Node getModelNode() {
@@ -122,7 +122,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     /**
-     * Returns true if the node is selected, false if not.
+     * @return true if the node is selected, false if not.
      */
     public final boolean isSelected() {
         return this.selected;
@@ -137,7 +137,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     /**
-     * Returns the center point for this node.
+     * @return the center point for this node.
      */
     public final Point getCenterPoint() {
         Rectangle bounds = getBounds();

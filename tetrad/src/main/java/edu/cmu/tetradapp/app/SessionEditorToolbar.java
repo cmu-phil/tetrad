@@ -375,7 +375,7 @@ final class SessionEditorToolbar extends JPanel {
     }
 
     /**
-     * Returns the JToggleButton for the given node type, or null if no such
+     * @return the JToggleButton for the given node type, or null if no such
      * button exists.
      */
     private JToggleButton getButtonForType(String nodeType) {

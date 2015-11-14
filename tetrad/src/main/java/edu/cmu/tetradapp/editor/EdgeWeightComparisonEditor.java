@@ -38,8 +38,6 @@ public class EdgeWeightComparisonEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
-     *
-     * @param comparison
      */
     public EdgeWeightComparisonEditor(EdgeWeightComparison comparison) {
         this.comparison = comparison;

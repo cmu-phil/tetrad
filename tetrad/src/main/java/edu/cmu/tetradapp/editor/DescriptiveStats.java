@@ -150,7 +150,7 @@ public class DescriptiveStats {
     /**
      * Given some variable, returns the mean, standard deviation, and variance.
      *
-     * @return [0] -> mean, [1] -> standard deviation, [2] -> variance
+     * @return [0] -&gt; mean, [1] -&gt; standard deviation, [2] -&gt; variance
      */
 
     public static double[] normalParams(double[] data)

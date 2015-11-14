@@ -39,7 +39,7 @@ import java.awt.event.ActionListener;
 
 /**
  * This class should access the getMappings mapped to it from the mapping to the
- * search classes. </p> This class is the parameter editor currently for Purify
+ * search classes. This class is the parameter editor currently for Purify
  * parameters
  *
  * @author Ricardo Silva rbas@cs.cmu.edu

@@ -37,7 +37,7 @@ import java.util.List;
  * @author Willie Wheeler
  * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  */
-public class    LagWorkbench extends AbstractWorkbench {
+public class LagWorkbench extends AbstractWorkbench {
 
     //=================PUBLIC STATIC FINAL FIELDS=========================//
     public static final int MEASURED_NODE = 0;
@@ -106,7 +106,7 @@ public class    LagWorkbench extends AbstractWorkbench {
                 modelNode.setNodeType(NodeType.LATENT);
                 break;
 
-            default :
+            default:
                 throw new IllegalStateException();
         }
 
@@ -127,14 +127,11 @@ public class    LagWorkbench extends AbstractWorkbench {
             GraphNodeMeasured nodeMeasured = new GraphNodeMeasured(modelNode);
             nodeMeasured.setEditExitingMeasuredVarsAllowed(isEditExistingMeasuredVarsAllowed());
             displayNode = nodeMeasured;
-        }
-        else if (modelNode.getNodeType() == NodeType.LATENT) {
+        } else if (modelNode.getNodeType() == NodeType.LATENT) {
             displayNode = new GraphNodeLatent(modelNode);
-        }
-        else if (modelNode.getNodeType() == NodeType.ERROR) {
+        } else if (modelNode.getNodeType() == NodeType.ERROR) {
             displayNode = new GraphNodeError(modelNode);
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
 
@@ -142,8 +139,7 @@ public class    LagWorkbench extends AbstractWorkbench {
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("resetGraph".equals(evt.getPropertyName())) {
                     setGraph(getGraph());
-                }
-                else if ("editingValueChanged".equals(evt.getPropertyName())) {
+                } else if ("editingValueChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
@@ -199,7 +195,7 @@ public class    LagWorkbench extends AbstractWorkbench {
             case BIDIRECTED_EDGE:
                 return Edges.bidirectedEdge(node1, node2);
 
-            default :
+            default:
                 throw new IllegalStateException();
         }
     }
@@ -228,7 +224,7 @@ public class    LagWorkbench extends AbstractWorkbench {
             case BIDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.BIDIRECTED);
 
-            default :
+            default:
                 throw new IllegalStateException();
         }
     }
@@ -246,8 +242,8 @@ public class    LagWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Given base <b> (a String), returns the first node in the sequence "<b>1",
-     * "<b>2", "<b>3", etc., which is not already the name of a node in the
+     * Given base b (a String), returns the first node in the sequence "b1",
+     * "b2", "b3", etc., which is not already the name of a node in the
      * workbench.
      *
      * @param base the base string.
@@ -289,7 +285,7 @@ public class    LagWorkbench extends AbstractWorkbench {
             case BIDIRECTED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
-            default :
+            default:
                 throw new IllegalArgumentException();
         }
     }
@@ -300,8 +296,7 @@ public class    LagWorkbench extends AbstractWorkbench {
     public void setNodeType(int nodeType) {
         if (nodeType == MEASURED_NODE || nodeType == LATENT_NODE) {
             this.nodeType = nodeType;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("The type of the node must be " +
                     "MEASURED_NODE or LATENT_NODE.");
         }
@@ -343,12 +338,12 @@ public class    LagWorkbench extends AbstractWorkbench {
      * name is adjusted, adjusts the position so the user can see the two
      * nodes.
      *
-     * @param node The node which is being adjusted
-     * @param deltaX  the shift in x
-     * @param deltaY  the shift in y.
+     * @param node   The node which is being adjusted
+     * @param deltaX the shift in x
+     * @param deltaY the shift in y.
      */
     private void adjustNameAndPosition(Node node, int deltaX,
-            int deltaY) {
+                                       int deltaY) {
         String originalName = node.getName();
         //String base = extractBase(originalName);
         String uniqueName = nextUniqueName(originalName);
@@ -361,7 +356,7 @@ public class    LagWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Returns the next string in the sequence.
+     * @return the next string in the sequence.
      *
      * @param base the string base of the name--for example, "Graph".
      * @return the next string in the sequence--for example, "Graph1".
@@ -371,22 +366,22 @@ public class    LagWorkbench extends AbstractWorkbench {
             throw new NullPointerException("Base name must be non-null.");
         }
         List<Node> currentNodes = this.getWorkbench().getGraph().getNodes();
-        if(!containsName(currentNodes, base)){
+        if (!containsName(currentNodes, base)) {
             return base;
         }
         // otherwise fine new unique name.
         base += "_";
         int i = 1;
-        while(containsName(currentNodes, base + i)){
+        while (containsName(currentNodes, base + i)) {
             i++;
         }
 
         return base + i;
     }
 
-    private static boolean containsName(List<Node> nodes, String name){
-        for(Node node : nodes){
-            if(name.equals(node.getName())){
+    private static boolean containsName(List<Node> nodes, String name) {
+        for (Node node : nodes) {
+            if (name.equals(node.getName())) {
                 return true;
             }
         }

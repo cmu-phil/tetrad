@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 /**
  * Represents a forbidden or required edge in a graph of knowledge facts. The
- * edge is always directed, X-->Y, and is either required or forbidden as
+ * edge is always directed, X--&gt;Y, and is either required or forbidden as
  * indicated in the constructor.
  *
  * @author Joseph Ramsey

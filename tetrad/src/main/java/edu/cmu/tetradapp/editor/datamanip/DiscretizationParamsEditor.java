@@ -283,7 +283,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     }
 
     /**
-     * Returns true
+     * @return true
      *
      * @return - true
      */
@@ -369,7 +369,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
 
     /**
-     * Returns the common mehtod if there is one.
+     * @return the common mehtod if there is one.
      */
     private ContinuousDiscretizationEditor.Method getCommonMethod(List<Node> nodes) {
         ContinuousDiscretizationEditor.Method method = null;
@@ -390,7 +390,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
 
     /**
-     * Returns the default category num to use for the given nodes. If they all have the same
+     * @return the default category num to use for the given nodes. If they all have the same
      * number then its returned otherwise 3 is returned (or something else?)
      */
     private int getDefaultCategoryNum(List<Node> nodes) {

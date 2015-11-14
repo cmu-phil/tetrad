@@ -100,7 +100,7 @@ public class SaveComponentImage extends AbstractAction {
 //        }
 //
 //        /**
-//         * Returns the description of this file filter that will be displayed in
+//         * @return the description of this file filter that will be displayed in
 //         * a JFileChooser.
 //         */
 //        public String getDescription() {

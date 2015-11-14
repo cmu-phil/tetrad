@@ -162,14 +162,14 @@ public class DirichletBayesImEditor extends JPanel {
     }
 
     /**
-     * Returns a reference to this editor.
+     * @return a reference to this editor.
      */
     private DirichletBayesImProbsWizard getProbsWizard() {
         return probsWizard;
     }
 
     /**
-     * Returns a reference to this editor.
+     * @return a reference to this editor.
      */
     private DirichletBayesImCountsWizard getCountsWizard() {
         return countsWizard;

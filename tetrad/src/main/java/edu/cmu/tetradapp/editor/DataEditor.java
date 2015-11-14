@@ -266,7 +266,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
 
     /**
-     * Returns the data sets that's currently in front.
+     * @return the data sets that's currently in front.
      */
     public DataModel getSelectedDataModel() {
         Component selectedComponent = tabbedPane().getSelectedComponent();
@@ -853,7 +853,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     }
 
     /**
-     * Returns the data display for the given model.
+     * @return the data display for the given model.
      */
     private JComponent dataDisplay(Object model) {
         if (model instanceof DataSet) {

@@ -280,7 +280,7 @@ final class NumberFormatAction extends AbstractAction
     }
 
     /**
-     * Returns the most recent number format, whether from the basic or from
+     * @return the most recent number format, whether from the basic or from
      * the advanced tab.
      * @throws RuntimeException if the getModel format string cannot be
      * accepted by DecimalFormat.
@@ -290,7 +290,7 @@ final class NumberFormatAction extends AbstractAction
     }
 
     /**
-     * Returns the most recent format string, whether from the basic or from
+     * @return the most recent format string, whether from the basic or from
      * the advanced tab.
      * @return this string.
      * @throws RuntimeException if the stored format string cannot be

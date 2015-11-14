@@ -54,7 +54,7 @@ final class SubsessionSelection implements Transferable {
             new DataFlavor(SubsessionSelection.class, "Subsession Selection")};
 
     /**
-     * Returns the number of pastes made of this object so far.
+     * @return the number of pastes made of this object so far.
      */
     private int numPastes = 0;
 
@@ -87,7 +87,7 @@ final class SubsessionSelection implements Transferable {
     }
 
     /**
-     * Returns an object which represents the data to be transferred.  The class
+     * @return an object which represents the data to be transferred.  The class
      * of the object returned is defined by the representation class of the
      * flavor.
      *
@@ -120,7 +120,7 @@ final class SubsessionSelection implements Transferable {
     }
 
     /**
-     * Returns whether or not the specified data flavor is supported for this
+     * @return whether or not the specified data flavor is supported for this
      * object.
      *
      * @param flavor the requested flavor for the data
@@ -131,7 +131,7 @@ final class SubsessionSelection implements Transferable {
     }
 
     /**
-     * Returns an array of DataFlavor objects indicating the flavors the data
+     * @return an array of DataFlavor objects indicating the flavors the data
      * can be provided in.  The array should be ordered according to preference
      * for providing the data (from most richly descriptive to least
      * descriptive).

@@ -40,7 +40,7 @@ public class PurifyIndTestParams implements MimIndTestParams {
     private double alpha = 0.0001;
 
     /**
-     * @serial Range >= 1.
+     * @serial Range greater than or equal to 1.
      */
     private int numClusters;
 

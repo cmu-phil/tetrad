@@ -38,7 +38,7 @@ public final class BasicIndTestParams implements IndTestParams {
     private double alpha = 0.05;
 
     /**
-     * @serial Range > -1.
+     * @serial Range greater than -1.
      */
     private int depth = -1;
 
@@ -84,7 +84,7 @@ public final class BasicIndTestParams implements IndTestParams {
     }
 
     /**
-     * Returns the depth of the search.
+     * @return the depth of the search.
      *
      * @return depth
      */

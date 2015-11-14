@@ -75,7 +75,7 @@ public enum DataToken implements Token {
 
 
     /**
-     * Returns the name of the token
+     * @return the name of the token
      *
      * @return - Name
      */

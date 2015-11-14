@@ -64,21 +64,21 @@ public class LagGraphParams implements Params {
     /**
      * The number of variables per individual.
      *
-     * @serial Range >= 1.
+     * @serial Range greater than or equal to 1.
      */
     private int varsPerInd = 5;
 
     /**
      * The maximum lag of the lag workbench.
      *
-     * @serial Range > 0.
+     * @serial Range greater than 0.
      */
     private int mlag = 1;
 
     /**
      * The indegree. (This is variously interpreted.)
      *
-     * @serial Range > 1.
+     * @serial Range greater than 1.
      */
     private int indegree = 2;
 
@@ -110,7 +110,7 @@ public class LagGraphParams implements Params {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * Returns the number of variables per individual.
+     * @return the number of variables per individual.
      */
     public int getVarsPerInd() {
         return this.varsPerInd;
@@ -129,7 +129,7 @@ public class LagGraphParams implements Params {
     }
 
     /**
-     * Returns the maximum lag.
+     * @return the maximum lag.
      */
     public int getMlag() {
         return this.mlag;
@@ -148,7 +148,7 @@ public class LagGraphParams implements Params {
     }
 
     /**
-     * Returns the indegree.
+     * @return the indegree.
      */
     public int getIndegree() {
         return this.indegree;
@@ -167,7 +167,7 @@ public class LagGraphParams implements Params {
     }
 
     /**
-     * Returns the indegree type.
+     * @return the indegree type.
      */
     public int getIndegreeType() {
         return indegreeType;

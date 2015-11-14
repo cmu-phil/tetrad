@@ -99,7 +99,7 @@ final class RangeEditor extends JComponent {
 
 
     /**
-     * Returns the <code>ContinuousDiscretizationSpec</code> that has been
+     * @return the <code>ContinuousDiscretizationSpec</code> that has been
      * created by the user.
      */
     public ContinuousDiscretizationSpec getDiscretizationSpec() {

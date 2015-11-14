@@ -118,7 +118,7 @@ public class TemporalTierEditor extends JPanel
     }
 
     /**
-     * Returns the title of this editor.
+     * @return the title of this editor.
      */
     private String getTitle() {
         String graphName = ("Background Knowledge");

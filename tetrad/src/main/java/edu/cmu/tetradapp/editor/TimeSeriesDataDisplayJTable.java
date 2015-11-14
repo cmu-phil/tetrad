@@ -59,7 +59,7 @@ public class TimeSeriesDataDisplayJTable extends JTable
     }
 
     /**
-     * Returns the underlying DataSet model.
+     * @return the underlying DataSet model.
      *
      * @return this model.
      */
@@ -109,7 +109,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the name of the column at position 'col'.
+     * @return the name of the column at position 'col'.
      *
      * @param col the position of the column whose name is requested.
      * @return the name of this column.
@@ -129,7 +129,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of rows in the wrapper table model. Guarantees that
+     * @return the number of rows in the wrapper table model. Guarantees that
      * this number will be at least 100.
      *
      * @return the row count of the wrapped model or 100, whichever is larger.
@@ -139,7 +139,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of columns in the wrapper table model. Guarantees that
+     * @return the number of columns in the wrapper table model. Guarantees that
      * this number will be at least 30.
      *
      * @return the column count of the wrapped model or 30, whichever is
@@ -150,7 +150,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the value at the given (row, column) coordinates of the table
+     * @return the value at the given (row, column) coordinates of the table
      * as an Object.  If the variable for the column is a DiscreteVariable, the
      * String value (as opposed to the integer index value) is extracted
      * and returned.  If the coordinates are out of range of the wrapped table
@@ -171,14 +171,14 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the class of the column.
+     * @return the class of the column.
      */
     public Class getColumnClass(int col) {
         return Number.class;
     }
 
     /**
-     * Returns the DataSet being presented.
+     * @return the DataSet being presented.
      */
     public TimeSeriesData getDataSet() {
         return dataSet;
@@ -191,7 +191,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
 class RowNumberRenderer2 implements TableCellRenderer {
 
     /**
-     * Returns a label stylized for presenting row numbers in the 0th column.
+     * @return a label stylized for presenting row numbers in the 0th column.
      */
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) {

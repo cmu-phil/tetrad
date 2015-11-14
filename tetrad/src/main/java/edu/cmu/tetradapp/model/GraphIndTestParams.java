@@ -34,7 +34,7 @@ public class GraphIndTestParams implements IndTestParams {
     static final long serialVersionUID = 23L;
 
     /**
-     * @serial Range >= -1.
+     * @serial Range greater than or equal to -1.
      */
     private int depth = -1;
 
@@ -77,7 +77,7 @@ public class GraphIndTestParams implements IndTestParams {
     }
 
     /**
-     * Returns the depth of the search.
+     * @return the depth of the search.
      */
     public int getDepth() {
         return this.depth;

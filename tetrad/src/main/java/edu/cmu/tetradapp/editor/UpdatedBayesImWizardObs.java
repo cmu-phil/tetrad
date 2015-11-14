@@ -67,7 +67,7 @@ import java.util.List;
 // They are for displaying the conditional probability tables
 // after updating an MlBayesIm.
 /////////////////////////////////////////////////////////////////////
-public class UpdatedBayesImWizardObs extends JPanel {
+public class  UpdatedBayesImWizardObs extends JPanel {
     private Evidence evidence;
     private GraphWorkbench workbench;
     private UpdaterWrapper updaterWrapper;
@@ -704,12 +704,12 @@ final class UpdaterEditingTableObs extends JTable {
  * The abstract table model containing the parameters to be edited for a given
  * node.  Parameters for a given node N with parents P1, P2, ..., are of the
  * form P(N=v0 | P1=v1, P2=v2, ..., Pn = vn).  The first n columns of this table
- * for each row contains a combination of values for <P1, P2, ... Pn>, such as
- * <v0, v1, ..., vn>.  If there are m values for N, the next m columns contain
+ * for each row contains a combination of values for (P1, P2, ... Pn), such as
+ * (v0, v1, ..., vn).  If there are m values for N, the next m columns contain
  * numbers in the range [0.0, 1.0] representing conditional probabilities that N
  * takes on that corresponding value given this combination of parent values.
  * These conditional probabilities may be edited.  As they are being edited for
- * a given row, the only condition is that they be >= 0.0.
+ * a given row, the only condition is that they be greater than or equal to 0.0.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -759,7 +759,7 @@ final class UpdaterEditingTableModelObs extends AbstractTableModel {
     }
 
     /**
-     * Returns the name of the given column.
+     * @return the name of the given column.
      */
     public String getColumnName(int col) {
         Node node = getBayesIm().getNode(getNodeIndex());
@@ -782,14 +782,14 @@ final class UpdaterEditingTableModelObs extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of rows in the table.
+     * @return the number of rows in the table.
      */
     public int getRowCount() {
         return getBayesIm().getNumRows(getNodeIndex());
     }
 
     /**
-     * Returns the total number of columns in the table, which is equal to the
+     * @return the total number of columns in the table, which is equal to the
      * number of parents for the node plus the number of values for the node.
      */
     public int getColumnCount() {
@@ -799,7 +799,7 @@ final class UpdaterEditingTableModelObs extends AbstractTableModel {
     }
 
     /**
-     * Returns the value of the table at the given row and column. The type
+     * @return the value of the table at the given row and column. The type
      * of value returned depends on the column.  If there are n parent values
      * and m node values, then the first n columns have String values
      * representing the values of the parent nodes for a particular combination
@@ -835,7 +835,7 @@ final class UpdaterEditingTableModelObs extends AbstractTableModel {
     }
 
     /**
-     * Returns the class of the column.
+     * @return the class of the column.
      */
     public Class getColumnClass(int col) {
         boolean isParent = col < getBayesIm().getNumParents(getNodeIndex());

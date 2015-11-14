@@ -70,7 +70,7 @@ class RandomMimParamsEditor extends JPanel {
                     if (value < 1) {
                         throw new IllegalArgumentException(
                                 "Number of structural " +
-                                        "nodes must be > 0: " + value);
+                                        "nodes Must be greater than 0: " + value);
                     }
 
                     preferences.putInt("numStructuralNodes", value);

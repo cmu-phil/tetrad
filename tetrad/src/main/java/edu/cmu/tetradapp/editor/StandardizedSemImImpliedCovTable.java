@@ -90,7 +90,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of rows being displayed--one more than the size of the
+     * @return the number of rows being displayed--one more than the size of the
      * matrix, which may be different depending on whether only the observed
      * variables are being displayed or all the variables are being displayed.
      */
@@ -103,7 +103,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of columns displayed--one more than the size of the
+     * @return the number of columns displayed--one more than the size of the
      * matrix, which may be different depending on whether only the observed
      * variables are being displayed or all the variables are being displayed.
      */
@@ -116,7 +116,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the name of the column at columnIndex, which is "" for column 0
+     * @return the name of the column at columnIndex, which is "" for column 0
      * and the name of the variable for the other columns.
      */
     public String getColumnName(int columnIndex) {
@@ -136,7 +136,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the value being displayed in a cell, either a variable name or a
+     * @return the value being displayed in a cell, either a variable name or a
      * Double.
      */
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -187,14 +187,14 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * Returns true iff only observed variables are displayed.
+     * @return true iff only observed variables are displayed.
      */
     private boolean measured() {
         return measured;
     }
 
     /**
-     * Returns true iff correlations (rather than covariances) are displayed.
+     * @return true iff correlations (rather than covariances) are displayed.
      */
     private boolean correlations() {
         return correlations;

@@ -54,7 +54,7 @@ public class ErrorDisplayComp extends JComponent
     }
 
     /**
-     * Returns the shape of the component.
+     * @return the shape of the component.
      */
     public Shape getShape() {
         return new Rectangle2D.Double(0, 0, getPreferredSize().width - 1,

@@ -50,8 +50,6 @@ public class DescriptiveStatsAction extends AbstractAction {
     /**
      * Constructs the <code>DescriptiveStatsAction</code> given the <code>DataEditor</code>
      * that its attached to.
-     *
-     * @param editor
      */
     public DescriptiveStatsAction(DataEditor editor) {
         super("Descriptive Statistics...");

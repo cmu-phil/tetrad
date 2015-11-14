@@ -143,7 +143,7 @@ public final class IntTextField extends JTextField {
     }
 
     /**
-     * Returns the int value currently displayed.
+     * @return the int value currently displayed.
      */
     public int getValue() {
         return value;

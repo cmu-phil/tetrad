@@ -100,14 +100,14 @@ public final class SessionEditor extends JComponent
     }
 
     /**
-     * Returns the session workbench.
+     * @return the session workbench.
      */
     public SessionEditorWorkbench getSessionWorkbench() {
         return getWorkbench();
     }
 
     /**
-     * Returns a list of all the SessionNodeWrappers (TetradNodes) and
+     * @return a list of all the SessionNodeWrappers (TetradNodes) and
      * SessionNodeEdges that are model components for the respective
      * SessionNodes and SessionEdges selected in the workbench. Note that the
      * workbench, not the SessionEditorNodes themselves, keeps track of the

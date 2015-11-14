@@ -151,7 +151,7 @@ class ExpressionEditor extends JPanel {
     //============================ Public Method ======================================//
 
     /**
-     * Returns the expression.
+     * @return the expression.
      *
      * @throws java.text.ParseException - If the values in the editor are not well-formed.
      */

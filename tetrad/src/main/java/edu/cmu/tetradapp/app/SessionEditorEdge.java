@@ -217,7 +217,7 @@ final class SessionEditorEdge extends DisplayEdge {
     }
 
     /**
-     * Returns the mode of this edge, RANDOMIZED or UNRANDOMIZED.
+     * @return the mode of this edge, RANDOMIZED or UNRANDOMIZED.
      */
     public int getSessionEdgeMode() {
         return sessionEdgeMode;

@@ -35,7 +35,7 @@ import java.util.List;
 public interface KnowledgeEditable {
 
     /**
-     * Returns a copy of the knowledge for this class.
+     * @return a copy of the knowledge for this class.
      */
     IKnowledge getKnowledge();
 
@@ -45,13 +45,13 @@ public interface KnowledgeEditable {
     void setKnowledge(IKnowledge knowledge);
 
     /**
-     * Returns the source graph. This will be used to arrange the graph in the
+     * @return the source graph. This will be used to arrange the graph in the
      * knowledge editor in a recognizable way.
      */
     Graph getSourceGraph();
 
     /**
-     * Returns the variable names that the knowledge editor may use.
+     * @return the variable names that the knowledge editor may use.
      */
     List<String> getVarNames();
 }

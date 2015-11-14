@@ -43,7 +43,7 @@ public final class PcIndTestParams implements IndTestParams {
     private double zeroEdgeP = 0.05;
 
     /**
-     * @serial Range > -1.
+     * @serial Range greater than -1.
      */
     private int depth = -1;
 
@@ -111,7 +111,7 @@ public final class PcIndTestParams implements IndTestParams {
     }
 
     /**
-     * Returns the depth of the search.
+     * @return the depth of the search.
      *
      * @return depth
      */

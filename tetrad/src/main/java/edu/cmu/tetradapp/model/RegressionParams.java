@@ -139,7 +139,7 @@ public final class RegressionParams implements StandardRegressionParams {
     }
 
     /*
-     * Returns the target variable for the PCX search.
+     * @return the target variable for the PCX search.
      */
     public String getTargetName() {
         return targetName;
@@ -157,7 +157,7 @@ public final class RegressionParams implements StandardRegressionParams {
     }
 
     /**
-     * Returns the significance level for the search.
+     * @return the significance level for the search.
      */
     public double getAlpha() {
         return alpha;
@@ -171,7 +171,7 @@ public final class RegressionParams implements StandardRegressionParams {
     }
 
     /**
-     * Returns the array of regressor indices
+     * @return the array of regressor indices
      */
     public String[] getRegressorNames() {
         return regressorNames;

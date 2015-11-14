@@ -39,7 +39,7 @@ public final class JpcIndTestParams implements IndTestParams {
     private double alpha = 0.001;
 
     /**
-     * @serial Range > -1.
+     * @serial Range greater than -1.
      */
     private int depth = -1;
 
@@ -101,7 +101,7 @@ public final class JpcIndTestParams implements IndTestParams {
     }
 
     /**
-     * Returns the depth of the search.
+     * @return the depth of the search.
      *
      * @return depth
      */

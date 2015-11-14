@@ -203,7 +203,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
 
     /**
-     * Returns the number of categories.
+     * @return the number of categories.
      *
      * @return - number of categories.
      */
@@ -213,7 +213,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
 
     /**
-     * Returns the getModel discretization spec created by the user.
+     * @return the getModel discretization spec created by the user.
      *
      * @return <code>ContinuousDiscretizationSpec</code>.
      */
@@ -241,7 +241,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
 
     /**
-     * Returns the method.
+     * @return the method.
      */
     public Method getMethod(){
         return this.method;

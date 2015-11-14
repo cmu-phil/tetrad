@@ -34,7 +34,7 @@ import javax.swing.*;
 public interface SessionNodeModelConfig {
 
     /**
-     * Returns the identifier to use for help.
+     * @return the identifier to use for help.
      *
      * @return - help id.
      */
@@ -42,7 +42,7 @@ public interface SessionNodeModelConfig {
 
 
     /**
-     * Returns the category that this model config belongs to or null if there isn't one.
+     * @return the category that this model config belongs to or null if there isn't one.
      * This allows you to organize models into various groupings.
      *
      * @return - Returns the category for this config or null if one was not set (not a required attribute).
@@ -51,7 +51,7 @@ public interface SessionNodeModelConfig {
 
 
     /**
-     * Returns the <code>Class</code> that represents the model.
+     * @return the <code>Class</code> that represents the model.
      *
      * @return - model
      */
@@ -59,7 +59,7 @@ public interface SessionNodeModelConfig {
 
 
     /**
-     * Returns a descriptive name for the model.
+     * @return a descriptive name for the model.
      *
      * @return - descriptive name.
      */
@@ -67,7 +67,7 @@ public interface SessionNodeModelConfig {
 
 
     /**
-     * Returns the acronym for the model.
+     * @return the acronym for the model.
      *
      * @return - acronym.
      */
@@ -76,7 +76,7 @@ public interface SessionNodeModelConfig {
 
 
     /**
-     * Returns an instance of the editor to use for the model.
+     * @return an instance of the editor to use for the model.
      *
      * @param arguments
      * @return - An editor
@@ -86,7 +86,7 @@ public interface SessionNodeModelConfig {
 
 
     /**
-     * Returns a newly created instance of the parameters for this model.
+     * @return a newly created instance of the parameters for this model.
      *
      * @return - newly created parameter object.
      */
@@ -94,7 +94,7 @@ public interface SessionNodeModelConfig {
 
 
     /**
-     * Returns a newly created instance of the parameter editor for the params
+     * @return a newly created instance of the parameter editor for the params
      * returned by <code>getParametersInstance()</code> or null if there is no such
      * editor.
      *

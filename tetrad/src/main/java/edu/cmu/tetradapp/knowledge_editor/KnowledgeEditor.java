@@ -50,7 +50,7 @@ import java.util.List;
 /**
  * Edits knowledge by letting the user put variable names into tiers. The number
  * of tiers may be set. By default, it is assumed that the structure of the
- * tiers is Tier0 --> Tier1 --> Tier2 --> ..., but special graphical structures
+ * tiers is Tier0 --&gt; Tier1 --&gt; Tier2 --&gt; ..., but special graphical structures
  * among the tiers may be set as well.
  *
  * @author Joseph Ramsey
@@ -797,7 +797,7 @@ public class KnowledgeEditor extends JPanel {
 //        }
 //
 //        /**
-//         * Returns an object which represents the data to be transferred.  The
+//         * @return an object which represents the data to be transferred.  The
 //         * class of the object returned is defined by the representation class
 //         * of the flavor.
 //         *
@@ -818,7 +818,7 @@ public class KnowledgeEditor extends JPanel {
 //        }
 //
 //        /**
-//         * Returns whether or not the specified data flavor is supported for
+//         * @return whether or not the specified data flavor is supported for
 //         * this object.
 //         *
 //         * @param flavor the requested flavor for the data
@@ -830,7 +830,7 @@ public class KnowledgeEditor extends JPanel {
 //        }
 //
 //        /**
-//         * Returns an array of DataFlavor objects indicating the flavors the
+//         * @return an array of DataFlavor objects indicating the flavors the
 //         * data can be provided in.  The array should be ordered according to
 //         * preference for providing the data (from most richly descriptive to
 //         * least descriptive).

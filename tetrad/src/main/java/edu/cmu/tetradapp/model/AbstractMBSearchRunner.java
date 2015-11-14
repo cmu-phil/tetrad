@@ -102,7 +102,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
 
 
     /**
-     * Returns the parameters for the search.
+     * @return the parameters for the search.
      */
     public MbSearchParams getParams() {
         return this.params;
@@ -110,7 +110,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
 
 
     /**
-     * Returns the data model for the variables in the Markov blanket or null if
+     * @return the data model for the variables in the Markov blanket or null if
      * the runner has not executed yet.
      */
     public DataSet getDataModelForMarkovBlanket() {
@@ -119,7 +119,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
 
 
     /**
-     * Returns the variables in the MB searhc.
+     * @return the variables in the MB searhc.
      */
     public List<Node> getMarkovBlanket() {
         return this.variables;
@@ -127,7 +127,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
 
 
     /**
-     * Returns the source of the search.
+     * @return the source of the search.
      */
     public DataSet getSource() {
         return this.source;
@@ -139,7 +139,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
-     * Returns the search name, or "Markov Blanket Search" by default.
+     * @return the search name, or "Markov Blanket Search" by default.
      */
     public String getSearchName() {
         if (this.searchName == null) {
@@ -179,7 +179,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
 
 
     /**
-     * Returns an appropriate independence test given the type of data set and values
+     * @return an appropriate independence test given the type of data set and values
      * in the params.
      */
     protected IndependenceTest getIndependenceTest() {

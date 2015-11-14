@@ -44,7 +44,7 @@ public class GesIndTestParams implements IndTestParams {
 
     /**
      * @serial Range (-inf, +inf?)
-     * @deprecatedf
+     * @deprecated
      */
     private boolean uniformStructurePrior;
 
@@ -59,7 +59,7 @@ public class GesIndTestParams implements IndTestParams {
     private double alpha = 0.05;
 
     /**
-     * @serial Range >= -1.
+     * @serial Range greater than or equal to -1.
      */
     private int depth = -1;
 

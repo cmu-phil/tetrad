@@ -69,7 +69,7 @@ class KnowledgeSelection implements Transferable {
     }
 
     /**
-     * Returns an object which represents the data to be transferred.  The class
+     * @return an object which represents the data to be transferred.  The class
      * of the object returned is defined by the representation class of the
      * flavor.
      *
@@ -91,7 +91,7 @@ class KnowledgeSelection implements Transferable {
     }
 
     /**
-     * Returns whether or not the specified data flavor is supported for this
+     * @return whether or not the specified data flavor is supported for this
      * object.
      *
      * @param flavor the requested flavor for the data
@@ -102,7 +102,7 @@ class KnowledgeSelection implements Transferable {
     }
 
     /**
-     * Returns an array of DataFlavor objects indicating the flavors the data
+     * @return an array of DataFlavor objects indicating the flavors the data
      * can be provided in.  The array should be ordered according to preference
      * for providing the data (from most richly descriptive to least
      * descriptive).

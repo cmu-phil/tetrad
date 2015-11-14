@@ -40,24 +40,24 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource, 
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns the data used to execute this algorithm. Might possibly be a
+     * @return the data used to execute this algorithm. Might possibly be a
      * graph.
      */
     DataModel getDataModel();
 
     /**
-     * Returns the search parameters for this algorithm.
+     * @return the search parameters for this algorithm.
      */
     SearchParams getParams();
 
     /**
-     * Returns the graph from which data was originally generated, if such a
+     * @return the graph from which data was originally generated, if such a
      * graph is available. Otherwise, returns null.
      */
     Graph getSourceGraph();
 
     /**
-     * Returns the graph that results from executing the algorithm, if the
+     * @return the graph that results from executing the algorithm, if the
      * algorithm has been successfully executed.
      */
     Graph getResultGraph();
@@ -68,12 +68,12 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource, 
     void execute();
 
     /**
-     * Returns true if the algorithm supports knowledge.
+     * @return true if the algorithm supports knowledge.
      */
     boolean supportsKnowledge();
 
     /**
-     * Returns the orientation rules for this search.
+     * @return the orientation rules for this search.
      */
     ImpliedOrientation getMeekRules();
 
@@ -83,7 +83,7 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource, 
     void setInitialGraph(Graph graph);
 
     /**
-     * Returns the initial graph, if there is one, or null if not.
+     * @return the initial graph, if there is one, or null if not.
      */
     Graph getInitialGraph();
 }

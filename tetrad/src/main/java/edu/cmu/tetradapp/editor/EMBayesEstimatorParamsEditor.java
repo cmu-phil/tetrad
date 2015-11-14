@@ -104,7 +104,7 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
     }
 
     /**
-     * Returns the getMappings object being edited. (This probably should not be
+     * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      *
      * @return the stored simulation parameters model.

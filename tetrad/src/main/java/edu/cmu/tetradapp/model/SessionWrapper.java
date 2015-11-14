@@ -273,9 +273,9 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the substring of <code>name</code> up to but not including a
+     * @return the substring of <code>name</code> up to but not including a
      * contiguous string of digits at the end. For example, given "Graph123"
-     * returns "Graph". If the name consists entirely of digits, "Node" is
+     * @return "Graph". If the name consists entirely of digits, "Node" is
      * returned.
      */
     private String extractBase(String name) {
@@ -296,7 +296,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the next string in the sequence.
+     * @return the next string in the sequence.
      *
      * @param base                the string base of the name--for example,
      *                            "Graph".
@@ -343,7 +343,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns true just in case the given object is this object.
+     * @return true just in case the given object is this object.
      */
     public boolean equals(Object o) {
         if (o == null) {
@@ -354,7 +354,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the list of edges in the workbench.  No particular ordering of
+     * @return the list of edges in the workbench.  No particular ordering of
      * the edges in the list is guaranteed.
      */
     public Set<Edge> getEdges() {
@@ -387,7 +387,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the list of edges connected to a particular node. No particular
+     * @return the list of edges connected to a particular node. No particular
      * ordering of the edges in the list is guaranteed.
      */
     public List<Edge> getEdges(Node node) {
@@ -403,7 +403,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the node with the given string name.  In case of accidental
+     * @return the node with the given string name.  In case of accidental
      * duplicates, the first node encountered with the given name is returned.
      * In case no node exists with the given name, null is returned.
      */
@@ -421,21 +421,21 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the number of nodes in the workbench.
+     * @return the number of nodes in the workbench.
      */
     public int getNumNodes() {
         return sessionNodeWrappers.size();
     }
 
     /**
-     * Returns the number of edges in the (entire) workbench.
+     * @return the number of edges in the (entire) workbench.
      */
     public int getNumEdges() {
         return sessionEdges.size();
     }
 
     /**
-     * Returns the number of edges in the workbench which are connected to a
+     * @return the number of edges in the workbench which are connected to a
      * particular node.
      *
      * @param node the node in question
@@ -459,14 +459,14 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the list of graph constraints for this graph.
+     * @return the list of graph constraints for this graph.
      */
     public List<GraphConstraint> getGraphConstraints() {
         return new LinkedList<GraphConstraint>();
     }
 
     /**
-     * Returns true iff graph constraints will be checked for future graph
+     * @return true iff graph constraints will be checked for future graph
      * modifications.
      */
     public boolean isGraphConstraintsChecked() {
@@ -611,7 +611,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the endpoint along the edge from node to node2 at the node2 end.
+     * @return the endpoint along the edge from node to node2 at the node2 end.
      */
     public Endpoint getEndpoint(Node node1, Node node2) {
         return getEdge(node1, node2).getProximalEndpoint(node2);
@@ -629,7 +629,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns a string representation of the workbench.
+     * @return a string representation of the workbench.
      *
      * @return a string representation of this object.
      */
@@ -736,14 +736,14 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     /** ***************OTHER PUBLIC METHODS ******************** */
 
     /**
-     * Returns a reference to the session being edited.
+     * @return a reference to the session being edited.
      */
     public Session getSession() {
         return this.session;
     }
 
     /**
-     * Returns the name of the session. The name cannot be null.
+     * @return the name of the session. The name cannot be null.
      */
     public String getName() {
         return this.session.getName();
@@ -762,7 +762,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     //======================PRIVATE METHODS=========================//
 
     /**
-     * Returns the property change support.
+     * @return the property change support.
      */
     private PropertyChangeSupport getPropertyChangeSupport() {
         if (this.propertyChangeSupport == null) {
@@ -800,7 +800,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the edges connecting node1 and node2.
+     * @return the edges connecting node1 and node2.
      */
     public List<Edge> getEdges(Node node1, Node node2) {
         throw new UnsupportedOperationException();
@@ -809,7 +809,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     // Unused methods from Graph
 
     /**
-     * Adds a directed edge --> to the graph.
+     * Adds a directed edge --&gt; to the graph.
      */
     public boolean addDirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException();
@@ -830,21 +830,21 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Adds a bidirected edges <-> to the graph.
+     * Adds a bidirected edges &lt;-&gt; to the graph.
      */
     public boolean addBidirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Adds a partially oriented edge o-> to the graph.
+     * Adds a partially oriented edge o-&gt; to the graph.
      */
     public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns true iff there is a directed cycle in the graph.
+     * @return true iff there is a directed cycle in the graph.
      */
     public boolean existsDirectedCycle() {
         throw new UnsupportedOperationException();
@@ -863,7 +863,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns true iff there is a directed path from node1 to node2 in the
+     * @return true iff there is a directed path from node1 to node2 in the
      * graph.
      */
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
@@ -883,7 +883,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns true iff a trek exists between two nodes in the graph.  A trek
+     * @return true iff a trek exists between two nodes in the graph.  A trek
      * exists if there is a directed path between the two nodes or else, for
      * some third node in the graph, there is a path to each of the two nodes in
      * question.
@@ -893,14 +893,14 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the list of ancestors for the given nodes.
+     * @return the list of ancestors for the given nodes.
      */
     public List<Node> getAncestors(List nodes) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns the Collection of children for a node.
+     * @return the Collection of children for a node.
      */
     public List<Node> getChildren(Node node) {
         throw new UnsupportedOperationException();
@@ -915,7 +915,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns a matrix of endpoints for the nodes in this graph, with nodes in
+     * @return a matrix of endpoints for the nodes in this graph, with nodes in
      * the same order as getNodes().
      */
     public Endpoint[][] getEndpointMatrix() {
@@ -923,28 +923,28 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns the list of nodes adjacent to the given node.
+     * @return the list of nodes adjacent to the given node.
      */
     public List<Node> getAdjacentNodes(Node node) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns the number of arrow endpoint adjacent to an edge.
+     * @return the number of arrow endpoint adjacent to an edge.
      */
     public int getIndegree(Node node) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns the number of null endpoints adjacent to an edge.
+     * @return the number of null endpoints adjacent to an edge.
      */
     public int getOutdegree(Node node) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns the list of parents for a node.
+     * @return the list of parents for a node.
      */
     public List<Node> getParents(Node node) {
         throw new UnsupportedOperationException();
@@ -962,21 +962,21 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns true iff node1 is adjacent to node2 in the graph.
+     * @return true iff node1 is adjacent to node2 in the graph.
      */
     public boolean isAdjacentTo(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns true iff node1 is a child of node2 in the graph.
+     * @return true iff node1 is a child of node2 in the graph.
      */
     public boolean isChildOf(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns true iff node1 is a (non-proper) descendant of node2.
+     * @return true iff node1 is a (non-proper) descendant of node2.
      */
     public boolean isDescendentOf(Node node1, Node node2) {
         throw new UnsupportedOperationException();
@@ -996,7 +996,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
 
     /**
      * Determines whether one node is d-separated from another. According to
-     * Spirtes, Richardson & Meek, two nodes are d- connected given some
+     * Spirtes, Richardson &amp; Meek, two nodes are d- connected given some
      * conditioning set Z if there is an acyclic undirected path U between them,
      * such that every collider on U is an ancestor of some element in Z and
      * every non-collider on U is not in Z.  Two elements are d-separated just
@@ -1010,7 +1010,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
 
     /**
      * Determines whether one node is d-separated from another. According to
-     * Spirtes, Richardson & Meek, two nodes are d- connected given some
+     * Spirtes, Richardson &amp; Meek, two nodes are d- connected given some
      * conditioning set Z if there is an acyclic undirected path U between them,
      * such that every collider on U is an ancestor of some element in Z and
      * every non-collider on U is not in Z.  Two elements are d-separated just
@@ -1027,7 +1027,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * Returns true iff the given node is exogenous in the graph.
+     * @return true iff the given node is exogenous in the graph.
      */
     public boolean isExogenous(Node node) {
         throw new UnsupportedOperationException();

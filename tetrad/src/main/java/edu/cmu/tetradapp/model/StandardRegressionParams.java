@@ -33,7 +33,7 @@ public interface StandardRegressionParams extends SearchParams{
     void setTargetName(String targetName);
 
     /*
-    * Returns the target variable for the PCX search.
+    * @return the target variable for the PCX search.
     */
     String getTargetName();
 
@@ -43,7 +43,7 @@ public interface StandardRegressionParams extends SearchParams{
     void setAlpha(double alpha);
 
     /**
-     * Returns the significance level for the search.
+     * @return the significance level for the search.
      */
     double getAlpha();
 
@@ -53,7 +53,7 @@ public interface StandardRegressionParams extends SearchParams{
     void setRegressorNames(String[] names);
 
     /**
-     * Returns the array of regressor indices
+     * @return the array of regressor indices
      */
     String[] getRegressorNames();
 }

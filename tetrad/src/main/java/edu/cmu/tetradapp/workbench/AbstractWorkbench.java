@@ -327,7 +327,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns the workbench mode. One of SELECT_MOVE, ADD_NODE, ADD_EDGE.
+     * @return the workbench mode. One of SELECT_MOVE, ADD_NODE, ADD_EDGE.
      *
      * @return the workbench mode. One of SELECT_MOVE, ADD_NODE, ADD_EDGE.
      */
@@ -336,14 +336,14 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns the Graph this workbench displays.
+     * @return the Graph this workbench displays.
      */
     public final Graph getGraph() {
         return this.graph;
     }
 
     /**
-     * Returns the currently selected nodes as a list.
+     * @return the currently selected nodes as a list.
      *
      * @return the currently selected nodes as a list.
      */
@@ -363,7 +363,7 @@ public abstract class AbstractWorkbench extends JComponent
 
 
     /**
-     * Returns the current selected node, if exactly one is selected; otherwise,
+     * @return the current selected node, if exactly one is selected; otherwise,
      * return null.
      *
      * @return the current selected node, if exactly one is selected; otherwise,
@@ -380,7 +380,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns the currently selected nodes as a vector.
+     * @return the currently selected nodes as a vector.
      *
      * @return Ibid.
      */
@@ -402,7 +402,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns the model edge for the given display edge.
+     * @return the model edge for the given display edge.
      *
      * @param displayEdge Ibid.
      */
@@ -415,7 +415,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns true iff nodes and edges may be added/removed by the user or
+     * @return true iff nodes and edges may be added/removed by the user or
      * node/edge properties edited.
      *
      * @return Ibid.
@@ -425,7 +425,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns true iff nodes may be dragged to new locations by the user.
+     * @return true iff nodes may be dragged to new locations by the user.
      *
      * @return Ibid.
      */
@@ -434,7 +434,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns true iff nodes and edges may be selected by the user.
+     * @return true iff nodes and edges may be selected by the user.
      *
      * @return Ibid.
      */
@@ -443,7 +443,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns true iff edge reorientations are permitted.
+     * @return true iff edge reorientations are permitted.
      *
      * @return Ibid.
      */
@@ -452,7 +452,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns true iff multiple nodes may be selected by the user using a
+     * @return true iff multiple nodes may be selected by the user using a
      * rubberband.
      *
      * @return Ibid.
@@ -705,7 +705,7 @@ public abstract class AbstractWorkbench extends JComponent
     /**
      * Sets the maximum x value (for dragging).
      *
-     * @param maxX the maximum x value (must be >= 100).
+     * @param maxX the maximum x value (Must be greater than or equal to 100).
      */
     public final void setMaxX(int maxX) {
         if (maxX < 100) {
@@ -832,7 +832,7 @@ public abstract class AbstractWorkbench extends JComponent
     /**
      * Sets the maximum x value (for dragging).
      *
-     * @param maxY the maximum Y value (must be >= 100).
+     * @param maxY the maximum Y value (Must be greater than or equal to 100).
      */
     public final void setMaxY(int maxY) {
         if (maxY < 100) {
@@ -1002,7 +1002,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns the maximum x value (for dragging).
+     * @return the maximum x value (for dragging).
      */
     private int getMaxX() {
         return maxX;
@@ -1707,7 +1707,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * Returns the maximum y value (for dragging).
+     * @return the maximum y value (for dragging).
      */
     private int getMaxY() {
         return maxY;
@@ -2273,7 +2273,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * True if the user is allowed to edit existing meausred variables.
+     * @return true if the user is allowed to edit existing meausred variables.
      */
     public boolean isEditExistingMeasuredVarsAllowed() {
         return editExistingMeasuredVarsAllowed;
@@ -2287,7 +2287,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * True if the user is allowed to delete variables.
+     * @return true iff the user is allowed to delete variables.
      */
     public boolean isDeleteVariablesAllowed() {
         return deleteVariablesAllowed;

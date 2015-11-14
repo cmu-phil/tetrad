@@ -459,7 +459,7 @@ public class NormalityTests {
     /**
      * Given some variable, returns the mean and standard deviation in indices 0 and 1 respectively.
      *
-     * @return [0] -> mean, [1] -> standard deviation
+     * @return [0] -&gt; mean, [1] -&gt; standard deviation
      */
 
     public static double[] normalParams(DataSet dataSet, Variable variable)

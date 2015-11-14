@@ -669,7 +669,7 @@ public class HistogramView extends JPanel {
 
 
         /**
-         * Returns the max category value that should be accepted for the given histogram.
+         * @return the max category value that should be accepted for the given histogram.
          */
         private static int getMaxCategoryValue(Histogram histogram) {
             Node node = histogram.getTargetNode();
@@ -1101,7 +1101,7 @@ public class HistogramView extends JPanel {
         }
 
         /**
-         * Returns an array of breakpoints that divides the data into equal sized buckets,
+         * @return an array of breakpoints that divides the data into equal sized buckets,
          * including the min and max.
          */
         public static double[] getNtileBreakpoints(double[] data, int ntiles) {

@@ -34,12 +34,12 @@ import edu.cmu.tetrad.search.IndependenceTest;
 public interface IndTestProducer {
 
     /**
-     * Returns the getModel independence test.
+     * @return the getModel independence test.
      */
     IndependenceTest getIndependenceTest();
 
     /**
-     * Returns the name of this independence test, e.g. the name of the box.
+     * @return the name of this independence test, e.g. the name of the box.
      */
     String getName();
 }

@@ -87,7 +87,7 @@ public class AdjustCopyrights {
 
 
     /**
-     * Returns all of the files in the given directory whose names end with
+     * @return all of the files in the given directory whose names end with
      * ".java".
      */
     private List<File> getJavaFiles(File directory) {

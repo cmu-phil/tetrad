@@ -96,7 +96,7 @@ class TetradLogArea extends JPanel {
 
 
     /**
-     * Returns the output stream that is being used to log messages to the log area.
+     * @return the output stream that is being used to log messages to the log area.
      *
      * @return
      */

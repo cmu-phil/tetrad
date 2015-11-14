@@ -42,7 +42,7 @@ public interface GraphEditable {
     void setName(String name);
 
     /**
-     * Returns the selected components (display nodes and display edges) in the
+     * @return the selected components (display nodes and display edges) in the
      * editor.
      * @return the selected components.
      */
@@ -57,13 +57,13 @@ public interface GraphEditable {
     void pasteSubsession(List sessionElements, Point upperLeft);
 
     /**
-     * Returns the graph workbench.
+     * @return the graph workbench.
      * @return the workbench.
      */
     GraphWorkbench getWorkbench();
 
     /**
-     * Returns the graph.
+     * @return the graph.
      * @return the graph.
      */
     Graph getGraph();

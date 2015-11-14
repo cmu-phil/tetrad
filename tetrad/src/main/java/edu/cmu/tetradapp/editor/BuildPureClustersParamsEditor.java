@@ -41,8 +41,8 @@ import java.util.List;
 
 /**
  * This class should access the getMappings mapped to it from the mapping to the
- * search classes. </p> This class is the parameter editor currently for
- * BuildPureClusters parameters
+ * search classes. This class is the parameter editor currently for
+ * BuildPureClusters parameters.
  *
  * @author Ricardo Silva rbas@cs.cmu.edu
  */

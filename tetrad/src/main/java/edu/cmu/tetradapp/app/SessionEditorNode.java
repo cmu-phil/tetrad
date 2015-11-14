@@ -174,7 +174,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Returns the acronym for the contained model class.
+     * @return the acronym for the contained model class.
      */
     private String getAcronym() {
         SessionNodeWrapper modelNode = (SessionNodeWrapper) getModelNode();
@@ -1002,7 +1002,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Returns the model class, or null if no model class was determined.
+     * @return the model class, or null if no model class was determined.
      */
     private Class determineTheModelClass(SessionNode sessionNode) {
 
@@ -1030,7 +1030,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Returns the selected model class, or null if no model class was
+     * @return the selected model class, or null if no model class was
      * selected.
      */
     private Class getModelClassFromUser(Class[] modelClasses,
@@ -1291,7 +1291,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Returns the spawned editor, if there is one.
+     * @return the spawned editor, if there is one.
      */
     private EditorWindow spawnedEditor() {
         return this.spawnedEditor;
@@ -1321,9 +1321,9 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Returns the substring of <code>name</code> up to but not including a
+     * @return the substring of <code>name</code> up to but not including a
      * contiguous string of digits at the end. For example, given "Graph123"
-     * returns "Graph". If the name consists entirely of digits, "Node" is
+     * @return "Graph". If the name consists entirely of digits, "Node" is
      * returned.
      */
     private static String extractBase(String name) {
@@ -1343,7 +1343,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Returns the model classes associated with the given button type.
+     * @return the model classes associated with the given button type.
      *
      * @throws NullPointerException if no classes are stored for the given
      *                              type.

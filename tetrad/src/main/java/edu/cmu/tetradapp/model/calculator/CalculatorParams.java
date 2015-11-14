@@ -60,7 +60,7 @@ public class CalculatorParams implements Params {
 
 
     /**
-     * Returns the equations used in the calculator.
+     * @return the equations used in the calculator.
      */
     public List<String> getEquations(){
         return this.equations;

@@ -163,7 +163,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
 
 
     /**
-     * Returns the alpha or -1.0 if the params aren't set.     
+     * @return the alpha or -1.0 if the params aren't set.
      */
     public double getAlpha(){
         if(this.params != null){

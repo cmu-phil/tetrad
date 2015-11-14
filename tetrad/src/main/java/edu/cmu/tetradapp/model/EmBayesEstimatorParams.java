@@ -39,7 +39,7 @@ public class EmBayesEstimatorParams implements Params {
     /**
      * The tolerance that should be used.
      *
-     * @serial Range > 0.0.
+     * @serial Range greater than 0.0.
      */
     private double tolerance = 0.0001;
 

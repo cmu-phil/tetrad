@@ -42,7 +42,7 @@ import java.util.prefs.Preferences;
 /**
  * Edits knowledge by letting the user put variable names into tiers. The number
  * of tiers may be set. By default, it is assumed that the structure of the
- * tiers is Tier0 --> Tier1 --> Tier2 --> ..., but special graphical structures
+ * tiers is Tier0 --&gt; Tier1 --&gt; Tier2 --&gt; ..., but special graphical structures
  * among the tiers may be set as well.
  *
  * @author Joseph Ramsey

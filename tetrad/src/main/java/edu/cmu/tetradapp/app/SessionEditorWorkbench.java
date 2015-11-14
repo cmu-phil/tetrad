@@ -118,7 +118,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     //==========================PUBLIC METHODS===========================//
 
     /**
-     * Returns a SessionNodeWrapper for a new SessionNode, the type of which is
+     * @return a SessionNodeWrapper for a new SessionNode, the type of which is
      * determined by the next button type, and the name of which is the next
      * button type (a String) appended with the next available positive
      * integer.
@@ -143,7 +143,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Returns a new SessionEditorNode for the given SessionNodeWrapper (cast as
+     * @return a new SessionEditorNode for the given SessionNodeWrapper (cast as
      * indicated).
      */
     public DisplayNode getNewDisplayNode(Node modelNode) {
@@ -155,21 +155,21 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Returns a new edge from node1 to node2 (directed).
+     * @return a new edge from node1 to node2 (directed).
      */
     public Edge getNewModelEdge(Node node1, Node node2) {
         return new Edge(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
     }
 
     /**
-     * Returns a new tracking edge from a node to some mouse location.
+     * @return a new tracking edge from a node to some mouse location.
      */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
         return new SessionEditorEdge((SessionEditorNode) node, mouseLoc);
     }
 
     /**
-     * Returns a new SessionEditorEdge for the given given edge (cast as
+     * @return a new SessionEditorEdge for the given given edge (cast as
      * indicated).
      */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
@@ -230,7 +230,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Returns the button type of the next node to be constructed; this will be
+     * @return the button type of the next node to be constructed; this will be
      * the base for the next node's name (for instance "base1", "base2", ...),
      * and it will be String key for looking up the possible model classes for
      * the node.
@@ -307,7 +307,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Returns the SessionNodeWrapper for the given SessionEditorNode.
+     * @return the SessionNodeWrapper for the given SessionEditorNode.
      */
     private SessionNodeWrapper getSessionNodeWrapper(SessionNode sessionNode) {
         for (Object key : getModelNodesToDisplay().keySet()) {
@@ -334,7 +334,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Returns the model classes associated with the given button type.
+     * @return the model classes associated with the given button type.
      *
      * @throws NullPointerException if no classes are stored for the given
      *                              type.
@@ -351,7 +351,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Returns the next string in the sequence.
+     * @return the next string in the sequence.
      *
      * @param base the string base of the name--for example, "Graph".
      * @return the next string in the sequence--for example, "Graph1".

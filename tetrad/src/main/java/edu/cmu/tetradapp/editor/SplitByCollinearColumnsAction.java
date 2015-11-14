@@ -252,7 +252,7 @@ public final class SplitByCollinearColumnsAction extends AbstractAction {
         }
 
         /**
-         * Returns the correlation level.
+         * @return the correlation level.
          */
         public int getCorrelationSize() {
             return correlationSize;

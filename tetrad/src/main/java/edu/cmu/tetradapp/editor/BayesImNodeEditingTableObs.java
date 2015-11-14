@@ -365,7 +365,7 @@ class BayesImNodeEditingTableObs extends JTable {
 		}
 
         /**
-         * Returns the name of the given column.
+         * @return the name of the given column.
          */
         public String getColumnName(int col) {
 			if (col < obsNodes.size())

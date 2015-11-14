@@ -263,7 +263,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 	}
 
 	/**
-	 * Returns the underlying DataSet model.
+	 * @return the underlying DataSet model.
 	 * 
 	 * @return this model.
 	 */
@@ -444,7 +444,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 	}
 
 	/**
-	 * Returns true iff the given token is a legitimate value for the cell at
+	 * @return true iff the given token is a legitimate value for the cell at
 	 * (row, col) in the table.
 	 */
 	public boolean checkValueAt(String token, int col) {

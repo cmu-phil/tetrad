@@ -29,8 +29,6 @@ import javax.swing.text.Element;
 
 /**
  * Text area that removes lines from the top as the line limit is exceeded.
- *
- * @author http://forum.java.sun.com/thread.jspa?threadID=563827&tstart=90
  */
 public class TextAreaFifo extends JTextArea implements DocumentListener {
     private int maxLines;

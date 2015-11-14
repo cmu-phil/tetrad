@@ -163,7 +163,7 @@ public class QQPlot {
     //==================================== Public Methods ====================================//
     
      /**
-     * Returns the max sample value.
+     * @return the max sample value.
      *
      * @return - max Value in sample.
      */
@@ -173,7 +173,7 @@ public class QQPlot {
 
 
     /**
-     * Returns the min sample value.
+     * @return the min sample value.
      *
      * @return - min value in sample.
      */
@@ -182,7 +182,7 @@ public class QQPlot {
     }
 
      /**
-     * Returns the max comparison value.
+     * @return the max comparison value.
      *
      * @return - max Value in comparison.
      */
@@ -192,7 +192,7 @@ public class QQPlot {
 
 
     /**
-     * Returns the min comparison value.
+     * @return the min comparison value.
      *
      * @return - min value in comparison.
      */
@@ -201,7 +201,7 @@ public class QQPlot {
     }
 
     /**
-     * Returns the min value in the q-q
+     * @return the min value in the q-q
      *
      * @return min value in q-q
      */
@@ -211,7 +211,7 @@ public class QQPlot {
     }
 
     /**
-     * Returns the max value in the q-q
+     * @return the max value in the q-q
      *
      * @return max value in q-q
      */
@@ -221,7 +221,7 @@ public class QQPlot {
     }
 
     /**
-     * Returns the node that has been selected.
+     * @return the node that has been selected.
      *
      * @return selected
      */
@@ -381,7 +381,7 @@ public class QQPlot {
     }
 
     /**
-     * Returns an estimation of the point in a Normal distribution at a specific quantile.
+     * @return an estimation of the point in a Normal distribution at a specific quantile.
      *
      * @param quantile Desired quantile you wish to find
      * @param low The minimum of your dataset

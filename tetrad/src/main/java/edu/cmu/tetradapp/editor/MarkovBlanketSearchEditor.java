@@ -110,7 +110,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
 
     /**
-     * Returns the data model being viewed.
+     * @return the data model being viewed.
      */
     public DataModel getDataModel() {
         if (algorithmRunner.getDataModelForMarkovBlanket() != null) {
@@ -130,7 +130,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     /**
      * Executes the algorithm. The execution takes place inside a thread, so one
      * cannot count on a result graph having been found when the method
-     * returns.
+     * @return.
      */
     private void execute() {
         Window owner = (Window) getTopLevelAncestor();
@@ -555,7 +555,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
 
     /**
-     * Returns the graph.
+     * @return the graph.
      */
     public Graph getGraph() {
         if (getWorkbench().getGraph() != null) {

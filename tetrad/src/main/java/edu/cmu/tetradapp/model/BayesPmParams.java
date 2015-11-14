@@ -56,7 +56,7 @@ public class BayesPmParams implements Params {
      * The lower bound on the number of values that a node may be initialized
      * with, if the initialization mode is AUTOMATIC.
      *
-     * @serial Must be >= 2.
+     * @serial Must be greater than or equal to 2.
      */
     private int lowerBoundNumVals = 2;
 
@@ -64,7 +64,7 @@ public class BayesPmParams implements Params {
      * The upper bound on the number of values that a node may be initialized
      * with, if the initialization mode is AUTOMATIC.
      *
-     * @serial Must be > lowerBoundNumVals
+     * @serial Must be greater than lowerBoundNumVals
      */
     private int upperBoundNumVals = 4;
 
@@ -95,7 +95,7 @@ public class BayesPmParams implements Params {
     public void setLowerBoundNumVals(int lowerBoundNumVals) {
         if (!(lowerBoundNumVals >= 2)) {
             throw new IllegalArgumentException(
-                    "Number of values must be >= 2: " + lowerBoundNumVals);
+                    "Number of values Must be greater than or equal to 2: " + lowerBoundNumVals);
         }
 
         if (!(lowerBoundNumVals <= upperBoundNumVals)) {
@@ -113,12 +113,12 @@ public class BayesPmParams implements Params {
     public void setUpperBoundNumVals(int upperBoundNumVals) {
         if (upperBoundNumVals < 2) {
             throw new IllegalArgumentException(
-                    "Number of values must be >= 2: " + upperBoundNumVals);
+                    "Number of values Must be greater than or equal to 2: " + upperBoundNumVals);
         }
 
         if (upperBoundNumVals < lowerBoundNumVals) {
             throw new IllegalArgumentException(
-                    "Upper bound must be >= lower bound.");
+                    "Upper bound Must be greater than or equal to lower bound.");
         }
 
         this.upperBoundNumVals = upperBoundNumVals;

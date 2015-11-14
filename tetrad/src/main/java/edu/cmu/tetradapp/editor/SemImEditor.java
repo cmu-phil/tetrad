@@ -359,7 +359,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     }
 
     /**
-     * Returns the index of the currently selected tab. Used to construct a new
+     * @return the index of the currently selected tab. Used to construct a new
      * SemImEditor in the same state as a previous one.
      */
     public int getTabSelectionIndex() {
@@ -367,7 +367,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     }
 
     /**
-     * Returns the index of the matrix that was being viewed most recently. Used
+     * @return the index of the matrix that was being viewed most recently. Used
      * to construct a new SemImEditor in the same state as the previous one.
      */
     public int getMatrixSelection() {
@@ -1144,7 +1144,7 @@ final class SemImGraphicalEditor extends JPanel {
     }
 
     /**
-     * Returns the parameter for the given edge, or null if the edge does not
+     * @return the parameter for the given edge, or null if the edge does not
      * have a parameter associated with it in the model. The edge must be either
      * directed or bidirected, since it has to come from a SemGraph. For
      * directed edges, this method automatically adjusts if the user has changed
@@ -1771,7 +1771,7 @@ class ImpliedMatricesPanel extends JPanel {
 
 
     /**
-     * Returns the matrix in tab delimited form.
+     * @return the matrix in tab delimited form.
      */
     public String getMatrixInTabDelimitedForm() {
         StringBuilder builder = new StringBuilder();
@@ -1932,7 +1932,7 @@ final class ImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of rows being displayed--one more than the size of the
+     * @return the number of rows being displayed--one more than the size of the
      * matrix, which may be different depending on whether only the observed
      * variables are being displayed or all the variables are being displayed.
      */
@@ -1945,7 +1945,7 @@ final class ImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of columns displayed--one more than the size of the
+     * @return the number of columns displayed--one more than the size of the
      * matrix, which may be different depending on whether only the observed
      * variables are being displayed or all the variables are being displayed.
      */
@@ -1958,7 +1958,7 @@ final class ImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the name of the column at columnIndex, which is "" for column 0
+     * @return the name of the column at columnIndex, which is "" for column 0
      * and the name of the variable for the other columns.
      */
     public String getColumnName(int columnIndex) {
@@ -1978,7 +1978,7 @@ final class ImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the value being displayed in a cell, either a variable name or a
+     * @return the value being displayed in a cell, either a variable name or a
      * Double.
      */
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -2029,14 +2029,14 @@ final class ImpliedCovTable extends AbstractTableModel {
     }
 
     /**
-     * Returns true iff only observed variables are displayed.
+     * @return true iff only observed variables are displayed.
      */
     private boolean measured() {
         return measured;
     }
 
     /**
-     * Returns true iff correlations (rather than covariances) are displayed.
+     * @return true iff correlations (rather than covariances) are displayed.
      */
     private boolean correlations() {
         return correlations;

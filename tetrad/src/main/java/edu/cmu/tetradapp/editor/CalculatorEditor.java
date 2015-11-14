@@ -107,7 +107,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
 
     /**
-     * Returns the data set that the editor is working with.     
+     * @return the data set that the editor is working with.
      */
     public DataSet getDataSet(){
         return this.dataSet;
@@ -195,7 +195,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     }
 
     /**
-     * Returns true.
+     * @return true.
      */
     public boolean mustBeShown() {
         return false;

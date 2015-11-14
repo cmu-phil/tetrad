@@ -140,7 +140,7 @@ final class SessionUtils {
     }
 
     /**
-     * Returns a string listing the combinations of legal parent models for a
+     * @return a string listing the combinations of legal parent models for a
      * given model class. The item at [i][j] is the jth parent model description
      * of the ith parent model combination.
      */
@@ -209,7 +209,7 @@ final class SessionUtils {
     //======================================== Private Methods ==============================//
 
     /**
-     * Returns the name of the given model
+     * @return the name of the given model
      */
     private static String getModelName(Class model) {
         TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();

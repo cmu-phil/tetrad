@@ -122,7 +122,7 @@ public final class TetradDesktop extends JPanel
 
     /**
      * Adds a component to the middle layer of the desktop--that is, the layer
-     * for session node editors. </p> Note: The comp is a SessionEditor
+     * for session node editors. Note: The comp is a SessionEditor
      */
     public void addSessionEditor(SessionEditorIndirectRef editorRef) {
         SessionEditor editor = (SessionEditor) editorRef;
@@ -499,7 +499,7 @@ public final class TetradDesktop extends JPanel
 
 
     /**
-     * Returns a reasonable divider location for the log output.
+     * @return a reasonable divider location for the log output.
      */
     private int getDivider() {
         int height;
@@ -534,7 +534,7 @@ public final class TetradDesktop extends JPanel
 
 
     /**
-     * Returns true iff there exist a session in the desktop.
+     * @return true iff there exist a session in the desktop.
      */
     private boolean existsSession() {
         JInternalFrame[] allFrames = desktopPane.getAllFramesInLayer(0);
@@ -585,7 +585,7 @@ public final class TetradDesktop extends JPanel
     }
 
     /**
-     * Returns the next available session name in the series untitled1.tet,
+     * @return the next available session name in the series untitled1.tet,
      * untitled2.tet, etc.
      */
     private String getNewSessionName() {

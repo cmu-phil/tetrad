@@ -44,7 +44,7 @@ public class Version implements TetradSerializable {
      * class, it's 4, and the minor version is 3. This should increase only for
      * truly substantial and essentially complete new releases of Tetrad.
      *
-     * @serial Range >= 0.
+     * @serial Range greater than or equal to 0.
      */
     private int majorVersion;
 
@@ -53,7 +53,7 @@ public class Version implements TetradSerializable {
      * without bound until the next major release, at which point it goes back
      * to zero.
      *
-     * @serial Range >= 0.
+     * @serial Range greater than or equal to 0.
      */
     private int minorVersion;
 
@@ -62,7 +62,7 @@ public class Version implements TetradSerializable {
      * without bound until the next major or minor release, at which point it
      * goes back to zero.
      *
-     * @serial Range >= 0.
+     * @serial Range greater than or equal to 0.
      */
     private int minorSubversion;
 
@@ -72,7 +72,7 @@ public class Version implements TetradSerializable {
      * minor subversion release, at which point is goes back to zero. If it is
      * zero, release a.b.c.dx may be referred to as a.b.c.
      *
-     * @serial Range >= 0.
+     * @serial Range greater than or equal to 0.
      */
     private int incrementalRelease;
 
@@ -127,7 +127,7 @@ public class Version implements TetradSerializable {
     }
 
     /**
-     * Returns the model version as stored in project/resources/version. This
+     * @return the model version as stored in project/resources/version. This
      * will be the same as the getModel viewable version when the ejar and task
      * is run. (The file is copied over.)
      */
@@ -151,7 +151,7 @@ public class Version implements TetradSerializable {
     }
 
     /**
-     * Returns the model version as stored in the ejar. To sync this with the
+     * @return the model version as stored in the ejar. To sync this with the
      * version at project/resources/version, run the ejar ant task.
      */
     public static Version currentViewableVersion() {

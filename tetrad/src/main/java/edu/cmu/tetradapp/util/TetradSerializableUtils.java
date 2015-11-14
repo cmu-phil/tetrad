@@ -726,7 +726,7 @@ public class TetradSerializableUtils {
 
 
     /**
-     * Returns a reference to the public static serializableInstance() method of
+     * @return a reference to the public static serializableInstance() method of
      * clazz, if there is one; otherwise, returns null.
      */
     public Method serializableInstanceMethod(Class clazz) {
@@ -756,7 +756,7 @@ public class TetradSerializableUtils {
     }
 
     /**
-     * Returns all of the classes x in the given directory (recursively) such
+     * @return all of the classes x in the given directory (recursively) such
      * that clazz.isAssignableFrom(x).
      */
     public List<Class> getAssignableClasses(File path,

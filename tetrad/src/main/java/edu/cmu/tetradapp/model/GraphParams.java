@@ -80,7 +80,7 @@ public class GraphParams implements Params {
 //
 //        if (!isConnected() && numEdges < 0) {
 //            throw new IllegalArgumentException(
-//                    "Number of edges must be >= 0: " + numEdges);
+//                    "Number of edges Must be greater than or equal to 0: " + numEdges);
 //        }
 //
 //        int maxNumEdges = getNumNodes() * (getNumNodes() - 1) / 2;

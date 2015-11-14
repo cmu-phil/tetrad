@@ -46,7 +46,7 @@ public final class LingParams implements SearchParams {
     private IKnowledge knowledge = new Knowledge2();
 
     /**
-     * @serial Range >= -1.
+     * @serial Range greater than or equal to -1.
      */
     private int depth;
 
@@ -164,7 +164,7 @@ public final class LingParams implements SearchParams {
 
     public void setThreshold(double threshold) {
         if (threshold <= 0) {
-            throw new IllegalArgumentException("Threshold must be >= 0.");
+            throw new IllegalArgumentException("Threshold Must be greater than or equal to 0.");
         }
 
         this.threshold = threshold;

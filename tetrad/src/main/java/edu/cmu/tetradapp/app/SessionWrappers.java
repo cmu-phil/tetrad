@@ -90,7 +90,7 @@ final class SessionWrappers {
     }
 
     /**
-     * Returns the model classes associated with the given button type.
+     * @return the model classes associated with the given button type.
      *
      * @throws NullPointerException if no classes are stored for the given
      *                              type.

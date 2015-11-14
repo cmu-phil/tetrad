@@ -290,7 +290,7 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
 
 
     /**
-     * Returns the matrix in tab delimited form.
+     * @return the matrix in tab delimited form.
      */
     public String getMatrixInTabDelimitedForm() {
         StringBuilder builder = new StringBuilder();

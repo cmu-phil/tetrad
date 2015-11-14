@@ -92,7 +92,7 @@ final class ConstructTemplateAction extends AbstractAction {
     //==========================PUBLIC METHODS===========================//
 
     /**
-     * Returns a copy of the template names. Must be public.
+     * @return a copy of the template names. Must be public.
      */
     public static String[] getTemplateNames() {
         String[] templateNamesCopy = new String[TEMPLATE_NAMES.length];
@@ -483,7 +483,7 @@ final class ConstructTemplateAction extends AbstractAction {
 
 
     /**
-     * Returns the next string in the sequence.
+     * @return the next string in the sequence.
      *
      * @param base the string base of the name--for example, "Graph".
      * @return the next string in the sequence--for example, "Graph1".
@@ -600,7 +600,7 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     /**
-     * Returns the model classes associated with the given button type.
+     * @return the model classes associated with the given button type.
      *
      * @throws NullPointerException if no classes are stored for the given
      *                              type.

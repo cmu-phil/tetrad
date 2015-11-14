@@ -34,8 +34,8 @@ public interface ParameterSaver extends TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns a map of parameters to their values to be persisted. The map
-     * should go from Strings to Objects (Double, Integer, String, &c), where
+     * @return a map of parameters to their values to be persisted. The map
+     * should go from Strings to Objects (Double, Integer, String, &amp;c), where
      * the Strings are names of parameters and the Objects are their values.
      */
     Map getParameterValues();

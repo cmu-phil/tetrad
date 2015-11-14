@@ -346,8 +346,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Given base <b> (a String), returns the first node in the sequence "<b>1",
-     * "<b>2", "<b>3", etc., which is not already the name of a node in the
+     * Given base b (a String), returns the first node in the sequence "b1",
+     * "b2", "b3", etc., which is not already the name of a node in the
      * workbench.
      *
      * @param base the base string.
@@ -464,7 +464,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Returns the next string in the sequence.
+     * @return the next string in the sequence.
      *
      * @param base the string base of the name--for example, "Graph".
      * @return the next string in the sequence--for example, "Graph1".

@@ -38,7 +38,7 @@ import java.util.List;
 public interface SearchParams extends Params, KnowledgeTransferable {
 
     /**
-     * Returns a copy of the knowledge for these params.
+     * @return a copy of the knowledge for these params.
      */
     IKnowledge getKnowledge();
 
@@ -48,7 +48,7 @@ public interface SearchParams extends Params, KnowledgeTransferable {
     void setKnowledge(IKnowledge knowledge);
 
     /**
-     * Returns the independence test parameters for this search.
+     * @return the independence test parameters for this search.
      */
     IndTestParams getIndTestParams();
 
@@ -56,7 +56,7 @@ public interface SearchParams extends Params, KnowledgeTransferable {
     void setIndTestParams2(IndTestParams params);
 
     /**
-     * Returns the list of variable names.
+     * @return the list of variable names.
      */
     List<String> getVarNames();
 
@@ -66,7 +66,7 @@ public interface SearchParams extends Params, KnowledgeTransferable {
     void setVarNames(List<String> varNames);
 
     /**
-     * Returns a copy of the latest workbench graph.
+     * @return a copy of the latest workbench graph.
      */
     Graph getSourceGraph();
 

@@ -473,7 +473,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Returns the 'from' AbstractGraphNode to which this session edge is
+     * @return the 'from' AbstractGraphNode to which this session edge is
      * anchored.
      */
     public final DisplayNode getComp1() {
@@ -481,7 +481,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Returns the 'to' AbstractGraphNode to which this session edge is
+     * @return the 'to' AbstractGraphNode to which this session edge is
      * anchored.
      */
     public final DisplayNode getComp2() {
@@ -489,14 +489,14 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Returns the getModel mode of the component.
+     * @return the getModel mode of the component.
      */
     public final int getMode() {
         return this.mode;
     }
 
     /**
-     * Returns the getModel track point for the edge.  When a new edge is being
+     * @return the getModel track point for the edge.  When a new edge is being
      * created in the UI, one end is anchored to a AbstractGraphNode while the
      * other tracks the mouse point.  When the mouse is released, the latest
      * mouse track point is needed to determine which node it's closest to so
@@ -507,7 +507,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Returns true iff the component is selected.
+     * @return true iff the component is selected.
      */
     public final boolean isSelected() {
         return this.mode == ANCHORED_SELECTED;
@@ -566,21 +566,21 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Returns node 1.
+     * @return node 1.
      */
     public final DisplayNode getNode1() {
         return this.node1;
     }
 
     /**
-     * Returns node 2.
+     * @return node 2.
      */
     public final DisplayNode getNode2() {
         return this.node2;
     }
 
     /**
-     * Returns the two points this edge actually connects--that is, the
+     * @return the two points this edge actually connects--that is, the
      * intersections of the edge with node 1 and node 2.
      */
     public final PointPair getConnectedPoints() {
@@ -595,7 +595,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Returns the moure track point relative to this component. (It's usually
+     * @return the moure track point relative to this component. (It's usually
      * given relative to the containing component.)
      */
     public final Point getRelativeMouseTrackPoint() {

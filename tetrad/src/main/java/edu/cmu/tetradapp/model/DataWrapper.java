@@ -228,8 +228,8 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     /**
-     * Given base <b> (a String), returns the first node in the sequence "<b>1",
-     * "<b>2", "<b>3", etc., which is not already the name of a node in the
+     * Given base b (a String), returns the first node in the sequence "b1",
+     * "b2", "b3", etc., which is not already the name of a node in the
      * workbench.
      *
      * @param base the base string.
@@ -278,7 +278,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     //==============================PUBLIC METHODS========================//
 
     /**
-     * Returns the list of models.
+     * @return the list of models.
      */
     public DataModelList getDataModelList() {
         return dataModelList;
@@ -289,7 +289,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     /**
-     * Returns the data model for this wrapper.
+     * @return the data model for this wrapper.
      */
     public DataModel getSelectedDataModel() {
         DataModelList modelList = this.dataModelList;
@@ -325,7 +325,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     /**
-     * Returns the source workbench, if there is one.
+     * @return the source workbench, if there is one.
      */
     public Graph getSourceGraph() {
         return this.sourceGraph;
@@ -336,7 +336,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     /**
-     * Returns the variable names, in order.
+     * @return the variable names, in order.
      */
     public List<Node> getVariables() {
         return this.getSelectedDataModel().getVariables();

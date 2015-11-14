@@ -34,7 +34,7 @@ public interface MimIndTestParams extends TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns the alpha level of the test, in [0, 1].
+     * @return the alpha level of the test, in [0, 1].
      */
     double getAlpha();
 
@@ -44,7 +44,7 @@ public interface MimIndTestParams extends TetradSerializable {
     void setAlpha(double alpha);
 
     /**
-     * Returns the most recently set list of variable names (Strings).
+     * @return the most recently set list of variable names (Strings).
      */
     List getVarNames();
 

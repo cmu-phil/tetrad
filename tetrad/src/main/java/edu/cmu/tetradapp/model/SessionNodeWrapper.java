@@ -83,7 +83,7 @@ public class SessionNodeWrapper extends GraphNode
     //===========================PUBLIC METHODS=======================//
 
     /**
-     * Returns the session name. (Should return the same as getName.)
+     * @return the session name. (Should return the same as getName.)
      */
     public String getSessionName() {
         return this.sessionNode.getDisplayName();
@@ -130,7 +130,7 @@ public class SessionNodeWrapper extends GraphNode
     }
 
     /**
-     * Returns the SessionNode being wrapped.
+     * @return the SessionNode being wrapped.
      */
     public SessionNode getSessionNode() {
         return this.sessionNode;
@@ -163,7 +163,7 @@ public class SessionNodeWrapper extends GraphNode
     }
 
     /**
-     * Returns a string representation of the node.
+     * @return a string representation of the node.
      */
     public String toString() {
         return "SessionNodewrapper (type " + getButtonType() + ", name " +

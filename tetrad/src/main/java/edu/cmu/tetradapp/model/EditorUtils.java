@@ -168,7 +168,7 @@ public class EditorUtils {
     }
 
     /**
-     * Returns a new JFileChooser properly set up for Tetrad.
+     * @return a new JFileChooser properly set up for Tetrad.
      *
      * @param name
      */

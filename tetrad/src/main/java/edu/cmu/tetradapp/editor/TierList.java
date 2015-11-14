@@ -144,7 +144,7 @@ public class TierList extends JScrollPane {
     }
 
     /**
-     * Returns modified knowledge allowing saving.
+     * @return modified knowledge allowing saving.
      */
     public IKnowledge getKnowledge() {
         return this.knowledge;

@@ -130,7 +130,7 @@ public class ScatterPlotOld {
     //==================================== Public Methods ====================================//
 
      /**
-     * Returns the max sample value between the y and x variables.
+     * @return the max sample value between the y and x variables.
      *
      * @return - max Value amongst the y and x variables.
      */
@@ -141,7 +141,7 @@ public class ScatterPlotOld {
 
 
     /**
-     * Returns the min sample value.
+     * @return the min sample value.
      *
      * @return - min value in sample.
      */
@@ -204,7 +204,7 @@ public class ScatterPlotOld {
      * each other when some other set of variables fall within particular ranges.
      *
      * When there are no conditional variables in use, the indexSet contains
-     * numbers <0, ..., (n - 1)> (all of the indices).
+     * numbers (0, ..., (n - 1)) (all of the indices).
      */
     public Vector getIndexSet() {
         return indexSet;

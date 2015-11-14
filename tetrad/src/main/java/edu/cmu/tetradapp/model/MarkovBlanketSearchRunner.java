@@ -36,7 +36,7 @@ public interface MarkovBlanketSearchRunner extends Executable {
     static final long serialVersionUID = 23L;
 
     /**
-     * Returns the search params.
+     * @return the search params.
      */
     MbSearchParams getParams();
 
@@ -48,19 +48,19 @@ public interface MarkovBlanketSearchRunner extends Executable {
     
 
     /**
-     * Returns the data model for the variables in the markov blanket.
+     * @return the data model for the variables in the markov blanket.
      */
     DataSet getDataModelForMarkovBlanket();
 
 
     /**
-     * Returns the variables in the markov blanket.
+     * @return the variables in the markov blanket.
      */
     List<Node> getMarkovBlanket();
 
 
     /**
-     * Returns the name of the search.
+     * @return the name of the search.
      */
     String getSearchName();
 

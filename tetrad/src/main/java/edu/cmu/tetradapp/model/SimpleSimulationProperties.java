@@ -38,7 +38,7 @@ public class SimpleSimulationProperties implements TetradSerializable {
     /**
      * The sample size.
      *
-     * @serial Range > 0.
+     * @serial Range greater than 0.
      */
     private int sampleSize = 1;
 

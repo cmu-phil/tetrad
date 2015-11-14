@@ -157,7 +157,7 @@ public class EmBayesEstimatorEditor extends JPanel {
     }
 
     /**
-     * Returns a reference to this editor.
+     * @return a reference to this editor.
      */
     private EMBayesEstimatorEditorWizard getWizard() {
         return wizard;
