@@ -9,11 +9,11 @@ www.phil.cmu.edu/tetrad/maven
 
 Javadocs are here:
 
-http://www.phil.cmu.edu/tetrad/maven/apidocs/index.html
+www.phil.cmu.edu/tetrad/maven/apidocs/index.html
 
 Downloads directory is here:
 
-http://www.phil.cmu.edu/projects/tetrad_download/maven/edu/cmu/
+www.phil.cmu.edu/projects/tetrad_download/maven/edu/cmu/
 
 This is a Maven port of an existing Ant-based project
 that's been under development for many years in the
