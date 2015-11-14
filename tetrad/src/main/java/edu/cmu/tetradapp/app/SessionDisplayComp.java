@@ -31,12 +31,12 @@ import edu.cmu.tetradapp.workbench.DisplayComp;
 public interface SessionDisplayComp extends DisplayComp {
 
     /**
-     * Sets the acronym (e.g. "PC") for the node.
+     * @param acronym the acronym (e.g. "PC") for the node.
      */
     void setAcronym(String acronym);
 
     /**
-     * Sets whether the node has a model--i.e. whether it should be rendered
+     * @param b whether the node has a model--i.e. whether it should be rendered
      * in the "filled" color or not.
      */
     void setHasModel(boolean b);

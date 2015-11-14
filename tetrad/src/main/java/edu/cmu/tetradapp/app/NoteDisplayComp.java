@@ -66,8 +66,6 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
      * Paints the component.
-     *
-     * @param g
      */
     public void paint(Graphics g) {
         int width = getSize().width;
@@ -92,8 +90,6 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
      * Sets the acronym of the component.
-     *
-     * @param acronym
      */
     public void setAcronym(String acronym) {
 
@@ -110,8 +106,6 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
      * Sets the comp as selected.
-     *
-     * @param selected
      */
     public void setSelected(boolean selected) {
         this.selected = selected;
@@ -119,8 +113,6 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
      * Does nothing.
-     *
-     * @param b
      */
     public void setHasModel(boolean b) {
         // Ignore.

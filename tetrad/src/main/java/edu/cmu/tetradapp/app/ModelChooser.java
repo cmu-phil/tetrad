@@ -49,18 +49,18 @@ public interface ModelChooser {
 
 
     /**
-     * The title to use for the chooser.
+     * @param title The title to use for the chooser.
      */
     public void setTitle(String title);
 
     /**
-     * Sets the models that this chooser should display.
+     * @param configs the models that this chooser should display.
      */
     public void setModelConfigs(List<SessionNodeModelConfig> configs);
 
 
     /**
-     * Sets the id for the node.
+     * @param id the id for the node.
      */
     public void setNodeId(String id);
 
@@ -71,7 +71,7 @@ public interface ModelChooser {
     public void setup();
 
     /**
-     * Passes in the SessionNode for the getModel node.
+     * @param sessionNode the SessionNode for the getModel node.
      */
     void setSessionNode(SessionNode sessionNode);
 }
