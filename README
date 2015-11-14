@@ -3,6 +3,18 @@ can be found here:
 
 www.phil.cmu.edu/tetrad
 
+The programmer's website is here:
+
+www.phil.cmu.edu/tetrad/maven
+
+Javadocs are here:
+
+http://www.phil.cmu.edu/tetrad/maven/apidocs/index.html
+
+Downloads directory is here:
+
+http://www.phil.cmu.edu/projects/tetrad_download/maven/edu/cmu/
+
 This is a Maven port of an existing Ant-based project
 that's been under development for many years in the
 Department of Philosophy at Carnegie Mellon University.
