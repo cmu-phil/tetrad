@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.sem;
 
-import cern.colt.matrix.DoubleMatrix2D;
+//import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -58,7 +58,6 @@ public class Mapping implements TetradSerializable {
      * @serial Can't be null.
      */
     private TetradMatrix a;
-    private DoubleMatrix2D aC;
 
     /**
      * The left-hand coordinate of a[i][j].
@@ -184,14 +183,6 @@ public class Mapping implements TetradSerializable {
         if (parameter == null) {
             throw new NullPointerException();
         }
-
-        if (aC != null) {
-            a = new TetradMatrix(aC.toArray());
-        }
-
-//        if (aC == null) {
-//            throw new NullPointerException();
-//        }
     }
 }
 

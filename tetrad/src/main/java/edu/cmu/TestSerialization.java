@@ -122,7 +122,7 @@ public class TestSerialization extends TestCase {
 
     /**
      * Tests to make sure sessions saved out using any version for which
-     * archived serialized class examplars can be loaded using the getModel
+     * archived serialized class examplars can be loaded using the model
      * version.
      */
     public void testLoadabilility() {

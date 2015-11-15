@@ -21,9 +21,6 @@
 
 package edu.cmu.tetrad.sem;
 
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.EigenvalueDecomposition;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
@@ -130,14 +127,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     private List<Parameter> meanParameters;
 
     /**
-     * Replaced by edgeCoef. Please do not delete; required for serialization
-     * backward compatibility.
-     *
-     * @serial
-     */
-    private DoubleMatrix2D edgeCoefC;
-
-    /**
      * Matrix of edge coefficients. edgeCoefC[i][j] is the coefficient of the
      * edge from getVariableNodes().get(i) to getVariableNodes().get(j), or 0.0
      * if this edge is not in the graph. The values of these may be changed, but
@@ -158,7 +147,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      */
     private TetradMatrix errCovar;
 
-    private DoubleMatrix2D errCovarC;
+//    private DoubleMatrix2D errCovarC;
 
     /**
      * Means of variables. These will not be counted for purposes of calculating
@@ -210,15 +199,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     private TetradMatrix implCovar;
 
     /**
-     * The covariance matrix of all the variables. May be null if it has not yet
-     * been calculated. The implied covariance matrix is reset each time the
-     * F_ML function is recalculated.
-     *
-     * @serial Can be null.
-     */
-    private DoubleMatrix2D implCovarC;
-
-    /**
      * The covariance matrix of the measured variables only. May be null if
      * implCovar has not been calculated yet. This is the submatrix of
      * implCovar, restricted to just the measured variables. It is recalculated
@@ -227,14 +207,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @serial Can be null.
      */
     private TetradMatrix implCovarMeas;
-
-    /**
-     * Replaced by implCovarMeasC. Please do not delete. Required for
-     * serialization backward compatibility.
-     *
-     * @serial
-     */
-    private DoubleMatrix2D implCovarMeasC;
 
     /**
      * The list of freeMappings. This is an unmodifiable list. It is fixed (up
@@ -491,7 +463,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             sampleCovarC = _semIm.sampleCovarC;
             sampleSize = _semIm.sampleSize;
             implCovar = _semIm.implCovar;
-            implCovarMeasC = _semIm.implCovarMeasC;
             freeMappings = _semIm.freeMappings;
             fixedMappings = _semIm.fixedMappings;
             standardErrors = _semIm.standardErrors;
@@ -2165,57 +2136,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //                "matrix was positive definite and the edge coefficients were stable.");
     }
 
-    private static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix b) {
-        EigenvalueDecomposition dec = new EigenvalueDecomposition(new DenseDoubleMatrix2D(b.toArray()));
-        TetradVector realEigenvalues = new TetradVector(dec.getRealEigenvalues().toArray());
-        TetradVector imagEigenvalues = new TetradVector(dec.getImagEigenvalues().toArray());
-
-        boolean allEigenvaluesSmallerThanOneInModulus = true;
-        for (int i = 0; i < realEigenvalues.size(); i++) {
-            double realEigenvalue = realEigenvalues.get(i);
-            double imagEigenvalue = imagEigenvalues.get(i);
-            double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
-
-            if (modulus >= 1) {
-                allEigenvaluesSmallerThanOneInModulus = false;
-            }
-        }
-
-        return allEigenvaluesSmallerThanOneInModulus;
-    }
-
-
-//    private void setFixed() {
-//        for (Node x : nodes) {
-//            if (x.getNodeType() != NodeType.LATENT) {
-//                continue;
-//            }
-//
-//            for (Node y : graph.getAdjacentNodes(x)) {
-//                if (y.getNodeType() != NodeType.MEASURED) {
-//                    continue;
-//                }
-//
-//                Edge edge = graph.getEdge(x, y);
-//
-//                if (!edge.pointsTowards(y)) {
-//                    continue;
-//                }
-//
-//                Parameter p = semPm.getParameter(x, y);
-//
-//                if (p == null) throw new IllegalArgumentException();
-//
-//                if (p.isFixed()) {
-//                    continue;
-//                }
-//
-//                p.setFixed(true);
-//                break;
-//            }
-//        }
-//
-//    }
 
     /**
      * @return the standard error for the given parameter
@@ -2865,32 +2785,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         if (measuredNodes == null) {
             throw new NullPointerException();
-        }
-
-        // Translate old data formats into new.
-        if (edgeCoefC != null) {
-            edgeCoef = new TetradMatrix(edgeCoefC.toArray());
-            edgeCoefC = null;
-        }
-
-        if (errCovarC != null) {
-            errCovar = new TetradMatrix(errCovarC.toArray());
-            errCovar = null;
-        }
-
-        if (sampleCovarC != null) {
-            sampleCovar = new TetradMatrix(sampleCovarC.toArray());
-            sampleCovar = null;
-        }
-
-        if (implCovarC != null) {
-            implCovar = new TetradMatrix(implCovarC.toArray());
-            implCovar = null;
-        }
-
-        if (implCovarMeasC != null) {
-            implCovarMeas = new TetradMatrix(implCovarMeasC.toArray());
-            implCovarMeas = null;
         }
 
         if (variableMeans == null) {

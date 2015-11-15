@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.data;
 
-import cern.colt.matrix.DoubleMatrix2D;
+//import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradAlgebra;
@@ -77,10 +77,10 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      */
     private TetradMatrix matrix;
 
-    /**
-     * @serial Do not remove this field; it is needed for serialization.
-     */
-    private DoubleMatrix2D matrixC;
+//    /**
+//     * @serial Do not remove this field; it is needed for serialization.
+//     */
+//    private DoubleMatrix2D matrixC;
 
     /**
      * The list of selected variables.
@@ -553,10 +553,10 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             throw new NullPointerException();
         }
 
-        if (matrixC != null) {
-            matrix = new TetradMatrix(matrixC.toArray());
-            matrixC = null;
-        }
+//        if (matrixC != null) {
+//            matrix = new TetradMatrix(matrixC.toArray());
+//            matrixC = null;
+//        }
 
         if (knowledge == null) {
             throw new NullPointerException();

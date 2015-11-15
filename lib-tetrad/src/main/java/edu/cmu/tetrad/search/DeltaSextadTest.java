@@ -21,11 +21,12 @@
 
 package edu.cmu.tetrad.search;
 
-import Jama.Matrix;
+//import Jama.Matrix;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -288,7 +289,7 @@ public class DeltaSextadTest implements IDeltaSextadTest {
         }
 
         // Need a matrix of variances and covariances of sample covariances.
-        Matrix sigma_ss = new Matrix(boldSigma.size(), boldSigma.size());
+        TetradMatrix sigma_ss = new TetradMatrix(boldSigma.size(), boldSigma.size());
 
         for (int i = 0; i < boldSigma.size(); i++) {
             for (int j = i; j < boldSigma.size(); j++) {
@@ -329,7 +330,7 @@ public class DeltaSextadTest implements IDeltaSextadTest {
 
         // Need a matrix of of population estimates of partial derivatives of tetrads
         // with respect to covariances in boldSigma.
-        Matrix del = new Matrix(boldSigma.size(), sextads.length);
+        TetradMatrix del = new TetradMatrix(boldSigma.size(), sextads.length);
 
         for (int j = 0; j < sextads.length; j++) {
             Sextad sextad = sextads[j];
@@ -342,12 +343,12 @@ public class DeltaSextadTest implements IDeltaSextadTest {
         }
 
         // Need a vector of population estimates of the sextads.
-        Matrix t = new Matrix(sextads.length, 1);
+        TetradMatrix t = new TetradMatrix(sextads.length, 1);
 
         for (int i = 0; i < sextads.length; i++) {
             Sextad sextad = sextads[i];
             List<Node> nodes = sextad.getNodes();
-            Matrix m = new Matrix(3, 3);
+            TetradMatrix m = new TetradMatrix(3, 3);
 
             for (int k1 = 0; k1 < 3; k1++) {
                 for (int k2 = 0; k2 < 3; k2++) {
@@ -385,7 +386,7 @@ public class DeltaSextadTest implements IDeltaSextadTest {
 //            this.storedValue = value;
 //        }
 
-        Matrix sigma_tt = del.transpose().times(sigma_ss).times(del);
+        TetradMatrix sigma_tt = del.transpose().times(sigma_ss).times(del);
         try {
             this.chisq = N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);
             return chisq;

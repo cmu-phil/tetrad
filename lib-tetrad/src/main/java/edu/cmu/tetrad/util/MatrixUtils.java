@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.util;
 
-import Jama.Matrix;
-import Jama.SingularValueDecomposition;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
@@ -31,7 +29,9 @@ import cern.colt.matrix.linalg.Property;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.AbstractRealMatrix;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -186,20 +186,21 @@ public final class MatrixUtils {
     }
 
     public static double[][] pseudoInverse(double[][] x) {
-        SingularValueDecomposition svd = new SingularValueDecomposition(new Matrix(x));
+        SingularValueDecomposition svd
+                = new SingularValueDecomposition(new BlockRealMatrix(x));
 
-        Matrix U = svd.getU();
-        Matrix V = svd.getV();
-        Matrix S = svd.getS();
+        RealMatrix U = svd.getU();
+        RealMatrix V = svd.getV();
+        RealMatrix S = svd.getS();
 
         for (int i = 0; i < S.getRowDimension(); i++) {
             for (int j = 0; j < S.getColumnDimension(); j++) {
-                double v = S.get(i, j);
-                S.set(i,  j, v == 0 ? 0.0 : 1.0 / v);
+                double v = S.getEntry(i, j);
+                S.setEntry(i,  j, v == 0 ? 0.0 : 1.0 / v);
             }
         }
 
-        return V.times(S.times(U.transpose())).getArray();
+        return V.multiply(S.multiply(U.transpose())).getData();
     }
 
     /**

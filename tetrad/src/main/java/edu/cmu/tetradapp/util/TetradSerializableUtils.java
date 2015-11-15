@@ -21,18 +21,17 @@
 
 package edu.cmu.tetradapp.util;
 
-import Jama.Matrix;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.jet.random.Beta;
 import cern.jet.random.BreitWigner;
 import cern.jet.random.Normal;
 import cern.jet.random.Uniform;
-import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradVector;
+import no.uib.cipr.matrix.Matrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
