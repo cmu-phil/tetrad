@@ -25,8 +25,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.SemEstimatorWrapper;
-import edu.cmu.tetradapp.model.SemImWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
