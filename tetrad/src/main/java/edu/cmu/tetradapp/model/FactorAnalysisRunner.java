@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FactorAnalysis;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.NumberFormat;
@@ -70,7 +71,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static FactorAnalysisRunner serializableInstance() {
         return new FactorAnalysisRunner(DataWrapper.serializableInstance(),

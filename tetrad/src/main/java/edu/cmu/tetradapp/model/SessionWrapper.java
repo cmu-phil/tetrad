@@ -27,6 +27,7 @@ import edu.cmu.tetrad.session.SessionAdapter;
 import edu.cmu.tetrad.session.SessionEvent;
 import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.SessionWrapperIndirectRef;
 
 import javax.swing.*;
@@ -99,7 +100,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static SessionWrapper serializableInstance() {
         return new SessionWrapper(Session.serializableInstance());

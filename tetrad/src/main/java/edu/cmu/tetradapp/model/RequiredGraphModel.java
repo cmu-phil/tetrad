@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -216,7 +217,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static RequiredGraphModel serializableInstance() {
         return new RequiredGraphModel(new KnowledgeParams(), GraphWrapper.serializableInstance());

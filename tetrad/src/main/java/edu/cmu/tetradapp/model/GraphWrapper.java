@@ -32,6 +32,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
@@ -222,7 +223,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static GraphWrapper serializableInstance() {
         return new GraphWrapper(Dag.serializableInstance());

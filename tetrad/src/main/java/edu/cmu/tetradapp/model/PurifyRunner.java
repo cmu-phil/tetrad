@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +77,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static PurifyRunner serializableInstance() {
         return new PurifyRunner(DataWrapper.serializableInstance(),

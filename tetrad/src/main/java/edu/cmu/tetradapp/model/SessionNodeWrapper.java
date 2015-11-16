@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -74,7 +75,7 @@ public class SessionNodeWrapper extends GraphNode
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static GraphNode serializableInstance() {
         return new SessionNodeWrapper(SessionNode.serializableInstance());

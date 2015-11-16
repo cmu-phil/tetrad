@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.rmi.MarshalledObject;
@@ -78,7 +79,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static BuildPureClustersRunner serializableInstance() {
         return new BuildPureClustersRunner(DataWrapper.serializableInstance(),

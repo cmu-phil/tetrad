@@ -28,6 +28,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -85,7 +86,7 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static GeneralizedSemImWrapper serializableInstance() {
         return new GeneralizedSemImWrapper(GeneralizedSemPmWrapper.serializableInstance());

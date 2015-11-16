@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -81,7 +82,7 @@ public class CompletedPatternWrapper implements SessionModel, GraphSource {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      * @return the serializable instance.
      */
     public static CompletedPatternWrapper serializableInstance() {

@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -134,7 +135,7 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static VcpcAltRunner serializableInstance() {
         return new VcpcAltRunner(Dag.serializableInstance(),

@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.editor.IndependenceResult;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class IndTestModel implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static IKnowledge serializableInstance() {
         return new Knowledge2();

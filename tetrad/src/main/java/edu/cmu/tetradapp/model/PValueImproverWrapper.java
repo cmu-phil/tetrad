@@ -28,6 +28,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -178,7 +179,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static PValueImproverWrapper serializableInstance() {
         return new PValueImproverWrapper(GraphWrapper.serializableInstance(),

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Lingam;
 import edu.cmu.tetrad.search.MeekRules;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -58,7 +59,7 @@ public class PdpStructureRunner extends AbstractAlgorithmRunner implements Graph
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static PdpStructureRunner serializableInstance() {
         return new PdpStructureRunner(DataWrapper.serializableInstance(),

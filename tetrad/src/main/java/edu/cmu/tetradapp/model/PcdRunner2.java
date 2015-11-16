@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Pcd;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +78,7 @@ public class PcdRunner2 extends AbstractAlgorithmRunner
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static PcdRunner serializableInstance() {
         return new PcdRunner(Dag.serializableInstance(),

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -203,7 +204,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static LingamStructureRunner serializableInstance() {
         return new LingamStructureRunner(DataWrapper.serializableInstance(),

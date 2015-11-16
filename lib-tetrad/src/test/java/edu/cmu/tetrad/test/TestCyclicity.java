@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu;
+package edu.cmu.tetrad.test;
 
 import jdepend.framework.JDepend;
 import jdepend.framework.JavaPackage;
@@ -46,7 +46,7 @@ public class TestCyclicity extends TestCase {
 
         try {
             jdepend.addDirectory(new File("target/classes/edu/cmu/tetrad").getAbsolutePath());
-            jdepend.addDirectory(new File("target/classes/edu/cmu/tetradapp").getAbsolutePath());
+//            jdepend.addDirectory(new File("../../../tetrad/target/classes/edu/cmu/tetradapp").getAbsolutePath());
         }
         catch (IOException e) {
             fail(e.getMessage());
@@ -58,7 +58,7 @@ public class TestCyclicity extends TestCase {
     }
 
     public void testBlank() {
-        
+
     }
 
     /**

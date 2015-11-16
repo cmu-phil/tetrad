@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.util;
+package edu.cmu.tetrad.util;
 
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
@@ -27,10 +27,6 @@ import cern.jet.random.Beta;
 import cern.jet.random.BreitWigner;
 import cern.jet.random.Normal;
 import cern.jet.random.Uniform;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradSerializable;
-import edu.cmu.tetrad.util.TetradSerializableExcluded;
-import edu.cmu.tetrad.util.TetradVector;
 import no.uib.cipr.matrix.Matrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;

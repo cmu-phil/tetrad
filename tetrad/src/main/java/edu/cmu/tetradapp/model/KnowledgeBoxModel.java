@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -265,7 +266,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static KnowledgeBoxModel serializableInstance() {
         return new KnowledgeBoxModel(new KnowledgeParams(), GraphWrapper.serializableInstance());

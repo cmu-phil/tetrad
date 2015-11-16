@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.util;
 
+import edu.cmu.tetrad.util.Version;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

@@ -19,9 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.util;
-
-import edu.cmu.tetrad.util.TetradSerializable;
+package edu.cmu.tetrad.util;
 
 import java.io.*;
 import java.net.URL;
@@ -188,11 +186,11 @@ public class Version implements TetradSerializable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+//     * @see edu.cmu.TestSerialization
+//     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Version serializableInstance() {
-        return new Version("4.3.1-5");
+        return new Version("1.2.3");
     }
 
     //==========================PUBLIC METHODS===========================//

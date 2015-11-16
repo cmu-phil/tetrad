@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.knowledge_editor;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
  * Represents a forbidden or required edge in a graph of knowledge facts. The
@@ -81,7 +82,7 @@ public class KnowledgeModelEdge extends Edge
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static Edge serializableInstance() {
         return new KnowledgeModelEdge(new KnowledgeModelNode("X"),

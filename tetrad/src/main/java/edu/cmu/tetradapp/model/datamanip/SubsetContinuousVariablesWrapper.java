@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class SubsetContinuousVariablesWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
         return new SubsetContinuousVariablesWrapper(new DataWrapper(DataUtils.continuousSerializableInstance()));

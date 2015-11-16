@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
 /**
@@ -54,7 +55,7 @@ public class ExpandCaseMultipliersWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static ExpandCaseMultipliersWrapper serializableInstance() {
         return new ExpandCaseMultipliersWrapper(DataWrapper.serializableInstance());

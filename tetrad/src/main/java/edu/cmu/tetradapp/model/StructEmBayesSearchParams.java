@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
  * Stores the parameters needed for the PC search and wizard.
@@ -46,7 +47,7 @@ public final class StructEmBayesSearchParams implements Params {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static BasicSearchParams serializableInstance() {
         return new BasicSearchParams();

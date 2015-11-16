@@ -19,9 +19,8 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu;
-
-import edu.cmu.tetradapp.util.TetradSerializableUtils;
+package edu.cmu.tetrad.test;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import junit.framework.TestCase;
 
 /**
@@ -113,7 +112,7 @@ import junit.framework.TestCase;
  * <p>Or Joshua Block, Effective Java.</p>                                                                                     fd
  *
  * @author Joseph Ramsey
- * @see edu.cmu.tetradapp.util.TetradSerializableUtils           
+// * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
 public class TestSerialization extends TestCase {
     public TestSerialization(String name) {
@@ -126,7 +125,7 @@ public class TestSerialization extends TestCase {
      * version.
      */
     public void testLoadabilility() {
-        String serializableScope = "build/tetrad/classes/edu/cmu";
+        String serializableScope = "target/classes/edu/cmu";
         String currentDirectory = "build/tetrad/serializable/getModel";
         String archiveDirectory = "archives";
 

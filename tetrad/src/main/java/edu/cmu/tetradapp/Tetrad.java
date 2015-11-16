@@ -28,7 +28,7 @@ import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.SplashScreen;
-import edu.cmu.tetradapp.util.Version;
+import edu.cmu.tetrad.util.Version;
 
 import javax.swing.*;
 import java.awt.*;

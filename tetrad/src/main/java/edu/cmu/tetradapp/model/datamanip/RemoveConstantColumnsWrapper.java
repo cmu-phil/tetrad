@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataFilter;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
 /**
@@ -60,7 +61,7 @@ public class RemoveConstantColumnsWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static RemoveConstantColumnsWrapper serializableInstance() {
         return new RemoveConstantColumnsWrapper(DataWrapper.serializableInstance());

@@ -35,6 +35,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
  * Converts a continuous data set to a correlation matrix.
@@ -157,7 +158,7 @@ public class Whitener extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
         DataWrapper wrapper =

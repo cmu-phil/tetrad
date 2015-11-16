@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.GraphSource;
 import edu.cmu.tetradapp.model.GraphWrapper;
 
@@ -156,7 +157,7 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static GraphAdjacencyIntersectionWrapper serializableInstance() {
         return new GraphAdjacencyIntersectionWrapper(GraphWrapper.serializableInstance(),

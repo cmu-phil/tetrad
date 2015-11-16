@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.text.NumberFormat;
 
@@ -54,7 +55,7 @@ public final class IndependenceResult implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static IndependenceResult serializableInstance() {
         return new IndependenceResult(1, "X _||_ Y", Type.DEPENDENT, 0.0001);

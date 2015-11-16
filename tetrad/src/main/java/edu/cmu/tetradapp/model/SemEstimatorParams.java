@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
  * Created by josephramsey on 1/3/14.
@@ -44,7 +45,7 @@ public class SemEstimatorParams implements Params {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static SemEstimatorParams serializableInstance() {
         return new SemEstimatorParams();

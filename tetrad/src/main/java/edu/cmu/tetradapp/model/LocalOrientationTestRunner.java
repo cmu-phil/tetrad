@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -82,7 +83,7 @@ public class LocalOrientationTestRunner extends AbstractAlgorithmRunner
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static LocalOrientationTestRunner serializableInstance() {
         return new LocalOrientationTestRunner(Dag.serializableInstance(),

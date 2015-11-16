@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestMimBuild;
 import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -84,7 +85,7 @@ public final class MimBuildParams implements MimParams {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static MimBuildParams serializableInstance() {
         return new MimBuildParams();

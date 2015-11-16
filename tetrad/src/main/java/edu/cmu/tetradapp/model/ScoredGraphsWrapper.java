@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.GraphScorer;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
@@ -128,7 +129,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static ScoredGraphsWrapper serializableInstance() {
         return new ScoredGraphsWrapper(PcRunner.serializableInstance());

@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -70,7 +71,7 @@ public class BayesImParams implements Params, TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static BayesImParams serializableInstance() {
         return new BayesImParams();

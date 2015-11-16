@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.regression.RegressionUtils;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphWrapper;
@@ -109,7 +110,7 @@ public class ResidualsWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
         return new ResidualsWrapper(DataWrapper.serializableInstance(),

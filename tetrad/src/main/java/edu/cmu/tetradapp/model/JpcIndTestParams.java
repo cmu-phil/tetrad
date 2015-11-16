@@ -21,6 +21,8 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
@@ -68,7 +70,7 @@ public final class JpcIndTestParams implements IndTestParams {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static JpcIndTestParams serializableInstance() {
         return new JpcIndTestParams();

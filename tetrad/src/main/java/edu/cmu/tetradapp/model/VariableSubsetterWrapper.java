@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
  * Creates a data set from the set of selected columns in the given data set.
@@ -62,7 +63,7 @@ public class VariableSubsetterWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
         return new VariableSubsetterWrapper(DataWrapper.serializableInstance());

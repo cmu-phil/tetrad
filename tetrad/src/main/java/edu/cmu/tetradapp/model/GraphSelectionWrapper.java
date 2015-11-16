@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
@@ -122,7 +123,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static GraphSelectionWrapper serializableInstance() {
         return new GraphSelectionWrapper(Dag.serializableInstance());

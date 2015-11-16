@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Ling;
 import edu.cmu.tetrad.search.MeekRules;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -73,7 +74,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static LingRunner serializableInstance() {
         return new LingRunner(DataWrapper.serializableInstance(), KnowledgeBoxModel.serializableInstance());

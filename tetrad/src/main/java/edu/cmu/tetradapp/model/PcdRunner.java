@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -126,7 +127,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static PcdRunner serializableInstance() {
         return new PcdRunner(Dag.serializableInstance(),

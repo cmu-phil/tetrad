@@ -28,6 +28,7 @@ import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.List;
 
@@ -73,7 +74,7 @@ public class ImpliedCovarianceDataAllWrapper extends DataWrapper implements Sess
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
         return new ImpliedCovarianceDataWrapper(SemEstimatorWrapper.serializableInstance());

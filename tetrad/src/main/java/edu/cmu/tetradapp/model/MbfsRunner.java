@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Mbfs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -129,7 +130,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	 * Generates a simple exemplar of this class to test serialization.
 	 * 
 	 * @see edu.cmu.TestSerialization
-	 * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+	 * @see TetradSerializableUtils
 	 */
 	public static MbfsRunner serializableInstance() {
 		return new MbfsRunner(DataWrapper.serializableInstance(),

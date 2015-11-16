@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -81,7 +82,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static IGesRunner serializableInstance() {
         return new GesRunner(DataWrapper.serializableInstance(),

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -74,7 +75,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static KnowledgeGraph serializableInstance() {
         return new KnowledgeGraph(Knowledge.serializableInstance());

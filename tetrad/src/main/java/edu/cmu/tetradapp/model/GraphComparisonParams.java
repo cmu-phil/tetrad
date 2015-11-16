@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.ExecutionRestarter;
 import edu.cmu.tetrad.session.SessionAdapter;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -113,8 +114,8 @@ public class GraphComparisonParams extends SessionAdapter
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+//     * @see edu.cmu.TestSerialization
+     * @see TetradSerializableUtils
      */
     public static GraphComparisonParams serializableInstance() {
         return new GraphComparisonParams();

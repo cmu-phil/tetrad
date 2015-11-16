@@ -31,6 +31,7 @@ import edu.cmu.tetrad.search.MimbuildTrek;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,7 +111,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static MimBuildTrekRunner serializableInstance() {
         DataSet dataSet = DataUtils.discreteSerializableInstance();

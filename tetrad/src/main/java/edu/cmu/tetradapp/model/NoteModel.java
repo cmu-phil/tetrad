@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyledDocument;
@@ -49,7 +50,7 @@ public class NoteModel implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static NoteModel serializableInstance() {
         return new NoteModel();

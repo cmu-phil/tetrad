@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.search.Lofs2;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -108,7 +109,7 @@ public final class PcSearchParams implements MeekSearchParams {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static PcSearchParams serializableInstance() {
         return new PcSearchParams();

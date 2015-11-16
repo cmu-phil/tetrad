@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.search.mb.Mmhc;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static MmhcRunner serializableInstance() {
         return new MmhcRunner(DataWrapper.serializableInstance(),

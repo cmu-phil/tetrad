@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 
 /**
@@ -69,7 +70,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
         return new GeneralizedSemDataWrapper(GeneralizedSemImWrapper.serializableInstance(),

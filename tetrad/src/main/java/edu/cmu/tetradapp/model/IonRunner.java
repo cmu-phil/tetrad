@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.IonJoeModifications;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
 import java.util.ArrayList;
@@ -180,7 +181,7 @@ public class IonRunner extends AbstractAlgorithmRunner
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static IonRunner serializableInstance() {
         return new IonRunner(new GraphWrapper(new EdgeListGraph()), new IonParams());

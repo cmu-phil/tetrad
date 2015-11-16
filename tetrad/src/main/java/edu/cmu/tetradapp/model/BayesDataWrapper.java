@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
  * Wraps a data model so that a random sample will automatically be drawn on
@@ -112,7 +113,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
         return new BayesDataWrapper(BayesPmWrapper.serializableInstance());

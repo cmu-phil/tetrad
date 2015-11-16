@@ -28,6 +28,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -82,7 +83,7 @@ public class StandardizedSemImWrapper implements SessionModel, GraphSource, Know
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static StandardizedSemImWrapper serializableInstance() {
         return new StandardizedSemImWrapper(SemImWrapper.serializableInstance());

@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.search.BpcAlgorithmType;
 import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -80,7 +81,7 @@ public class BuildPureClustersIndTestParams implements MimIndTestParams {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static BuildPureClustersIndTestParams serializableInstance() {
         return new BuildPureClustersIndTestParams(0.05, TestType.TETRAD_WISHART, TestType.GAUSSIAN_PVALUE);

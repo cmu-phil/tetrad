@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataFilter;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
@@ -49,7 +50,7 @@ public class CaseExpanderWrapper extends DataWrapper implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
         return new CaseExpanderWrapper(DataWrapper.serializableInstance());

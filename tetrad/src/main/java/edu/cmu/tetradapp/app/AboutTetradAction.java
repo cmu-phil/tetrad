@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.LicenseUtils;
-import edu.cmu.tetradapp.util.Version;
+import edu.cmu.tetrad.util.Version;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;

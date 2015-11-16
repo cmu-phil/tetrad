@@ -25,6 +25,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.BayesUpdaterClassifier;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -87,7 +88,7 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static BayesUpdaterClassifierWrapper serializableInstance() {
         return new BayesUpdaterClassifierWrapper(

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
@@ -91,7 +92,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static CptInvariantUpdaterWrapper serializableInstance() {
         return new CptInvariantUpdaterWrapper(

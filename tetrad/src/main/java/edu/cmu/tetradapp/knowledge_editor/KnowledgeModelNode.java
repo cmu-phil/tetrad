@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeListener;
 
@@ -73,7 +74,7 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static KnowledgeModelNode serializableInstance() {
         return new KnowledgeModelNode("X");

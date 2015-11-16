@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -101,7 +102,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static TimeLagGraphWrapper serializableInstance() {
         return new TimeLagGraphWrapper(new TimeLagGraph());

@@ -28,10 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetrad.util.*;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -211,7 +208,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static SemEstimatorWrapper serializableInstance() {
         List<Node> variables = new LinkedList<Node>();

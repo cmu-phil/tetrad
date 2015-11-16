@@ -27,7 +27,7 @@ import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 import edu.cmu.tetradapp.util.TetradMetadataIndirectRef;
-import edu.cmu.tetradapp.util.Version;
+import edu.cmu.tetrad.util.Version;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

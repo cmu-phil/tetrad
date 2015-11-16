@@ -31,6 +31,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Memorable;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -166,7 +167,7 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static BayesImWrapper serializableInstance() {
         return new BayesImWrapper(BayesPmWrapper.serializableInstance(),

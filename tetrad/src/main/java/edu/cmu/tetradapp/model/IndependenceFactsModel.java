@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -54,8 +55,8 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+//     * @see edu.cmu.TestSerialization
+     * @see TetradSerializableUtils
      */
     public static IKnowledge serializableInstance() {
         return new Knowledge2();

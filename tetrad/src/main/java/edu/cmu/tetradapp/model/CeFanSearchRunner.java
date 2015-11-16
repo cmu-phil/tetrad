@@ -26,6 +26,7 @@ import edu.cmu.tetrad.search.Cefs;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -93,7 +94,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static CeFanSearchRunner serializableInstance() {
         return new CeFanSearchRunner(Dag.serializableInstance(),

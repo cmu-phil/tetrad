@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Uniform;
 
@@ -75,7 +76,7 @@ public class Sem2DataParams implements Params {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * @see TetradSerializableUtils
      */
     public static Sem2DataParams serializableInstance() {
         return new Sem2DataParams();
