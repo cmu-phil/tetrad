@@ -30,6 +30,7 @@ The project contains fairly well-developed code in these
 packages:
 
 tetrad
+pitt
 tetradapp
 
 as well as some contributions in the pitt directories. The 
