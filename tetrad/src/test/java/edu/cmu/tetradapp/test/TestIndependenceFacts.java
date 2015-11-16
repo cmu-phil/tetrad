@@ -19,80 +19,84 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.model;
+package edu.cmu.tetradapp.test;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IndependenceFacts;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetradapp.model.IndependenceFactsModel;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tests the basic functionality of the DataWrapper.
+ * Tests the Knowledge class.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author Joseph Ramsey
  */
-public class TestDataWrapper extends TestCase {
-
-    DataWrapper dataWrapper;
+public final class TestIndependenceFacts extends TestCase {
+    private IndependenceFactsModel facts;
 
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestDataWrapper(String name) {
+    public TestIndependenceFacts(String name) {
         super(name);
     }
 
-    public void testConstruction() {
+    public void test1() {
+        IndependenceFactsModel facts = new IndependenceFactsModel();
 
-        this.dataWrapper = new DataWrapper();
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
+        Node x6 = new GraphNode("X6");
 
-        assertNotNull(dataWrapper);
+        facts.add(new IndependenceFact(x1, x2, x3));
+        facts.add(new IndependenceFact(x2, x3));
+        facts.add(new IndependenceFact(x2, x4, x1, x2));
+        facts.add(new IndependenceFact(x2, x4, x1, x3, x5));
+        facts.add(new IndependenceFact(x2, x4, x3));
+        facts.add(new IndependenceFact(x2, x4, x3, x6));
+
+        System.out.println(facts);
+
+        facts.remove(new IndependenceFact(x1, x2, x3));
+
+//        System.out.println(facts);
+
+        IndependenceFacts _facts = new IndependenceFacts(facts.getFacts());
+
+        System.out.println(_facts.toString());
+
+        assertTrue(_facts.isIndependent(x4, x2, x1, x2));
+        assertTrue(_facts.isIndependent(x4, x2, x5, x3, x1));
+
+        List<Node> l = new ArrayList<Node>();
+        l.add(x1);
+        l.add(x2);
+
+        assertTrue(_facts.isIndependent(x4, x2, l));
+
     }
 
-    public void testDataModelList() {
-        DataModelList modelList = new DataModelList();
-
-        List<Node> variables1 = new ArrayList<Node>();
-
-        for (int i = 0; i < 10; i++) {
-            variables1.add(new ContinuousVariable("X" + i));
-        }
-
-        List<Node> variables2 = new ArrayList<Node>();
-
-        for (int i = 0; i < 10; i++) {
-            variables2.add(new ContinuousVariable("X" + i));
-        }
-
-        DataSet first = new ColtDataSet(10, variables1);
-        first.setName("first");
-
-        DataSet second = new ColtDataSet(10, variables2);
-        second.setName("second");
-
-        modelList.add(first);
-        modelList.add(second);
-
-        System.out.println(modelList.contains(first));
-        System.out.println(modelList.contains(second));
-
-        modelList.setSelectedModel(second);
+    public void test2() {
+        File file = new File("resources/sample.independencies.txt");
 
         try {
-            DataModelList modelList2 = (DataModelList) new MarshalledObject(modelList).get();
-            System.out.println(modelList2.getSelectedModel().getName());
+            IndependenceFactsModel facts = IndependenceFactsModel.loadFacts(new FileReader(file));
+
+            System.out.println(facts);
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -105,7 +109,7 @@ public class TestDataWrapper extends TestCase {
 
         // Edit the name of the class in the parens to match the name
         // of this class.
-        return new TestSuite(TestDataWrapper.class);
+        return new TestSuite(TestIndependenceFacts.class);
     }
 }
 

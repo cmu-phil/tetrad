@@ -19,28 +19,50 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.workbench;
+package edu.cmu.tetradapp.test;
 
-import junit.framework.Test;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-public class TestDisplayNode extends TestCase {
-    public TestDisplayNode(String name) {
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+/**
+ * Tests to make sure the field <code>showDialog</code> in WatchProcess is set
+ * to <code>true</code>. This must be the case in order for the little progress
+ * dialogs to be displayed while algorithms are running, etc. It is convenient
+ * to set this to false while debugging, but Tetrad must not be posted with this
+ * set to false.
+ *
+ * @author Joseph Ramsey
+// * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+ */
+public class TestWatchedProcessDialogs extends TestCase {
+    public TestWatchedProcessDialogs(String name) {
         super(name);
     }
 
-    public void testSetLocation() {
+    public void testWatchedProcessDialogs() {
+        try {
+            Field field = WatchedProcess.class.getDeclaredField("SHOW_DIALOG");
 
-        // When constructing a display node without a model node, must check
-        // make sure its position can be set. This at one point threw a
-        // null pointer exception.
-        DisplayNode displayNode = new GraphNodeMeasured("X");
-        displayNode.setLocation(10, 10);
-    }
+            int modifiers = field.getModifiers();
+            boolean _static = Modifier.isStatic(modifiers);
+            field.setAccessible(true);
 
-    public static Test suite() {
-        return new TestSuite(TestDisplayNode.class);
+            if (!_static || !(field.getBoolean(null))) {
+                throw new RuntimeException("Class does not define static " +
+                        "boolean SHOW_DIALOG = true. Please revise before " +
+                        "posting next time.");
+            }
+        }
+        catch (NoSuchFieldException e) {
+            throw new RuntimeException(
+                    "No field showDialog in WatchedProcess!");
+        }
+        catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

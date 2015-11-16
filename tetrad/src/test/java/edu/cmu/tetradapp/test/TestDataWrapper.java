@@ -19,37 +19,83 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.workbench;
+package edu.cmu.tetradapp.test;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetradapp.model.DataWrapper;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-/**
- * Tests the GraphWorkbench class.
- *
- * @author Joseph Ramsey
- */
-public class TestGraphWorkbench extends TestCase {
+import java.io.IOException;
+import java.rmi.MarshalledObject;
+import java.util.ArrayList;
+import java.util.List;
 
-    private GraphWorkbench graphWorkbench;
+/**
+ * Tests the basic functionality of the DataWrapper.
+ *
+ * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ */
+public class TestDataWrapper extends TestCase {
+
+    DataWrapper dataWrapper;
 
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestGraphWorkbench(String name) {
+    public TestDataWrapper(String name) {
         super(name);
     }
 
-    public void setUp() {
-        this.graphWorkbench = new GraphWorkbench(new EdgeListGraph());
+    public void testConstruction() {
+
+        this.dataWrapper = new DataWrapper();
+
+        assertNotNull(dataWrapper);
     }
 
-    public void testNextVariableName() {
-        // TODO: Not an independent test yet--some other test may
-        // change the workbench.
-        assertTrue("X1".equals(this.graphWorkbench.nextVariableName("X")));
+    public void testDataModelList() {
+        DataModelList modelList = new DataModelList();
+
+        List<Node> variables1 = new ArrayList<Node>();
+
+        for (int i = 0; i < 10; i++) {
+            variables1.add(new ContinuousVariable("X" + i));
+        }
+
+        List<Node> variables2 = new ArrayList<Node>();
+
+        for (int i = 0; i < 10; i++) {
+            variables2.add(new ContinuousVariable("X" + i));
+        }
+
+        DataSet first = new ColtDataSet(10, variables1);
+        first.setName("first");
+
+        DataSet second = new ColtDataSet(10, variables2);
+        second.setName("second");
+
+        modelList.add(first);
+        modelList.add(second);
+
+        System.out.println(modelList.contains(first));
+        System.out.println(modelList.contains(second));
+
+        modelList.setSelectedModel(second);
+
+        try {
+            DataModelList modelList2 = (DataModelList) new MarshalledObject(modelList).get();
+            System.out.println(modelList2.getSelectedModel().getName());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -58,9 +104,9 @@ public class TestGraphWorkbench extends TestCase {
      */
     public static Test suite() {
 
-        // Edit the name of the class in the parents to match the name
+        // Edit the name of the class in the parens to match the name
         // of this class.
-        return new TestSuite(TestGraphWorkbench.class);
+        return new TestSuite(TestDataWrapper.class);
     }
 }
 

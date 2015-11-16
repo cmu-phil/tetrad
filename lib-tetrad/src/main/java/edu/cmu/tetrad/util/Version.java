@@ -95,8 +95,18 @@ public class Version implements TetradSerializable {
             this.minorSubversion = Integer.parseInt(matcher2.group(3));
             this.incrementalRelease = 0;
         } else {
-            throw new IllegalArgumentException("Version should be either of the " +
-                    "form a.b.c (Maven) or a.b.c-d (old): " + spec);
+            Pattern pattern3 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)");
+            Matcher matcher3 = pattern3.matcher(spec);
+
+            if (matcher3.matches()) {
+                this.majorVersion = Integer.parseInt(matcher3.group(1));
+                this.minorVersion = Integer.parseInt(matcher3.group(2));
+                this.minorSubversion = Integer.parseInt(matcher3.group(3));
+                this.incrementalRelease = Integer.parseInt(matcher3.group(4));
+            } else {
+                throw new IllegalArgumentException("Version should be either of the " +
+                        "form a.b.c (Maven) or a.b.c-d (old): " + spec);
+            }
         }
     }
 
@@ -185,9 +195,9 @@ public class Version implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-//     * @see edu.cmu.TestSerialization
-//     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+     * <p>
+     * //     * @see edu.cmu.TestSerialization
+     * //     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Version serializableInstance() {
         return new Version("1.2.3");

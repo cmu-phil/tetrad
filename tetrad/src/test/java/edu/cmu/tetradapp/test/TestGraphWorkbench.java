@@ -19,49 +19,38 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.util;
+package edu.cmu.tetradapp.test;
 
-import edu.cmu.tetrad.util.Version;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * Tests the Version class, to make sure it can load versions from string
- * representations and generate string representations correctly.
+ * Tests the GraphWorkbench class.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author Joseph Ramsey
  */
-public final class TestVersion extends TestCase {
+public class TestGraphWorkbench extends TestCase {
+
+    private GraphWorkbench graphWorkbench;
 
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestVersion(final String name) {
+    public TestGraphWorkbench(String name) {
         super(name);
     }
 
-    public void testRoundtrip() {
-        Version version = new Version("4.3.1-5");
-        String versionString = version.toString();
-        Version version2 = new Version(versionString);
-        assertTrue(version.equals(version2));
+    public void setUp() {
+        this.graphWorkbench = new GraphWorkbench(new EdgeListGraph());
     }
 
-    public void testNextVersion() {
-        Version version = new Version("4.3.1-5");
-
-        Version version2 = version.nextMajorVersion();
-        assertEquals(version2, new Version("5.0.0-0"));
-
-        Version version3 = version.nextMinorVersion();
-        assertEquals(version3, new Version("4.4.0-0"));
-
-        Version version4 = version.nextMinorSubversion();
-        assertEquals(version4, new Version("4.3.2-0"));
-
-        Version version5 = version.nextIncrementalRelease();
-        assertEquals(version5, new Version("4.3.1-6"));
+    public void testNextVariableName() {
+        // TODO: Not an independent test yet--some other test may
+        // change the workbench.
+        assertTrue("X1".equals(this.graphWorkbench.nextVariableName("X")));
     }
 
     /**
@@ -70,9 +59,9 @@ public final class TestVersion extends TestCase {
      */
     public static Test suite() {
 
-        // Edit the name of the class in the parens to match the name
+        // Edit the name of the class in the parents to match the name
         // of this class.
-        return new TestSuite(TestVersion.class);
+        return new TestSuite(TestGraphWorkbench.class);
     }
 }
 

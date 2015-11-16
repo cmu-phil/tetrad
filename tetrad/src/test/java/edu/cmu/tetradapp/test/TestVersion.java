@@ -19,85 +19,49 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.model;
+package edu.cmu.tetradapp.test;
 
-import edu.cmu.tetrad.data.IndependenceFacts;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Version;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Tests the Knowledge class.
+ * Tests the Version class, to make sure it can load versions from string
+ * representations and generate string representations correctly.
  *
- * @author Joseph Ramsey
+ * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public final class TestIndependenceFacts extends TestCase {
-    private IndependenceFactsModel facts;
+public final class TestVersion extends TestCase {
 
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestIndependenceFacts(String name) {
+    public TestVersion(final String name) {
         super(name);
     }
 
-    public void test1() {
-        IndependenceFactsModel facts = new IndependenceFactsModel();
-
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
-        Node x6 = new GraphNode("X6");
-
-        facts.add(new IndependenceFact(x1, x2, x3));
-        facts.add(new IndependenceFact(x2, x3));
-        facts.add(new IndependenceFact(x2, x4, x1, x2));
-        facts.add(new IndependenceFact(x2, x4, x1, x3, x5));
-        facts.add(new IndependenceFact(x2, x4, x3));
-        facts.add(new IndependenceFact(x2, x4, x3, x6));
-
-        System.out.println(facts);
-
-        facts.remove(new IndependenceFact(x1, x2, x3));
-
-//        System.out.println(facts);
-
-        IndependenceFacts _facts = new IndependenceFacts(facts.getFacts());
-
-        System.out.println(_facts.toString());
-
-        assertTrue(_facts.isIndependent(x4, x2, x1, x2));
-        assertTrue(_facts.isIndependent(x4, x2, x5, x3, x1));
-
-        List<Node> l = new ArrayList<Node>();
-        l.add(x1);
-        l.add(x2);
-
-        assertTrue(_facts.isIndependent(x4, x2, l));
-
+    public void testRoundtrip() {
+        Version version = new Version("4.3.1-5");
+        String versionString = version.toString();
+        Version version2 = new Version(versionString);
+        assertTrue(version.equals(version2));
     }
 
-    public void test2() {
-        File file = new File("sample_data/sample.independencies.txt");
+    public void testNextVersion() {
+        Version version = new Version("4.3.1-5");
 
-        try {
-            IndependenceFactsModel facts = IndependenceFactsModel.loadFacts(new FileReader(file));
+        Version version2 = version.nextMajorVersion();
+        assertEquals(version2, new Version("5.0.0-0"));
 
-            System.out.println(facts);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Version version3 = version.nextMinorVersion();
+        assertEquals(version3, new Version("4.4.0-0"));
+
+        Version version4 = version.nextMinorSubversion();
+        assertEquals(version4, new Version("4.3.2-0"));
+
+        Version version5 = version.nextIncrementalRelease();
+        assertEquals(version5, new Version("4.3.1-6"));
     }
 
     /**
@@ -108,7 +72,7 @@ public final class TestIndependenceFacts extends TestCase {
 
         // Edit the name of the class in the parens to match the name
         // of this class.
-        return new TestSuite(TestIndependenceFacts.class);
+        return new TestSuite(TestVersion.class);
     }
 }
 
