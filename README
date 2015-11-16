@@ -54,3 +54,7 @@ IntelliJ IDEA files were removed from the repository; if
 these got removed in your fork, just set up the IntelliJ
 project again (without cloning it again, that is). See
 Wiki.
+
+Don't be too impressed with the high version number. Tetrad
+has gone through many phases, in more than one programming
+language. The Java versions are 4 and 5 (the current).
