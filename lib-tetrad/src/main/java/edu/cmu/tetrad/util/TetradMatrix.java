@@ -109,6 +109,18 @@ public class TetradMatrix implements TetradSerializable {
         return new TetradMatrix(0, 0);
     }
 
+    public TetradMatrix sqrt() {
+        SingularValueDecomposition svd = new SingularValueDecomposition(getRealMatrix());
+        RealMatrix U = svd.getU();
+        RealMatrix V = svd.getV();
+        double[] s = svd.getSingularValues();
+        for (int i = 0; i < s.length; i++) s[i] = 1.0 / s[i];
+        RealMatrix S = new BlockRealMatrix(s.length, s.length);
+        for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
+        RealMatrix sqrt = U.multiply(S).multiply(V);
+        return new TetradMatrix(sqrt);
+    }
+
     public int rows() {
         return m;
     }

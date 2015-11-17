@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -34,8 +33,6 @@ import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.GaussianPower;
-//import no.uib.cipr.matrix.*;
-//import no.uib.cipr.matrix.TetradMatrix;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.optim.InitialGuess;
@@ -53,12 +50,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
+import static java.lang.Math.cosh;
+import static java.lang.Math.log;
+
 /**
  * The code used within this class is largely Gustave Lacerda's, which corresponds to his essay, Discovering Cyclic
  * Causal Models by Independent Components Analysis. The code models the LiNG algorithm.
- * <p>
- * Created by IntelliJ IDEA. User: Mark Whitehouse Date: Nov 28, 2008 Time: 8:03:29 PM To change this template use File
- * | Settings | File Templates.
  */
 public class Ling implements GraphGroupSearch {
 
@@ -83,7 +80,7 @@ public class Ling implements GraphGroupSearch {
      */
     private DataSet dataSet;
 
-    private double pruneFactor = 1.0;
+//    private double pruneFactor = 1.0;
 
     //=============================CONSTRUCTORS============================//
 
@@ -118,7 +115,6 @@ public class Ling implements GraphGroupSearch {
      */
     public Ling(Graph g, int samples) {
         numSamples = samples;
-        //get the graph shown in Example 1
         GraphWithParameters graphWP = new GraphWithParameters(g);
         makeDataSet(graphWP);
     }
@@ -153,7 +149,6 @@ public class Ling implements GraphGroupSearch {
                 graphs = findCandidateModels(dataSet.getVariables(), W, true);
             } else {
                 double zeta = 1;
-                double epsilon = threshold;
 
                 final List<Mapping> allMappings = createMappings(null, null, dataSet.getNumColumns());
 
@@ -264,8 +259,7 @@ public class Ling implements GraphGroupSearch {
 
     }
 
-    public double ngFullData(int rowIndex, TetradMatrix dataSetTetradMatrix, double[][] W) {
-        TetradMatrix data = dataSetTetradMatrix;
+    public double ngFullData(int rowIndex, TetradMatrix data, double[][] W) {
         double[] col = new double[data.rows()];
 
         for (int i = 0; i < data.rows(); i++) {
@@ -289,7 +283,14 @@ public class Ling implements GraphGroupSearch {
             return Double.NaN;
         }
 
-        return new AndersonDarlingTest(col).getASquaredStar();
+        double sum = 0;
+
+        for (int i = 0; i < col.length; i++) {
+            sum += log(cosh(col[i]));
+        }
+
+        return sum / col.length;
+//        return new AndersonDarlingTest(col).getASquaredStar();
     }
 
     private double[] removeNaN(double[] data) {
@@ -342,18 +343,10 @@ public class Ling implements GraphGroupSearch {
         for (int i = 0; i < numNodes; i++) {
             for (int j = 0; j < numNodes; j++) {
                 if (i == j) continue;
-
-//                Node v1 = nodes.get(i);
-//                Node v2 = nodes.get(j);
-//
-//                Node w1 = graph.getNode(v1.getName());
-//                Node w2 = graph.getNode(v2.getName());
-
-//                if (graph.isAdjacentTo(w1, w2)) {
                 allMappings.add(new Mapping(i, j));
-//                }
             }
         }
+
         return allMappings;
     }
 
@@ -483,7 +476,7 @@ public class Ling implements GraphGroupSearch {
                 System.out.println("Covariance matrix is not positive definite.");
             }
 
-            TetradMatrix sqrt = sqrt(new TetradMatrix(cov));
+            TetradMatrix sqrt = cov.sqrt();;
 
             TetradMatrix I = TetradMatrix.identity(rows);
             TetradMatrix AI = I.copy();
@@ -565,7 +558,7 @@ public class Ling implements GraphGroupSearch {
                 means.set(i, j, themean);
                 stds.set(i, j, thestd);
 
-                if (Math.abs(themean) < getPruneFactor() * thestd) {
+                if (Math.abs(themean) < threshold * thestd) {//  getPruneFactor() * thestd) {
                     BFinal.set(i, j, 0);
                 } else {
                     BFinal.set(i, j, themean);
@@ -573,47 +566,11 @@ public class Ling implements GraphGroupSearch {
             }
         }
 
-//
-//        diststdfinal = mean(diststdpieces,2);
-//        cfinal = mean(cpieces,2);
-//
-//        % Finally, rename all the variables to the way we defined them
-//        % in the function definition
-//
-//        Bpruned = Bfinal;
-//        stde = diststdfinal;
-//        ci = cfinal;
-
         return BFinal;
     }
 
-    public int[] iperm(int[] k) {
-        int[] ik = new int[k.length];
-
-        for (int i = 0; i < k.length; i++) {
-            for (int j = 0; j < k.length; j++) {
-                if (k[i] == j) {
-                    ik[j] = i;
-                }
-            }
-        }
-
-        return ik;
-    }
-
-    private TetradMatrix sqrt(TetradMatrix m) {
-        SingularValueDecomposition svd = new SingularValueDecomposition(m.getRealMatrix());
-        RealMatrix U = svd.getU();
-        RealMatrix V = svd.getV();
-        double[] s = svd.getSingularValues();
-        for (int i = 0; i < s.length; i++) s[i] = 1.0 / s[i];
-        RealMatrix S = new BlockRealMatrix(s.length, s.length);
-        for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
-        RealMatrix sqrt = U.multiply(S).multiply(S);
-        return new TetradMatrix(sqrt);
-    }
-
     private void makeDataSet(GraphWithParameters graphWP) {
+
         //define the "Gaussian-squared" distribution
         Distribution gp2 = new GaussianPower(2);
 
@@ -839,8 +796,8 @@ public class Ling implements GraphGroupSearch {
         List<PermutationMatrixPair> permutations = new Vector<PermutationMatrixPair>();
 
         if (approximateZeros) {
-            setInsignificantEntriesToZero(ica_W);
-//            pruneEdgesByResampling(dataSet.getDoubleData());
+//            setInsignificantEntriesToZero(ica_W);
+            pruneEdgesByResampling(dataSet.getDoubleData());
             ica_W = removeZeroRowsAndCols(ica_W, vars);
         }
 
@@ -1083,9 +1040,9 @@ public class Ling implements GraphGroupSearch {
 
     }
 
-    public double getPruneFactor() {
-        return pruneFactor;
-    }
+//    public double getPruneFactor() {
+//        return pruneFactor;
+//    }
 
     /**
      * This small class is used to store graph permutations. It contains basic methods for adding and accessing graphs.
