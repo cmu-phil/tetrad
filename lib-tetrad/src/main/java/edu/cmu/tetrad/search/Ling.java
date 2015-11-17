@@ -21,13 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.EigenvalueDecomposition;
-import cern.jet.math.PlusMult;
 import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataSet;
@@ -37,11 +31,13 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.LingUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.GaussianPower;
-import no.uib.cipr.matrix.*;
-import no.uib.cipr.matrix.Matrix;
+//import no.uib.cipr.matrix.*;
+//import no.uib.cipr.matrix.TetradMatrix;
 import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.PointValuePair;
@@ -60,7 +56,7 @@ import java.util.Vector;
 /**
  * The code used within this class is largely Gustave Lacerda's, which corresponds to his essay, Discovering Cyclic
  * Causal Models by Independent Components Analysis. The code models the LiNG algorithm.
- * <p/>
+ * <p>
  * Created by IntelliJ IDEA. User: Mark Whitehouse Date: Nov 28, 2008 Time: 8:03:29 PM To change this template use File
  * | Settings | File Templates.
  */
@@ -130,8 +126,6 @@ public class Ling implements GraphGroupSearch {
     //==============================PUBLIC METHODS=========================//
 
     /**
-     * @return the DataSet that was either provided to the class or the DataSet that the class generated.
-     *
      * @return DataSet   Returns a dataset of the data used by the algorithm.
      */
     public DataSet getData() {
@@ -142,13 +136,13 @@ public class Ling implements GraphGroupSearch {
      * The search method is used to process LiNG. Call search when you want to run the algorithm.
      */
     public StoredGraphs search() {
-        DoubleMatrix2D A, W;
+        TetradMatrix A, W;
         StoredGraphs graphs = new StoredGraphs();
 
         try {
             long sTime = (new Date()).getTime();
 
-            boolean  fastIca = true;
+            boolean fastIca = true;
 
             if (fastIca) {
                 W = getWFastIca();
@@ -157,16 +151,15 @@ public class Ling implements GraphGroupSearch {
 
                 //this is the heart of our method:
                 graphs = findCandidateModels(dataSet.getVariables(), W, true);
-            }
-            else {
+            } else {
                 double zeta = 1;
                 double epsilon = threshold;
 
                 final List<Mapping> allMappings = createMappings(null, null, dataSet.getNumColumns());
 
-                double[][] _w = estimateW(new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray()),
+                double[][] _w = estimateW(new TetradMatrix(dataSet.getDoubleData().toArray()),
                         dataSet.getNumColumns(), -zeta, zeta, allMappings);
-                W = new DenseDoubleMatrix2D(_w);
+                W = new TetradMatrix(_w);
 
                 System.out.println("W = " + W);
 
@@ -183,13 +176,13 @@ public class Ling implements GraphGroupSearch {
     }
 
 
-    private double[][] estimateW(DoubleMatrix2D matrix, int numNodes, double min, double max, List<Mapping> allMappings) {
+    private double[][] estimateW(TetradMatrix matrix, int numNodes, double min, double max, List<Mapping> allMappings) {
         double[][] W = initializeW(numNodes);
         maxMappings(matrix, min, max, W, allMappings);
         return W;
     }
 
-    private void maxMappings(final DoubleMatrix2D matrix, final double min,
+    private void maxMappings(final TetradMatrix matrix, final double min,
                              final double max, final double[][] W, final List<Mapping> allMappings) {
 
         final int numNodes = W.length;
@@ -226,7 +219,7 @@ public class Ling implements GraphGroupSearch {
         }
     }
 
-    private void optimizeNonGaussianity(final int rowIndex, final DoubleMatrix2D dataSetMatrix,
+    private void optimizeNonGaussianity(final int rowIndex, final TetradMatrix dataSetTetradMatrix,
                                         final double[][] W, List<Mapping> allMappings) {
         final List<Mapping> mappings = mappingsForRow(rowIndex, allMappings);
 
@@ -237,7 +230,7 @@ public class Ling implements GraphGroupSearch {
                     W[mapping.getI()][mapping.getJ()] = values[i];
                 }
 
-                double v = ngFullData(rowIndex, dataSetMatrix, W);
+                double v = ngFullData(rowIndex, dataSetTetradMatrix, W);
 
                 if (Double.isNaN(v)) return 10000;
 
@@ -265,14 +258,14 @@ public class Ling implements GraphGroupSearch {
 
             for (int k = 0; k < mappings.size(); k++) {
                 Mapping mapping = mappings.get(k);
-                 W[mapping.getI()][mapping.getJ()] = values[k];
+                W[mapping.getI()][mapping.getJ()] = values[k];
             }
         }
 
     }
 
-    public double ngFullData(int rowIndex, DoubleMatrix2D dataSetMatrix, double[][] W) {
-        DoubleMatrix2D data = dataSetMatrix;
+    public double ngFullData(int rowIndex, TetradMatrix dataSetTetradMatrix, double[][] W) {
+        TetradMatrix data = dataSetTetradMatrix;
         double[] col = new double[data.rows()];
 
         for (int i = 0; i < data.rows(); i++) {
@@ -357,7 +350,7 @@ public class Ling implements GraphGroupSearch {
 //                Node w2 = graph.getNode(v2.getName());
 
 //                if (graph.isAdjacentTo(w1, w2)) {
-                    allMappings.add(new Mapping(i, j));
+                allMappings.add(new Mapping(i, j));
 //                }
             }
         }
@@ -382,11 +375,11 @@ public class Ling implements GraphGroupSearch {
         }
     }
 
-    private DoubleMatrix2D getWFastIca() {
-        DoubleMatrix2D A;
-        DoubleMatrix2D W;// Using this Fast ICA to get the logging.
-        DoubleMatrix2D data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
-        FastIca fastIca = new FastIca(data.copy(), data.columns());
+    private TetradMatrix getWFastIca() {
+        TetradMatrix A;
+        TetradMatrix W;// Using this Fast ICA to get the logging.
+        TetradMatrix data = new TetradMatrix(dataSet.getDoubleData().toArray());
+        FastIca fastIca = new FastIca(new DenseDoubleMatrix2D(data.toArray()), data.columns());
         fastIca.setVerbose(false);
         fastIca.setAlgorithmType(FastIca.DEFLATION);
         fastIca.setFunction(FastIca.LOGCOSH);
@@ -394,12 +387,8 @@ public class Ling implements GraphGroupSearch {
         fastIca.setMaxIterations(500);
         fastIca.setAlpha(1.0);
         FastIca.IcaResult result = fastIca.findComponents();
-//            DoubleMatrix2D w = result.getW();
-//            DoubleMatrix2D k = result.getK();
-//
-//            W = new Algebra().times(k, w).transpose();
-        A = result.getA().viewDice();
-        W = LingUtils.inverse(A);
+        A = new TetradMatrix(result.getA().viewDice().toArray());
+        W = A.inverse();
         return W;
     }
 
@@ -424,17 +413,17 @@ public class Ling implements GraphGroupSearch {
     /**
      * This is the method used in Patrik's code.
      */
-    public DoubleMatrix2D pruneEdgesByResampling(DoubleMatrix2D data) {
-        Matrix X = new DenseMatrix(data.viewDice().toArray());
+    public TetradMatrix pruneEdgesByResampling(TetradMatrix data) {
+        TetradMatrix X = new TetradMatrix(data.transpose().toArray());
 
         int npieces = 10;
-        int cols = X.numColumns();
-        int rows = X.numRows();
+        int cols = X.columns();
+        int rows = X.rows();
         int piecesize = (int) Math.floor(cols / npieces);
 
-        List<Matrix> bpieces = new ArrayList<Matrix>();
-        List<no.uib.cipr.matrix.Vector> diststdpieces = new ArrayList<no.uib.cipr.matrix.Vector>();
-        List<no.uib.cipr.matrix.Vector> cpieces = new ArrayList<no.uib.cipr.matrix.Vector>();
+        List<TetradMatrix> bpieces = new ArrayList<TetradMatrix>();
+        List<TetradVector> diststdpieces = new ArrayList<TetradVector>();
+        List<TetradVector> cpieces = new ArrayList<TetradVector>();
 
         for (int p = 0; p < npieces; p++) {
 
@@ -446,7 +435,7 @@ public class Ling implements GraphGroupSearch {
             int[] range = range(p0, p1);
 
 
-            Matrix Xp = X;
+            TetradMatrix Xp = X;
 
 //          % Remember to subract out the mean
 //          Xpm = mean(Xp,2);
@@ -455,75 +444,61 @@ public class Ling implements GraphGroupSearch {
 //          % Calculate covariance matrix
 //          cov = (Xp*Xp')/size(Xp,2);
 
-            double[] Xpm = new double[rows];
+            TetradVector Xpm = new TetradVector(rows);
 
             for (int i = 0; i < rows; i++) {
                 double sum = 0.0;
 
-                for (int j = 0; j < Xp.numColumns(); j++) {
+                for (int j = 0; j < Xp.columns(); j++) {
                     sum += Xp.get(i, j);
                 }
 
-                Xpm[i] = sum / Xp.numColumns();
+                Xpm.set(i, sum / Xp.columns());
             }
 
             for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < Xp.numColumns(); j++) {
-                    Xp.set(i, j, Xp.get(i, j) - Xpm[i]);
+                for (int j = 0; j < Xp.columns(); j++) {
+                    Xp.set(i, j, Xp.get(i, j) - Xpm.get(i));
                 }
             }
 
 
-            Matrix XpT = new DenseMatrix(Xp.numColumns(), rows);
-            Matrix Xpt = Xp.transpose(XpT);
+            TetradMatrix Xpt = Xp.transpose();
 
-            Matrix cov = new DenseMatrix(rows, rows);
-            cov = Xp.mult(Xpt, cov);
+            TetradMatrix cov = Xp.times(Xpt);
 
-            for (int i = 0; i < cov.numRows(); i++) {
-                for (int j = 0; j < cov.numColumns(); j++) {
-                    cov.set(i, j, cov.get(i, j) / Xp.numColumns());
+            for (int i = 0; i < cov.rows(); i++) {
+                for (int j = 0; j < cov.columns(); j++) {
+                    cov.set(i, j, cov.get(i, j) / Xp.columns());
                 }
             }
 
 //          % Do QL decomposition on the inverse square root of cov
 //          [Q,L] = tridecomp(cov^(-0.5),'ql');
 
-            boolean posDef = LingUtils.isPositiveDefinite(new DenseDoubleMatrix2D(Matrices.getArray(cov)));
+            boolean posDef = LingUtils.isPositiveDefinite(cov);
 //            TetradLogger.getInstance().log("lingamDetails","Positive definite = " + posDef);
 
             if (!posDef) {
                 System.out.println("Covariance matrix is not positive definite.");
             }
 
-            DenseMatrix sqrt;
+            TetradMatrix sqrt = sqrt(new TetradMatrix(cov));
 
-            try {
-                sqrt = sqrt(new DenseMatrix(cov));
-            } catch (NotConvergedException e) {
-                throw new RuntimeException(e);
-            }
+            TetradMatrix I = TetradMatrix.identity(rows);
+            TetradMatrix AI = I.copy();
+            TetradMatrix invSqrt = sqrt.inverse();
 
-            DenseMatrix I = Matrices.identity(rows);
-            DenseMatrix AI = I.copy();
-            DenseMatrix invSqrt;
-
-            try {
-                invSqrt = new DenseMatrix(sqrt.solve(I, AI));
-            } catch (MatrixSingularException e) {
-                throw new RuntimeException("Singular matrix.", e);
-            }
-
-            QL ql = QL.factorize(invSqrt);
-            Matrix L = ql.getL();
+            QRDecomposition qr = new QRDecomposition(invSqrt.getRealMatrix());
+            RealMatrix R = qr.getR();
 
 //          % The estimated disturbance-stds are one over the abs of the diag of L
 //          newestdisturbancestd = 1./diag(abs(L));
 
-            no.uib.cipr.matrix.Vector newestdisturbancestd = new DenseVector(rows);
+            TetradVector newestdisturbancestd = new TetradVector(rows);
 
             for (int t = 0; t < rows; t++) {
-                newestdisturbancestd.set(t, 1.0 / Math.abs(L.get(t, t)));
+                newestdisturbancestd.set(t, 1.0 / Math.abs(R.getEntry(t, t)));
             }
 
 //          % Normalize rows of L to unit diagonal
@@ -531,18 +506,17 @@ public class Ling implements GraphGroupSearch {
 //
             for (int s = 0; s < rows; s++) {
                 for (int t = 0; t <= s; t++) {
-                    L.set(s, t, L.get(s, t) / L.get(s, s));
+                    R.setEntry(s, t, R.getEntry(s, t) / R.getEntry(s, s));
                 }
             }
 
 //          % Calculate corresponding B
 //          bnewest = eye(dims)-L;
 
-            Matrix bnewest = Matrices.identity(rows);
-            bnewest = bnewest.add(-1.0, L);
+            TetradMatrix bnewest = TetradMatrix.identity(rows);
+            bnewest = bnewest.minus(new TetradMatrix(R));
 
-            no.uib.cipr.matrix.Vector cnewest = new DenseVector(rows);
-            cnewest = L.mult(new DenseVector(Xpm), cnewest);
+            TetradVector cnewest = new TetradMatrix(R).times(Xpm);
 
             bpieces.add(bnewest);
             diststdpieces.add(newestdisturbancestd);
@@ -565,10 +539,10 @@ public class Ling implements GraphGroupSearch {
 //          end
 //        end
 
-        Matrix means = new DenseMatrix(rows, rows);
-        Matrix stds = new DenseMatrix(rows, rows);
+        TetradMatrix means = new TetradMatrix(rows, rows);
+        TetradMatrix stds = new TetradMatrix(rows, rows);
 
-        Matrix BFinal = new DenseMatrix(rows, rows);
+        TetradMatrix BFinal = new TetradMatrix(rows, rows);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < rows; j++) {
@@ -610,7 +584,7 @@ public class Ling implements GraphGroupSearch {
 //        stde = diststdfinal;
 //        ci = cfinal;
 
-        return new DenseDoubleMatrix2D(Matrices.getArray(BFinal));
+        return BFinal;
     }
 
     public int[] iperm(int[] k) {
@@ -627,23 +601,16 @@ public class Ling implements GraphGroupSearch {
         return ik;
     }
 
-    private DenseMatrix sqrt(DenseMatrix m) throws NotConvergedException {
-        EVD eig = new EVD(m.numRows());
-        eig.factor(m);
-        double[] r = eig.getRealEigenvalues();
-        Matrix v = eig.getLeftEigenvectors();
-
-        Matrix d = new DenseMatrix(m.numRows(), m.numRows());
-        for (int i = 0; i < d.numRows(); i++) d.set(i, i, Math.sqrt(Math.abs(r[i])));
-
-        Matrix vd = new DenseMatrix(m.numRows(), m.numRows());
-        vd = v.mult(d, vd);
-        Matrix vT = new DenseMatrix(m.numRows(), m.numRows());
-        vT = v.transpose(vT);
-
-        DenseMatrix prod = new DenseMatrix(m.numRows(), m.numRows());
-        vd.mult(vT, prod);
-        return prod;
+    private TetradMatrix sqrt(TetradMatrix m) {
+        SingularValueDecomposition svd = new SingularValueDecomposition(m.getRealMatrix());
+        RealMatrix U = svd.getU();
+        RealMatrix V = svd.getV();
+        double[] s = svd.getSingularValues();
+        for (int i = 0; i < s.length; i++) s[i] = 1.0 / s[i];
+        RealMatrix S = new BlockRealMatrix(s.length, s.length);
+        for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
+        RealMatrix sqrt = U.multiply(S).multiply(S);
+        return new TetradMatrix(sqrt);
     }
 
     private void makeDataSet(GraphWithParameters graphWP) {
@@ -651,13 +618,13 @@ public class Ling implements GraphGroupSearch {
         Distribution gp2 = new GaussianPower(2);
 
         //the coefficients of the error terms  (here, all 1s)
-        DoubleMatrix1D errorCoefficients = getErrorCoeffsIdentity(graphWP.getGraph().getNumNodes());
+        TetradVector errorCoefficients = getErrorCoeffsIdentity(graphWP.getGraph().getNumNodes());
 
         //generate data from the SEM
-        DoubleMatrix2D inVectors = simulateCyclic(graphWP, errorCoefficients, numSamples, gp2);
+        TetradMatrix inVectors = simulateCyclic(graphWP, errorCoefficients, numSamples, gp2);
 
         //reformat it
-        dataSet = ColtDataSet.makeContinuousData(graphWP.getGraph().getNodes(), new TetradMatrix(inVectors.viewDice().toArray()));
+        dataSet = ColtDataSet.makeContinuousData(graphWP.getGraph().getNodes(), new TetradMatrix(inVectors.transpose().toArray()));
     }
 
     private int[] range(int i1, int i2) {
@@ -673,8 +640,8 @@ public class Ling implements GraphGroupSearch {
      * @param n The number of variables.
      * @return StoredGraphs
      */
-    private static DoubleMatrix1D getErrorCoeffsIdentity(int n) {
-        DoubleMatrix1D errorCoefficients = new DenseDoubleMatrix1D(n);
+    private static TetradVector getErrorCoeffsIdentity(int n) {
+        TetradVector errorCoefficients = new TetradVector(n);
         for (int i = 0; i < n; i++) {
             errorCoefficients.set(i, 1);
         }
@@ -683,13 +650,13 @@ public class Ling implements GraphGroupSearch {
 
     // used to produce dataset if one is not provided as the input to the constructor
 
-    private static DoubleMatrix2D simulateCyclic(GraphWithParameters dwp, DoubleMatrix1D errorCoefficients, int n, Distribution distribution) {
-        DoubleMatrix2D reducedForm = reducedForm(dwp);
+    private static TetradMatrix simulateCyclic(GraphWithParameters dwp, TetradVector errorCoefficients, int n, Distribution distribution) {
+        TetradMatrix reducedForm = reducedForm(dwp);
 
-        DoubleMatrix2D vectors = new DenseDoubleMatrix2D(dwp.getGraph().getNumNodes(), n);
+        TetradMatrix vectors = new TetradMatrix(dwp.getGraph().getNumNodes(), n);
         for (int j = 0; j < n; j++) {
-            DoubleMatrix1D vector = simulateReducedForm(reducedForm, errorCoefficients, distribution);
-            vectors.viewColumn(j).assign(vector);
+            TetradVector vector = simulateReducedForm(reducedForm, errorCoefficients, distribution);
+            vectors.assignColumn(j, vector);
         }
         return vectors;
     }
@@ -697,20 +664,20 @@ public class Ling implements GraphGroupSearch {
     // graph matrix is B
     // mixing matrix (reduced form) is A
 
-    private static DoubleMatrix2D reducedForm(GraphWithParameters graph) {
-        DoubleMatrix2D graphMatrix = new DenseDoubleMatrix2D(graph.getGraphMatrix().getDoubleData().toArray());
+    private static TetradMatrix reducedForm(GraphWithParameters graph) {
+        TetradMatrix graphMatrix = new TetradMatrix(graph.getGraphMatrix().getDoubleData().toArray());
         int n = graphMatrix.rows();
-//        DoubleMatrix2D identityMinusGraphMatrix = MatrixUtils.linearCombination(MatrixUtils.identityMatrix(n), 1, graphMatrix, -1);
-        DoubleMatrix2D identityMinusGraphMatrix = DoubleFactory2D.dense.identity(n).assign(graphMatrix, PlusMult.plusMult(-1));
-        return LingUtils.inverse(identityMinusGraphMatrix);
+//        TetradMatrix identityMinusGraphTetradMatrix = TetradMatrixUtils.linearCombination(TetradMatrixUtils.identityTetradMatrix(n), 1, graphTetradMatrix, -1);
+        TetradMatrix identityMinusGraphTetradMatrix = TetradMatrix.identity(n).minus(graphMatrix);
+        return identityMinusGraphTetradMatrix.inverse();
     }
 
     //check against model in which: A =  ..... / (1 - xyzw)
 
-    private static DoubleMatrix1D simulateReducedForm(DoubleMatrix2D reducedForm, DoubleMatrix1D errorCoefficients, Distribution distr) {
+    private static TetradVector simulateReducedForm(TetradMatrix reducedForm, TetradVector errorCoefficients, Distribution distr) {
         int n = reducedForm.rows();
-        DoubleMatrix1D vector = new DenseDoubleMatrix1D(n);
-        DoubleMatrix1D samples = new DenseDoubleMatrix1D(n);
+        TetradVector vector = new TetradVector(n);
+        TetradVector samples = new TetradVector(n);
 
         for (int j = 0; j < n; j++) { //sample from each noise term
             double sample = distr.nextRandom();
@@ -732,9 +699,9 @@ public class Ling implements GraphGroupSearch {
 
     //given the W matrix, outputs the list of SEMs consistent with the observed distribution.
 
-    private StoredGraphs findCandidateModels(List<Node> variables, DoubleMatrix2D matrixW, boolean approximateZeros) {
+    private StoredGraphs findCandidateModels(List<Node> variables, TetradMatrix matrixW, boolean approximateZeros) {
 
-        DoubleMatrix2D normalizedZldW;
+        TetradMatrix normalizedZldW;
         List<PermutationMatrixPair> zldPerms;
 
         StoredGraphs gs = new StoredGraphs();
@@ -753,13 +720,13 @@ public class Ling implements GraphGroupSearch {
 
             normalizedZldW = LingUtils.normalizeDiagonal(zldPerm.getMatrixW());
             // Note: add method to deal with this data
-            zldPerm.setMatrixBhat(computeBhatMatrix(normalizedZldW, variables)); //B~ = I - W~
+            zldPerm.setMatrixBhat(computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
             TetradMatrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
-            boolean isStableMatrix = allEigenvaluesAreSmallerThanOneInModulus(new DenseDoubleMatrix2D(doubleData.toArray()));
+            boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(doubleData.toArray()));
             GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
 
             gs.addGraph(graph.getGraph());
-            gs.addStable(isStableMatrix);
+            gs.addStable(isStableTetradMatrix);
             gs.addData(zldPerm.getMatrixBhat());
 
         }
@@ -797,10 +764,10 @@ public class Ling implements GraphGroupSearch {
         return gs;
     }
 
-    private StoredGraphs findCandidateModel(List<Node> variables, DoubleMatrix2D matrixW, boolean approximateZeros) {
+    private StoredGraphs findCandidateModel(List<Node> variables, TetradMatrix matrixW, boolean approximateZeros) {
 
-        DoubleMatrix2D normalizedZldW;
-        List<PermutationMatrixPair> zldPerms;
+        TetradMatrix normalizedZldW;
+        List<PermutationMatrixPair > zldPerms;
 
         StoredGraphs gs = new StoredGraphs();
 
@@ -815,19 +782,19 @@ public class Ling implements GraphGroupSearch {
         System.out.println("Calculated zeroless diagonal permutations.");
 
         //for each W~, compute a candidate B, and score it
-        for (PermutationMatrixPair zldPerm : zldPerms) {
+        for (PermutationMatrixPair  zldPerm : zldPerms) {
             TetradLogger.getInstance().log("lingDetails", "" + zldPerm);
             System.out.println(zldPerm);
 
             normalizedZldW = LingUtils.normalizeDiagonal(zldPerm.getMatrixW());
             // Note: add method to deal with this data
-            zldPerm.setMatrixBhat(computeBhatMatrix(normalizedZldW, variables)); //B~ = I - W~
+            zldPerm.setMatrixBhat(computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
             TetradMatrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
-            boolean isStableMatrix = allEigenvaluesAreSmallerThanOneInModulus(new DenseDoubleMatrix2D(doubleData.toArray()));
+            boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(doubleData.toArray()));
             GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
 
             gs.addGraph(graph.getGraph());
-            gs.addStable(isStableMatrix);
+            gs.addStable(isStableTetradMatrix);
             gs.addData(zldPerm.getMatrixBhat());
 
         }
@@ -866,8 +833,8 @@ public class Ling implements GraphGroupSearch {
     }
 
 
-    private List<PermutationMatrixPair> zerolessDiagonalPermutations(DoubleMatrix2D ica_W, boolean approximateZeros,
-                                                                     List<Node> vars, DataSet dataSet) {
+    private List<PermutationMatrixPair> zerolessDiagonalPermutations(TetradMatrix ica_W, boolean approximateZeros,
+                                                                           List<Node> vars, DataSet dataSet) {
 
         List<PermutationMatrixPair> permutations = new Vector<PermutationMatrixPair>();
 
@@ -878,7 +845,7 @@ public class Ling implements GraphGroupSearch {
         }
 
         //find assignments
-        DoubleMatrix2D mat = ica_W.viewDice();
+        TetradMatrix mat = ica_W.transpose();
         //returns all zeroless-diagonal column-permutations
 
         System.out.println("AAA");
@@ -889,9 +856,9 @@ public class Ling implements GraphGroupSearch {
 
         //for each assignment, add the corresponding permutation to 'permutations'
         for (List<Integer> permutation : nRookAssignments) {
-            DoubleMatrix2D matrixW = permuteRows(ica_W, permutation).viewDice();
-            PermutationMatrixPair permMatrixPair = new PermutationMatrixPair(permutation, matrixW, vars);
-            permutations.add(permMatrixPair);
+            TetradMatrix matrixW = permuteRows(ica_W, permutation).transpose();
+            PermutationMatrixPair permTetradMatrixPair = new PermutationMatrixPair(permutation, matrixW);
+            permutations.add(permTetradMatrixPair);
         }
 
         System.out.println("CCC");
@@ -899,10 +866,10 @@ public class Ling implements GraphGroupSearch {
         return permutations;
     }
 
-    private List<PermutationMatrixPair> zerolessDiagonalPermutation(DoubleMatrix2D ica_W, boolean approximateZeros,
-                                                                    List<Node> vars, DataSet dataSet) {
+    private List<PermutationMatrixPair > zerolessDiagonalPermutation(TetradMatrix ica_W, boolean approximateZeros,
+                                                                          List<Node> vars, DataSet dataSet) {
 
-        List<PermutationMatrixPair> permutations = new Vector<PermutationMatrixPair>();
+        List<PermutationMatrixPair > permutations = new Vector<PermutationMatrixPair >();
 
         if (approximateZeros) {
             setInsignificantEntriesToZero(ica_W);
@@ -910,21 +877,21 @@ public class Ling implements GraphGroupSearch {
             ica_W = removeZeroRowsAndCols(ica_W, vars);
         }
 
-//        List<PermutationMatrixPair> zldPerms = new ArrayList<PermutationMatrixPair>();
+//        List<PermutationMatrixPair > zldPerms = new ArrayList<PermutationMatrixPair >();
 
         List<Integer> perm = new ArrayList<Integer>();
 
         for (int i = 0; i < vars.size(); i++) perm.add(i);
 
-        DoubleMatrix2D matrixW = ica_W.viewDice();
+        TetradMatrix matrixW = ica_W.transpose();
 
-        PermutationMatrixPair pair = new PermutationMatrixPair(perm, matrixW, vars);
+        PermutationMatrixPair pair = new PermutationMatrixPair(perm, matrixW);
 
         permutations.add(pair);
 
 
 //        //find assignments
-//        DoubleMatrix2D mat = ica_W.transpose();
+//        TetradMatrix mat = ica_W.transpose();
 //        //returns all zeroless-diagonal column-permutations
 //
 //        System.out.println("AAA");
@@ -935,9 +902,9 @@ public class Ling implements GraphGroupSearch {
 //
 //        //for each assignment, add the corresponding permutation to 'permutations'
 //        for (List<Integer> permutation : nRookAssignments) {
-//            DoubleMatrix2D matrixW = permuteRows(ica_W, permutation).transpose();
-//            PermutationMatrixPair permMatrixPair = new PermutationMatrixPair(permutation, matrixW, vars);
-//            permutations.add(permMatrixPair);
+//            TetradMatrix matrixW = permuteRows(ica_W, permutation).transpose();
+//            PermutationMatrixPair  permTetradMatrixPair = new PermutationMatrixPair (permutation, matrixW, vars);
+//            permutations.add(permTetradMatrixPair);
 //        }
 //
 //        System.out.println("CCC");
@@ -945,15 +912,15 @@ public class Ling implements GraphGroupSearch {
         return permutations;
     }
 
-    private DoubleMatrix2D removeZeroRowsAndCols(DoubleMatrix2D w, List<Node> variables) {
+    private TetradMatrix removeZeroRowsAndCols(TetradMatrix w, List<Node> variables) {
 
-        DoubleMatrix2D _W = w.copy();
+        TetradMatrix _W = w.copy();
         List<Node> _variables = new ArrayList<Node>(variables);
         List<Integer> remove = new ArrayList<Integer>();
 
         ROW:
         for (int i = 0; i < _W.rows(); i++) {
-            DoubleMatrix1D row = _W.viewRow(i);
+            TetradVector row = _W.getRow(i);
 
             for (int j = 0; j < row.size(); j++) {
                 if (row.get(j) != 0) continue ROW;
@@ -965,7 +932,7 @@ public class Ling implements GraphGroupSearch {
 
         COLUMN:
         for (int i = 0; i < _W.rows(); i++) {
-            DoubleMatrix1D col = _W.viewColumn(i);
+            TetradVector col = _W.getColumn(i);
 
             for (int j = 0; j < col.size(); j++) {
                 if (col.get(j) != 0) continue COLUMN;
@@ -987,14 +954,14 @@ public class Ling implements GraphGroupSearch {
             }
         }
 
-        w = w.viewSelection(rows, rows);
+        w = w.getSelection(rows, rows);
 
         return w;
     }
 
     // uses the thresholding criterion
 
-    private void setInsignificantEntriesToZero(DoubleMatrix2D mat) {
+    private void setInsignificantEntriesToZero(TetradMatrix mat) {
         int n = mat.rows();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -1015,8 +982,10 @@ public class Ling implements GraphGroupSearch {
         return l;
     }
 
-    private static List<List<Integer>> nRookColumnAssignments(DoubleMatrix2D mat, List<Integer> availableRows) {
+    private static List<List<Integer>> nRookColumnAssignments(TetradMatrix mat, List<Integer> availableRows) {
         List<List<Integer>> concats = new ArrayList<List<Integer>>();
+
+        System.out.println("mat = " + mat);
 
         int n = availableRows.size();
 
@@ -1027,7 +996,7 @@ public class Ling implements GraphGroupSearch {
                 if (mat.columns() > 1) {
                     Vector<Integer> newAvailableRows = (new Vector<Integer>(availableRows));
                     newAvailableRows.removeElement(currentRowIndex);
-                    DoubleMatrix2D subMat = mat.viewPart(0, 1, mat.rows(), mat.columns() - 1);
+                    TetradMatrix subMat = mat.getPart(0, 1, mat.rows(), mat.columns() - 1);
                     List<List<Integer>> allLater = nRookColumnAssignments(subMat, newAvailableRows);
 
                     for (List<Integer> laterPerm : allLater) {
@@ -1045,12 +1014,12 @@ public class Ling implements GraphGroupSearch {
         return concats;
     }
 
-    private static DoubleMatrix2D permuteRows(DoubleMatrix2D mat, List<Integer> permutation) {
-        DoubleMatrix2D permutedMat = mat.like();
+    private static TetradMatrix permuteRows(TetradMatrix mat, List<Integer> permutation) {
+        TetradMatrix permutedMat = mat.like();
 
         for (int j = 0; j < mat.rows(); j++) {
-            DoubleMatrix1D row = mat.viewRow(j);
-            permutedMat.viewRow(permutation.get(j)).assign(row);
+            TetradVector row = mat.getRow(j);
+            permutedMat.assignRow(permutation.get(j), row);
         }
 
         return permutedMat;
@@ -1058,24 +1027,24 @@ public class Ling implements GraphGroupSearch {
 
     //	B^ = I - W~'
 
-    private static DataSet computeBhatMatrix(DoubleMatrix2D normalizedZldW, List<Node> nodes) {//, List<Integer> perm) {
+    private static DataSet computeBhatTetradMatrix(TetradMatrix normalizedZldW, List<Node> nodes) {//, List<Integer> perm) {
         int size = normalizedZldW.rows();
-        DoubleMatrix2D mat = DoubleFactory2D.dense.identity(size).assign(normalizedZldW, PlusMult.plusMult(-1));
+        TetradMatrix mat = TetradMatrix.identity(size).minus(normalizedZldW);
         return ColtDataSet.makeContinuousData(nodes, new TetradMatrix(mat.toArray()));
     }
 
-    private static boolean allEigenvaluesAreSmallerThanOneInModulus(DoubleMatrix2D mat) {
+    private static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {
 
-        EigenvalueDecomposition dec = new EigenvalueDecomposition(mat);
-        DoubleMatrix1D realEigenvalues = dec.getRealEigenvalues();
-        DoubleMatrix1D imagEigenvalues = dec.getImagEigenvalues();
+        EigenDecomposition dec = new EigenDecomposition(mat.getRealMatrix());
+        double[] realEigenvalues = dec.getRealEigenvalues();
+        double[] imagEigenvalues = dec.getImagEigenvalues();
 
         double sum = 0.0;
 
 //        boolean allEigenvaluesSmallerThanOneInModulus = true;
-        for (int i = 0; i < realEigenvalues.size(); i++) {
-            double realEigenvalue = realEigenvalues.get(i);
-            double imagEigenvalue = imagEigenvalues.get(i);
+        for (int i = 0; i < realEigenvalues.length; i++) {
+            double realEigenvalue = realEigenvalues[i];
+            double imagEigenvalue = imagEigenvalues[i];
             double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
 //			double argument = Math.atan(imagEigenvalue/realEigenvalue);
 //			double modulusCubed = Math.pow(modulus, 3);
@@ -1120,7 +1089,7 @@ public class Ling implements GraphGroupSearch {
 
     /**
      * This small class is used to store graph permutations. It contains basic methods for adding and accessing graphs.
-     * <p/>
+     * <p>
      * It is likely that this class will move elesewhere once the role of algorithms that produce multiple graphs is
      * better defined.
      */
@@ -1153,8 +1122,6 @@ public class Ling implements GraphGroupSearch {
         }
 
         /**
-         * @return a specific graph at index g.
-         *
          * @param g The index of the graph to be returned
          * @return Returns a Graph
          */
@@ -1163,8 +1130,6 @@ public class Ling implements GraphGroupSearch {
         }
 
         /**
-         * @return the data for a specific graph at index d.
-         *
          * @param d The index of the graph for which the DataSet is being returned
          * @return Returns a DataSet
          */
@@ -1173,8 +1138,6 @@ public class Ling implements GraphGroupSearch {
         }
 
         /**
-         * @return whether or not the graph at index s is stable.
-         *
          * @param s The index of the graph at which to return the boolean stability information for the permutation
          * @return Returns the shriknig variable value for a specific graph.
          */

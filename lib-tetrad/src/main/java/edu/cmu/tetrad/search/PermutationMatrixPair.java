@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
@@ -30,18 +29,16 @@ import java.util.List;
 
 public class PermutationMatrixPair {
 
-    private DoubleMatrix2D matrixW;
+    private TetradMatrix matrixW;
     private DataSet matrixBhat;
-    private TetradMatrix matrixA;
     private List<Integer> permutation;
-    private List<Node> vars;
 
-    public PermutationMatrixPair(List<Integer> permutation, DoubleMatrix2D matrixW, List<Node> vars) {
+    public PermutationMatrixPair(List<Integer> permutation, TetradMatrix matrixW) {
         this.permutation = permutation;
         this.matrixW = matrixW;
     }
 
-    public DoubleMatrix2D getMatrixW() {
+    public TetradMatrix getMatrixW() {
         return matrixW;
     }
 
@@ -51,14 +48,6 @@ public class PermutationMatrixPair {
 
     public void setMatrixBhat(DataSet matrixBhat) {
         this.matrixBhat = matrixBhat;
-    }
-
-    public TetradMatrix getMatrixA() {
-        return matrixA;
-    }
-
-    public void setMatrixA(TetradMatrix matrixA) {
-        this.matrixA = matrixA;
     }
 
     public List<Integer> getPermutation() {
@@ -72,14 +61,6 @@ public class PermutationMatrixPair {
         buf.append("matrix W : " + matrixW);
 
         return buf.toString();
-    }
-
-    public void setMatrixW(DoubleMatrix2D matrixW) {
-        this.matrixW = matrixW;
-    }
-
-    public void setVars(List<Node> vars) {
-        this.vars = vars;
     }
 }
 

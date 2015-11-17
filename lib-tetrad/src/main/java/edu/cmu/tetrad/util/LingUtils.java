@@ -39,8 +39,8 @@ public class LingUtils {
     //
     //makes the diagonal 1, scaling the remainder of each row appropriately
     //pre: 'matrix' must be square
-    public static DoubleMatrix2D normalizeDiagonal(DoubleMatrix2D matrix) {
-        DoubleMatrix2D resultMatrix = matrix.copy();
+    public static TetradMatrix normalizeDiagonal(TetradMatrix matrix) {
+        TetradMatrix resultMatrix = matrix.copy();
         for (int i = 0; i < resultMatrix.rows(); i++) {
             double factor = 1 / resultMatrix.get(i, i);
             for (int j = 0; j < resultMatrix.columns(); j++)
@@ -162,8 +162,8 @@ public class LingUtils {
 //        return TetradAlgebra.ZERO.inverse(mat);
     }
 
-    public static boolean isPositiveDefinite(DoubleMatrix2D matrix) {
-        return new CholeskyDecomposition(matrix).isSymmetricPositiveDefinite();
+    public static boolean isPositiveDefinite(TetradMatrix matrix) {
+        return new CholeskyDecomposition(new DenseDoubleMatrix2D(matrix.toArray())).isSymmetricPositiveDefinite();
     }
 
 }
