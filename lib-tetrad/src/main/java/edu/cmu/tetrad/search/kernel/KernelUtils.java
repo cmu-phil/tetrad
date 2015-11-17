@@ -23,9 +23,7 @@ package edu.cmu.tetrad.search.kernel;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import no.uib.cipr.matrix.DenseMatrix;
-import no.uib.cipr.matrix.Matrix;
-import no.uib.cipr.matrix.UpperSymmPackMatrix;
+import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.List;
 
@@ -45,9 +43,9 @@ public class KernelUtils {
      * @param nodes   the variables to construct the Gram matrix for
      * @return
      */
-    public static UpperSymmPackMatrix constructGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
+    public static TetradMatrix constructGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
         int m = dataset.getNumRows();
-        UpperSymmPackMatrix gram = new UpperSymmPackMatrix(m);
+        TetradMatrix gram = new TetradMatrix(m, m);
         for (int k = 0; k < nodes.size(); k++) {
             Node node = nodes.get(k);
             int col = dataset.getColumn(node);
@@ -76,14 +74,12 @@ public class KernelUtils {
      * @param nodes   the variables to construct the Gram matrix for
      * @return
      */
-    public static Matrix constructCentralizedGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
+    public static TetradMatrix constructCentralizedGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
         int m = dataset.getNumRows();
-        UpperSymmPackMatrix gram = constructGramMatrix(kernels, dataset, nodes);
-        UpperSymmPackMatrix H = constructH(m);
-        Matrix KH = new DenseMatrix(m, m);
-        gram.mult(H, KH);
-        Matrix HKH = new DenseMatrix(m, m);
-        H.mult(KH, HKH);
+        TetradMatrix gram = constructGramMatrix(kernels, dataset, nodes);
+        TetradMatrix H = constructH(m);
+        TetradMatrix KH = gram.times(H);
+        TetradMatrix HKH = H.times(KH);
         return HKH;
     }
 
@@ -93,8 +89,8 @@ public class KernelUtils {
      * @param m the sample size
      * @return
      */
-    public static UpperSymmPackMatrix constructH(int m) {
-        UpperSymmPackMatrix H = new UpperSymmPackMatrix(m);
+    public static TetradMatrix constructH(int m) {
+        TetradMatrix H = new TetradMatrix(m, m);
         double od = -1.0 / (double) m;
         double d = od + 1;
         for (int i = 0; i < m; i++) {
@@ -117,13 +113,13 @@ public class KernelUtils {
      * @param nodes   the variables to construct the Gram matrix for
      * @return
      */
-    public static Matrix incompleteCholeskyGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes, double precision) {
+    public static TetradMatrix incompleteCholeskyGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes, double precision) {
         if (precision <= 0) {
             throw new IllegalArgumentException("Precision must be > 0");
         }
 
         int m = dataset.getNumRows();
-        Matrix G = new DenseMatrix(m, m);
+        TetradMatrix G = new TetradMatrix(m, m);
 
         // get diagonal of Gram matrix and initialize permutation vector
         double[] Dadv = new double[m];
@@ -185,7 +181,7 @@ public class KernelUtils {
         }
 
         // trim columns
-        Matrix Gm = new DenseMatrix(m, cols);
+        TetradMatrix Gm = new TetradMatrix(m, cols);
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < cols; j++) {
                 Gm.set(i, j, G.get(i, j));
@@ -208,7 +204,7 @@ public class KernelUtils {
 
     // computes the trace
 
-    private static double trace(Matrix A, int m) {
+    private static double trace(TetradMatrix A, int m) {
         double trace = 0.0;
         for (int i = 0; i < m; i++) {
             trace += A.get(i, i);

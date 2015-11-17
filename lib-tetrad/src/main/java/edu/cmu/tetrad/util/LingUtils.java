@@ -26,10 +26,6 @@ import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.CholeskyDecomposition;
-import no.uib.cipr.matrix.DenseMatrix;
-import no.uib.cipr.matrix.Matrices;
-import no.uib.cipr.matrix.Matrix;
-import no.uib.cipr.matrix.MatrixSingularException;
 
 /**
  * Sundry utilities for the Ling algorithm.
@@ -131,8 +127,8 @@ public class LingUtils {
     //Gustavo 7 May 2007
     //converts double[] into Colt matrices
     public static DoubleMatrix2D convertToColt(double[][] vectors) {
-        int m = vectors.length; //Matrix.getNumOfRows(vectors);
-        int n = vectors[0].length; //Matrix.getNumOfColumns(vectors);
+        int m = vectors.length; //TetradMatrix.getNumOfRows(vectors);
+        int n = vectors[0].length; //TetradMatrix.getNumOfColumns(vectors);
 
         DoubleMatrix2D mat = new DenseDoubleMatrix2D(m, n);
         for (int i = 0; i < m; i++)
@@ -142,24 +138,12 @@ public class LingUtils {
         return mat;
     }
 
-    public static DoubleMatrix2D inverse(DoubleMatrix2D mat) {
-        Matrix m = new DenseMatrix(mat.toArray());
+    public static TetradMatrix inverse(DoubleMatrix2D mat) {
+        TetradMatrix m = new TetradMatrix(mat.toArray());
 
-        DenseMatrix I = Matrices.identity(m.numRows());
-        DenseMatrix AI = I.copy();
-        Matrix inv;
+        TetradMatrix inv = m.inverse();
 
-        try {
-            inv = new DenseMatrix(m.solve(I, AI));
-        }
-        catch (MatrixSingularException e) {
-            throw new RuntimeException("Singular matrix.", e);
-        }
-
-        return new DenseDoubleMatrix2D(Matrices.getArray(inv));
-
-
-//        return TetradAlgebra.ZERO.inverse(mat);
+        return inv;
     }
 
     public static boolean isPositiveDefinite(TetradMatrix matrix) {

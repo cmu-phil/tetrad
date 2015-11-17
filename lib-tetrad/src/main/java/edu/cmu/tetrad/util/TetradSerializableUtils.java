@@ -27,7 +27,6 @@ import cern.jet.random.Beta;
 import cern.jet.random.BreitWigner;
 import cern.jet.random.Normal;
 import cern.jet.random.Uniform;
-import no.uib.cipr.matrix.Matrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
@@ -73,7 +72,7 @@ public class TetradSerializableUtils {
             String.class, Class.class, Date.class, Collection.class, Map.class,
             TetradMatrix.class, Document.class, Normal.class, Uniform.class,
             BreitWigner.class, Beta.class, TetradVector.class, Number.class,
-            Matrix.class, DoubleMatrix2D.class, DoubleMatrix1D.class, RealMatrix.class,
+            DoubleMatrix2D.class, DoubleMatrix1D.class, RealMatrix.class,
             NumberFormat.class, RealVector.class
     };
 

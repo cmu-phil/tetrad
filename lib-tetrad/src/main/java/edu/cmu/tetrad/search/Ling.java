@@ -52,6 +52,7 @@ import java.util.Vector;
 
 import static java.lang.Math.cosh;
 import static java.lang.Math.log;
+import static java.lang.Math.min;
 
 /**
  * The code used within this class is largely Gustave Lacerda's, which corresponds to his essay, Discovering Cyclic
@@ -483,7 +484,7 @@ public class Ling implements GraphGroupSearch {
             TetradMatrix invSqrt = sqrt.inverse();
 
             QRDecomposition qr = new QRDecomposition(invSqrt.getRealMatrix());
-            RealMatrix R = qr.getR();
+            RealMatrix r = qr.getR();
 
 //          % The estimated disturbance-stds are one over the abs of the diag of L
 //          newestdisturbancestd = 1./diag(abs(L));
@@ -491,15 +492,15 @@ public class Ling implements GraphGroupSearch {
             TetradVector newestdisturbancestd = new TetradVector(rows);
 
             for (int t = 0; t < rows; t++) {
-                newestdisturbancestd.set(t, 1.0 / Math.abs(R.getEntry(t, t)));
+                newestdisturbancestd.set(t, 1.0 / Math.abs(r.getEntry(t, t)));
             }
 
 //          % Normalize rows of L to unit diagonal
 //          L = L./(diag(L)*ones(1,dims));
 //
             for (int s = 0; s < rows; s++) {
-                for (int t = 0; t <= s; t++) {
-                    R.setEntry(s, t, R.getEntry(s, t) / R.getEntry(s, s));
+                for (int t = 0; t < min(s, cols); t++) {
+                    r.setEntry(s, t, r.getEntry(s, t) / r.getEntry(s, s));
                 }
             }
 
@@ -507,9 +508,9 @@ public class Ling implements GraphGroupSearch {
 //          bnewest = eye(dims)-L;
 
             TetradMatrix bnewest = TetradMatrix.identity(rows);
-            bnewest = bnewest.minus(new TetradMatrix(R));
+            bnewest = bnewest.minus(new TetradMatrix(r));
 
-            TetradVector cnewest = new TetradMatrix(R).times(Xpm);
+            TetradVector cnewest = new TetradMatrix(r).times(Xpm);
 
             bpieces.add(bnewest);
             diststdpieces.add(newestdisturbancestd);
@@ -829,8 +830,8 @@ public class Ling implements GraphGroupSearch {
         List<PermutationMatrixPair > permutations = new Vector<PermutationMatrixPair >();
 
         if (approximateZeros) {
-            setInsignificantEntriesToZero(ica_W);
-//            ica_W = pruneEdgesByResampling(ica_W);
+//            setInsignificantEntriesToZero(ica_W);
+            ica_W = pruneEdgesByResampling(ica_W);
             ica_W = removeZeroRowsAndCols(ica_W, vars);
         }
 

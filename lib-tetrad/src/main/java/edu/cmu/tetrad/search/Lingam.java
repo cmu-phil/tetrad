@@ -38,6 +38,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.*;
 
+import static java.lang.Math.min;
+
 /**
  * Implements the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen, and Kerminen, A linear nongaussian acyclic model for
  * causal discovery, JMLR 7 (2006). Largely follows the Matlab code.
@@ -483,7 +485,7 @@ public class Lingam {
 //          L = L./(diag(L)*ones(1,dims));
 //
             for (int s = 0; s < rows; s++) {
-                for (int t = 0; t < cols; t++) {
+                for (int t = 0; t < min(s, cols); t++) {
                     r.setEntry(s, t, r.getEntry(s, t) / r.getEntry(s, s));
                 }
             }

@@ -34,10 +34,8 @@ import edu.cmu.tetrad.search.kernel.KernelUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradMatrix;
 import junit.framework.TestCase;
-import no.uib.cipr.matrix.DenseMatrix;
-import no.uib.cipr.matrix.Matrices;
-import no.uib.cipr.matrix.Matrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,82 +86,60 @@ public class TestIndTestHsic extends TestCase {
             kernels.add(k);
         }
 
-        Matrix Kx = KernelUtils.constructGramMatrix(kernels, data, Arrays.asList(data.getVariable(0)));
-        Matrix Gx = KernelUtils.incompleteCholeskyGramMatrix(kernels, data, Arrays.asList(data.getVariable(0)), precision);
-        int nx = Gx.numColumns();
-        Matrix Gxt = new DenseMatrix(nx, m);
-        Gx.transpose(Gxt);
-        Matrix GGx = new DenseMatrix(m, m);
-        Gx.mult(Gxt, GGx);
+        TetradMatrix Kx = KernelUtils.constructGramMatrix(kernels, data, Arrays.asList(data.getVariable(0)));
+        TetradMatrix Gx = KernelUtils.incompleteCholeskyGramMatrix(kernels, data, Arrays.asList(data.getVariable(0)), precision);
+        int nx = Gx.columns();
+        TetradMatrix Gxt = Gx.transpose();
+        TetradMatrix GGx = Gx.times(Gxt);
         System.out.println("X true: " + trace(Kx, m));
         System.out.println("X appr: " + trace(GGx, m));
-        Matrix Ky = KernelUtils.constructGramMatrix(kernels, data, Arrays.asList(data.getVariable(1)));
-        Matrix Gy = KernelUtils.incompleteCholeskyGramMatrix(kernels, data, Arrays.asList(data.getVariable(1)), precision);
-        int ny = Gy.numColumns();
-        Matrix Gyt = new DenseMatrix(ny, m);
-        Gy.transpose(Gyt);
-        Matrix GGy = new DenseMatrix(m, m);
-        Gy.mult(Gyt, GGy);
+        TetradMatrix Ky = KernelUtils.constructGramMatrix(kernels, data, Arrays.asList(data.getVariable(1)));
+        TetradMatrix Gy = KernelUtils.incompleteCholeskyGramMatrix(kernels, data, Arrays.asList(data.getVariable(1)), precision);
+        int ny = Gy.columns();
+        TetradMatrix Gyt = Gy.transpose();
+        TetradMatrix GGy = Gy.times(Gyt);
         System.out.println("Y true: " + trace(Ky, m));
         System.out.println("Y appr: " + trace(GGy, m));
 
-        Matrix KxKy = new DenseMatrix(m, m);
-        Kx.mult(Ky, KxKy);
-        Matrix GxGy = new DenseMatrix(m, m);
-        GGx.mult(GGy, GxGy);
+        TetradMatrix KxKy = Kx.times(Ky);
+        TetradMatrix GxGy = GGx.times(GGy);
         System.out.println("XY true: " + trace(KxKy, m));
         System.out.println("XY appr: " + trace(GxGy, m));
-        Matrix H = KernelUtils.constructH(m);
-        Matrix HKx = new DenseMatrix(m, m);
-        H.mult(Kx, HKx);
-        Matrix HKxH = new DenseMatrix(m, m);
-        HKx.mult(H, HKxH);
-        Matrix HKy = new DenseMatrix(m, m);
-        H.mult(Ky, HKy);
-        Matrix HKyH = new DenseMatrix(m, m);
-        HKy.mult(H, HKyH);
-        Matrix HGx = new DenseMatrix(m, nx);
-        H.mult(Gx, HGx);
-        Matrix HGxt = new DenseMatrix(nx, m);
-        HGx.transpose(HGxt);
-        Matrix HGxH = new DenseMatrix(m, m);
-        HGx.mult(HGxt, HGxH);
-        Matrix HGy = new DenseMatrix(m, ny);
-        H.mult(Gy, HGy);
-        Matrix HGyt = new DenseMatrix(ny, m);
-        HGy.transpose(HGyt);
-        Matrix HGyH = new DenseMatrix(m, m);
-        HGy.mult(HGyt, HGyH);
-        Matrix HKxHHKyH = new DenseMatrix(m, m);
-        HKxH.mult(HKyH, HKxHHKyH);
-        Matrix HGxHHGyH = new DenseMatrix(m, m);
-        HGxH.mult(HGyH, HGxHHGyH);
+        TetradMatrix H = KernelUtils.constructH(m);
+        TetradMatrix HKx = H.times(Kx);
+        TetradMatrix HKxH = HKx.times(H);
+        TetradMatrix HKy = H.times(Ky);
+        TetradMatrix HKyH = HKy.times(H);
+        TetradMatrix HGx = H.times(Gx);
+        TetradMatrix HGxt = HGx.transpose();
+        TetradMatrix HGxH = HGx.times(HGxt);
+        TetradMatrix HGy = H.times(Gy);
+        TetradMatrix HGyt = HGy.transpose();
+        TetradMatrix HGyH = HGy.times(HGyt);
+        TetradMatrix HKxHHKyH = HKxH.times(HKyH);
+        TetradMatrix HGxHHGyH = HGxH.times(HGyH);
         System.out.println("HXHHYH True: " + trace(HKxHHKyH, m));
         System.out.println("HXHHYH Appr: " + trace(HGxHHGyH, m));
-        Matrix Kz = KernelUtils.constructGramMatrix(kernels, data, Arrays.asList(data.getVariable(2)));
-        Matrix Gz = KernelUtils.incompleteCholeskyGramMatrix(kernels, data, Arrays.asList(data.getVariable(2)), precision);
-        int nz = Gz.numColumns();
-        Matrix Gzt = new DenseMatrix(nz, m);
-        Gz.transpose(Gzt);
-        Matrix GGz = new DenseMatrix(m, m);
-        Gz.mult(Gzt, GGz);
+        TetradMatrix Kz = KernelUtils.constructGramMatrix(kernels, data, Arrays.asList(data.getVariable(2)));
+        TetradMatrix Gz = KernelUtils.incompleteCholeskyGramMatrix(kernels, data, Arrays.asList(data.getVariable(2)), precision);
+        int nz = Gz.columns();
+        TetradMatrix Gzt = Gz.transpose();
+        TetradMatrix GGz = Gz.times(Gzt);
         System.out.println("Z true: " + trace(Kz, m));
         System.out.println("Z appr: " + trace(GGz, m));
         // invert Kz
         double ep = 0.0001;
-        Matrix Kzep = Kz.copy();
+        TetradMatrix Kzep = Kz.copy();
         for (int i = 0; i < m; i++) {
             Kzep.set(i, i, Kzep.get(i, i) + ep);
         }
-        Matrix Kzinv = new DenseMatrix(m, m);
-        Kzep.solve(Matrices.identity(m), Kzinv);
+        TetradMatrix Kzinv = Kzep.inverse();
         System.out.println("Z-1 true: " + trace(Kzinv, m));
-        Matrix GGzep = GGz.copy();
+        TetradMatrix GGzep = GGz.copy();
         for (int i = 0; i < m; i++) {
             GGzep.set(i, i, GGzep.get(i, i) + ep);
         }
-        Matrix GGzinv = new DenseMatrix(m, m);
-        GGzep.solve(Matrices.identity(m), GGzinv);
+        TetradMatrix GGzinv = GGzep.inverse();
         System.out.println("Z-1 appr: " + trace(GGzinv, m));
     }
 
@@ -211,7 +187,7 @@ public class TestIndTestHsic extends TestCase {
         System.out.println("Fisher Z P-value: " + test2.getPValue());
     }
 
-    private static double trace(Matrix A, int m) {
+    private static double trace(TetradMatrix A, int m) {
         double trace = 0.0;
         for (int i = 0; i < m; i++) {
             trace += A.get(i, i);

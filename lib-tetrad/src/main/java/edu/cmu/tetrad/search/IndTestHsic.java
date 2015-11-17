@@ -32,9 +32,6 @@ import edu.cmu.tetrad.search.kernel.KernelUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
-import no.uib.cipr.matrix.DenseMatrix;
-import no.uib.cipr.matrix.Matrices;
-import no.uib.cipr.matrix.Matrix;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -187,9 +184,9 @@ public final class IndTestHsic implements IndependenceTest {
         }
 
         // consruct Gram matricces
-        Matrix Ky = null;
-        Matrix Kx = null;
-        Matrix Kz = null;
+        TetradMatrix Ky = null;
+        TetradMatrix Kx = null;
+        TetradMatrix Kz = null;
         // use incomplete Cholesky to approximate
         if (useIncompleteCholesky > 0) {
             Ky = KernelUtils.incompleteCholeskyGramMatrix(Arrays.asList(yKernel), this.dataSet, Arrays.asList(y), useIncompleteCholesky);
@@ -275,14 +272,14 @@ public final class IndTestHsic implements IndependenceTest {
                 zKernel.get(j).setDefaultBw(shuffleData, z.get(j));
             }
             // Gram matrices
-            Matrix Kyn = null;
+            TetradMatrix Kyn = null;
             if (useIncompleteCholesky > 0) {
                 Kyn = KernelUtils.incompleteCholeskyGramMatrix(Arrays.asList(yKernel), shuffleData, Arrays.asList(y), useIncompleteCholesky);
             } else {
                 Kyn = KernelUtils.constructCentralizedGramMatrix(Arrays.asList(yKernel), shuffleData, Arrays.asList(y));
 
             }
-            Matrix Kzn = null;
+            TetradMatrix Kzn = null;
             if (!z.isEmpty()) {
                 if (useIncompleteCholesky > 0) {
                     Kzn = KernelUtils.incompleteCholeskyGramMatrix(zKernel, shuffleData, z, useIncompleteCholesky);
@@ -336,9 +333,8 @@ public final class IndTestHsic implements IndependenceTest {
      * @param m  sample size
      * @return
      */
-    public double empiricalHSIC(Matrix Ky, Matrix Kx, int m) {
-        Matrix Kyx = new DenseMatrix(m, m);
-        Ky.mult(Kx, Kyx);
+    public double empiricalHSIC(TetradMatrix Ky, TetradMatrix Kx, int m) {
+        TetradMatrix Kyx = Ky.times(Kx);
         double empHSIC = 0.0;
         for (int i = 0; i < m; i++) {
             empHSIC += Kyx.get(i, i);
@@ -356,25 +352,19 @@ public final class IndTestHsic implements IndependenceTest {
      * @param m  sample size
      * @return
      */
-    public double empiricalHSICincompleteCholesky(Matrix Gy, Matrix Gx, int m) {
+    public double empiricalHSICincompleteCholesky(TetradMatrix Gy, TetradMatrix Gx, int m) {
         // centralized Choleksy
-        int ky = Gy.numColumns();
-        int kx = Gx.numColumns();
-        Matrix H = KernelUtils.constructH(m);
-        Matrix Gcy = new DenseMatrix(m, ky);
-        H.mult(Gy, Gcy);
-        Matrix Gcx = new DenseMatrix(m, kx);
-        H.mult(Gx, Gcx);
+        int ky = Gy.columns();
+        int kx = Gx.columns();
+        TetradMatrix H = KernelUtils.constructH(m);
+        TetradMatrix Gcy = H.times(Gy);
+        TetradMatrix Gcx = H.times(Gx);
 
         // multiply gram matrices
-        Matrix A = new DenseMatrix(ky, kx);
-        Matrix Gcyt = new DenseMatrix(ky, m);
-        Gcy.transpose(Gcyt);
-        Gcyt.mult(Gcx, A);
-        Matrix B = new DenseMatrix(m, kx);
-        Gcy.mult(A, B);
-        Matrix Gcxt = new DenseMatrix(kx, m);
-        Gcx.transpose(Gcxt);
+        TetradMatrix Gcyt = Gcy.transpose();
+        TetradMatrix A = Gcyt.times(Gcx);
+        TetradMatrix B = Gcy.times(A);
+        TetradMatrix Gcxt = Gcx.transpose();
         double empHSIC = 0.0;
         for (int i = 0; i < m; i++) {
             empHSIC += matrixProductEntry(B, Gcxt, i, i);
@@ -392,29 +382,24 @@ public final class IndTestHsic implements IndependenceTest {
      * @param m  sample size
      * @return
      */
-    private double empiricalHSIC(Matrix Ky, Matrix Kx, Matrix Kz, int m) {
-        Matrix Kyx = new DenseMatrix(m, m);
-        Ky.mult(Kx, Kyx);
-        Matrix Kyz = new DenseMatrix(m, m);
-        Ky.mult(Kz, Kyz);
-        Matrix Kzx = new DenseMatrix(m, m);
-        Kz.mult(Kx, Kzx);
-        Matrix Kzreg = Kz.copy();
+    private double empiricalHSIC(TetradMatrix Ky, TetradMatrix Kx, TetradMatrix Kz, int m) {
+        TetradMatrix Kyx = Ky.times(Kx);
+        TetradMatrix Kyz = Ky.times(Kz);
+        TetradMatrix Kzx = Kz.times(Kx);
+        TetradMatrix Kzreg = Kz.copy();
         for (int i = 0; i < m; i++) {
             double ent = (Kzreg.get(i, i) + this.regularizer);
             Kzreg.set(i, i, ent);
         }
-        Matrix A = new DenseMatrix(m, m);
-        Matrix I = Matrices.identity(m);
-        Kzreg.solve(I, A);
-        A.mult(A, Kzreg);
-        Matrix Kyzzregzx = new DenseMatrix(m, m);
-        Kyz.mult(Kzreg, A);
-        A.mult(Kzx, Kyzzregzx);
-        Matrix Kyzzregzxzzregz = Kyzzregzx.copy();
-        Kyzzregzx.mult(Kz, Kyzzregzxzzregz);
-        Kyzzregzxzzregz.mult(Kzreg, A);
-        A.mult(Kz, Kyzzregzxzzregz);
+        TetradMatrix A = Kzreg.inverse();
+        Kzreg = A.times(A);
+        TetradMatrix Kyzzregzx = new TetradMatrix(m, m);
+        A = Kyz.times(Kzreg);
+        Kyzzregzx = A.times(Kzx);
+        TetradMatrix Kyzzregzxzzregz = Kyzzregzx.copy();
+        Kyzzregzxzzregz = Kyzzregzx.times(Kz);
+        A = Kyzzregzxzzregz.times(Kzreg);
+        Kyzzregzxzzregz = A.times(Kz);
         // get trace
         double empHSIC = 0.0;
         for (int i = 0; i < m; i++) {
@@ -445,31 +430,26 @@ public final class IndTestHsic implements IndependenceTest {
      * @param m  sample size
      * @return
      */
-    public double empiricalHSICincompleteCholesky(Matrix Gy, Matrix Gx, Matrix Gz, int m) {
+    public double empiricalHSICincompleteCholesky(TetradMatrix Gy, TetradMatrix Gx, TetradMatrix Gz, int m) {
         // centralize Choleksy
-        int ky = Gy.numColumns();
-        int kx = Gx.numColumns();
-        int kz = Gz.numColumns();
+        int ky = Gy.columns();
+        int kx = Gx.columns();
+        int kz = Gz.columns();
 
-        Matrix H = KernelUtils.constructH(m);
-        Matrix Gcy = new DenseMatrix(m, ky);
-        H.mult(Gy, Gcy);
-        Matrix Gcx = new DenseMatrix(m, kx);
-        H.mult(Gx, Gcx);
-        Matrix Gcz = new DenseMatrix(m, kz);
-        H.mult(Gz, Gcz);
+        TetradMatrix H = KernelUtils.constructH(m);
+        TetradMatrix Gcy = H.times(Gy);
+        TetradMatrix Gcx = H.times(Gx);
+        TetradMatrix Gcz = H.times(Gz);
 
         // multiply gram matrices (first block)
-        Matrix A = new DenseMatrix(ky, kx);
-        Matrix Gcyt = new DenseMatrix(ky, m);
-        Gcy.transpose(Gcyt);
-        Gcyt.mult(Gcx, A);
-        Matrix B = new DenseMatrix(m, kx);
-        Gcy.mult(A, B);
-        Matrix Kyx = new DenseMatrix(m, m);
-        Matrix Gcxt = new DenseMatrix(kx, m);
-        Gcx.transpose(Gcxt);
-        B.mult(Gcxt, Kyx);
+        TetradMatrix A = new TetradMatrix(ky, kx);
+        TetradMatrix Gcyt = Gcy.transpose();
+        A = Gcyt.times(Gcx);
+        TetradMatrix B = Gcy.times(A);
+        TetradMatrix Kyx = new TetradMatrix(m, m);
+        TetradMatrix Gcxt = new TetradMatrix(kx, m);
+        Gcxt = Gcx.transpose();
+        Kyx = B.times(Gcxt);
         double empHSIC = 0.0;
         double xy = 0.0;
         for (int i = 0; i < m; i++) {
@@ -477,46 +457,33 @@ public final class IndTestHsic implements IndependenceTest {
         }
 
         // second block
-        Matrix Gytz = new DenseMatrix(ky, kz);
-        Gcyt.mult(Gcz, Gytz);
-        Matrix Gztx = new DenseMatrix(kz, kx);
-        Matrix Gczt = new DenseMatrix(kz, m);
-        Gcz.transpose(Gczt);
-        Gczt.mult(Gcx, Gztx);
-        Matrix Gztz = new DenseMatrix(kz, kz);
-        Gczt.mult(Gcz, Gztz);
-        Matrix Gztzr = Gztz.copy();
+        TetradMatrix Gytz = Gcyt.times(Gcz);
+        TetradMatrix Gczt = Gcz.transpose();
+        TetradMatrix Gztx = Gczt.times(Gcx);
+        TetradMatrix Gztz = Gczt.times(Gcz);
+        TetradMatrix Gztzr = Gztz.copy();
         for (int i = 0; i < kz; i++) {
             Gztzr.set(i, i, Gztz.get(i, i) + this.regularizer);
         }
-        Matrix ZI = new DenseMatrix(kz, kz);
         // invert matrix
-        Gztzr.solve(Matrices.identity(kz), ZI);
-        Matrix ZIzt = new DenseMatrix(kz, m);
-        ZI.mult(Gczt, ZIzt);
-        Matrix Gzr = Gcz.copy();
+        TetradMatrix ZI = Gztzr.inverse();
+        TetradMatrix ZIzt = ZI.times(Gczt);
+        TetradMatrix Gzr = Gcz.copy();
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < kz; j++) {
                 Gzr.set(i, j, Gcz.get(i, j) * (-1.0 / this.regularizer));
             }
         }
-        Matrix Zinv = new DenseMatrix(m, m);
-        Gzr.mult(ZIzt, Zinv);
+        TetradMatrix Zinv = Gzr.times(ZIzt);
         for (int i = 0; i < m; i++) {
             Zinv.set(i, i, Zinv.get(i, i) + (1.0 / this.regularizer));
         }
-        Matrix Gztzinv = new DenseMatrix(kz, m);
-        Gczt.mult(Zinv, Gztzinv);
-        Matrix Gzinvz = new DenseMatrix(m, kz);
-        Zinv.mult(Gcz, Gzinvz);
-        Matrix Gztinv2z = new DenseMatrix(kz, kz);
-        Gztzinv.mult(Gzinvz, Gztinv2z);
-        Matrix Gytzztzinv2z = new DenseMatrix(ky, kz);
-        Gytz.mult(Gztinv2z, Gytzztzinv2z);
-        Matrix Gytzztzinv2zztx = new DenseMatrix(ky, kx);
-        Gytzztzinv2z.mult(Gztx, Gytzztzinv2zztx);
-        Matrix Gyytzztzinv2zztx = new DenseMatrix(m, kx);
-        Gcy.mult(Gytzztzinv2zztx, Gyytzztzinv2zztx);
+        TetradMatrix Gztzinv = Gczt.times(Zinv);
+        TetradMatrix Gzinvz = Zinv.times(Gcz);
+        TetradMatrix Gztinv2z = Gztzinv.times(Gzinvz);
+        TetradMatrix Gytzztzinv2z = Gytz.times(Gztinv2z);
+        TetradMatrix Gytzztzinv2zztx = Gytzztzinv2z.times(Gztx);
+        TetradMatrix Gyytzztzinv2zztx = Gcy.times(Gytzztzinv2zztx);
         double second = 0.0;
         for (int i = 0; i < m; i++) {
             second += matrixProductEntry(Gyytzztzinv2zztx, Gcxt, i, i);
@@ -524,12 +491,9 @@ public final class IndTestHsic implements IndependenceTest {
         empHSIC -= 2 * second;
 
         // third block
-        Matrix Gxtz = new DenseMatrix(kx, kz);
-        Gcxt.mult(Gcz, Gxtz);
-        Matrix Gxtzztinv2z = new DenseMatrix(kx, kz);
-        Gxtz.mult(Gztinv2z, Gxtzztinv2z);
-        Matrix Gyytzztzinv2zztxxtzztinv2z = new DenseMatrix(m, kz);
-        Gyytzztzinv2zztx.mult(Gxtzztinv2z, Gyytzztzinv2zztxxtzztinv2z);
+        TetradMatrix Gxtz = Gcxt.times(Gcz);
+        TetradMatrix Gxtzztinv2z = Gxtz.times(Gztinv2z);
+        TetradMatrix Gyytzztzinv2zztxxtzztinv2z = Gyytzztzinv2zztx.times(Gxtzztinv2z);
         for (int i = 0; i < m; i++) {
             empHSIC += matrixProductEntry(Gyytzztzinv2zztxxtzztinv2z, Gczt, i, i);
         }
@@ -558,68 +522,50 @@ public final class IndTestHsic implements IndependenceTest {
      * @param m  sample size
      * @return
      */
-    public double empiricalHSICincompleteCholeskyOLD(Matrix Gy, Matrix Gx, Matrix Gz, int m) {
+    public double empiricalHSICincompleteCholeskyOLD(TetradMatrix Gy, TetradMatrix Gx, TetradMatrix Gz, int m) {
         // centralize Choleksy
-        int ky = Gy.numColumns();
-        int kx = Gx.numColumns();
-        int kz = Gz.numColumns();
+        int ky = Gy.columns();
+        int kx = Gx.columns();
+        int kz = Gz.columns();
 
-        Matrix H = KernelUtils.constructH(m);
-        Matrix Gcy = new DenseMatrix(m, ky);
-        H.mult(Gy, Gcy);
-        Matrix Gcx = new DenseMatrix(m, kx);
-        H.mult(Gx, Gcx);
-        Matrix Gcz = new DenseMatrix(m, kz);
-        H.mult(Gz, Gcz);
+        TetradMatrix H = KernelUtils.constructH(m);
+        TetradMatrix Gcy = H.times(Gy);
+        TetradMatrix Gcx = H.times(Gx);
+        TetradMatrix Gcz = H.times(Gz);
 
         // multiply gram matrices (first block)
-        Matrix A = new DenseMatrix(ky, kx);
-        Matrix Gcyt = new DenseMatrix(ky, m);
-        Gcy.transpose(Gcyt);
-        Gcyt.mult(Gcx, A);
-        Matrix B = new DenseMatrix(m, kx);
-        Gcy.mult(A, B);
-        Matrix Kyx = new DenseMatrix(m, m);
-        Matrix Gcxt = new DenseMatrix(kx, m);
-        Gcx.transpose(Gcxt);
-        B.mult(Gcxt, Kyx);
+        TetradMatrix Gcyt = Gcy.transpose();
+        TetradMatrix A = Gcyt.times(Gcx);
+        TetradMatrix B = Gcy.times(A);
+        TetradMatrix Gcxt = Gcx.transpose();
+        TetradMatrix Kyx = B.times(Gcxt);
         double empHSIC = 0.0;
+        
         double xy = 0.0;
-        for (int i = 0; i < m; i++) {
+        for (int i = 0; i < m; i++) {   
             empHSIC += matrixProductEntry(B, Gcxt, i, i);
         }
 
         // second block
-        Matrix Gytz = new DenseMatrix(ky, kz);
-        Gcyt.mult(Gcz, Gytz);
-        Matrix Gztx = new DenseMatrix(kz, kx);
-        Matrix Gczt = new DenseMatrix(kz, m);
-        Gcz.transpose(Gczt);
-        Gczt.mult(Gcx, Gztx);
-        Matrix Gztz = new DenseMatrix(kz, kz);
-        Gczt.mult(Gcz, Gztz);
-        Matrix Gztzztx = new DenseMatrix(kz, kx);
-        Gztz.mult(Gztx, Gztzztx);
-        Matrix Gytzztzztx = new DenseMatrix(ky, kx);
-        Gytz.mult(Gztzztx, Gytzztzztx);
-        Matrix Gyytzztzztx = new DenseMatrix(m, kx);
-        Gcy.mult(Gytzztzztx, Gyytzztzztx);
+        TetradMatrix Gytz = Gcyt.times(Gcz);
+        TetradMatrix Gztx = new TetradMatrix(kz, kx);
+        TetradMatrix Gczt = Gcz.transpose();
+        Gztx = Gczt.times(Gcx);
+        TetradMatrix Gztz = Gczt.times(Gcz);
+        TetradMatrix Gztzztx = Gztz.times(Gztx);
+        TetradMatrix Gytzztzztx = Gytz.times(Gztzztx);
+        TetradMatrix Gyytzztzztx = Gcy.times(Gytzztzztx);
         double second = 0.0;
         for (int i = 0; i < m; i++) {
             second += matrixProductEntry(Gyytzztzztx, Gcxt, i, i);
         }
-        Matrix Gztzr = Gztz.copy();
+        TetradMatrix Gztzr = Gztz.copy();
         for (int i = 0; i < kz; i++) {
             Gztzr.set(i, i, Gztz.get(i, i) + this.regularizer);
         }
-        Matrix ZI = new DenseMatrix(kz, kz);
-        // invert matrix
-        Gztzr.solve(Matrices.identity(kz), ZI);
-        //
-        Matrix GzGZI = new DenseMatrix(m, kz);
-        Gcz.mult(ZI, GzGZI);
-        Matrix GzGZIGzt = new DenseMatrix(m, m);
-        GzGZI.mult(Gczt, GzGZIGzt);
+        TetradMatrix ZI = Gztzr.inverse();
+        TetradMatrix GzGZI = Gcz.times(ZI);
+        TetradMatrix GzGZIGzt = GzGZI.times(Gczt);
         double inv = 0.0;
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < m; j++) {
@@ -634,51 +580,36 @@ public final class IndTestHsic implements IndependenceTest {
         }
         System.out.println("inv " + inv);
         inv = 0.0;
-        Matrix ZI2 = new DenseMatrix(m, m);
-        GzGZIGzt.mult(GzGZIGzt, ZI2);
+        TetradMatrix ZI2 = GzGZIGzt.times(GzGZIGzt);
         for (int i = 0; i < m; i++) {
             inv += ZI2.get(i, i);
         }
         System.out.println("inv " + inv);
-        Matrix Gyytz = new DenseMatrix(m, kz);
-        Gcy.mult(Gytz, Gyytz);
-        Matrix Gyytzzt = new DenseMatrix(m, m);
-        Gyytz.mult(Gczt, Gyytzzt);
-        Matrix Gzztx = new DenseMatrix(m, kx);
-        Gcz.mult(Gztx, Gzztx);
-        Matrix Gzztxxt = new DenseMatrix(m, m);
-        Gzztx.mult(Gcxt, Gzztxxt);
-        Matrix GyzZI = new DenseMatrix(m, m);
-        Gyytzzt.mult(ZI2, GyzZI);
-        Matrix GyzZIzx = new DenseMatrix(m, m);
-        GyzZI.mult(Gzztxxt, GyzZIzx);
+        TetradMatrix Gyytz = Gcy.times(Gytz);
+        TetradMatrix Gyytzzt = Gyytz.times(Gczt);
+        TetradMatrix Gzztx = Gcz.times(Gztx);
+        TetradMatrix Gzztxxt = Gzztx.times(Gcxt);
+        TetradMatrix GyzZI = Gyytzzt.times(ZI2);
+        TetradMatrix GyzZIzx = GyzZI.times(Gzztxxt);
         double sec = 0.0;
         for (int i = 0; i < m; i++) {
             sec += GyzZIzx.get(i, i);
         }
         System.out.println("sec " + sec);
         //
-        Matrix Gytzztz = new DenseMatrix(ky, kz);
-        Gytz.mult(Gztz, Gytzztz);
-        Matrix GytzztzZI = new DenseMatrix(ky, kz);
-        Gytzztz.mult(ZI, GytzztzZI);
-        Matrix GytzztzZIztzztx = new DenseMatrix(ky, kx);
-        GytzztzZI.mult(Gztzztx, GytzztzZIztzztx);
-        Matrix GyytzztzZIztzztx = new DenseMatrix(m, kx);
-        Gcy.mult(GytzztzZIztzztx, GyytzztzZIztzztx);
+        TetradMatrix Gytzztz = Gytz.times(Gztz);
+        TetradMatrix GytzztzZI = Gytzztz.times(ZI);
+        TetradMatrix GytzztzZIztzztx = GytzztzZI.times(Gztzztx);
+        TetradMatrix GyytzztzZIztzztx = Gcy.times(GytzztzZIztzztx);
         double s1 = 0.0;
         for (int i = 0; i < m; i++) {
             s1 += matrixProductEntry(GyytzztzZIztzztx, Gcxt, i, i);
         }
         second -= 2 * s1;
-        Matrix GZIztzztx = new DenseMatrix(kz, kx);
-        ZI.mult(Gztzztx, GZIztzztx);
-        Matrix GytzztzZIztz = new DenseMatrix(ky, kz);
-        GytzztzZI.mult(Gztz, GytzztzZIztz);
-        Matrix GytzztzZIztzZIztzztx = new DenseMatrix(ky, kx);
-        GytzztzZIztz.mult(GZIztzztx, GytzztzZIztzZIztzztx);
-        Matrix GyytzztzZIztzZIztzztx = new DenseMatrix(m, kx);
-        Gcy.mult(GytzztzZIztzZIztzztx, GyytzztzZIztzZIztzztx);
+        TetradMatrix GZIztzztx = ZI.times(Gztzztx);
+        TetradMatrix GytzztzZIztz = GytzztzZI.times(Gztz);
+        TetradMatrix GytzztzZIztzZIztzztx = GytzztzZIztz.times(GZIztzztx);
+        TetradMatrix GyytzztzZIztzZIztzztx = Gcy.times(GytzztzZIztzZIztzztx);
         for (int i = 0; i < m; i++) {
             second += matrixProductEntry(GyytzztzZIztzZIztzztx, Gcxt, i, i);
         }
@@ -686,24 +617,15 @@ public final class IndTestHsic implements IndependenceTest {
         empHSIC -= (2 / reg2) * second;
 
         // third block
-        Matrix Gxtz = new DenseMatrix(kx, kz);
-        Gcxt.mult(Gcz, Gxtz);
-        Matrix Gxtzztz = new DenseMatrix(kx, kz);
-        Gxtz.mult(Gztz, Gxtzztz);
-        Matrix Gxtzztzzt = new DenseMatrix(kx, m);
-        Gxtzztz.mult(Gczt, Gxtzztzzt);
-        Matrix GxtzztzZI = new DenseMatrix(kx, kz);
-        Gxtzztz.mult(ZI, GxtzztzZI);
-        Matrix GxtzztzZIztz = new DenseMatrix(kx, kz);
-        GxtzztzZI.mult(Gztz, GxtzztzZIztz);
-        Matrix GxtzztzZIztzzt = new DenseMatrix(kx, m);
-        GxtzztzZIztz.mult(Gczt, GxtzztzZIztzzt);
-        Matrix GxtzztzZIztzZI = new DenseMatrix(kx, kz);
-        GxtzztzZIztz.mult(ZI, GxtzztzZIztzZI);
-        Matrix GxtzztzZIztzZIztz = new DenseMatrix(kx, kz);
-        GxtzztzZIztzZI.mult(Gztz, GxtzztzZIztzZIztz);
-        Matrix GxtzztzZIztzZIztzzt = new DenseMatrix(kx, m);
-        GxtzztzZIztzZIztz.mult(Gczt, GxtzztzZIztzZIztzzt);
+        TetradMatrix Gxtz = Gcxt.times(Gcz);
+        TetradMatrix Gxtzztz = Gxtz.times(Gztz);
+        TetradMatrix Gxtzztzzt = Gxtzztz.times(Gczt);
+        TetradMatrix GxtzztzZI = Gxtzztz.times(ZI);
+        TetradMatrix GxtzztzZIztz = GxtzztzZI.times(Gztz);
+        TetradMatrix GxtzztzZIztzzt = GxtzztzZIztz.times(Gczt);
+        TetradMatrix GxtzztzZIztzZI = GxtzztzZIztz.times(ZI);
+        TetradMatrix GxtzztzZIztzZIztz = GxtzztzZIztzZI.times(Gztz);
+        TetradMatrix GxtzztzZIztzZIztzzt = GxtzztzZIztzZIztz.times(Gczt);
         double third = 0.0;
         for (int i = 0; i < m; i++) {
             third += matrixProductEntry(GyytzztzZIztzztx, Gxtzztzzt, i, i);
@@ -923,15 +845,15 @@ public final class IndTestHsic implements IndependenceTest {
         return this.dataSet.getNumRows();
     }
 
-    private double matrixProductEntry(Matrix X, Matrix Y, int i, int j) {
+    private double matrixProductEntry(TetradMatrix X, TetradMatrix Y, int i, int j) {
         double entry = 0.0;
-        for (int k = 0; k < X.numColumns(); k++) {
+        for (int k = 0; k < X.columns(); k++) {
             entry += X.get(i, k) * Y.get(k, j);
         }
         return entry;
     }
 
-    private static double trace(Matrix A, int m) {
+    private static double trace(TetradMatrix A, int m) {
         double trace = 0.0;
         for (int i = 0; i < m; i++) {
             trace += A.get(i, i);
