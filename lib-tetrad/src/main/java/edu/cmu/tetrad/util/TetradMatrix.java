@@ -166,7 +166,11 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public TetradVector times(TetradVector v) {
-        double[] y = new double[v.size()];
+        if (v.size() != apacheData.getColumnDimension()) {
+            throw new IllegalArgumentException("Mismatched dimensions.");
+        }
+
+        double[] y = new double[apacheData.getRowDimension()];
 
         for (int i = 0; i < apacheData.getRowDimension(); i++) {
             double sum = 0.0;
@@ -516,6 +520,18 @@ public class TetradMatrix implements TetradSerializable {
 
     public RealMatrix getRealMatrix() {
         return apacheData;
+    }
+
+    public void assign(TetradMatrix matrix) {
+        if (apacheData.getRowDimension() != matrix.rows() || apacheData.getColumnDimension() != matrix.columns()) {
+            throw new IllegalArgumentException("Mismatched matrix size.");
+        }
+
+        for (int i = 0; i < apacheData.getRowDimension(); i++) {
+            for (int j = 0; j < apacheData.getColumnDimension(); j++) {
+                apacheData.setEntry(i, j, matrix.get(i, j));
+            }
+        }
     }
 }
 

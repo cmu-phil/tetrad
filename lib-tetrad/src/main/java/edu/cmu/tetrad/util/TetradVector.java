@@ -122,6 +122,12 @@ public class TetradVector implements TetradSerializable {
 
         return MatrixUtils.equals(v.toArray(), this.toArray());
     }
+
+    public void assign(double value) {
+        for (int i = 0; i < data.getDimension(); i++) {
+            data.setEntry(i, value);
+        }
+    }
 }
 
 

@@ -373,7 +373,7 @@ public class Ling implements GraphGroupSearch {
         TetradMatrix A;
         TetradMatrix W;// Using this Fast ICA to get the logging.
         TetradMatrix data = new TetradMatrix(dataSet.getDoubleData().toArray());
-        FastIca fastIca = new FastIca(new DenseDoubleMatrix2D(data.toArray()), data.columns());
+        FastIca fastIca = new FastIca(data, data.columns());
         fastIca.setVerbose(false);
         fastIca.setAlgorithmType(FastIca.DEFLATION);
         fastIca.setFunction(FastIca.LOGCOSH);
@@ -381,7 +381,7 @@ public class Ling implements GraphGroupSearch {
         fastIca.setMaxIterations(500);
         fastIca.setAlpha(1.0);
         FastIca.IcaResult result = fastIca.findComponents();
-        A = new TetradMatrix(result.getA().viewDice().toArray());
+        A = new TetradMatrix(result.getA().transpose().toArray());
         W = A.inverse();
         return W;
     }
@@ -954,7 +954,7 @@ public class Ling implements GraphGroupSearch {
                 if (mat.columns() > 1) {
                     Vector<Integer> newAvailableRows = (new Vector<Integer>(availableRows));
                     newAvailableRows.removeElement(currentRowIndex);
-                    TetradMatrix subMat = mat.getPart(0, 1, mat.rows(), mat.columns() - 1);
+                    TetradMatrix subMat = mat.getPart(0, mat.rows() - 1, 1, mat.columns() - 2);
                     List<List<Integer>> allLater = nRookColumnAssignments(subMat, newAvailableRows);
 
                     for (List<Integer> laterPerm : allLater) {

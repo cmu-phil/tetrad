@@ -30,7 +30,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,8 +58,8 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
-     * @see TetradSerializableUtils
+//     * @see edu.cmu.TestSerialization
+//     * @see TetradSerializableUtils
      */
     public static GlassoRunner serializableInstance() {
         return new GlassoRunner(DataWrapper.serializableInstance(),

@@ -21,13 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix1D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.jet.math.PlusMult;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -38,6 +31,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.*;
 
+import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
 /**
@@ -45,7 +39,6 @@ import static java.lang.Math.min;
  * causal discovery, JMLR 7 (2006). Largely follows the Matlab code.
  *
  * @author Gustavo Lacerda
- * @author Joseph Ramsey
  */
 public class Lingam {
     private double pruneFactor = 1.0;
@@ -53,22 +46,22 @@ public class Lingam {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+//    private TetradLogger logger = TetradLogger.getInstance();
 
     //================================CONSTRUCTORS==========================//
 
     /**
      * Constructs a new LiNGAM algorithm with the given alpha level (used for pruning).
      */
-    public Lingam() {
-    }
+    public Lingam() {}
 
     public Graph search(DataSet data) {
-        DoubleMatrix2D X = new DenseDoubleMatrix2D(data.getDoubleData().toArray());
+        TetradMatrix X = data.getDoubleData();
         List<Node> nodes = data.getVariables();
 
         EstimateResult result = estimate(X);
-        TetradMatrix bHat = pruneEdgesByResampling(X, result.getK());
+        int[] k = result.getK();
+        TetradMatrix bHat = pruneEdgesByResampling(X, k);
 
         Graph graph = new EdgeListGraph(nodes);
 
@@ -80,28 +73,63 @@ public class Lingam {
             }
         }
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        System.out.println("graph Returning this graph: " + graph);
 
         return graph;
     }
 
     //================================PUBLIC METHODS========================//
 
-    public EstimateResult estimate(DoubleMatrix2D X) {
-        DoubleMatrix2D W = calcWFastIca(X);
+    private EstimateResult estimate(TetradMatrix X) {
+        FastIca fastIca = new FastIca(X, 20);
+        fastIca.setVerbose(true);
+        fastIca.setAlgorithmType(FastIca.DEFLATION);
+        fastIca.setFunction(FastIca.LOGCOSH);
+        fastIca.setTolerance(1e-20);
+        FastIca.IcaResult result = fastIca.findComponents();
+        TetradMatrix w = result.getW();
+        TetradMatrix k = result.getK();
+
+        TetradMatrix W = k.times(w.transpose());
         System.out.println("W = " + W);
 
         TetradLogger.getInstance().log("lingamDetails", "\nW " + W);
 
+
+//        PermutationGenerator gen = new PermutationGenerator(W.columns());
+//        int[] perm;
+//        int[] rowp = new int[5];
+//        double maxSum = -1.0;
+//
+//        while ((perm = gen.next()) != null) {
+//            double sum = 0.0;
+//
+//            for (int i = 0; i < W.rows(); i++) {
+//                for (int j = 0; j < i; j++) {
+//                    sum += abs(W.get(perm[i], perm[j]));
+//                }
+//            }
+//
+//            if (sum > maxSum) {
+//                maxSum = sum;
+//                rowp = Arrays.copyOf(perm, perm.length);
+//            }
+//        }
+
+
+
         // The method that calls assign() twice could be a problem for the
         // negative coefficients
-        DoubleMatrix2D S = W.copy();
-        S.assign(cern.jet.math.Functions.abs);
+        TetradMatrix S = W.copy();
 
-        S.assign(cern.jet.math.Functions.inv);
+        for (int i = 0; i < S.rows(); i++) {
+            for (int j = 0; j < S.columns(); j++) {
+                S.set(i, j, 1.0 / abs(S.get(i, j)));
+            }
+        }
 
         //this is an n x 2 matrix, i.e. a list of index pairs
-        int[][] assignment = Hungarian.hgAlgorithm(S.viewDice().toArray(), "min");
+        int[][] assignment = Hungarian.hgAlgorithm(S.toArray(), "min");
 
         int[] rowp = new int[assignment.length];
 
@@ -111,23 +139,23 @@ public class Lingam {
 
         TetradLogger.getInstance().log("lingamDetails", "\nrowp = ");
 
-        for (int row : rowp) {
-            TetradLogger.getInstance().log("lingamDetails", row + "\t");
-        }
+//        for (int row : rowp) {
+//            System.out.println("lingamDetails " + row + "\t");
+//        }
 
-        DoubleMatrix2D Wp = W.viewSelection(rowp, range(0, W.columns() - 1));
+        TetradMatrix Wp = W.getSelection(rowp, rowp);//range(0, W.columns() - 1));
 
-        TetradLogger.getInstance().log("lingamDetails", "\nWp = " + Wp);
+        System.out.println("lingamDetails Wp = " + Wp);
 
-        DoubleMatrix1D estdisturbancesstd = new DenseDoubleMatrix1D(Wp.rows());
+//        TetradVector estdisturbancesstd = new TetradVector(Wp.rows());
+//
+//        for (int i = 0; i < Wp.rows(); i++) {
+//            estdisturbancesstd.set(i, 1.0 / abs(Wp.get(i, i)));
+//        }
 
-        for (int i = 0; i < Wp.rows(); i++) {
-            estdisturbancesstd.set(i, 1.0 / Math.abs(Wp.get(i, i)));
-        }
+        System.out.println("lingamDetails Wp = " + Wp);
 
-        TetradLogger.getInstance().log("lingamDetails", "\nWp = " + Wp);
-
-        DoubleMatrix1D diag = DoubleFactory2D.dense.diagonal(Wp);
+        TetradVector diag = Wp.diag();
 
         for (int i = 0; i < Wp.rows(); i++) {
             for (int j = 0; j < Wp.columns(); j++) {
@@ -135,14 +163,13 @@ public class Lingam {
             }
         }
 
-        TetradLogger.getInstance().log("lingamDetails", "\nWp = " + Wp);
+        System.out.println("lingamDetails Wp = " + Wp);
 
-        DoubleMatrix2D Best = DoubleFactory2D.dense.identity(Wp.rows());
-        Best = Best.assign(Wp, PlusMult.plusMult(-1));
+        TetradMatrix Best = TetradMatrix.identity(Wp.rows()).minus(Wp);
 
-        TetradLogger.getInstance().log("lingamDetails", "\nBest + " + Best);
+        System.out.println("lingamDetails Best " + Best);
 
-        DoubleMatrix1D Xm = new DenseDoubleMatrix1D(X.columns());
+        TetradVector Xm = new TetradVector(X.columns());
 
         for (int j = 0; j < X.columns(); j++) {
             double sum = 0.0;
@@ -157,48 +184,36 @@ public class Lingam {
             Xm.set(j, mean);
         }
 
-        DoubleMatrix1D cest = new Algebra().mult(Wp, Xm);
+//        TetradVector cest = Wp.times(Xm);
+//
+//        System.out.println("lingamDetails cest = " + cest);
 
-        TetradLogger.getInstance().log("lingamDetails", "cest = " + cest);
+//        StlPruneResult result1 = stlPrune(Best);
+//
+//        TetradMatrix bestCausal = result1.getBestcausal();
+//        int[] causalperm = result1.getCausalperm();
+//
+//        System.out.println("lingamDetails Best causal " + bestCausal);
+//        System.out.println("lingamDetails causalperm = " + Arrays.toString(causalperm));
+//
+//        int[] icausal = iperm(causalperm);
+//
+//        for (int i = 0; i < bestCausal.rows(); i++) {
+//            for (int j = i + 1; j < bestCausal.columns(); j++) {
+//                bestCausal.set(i, j, 0);
+//            }
+//        }
+//
+//        System.out.println("lingamDetails bestCausal = " + bestCausal);
+//
+//        TetradMatrix B = bestCausal.getSelection(icausal, icausal).copy();
+//
+//
+//        System.out.println("lingamDetails B = " + B);
+//
+//        System.out.println("causal perm = " + Arrays.toString(causalperm));
 
-        StlPruneResult result1 = stlPrune(Best);
-
-        DoubleMatrix2D bestCausal = result1.getBestcausal();
-        int[] causalperm = result1.getCausalperm();
-
-        TetradLogger.getInstance().log("lingamDetails", "\nBest causal " + bestCausal);
-        TetradLogger.getInstance().log("lingamDetails", "\ncausalperm = " + Arrays.toString(causalperm));
-
-        int[] icausal = iperm(causalperm);
-
-        for (int i = 0; i < bestCausal.rows(); i++) {
-            for (int j = i + 1; j < bestCausal.columns(); j++) {
-                bestCausal.set(i, j, 0);
-            }
-        }
-
-        TetradLogger.getInstance().log("lingamDetails", "\nbestCausal = " + bestCausal);
-
-        DoubleMatrix2D B = bestCausal.viewSelection(icausal, icausal).copy();
-
-
-        TetradLogger.getInstance().log("lingamDetails", "B = " + B);
-
-        return new EstimateResult(
-                causalperm);
-    }
-
-    private DoubleMatrix2D calcWFastIca(DoubleMatrix2D X) {
-        FastIca fastIca = new FastIca(X.copy(), X.columns());
-        fastIca.setVerbose(true);
-//        fastIca.setAlgorithmType(FastIca.DEFLATION);
-//        fastIca.setFunction(FastIca.LOGCOSH);
-//        fastIca.setTolerance(1e-20);
-        FastIca.IcaResult result = fastIca.findComponents();
-        DoubleMatrix2D w = result.getW();
-        DoubleMatrix2D k = result.getK();
-
-        return new Algebra().mult(k, w).viewDice();
+        return new EstimateResult(rowp);
     }
 
     public double getPruneFactor() {
@@ -226,15 +241,15 @@ public class Lingam {
     }
 
     private static class StlPruneResult {
-        private DoubleMatrix2D Bestcausal;
+        private TetradMatrix Bestcausal;
         private int[] causalperm;
 
-        public StlPruneResult(DoubleMatrix2D Bestcausal, int[] causalPerm) {
+        public StlPruneResult(TetradMatrix Bestcausal, int[] causalPerm) {
             this.Bestcausal = Bestcausal;
             this.causalperm = causalPerm;
         }
 
-        public DoubleMatrix2D getBestcausal() {
+        public TetradMatrix getBestcausal() {
             return Bestcausal;
         }
 
@@ -243,7 +258,7 @@ public class Lingam {
         }
     }
 
-    private StlPruneResult stlPrune(DoubleMatrix2D bHat) {
+    private StlPruneResult stlPrune(TetradMatrix bHat) {
         int m = bHat.rows();
 
         LinkedList<Entry> entries = getEntries(bHat);
@@ -251,7 +266,7 @@ public class Lingam {
         // Sort entries by absolute value.
         java.util.Collections.sort(entries);
 
-        DoubleMatrix2D bHat2 = bHat.copy();
+        TetradMatrix bHat2 = bHat.copy();
 //
         int numUpperTriangle = m * (m + 1) / 2;
         int numTotal = m * m;
@@ -267,7 +282,7 @@ public class Lingam {
             int[] permutation = algorithmB(bHat);
 
             if (permutation != null) {
-                DoubleMatrix2D Bestcausal = permute(permutation, bHat2);
+                TetradMatrix Bestcausal = permute(permutation, bHat2);
 
                 return new StlPruneResult(Bestcausal, permutation);
             }
@@ -279,11 +294,11 @@ public class Lingam {
         throw new IllegalArgumentException("No permutation was found.");
     }
 
-    private DoubleMatrix2D permute(int[] permutation, DoubleMatrix2D data) {
-        return data.viewSelection(permutation, permutation);
+    private TetradMatrix permute(int[] permutation, TetradMatrix data) {
+        return data.getSelection(permutation, permutation);
     }
 
-    private LinkedList<Entry> getEntries(DoubleMatrix2D mat) {
+    private LinkedList<Entry> getEntries(TetradMatrix mat) {
         LinkedList<Entry> entries = new LinkedList<Entry>();
 
         for (int i = 0; i < mat.rows(); i++) {
@@ -313,8 +328,8 @@ public class Lingam {
          * @see java.lang.Comparable#compareTo(java.lang.Object)
          */
         public int compareTo(Entry entry) {
-            double thisVal = Math.abs(value);
-            double entryVal = Math.abs(entry.value);
+            double thisVal = abs(value);
+            double entryVal = abs(entry.value);
             return (new Double(thisVal).compareTo(entryVal));
         }
 
@@ -323,7 +338,7 @@ public class Lingam {
         }
     }
 
-    public int[] algorithmB(DoubleMatrix2D mat) {
+    public int[] algorithmB(TetradMatrix mat) {
         List<Integer> removedIndices = new ArrayList<Integer>();
         List<Integer> permutation = new ArrayList<Integer>();
 
@@ -336,7 +351,7 @@ public class Lingam {
                     continue;
                 }
 
-                if (zeroesInNewColumns(mat.viewRow(i), removedIndices)) {
+                if (zeroesInNewColumns(mat.getRow(i), removedIndices)) {
                     allZerosRow = i;
                     break;
                 }
@@ -360,7 +375,7 @@ public class Lingam {
         return _permutation;
     }
 
-    private boolean zeroesInNewColumns(DoubleMatrix1D vec, List<Integer> removedIndices) {
+    private boolean zeroesInNewColumns(TetradVector vec, List<Integer> removedIndices) {
         for (int i = 0; i < vec.size(); i++) {
             if (vec.get(i) != 0 && !removedIndices.contains(i)) {
                 return false;
@@ -373,7 +388,7 @@ public class Lingam {
     /**
      * This is the method used in Patrik's code.
      */
-    public TetradMatrix pruneEdgesByResampling(DoubleMatrix2D data, int[] k) {
+    public TetradMatrix pruneEdgesByResampling(TetradMatrix data, int[] k) {
         if (k.length != data.columns()) {
             throw new IllegalArgumentException("Execting a permutation.");
         }
@@ -392,7 +407,7 @@ public class Lingam {
             set.add(i);
         }
 
-        TetradMatrix X = new TetradMatrix(data.viewDice().toArray());
+        TetradMatrix X = data.transpose();
 
         int npieces = 10;
         int cols = X.columns();
@@ -441,17 +456,13 @@ public class Lingam {
             }
 
 
-            TetradMatrix XpT = new TetradMatrix(Xp.columns(), rows);
-            TetradMatrix Xpt = Xp.transpose();
+            TetradMatrix cov = Xp.times(Xp.transpose());
 
-            TetradMatrix cov = new TetradMatrix(rows, rows);
-            cov = Xp.times(Xpt);
-
-            for (int i = 0; i < cov.rows(); i++) {
-                for (int j = 0; j < cov.columns(); j++) {
-                    cov.set(i, j, cov.get(i, j) / Xp.columns());
-                }
-            }
+//            for (int i = 0; i < cov.rows(); i++) {
+//                for (int j = 0; j < cov.columns(); j++) {
+//                    cov.set(i, j, cov.get(i, j) / Xp.columns());
+//                }
+//            }
 
 //          % Do QL decomposition on the inverse square root of cov
 //          [Q,L] = tridecomp(cov^(-0.5),'ql');
@@ -463,11 +474,7 @@ public class Lingam {
                 System.out.println("Covariance matrix is not positive definite.");
             }
 
-            TetradMatrix sqrt = cov.sqrt();
-
-            TetradMatrix I = TetradMatrix.identity(rows);
-            TetradMatrix AI = I.copy();
-            TetradMatrix invSqrt = AI.inverse();
+            TetradMatrix invSqrt = cov.sqrt().inverse();
 
             QRDecomposition qr = new QRDecomposition(invSqrt.getRealMatrix());
             RealMatrix r = qr.getR();
@@ -478,7 +485,7 @@ public class Lingam {
             TetradVector newestdisturbancestd = new TetradVector(rows);
 
             for (int t = 0; t < rows; t++) {
-                newestdisturbancestd.set(t, 1.0 / Math.abs(r.getEntry(t, t)));
+                newestdisturbancestd.set(t, 1.0 / abs(r.getEntry(t, t)));
             }
 
 //          % Normalize rows of L to unit diagonal
@@ -549,7 +556,7 @@ public class Lingam {
                 means.set(i, j, themean);
                 stds.set(i, j, thestd);
 
-                if (Math.abs(themean) < getPruneFactor() * thestd) {
+                if (abs(themean) < getPruneFactor() * thestd) {
                     BFinal.set(i, j, 0);
                 } else {
                     BFinal.set(i, j, themean);

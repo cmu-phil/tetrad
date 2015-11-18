@@ -195,7 +195,7 @@ public class Lofs2 {
             graph = GraphUtils.undirectedGraph(skeleton);
             return patelTauOrientation(graph, 0.90);
         } else if (this.rule == Rule.FastICA) {
-            FastIca fastIca = new FastIca(new DenseDoubleMatrix2D(dataSets.get(0).getDoubleData().toArray()),
+            FastIca fastIca = new FastIca(dataSets.get(0).getDoubleData(),
                     dataSets.get(0).getNumColumns());
             FastIca.IcaResult result = fastIca.findComponents();
             System.out.println(result.getW());

@@ -356,15 +356,6 @@ public class ClusterUtils {
     }
 
 
-    public static TetradMatrix restrictToTimeSeries(TetradMatrix data) {
-        return data.getPart(0, 3, data.rows(), data.columns() - 3);
-    }
-
-    public static TetradMatrix restrictToXyz(TetradMatrix data) {
-        return data.getPart(0, 0, data.rows(), 3);
-    }
-
-
     /**
      * Prints the XYZ extents of the given XYZ dataset--that is, the minimum and
      * maximum of each dimension. It is assumed that the dataset has three

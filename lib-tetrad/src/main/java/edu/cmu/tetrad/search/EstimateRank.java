@@ -21,10 +21,8 @@
 
 package edu.cmu.tetrad.search;
 
-import Jama.EigenvalueDecomposition;
-import Jama.Matrix;
-import Jama.SingularValueDecomposition;
 import edu.cmu.tetrad.util.ProbUtils;
+import org.apache.commons.math3.linear.*;
 
 import java.util.Arrays;
 
@@ -44,11 +42,10 @@ public class EstimateRank {
     public double[] CanCor(double[][] A, double[][] B) {
         this.A = A;
         this.B = B;
-        Matrix Ua = new SingularValueDecomposition(new Matrix(A)).getU();
-        Matrix UTa = Ua.transpose();
-        Matrix Ub = new SingularValueDecomposition(new Matrix(B)).getU();
-        double[] Cors = new SingularValueDecomposition(UTa.times(Ub)).getSingularValues();
-        return Cors;
+        RealMatrix Ua = new SingularValueDecomposition(new BlockRealMatrix(A)).getU();
+        RealMatrix UTa = Ua.transpose();
+        RealMatrix Ub = new SingularValueDecomposition(new BlockRealMatrix(B)).getU();
+        return new SingularValueDecomposition(UTa.multiply(Ub)).getSingularValues();
     }
 
     //Compute canonical correlations from covariance matrix.
@@ -56,18 +53,22 @@ public class EstimateRank {
         this.iA = iA;
         this.iB = iB;
         this.cov = cov;
-        Matrix covA = new Matrix(cov).getMatrix(iA, iA);
-        Matrix covB = new Matrix(cov).getMatrix(iB, iB);
-        Matrix covAB = new Matrix(cov).getMatrix(iA, iB);
-        Matrix covBA = new Matrix(cov).getMatrix(iB, iA);
-        Matrix S = covA.inverse().times(covAB).times(covB.inverse()).times(covBA);
-        double[] rtCors = new EigenvalueDecomposition(S).getRealEigenvalues();
+        RealMatrix covA = new BlockRealMatrix(cov).getSubMatrix(iA, iA);
+        RealMatrix covB = new BlockRealMatrix(cov).getSubMatrix(iB, iB);
+        RealMatrix covAB = new BlockRealMatrix(cov).getSubMatrix(iA, iB);
+        RealMatrix covBA = new BlockRealMatrix(cov).getSubMatrix(iB, iA);
+        RealMatrix S = getInverse(covA).multiply(covAB).multiply(getInverse(covB)).multiply(covBA);
+        double[] rtCors = new EigenDecomposition(S).getRealEigenvalues();
         Arrays.sort(rtCors);
         double[] Cors = new double[rtCors.length];
         for (int i = rtCors.length; i > 0; i--) {
             Cors[rtCors.length - i] = Math.pow(rtCors[i - 1],.5);
         }
         return Cors;
+    }
+
+    private RealMatrix getInverse(RealMatrix covA) {
+        return new LUDecomposition(covA).getSolver().getInverse();
     }
 
     //Estimate rank from data.
