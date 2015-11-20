@@ -54,7 +54,7 @@ public class TestLing extends TestCase {
 
     // test from gustavo's essay
 
-    public void test() {
+    public void rtest() {
 
         Graph g = new EdgeListGraph();
 
@@ -221,7 +221,7 @@ public class TestLing extends TestCase {
 
     // randomly generated cyclic graph
 
-    public void test2() {
+    public void rtest2() {
         Dag dag = new Dag(GraphUtils.randomGraph(6, 0, 7, 3,
                 3, 4, false));
         Graph graph = GraphUtils.addCycles(dag, 3, 2);
@@ -251,7 +251,7 @@ public class TestLing extends TestCase {
         }
     }
 
-    public void test2_1() {
+    public void rtest2_1() {
         Dag dag = new Dag(GraphUtils.randomGraph(8, 0, 8, 3,
                 3, 4, false));
         Graph graph = GraphUtils.addCycles(dag, 1, 3);
@@ -278,7 +278,7 @@ public class TestLing extends TestCase {
 
     // simple loop test
 
-    public void test3() {
+    public void rtest3() {
 
         Graph g = new EdgeListGraph();
 
@@ -314,7 +314,7 @@ public class TestLing extends TestCase {
 
     // test for peter
 
-    public void test4() {
+    public void rtest4() {
 
         Graph g = new EdgeListGraph();
 
@@ -355,7 +355,7 @@ public class TestLing extends TestCase {
 
     // test for peter
 
-    public void test5() {
+    public void rtest5() {
 
         Graph g = new EdgeListGraph();
 
@@ -396,7 +396,7 @@ public class TestLing extends TestCase {
 
     // benchmark1 of ling to lingam
 
-    public void test6() {
+    public void rtest6() {
 
         double avg = 0.0;
         int iterations = 10;
@@ -433,7 +433,7 @@ public class TestLing extends TestCase {
 
     }
 
-    public void test7() {
+    public void rtest7() {
         try {
             DataReader reader = new DataReader();
             DataSet data = reader.parseTabular(new File("src/test/resources/roidata.txt"));
