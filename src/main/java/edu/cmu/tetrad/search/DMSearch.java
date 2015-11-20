@@ -22,12 +22,25 @@ public class DMSearch {
     private int[] inputs;
     private int[] outputs;
 
+    //alpha value for sober's criterion.
     private double alphaSober = .05;
+
+    //Alpha value for pc.
     private double alphaPC = .05;
+
+
+    //Starting ges penalty discount.
     private double gesDiscount = 10;
     private int gesDepth = 0;
+
+    //Minimum ges penalty discount to use in recursive search.
     private int minDiscount = 4;
+
+    //If true, use GES, else use PC.
     private boolean useGES = true;
+
+    //Lets the user select a subset of the inputs in the dataset to search over.
+    //If not subseting, should be set to the entire input set.
     private int[] trueInputs;
     private DataSet data;
 
