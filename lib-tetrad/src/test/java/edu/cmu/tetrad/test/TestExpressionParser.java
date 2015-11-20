@@ -223,6 +223,8 @@ public class TestExpressionParser extends TestCase {
 
         try {
             for (String formula : formulas) {
+                System.out.println(formula);
+
                 Expression expression = parser.parseExpression(formula);
                 System.out.println(expression);
 
@@ -399,23 +401,19 @@ public class TestExpressionParser extends TestCase {
         formulas.put("ChiSquare(1)", 1.0);
         formulas.put("Gamma(2, .5)", 1.0);
         formulas.put("Beta(1, 2)", 0.33);
-        formulas.put("Poisson(5)", 5.0);
-        formulas.put("ExponentialPower(3)", 0.001); // Couldn't find a closed form for this mean.
         formulas.put("Normal(2, 3)", 2.0);
         formulas.put("N(2, 3)", 2.0);
         formulas.put("StudentT(5)", 0.0);
-        formulas.put("Hyperbolic(5, 3)", 1.04); // Not sure about this one--check for constancy.
         formulas.put("U(0, 1)", 0.5);
         formulas.put("Uniform(0, 1)", 0.5);
         formulas.put("Split(0, 1, 5, 6)", 3.0);
-        formulas.put("VonMises(1)", 0.0);
 
         ExpressionParser parser = new ExpressionParser();
 
         try {
             for (String formula : formulas.keySet()) {
+                System.out.println(formula);
                 Expression expression = parser.parseExpression(formula);
-                System.out.println(expression);
 
                 double sum = 0.0;
                 int sampleSize = 10000;

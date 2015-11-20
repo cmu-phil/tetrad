@@ -329,7 +329,7 @@ public class TestCcd extends TestCase {
     }
 
     //
-    public void testLoop() {
+    public void rtestLoop() {
         NumberFormat nf = new DecimalFormat("0.0000");
 
         boolean nonpranormal = false;

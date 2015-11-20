@@ -445,20 +445,6 @@ public class TestLing extends TestCase {
         }
     }
 
-    public void test8() {
-
-        try {
-            DataReader reader = new DataReader();
-            DataSet data = reader.parseTabular(new File("src/test/resources/data1.txt"));
-            Ling t = new Ling(data);
-            t.setThreshold(0.5);
-            t.search();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     private static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix b) {
         EigenvalueDecomposition dec = new EigenvalueDecomposition(new DenseDoubleMatrix2D(b.toArray()));
         DoubleMatrix1D realEigenvalues = dec.getRealEigenvalues();
