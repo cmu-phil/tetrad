@@ -334,15 +334,11 @@ public class TestDM extends TestCase {
         trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
 
         trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X4"));
-//        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X7"));
-
 
         trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L2"));
         trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L2"));
 
-//        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X10"));
         trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X5"));
-
 
         assertTrue(foundGraph.equals(trueGraph));
 
@@ -374,12 +370,36 @@ public class TestDM extends TestCase {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        search.search();
+        Graph foundGraph = search.search();
 
         System.out.println("Three Latent Collider Case");
         System.out.println(search.getDmStructure());
 
-        assertTrue(true);
+        Graph trueGraph = new EdgeListGraph();
+
+        trueGraph.addNode(new GraphNode("X0"));
+        trueGraph.addNode(new GraphNode("X1"));
+        trueGraph.addNode(new GraphNode("X2"));
+        trueGraph.addNode(new GraphNode("X3"));
+        trueGraph.addNode(new GraphNode("X4"));
+        trueGraph.addNode(new GraphNode("X5"));
+        trueGraph.addNode(new GraphNode("L0"));
+        trueGraph.addNode(new GraphNode("L1"));
+        trueGraph.addNode(new GraphNode("L2"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X3"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L1"));
+
+        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X4"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L2"));
+        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X5"));
+
+        assertTrue(foundGraph.equals(trueGraph));
     }
 
     //Four latent case.
@@ -415,7 +435,7 @@ public class TestDM extends TestCase {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        search.search();
+        Graph foundGraph = search.search();
 
         System.out.println("Four Latent Case");
         System.out.println(search.getDmStructure());
@@ -424,9 +444,52 @@ public class TestDM extends TestCase {
         System.out.println("search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure())");
         System.out.println(search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()));
 
-        assertTrue(true);
+
+        Graph trueGraph = new EdgeListGraph();
+
+        trueGraph.addNode(new GraphNode("X0"));
+        trueGraph.addNode(new GraphNode("X1"));
+        trueGraph.addNode(new GraphNode("X2"));
+        trueGraph.addNode(new GraphNode("X3"));
+        trueGraph.addNode(new GraphNode("X4"));
+        trueGraph.addNode(new GraphNode("X5"));
+        trueGraph.addNode(new GraphNode("X6"));
+        trueGraph.addNode(new GraphNode("X7"));
+        trueGraph.addNode(new GraphNode("L0"));
+        trueGraph.addNode(new GraphNode("L1"));
+        trueGraph.addNode(new GraphNode("L2"));
+        trueGraph.addNode(new GraphNode("L3"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X4"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
+
+
+        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X5"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L2"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L2"));
+        trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L2"));
+        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X6"));
+
+
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L3"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L3"));
+        trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L3"));
+        trueGraph.addDirectedEdge(new GraphNode("X3"), new GraphNode("L3"));
+        trueGraph.addDirectedEdge(new GraphNode("L3"), new GraphNode("X7"));
+
+
+        assertTrue(foundGraph.equals(trueGraph));
     }
 
+
+
+//    Test cases after here serve as examples and/or were used to diagnose a no longer applicable problem.
+//    Still have to clean up.
 
     public void rtest7(){
 
