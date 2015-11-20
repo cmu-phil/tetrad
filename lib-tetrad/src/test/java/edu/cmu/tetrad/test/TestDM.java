@@ -76,12 +76,30 @@ public class TestDM extends TestCase {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        search.search();
+        Graph foundGraph = search.search();
 
         System.out.println("Test Case 1");
-        System.out.println(search.getDmStructure());
+//        System.out.println(search.getDmStructure());
 
-        assertTrue(true);
+//        System.out.println(foundGraph);
+
+        Graph trueGraph = new EdgeListGraph();
+
+        trueGraph.addNode(new GraphNode("X0"));
+        trueGraph.addNode(new GraphNode("X1"));
+        trueGraph.addNode(new GraphNode("X2"));
+        trueGraph.addNode(new GraphNode("X3"));
+        trueGraph.addNode(new GraphNode("L0"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L0"));
+
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X2"));
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X3"));
+
+//        System.out.println(trueGraph);
+
+        assertTrue(trueGraph.equals(foundGraph));
     }
 
 
@@ -119,13 +137,43 @@ public class TestDM extends TestCase {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        search.search();
+
+        Graph foundGraph = search.search();
 
         System.out.println("Test Case 2");
         System.out.println(search.getDmStructure());
 
+        Graph trueGraph = new EdgeListGraph();
 
-        assertTrue(true);
+        trueGraph.addNode(new GraphNode("X0"));
+        trueGraph.addNode(new GraphNode("X1"));
+        trueGraph.addNode(new GraphNode("X2"));
+        trueGraph.addNode(new GraphNode("X3"));
+        trueGraph.addNode(new GraphNode("X4"));
+        trueGraph.addNode(new GraphNode("X5"));
+        trueGraph.addNode(new GraphNode("X6"));
+        trueGraph.addNode(new GraphNode("X7"));
+
+        trueGraph.addNode(new GraphNode("L0"));
+        trueGraph.addNode(new GraphNode("L1"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L0"));
+
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X2"));
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X3"));
+
+//        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X1"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X4"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new GraphNode("X5"), new GraphNode("L1"));
+
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X6"));
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X7"));
+
+
+
+        assertTrue(foundGraph.equals(trueGraph));
     }
 
 
@@ -183,12 +231,53 @@ public class TestDM extends TestCase {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        search.search();
+        Graph foundGraph = search.search();
 
         System.out.println("Test Case 3");
         System.out.println(search.getDmStructure());
 
-        assertTrue(true);
+
+
+        Graph trueGraph = new EdgeListGraph();
+
+        trueGraph.addNode(new GraphNode("X0"));
+        trueGraph.addNode(new GraphNode("X1"));
+        trueGraph.addNode(new GraphNode("X2"));
+        trueGraph.addNode(new GraphNode("X3"));
+        trueGraph.addNode(new GraphNode("X4"));
+        trueGraph.addNode(new GraphNode("X5"));
+        trueGraph.addNode(new GraphNode("X6"));
+        trueGraph.addNode(new GraphNode("X7"));
+        trueGraph.addNode(new GraphNode("X8"));
+        trueGraph.addNode(new GraphNode("X9"));
+        trueGraph.addNode(new GraphNode("X10"));
+        trueGraph.addNode(new GraphNode("X11"));
+
+        trueGraph.addNode(new GraphNode("L0"));
+        trueGraph.addNode(new GraphNode("L1"));
+        trueGraph.addNode(new GraphNode("L2"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
+
+        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X2"));
+        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X3"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X4"), new GraphNode("L2"));
+        trueGraph.addDirectedEdge(new GraphNode("X5"), new GraphNode("L2"));
+
+        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X6"));
+        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X7"));
+
+
+        trueGraph.addDirectedEdge(new GraphNode("X8"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new GraphNode("X9"), new GraphNode("L0"));
+
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X10"));
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X11"));
+
+
+        assertTrue(foundGraph.equals(trueGraph));
     }
 
 
@@ -218,12 +307,45 @@ public class TestDM extends TestCase {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        search.search();
+        Graph foundGraph = search.search();
 
         System.out.println("Three Latent Fork Case");
         System.out.println(search.getDmStructure());
 
-        assertTrue(true);
+
+
+        Graph trueGraph = new EdgeListGraph();
+
+        trueGraph.addNode(new GraphNode("X0"));
+        trueGraph.addNode(new GraphNode("X1"));
+        trueGraph.addNode(new GraphNode("X2"));
+        trueGraph.addNode(new GraphNode("X3"));
+        trueGraph.addNode(new GraphNode("X4"));
+        trueGraph.addNode(new GraphNode("X5"));
+        trueGraph.addNode(new GraphNode("L0"));
+        trueGraph.addNode(new GraphNode("L1"));
+        trueGraph.addNode(new GraphNode("L2"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L0"));
+
+        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X3"));
+
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
+
+        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X4"));
+//        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X7"));
+
+
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L2"));
+        trueGraph.addDirectedEdge(new GraphNode("X2"), new GraphNode("L2"));
+
+//        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X10"));
+        trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X5"));
+
+
+        assertTrue(foundGraph.equals(trueGraph));
+
     }
 
     // Three latent collider case
@@ -539,7 +661,7 @@ public class TestDM extends TestCase {
     }
 
 
-    public void test11() {
+    public void rtest11() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
@@ -577,7 +699,7 @@ public class TestDM extends TestCase {
 
 
 
-    public void test12() {
+    public void rtest12() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
@@ -652,7 +774,7 @@ public class TestDM extends TestCase {
     }
 
 
-    public void test13() {
+    public void rtest13() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
