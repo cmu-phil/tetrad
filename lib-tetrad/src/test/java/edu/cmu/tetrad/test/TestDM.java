@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradproj.amurrayw;
+package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.BigDataSetUtility;
 import edu.cmu.tetrad.data.DataSet;
@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import edu.cmu.tetrad.search.DMSearch;
 
 import java.io.*;
 import java.util.List;

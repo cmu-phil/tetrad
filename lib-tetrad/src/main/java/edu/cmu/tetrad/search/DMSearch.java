@@ -775,7 +775,7 @@ System.out.println("Sorted patternNodes");
         return (actualInputs);
     }
 
-    class LatentStructure {
+    public class LatentStructure {
         List<Node> latents = new ArrayList<Node>();
         Map<Node, SortedSet<Node>> inputs = new TreeMap<Node, SortedSet<Node>>();
         Map<Node, SortedSet<Node>> outputs = new TreeMap<Node, SortedSet<Node>>();
