@@ -306,7 +306,7 @@ public class TestDM extends TestCase {
     }
 
 
-    public void test7(){
+    public void rtest7(){
 
         System.out.println("test 7");
         DMSearch result =
@@ -379,7 +379,7 @@ public class TestDM extends TestCase {
 
 
 
-    public void test9(){
+    public void rtest9(){
         internaltest9(10);
     }
 
@@ -747,7 +747,7 @@ public class TestDM extends TestCase {
 
     }
 
-    public void test16(){
+    public void rtest16(){
 
         System.out.println("test PC");
         DMSearch result =
@@ -776,7 +776,7 @@ public class TestDM extends TestCase {
 
 
 
-    public void test17(){
+    public void rtest17(){
         internaltest17(999);
     }
 
@@ -870,7 +870,7 @@ public class TestDM extends TestCase {
 
 
 
-    public void test14() {
+    public void rtest14() {
         //setting seed for debug.
 //        RandomUtil.getInstance().setSeed(29483818483L);
 //
@@ -906,7 +906,7 @@ public class TestDM extends TestCase {
 
 
 
-    public void test15() {
+    public void rtest15() {
 //        for(int i=10; i>=4; i--){
 //            finishRenaming(i);
 //        }
