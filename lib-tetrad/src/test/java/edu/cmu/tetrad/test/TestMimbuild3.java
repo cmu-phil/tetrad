@@ -384,7 +384,7 @@ public class TestMimbuild3 extends TestCase {
     }
 
 
-    public void test3() {
+    public void rtest3() {
         Node x = new GraphNode("X");
         Node y = new GraphNode("Y");
         Node z = new GraphNode("Z");

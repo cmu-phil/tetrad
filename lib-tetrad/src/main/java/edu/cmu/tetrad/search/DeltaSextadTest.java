@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-//import Jama.Matrix;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;

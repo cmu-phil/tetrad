@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
