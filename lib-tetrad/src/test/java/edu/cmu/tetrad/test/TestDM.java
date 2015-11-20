@@ -165,13 +165,19 @@ public class TestDM extends TestCase {
 
 //        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X1"));
 
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L1"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L1"));
+
         trueGraph.addDirectedEdge(new GraphNode("X4"), new GraphNode("L1"));
         trueGraph.addDirectedEdge(new GraphNode("X5"), new GraphNode("L1"));
 
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X6"));
-        trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X7"));
+        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X6"));
+        trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X7"));
 
 
+System.out.println(foundGraph);
+        System.out.println(trueGraph);
 
         assertTrue(foundGraph.equals(trueGraph));
     }
@@ -263,12 +269,20 @@ public class TestDM extends TestCase {
         trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X2"));
         trueGraph.addDirectedEdge(new GraphNode("L1"), new GraphNode("X3"));
 
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L2"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L2"));
         trueGraph.addDirectedEdge(new GraphNode("X4"), new GraphNode("L2"));
         trueGraph.addDirectedEdge(new GraphNode("X5"), new GraphNode("L2"));
 
         trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X6"));
         trueGraph.addDirectedEdge(new GraphNode("L2"), new GraphNode("X7"));
 
+
+        trueGraph.addDirectedEdge(new GraphNode("X0"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new GraphNode("X1"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new GraphNode("X4"), new GraphNode("L0"));
+        trueGraph.addDirectedEdge(new GraphNode("X5"), new GraphNode("L0"));
 
         trueGraph.addDirectedEdge(new GraphNode("X8"), new GraphNode("L0"));
         trueGraph.addDirectedEdge(new GraphNode("X9"), new GraphNode("L0"));
