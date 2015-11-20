@@ -1,11 +1,10 @@
-package edu.cmu.tetradproj.amurrayw;
+package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.File;
@@ -153,7 +152,7 @@ public class DMSearch {
         Graph pattern = new EdgeListGraph();
 
         if(useGES==true){
-            FastGes ges = new FastGes(cov);
+            Fgs ges = new Fgs(cov);
 
             pattern = recursiveGES(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
         }
@@ -603,7 +602,7 @@ System.out.println("Sorted patternNodes");
         this.cov = new CovarianceMatrixOnTheFly(data);
 
 
-        FastGes ges = new FastGes((ICovarianceMatrix) cov);
+        Fgs ges = new Fgs((ICovarianceMatrix) cov);
 
         ges.setKnowledge(knowledge);
         ges.setDepth(this.gesDepth);
