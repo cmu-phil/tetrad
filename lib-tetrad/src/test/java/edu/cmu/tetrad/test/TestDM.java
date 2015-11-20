@@ -103,7 +103,7 @@ public class TestDM extends TestCase {
     }
 
 
-    public void test2() {
+    public void rtest2() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
@@ -178,7 +178,7 @@ public class TestDM extends TestCase {
 
 
 
-    public void test3() {
+    public void rtest3() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
