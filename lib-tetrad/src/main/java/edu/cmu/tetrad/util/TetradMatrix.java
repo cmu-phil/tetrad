@@ -28,8 +28,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
- * Wraps the Apache math3 linear algebra library for most uses in Tetrad. Specialized uses will still have to use
- * the library directly.
+ * Wraps the Apache math3 linear algebra library for most uses in Tetrad.
+ * Specialized uses will still have to use the library directly. One issue
+ * this fixes is that a BlockRealMatrix cannot represent a matrix with zero
+ * rows; this uses an Array2DRowRealMatrix to represent that case.
  *
  * @author Joseph Ramsey
  */
