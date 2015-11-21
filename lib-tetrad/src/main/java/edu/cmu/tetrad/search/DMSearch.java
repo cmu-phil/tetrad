@@ -43,23 +43,25 @@ public class DMSearch {
     private int[] trueInputs;
     private DataSet data;
 
-    public void setMinDiscount(int minDiscount){
+    public void setMinDiscount(int minDiscount) {
         this.minDiscount = minDiscount;
     }
 
-    public int getMinDepth(){
-        return(this.minDiscount);
+    public int getMinDepth() {
+        return (this.minDiscount);
     }
 
-    public void setGesDepth(int gesDepth){
-        this.gesDepth=gesDepth;
+    public void setGesDepth(int gesDepth) {
+        this.gesDepth = gesDepth;
     }
 
-    public int getGesDepth(){
-        return(gesDepth);
+    public int getGesDepth() {
+        return (gesDepth);
     }
 
-    public void setTrueInputs(int[] trueInputs){this.trueInputs = trueInputs;}
+    public void setTrueInputs(int[] trueInputs) {
+        this.trueInputs = trueInputs;
+    }
 
     public void setInputs(int[] inputs) {
         this.inputs = inputs;
@@ -69,11 +71,17 @@ public class DMSearch {
         this.outputs = outputs;
     }
 
-    public void setData(DataSet data){this.data=data;}
+    public void setData(DataSet data) {
+        this.data = data;
+    }
 
-    public int[] getTrueInputs(){return(this.trueInputs);}
+    public int[] getTrueInputs() {
+        return (this.trueInputs);
+    }
 
-    public DataSet getData(){return(this.data);}
+    public DataSet getData() {
+        return (this.data);
+    }
 
     public int[] getInputs() {
         return (inputs);
@@ -106,7 +114,9 @@ public class DMSearch {
         this.gesDiscount = discount;
     }
 
-    public void setUseGES(boolean set){this.useGES=set;}
+    public void setUseGES(boolean set) {
+        this.useGES = set;
+    }
 
 
     public Graph search() {
@@ -117,7 +127,6 @@ public class DMSearch {
 
         //TODO: Break stuff below here into seperate fuct/classes.
         this.cov = new CovarianceMatrixOnTheFly(data);
-
 
 
         Knowledge2 knowledge = new Knowledge2(data.getVariableNames());
@@ -137,13 +146,13 @@ public class DMSearch {
         Set<String> inputString = new HashSet<String>();
 
         HashSet actualInputs = new HashSet<Integer>();
-        for(int i=0; i<trueInputs.length; i++){
+        for (int i = 0; i < trueInputs.length; i++) {
             actualInputs.add(trueInputs[i]);
         }
 
 
         for (int i : inputs) {
-            if(actualInputs.contains(i)) {
+            if (actualInputs.contains(i)) {
 
                 inputString.add(data.getVariable(i).getName());
             }
@@ -151,12 +160,11 @@ public class DMSearch {
 
         Graph pattern = new EdgeListGraph();
 
-        if(useGES==true){
+        if (useGES == true) {
             Fgs ges = new Fgs(cov);
 
             pattern = recursiveGES(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
-        }
-        else{
+        } else {
             this.cov = new CovarianceMatrixOnTheFly(data);
 //            Pc pc = new Pc(new IndTestFisherZ(cov, this.alphaPC));
 //            pc.setKnowledge(knowledge);
@@ -170,7 +178,7 @@ public class DMSearch {
 //            ExecutorService executorService = Executors.newFixedThreadPool(4); // number of threads
 
             IndTestFisherZ ind = new IndTestFisherZ(cov, this.alphaPC);
-            for(int i=0; i<getInputs().length; i++) {
+            for (int i = 0; i < getInputs().length; i++) {
                 if (!pattern.containsNode(data.getVariable(i))) {
                     pattern.addNode(data.getVariable(i));
                 }
@@ -183,9 +191,9 @@ public class DMSearch {
 
 //                    System.out.println(i);
 //                    System.out.println(j);
-                            if (ind.isDependent(data.getVariable(i), data.getVariable(j))) {
-                                pattern.addDirectedEdge(data.getVariable(i), data.getVariable(j));
-                            }
+                        if (ind.isDependent(data.getVariable(i), data.getVariable(j))) {
+                            pattern.addDirectedEdge(data.getVariable(i), data.getVariable(j));
+                        }
                     }
                 }
             }
@@ -197,19 +205,22 @@ public class DMSearch {
         return (getDmStructure().latentStructToEdgeListGraph(getDmStructure()));
 
     }
-    public LatentStructure applyDmSearch(Graph pattern, Set<String> inputString, double penalty){
+
+    public LatentStructure applyDmSearch(Graph pattern, Set<String> inputString, double penalty) {
 
         List<Set<Node>> outputParentsList = new ArrayList<Set<Node>>();
         final List<Node> patternNodes = pattern.getNodes();
 
 //        TODO: add testcase to see how sort compares 10, 11, 1, etc.
-        java.util.Collections.sort(patternNodes,new Comparator<Node>(){
-            public int compare(Node node1, Node node2){
+        java.util.Collections.sort(patternNodes, new Comparator<Node>() {
+            public int compare(Node node1, Node node2) {
 //TODO: string length error here. Fix.
 
-                if(node1.getName().length()>node2.getName().length()){return(1);}
-                else if(node1.getName().length()<node2.getName().length()){return(-1);}
-                else {
+                if (node1.getName().length() > node2.getName().length()) {
+                    return (1);
+                } else if (node1.getName().length() < node2.getName().length()) {
+                    return (-1);
+                } else {
                     int n1 = Integer.parseInt(node1.getName().substring(1));
                     int n2 = Integer.parseInt(node2.getName().substring(1));
                     return (n1 - n2);
@@ -217,7 +228,7 @@ public class DMSearch {
             }
         });
 
-System.out.println("Sorted patternNodes");
+        System.out.println("Sorted patternNodes");
         //constructing treeSet of output nodes.
         SortedSet<Node> outputNodes = new TreeSet<Node>();
         for (int i : getOutputs()) {
@@ -236,7 +247,7 @@ System.out.println("Sorted patternNodes");
 
         //Constructing list of output node parents.
         for (Node node : outputNodes) {
-            outputParentsList.add(new TreeSet<Node>(getInputParents(node, inputString, pattern))) ;
+            outputParentsList.add(new TreeSet<Node>(getInputParents(node, inputString, pattern)));
         }
 
         System.out.println("Created list of output node parents");
@@ -249,12 +260,14 @@ System.out.println("Sorted patternNodes");
         // And adding both inputs and outputs to their respective latents.
         for (Set<Node> set1 : outputParentsList) {
 
-            TreeSet<Node> sameSetParents = new TreeSet<Node>(new Comparator<Node>(){
-                public int compare(Node node1, Node node2){
+            TreeSet<Node> sameSetParents = new TreeSet<Node>(new Comparator<Node>() {
+                public int compare(Node node1, Node node2) {
 
-                    if(node1.getName().length()>node2.getName().length()){return(1);}
-                    else if(node1.getName().length()<node2.getName().length()){return(-1);}
-                    else {
+                    if (node1.getName().length() > node2.getName().length()) {
+                        return (1);
+                    } else if (node1.getName().length() < node2.getName().length()) {
+                        return (-1);
+                    } else {
                         int n1 = Integer.parseInt(node1.getName().substring(1));
                         int n2 = Integer.parseInt(node2.getName().substring(1));
                         return (n1 - n2);
@@ -266,17 +279,17 @@ System.out.println("Sorted patternNodes");
             //If no next set, then just add var.
             if (nextSet.isEmpty()) {
 //                for (int head = 0; head < (set1.size()); head++) {
-                    sameSetParents.addAll(set1);
+                sameSetParents.addAll(set1);
 //                }
             }
             for (Set<Node> set2 : nextSet) {
                 if (!(set1.size() == 0 || set2.size() == 0) && set1.equals(set2)) {
 //                    for (int head = 0; head < (set1.size()); head++) {
-                        sameSetParents.addAll(set1);
+                    sameSetParents.addAll(set1);
 //                    }
                 } else if (set1.size() > 0) {
 //                    for (int head = 0; head < (set1.size()); head++) {
-                        sameSetParents.addAll(set1);
+                    sameSetParents.addAll(set1);
 //                    }
                 }
             }
@@ -313,7 +326,7 @@ System.out.println("Sorted patternNodes");
                     }
                 }
             }
-            System.out.println("Completed starting point: " + sublistStart + " out of #" + outputParentsList.size() +" sets, and is "+ set1.size() +" units large.");
+            System.out.println("Completed starting point: " + sublistStart + " out of #" + outputParentsList.size() + " sets, and is " + set1.size() + " units large.");
             sublistStart++;
         }
         System.out.println("created initial sets");
@@ -326,17 +339,17 @@ System.out.println("Sorted patternNodes");
         System.out.println("Finding initial latent-latent effects");
 
 
-
 //        System.out.println(latentsSortedByInputSetSize);
 
 
+        TreeSet<Node> inputs1 = new TreeSet<Node>(new Comparator<Node>() {
+            public int compare(Node node1, Node node2) {
 
-        TreeSet<Node> inputs1 = new TreeSet<Node>(new Comparator<Node>(){
-            public int compare(Node node1, Node node2){
-
-                if(node1.getName().length()>node2.getName().length()){return(1);}
-                else if(node1.getName().length()<node2.getName().length()){return(-1);}
-                else {
+                if (node1.getName().length() > node2.getName().length()) {
+                    return (1);
+                } else if (node1.getName().length() < node2.getName().length()) {
+                    return (-1);
+                } else {
                     int n1 = Integer.parseInt(node1.getName().substring(1));
                     int n2 = Integer.parseInt(node2.getName().substring(1));
                     return (n1 - n2);
@@ -344,12 +357,14 @@ System.out.println("Sorted patternNodes");
             }
         });
 
-        TreeSet<Node> inputs2 = new TreeSet<Node>(new Comparator<Node>(){
-            public int compare(Node node1, Node node2){
+        TreeSet<Node> inputs2 = new TreeSet<Node>(new Comparator<Node>() {
+            public int compare(Node node1, Node node2) {
 
-                if(node1.getName().length()>node2.getName().length()){return(1);}
-                else if(node1.getName().length()<node2.getName().length()){return(-1);}
-                else {
+                if (node1.getName().length() > node2.getName().length()) {
+                    return (1);
+                } else if (node1.getName().length() < node2.getName().length()) {
+                    return (-1);
+                } else {
                     int n1 = Integer.parseInt(node1.getName().substring(1));
                     int n2 = Integer.parseInt(node2.getName().substring(1));
                     return (n1 - n2);
@@ -360,26 +375,25 @@ System.out.println("Sorted patternNodes");
         HashSet alreadyLookedAt = new HashSet();
 
         //Finding initial latent-latent Effects.
-        for (int i=0; i<=latentsSortedByInputSetSize.keySet().size(); i++) {
+        for (int i = 0; i <= latentsSortedByInputSetSize.keySet().size(); i++) {
 
 //          TODO: Need to only perform this test if haven't already looked at latent. (for latent 1).
 
 
-            TreeSet<TreeSet<Node>> sortedInputs = new TreeSet<TreeSet<Node>>(new Comparator<TreeSet<Node>>(){
-            public int compare(TreeSet<Node> o1, TreeSet<Node> o2)
-            {
-                int size = o1.size()-o2.size();
-                if(size==0){
-                    if(o1.equals(o2)){return(0);}
-                    else {
-                        return (o1.hashCode() - o2.hashCode());
+            TreeSet<TreeSet<Node>> sortedInputs = new TreeSet<TreeSet<Node>>(new Comparator<TreeSet<Node>>() {
+                public int compare(TreeSet<Node> o1, TreeSet<Node> o2) {
+                    int size = o1.size() - o2.size();
+                    if (size == 0) {
+                        if (o1.equals(o2)) {
+                            return (0);
+                        } else {
+                            return (o1.hashCode() - o2.hashCode());
+                        }
+                    } else {
+                        return (size);
                     }
                 }
-                else{
-                    return(size);
-                }
-            }
-        });
+            });
 
             sortedInputs.addAll(latentsSortedByInputSetSize.keySet());
 
@@ -389,55 +403,56 @@ System.out.println("Sorted patternNodes");
 
             Node latent1 = latentsSortedByInputSetSize.get(inputs1);
 
-            if(inputs1.first().getName().equals("alreadySeenEverything")){
+            if (inputs1.first().getName().equals("alreadySeenEverything")) {
                 continue;
             }
 
-            for (int j=0; j<=latentsSortedByInputSetSize.keySet().size(); j++) {
+            for (int j = 0; j <= latentsSortedByInputSetSize.keySet().size(); j++) {
 
 
-                TreeSet temp2 = new TreeSet<TreeSet<Node>>(new Comparator<TreeSet<Node>>(){
-            public int compare(TreeSet<Node> o1, TreeSet<Node> o2)
-            {
-                int size = o1.size()-o2.size();
-                if(size==0){
-                    if(o1.equals(o2)){return(0);}
-                    else {
-                        return (o1.hashCode() - o2.hashCode());
+                TreeSet temp2 = new TreeSet<TreeSet<Node>>(new Comparator<TreeSet<Node>>() {
+                    public int compare(TreeSet<Node> o1, TreeSet<Node> o2) {
+                        int size = o1.size() - o2.size();
+                        if (size == 0) {
+                            if (o1.equals(o2)) {
+                                return (0);
+                            } else {
+                                return (o1.hashCode() - o2.hashCode());
+                            }
+                        } else {
+                            return (size);
+                        }
                     }
-                }
-                else{
-                    return(size);
-                }
-            }
-        });
+                });
 
                 inputs2 = findFirstUnseenElement(sortedInputs, alreadyLookedAtInnerLoop, latentsSortedByInputSetSize);
 
 
                 Node latent2 = latentsSortedByInputSetSize.get(inputs2);
 
-                if(inputs2.first().getName().equals("alreadySeenEverything")){
+                if (inputs2.first().getName().equals("alreadySeenEverything")) {
                     continue;
                 }
 
                 alreadyLookedAtInnerLoop.add(latent2);
 
 
-                if (latent1.equals(latent2) || structure.getInputs(latent2).equals(structure.getInputs(latent1))){
+                if (latent1.equals(latent2) || structure.getInputs(latent2).equals(structure.getInputs(latent1))) {
                     continue;
                 }
 
 
                 //if latent1 is a subset of latent2...
                 if (structure.getInputs(latent2).containsAll(structure.getInputs(latent1))) {
-                    if (structure.latentEffects.get(latent1)==null) {
-                        TreeSet<Node> latentEffects = new TreeSet<Node>(new Comparator<Node>(){
-                            public int compare(Node node1, Node node2){
+                    if (structure.latentEffects.get(latent1) == null) {
+                        TreeSet<Node> latentEffects = new TreeSet<Node>(new Comparator<Node>() {
+                            public int compare(Node node1, Node node2) {
 
-                                if(node1.getName().length()>node2.getName().length()){return(1);}
-                                else if(node1.getName().length()<node2.getName().length()){return(-1);}
-                                else {
+                                if (node1.getName().length() > node2.getName().length()) {
+                                    return (1);
+                                } else if (node1.getName().length() < node2.getName().length()) {
+                                    return (-1);
+                                } else {
                                     int n1 = Integer.parseInt(node1.getName().substring(1));
                                     int n2 = Integer.parseInt(node2.getName().substring(1));
                                     return (n1 - n2);
@@ -463,12 +478,14 @@ System.out.println("Sorted patternNodes");
 
 
 //        Ensuring no nulls in latenteffects map.
-        SortedSet<Node> emptyTreeSet = new TreeSet<Node>(new Comparator<Node>(){
-            public int compare(Node node1, Node node2){
+        SortedSet<Node> emptyTreeSet = new TreeSet<Node>(new Comparator<Node>() {
+            public int compare(Node node1, Node node2) {
 
-                if(node1.getName().length()>node2.getName().length()){return(1);}
-                else if(node1.getName().length()<node2.getName().length()){return(-1);}
-                else {
+                if (node1.getName().length() > node2.getName().length()) {
+                    return (1);
+                } else if (node1.getName().length() < node2.getName().length()) {
+                    return (-1);
+                } else {
                     int n1 = Integer.parseInt(node1.getName().substring(1));
                     int n2 = Integer.parseInt(node2.getName().substring(1));
                     return (n1 - n2);
@@ -476,8 +493,8 @@ System.out.println("Sorted patternNodes");
             }
         });
 
-        for(Node latent:structure.getLatents()){
-            if(structure.latentEffects.get(latent)==null){
+        for (Node latent : structure.getLatents()) {
+            if (structure.latentEffects.get(latent) == null) {
                 structure.latentEffects.put(latent, emptyTreeSet);
             }
         }
@@ -501,29 +518,25 @@ System.out.println("Sorted patternNodes");
         setDmStructure(structure);
 
 
-
-
         //Saves DM output in case is needed.
-        File file=new File("src/edu/cmu/tetradproj/amurrayw/DM_output_" + "GES_penalty" + penalty + "_.txt");
+        File file = new File("src/edu/cmu/tetradproj/amurrayw/DM_output_" + "GES_penalty" + penalty + "_.txt");
         try {
             FileOutputStream out = new FileOutputStream(file);
             PrintStream outStream = new PrintStream(out);
             outStream.println(structure.latentStructToEdgeListGraph(structure));
-        }
-        catch (java.io.FileNotFoundException e) {
+        } catch (java.io.FileNotFoundException e) {
             System.out.println("Can't write to file.");
 
         }
 
 
-
-        return(structure);
+        return (structure);
 
     }
 
-    private TreeSet<Node> findFirstUnseenElement(TreeSet<TreeSet<Node>> set, HashSet alreadySeen, TreeMap map){
-        for(TreeSet<Node> currentSet:set){
-            if(!(alreadySeen.contains(map.get(currentSet))) && map.get(currentSet)!=null){
+    private TreeSet<Node> findFirstUnseenElement(TreeSet<TreeSet<Node>> set, HashSet alreadySeen, TreeMap map) {
+        for (TreeSet<Node> currentSet : set) {
+            if (!(alreadySeen.contains(map.get(currentSet))) && map.get(currentSet) != null) {
                 return (currentSet);
             }
         }
@@ -533,28 +546,28 @@ System.out.println("Sorted patternNodes");
         seenEverything.add(end);
 
 
-        return(seenEverything);
+        return (seenEverything);
 
     }
 
 
-    private TreeSet nthElementOn (TreeSet set, int startingElementPos){
+    private TreeSet nthElementOn(TreeSet set, int startingElementPos) {
 
-        for(int i=0; i < set.size()-startingElementPos; i++){
+        for (int i = 0; i < set.size() - startingElementPos; i++) {
             set = rest(set);
         }
 
-        return(set);
+        return (set);
     }
 
     //    Pulls head off of set and returns rest. (think cdr in lisp)
-    private TreeSet<TreeSet<Node>> rest(TreeSet set){
+    private TreeSet<TreeSet<Node>> rest(TreeSet set) {
         set.remove(set.first());
         return (set);
     }
 
     //returns second set of nodes.(think cadr in lisp).
-    private TreeSet<TreeSet<Node>> second(TreeSet<TreeSet<Node>> set){
+    private TreeSet<TreeSet<Node>> second(TreeSet<TreeSet<Node>> set) {
 
         TreeSet<TreeSet<Node>> secondNodeSet = new TreeSet<>();
 
@@ -562,38 +575,36 @@ System.out.println("Sorted patternNodes");
 
         secondNodeSet.first();
 
-        return(secondNodeSet);
+        return (secondNodeSet);
 
     }
 
-    private boolean allEqual(SortedSet<Node> set1, SortedSet<Node> set2){
-        for(Node i:set1){
-            for(Node j:set2){
-                if(i.equals(j)){
+    private boolean allEqual(SortedSet<Node> set1, SortedSet<Node> set2) {
+        for (Node i : set1) {
+            for (Node j : set2) {
+                if (i.equals(j)) {
                     continue;
-                }
-                else{
-                    return(false);
+                } else {
+                    return (false);
                 }
             }
         }
-        for(Node i:set2){
-            for(Node j:set1){
-                if(i.equals(j)){
+        for (Node i : set2) {
+            for (Node j : set1) {
+                if (i.equals(j)) {
                     continue;
-                }
-                else{
-                    return(false);
+                } else {
+                    return (false);
                 }
             }
         }
-        return(true);
+        return (true);
     }
 
     // Uses previous runs of GES as new knowledge for a additional runs of GES with lower penalty discounts.
-    private Graph recursiveGES(Graph previousGES, Knowledge2 knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString){
+    private Graph recursiveGES(Graph previousGES, Knowledge2 knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString) {
 
-        for(Edge edge:previousGES.getEdges()){
+        for (Edge edge : previousGES.getEdges()) {
             knowledge.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
         }
 
@@ -606,35 +617,31 @@ System.out.println("Sorted patternNodes");
 
         ges.setKnowledge(knowledge);
         ges.setDepth(this.gesDepth);
-        ges.setPenaltyDiscount( penalty);
+        ges.setPenaltyDiscount(penalty);
 
         ges.setIgnoreLinearDependent(true);
-
 
 
         Graph pattern = ges.search();
 
 
-
         //Saves GES output in case is needed.
-        File file=new File("src/edu/cmu/tetradproj/amurrayw/ges_output_" + penalty+ "_.txt");
+        File file = new File("src/edu/cmu/tetradproj/amurrayw/ges_output_" + penalty + "_.txt");
         try {
             FileOutputStream out = new FileOutputStream(file);
             PrintStream outStream = new PrintStream(out);
             outStream.println(pattern);
-        }
-        catch (java.io.FileNotFoundException e) {
+        } catch (java.io.FileNotFoundException e) {
             System.out.println("Can't write to file.");
 
         }
 
-        if(penalty>minPenalty){
+        if (penalty > minPenalty) {
             applyDmSearch(pattern, inputString, penalty);
-            return(recursiveGES(pattern, knowledge, penalty-1, minPenalty, data, inputString));
-        }
-        else{
+            return (recursiveGES(pattern, knowledge, penalty - 1, minPenalty, data, inputString));
+        } else {
             applyDmSearch(pattern, inputString, penalty);
-            return(pattern);
+            return (pattern);
         }
 
     }
@@ -643,8 +650,8 @@ System.out.println("Sorted patternNodes");
     //Finds any input set that dseps outputs for a pair of directly related latents, then adds input set to approp. set
     //Finally removes latent effect from list of latent effects.
     private void applySobersStep(SortedSet<Node> inputsLatent, SortedSet<Node> inputsLatentEffect,
-                                SortedSet<Node> outputsLatent, SortedSet<Node> outputsLatentEffect,
-                                Graph pattern, LatentStructure structure, Node latent, Node latentEffect) {
+                                 SortedSet<Node> outputsLatent, SortedSet<Node> outputsLatentEffect,
+                                 Graph pattern, LatentStructure structure, Node latent, Node latentEffect) {
 
         List<Node> latentList = new ArrayList<Node>();
 
@@ -656,8 +663,7 @@ System.out.println("Sorted patternNodes");
 
         try {
             testResult = test.isIndependent(outputsLatent.first(), outputsLatentEffect.first(), latentList);
-        }
-        catch(SingularMatrixException error){
+        } catch (SingularMatrixException error) {
             System.out.println(error);
             System.out.println("SingularMatrixException Error!!!!!! Evaluated as:");
             System.out.println(testResult);
@@ -666,7 +672,7 @@ System.out.println("Sorted patternNodes");
             System.out.println("outputsLatentEffect.first()");
             System.out.println(outputsLatentEffect.first());
         }
-        if (testResult==true) {
+        if (testResult == true) {
             structure.latentEffects.get(latent).remove(latentEffect);
             structure.inputs.get(latentEffect).addAll(inputsLatent);
         }
@@ -684,7 +690,7 @@ System.out.println("Sorted patternNodes");
 
                 //Want to remove input set only if the target set is greater than the discovered superset or is superset.
                 if (structure.inputs.get(latent).size() > sizeOfSuperset || latent.equals(latentForSuperset)) {
-                    if(structure.inputs.get(latent).containsAll(set)){
+                    if (structure.inputs.get(latent).containsAll(set)) {
 
                         structure.inputs.get(latent).removeAll(set);
 
@@ -693,7 +699,7 @@ System.out.println("Sorted patternNodes");
                 }
             }
         }
-        return(map);
+        return (map);
     }
 
     //Returns true if a latent already contains the given input set.
@@ -711,10 +717,10 @@ System.out.println("Sorted patternNodes");
         return super.equals(obj);
     }
 
-    private SortedSet copy(SortedSet orig){
+    private SortedSet copy(SortedSet orig) {
         SortedSet newset = new TreeSet();
 
-        for(Object o:orig){
+        for (Object o : orig) {
             newset.add(o);
 
         }
@@ -724,30 +730,30 @@ System.out.println("Sorted patternNodes");
 
     private TreeMap<TreeSet<Node>, Node> sortMapByValue(Map<Node, SortedSet<Node>> inputMap, List<Node> latents, LatentStructure structure) {
 
-        TreeMap<TreeSet<Node>, Node> sortedInputSets = new TreeMap<TreeSet<Node>, Node>(new Comparator<SortedSet<Node>>()
-        {
-            public int compare(SortedSet o1, SortedSet o2)
-            {
-                int size = o1.size()-o2.size();
-                if(size==0){
-                    if(o1.equals(o2)){return(0);}
-                    else {
+        TreeMap<TreeSet<Node>, Node> sortedInputSets = new TreeMap<TreeSet<Node>, Node>(new Comparator<SortedSet<Node>>() {
+            public int compare(SortedSet o1, SortedSet o2) {
+                int size = o1.size() - o2.size();
+                if (size == 0) {
+                    if (o1.equals(o2)) {
+                        return (0);
+                    } else {
                         return (o1.hashCode() - o2.hashCode());
                     }
-                }
-                else{
-                    return(size);
+                } else {
+                    return (size);
                 }
             }
         });
 
         for (Node latent : latents) {
-            TreeSet<Node> tempSet = new TreeSet<>(new Comparator<Node>(){
-                public int compare(Node node1, Node node2){
+            TreeSet<Node> tempSet = new TreeSet<>(new Comparator<Node>() {
+                public int compare(Node node1, Node node2) {
 
-                    if(node1.getName().length()>node2.getName().length()){return(1);}
-                    else if(node1.getName().length()<node2.getName().length()){return(-1);}
-                    else {
+                    if (node1.getName().length() > node2.getName().length()) {
+                        return (1);
+                    } else if (node1.getName().length() < node2.getName().length()) {
+                        return (-1);
+                    } else {
                         int n1 = Integer.parseInt(node1.getName().substring(1));
                         int n2 = Integer.parseInt(node2.getName().substring(1));
                         return (n1 - n2);
@@ -816,7 +822,9 @@ System.out.println("Sorted patternNodes");
             return new TreeSet<Node>(outputs.get(latent));
         }
 
-        public SortedSet<Node> getLatentEffects(Node latent) {return new TreeSet<Node>(latentEffects.get(latent));}
+        public SortedSet<Node> getLatentEffects(Node latent) {
+            return new TreeSet<Node>(latentEffects.get(latent));
+        }
 
         public String toString() {
             StringBuilder b = new StringBuilder();
