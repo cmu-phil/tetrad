@@ -11,7 +11,6 @@
     </parent>
 
     <artifactId>lib-tetrad</artifactId>
-    <version>5.3.0-SNAPSHOT</version>
 
     <build>
         <plugins>
