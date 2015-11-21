@@ -69,15 +69,6 @@
                 <editor-class>edu.cmu.tetradapp.editor.TimeLagGraphEditor
                 </editor-class>
             </model>
-            <!--<model name="Gene Graph" acronym="GeneGraph" help="gene_graph">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="graph" description="Graph" default="on"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradproj.gene.tetrad.gene.graph.ManualActiveLagGraph</model-class>-->
-            <!--<editor-class>edu.cmu.tetradproj.gene.tetradapp.gene.editor.LagGraphEditor-->
-            <!--</editor-class>-->
-            <!--</model>-->
         </models>
         <display-component image="graphIcon.gif"/>
         <model-chooser title="Graph Types"/>
@@ -262,14 +253,6 @@
                 <editor-class>edu.cmu.tetradapp.editor.GeneralizedSemPmEditor
                 </editor-class>
             </model>
-            <!--<model name="Boolean Glass Gene PM" acronym="Glass PM"-->
-            <!--help="glass_pm">-->
-            <!--<model-class>edu.cmu.tetradproj.gene.tetradapp.model.BooleanGlassGenePm-->
-            <!--</model-class>-->
-            <!--<editor-class>-->
-            <!--edu.cmu.tetradapp.gene.editor.BooleanGlassGenePmEditor-->
-            <!--</editor-class>-->
-            <!--</model>-->
         </models>
         <display-component image="pmIcon.gif"/>
         <model-chooser title="Types of Parameterized Models"/>
@@ -365,14 +348,6 @@
                 <model-class>edu.cmu.tetradapp.model.GeneralizedSemImWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GeneralizedSemImEditor</editor-class>
             </model>
-            <!--<model name="Boolean Glass Gene IM" acronym="Glass IM"-->
-            <!--heldp="glass_im">-->
-            <!--<model-class>edu.cmu.tetradproj.gene.tetradapp.model.BooleanGlassGeneIm-->
-            <!--</model-class>-->
-            <!--<editor-class>-->
-            <!--edu.cmu.tetradapp.gene.editor.BooleanGlassGeneImEditor-->
-            <!--</editor-class>-->
-            <!--</model>-->
         </models>
         <display-component image="imIcon.gif"/>
         <model-chooser title="Types of Instantiated Models"/>
@@ -447,9 +422,6 @@
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-class>edu.cmu.tetradapp.model.SemDataParams
                 </params-class>
-                <!--<params-editor-class>-->
-                <!--edu.cmu.tetradapp.editor.SemDataParamsEditor-->
-                <!--</params-editor-class>-->
             </model>
             <model name="Implied Covariance Matrix--All" acronym="Implied Covar All" help="data">
                 <logger>
@@ -461,9 +433,6 @@
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-class>edu.cmu.tetradapp.model.SemDataParams
                 </params-class>
-                <!--<params-editor-class>-->
-                <!--edu.cmu.tetradapp.editor.SemDataParamsEditor-->
-                <!--</params-editor-class>-->
             </model>
             <model name="Generalized SEM IM Simulated Data" acronym="Gen. SEM Data" help="data">
                 <logger>
@@ -479,16 +448,6 @@
                     edu.cmu.tetradapp.editor.SemDataParamsEditor
                 </params-editor-class>
             </model>
-            <!--<model name="SEM2 IM Simulated Data" acronym="SEM2 Data" help="data">-->
-            <!--<model-class>edu.cmu.tetradapp.model.Sem2DataWrapper-->
-            <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.Sem2DataParams-->
-            <!--</params-class>-->
-            <!--<params-editor-class>-->
-            <!--edu.cmu.tetradapp.editor.Sem2DataParamsEditor-->
-            <!--</params-editor-class>-->
-            <!--</model>-->
         </models>
         <display-component image="dataIcon.gif"/>
         <model-chooser title="Types of data Objects"/>
@@ -617,16 +576,6 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <!--<model name="Convert to Correlation Matrix Special" acronym="Corr Matrix Specia."-->
-            <!--help="corr" category="Convert">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="data" description="Data"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.CorrMatrixConverterSpecial-->
-            <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
-            <!--</model>-->
             <model name="Convert to Covariance Matrix" acronym="Cov Matrix"
                    help="covariances" category="Convert">
                 <logger>
@@ -687,12 +636,6 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <!--<model name="Invert covariance matrix" acronym="InvertCov"-->
-            <!--help="data" category="Convert">-->
-            <!--<model-class>edu.cmu.tetradapp.model.datamanip.InvertCovMatrixWrapper-->
-            <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
-            <!--</model>-->
             <model name="Convert to Time Lag Data" acronym="Time Lag"
                    help="data" category="Convert">
                 <logger>
@@ -733,21 +676,6 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <!--<model name="Convert to Box Cox" acronym="Box Cox"-->
-            <!--help="data" category="Convert">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="data" description="Data"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.datamanip.BoxCoxWrapper-->
-            <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.datamanip.BoxCoxParams-->
-            <!--</params-class>-->
-            <!--<params-editor-class>-->
-            <!--edu.cmu.tetradapp.editor.datamanip.BoxCoxParamsEditor-->
-            <!--</params-editor-class>-->
-            <!--</model>-->
             <model name="Convert to residuals" acronym="Residuals"
                    help="data" category="Convert">
                 <logger>
@@ -862,16 +790,6 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <!--<model name="Convert to Positive Skew" acronym="Positive Skew"-->
-            <!--help="data" category="Convert">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="data" description="Data"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.ConvertToPositiveSkew-->
-            <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
-            <!--</model>-->
             <model name="Bootstrap Sample"
                    acronym="Bootstrap" help="data" category="Row operations">
                 <logger>
@@ -1001,16 +919,6 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <!--<model name="Restrict to Graph Nodes" acronym="Restrict"-->
-            <!--help="restrict" category="Column operations">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="data" description="Data"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.RestrictToGraphNodes-->
-            <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
-            <!--</model>-->
             <model name="Average Over Clusters" acronym="AvgClusters"
                    help="avgclusters" category="Column operations">
                 <logger>
@@ -1100,17 +1008,6 @@
                 <params-class>edu.cmu.tetradapp.model.EmBayesEstimatorParams</params-class>
                 <params-editor-class>edu.cmu.tetradapp.editor.EMBayesEstimatorParamsEditor</params-editor-class>
             </model>
-            <!--<model name="Structural EM" acronym="Struct EM" help="struct_em">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="details" description="Details"/>-->
-            <!--<event id="im" description="Estimated Model"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.StructEmBayesSearchRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.StructEmBayesSearchEditor</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.StructEmBayesSearchParams</params-class>-->
-            <!--<params-editor-class>edu.cmu.tetradapp.editor.StructEMBayesSearchParamsEditor</params-editor-class>-->
-            <!--</model>-->
         </models>
         <display-component image="estimatorIcon.gif"/>
         <model-chooser title="Types of Estimators"/>
@@ -1447,60 +1344,6 @@
                 <editor-class>edu.cmu.tetradapp.editor.LingSearchEditor
                 </editor-class>
             </model>
-            <!--<model name="LiNGAM2" acronym="lingam2" help="lingam2"-->
-            <!--category="DAG Searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="graph" description="Graph" default="on"/>-->
-            <!--<event id="edgeRemoved" description="Edge Removal"-->
-            <!--default="on"/>-->
-            <!--<event id="edgeOriented" description="Edge Orientations"/>-->
-            <!--<event id="colliderOrientations"-->
-            <!--description="Collider Orientations"/>-->
-            <!--<event id="details" description="Misc Fine Details"/>-->
-            <!--<event id="independenceDetails"-->
-            <!--description="Independence Details"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.LingamStructureRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
-            <!--</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
-            <!--</params-class>-->
-            <!--</model>-->
-            <!--<model name="LiNGAM Pattern" acronym="lingam_pattern" help="lingam_pattern"-->
-            <!--category="DAG Searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="graph" description="Graph" default="on"/>-->
-            <!--<event id="edgeRemoved" description="Edge Removal"-->
-            <!--default="on"/>-->
-            <!--<event id="edgeOriented" description="Edge Orientations"/>-->
-            <!--<event id="colliderOrientations"-->
-            <!--description="Collider Orientations"/>-->
-            <!--<event id="details" description="Misc Fine Details"/>-->
-            <!--<event id="independenceDetails"-->
-            <!--description="Independence Details"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.LingamStructureRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
-            <!--</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
-            <!--</params-class>-->
-            <!--</model>-->
-            <!--<model name="Lingam Pattern" acronym="PC LiNGAM" help="pc_lingam"-->
-            <!--category="DAG Searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="normalityTests" description="Normality Tests" default="on"/>-->
-            <!--<event id="nongaussianOrientations" description="Nongaussian Orientations" default="on"/>-->
-            <!--<event id="graph" description="Graph" default="on"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.LingamPatternRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
-            <!--</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
-            <!--</params-class>-->
-            <!--</model>-->
             <model name="PC LiNGAM" acronym="PC LiNGAM" help="pc_lingam"
                    category="DAG Searches">
                 <logger>
@@ -1527,23 +1370,6 @@
                 <params-class>edu.cmu.tetradapp.model.PcSearchParams
                 </params-class>
             </model>
-            <!--<model name="FCI" acronym="FCI" help="fci" category="PAG searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="graph" description="Graph"/>-->
-            <!--<event id="edgeOriented" description="Edge Orientations"/>-->
-            <!--<event id="colliderOrientations"-->
-            <!--description="Collider Orientations"/>-->
-            <!--<event id="independenceDetails"-->
-            <!--description="Independence Details"/>-->
-            <!--<event id="details" description="Misc. Fine Details"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradproj.tetradapp.model.FciRunnerOld</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
-            <!--</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.FciSearchParams-->
-            <!--</params-class>-->
-            <!--</model>-->
             <model name="FCI" acronym="FCI" help="fci" category="PAG searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1650,7 +1476,7 @@
                    category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Misc Fine Details" default="on" />
+                    <event id="details" description="Misc Fine Details" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.PValueImproverWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.PValueImproverEditor
@@ -1661,7 +1487,7 @@
                    category="Multiple Indicator Model searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Misc Fine Details" default="on" />
+                    <event id="details" description="Misc Fine Details" default="on"/>
                     <event id="maxmodel" description="Max P Value Model" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.MimBuildRunner
@@ -1670,7 +1496,6 @@
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.MimBuildParams
                 </params-class>
-                <!--Need a params editor here.-->
             </model>
             <model name="Cluster Search" acronym="Cluster" help="cluster"
                    category="Multiple Indicator Model searches">
@@ -1725,7 +1550,6 @@
                 <params-editor-class>
                     edu.cmu.tetradapp.editor.MbSearchParamEditor
                 </params-editor-class>
-
             </model>
             <model name="CEFS" acronym="CEFS" help="cef"
                    category="Feature selection searches">
@@ -1789,23 +1613,6 @@
                 <params-class>edu.cmu.tetradapp.model.GlassoSearchParams
                 </params-class>
             </model>
-            <!--<model name="INVCORR" acronym="INVCORR" help="invcorr" category="Undirected Graph Searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="independencies" description="Independencies" default="on"/>-->
-            <!--<event id="dependencies" description="Dependencies"/>-->
-            <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
-            <!--<event id="colliderOrientations"-->
-            <!--description="Collider Orientations" default="on"/>-->
-            <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
-            <!--<event id="graph" description="Graph" default="on"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.InverseCorrelationRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.GlassoSearchEditor-->
-            <!--</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.GlassoSearchParams-->
-            <!--</params-class>-->
-            <!--</model>-->
         </models>
         <display-component image="searchIcon.gif"/>
         <model-chooser title="Types of Search Algorithms">
@@ -1977,26 +1784,6 @@
             ]]>
         </tooltip>
     </session-node>
-    <!--<session-node id="Knowledge">-->
-    <!--<models>-->
-    <!--<model name="Knowledge" acronym="Knowledge"-->
-    <!--help="knowledge">-->
-    <!--<model-class>edu.cmu.tetradapp.model.KnowledgeWrapper-->
-    <!--</model-class>-->
-    <!--<editor-class>edu.cmu.tetradapp.editor.KnowledgeEditor-->
-    <!--</editor-class>-->
-    <!--</model>-->
-    <!--</models>-->
-    <!--<display-component image="searchIcon.gif"/>-->
-    <!--<model-chooser title="Types of Regression"/>-->
-    <!--<tooltip>-->
-    <!--<![CDATA[-->
-    <!--<html> Allowable Input Nodes:-->
-    <!--<br> (1) Data (Continuous)-->
-    <!--</html>-->
-    <!--]]>-->
-    <!--</tooltip>-->
-    <!--</session-node>-->
     <session-node id="Classify">
         <models>
             <model name="Bayes Updater Classifier" acronym="BayesUpClass"
@@ -2053,22 +1840,22 @@
                     edu.cmu.tetradapp.editor.GraphComparisonParamsEditor
                 </params-editor-class>
             </model>
-            <!--<model name="Misclassifications" acronym="Misclassifications"-->
-            <!--help="misclassifications" category="Graph-Graph Comparisons">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="comparison" description="Comparison" default="on"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.Misclassifications-->
-            <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.MisclassificationsEditor</editor-class>-->
-            <!--&lt;!&ndash;<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>&ndash;&gt;-->
-            <!--<params-class>edu.cmu.tetradapp.model.GraphComparisonParams-->
-            <!--</params-class>-->
-            <!--<params-editor-class>-->
-            <!--edu.cmu.tetradapp.editor.GraphComparisonParamsEditor-->
-            <!--</params-editor-class>-->
-            <!--</model>-->
+            <model name="Misclassifications" acronym="Misclassifications"
+                   help="misclassifications" category="Graph-Graph Comparisons">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.Misclassifications
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.MisclassificationsEditor</editor-class>
+                <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+                <params-class>edu.cmu.tetradapp.model.GraphComparisonParams
+                </params-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.GraphComparisonParamsEditor
+                </params-editor-class>
+            </model>
             <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
                    help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
                 <logger>

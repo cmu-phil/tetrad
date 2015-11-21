@@ -552,8 +552,8 @@ public class MisclassificationUtils {
         return newEdges;
     }
 
-    public static String endpointMisclassification(Graph dag, Graph estGraph, Graph refGraph) {
-        List<Node> _nodes = dag.getNodes();
+    public static String endpointMisclassification(Graph estGraph, Graph refGraph) {
+        List<Node> _nodes = refGraph.getNodes();
         estGraph = GraphUtils.replaceNodes(estGraph, _nodes);
         refGraph = GraphUtils.replaceNodes(refGraph, _nodes);
 
@@ -641,7 +641,7 @@ public class MisclassificationUtils {
         estEdgeTypes.add(new Edge(a, b, Endpoint.NULL, Endpoint.NULL));
 
         int[][] counts = new int[8][6];
-        Graph graph = new EdgeListGraph(dag.getNodes());
+        Graph graph = new EdgeListGraph(trueGraph.getNodes());
         graph.fullyConnect(Endpoint.TAIL);
 
         for (int m = 0; m < 8; m++) {
