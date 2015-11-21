@@ -46,7 +46,6 @@
                             <shadedClassifierName>launch</shadedClassifierName> <!-- Any name that makes sense -->
                         </configuration>
                     </execution>
-
                 </executions>
             </plugin>
             <plugin>
@@ -72,6 +71,20 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.3</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <extensions>
             <extension>
@@ -94,7 +107,6 @@
             </plugin>
         </plugins>
     </reporting>
-
     <dependencies>
         <dependency>
             <groupId>edu.cmu</groupId>
@@ -105,16 +117,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.rosuda.REngine</groupId>
-            <artifactId>Rserve</artifactId>
-            <version>1.8.1</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sourceforge.jexcelapi</groupId>
-            <artifactId>jxl</artifactId>
-            <version>2.6.12</version>
         </dependency>
     </dependencies>
     <distributionManagement>
