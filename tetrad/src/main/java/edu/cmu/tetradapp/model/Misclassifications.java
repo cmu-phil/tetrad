@@ -245,9 +245,6 @@ public final class Misclassifications implements SessionModel {
 
         if (referenceName == null) {
             throw new IllegalArgumentException("Must specify a reference graph.");
-            //            this.referenceGraph = ((GraphSource) model1).getGraph();
-            //            this.targetGraph = ((GraphSource) model2).getGraph();
-            //            this.params.setReferenceGraphName(model1.getName());
         } else if (referenceName.equals(model1.getName())) {
             this.referenceGraph = ((GraphSource) model1).getGraph();
             this.targetGraph = ((GraphSource) model2).getGraph();
@@ -260,7 +257,6 @@ public final class Misclassifications implements SessionModel {
                             referenceName + "'.");
         }
 
-        //        this.referenceGraph = DataGraphUtils.replaceNodes(referenceGraph, nodes);
         this.targetGraph = GraphUtils.replaceNodes(targetGraph, this.referenceGraph.getNodes());
 
         Set<Node> _nodes = new HashSet<Node>(this.referenceGraph.getNodes());
