@@ -554,7 +554,7 @@ public class PerformanceTests {
         IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
         double penaltyDiscount = 2.0;
         int maxPathLength = 6;
-        GFCI fci = new GFCI(independenceTest);
+        GFci fci = new GFci(independenceTest);
         fci.setVerbose(false);
         fci.setPenaltyDiscount(penaltyDiscount);
         fci.setMaxPathLength(maxPathLength);
@@ -1022,7 +1022,7 @@ public class PerformanceTests {
 //            Fci fci = new Fci(independenceTest);
 //            GFCI fci = new GFCI(independenceTest);
 //            TFci fci = new TFci(independenceTest);
-            TGFCI fci = new TGFCI(independenceTest);
+            TGFci fci = new TGFci(independenceTest);
 //            fci.setVerbose(false);
             fci.setPenaltyDiscount(penaltyDiscount);
             fci.setDepth(depth);
@@ -1436,7 +1436,7 @@ public class PerformanceTests {
 
             out6.println("FCI.FGS.PAG");
 
-            GFCI GFci = new GFCI(independenceTestGFci);
+            GFci GFci = new GFci(independenceTestGFci);
             GFci.setVerbose(false);
             GFci.setPenaltyDiscount(penaltyDiscount);
             GFci.setDepth(depth);

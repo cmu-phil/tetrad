@@ -35,6 +35,9 @@ import java.util.concurrent.ConcurrentMap;
 
 
 /**
+ * <p></p>This is experimental; you should use it. It will probably be
+ * removed from the repository.</p>
+ *
  * Replaces the FAS search in the previous version with GES followed by PC adjacency removals for more accuracy.
  * Uses conservative collider orientation. Gets sepsets for X---Y from among adjacencies of X or of Y. -jdramsey 3/10/2015
  * <p>
@@ -54,8 +57,9 @@ import java.util.concurrent.ConcurrentMap;
  * @author Alex Smith, December 2008
  * @author Joseph Ramsey
  * @author Choh-Man Teng
+ * @deprecated
  */
-public final class TGFCI {
+public final class TGFci {
 
     /**
      * The PAG being constructed.
@@ -152,7 +156,7 @@ public final class TGFCI {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public TGFCI(IndependenceTest independenceTest) {
+    public TGFci(IndependenceTest independenceTest) {
         if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }

@@ -115,7 +115,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
             graph = dagToPag.convert();
         }
         else {
-            GFCI fci = new GFCI(getIndependenceTest());
+            GFci fci = new GFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
             fci.setPossibleDsepSearchDone(indTestParams.isPossibleDsepDone());

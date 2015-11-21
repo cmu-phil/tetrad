@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.TGFCI;
+import edu.cmu.tetrad.search.TGFci;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
@@ -125,7 +125,7 @@ public class TGFciRunner extends AbstractAlgorithmRunner
 //            setResultGraph(graph);
         Graph graph;
 
-        TGFCI fci = new TGFCI(getIndependenceTest());
+        TGFci fci = new TGFci(getIndependenceTest());
         fci.setKnowledge(knowledge);
         fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
         fci.setPossibleDsepSearchDone(indTestParams.isPossibleDsepDone());

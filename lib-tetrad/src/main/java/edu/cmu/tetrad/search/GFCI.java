@@ -56,7 +56,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Joseph Ramsey
  * @author Choh-Man Teng
  */
-public final class GFCI {
+public final class GFci {
 
     /**
      * The PAG being constructed.
@@ -153,7 +153,7 @@ public final class GFCI {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public GFCI(IndependenceTest independenceTest) {
+    public GFci(IndependenceTest independenceTest) {
         if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }

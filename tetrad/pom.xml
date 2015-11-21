@@ -43,12 +43,11 @@
                                     </manifestEntries>
                                 </transformer>
                             </transformers>
-                            <!--Will have to optimize this by hand; minimizing it messes up the ejar launch.-->
-                            <minimizeJar>false</minimizeJar>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>launch</shadedClassifierName> <!-- Any name that makes sense -->
                         </configuration>
                     </execution>
+
                 </executions>
             </plugin>
             <plugin>

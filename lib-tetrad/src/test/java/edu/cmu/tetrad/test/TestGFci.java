@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.GFCI;
+import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
@@ -123,7 +123,7 @@ public class TestGFci extends TestCase {
         System.out.println("True PAG done");
         independenceTest.setAlpha(alpha);
 
-        GFCI gFci = new GFCI(independenceTest);
+        GFci gFci = new GFci(independenceTest);
         gFci.setVerbose(false);
         gFci.setPenaltyDiscount(penaltyDiscount);
         gFci.setDepth(depth);

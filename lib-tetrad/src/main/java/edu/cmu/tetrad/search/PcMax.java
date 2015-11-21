@@ -31,11 +31,17 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
+ * <p></p>This is experimental; you should use it. It will probably be
+ * removed from the repository.</p>
+ * <p></p>This is experimental; you should use it. It will probably be
+ * removed from the repository.</p>
+ *
  * Implements the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of Spirtes, Glymour, and Scheines, "Causation,
  * Prediction, and Search," 2nd edition, with a modified rule set in step D due to Chris Meek. For the modified rule
  * set, see Chris Meek (1995), "Causal inference and causal explanation with background knowledge."
  *
  * @author Joseph Ramsey.
+ * @deprecated
  */
 public class PcMax implements GraphSearch {
 

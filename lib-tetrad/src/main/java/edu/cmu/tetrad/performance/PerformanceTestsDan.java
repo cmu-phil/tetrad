@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.GFCI;
+import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.sem.SemIm;
@@ -175,7 +175,7 @@ public class PerformanceTestsDan {
 
             out6.println("FCI.GES.PAG");
 
-            GFCI gFci = new GFCI(independenceTestGFci);
+            GFci gFci = new GFci(independenceTestGFci);
             gFci.setVerbose(false);
             gFci.setPenaltyDiscount(penaltyDiscount);
             gFci.setDepth(depth);
