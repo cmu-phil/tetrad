@@ -106,7 +106,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         if (!evidence.isCompatibleWith(bayesIm)) {
             throw new IllegalArgumentException(
                     "Variables for this evidence must be compatible with those " +
-                            "of the getModel Bayes IM");
+                            "of the model Bayes IM");
         }
 
         this.bayesIm = bayesIm;

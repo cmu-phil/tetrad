@@ -156,6 +156,7 @@ public class Fas2 implements IFas {
         graph.removeEdges(graph.getEdges());
 
         sepset = new SepsetMap();
+        sepset.setReturnEmptyIfNotSet(true);
 
         int _depth = depth;
 
@@ -329,7 +330,9 @@ public class Fas2 implements IFas {
 
 
                 if (independent && noEdgeRequired) {
-                    getSepsets().set(x, y, empty);
+                    if (!getSepsets().isReturnEmptyIfNotSet()) {
+                        getSepsets().set(x, y, empty);
+                    }
 
                     TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
                             nf.format(test.getPValue()));

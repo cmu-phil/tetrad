@@ -64,7 +64,7 @@ final class SessionVersionAction extends AbstractAction {
 
         if (metadata == null) {
             buf.append(
-                    "This session has not yet been saved or loaded. The getModel\n");
+                    "This session has not yet been saved or loaded. The model\n");
             buf.append("version you are working in is ");
             buf.append(Version.currentViewableVersion());
             buf.append(".");

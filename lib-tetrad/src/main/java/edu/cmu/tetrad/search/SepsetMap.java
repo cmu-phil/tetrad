@@ -77,23 +77,22 @@ public final class SepsetMap implements TetradSerializable {
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
      */
-    public synchronized void set(Node x, Node y, List<Node> z) {
+    public void set(Node x, Node y, List<Node> z) {
         Set<Node> pair = new HashSet<Node>(2);
         pair.add(x);
         pair.add(y);
         if (z == null) {
             sepsets.remove(pair);
-        }
-        else {
+        } else {
             sepsets.put(pair, z);
         }
     }
 
-    public synchronized void setPValue(Node x, Node y, double p) {
+    public void setPValue(Node x, Node y, double p) {
         Set<Node> pair = new HashSet<Node>(2);
         pair.add(x);
         pair.add(y);
-            pValues.put(pair, p);
+        pValues.put(pair, p);
     }
 
     /**

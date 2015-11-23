@@ -126,7 +126,7 @@ public class TestSerialization extends TestCase {
      */
     public void testLoadabilility() {
         String serializableScope = "target/classes/edu/cmu";
-        String currentDirectory = "build/tetrad/serializable/getModel";
+        String currentDirectory = "build/tetrad/serializable/model";
         String archiveDirectory = "archives";
 
         TetradSerializableUtils utils = new TetradSerializableUtils(
@@ -148,7 +148,7 @@ public class TestSerialization extends TestCase {
 
     public void doArchive() {
         String serializableScope = "build/tetrad/classes/edu/cmu";
-        String currentDirectory = "build/tetrad/serializable/getModel";
+        String currentDirectory = "build/tetrad/serializable/model";
         String archiveDirectory = "archives";
 
         TetradSerializableUtils utils = new TetradSerializableUtils(

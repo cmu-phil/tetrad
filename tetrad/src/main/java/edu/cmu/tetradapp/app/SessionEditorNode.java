@@ -527,7 +527,7 @@ public final class SessionEditorNode extends DisplayNode {
                     } else {
                         Component centeringComp = SessionEditorNode.this;
                         JOptionPane.showMessageDialog(centeringComp,
-                                "Please destroy the getModel model first.");
+                                "Please destroy the model model first.");
                     }
                 } catch (Exception e1) {
                     Component centeringComp = SessionEditorNode.this;

@@ -106,6 +106,7 @@ public class Fas implements IFas {
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
         sepset = new SepsetMap();
+        sepset.setReturnEmptyIfNotSet(true);
 
         int _depth = depth;
 
@@ -195,7 +196,14 @@ public class Fas implements IFas {
 
                         if (independent) {
                             graph.removeEdge(x, y);
-                            getSepsets().set(x, y, condSet);
+                            if (condSet.isEmpty()) {
+                                if (!sepset.isReturnEmptyIfNotSet()) {
+                                    getSepsets().set(x, y, condSet);
+                                }
+                            }
+                            else {
+                                getSepsets().set(x, y, condSet);
+                            }
                             continue EDGE;
                         }
                     }

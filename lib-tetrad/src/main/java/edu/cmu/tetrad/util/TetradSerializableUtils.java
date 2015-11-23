@@ -506,7 +506,7 @@ public class TetradSerializableUtils {
             return o;
         }
         catch (ClassNotFoundException e) {
-            throw new RuntimeException("There is no class in the getModel API " +
+            throw new RuntimeException("There is no class in the model API " +
                     "to deserialize the object in " + file + ". Perhaps the " +
                     "class was renamed, moved to another package, or removed. " +
                     "In any case, please put it back where it was.", e);

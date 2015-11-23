@@ -112,7 +112,7 @@ final class LoadDataAction extends AbstractAction {
         boolean keepData = false;
 
         if (!isDataEmpty()) {
-            String message = "Would you like to replace the getModel data?";
+            String message = "Would you like to replace the model data?";
             int option = JOptionPane.showOptionDialog(this.dataEditor, message, "Data Replacement",
                     0, JOptionPane.QUESTION_MESSAGE,
                     null, new String[]{"Replace", "Keep"}, "Replace");
