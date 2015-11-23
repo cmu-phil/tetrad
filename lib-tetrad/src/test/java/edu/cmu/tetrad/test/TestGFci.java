@@ -71,9 +71,9 @@ public class TestGFci extends TestCase {
 //        int numEdges = 4500;
 //        int sampleSize = 1000;
 
-        double alpha = 0.001;
-        double penaltyDiscount = 2;
-        int depth = 3;
+        double alpha = 0.01;
+        double penaltyDiscount = 4;
+        int depth = -1;
         int maxPathLength = -1;
         boolean possibleDsepDone = true;
         boolean completeRuleSetUsed = false;
@@ -89,8 +89,8 @@ public class TestGFci extends TestCase {
 
         System.out.println("Finishing list of vars");
 
-//        Graph dag = DataGraphUtils.randomDagUniform(vars, numLatents, numEdges, 4, 4, 4, false);
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges1(vars, numLatents, numEdges);
+        Graph dag = GraphUtils.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false);
+//        Graph dag = GraphUtils.randomGraphRandomForwardEdges1(vars, numLatents, numEdges);
 //        Graph dag = DataGraphUtils.scaleFreeGraph(vars, numLatents, .05, .05, .05, 3);
 
         System.out.println("Graph done");
@@ -101,7 +101,7 @@ public class TestGFci extends TestCase {
             SemPm pm = new SemPm(dag);
 
             SemImInitializationParams params = new SemImInitializationParams();
-            params.setCoefRange(.2, 1.5);
+            params.setCoefRange(.5, 1.5);
             params.setCoefSymmetric(true);
             params.setVarRange(1, 3);
             params.setCoefSymmetric(true);
@@ -110,7 +110,7 @@ public class TestGFci extends TestCase {
             data = im.simulateData(sampleSize, false);
         } else {
             LargeSemSimulator simulator = new LargeSemSimulator(dag);
-            simulator.setCoefRange(.5, 1.1);
+            simulator.setCoefRange(.5, 1.5);
             simulator.setVarRange(1, 3);
             data = simulator.simulateDataAcyclic(sampleSize);
             data = DataUtils.restrictToMeasured(data);

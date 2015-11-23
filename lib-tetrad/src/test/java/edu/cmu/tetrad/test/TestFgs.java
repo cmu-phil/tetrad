@@ -61,7 +61,7 @@ public class TestFgs extends TestCase {
 
     public void testFgs() {
         int numVars = 1000;
-        double edgesPerNode = 1.0;
+        double edgesPerNode = 2.0;
         int numCases = 1000;
         double penaltyDiscount = 4.0;
 
