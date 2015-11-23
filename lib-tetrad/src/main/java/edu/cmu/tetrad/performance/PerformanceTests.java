@@ -189,7 +189,7 @@ public class PerformanceTests {
         pcStable.setDepth(depth);
 //        pcStable.setOut(out);
 
-        Graph estPattern = pcStable.search(new FasStableConcurrent2(test), test.getVariables());
+        Graph estPattern = pcStable.search(new FasStableConcurrent(test), test.getVariables());
 
 //        out.println(estPattern);
 

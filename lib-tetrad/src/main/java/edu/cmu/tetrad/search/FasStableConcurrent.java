@@ -1,3 +1,5 @@
+package edu.cmu.tetrad.search;
+
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
@@ -19,11 +21,13 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
-
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.IFas;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchLogUtils;
+import edu.cmu.tetrad.search.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -33,6 +37,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
@@ -45,14 +50,12 @@ import java.util.concurrent.RecursiveTask;
  * search is different for different algorithms, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
  * </p>
- * This version uses the Pc-Stable variant, calculating independencies in parallel for edach step.
+ * This variant uses the Pc-Stable modification, calculating independencies in parallel within each depth.
+ * It uses a slightly different algorithm from FasStableConcurrent, probably better.
  *
  * @author Joseph Ramsey.
  */
 public class FasStableConcurrent implements IFas {
-
-    private int EPOCH_COUNT = 500000;
-
 
     /**
      * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
@@ -94,14 +97,27 @@ public class FasStableConcurrent implements IFas {
      */
     private Graph initialGraph;
 
-//    private List<Double> pValues = new ArrayList<Double>();
-
+    // Number formatter.
     private NumberFormat nf = new DecimalFormat("0.00E0");
+
+    /**
+     * Set to true if verbose output is desired.
+     */
     private boolean verbose = false;
+
+    // The concurrency pool.
     private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-    private int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
+
+    /**
+     * Where verbose output is sent.
+     */
     private PrintStream out = System.out;
-    private boolean sepsetsRecorded = true;
+
+
+//    private boolean sepsetsRecorded = true;
+
+    int chunk = 100;
+
 
     //==========================CONSTRUCTORS=============================//
 
@@ -130,6 +146,7 @@ public class FasStableConcurrent implements IFas {
         graph = new EdgeListGraphSingleConnections(test.getVariables());
 
         sepsets = new SepsetMap();
+
         //this is bad when starting from init graph --AJ
         sepsets.setReturnEmptyIfNotSet(true);
 
@@ -140,7 +157,7 @@ public class FasStableConcurrent implements IFas {
         }
 
 
-        Map<Node, Set<Node>> adjacencies = new ConcurrentHashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new ConcurrentSkipListMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -160,7 +177,6 @@ public class FasStableConcurrent implements IFas {
                 break;
             }
         }
-
 
         if (verbose) {
             out.println("Finished with search, constructing Graph...");
@@ -196,42 +212,42 @@ public class FasStableConcurrent implements IFas {
         return 0;
     }
 
-    public Map<Node, Set<Node>> searchMapOnly() {
-        this.logger.log("info", "Starting Fast Adjacency Search.");
-        graph.removeEdges(graph.getEdges());
-
-        sepsets = new SepsetMap();
-
-        int _depth = depth;
-
-        if (_depth == -1) {
-            _depth = 1000;
-        }
-
-
-        Map<Node, Set<Node>> adjacencies = new ConcurrentHashMap<Node, Set<Node>>();
-        List<Node> nodes = graph.getNodes();
-
-        for (Node node : nodes) {
-            adjacencies.put(node, new TreeSet<Node>());
-        }
-
-        for (int d = 0; d <= _depth; d++) {
-            boolean more;
-
-            if (d == 0) {
-                more = searchAtDepth0(nodes, test, adjacencies);
-            } else {
-                more = searchAtDepth(nodes, test, adjacencies, d);
-            }
-
-            if (!more) {
-                break;
-            }
-        }
-
-        return adjacencies;
-    }
+//    public Map<Node, Set<Node>> searchMapOnly() {
+//        this.logger.log("info", "Starting Fast Adjacency Search.");
+//        graph.removeEdges(graph.getEdges());
+//
+//        sepsets = new SepsetMap();
+//
+//        int _depth = depth;
+//
+//        if (_depth == -1) {
+//            _depth = 1000;
+//        }
+//
+//
+//        Map<Node, Set<Node>> adjacencies = new ConcurrentHashMap<Node, Set<Node>>();
+//        List<Node> nodes = graph.getNodes();
+//
+//        for (Node node : nodes) {
+//            adjacencies.put(node, new TreeSet<Node>());
+//        }
+//
+//        for (int d = 0; d <= _depth; d++) {
+//            boolean more;
+//
+//            if (d == 0) {
+//                more = searchAtDepth0(nodes, test, adjacencies);
+//            } else {
+//                more = searchAtDepth(nodes, test, adjacencies, d);
+//            }
+//
+//            if (!more) {
+//                break;
+//            }
+//        }
+//
+//        return adjacencies;
+//    }
 
     public int getDepth() {
         return depth;
@@ -328,7 +344,9 @@ public class FasStableConcurrent implements IFas {
                                     knowledge.noEdgeRequired(x.getName(), y.getName());
 
                             if (independent && noEdgeRequired) {
-                                getSepsets().set(x, y, empty);
+                                if (!sepsets.isReturnEmptyIfNotSet()) {
+                                    getSepsets().set(x, y, empty);
+                                }
 
                                 if (verbose) {
                                     TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
@@ -365,10 +383,6 @@ public class FasStableConcurrent implements IFas {
                 }
             }
         }
-
-//        getIndependenceTest().setAlpha(alpha);
-
-        final int chunk = 100;
 
         pool.invoke(new Depth0Task(chunk, 0, nodes.size()));
 
@@ -433,7 +447,9 @@ public class FasStableConcurrent implements IFas {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
+                        if (verbose) {
+                            if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
+                        }
 
                         EDGE:
                         for (int j = i + 1; j < nodes.size(); j++) {
@@ -443,13 +459,8 @@ public class FasStableConcurrent implements IFas {
                             if (!adjacenciesCopy.get(x).contains(y)) continue;
 
                             List<Node> adjx = new ArrayList<Node>(adjacenciesCopy.get(x));
-                            List<Node> adjy = new ArrayList<Node>(adjacenciesCopy.get(y));
-
                             adjx.remove(y);
-                            adjy.remove(x);
-
                             adjx = possibleParents(x, adjx, knowledge);
-                            adjy = possibleParents(y, adjy, knowledge);
 
                             if (adjx.size() >= depth) {
                                 ChoiceGenerator cg = new ChoiceGenerator(adjx.size(), depth);
@@ -470,13 +481,6 @@ public class FasStableConcurrent implements IFas {
                                     boolean noEdgeRequired =
                                             knowledge.noEdgeRequired(x.getName(), y.getName());
 
-//                                    if (independent && noEdgeRequired) {
-//                                        adjacencies.get(x).remove(y);
-//                                        adjacencies.get(y).remove(x);
-//                                        getSepsets().set(x, y, condSet);
-//                                        continue EDGE;
-//                                    }
-
                                     if (independent && noEdgeRequired) {
                                         adjacencies.get(x).remove(y);
                                         adjacencies.get(y).remove(x);
@@ -490,14 +494,13 @@ public class FasStableConcurrent implements IFas {
                                         }
 
                                         continue EDGE;
-                                    } else {
-                                        if (verbose) {
-                                            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, condSet,
-                                                    test.getPValue()) + " p = " + nf.format(test.getPValue()));
-                                        }
                                     }
                                 }
                             }
+
+                            List<Node> adjy = new ArrayList<Node>(adjacenciesCopy.get(y));
+                            adjy.remove(x);
+                            adjy = possibleParents(y, adjy, knowledge);
 
                             if (adjy.size() >= depth) {
                                 ChoiceGenerator cg2 = new ChoiceGenerator(adjy.size(), depth);
@@ -522,6 +525,12 @@ public class FasStableConcurrent implements IFas {
 
                                         continue EDGE;
                                     }
+                                    else {
+                                        if (verbose) {
+                                            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, condSet,
+                                                    test.getPValue()) + " p = " + nf.format(test.getPValue()));
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -542,8 +551,6 @@ public class FasStableConcurrent implements IFas {
                 }
             }
         }
-
-        int chunk = 100;
 
         pool.invoke(new DepthTask(chunk, 0, nodes.size()));
 
@@ -639,13 +646,13 @@ public class FasStableConcurrent implements IFas {
         return out;
     }
 
-    public boolean isSepsetsRecorded() {
-        return sepsetsRecorded;
-    }
-
-    public void setSepsetsRecorded(boolean sepsetsRecorded) {
-        this.sepsetsRecorded = sepsetsRecorded;
-    }
+//    public boolean isSepsetsRecorded() {
+//        return sepsetsRecorded;
+//    }
+//
+//    public void setSepsetsRecorded(boolean sepsetsRecorded) {
+//        this.sepsetsRecorded = sepsetsRecorded;
+//    }
 }
 
 

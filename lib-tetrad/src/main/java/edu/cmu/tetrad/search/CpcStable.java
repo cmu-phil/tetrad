@@ -220,7 +220,6 @@ public final class CpcStable implements GraphSearch {
 
         final FasStableConcurrent fas = new FasStableConcurrent(getIndependenceTest());
         fas.setOut(out);
-        fas.setSepsetsRecorded(false);
         return search(fas, nodes);
     }
 

@@ -240,7 +240,7 @@ public class TestPc extends TestCase {
 
         // Run search
 //        Graph resultGraph = pc.search();
-        Graph resultGraph = pc.search(new FasStableConcurrent2(independence), independence.getVariables());
+        Graph resultGraph = pc.search(new FasStableConcurrent(independence), independence.getVariables());
 
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);
