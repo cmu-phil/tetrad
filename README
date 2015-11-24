@@ -41,12 +41,11 @@ tetrad
 pitt
 tetradapp
 
-as well as some contributions in the pitt directories. The 
-tetrad package contains the "model" code; the tetradapp package 
-contains the "view" (GUI) code. The model code is packaged
-as the lib-tetrad submodule; the view code is packaged as 
-the tetrad submodule; these can be downloaded separately
-in the above downloads directory.
+The  tetrad package contains the "model" code; the 
+tetradapp package contains the "view" (GUI) code. The 
+model code is packaged as the lib-tetrad submodule; the 
+view code is packaged as  the tetrad submodule; these 
+can be downloaded separately n the above downloads directory.
 
 Contributions are welcome; we will handle these via the
 issue tracker and the GitHub pull-request procedure. As 
