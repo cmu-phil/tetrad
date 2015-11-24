@@ -21,6 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -28,10 +32,21 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.Ccd;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 
+import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static java.lang.Math.sin;
+import static java.lang.Math.sqrt;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the CCD algorithm.
@@ -108,7 +123,6 @@ public class CcdRunner extends AbstractAlgorithmRunner
 	/**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static CcdRunner serializableInstance() {
@@ -146,10 +160,47 @@ public class CcdRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
+        DataSet dataSet = (DataSet) dataModel;
+
+//        SingularValueDecomposition decomp = new SingularValueDecomposition(dataSet.getDoubleData().getRealMatrix());
+//        double[] singularValues = decomp.getSingularValues();
+//
+//        System.out.println();
+//
+//        for (int i = 0; i < singularValues.length; i++) {
+//            double s = singularValues[i];
+//            double eigenvalue = s * s;
+//            System.out.println(eigenvalue);
+//            if (eigenvalue >= 1) {
+//                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Eigenvalue > 1: " + eigenvalue);
+//                singularValues[i] = 0;
+//            }
+//        }
+//
+//        System.out.println(Arrays.toString(singularValues));
+//
+//        System.out.println("U = " + new TetradMatrix(decomp.getU()));
+//
+//        System.out.println("V = " + new TetradMatrix(decomp.getV()));
+//
+//        TetradVector s = new TetradVector(singularValues);
+//        RealMatrix diag = s.diag().getRealMatrix();
+//
+//        System.out.println("DIAG = " + new TetradMatrix(diag));
+//
+//        RealMatrix g = decomp.getU().multiply(diag).multiply(decomp.getV());
+//        TetradMatrix h = new TetradMatrix(g);
+//
+//        System.out.println("H = " + h);
+//
+//        DataSet dataSet2 = new BoxDataSet(new DoubleDataBox(h.toArray()), dataSet.getVariables());
+
         BasicSearchParams params = (BasicSearchParams) getParams();
         IndTestType testType = params.getIndTestType();
-        return new IndTestChooser().getTest(dataModel, params, testType);
+        return new IndTestChooser().getTest(dataSet, params, testType);
     }
+
+
 
     public Graph getGraph() {
         return getResultGraph();

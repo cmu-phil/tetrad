@@ -210,11 +210,11 @@ public final class Ccd implements GraphSearch {
 
         List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
 
-        Collections.sort(colliders, new Comparator<Triple>() {
-            public int compare(Triple o1, Triple o2) {
-                return -Double.compare(collidersPs.get(o1), collidersPs.get(o2));
-            }
-        });
+//        Collections.sort(colliders, new Comparator<Triple>() {
+//            public int compare(Triple o1, Triple o2) {
+//                return -Double.compare(collidersPs.get(o1), collidersPs.get(o2));
+//            }
+//        });
 
         for (Triple collider : colliders) {
             Node a = collider.getX();
@@ -243,10 +243,6 @@ public final class Ccd implements GraphSearch {
             Node a = collider.getX();
             Node b = collider.getY();
             Node c = collider.getZ();
-
-            if (!(isArrowpointAllowed(a, b) && isArrowpointAllowed(c, b))) {
-                continue;
-            }
 
             graph.addUnderlineTriple(a, b, c);
         }
