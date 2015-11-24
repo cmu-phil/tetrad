@@ -38,6 +38,8 @@ import static java.lang.Math.min;
  * Implements the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen, and Kerminen, A linear nongaussian acyclic model for
  * causal discovery, JMLR 7 (2006). Largely follows the Matlab code.
  *
+ * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015</p>
+
  * @author Gustavo Lacerda
  */
 public class Lingam {

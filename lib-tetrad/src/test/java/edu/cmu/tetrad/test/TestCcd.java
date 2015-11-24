@@ -57,7 +57,7 @@ public class TestCcd extends TestCase {
     /**
      * From "CcdTester".
      */
-    public void rtestCcd() {  // TODO
+    public void testCcd() {  // TODO
         Node a = new ContinuousVariable("A");
         Node b = new ContinuousVariable("B");
         Node x = new ContinuousVariable("X");
@@ -121,6 +121,13 @@ public class TestCcd extends TestCase {
 
         //Dag dag = new Dag(graph);
 
+        boolean b0 = PagUtils.graphInPagStep0(outPag, graph);
+        if (!b0) {
+            fail();
+        } else {
+            System.out.println("Step 0 OK");
+        }
+
         boolean b1 = PagUtils.graphInPagStep1(outPag, graph);
         if (!b1) {
             fail();
@@ -156,28 +163,13 @@ public class TestCcd extends TestCase {
             System.out.println("Step 5 OK");
         }
 
-        boolean b6 = PagUtils.graphInPagStep6(outPag, graph);
-        if (!b6) {
-            fail();
-        } else {
-            System.out.println("Step 6 OK");
-        }
-
         System.out.println("\n\n");
     }
 
     /**
-     * From CcdTesterC.     // fails in step C can't figure out why...
+     * From CcdTesterC.
      */
-    public void rtestCcdC() {
-
-        /*
-        Node a = new GraphNode("A");
-        Node b = new GraphNode("B");
-        Node c = new GraphNode("C");
-        Node d = new GraphNode("D");
-        Node e = new GraphNode("E");
-        */
+    public void testCcdC() {
 
         Node a = new ContinuousVariable("A");
         Node b = new ContinuousVariable("B");
@@ -262,42 +254,42 @@ public class TestCcd extends TestCase {
         System.out.println(outPag);
         System.out.println("\n\n");
 
-        boolean b1 = PagUtils.graphInPagStep1(outPag, graph);
+        boolean b1 = PagUtils.graphInPagStep0(outPag, graph);
         if (!b1) {
             fail();
         } else {
             System.out.println("Step 1 OK");
         }
 
-        boolean b2 = PagUtils.graphInPagStep2(outPag, graph);
+        boolean b2 = PagUtils.graphInPagStep1(outPag, graph);
         if (!b2) {
             fail();
         } else {
             System.out.println("Step 2 OK");
         }
 
-        boolean b3 = PagUtils.graphInPagStep3(outPag, graph);
+        boolean b3 = PagUtils.graphInPagStep2(outPag, graph);
         if (!b3) {
             fail();
         } else {
             System.out.println("Step 3 OK");
         }
 
-        boolean b4 = PagUtils.graphInPagStep4(outPag, graph);
+        boolean b4 = PagUtils.graphInPagStep3(outPag, graph);
         if (!b4) {
             fail();
         } else {
             System.out.println("Step 4 OK");
         }
 
-        boolean b5 = PagUtils.graphInPagStep5(outPag, graph);
+        boolean b5 = PagUtils.graphInPagStep4(outPag, graph);
         if (!b5) {
             fail();
         } else {
             System.out.println("Step 5 OK");
         }
 
-        boolean b6 = PagUtils.graphInPagStep6(outPag, graph);
+        boolean b6 = PagUtils.graphInPagStep5(outPag, graph);
         if (!b6) {
             fail();
         } else {

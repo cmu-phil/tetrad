@@ -39,7 +39,7 @@ public final class PagUtils {
      *
      * @return true if every vertex in gamma is in O.
      */
-    public static boolean graphInPagStep1(Graph pag, Graph dag) {
+    public static boolean graphInPagStep0(Graph pag, Graph dag) {
         System.out.println("graphInPag entered!");
         System.out.println("PAG = " + pag);
         System.out.println("DAG = " + dag);
@@ -61,96 +61,39 @@ public final class PagUtils {
         return true;
     }
 
-    public static boolean graphInPagStep2(Graph pag, Graph dag) {
+    public static boolean graphInPagStep1(Graph pag, Graph dag) {
         //If A and B are in O, there is an edge between A and B in gamma
         //iff for every W subset of O minus {A, B}, A and B are d-connected
-        //given W union S in [every graph] in delta (dag).
-        List<Node> dagNodes = new LinkedList<Node>(dag.getNodes());
-        List<Node> dagONodes = new LinkedList<Node>();
-
+        //given W in [every graph] in delta (dag).
         IndTestDSep test = new IndTestDSep(pag);
 
-        for (Node dagNode : dagNodes) {
-            if (dagNode.getNodeType() == NodeType.MEASURED) {
-                dagONodes.add(dagNode);
-            }
-        }
+        List<Node> V = new ArrayList<>(dag.getNodes());
 
-        //For each pair of nodes A and B in dag
-        boolean forAllAB = true;
-        for (int j = 0; j < dagONodes.size(); j++) {
-            for (int k = j + 1; k < dagONodes.size(); k++) {
-                Node Ad = dagONodes.get(j);
-                Node Bd = dagONodes.get(k);
+        for (Edge edge : pag.getEdges()) {
+            Node A = edge.getNode1();
+            Node B = edge.getNode2();
 
-                //System.out.println("A = " + Ad.getName() + " B = " + Bd.getName());
+            List<Node> W = new ArrayList<>(V);
+            W.remove(A);
+            W.remove(B);
 
-                List<Node> OMinusAB = new ArrayList<Node>(dagONodes);
-                OMinusAB.remove(Ad);
-                OMinusAB.remove(Bd);
+            ChoiceGenerator gen = new ChoiceGenerator(W.size(), W.size());
+            int[] choice;
 
-                //System.out.println("OMinusAB:  ");
-                //for(Iterator it = OMinusAB.iterator(); it.hasNext(); )
-                //    System.out.println(((Node) it.next()).getName() + " ");
+            while ((choice = gen.next()) != null) {
+                List<Node> S = GraphUtils.asList(choice, W);
 
-                int nOMinusAB = OMinusAB.size();
-
-
-                Node Ap = pag.getNode(Ad.getName());
-                Node Bp = pag.getNode(Bd.getName());
-
-                //Is there an edge between A and B in gamma?
-                List<Edge> edgesABgamma = pag.getEdges(Ap, Bp);
-                boolean existsEdgeABgamma = (edgesABgamma.size() > 0);
-                //if(existsEdgeABgamma) System.out.println("There are edges between " +
-                //        Ap.getName() + " and " + Bp.getName() + " in gamma.");
-
-                //For every subset W of O
-                //int maxDepth = 3;
-
-                //if (depth() != -1 && _depth > depth()) {
-                //    _depth = depth();
-                //}
-
-                boolean forEveryW = true;
-
-//                Node[] arrayOMinusAB = OMinusAB.toArray(new Node[0]);
-                for (int i = 0; i <= nOMinusAB; i++) {
-                    //subsets of size i
-                    ChoiceGenerator cg = new ChoiceGenerator(nOMinusAB, i);
-
-                    int[] indSet;
-                    while ((indSet = cg.next()) != null) {
-                        List<Node> condSetW = GraphUtils.asList(indSet, OMinusAB);
-
-                        //System.out.println("Trying conditioning set:  ");
-                        //for(Iterator it = condSetW.iterator(); it.hasNext(); )
-                        //    System.out.println(((Node) it.next()).getName() + " ");
-
-
-                        if (test.isIndependent(Ad, Bd, condSetW)) {
-                            //A and B are d-separated in dag given conditioning set W.
-                            forEveryW = false;
-                            break;
-                        }
-                    }
-                    if (!forEveryW) {
-                        break;
-                    }
-                }
-
-                if (forEveryW != existsEdgeABgamma) {
-                    forAllAB = false;
-                    break;
+                if (test.isDSeparated(A, B, S)) {
+                    return false;
                 }
 
             }
         }
 
-        return forAllAB;
+        return true;
     }
 
-    public static boolean graphInPagStep3(Graph pag, Graph dag) {
+    public static boolean graphInPagStep2(Graph pag, Graph dag) {
         Set<Edge> pagEdges = pag.getEdges();
 
         for (Edge edge : pagEdges) {
@@ -173,7 +116,7 @@ public final class PagUtils {
         return true;
     }
 
-    public static boolean graphInPagStep4(Graph pag, Graph dag) {
+    public static boolean graphInPagStep3(Graph pag, Graph dag) {
         Set<Edge> pagEdges = pag.getEdges();
 
         for (Edge edge : pagEdges) {
@@ -184,10 +127,7 @@ public final class PagUtils {
                 Node Ad = dag.getNode(A.getName());
                 Node Bd = dag.getNode(B.getName());
 
-                List<Node> singletonA = new ArrayList<Node>();
-                singletonA.add(Ad);
-                List<Node> ancestorsOfA = dag.getAncestors(singletonA);
-                if (ancestorsOfA.contains(Bd)) {
+                if (dag.isAncestorOf(Bd, Ad)) {
                     return false;
                 }
             }
@@ -196,7 +136,7 @@ public final class PagUtils {
         return true;
     }
 
-    public static boolean graphInPagStep5(Graph pag, Graph dag) {
+    public static boolean graphInPagStep4(Graph pag, Graph dag) {
         Set<Triple> pagUnderLines = pag.getUnderLines();
 
         for (Triple underline : pagUnderLines) {
@@ -208,15 +148,7 @@ public final class PagUtils {
             Node Bd = dag.getNode(B.getName());
             Node Cd = dag.getNode(C.getName());
 
-            List<Node> singletonA = new ArrayList<Node>();
-            singletonA.add(Ad);
-            List<Node> singletonC = new ArrayList<Node>();
-            singletonC.add(Cd);
-
-            List<Node> ancestorsOfA = dag.getAncestors(singletonA);
-            List<Node> ancestorsOfC = dag.getAncestors(singletonC);
-
-            if (!ancestorsOfA.contains(Bd) && !ancestorsOfC.contains(Bd)) {
+            if (!dag.isAncestorOf(Bd, Ad) && !dag.isAncestorOf(Bd, Cd)) {
                 return false;
             }
         }
@@ -224,61 +156,23 @@ public final class PagUtils {
         return true;
     }
 
-    public static boolean graphInPagStep6(Graph pag, Graph dag) {
-        List<Node> pagNodes = pag.getNodes();
-        List<Node> dagNodes = dag.getNodes();
+    public static boolean graphInPagStep5(Graph pag, Graph dag) {
+        for (Triple triple : pag.getDottedUnderlines()) {
+            Node A = triple.getX();
+            Node B = triple.getY();
+            Node C = triple.getZ();
 
-        Set<Triple> pagDottedUnderlines = pag.getDottedUnderlines();
+            Node Ad = dag.getNode(A.getName());
+            Node Bd = dag.getNode(B.getName());
+            Node Cd = dag.getNode(C.getName());
 
-        for (Node B : pagNodes) {
-            List<Node> parentsOfB = pag.getParents(B);
+            if (pag.isParentOf(A, B) && pag.isParentOf(C, B)) {
+                List<Node> commonChildrenAC = new ArrayList<>(dag.getChildren(Ad));
+                commonChildrenAC.retainAll(dag.getChildren(Cd));
 
-            //Hack to make sure each parent occurs only once:
-            Set<Node> bParents = new HashSet<Node>(parentsOfB);
-            Node[] parents = new Node[bParents.size()];
-            for (int i = 0; i < parents.length; i++) {
-                parents[i] = (Node) (bParents.toArray()[i]);
-            }
-            //parents = (Node[]) bParents.toArray();
-
-            for (int i = 0; i < parents.length; i++) {
-                for (int j = i + 1; j < parents.length; j++) {
-                    Node A = parents[i];
-                    Node C = parents[j];
-
-                    for (Triple underline : pagDottedUnderlines) {
-
-                        //Does it matter if the triple is ABC versus CBA?
-                        //if(A == underLine.getFirst() && B == underLine.getSecond() &&
-                        //        C == underLine.getThird()) {
-                        if (B == underline.getY() && ((
-                                A == underline.getX() &&
-                                        C == underline.getZ()) || (
-                                C == underline.getX() &&
-                                        A == underline.getZ()))) {
-                            //if B is a descendant of a common child of A & C return false
-                            Node Ad = dag.getNode(A.getName());
-                            Node Cd = dag.getNode(C.getName());
-
-                            List<Node> childrenOfA = dag.getChildren(Ad);
-                            List<Node> childrenOfC = dag.getChildren(Cd);
-
-                            List<Node> commonChildrenAC = new ArrayList<Node>();
-
-                            for (Node childAC : dagNodes) {
-                                if (childrenOfA.contains(childAC) &&
-                                        childrenOfC.contains(childAC)) {
-                                    commonChildrenAC.add(childAC);
-                                }
-                            }
-
-                            //If b desdencant of any node in commonChildrenAC return false
-                            for (Node commonChild : commonChildrenAC) {
-                                if (dag.isDescendentOf(B, commonChild)) {
-                                    return false;
-                                }
-                            }
-                        }
+                for (Node Dd : commonChildrenAC) {
+                    if (dag.isDescendentOf(Bd, Dd)) {
+                        return false;
                     }
                 }
             }

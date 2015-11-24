@@ -1316,34 +1316,34 @@
             <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
             <!--</params-class>-->
             <!--</model>-->
-            <model name="LiNGAM" acronym="LiNGAM" help="lingam"
-                   category="DAG Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="fastIcaDetails" description="FastICA Details" default="on"/>
-                    <event id="lingamDetails" description="Lingam Details" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.LingamRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.LingamSearchEditor
-                </editor-class>
-                <params-class>edu.cmu.tetradapp.model.LingamParams
-                </params-class>
-            </model>
-            <model name="LiNG" acronym="LiNG" help="ling"
-                   category="DG Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="fastIcaDetails" description="FastICA Details"/>
-                    <event id="lingDetails" description="Ling Details"/>
-                    <event id="stableGraphs" description="Stable Graphs" default="on"/>
-                    <event id="unstableGraphs" description="Unstable Graphs"/>
-                    <event id="wMatrices" description="W Matrices"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.LingRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.LingSearchEditor
-                </editor-class>
-            </model>
+            <!--<model name="LiNGAM" acronym="LiNGAM" help="lingam"-->
+            <!--category="DAG Searches">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="fastIcaDetails" description="FastICA Details" default="on"/>-->
+            <!--<event id="lingamDetails" description="Lingam Details" default="on"/>-->
+            <!--<event id="graph" description="Graph" default="on"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.LingamRunner</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.LingamSearchEditor-->
+            <!--</editor-class>-->
+            <!--<params-class>edu.cmu.tetradapp.model.LingamParams-->
+            <!--</params-class>-->
+            <!--</model>-->
+            <!--<model name="LiNG" acronym="LiNG" help="ling"-->
+            <!--category="DG Searches">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="fastIcaDetails" description="FastICA Details"/>-->
+            <!--<event id="lingDetails" description="Ling Details"/>-->
+            <!--<event id="stableGraphs" description="Stable Graphs" default="on"/>-->
+            <!--<event id="unstableGraphs" description="Unstable Graphs"/>-->
+            <!--<event id="wMatrices" description="W Matrices"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.LingRunner</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.LingSearchEditor-->
+            <!--</editor-class>-->
+            <!--</model>-->
             <model name="PC LiNGAM" acronym="PC LiNGAM" help="pc_lingam"
                    category="DAG Searches">
                 <logger>

@@ -29,6 +29,8 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import java.util.List;
 
 /**
+ * Selects the maximum p value sepset
+ *
  * Created by josephramsey on 3/24/15.
  */
 public class SepsetsMaxPValue implements SepsetProducer {

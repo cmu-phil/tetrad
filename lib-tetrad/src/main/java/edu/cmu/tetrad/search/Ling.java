@@ -56,6 +56,8 @@ import static java.lang.Math.min;
 /**
  * The code used within this class is largely Gustave Lacerda's, which corresponds to his essay, Discovering Cyclic
  * Causal Models by Independent Components Analysis. The code models the LiNG algorithm.
+ *
+ * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015</p>
  */
 public class Ling implements GraphGroupSearch {
 
