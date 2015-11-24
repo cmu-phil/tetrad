@@ -15,6 +15,14 @@ Downloads directory is here:
 
 www.phil.cmu.edu/projects/tetrad_download/maven/edu/cmu/
 
+The wiki is here:
+
+https://github.com/cmu-phil/tetrad/wiki
+
+The issue tracker is here:
+
+https://github.com/cmu-phil/tetrad/issues
+
 This is a Maven port of an existing Ant-based project
 that's been under development for many years in the
 Department of Philosophy at Carnegie Mellon University.
@@ -33,12 +41,11 @@ tetrad
 pitt
 tetradapp
 
-as well as some contributions in the pitt directories. The 
-tetrad package contains the "model" code; the tetradapp package 
-contains the "view" (GUI) code. The model code is packaged
-as the lib-tetrad submodule; the view code is packaged as 
-the tetrad submodule; these can be downloaded separately
-in the above downloads directory.
+The  tetrad package contains the "model" code; the 
+tetradapp package contains the "view" (GUI) code. The 
+model code is packaged as the lib-tetrad submodule; the 
+view code is packaged as  the tetrad submodule; these 
+can be downloaded separately n the above downloads directory.
 
 Contributions are welcome; we will handle these via the
 issue tracker and the GitHub pull-request procedure. As 
