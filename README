@@ -15,6 +15,14 @@ Downloads directory is here:
 
 www.phil.cmu.edu/projects/tetrad_download/maven/edu/cmu/
 
+The wiki is here:
+
+https://github.com/cmu-phil/tetrad/wiki
+
+The issue tracker is here:
+
+https://github.com/cmu-phil/tetrad/issues
+
 This is a Maven port of an existing Ant-based project
 that's been under development for many years in the
 Department of Philosophy at Carnegie Mellon University.
