@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -218,6 +219,33 @@ public final class TestEdgeListGraph extends TestCase {
         edges = new ArrayList<Edge>(graph.getEdges());
 
         System.out.println(edges);
+    }
+
+    public void test5() {
+        Graph graph1 = GraphUtils.emptyGraph(3);
+
+        List<Node> nodes = graph1.getNodes();
+
+        graph1.addDirectedEdge(nodes.get(0), nodes.get(1));
+        graph1.addDirectedEdge(nodes.get(1), nodes.get(2));
+        graph1.addDirectedEdge(nodes.get(0), nodes.get(2));
+
+        Graph graph2 = new EdgeListGraph(graph1);
+
+        graph2.removeEdge(nodes.get(0), nodes.get(1));
+
+        System.out.println(graph1.toString());
+
+        System.out.println("graph1 = " + graph1);
+        System.out.println("graph2 = " + graph2);
+
+        System.out.println(graph1.equals(graph2));
+
+        int shd = SearchGraphUtils.structuralHammingDistance(graph1, graph2);
+        System.out.println(Integer.toString(shd));
+
+        assertEquals(2, shd);
+
     }
 
     /**

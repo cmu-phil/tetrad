@@ -2282,14 +2282,17 @@ public final class SearchGraphUtils {
 
         Set<Node> _allNodes = new HashSet<Node>();
 
-        List<Node> trueLatents = GraphUtils.getLatents(trueGraph);
-        List<Node> estLatents = GraphUtils.getLatents(estGraph);
+        List<Node> trueLatents = trueGraph.getNodes();
+        List<Node> estLatents = estGraph.getNodes();
+
+//        List<Node> trueLatents = GraphUtils.getLatents(trueGraph);
+//        List<Node> estLatents = GraphUtils.getLatents(estGraph);
 
         Graph u = trueGraph.subgraph(trueLatents);
         Graph t = estGraph.subgraph(estLatents);
 
-        Graph G = patternForDag(u);
-        Graph H = patternForDag(t);
+        Graph G = u; //patternForDag(u);
+        Graph H = t; //patternForDag(t);
 
 //        System.out.println("Pattern of true graph over latents = " + G);
 
@@ -2307,6 +2310,7 @@ public final class SearchGraphUtils {
                 Edge e2 = H.getEdge(l1, l2);
 
                 int shd = structuralHammingDistanceOneEdge(e1, e2);
+
                 error += shd;
             }
         }

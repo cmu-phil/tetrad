@@ -186,28 +186,7 @@ public final class Cci {
                     _y[i] = function(n, y[i]);
                 }
 
-                double sigmaXY = covariance(_x, _y);
-                double sigmaXX = covariance(_x, _x);
-                double sigmaYY = covariance(_y, _y);
-
-                double r = sigmaXY / sqrt(sigmaXX * sigmaYY);
-
-                if (r > 1) r = 1;
-                if (r < -1) r = -1;
-
-                // Non-parametric Fisher Z test.
-                double _z = 0.5 * (log(1.0 + r) - log(1.0 - r));
-                double w = sqrt(x.length) * _z;
-
-                // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
-                // are finite and that the sample is large.
-                standardize(_x);
-                standardize(_y);
-
-                double t2 = moment22(_x, _y);
-
-                double t = sqrt(t2);
-                double _p = 2.0 * (1.0 - normalCdf(0.0, t, abs(w)));
+                double _p = calcP(_x, _y);
 
                 if (!Double.isNaN(_p)) {
                     p.add(_p);
@@ -229,6 +208,31 @@ public final class Cci {
 
         return minP > cutoff;
 //        return getQ(p) > alpha;
+    }
+
+    private double calcP(double[] _x, double[] _y) {
+        double sigmaXY = covariance(_x, _y);
+        double sigmaXX = covariance(_x, _x);
+        double sigmaYY = covariance(_y, _y);
+
+        double r = sigmaXY / sqrt(sigmaXX * sigmaYY);
+
+        if (r > 1) r = 1;
+        if (r < -1) r = -1;
+
+        // Non-parametric Fisher Z test.
+        double _z = 0.5 * (log(1.0 + r) - log(1.0 - r));
+        double w = sqrt(_x.length) * _z;
+
+        // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
+        // are finite and that the sample is large.
+        standardize(_x);
+        standardize(_y);
+
+        double t2 = moment22(_x, _y);
+
+        double t = sqrt(t2);
+        return 2.0 * (1.0 - normalCdf(0.0, t, abs(w)));
     }
 
     /**
