@@ -309,6 +309,7 @@ public class TestStandardizedSem extends TestCase {
     // This tests what the user is going to try to do in the GUI.
     public void test7() {
         RandomUtil random = RandomUtil.getInstance();
+        random.setSeed(9394929393L);
 
         SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false)));
 

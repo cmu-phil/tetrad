@@ -232,13 +232,7 @@ public class Pc implements GraphSearch {
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
-//        if (getIndependenceTest() instanceof IndTestFisherZConcatenateResiduals2) {
-//            return search(new FasICov2(getIndependenceTest()), nodes);
-////            return search(new FasICov(getIndependenceTest()), nodes);
-//        }
-
-//        return search(new Fas(getIndependenceTest()), nodes);
-        FasStableConcurrent fas = new FasStableConcurrent(getIndependenceTest());
+        IFas fas = new Fas(getIndependenceTest());
         fas.setVerbose(verbose);
         return search(fas, nodes);
     }
