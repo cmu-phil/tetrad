@@ -211,7 +211,7 @@ public final class RGFci {
 
         this.graph = new EdgeListGraph(nodes);
 
-//        Fas2 fas = new Fas2(new IndTestFisherZ(independenceTest.getCov(), 0.001));
+//        Fas fas = new Fas(new IndTestFisherZ(independenceTest.getCov(), 0.001));
 //        fas.setKnowledge(getKnowledge());
 //        fas.setDepth(depth);
 //        fas.setVerbose(verbose);

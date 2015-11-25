@@ -272,7 +272,7 @@ public class FindOneFactorClustersWithCausalIndicators {
         } else {
 //            System.out.println("Running PC adjacency search...");
             Graph graph = new EdgeListGraph(variables);
-            Fas2 fas = new Fas2(graph, indTest);
+            Fas fas = new Fas(graph, indTest);
             fas.setVerbose(false);
             fas.setDepth(depth);     // 1?
             adjacencies = fas.searchMapOnly();
@@ -995,7 +995,7 @@ public class FindOneFactorClustersWithCausalIndicators {
         } else {
             System.out.println("Running PC adjacency search...");
             Graph graph = new EdgeListGraph(variables);
-            Fas2 fas = new Fas2(graph, indTest);
+            Fas fas = new Fas(graph, indTest);
             fas.setDepth(depth);     // 1?
             adjacencies = fas.searchMapOnly();
             System.out.println("...done.");

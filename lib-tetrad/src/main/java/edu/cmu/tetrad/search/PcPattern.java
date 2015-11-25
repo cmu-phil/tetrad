@@ -173,7 +173,7 @@ public class PcPattern implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-//        Fas2 fas = new Fas2(graph, getIndependenceTest());
+//        Fas fas = new Fas(graph, getIndependenceTest());
         FasStable fas = new FasStable(getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());

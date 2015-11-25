@@ -1161,7 +1161,7 @@ public class PerformanceTests {
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
 
-    // Fas2 is calibrated; we need to calibrate other FAS versions to it.
+    // Fas is calibrated; we need to calibrate other FAS versions to it.
     public void testCompareFasVersions(int numVars, double edgesPerNode, int numLatents) {
         System.out.println("Making list of vars");
 
@@ -1189,7 +1189,7 @@ public class PerformanceTests {
 
         System.out.println("Graph done");
 
-        Fas2 fas = new Fas2(new IndTestDSep(dag));
+        Fas fas = new Fas(new IndTestDSep(dag));
 
         Graph left = fas.search();
 
@@ -1208,16 +1208,16 @@ public class PerformanceTests {
 
         Set<Edge> leftEdges = left.getEdges();
         leftEdges.removeAll(top.getEdges());
-        System.out.println("FAS1 but not FAS2 " + leftEdges);
+        System.out.println("FAS1 but not Fas " + leftEdges);
 
         Set<Edge> topEdges = top.getEdges();
         topEdges.removeAll(left.getEdges());
-        System.out.println("Fas2 but not FAS1 " + topEdges);
+        System.out.println("Fas but not FAS1 " + topEdges);
 
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
 
-    // Fas2 is calibrated; we need to calibrate other FAS versions to it.
+    // Fas is calibrated; we need to calibrate other FAS versions to it.
     public void testComparePcVersions(int numVars, double edgesPerNode, int numLatents) {
         System.out.println("Making list of vars");
 
@@ -1264,11 +1264,11 @@ public class PerformanceTests {
 
         Set<Edge> leftEdges = left.getEdges();
         leftEdges.removeAll(top.getEdges());
-        System.out.println("FAS1 but not FAS2 " + leftEdges);
+        System.out.println("FAS1 but not Fas " + leftEdges);
 
         Set<Edge> topEdges = top.getEdges();
         topEdges.removeAll(left.getEdges());
-        System.out.println("Fas2 but not FAS1 " + topEdges);
+        System.out.println("Fas but not FAS1 " + topEdges);
 
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }

@@ -165,8 +165,8 @@ public class TestFas extends TestCase {
         fas.setDepth(depth);
         Graph outGraph = fas.search();
 
-        IFas fas2 = new Fas2(test);
-//        IFas fas2 = new FasStableConcurrent(new EdgeListGraphSingleConnections(test.getVariables()), test);
+        IFas fas2 = new Fas(test);
+//        IFas fas = new FasStableConcurrent(new EdgeListGraphSingleConnections(test.getVariables()), test);
         fas2.setDepth(depth);
         Graph outGraph2 = fas2.search();
 

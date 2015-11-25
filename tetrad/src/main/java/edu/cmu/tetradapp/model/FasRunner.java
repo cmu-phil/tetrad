@@ -105,7 +105,6 @@ public class FasRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static FasRunner serializableInstance() {
@@ -127,7 +126,7 @@ public class FasRunner extends AbstractAlgorithmRunner
         int depth = getParams().getIndTestParams().getDepth();
         Graph graph = new EdgeListGraph(getIndependenceTest().getVariables());
 
-        Fas2 fas = new Fas2(graph, getIndependenceTest());
+        Fas fas = new Fas(graph, getIndependenceTest());
         fas.setKnowledge(knowledge);
         fas.setDepth(depth);
         graph = fas.search();

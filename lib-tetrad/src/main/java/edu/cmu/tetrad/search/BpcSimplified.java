@@ -600,7 +600,7 @@ public class BpcSimplified {
             test = new IndTestFisherZ(cov, _alpha);
         }
 
-        Fas2 fas = new Fas2(G, test);
+        Fas fas = new Fas(G, test);
         fas.setDepth(depth);
 
         G = fas.search();

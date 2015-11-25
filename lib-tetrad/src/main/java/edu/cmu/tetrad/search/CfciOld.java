@@ -192,7 +192,7 @@ public final class CfciOld {
         getGraph().fullyConnect(Endpoint.CIRCLE);
 
         // Step FCI B.
-        Fas2 fas = new Fas2(graph, independenceTest);
+        Fas fas = new Fas(graph, independenceTest);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
 

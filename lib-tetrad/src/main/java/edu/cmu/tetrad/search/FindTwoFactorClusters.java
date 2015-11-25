@@ -274,7 +274,7 @@ public class FindTwoFactorClusters {
         }
 
         Graph graph = new EdgeListGraph(variables);
-        Fas2 fas = new Fas2(graph, indTest);
+        Fas fas = new Fas(graph, indTest);
         fas.setDepth(depth);
         graph = fas.search();
         if (verbose) {

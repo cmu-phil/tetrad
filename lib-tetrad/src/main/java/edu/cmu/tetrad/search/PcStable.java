@@ -228,7 +228,7 @@ public class PcStable implements GraphSearch {
 //        graph.fullyConnect(Endpoint.TAIL);
 
 //        IFas fas = new Fas(getIndependenceTest());
-//        IFas fas = new Fas2(getIndependenceTest());
+//        IFas fas = new Fas(getIndependenceTest());
 //        IFas fas = new FasStable2(getIndependenceTest());
 //        IFas fas = new FasStable2a(getIndependenceTest());
 //        IFas fas = new FasStable2b(getIndependenceTest());

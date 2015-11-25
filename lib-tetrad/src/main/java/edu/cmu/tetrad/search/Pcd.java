@@ -238,8 +238,8 @@ public class Pcd implements GraphSearch {
 ////            return search(new FasICov(getIndependenceTest()), nodes);
 //        }
 
-//        return search(new Fas3(getIndependenceTest()), nodes);
-        return search(new Fas2(getIndependenceTest()), nodes);
+//        return search(new Fas(getIndependenceTest()), nodes);
+        return search(new Fas(getIndependenceTest()), nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {

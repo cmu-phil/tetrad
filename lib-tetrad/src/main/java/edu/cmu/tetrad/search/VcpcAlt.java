@@ -258,7 +258,7 @@ public final class VcpcAlt implements GraphSearch {
 ////    public Graph search(List<Node> nodes) {
 ////
 //////        return search(new FasICov2(getIndependenceTest()), nodes);
-//////        return search(new Fas3(getIndependenceTest()), nodes);
+//////        return search(new Fas(getIndependenceTest()), nodes);
 ////        return search(new Fas(getIndependenceTest()), nodes);
 //    }
 
@@ -290,7 +290,7 @@ public final class VcpcAlt implements GraphSearch {
 //                    "be in the domain of the independence test provided.");
 //        }
 
-//        Fas3 fas = new Fas3(graph, getIndependenceTest());
+//        Fas fas = new Fas(graph, getIndependenceTest());
 //        FasStableConcurrent fas = new FasStableConcurrent(graph, getIndependenceTest());
 //        Fas6 fas = new Fas6(graph, getIndependenceTest());
 //        fas = new FasICov(graph, (IndTestFisherZ) getIndependenceTest());

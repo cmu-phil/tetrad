@@ -184,7 +184,7 @@ public final class FciMax implements GraphSearch {
         FasStableConcurrent fas = new FasStableConcurrent(getIndependenceTest());
         fas.setVerbose(verbose);
         return search(fas);
-//        return search(new Fas3(getIndependenceTest()));
+//        return search(new Fas(getIndependenceTest()));
     }
 
     public void setInitialGraph(Graph initialGraph) {

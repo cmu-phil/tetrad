@@ -169,7 +169,7 @@ public final class TestSearchGraph extends TestCase {
         IndependenceTest test = new IndTestDSep(graph);
 
         Rfci fci = new Rfci(test);
-        Fas2 fas = new Fas2(test);
+        Fas fas = new Fas(test);
         start = System.currentTimeMillis();
         fci.setDepth(depth);
         fci.setVerbose(true);
@@ -187,16 +187,16 @@ public final class TestSearchGraph extends TestCase {
         IndependenceTest test2 = new IndTestFisherZ(data, 0.001);
 
         Rfci fci3 = new Rfci(test2);
-        Fas2 fas3 = new Fas2(test2);
+        Fas fas2 = new Fas(test2);
         start = System.currentTimeMillis();
         fci3.setDepth(depth);
-        fci3.search(fas3, fas3.getNodes());
+        fci3.search(fas2, fas2.getNodes());
         stop = System.currentTimeMillis();
 
         System.out.println("FISHER Z RFCI");
-        System.out.println("# indep checks = " + fas3.getNumIndependenceTests());
+        System.out.println("# indep checks = " + fas.getNumIndependenceTests());
         System.out.println("Elapsed " + (stop - start));
-        System.out.println("Per " + fas3.getNumIndependenceTests() / (double) (stop - start));
+        System.out.println("Per " + fas.getNumIndependenceTests() / (double) (stop - start));
     }
 
     private boolean dConnected(Graph graph, String x, String y, String...z) {

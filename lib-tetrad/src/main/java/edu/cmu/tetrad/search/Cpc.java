@@ -255,7 +255,7 @@ public final class Cpc implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        return search(new Fas2(getIndependenceTest()), nodes);
+        return search(new Fas(getIndependenceTest()), nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
@@ -281,7 +281,7 @@ public final class Cpc implements GraphSearch {
         }
 
 
-//        Fas3 fas = new Fas3(graph, getIndependenceTest());
+//        Fas fas = new Fas(graph, getIndependenceTest());
 //        FasStableConcurrent fas = new FasStableConcurrent(graph, getIndependenceTest());
 //        Fas6 fas = new Fas6(graph, getIndependenceTest());
 //        fas = new FasICov(graph, (IndTestFisherZ) getIndependenceTest());
