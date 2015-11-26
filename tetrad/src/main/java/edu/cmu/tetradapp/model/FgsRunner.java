@@ -45,7 +45,7 @@ import java.util.Map;
  * @author Ricardo Silva
  */
 
-public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
+public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
         PropertyChangeListener, Indexable, IGesRunner, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
     private transient List<PropertyChangeListener> listeners;
@@ -58,23 +58,23 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     //============================CONSTRUCTORS============================//
 
-    public GesRunner(DataWrapper dataWrapper, GesParams params) {
+    public FgsRunner(DataWrapper dataWrapper, GesParams params) {
         super(dataWrapper, params, null);
     }
 
-    public GesRunner(DataWrapper dataWrapper, GraphSource trueGraph, GesParams params) {
+    public FgsRunner(DataWrapper dataWrapper, GraphSource trueGraph, GesParams params) {
         this(dataWrapper, params, null);
         this.initialGraph = trueGraph.getGraph();
     }
 
-    public GesRunner(DataWrapper dataWrapper, GesParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner(DataWrapper dataWrapper, GesParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public GesRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
@@ -85,7 +85,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
      * @see TetradSerializableUtils
      */
     public static IGesRunner serializableInstance() {
-        return new GesRunner(DataWrapper.serializableInstance(),
+        return new FgsRunner(DataWrapper.serializableInstance(),
                 GesParams.serializableInstance());
     }
 
@@ -102,22 +102,65 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
         GesParams gesParams = (GesParams) getParams();
         GesIndTestParams indTestParams = (GesIndTestParams) gesParams.getIndTestParams();
         double penalty = gesParams.getComplexityPenalty();
-        Ges ges;
+        Fgs ges;
+        boolean faithfulnessAssumed = false;
+        boolean ignoreLinearDependent = false;
 
         if (source instanceof ICovarianceMatrix) {
-            ges = new Ges((ICovarianceMatrix) source);
+//            ges = new FGS((ICovarianceMatrix) source);
+//            ges.setKnowledge(getParams().getKnowledge());
+//            ges.setPenaltyDiscount(penalty);
+//            ges.setVerbose(true);
+//            ges.setLog(true);
+//            ges.setDepth(-1);
+//            ges.setNumPatternsToStore(0);
+//            ges.setFaithfulnessAssumed(faithfulnessAssumed);
+
+            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) source);
+            gesScore.setIgnoreLinearDependent(ignoreLinearDependent);
+            gesScore.setPenaltyDiscount(penalty);
+            ges = new Fgs(gesScore);
             ges.setKnowledge(getParams().getKnowledge());
             ges.setPenaltyDiscount(penalty);
+            ges.setDepth(2);
             ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
+            ges.setFaithfulnessAssumed(faithfulnessAssumed);
+//            ges.setIgnoreLinearDependent(ignoreLinearDependent);
             ges.setVerbose(true);
+
         } else if (source instanceof DataSet) {
             DataSet dataSet = (DataSet) source;
 
             if (dataSet.isContinuous()) {
-                ges = new Ges((DataSet) source);
+
+//                ges = new FGSSet);
+//                ges.setKnowledge(getParams().getKnowledge());
+//                ges.setPenaltyDiscount(penalty);
+//                ges.setVerbose(true);
+//                ges.setLog(true);
+//                ges.setDepth(-1);
+//                ges.setNumPatternsToStore(0);
+//                ges.setFaithfulnessAssumed(faithfulnessAssumed);
+
+//                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+//                gesScore.setPenaltyDiscount(penalty);
+//                ges = new FGS(gesScore);
+//                ges.setKnowledge(getParams().getKnowledge());
+//                ges.setDepth(-1);
+//                ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
+//                ges.setFaithfulnessAssumed(faithfulnessAssumed);
+//                ges.setIgnoreLinearDependent(ignoreLinearDependent);
+
+                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) source));
+                gesScore.setIgnoreLinearDependent(ignoreLinearDependent);
+                gesScore.setPenaltyDiscount(penalty);
+                ges = new Fgs(gesScore);
                 ges.setKnowledge(getParams().getKnowledge());
                 ges.setPenaltyDiscount(penalty);
+                ges.setDepth(2);
                 ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
+                ges.setFaithfulnessAssumed(faithfulnessAssumed);
+//                ges.setIgnoreLinearDependent(ignoreLinearDependent);
                 ges.setVerbose(true);
             }
             else if (dataSet.isDiscrete()) {
@@ -126,13 +169,14 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
-                ges = new Ges((DataSet) source);
+//                BDeScore score = new BDeScore(dataSet);
+                ges = new Fgs(score);
                 ges.setVerbose(true);
                 ges.setLog(true);
                 ges.setKnowledge(getParams().getKnowledge());
-                ges.setSamplePrior(((GesParams) getParams()).getSamplePrior());
-                ges.setStructurePrior(((GesParams) getParams()).getStructurePrior());
+                ges.setDepth(2);
                 ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
+                ges.setFaithfulnessAssumed(faithfulnessAssumed);
             }
             else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
@@ -160,13 +204,13 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
             topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
         }
 
-        this.topGraphs = new ArrayList<>(ges.getTopGraphs());
+        this.topGraphs = new ArrayList<ScoredGraph>(ges.getTopGraphs());
 
         if (this.topGraphs.isEmpty()) {
             this.topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
         }
 
-        this.allDagsToScores = new ArrayList<>();
+        this.allDagsToScores = new ArrayList<Map<Graph, Double>>();
 
         for (ScoredGraph scoredGraph : topGraphs) {
             Map<Graph, Double> dagsToScores = scoreGraphs(ges, scoredGraph.getGraph());
@@ -194,7 +238,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
         return index;
     }
 
-    private Map<Graph, Double> scoreGraphs(Ges ges, Graph graph) {
+    private Map<Graph, Double> scoreGraphs(Fgs ges, Graph graph) {
         Map<Graph, Double> dagsToScores = new HashMap<Graph, Double>();
 
         if (false) {

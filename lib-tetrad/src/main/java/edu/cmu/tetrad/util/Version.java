@@ -195,9 +195,6 @@ public class Version implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     * <p>
-     * //     * @see edu.cmu.TestSerialization
-     * //     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Version serializableInstance() {
         return new Version("1.2.3");

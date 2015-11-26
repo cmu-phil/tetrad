@@ -76,6 +76,14 @@ public class GesSearchEditor extends AbstractSearchEditor
 //        getWorkbench().setGraph(runner.getTopGraphs().get(runner.getTopGraphs().size() - 1).getGraph());
     }
 
+    /**
+     * Opens up an editor to let the user view the given GesRunner.
+     */
+    public GesSearchEditor(FgsRunner runner) {
+        super(runner, "Result Pattern");
+//        getWorkbench().setGraph(runner.getTopGraphs().get(runner.getTopGraphs().size() - 1).getGraph());
+    }
+
     public GesSearchEditor(ImagesRunner runner) {
         super(runner, "Result Pattern");
     }

@@ -720,6 +720,8 @@ public final class Ges implements GraphSearch, GraphScorer {
     }
 
     public void setInitialGraph(Graph initialGraph) {
+        if (initialGraph == null) return;
+
         initialGraph = GraphUtils.replaceNodes(initialGraph, variables);
 
         System.out.println("Initial graph variables: " + initialGraph.getNodes());
