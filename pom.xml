@@ -5,14 +5,14 @@
                              http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.cmu</groupId>
-    <artifactId>tetrad-parent</artifactId>
+    <artifactId>tetrad</artifactId>
     <version>5.3.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
     <modules>
-        <module>tetrad</module>
-        <module>lib-tetrad</module>
+        <module>tetrad-lib</module>
+        <module>tetrad-gui</module>
     </modules>
 
     <licenses>
