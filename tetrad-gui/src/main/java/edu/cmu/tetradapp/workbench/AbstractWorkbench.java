@@ -33,6 +33,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * The functionality of the workbench which is shared between the workbench
@@ -1824,7 +1825,19 @@ public abstract class AbstractWorkbench extends JComponent
         } else if (source instanceof IDisplayEdge) {
             edgeClicked(source, e);
         } else {
-            deselectAll();
+            if (e.isAltDown() && e.isControlDown() && e.isMetaDown()) {
+                if (Preferences.userRoot().getBoolean("experimental", false)) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            "Setting to published interface on next restart."
+                    );
+                    Preferences.userRoot().putBoolean("experimental", false);
+                } else {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            "Setting to experimental interface on next restart."
+                    );
+                    Preferences.userRoot().putBoolean("experimental", true);
+                }
+            }
         }
     }
 

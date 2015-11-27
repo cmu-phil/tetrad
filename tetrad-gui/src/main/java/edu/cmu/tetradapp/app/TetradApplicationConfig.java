@@ -33,9 +33,14 @@ import nu.xom.Element;
 import nu.xom.Elements;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * Represents the configuration details for the Tetrad application.
@@ -50,13 +55,6 @@ public class TetradApplicationConfig {
      */
     private final static TetradApplicationConfig instance = new TetradApplicationConfig();
 
-
-    /**
-     * Path to the xml file.
-     */
-    private final static String PATH = "/resources/configuration.xml";
-
-
     /**
      * A map from ids to node configs.
      */
@@ -68,12 +66,21 @@ public class TetradApplicationConfig {
      */
     private Map<Class, SessionNodeConfig> classMap = new HashMap<Class, SessionNodeConfig>();
 
-
     /**
-     * Constructs the configuration from the configuration.xml file.
+     * Constructs the configuration.
      */
     public TetradApplicationConfig() {
-        InputStream stream = this.getClass().getResourceAsStream(PATH);
+        String path;
+
+        if (Preferences.userRoot().getBoolean("experimental", false)) {
+            path = "/resources/configplay.xml";
+        }
+        else {
+            path = "/resources/configpost.xml";
+        }
+
+//        String PATH = "/resources/configplay.xml";
+        InputStream stream = this.getClass().getResourceAsStream(path);
         Builder builder = new Builder(true);
         try {
             Document doc = builder.build(stream);

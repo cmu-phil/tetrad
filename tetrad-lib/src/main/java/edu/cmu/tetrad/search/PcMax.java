@@ -82,11 +82,6 @@ public class PcMax implements GraphSearch {
     private TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The number of indepdendence tests in the last search.
-     */
-    private int numIndependenceTests;
-
-    /**
      * The initial graph for the Fast Adjacency Search, or null if there is none.
      */
     private Graph initialGraph = null;
@@ -235,7 +230,7 @@ public class PcMax implements GraphSearch {
 //        independenceTest = new ProbabilisticMAPIndependence((DataSet) independenceTest.getData());
 
         SepsetsMaxPValue sepsetProducer = new SepsetsMaxPValue(graph, independenceTest, null, getDepth());
-        sepsetProducer.setDsep(dsep);
+//        sepsetProducer.setDsep(dsep);
 
         addColliders(graph, sepsetProducer, knowledge);
 
@@ -423,9 +418,9 @@ public class PcMax implements GraphSearch {
 
     //===============================PRIVATE METHODS=======================//
 
-    public int getNumIndependenceTests() {
-        return numIndependenceTests;
-    }
+//    public int getNumIndependenceTests() {
+//        return numIndependenceTests;
+//    }
 
     public List<Node> getNodes() {
         return graph.getNodes();

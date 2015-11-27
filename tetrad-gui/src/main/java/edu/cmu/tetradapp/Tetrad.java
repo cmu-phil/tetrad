@@ -32,11 +32,14 @@ import edu.cmu.tetrad.util.Version;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Locale;
+import java.util.prefs.Preferences;
 
 /**
  * <p>Launches Tetrad as an application.  The intended class path in either case
@@ -123,8 +126,7 @@ public final class Tetrad implements PropertyChangeListener {
                 UIManager.setLookAndFeel(
                         UIManager.getSystemLookAndFeelClassName());
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -199,6 +201,9 @@ public final class Tetrad implements PropertyChangeListener {
         });
 
         SplashScreen.hide();
+
+
+
     }
 
     /**
@@ -213,12 +218,11 @@ public final class Tetrad implements PropertyChangeListener {
 
         getFrame().setVisible(false);
         getFrame().dispose();
-        TetradLogger.getInstance().removeNextOutputStream();        
+        TetradLogger.getInstance().removeNextOutputStream();
 
         try {
             System.exit(0);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

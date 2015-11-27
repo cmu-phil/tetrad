@@ -39,7 +39,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
     private final SepsetMap extraSepsets;
     private int depth = 3;
     private double p = Double.NaN;
-    private IndependenceTest dsep = null;
+//    private IndependenceTest dsep = null;
 
     public SepsetsMaxPValue(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -78,7 +78,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
                 independenceTest.isIndependent(i, k, v);
                 double p = independenceTest.getPValue();
 
-                printDsepP(i, k, v, p);
+//                printDsepP(i, k, v, p);
 
                 if (p > _p) {
                     _p = p;
@@ -103,7 +103,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
                 getIndependenceTest().isIndependent(i, k, v);
                 double p = getIndependenceTest().getPValue();
 
-                printDsepP(i, k, v, p);
+//                printDsepP(i, k, v, p);
 
                 if (p > _p) {
                     _p = p;
@@ -126,7 +126,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
                     getIndependenceTest().isIndependent(i, k, v);
                     double p = getIndependenceTest().getPValue();
 
-                    printDsepP(i, k, v, p);
+//                    printDsepP(i, k, v, p);
 
                     if (p > _p) {
                         _p = p;
@@ -142,15 +142,15 @@ public class SepsetsMaxPValue implements SepsetProducer {
         return _v;
     }
 
-    private void  printDsepP(Node i, Node k, List<Node> v, double p) {
-        if (dsep != null) {
-//                        System.out.println("RRR " + p + " dsep = " + dsep.isIndependent(i, k, v));
-
-            if (dsep.isIndependent(i, k, v)) {
-                System.out.println("HHH " + p);
-            }
-        }
-    }
+//    private void  printDsepP(Node i, Node k, List<Node> v, double p) {
+//        if (dsep != null) {
+////                        System.out.println("RRR " + p + " dsep = " + dsep.isIndependent(i, k, v));
+//
+//            if (dsep.isIndependent(i, k, v)) {
+//                System.out.println("HHH " + p);
+//            }
+//        }
+//    }
 
 
     @Override
@@ -172,12 +172,12 @@ public class SepsetsMaxPValue implements SepsetProducer {
         return independenceTest;
     }
 
-    public IndependenceTest getDsep() {
-        return dsep;
-    }
-
-    public void setDsep(IndependenceTest dsep) {
-        this.dsep = dsep;
-    }
+//    public IndependenceTest getDsep() {
+//        return dsep;
+//    }
+//
+//    public void setDsep(IndependenceTest dsep) {
+//        this.dsep = dsep;
+//    }
 }
 

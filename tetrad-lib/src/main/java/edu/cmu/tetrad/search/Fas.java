@@ -195,8 +195,6 @@ public class Fas implements IFas {
             }
         }
 
-//        GraphUtils.checkMarkov(graph, test, depth);
-
         this.logger.log("info", "Finishing Fast Adjacency Search.");
 
         return graph;

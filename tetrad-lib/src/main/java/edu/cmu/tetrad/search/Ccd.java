@@ -98,7 +98,7 @@ public final class Ccd implements GraphSearch {
         //Step A
         TetradLogger.getInstance().log("info", "\nStep A");
 
-        IFas search = new FasStableConcurrent(test);
+        IFas search = new Fas(test);
         search.setDepth(depth);
         search.setKnowledge(getKnowledge());
         search.setVerbose(true);
@@ -210,11 +210,11 @@ public final class Ccd implements GraphSearch {
 
         List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
 
-//        Collections.sort(colliders, new Comparator<Triple>() {
-//            public int compare(Triple o1, Triple o2) {
-//                return -Double.compare(collidersPs.get(o1), collidersPs.get(o2));
-//            }
-//        });
+        Collections.sort(colliders, new Comparator<Triple>() {
+            public int compare(Triple o1, Triple o2) {
+                return -Double.compare(collidersPs.get(o1), collidersPs.get(o2));
+            }
+        });
 
         for (Triple collider : colliders) {
             Node a = collider.getX();
@@ -226,12 +226,12 @@ public final class Ccd implements GraphSearch {
             }
 
             if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
-                graph.removeEdge(a, b);
-                graph.removeEdge(c, b);
-                graph.addDirectedEdge(a, b);
-                graph.addDirectedEdge(c, b);
-//                graph.setEndpoint(a, b, Endpoint.ARROW);
-//                graph.setEndpoint(c, b, Endpoint.ARROW);
+//                graph.removeEdge(a, b);
+//                graph.removeEdge(c, b);
+//                graph.addDirectedEdge(a, b);
+//                graph.addDirectedEdge(c, b);
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
             }
         }
     }
@@ -395,7 +395,7 @@ public final class Ccd implements GraphSearch {
                 }
             }
 
-            if (count >= 2) {
+            if (count >= 3) {
                 System.out.println("C. Orienting " + psi.getEdge(x, y) + " as " + y + " --> " + x);
                 psi.setEndpoint(y, x, Endpoint.ARROW);
                 psi.setEndpoint(x, y, Endpoint.TAIL);
