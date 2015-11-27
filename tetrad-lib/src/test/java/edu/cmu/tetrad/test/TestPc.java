@@ -103,12 +103,11 @@ public class TestPc extends TestCase {
                 knowledge);
     }
 
-    public void rtestShowInefficiency() {
+    public void testShowInefficiency() {
 
         int numVars = 20;
         int numEdges = 20;
         int maxSample = 2000;
-        int increment = 1;
 
         Dag trueGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 7,
                 5, 5, false));
@@ -121,52 +120,48 @@ public class TestPc extends TestCase {
         DataSet _dataSet = semIm.simulateData(maxSample, false);
         Graph previousResult = null;
 
-        for (int n = 3; n <= maxSample; n += increment) {
-            int[] rows = new int[n];
-            for (int i = 0; i < rows.length; i++) {
-                rows[i] = i;
-            }
+        int[] rows = new int[maxSample];
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = i;
+        }
 
-            DataSet dataSet = _dataSet.subsetRows(rows);
-            IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
+        DataSet dataSet = _dataSet.subsetRows(rows);
+        IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
 
-            Cpc search = new Cpc(test);
-            Graph resultGraph = search.search();
+        Pc search = new Pc(test);
+        Graph resultGraph = search.search();
 
-            if (previousResult != null) {
-                Set<Edge> resultEdges = resultGraph.getEdges();
-                Set<Edge> previousEdges = previousResult.getEdges();
+        if (previousResult != null) {
+            Set<Edge> resultEdges = resultGraph.getEdges();
+            Set<Edge> previousEdges = previousResult.getEdges();
 
-                List<Edge> addedEdges = new LinkedList<Edge>();
+            List<Edge> addedEdges = new LinkedList<Edge>();
 
-                for (Edge edge : resultEdges) {
-                    if (!previousEdges.contains(edge)) {
-                        addedEdges.add(edge);
-                    }
-                }
-
-                List<Edge> removedEdges = new LinkedList<Edge>();
-
-                for (Edge edge : previousEdges) {
-                    if (!resultEdges.contains(edge)) {
-                        removedEdges.add(edge);
-                    }
-                }
-
-                if (!addedEdges.isEmpty() && !removedEdges.isEmpty()) {
-                    System.out.println("\nn = " + n + ":");
-
-                    if (!addedEdges.isEmpty()) {
-                        System.out.println("Added: " + addedEdges);
-                    }
-
-                    if (!removedEdges.isEmpty()) {
-                        System.out.println("Removed: " + removedEdges);
-                    }
+            for (Edge edge : resultEdges) {
+                if (!previousEdges.contains(edge)) {
+                    addedEdges.add(edge);
                 }
             }
 
-            previousResult = resultGraph;
+            List<Edge> removedEdges = new LinkedList<Edge>();
+
+            for (Edge edge : previousEdges) {
+                if (!resultEdges.contains(edge)) {
+                    removedEdges.add(edge);
+                }
+            }
+
+            if (!addedEdges.isEmpty() && !removedEdges.isEmpty()) {
+                System.out.println("\nn = " + maxSample + ":");
+
+                if (!addedEdges.isEmpty()) {
+                    System.out.println("Added: " + addedEdges);
+                }
+
+                if (!removedEdges.isEmpty()) {
+                    System.out.println("Removed: " + removedEdges);
+                }
+            }
         }
 
         System.out.println("Final graph = " + previousResult);

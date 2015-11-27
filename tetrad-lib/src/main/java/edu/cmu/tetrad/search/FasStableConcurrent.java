@@ -53,12 +53,6 @@ import java.util.concurrent.RecursiveTask;
 public class FasStableConcurrent implements IFas {
 
     /**
-     * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
-     * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
-     */
-    private Graph graph;
-
-    /**
      * The independence test. This should be appropriate to the types
      */
     private IndependenceTest test;
@@ -108,9 +102,6 @@ public class FasStableConcurrent implements IFas {
      */
     private PrintStream out = System.out;
 
-
-//    private boolean sepsetsRecorded = true;
-
     int chunk = 50;
 
 
@@ -138,7 +129,9 @@ public class FasStableConcurrent implements IFas {
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
 
-        graph = new EdgeListGraphSingleConnections(test.getVariables());
+        // The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
+        // x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
+        Graph graph = new EdgeListGraphSingleConnections(test.getVariables());
 
         sepsets = new SepsetMap();
 
@@ -160,15 +153,13 @@ public class FasStableConcurrent implements IFas {
         }
 
         for (int d = 0; d <= _depth; d++) {
-            boolean more;
-
             if (d == 0) {
-                more = searchAtDepth0(nodes, test, adjacencies);
+                searchAtDepth0(nodes, test, adjacencies);
             } else {
-                more = searchAtDepth(nodes, test, adjacencies, d);
+                searchAtDepth(nodes, test, adjacencies, d);
             }
 
-            if (!more) {
+            if (!freeDegreeGreaterThanDepth(adjacencies, depth)) {
                 break;
             }
         }
@@ -287,7 +278,7 @@ public class FasStableConcurrent implements IFas {
 
     //==============================PRIVATE METHODS======================/
 
-    private boolean searchAtDepth0(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies) {
+    private void searchAtDepth0(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies) {
         if (verbose) {
             out.println("Searching at depth 0.");
             System.out.println("Searching at depth 0.");
@@ -354,7 +345,6 @@ public class FasStableConcurrent implements IFas {
                                     out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
                                             nf.format(test.getPValue()));
                                 }
-
                             } else if (!forbiddenEdge(x, y)) {
                                 adjacencies.get(x).add(y);
                                 adjacencies.get(y).add(x);
@@ -384,8 +374,6 @@ public class FasStableConcurrent implements IFas {
         }
 
         pool.invoke(new Depth0Task(chunk, 0, nodes.size()));
-
-        return freeDegreeGreaterThanDepth(adjacencies, 0);
     }
 
     private boolean forbiddenEdge(Node x, Node y) {
@@ -417,7 +405,7 @@ public class FasStableConcurrent implements IFas {
         return false;
     }
 
-    private boolean searchAtDepth(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies,
+    private void searchAtDepth(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies,
                                   final int depth) {
 
         if (verbose) {
@@ -519,8 +507,6 @@ public class FasStableConcurrent implements IFas {
         if (verbose) {
             System.out.println("Done with depth");
         }
-
-        return freeDegreeGreaterThanDepth(adjacencies, depth);
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
