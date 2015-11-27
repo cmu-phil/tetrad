@@ -24,10 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IFas;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
-import edu.cmu.tetrad.search.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -36,7 +32,6 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
@@ -106,7 +101,7 @@ public class FasStableConcurrent implements IFas {
     private boolean verbose = false;
 
     // The concurrency pool.
-    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private ForkJoinPool pool = ForkJoinPool.commonPool();
 
     /**
      * Where verbose output is sent.
@@ -116,7 +111,7 @@ public class FasStableConcurrent implements IFas {
 
 //    private boolean sepsetsRecorded = true;
 
-    int chunk = 100;
+    int chunk = 50;
 
 
     //==========================CONSTRUCTORS=============================//
@@ -197,7 +192,9 @@ public class FasStableConcurrent implements IFas {
             out.println("Finished constructing Graph.");
         }
 
-        this.logger.log("info", "Finishing Fast Adjacency Search.");
+        if (verbose) {
+            this.logger.log("info", "Finishing Fast Adjacency Search.");
+        }
 
         return graph;
     }
@@ -313,7 +310,9 @@ public class FasStableConcurrent implements IFas {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
+                        if (verbose) {
+                            if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
+                        }
 
                         final Node x = nodes.get(i);
 
@@ -429,7 +428,7 @@ public class FasStableConcurrent implements IFas {
         final Map<Node, Set<Node>> adjacenciesCopy = new HashMap<Node, Set<Node>>();
 
         for (Node node : adjacencies.keySet()) {
-            adjacenciesCopy.put(node, new HashSet<Node>(adjacencies.get(node)));
+            adjacenciesCopy.put(node, new HashSet<>(adjacencies.get(node)));
         }
 
         class DepthTask extends RecursiveTask<Boolean> {
@@ -451,30 +450,29 @@ public class FasStableConcurrent implements IFas {
                             if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
                         }
 
+                        Node x = nodes.get(i);
+
+                        List<Node> adjx = new ArrayList<>(adjacenciesCopy.get(x));
+
                         EDGE:
-                        for (int j = i + 1; j < nodes.size(); j++) {
-                            Node x = nodes.get(i);
-                            Node y = nodes.get(j);
+                        for (Node y : adjx) {
+                            List<Node> _adjx = new ArrayList<>(adjx);
+                            _adjx.remove(y);
+                            List<Node> ppx = possibleParents(x, _adjx, knowledge);
 
-                            if (!adjacenciesCopy.get(x).contains(y)) continue;
-
-                            List<Node> adjx = new ArrayList<Node>(adjacenciesCopy.get(x));
-                            adjx.remove(y);
-                            adjx = possibleParents(x, adjx, knowledge);
-
-                            if (adjx.size() >= depth) {
-                                ChoiceGenerator cg = new ChoiceGenerator(adjx.size(), depth);
+                            if (ppx.size() >= depth) {
+                                ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
                                 int[] choice;
 
                                 while ((choice = cg.next()) != null) {
-                                    List<Node> condSet = GraphUtils.asList(choice, adjx);
+                                    List<Node> condSet = GraphUtils.asList(choice, ppx);
 
                                     boolean independent;
 
                                     try {
+                                        numIndependenceTests++;
                                         independent = test.isIndependent(x, y, condSet);
                                     } catch (Exception e) {
-                                        e.printStackTrace();
                                         independent = false;
                                     }
 
@@ -484,52 +482,16 @@ public class FasStableConcurrent implements IFas {
                                     if (independent && noEdgeRequired) {
                                         adjacencies.get(x).remove(y);
                                         adjacencies.get(y).remove(x);
+
                                         getSepsets().set(x, y, condSet);
 
                                         if (verbose) {
                                             TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
                                                     nf.format(test.getPValue()));
-                                            out.println(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-                                                    nf.format(test.getPValue()));
+                                            out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
                                         }
 
                                         continue EDGE;
-                                    }
-                                }
-                            }
-
-                            List<Node> adjy = new ArrayList<Node>(adjacenciesCopy.get(y));
-                            adjy.remove(x);
-                            adjy = possibleParents(y, adjy, knowledge);
-
-                            if (adjy.size() >= depth) {
-                                ChoiceGenerator cg2 = new ChoiceGenerator(adjy.size(), depth);
-                                int[] choice2;
-
-                                boolean independent;
-
-                                while ((choice2 = cg2.next()) != null) {
-                                    List<Node> condSet = GraphUtils.asList(choice2, adjy);
-
-                                    try {
-                                        independent = test.isIndependent(x, y, condSet);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        independent = false;
-                                    }
-
-                                    if (independent) {
-                                        adjacencies.get(x).remove(y);
-                                        adjacencies.get(y).remove(x);
-                                        getSepsets().set(x, y, condSet);
-
-                                        continue EDGE;
-                                    }
-                                    else {
-                                        if (verbose) {
-                                            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, condSet,
-                                                    test.getPValue()) + " p = " + nf.format(test.getPValue()));
-                                        }
                                     }
                                 }
                             }

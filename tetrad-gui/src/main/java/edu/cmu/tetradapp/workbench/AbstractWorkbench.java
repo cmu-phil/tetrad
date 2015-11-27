@@ -1825,6 +1825,8 @@ public abstract class AbstractWorkbench extends JComponent
         } else if (source instanceof IDisplayEdge) {
             edgeClicked(source, e);
         } else {
+
+            // This shouldn't be here, but I can't get it to work higher up.
             if (e.isAltDown() && e.isControlDown() && e.isMetaDown()) {
                 if (Preferences.userRoot().getBoolean("experimental", false)) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
