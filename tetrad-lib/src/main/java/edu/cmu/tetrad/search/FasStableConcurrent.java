@@ -152,14 +152,17 @@ public class FasStableConcurrent implements IFas {
             adjacencies.put(node, new HashSet<Node>());
         }
 
+
         for (int d = 0; d <= _depth; d++) {
+            boolean more;
+
             if (d == 0) {
-                searchAtDepth0(nodes, test, adjacencies);
+                more = searchAtDepth0(nodes, test, adjacencies);
             } else {
-                searchAtDepth(nodes, test, adjacencies, d);
+                more = searchAtDepth(nodes, test, adjacencies, d);
             }
 
-            if (!freeDegreeGreaterThanDepth(adjacencies, depth)) {
+            if (!more) {
                 break;
             }
         }
@@ -199,43 +202,6 @@ public class FasStableConcurrent implements IFas {
     public long getElapsedTime() {
         return 0;
     }
-
-//    public Map<Node, Set<Node>> searchMapOnly() {
-//        this.logger.log("info", "Starting Fast Adjacency Search.");
-//        graph.removeEdges(graph.getEdges());
-//
-//        sepsets = new SepsetMap();
-//
-//        int _depth = depth;
-//
-//        if (_depth == -1) {
-//            _depth = 1000;
-//        }
-//
-//
-//        Map<Node, Set<Node>> adjacencies = new ConcurrentHashMap<Node, Set<Node>>();
-//        List<Node> nodes = graph.getNodes();
-//
-//        for (Node node : nodes) {
-//            adjacencies.put(node, new TreeSet<Node>());
-//        }
-//
-//        for (int d = 0; d <= _depth; d++) {
-//            boolean more;
-//
-//            if (d == 0) {
-//                more = searchAtDepth0(nodes, test, adjacencies);
-//            } else {
-//                more = searchAtDepth(nodes, test, adjacencies, d);
-//            }
-//
-//            if (!more) {
-//                break;
-//            }
-//        }
-//
-//        return adjacencies;
-//    }
 
     public int getDepth() {
         return depth;
@@ -278,7 +244,7 @@ public class FasStableConcurrent implements IFas {
 
     //==============================PRIVATE METHODS======================/
 
-    private void searchAtDepth0(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies) {
+    private boolean searchAtDepth0(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies) {
         if (verbose) {
             out.println("Searching at depth 0.");
             System.out.println("Searching at depth 0.");
@@ -374,6 +340,8 @@ public class FasStableConcurrent implements IFas {
         }
 
         pool.invoke(new Depth0Task(chunk, 0, nodes.size()));
+
+        return freeDegree(nodes, adjacencies) > 0;
     }
 
     private boolean forbiddenEdge(Node x, Node y) {
@@ -393,6 +361,25 @@ public class FasStableConcurrent implements IFas {
         return false;
     }
 
+    private int freeDegree(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {
+        int max = 0;
+
+        for (Node x : nodes) {
+            Set<Node> opposites = adjacencies.get(x);
+
+            for (Node y : opposites) {
+                Set<Node> adjx = new HashSet<Node>(opposites);
+                adjx.remove(y);
+
+                if (adjx.size() > max) {
+                    max = adjx.size();
+                }
+            }
+        }
+
+        return max;
+    }
+
     private boolean freeDegreeGreaterThanDepth(Map<Node, Set<Node>> adjacencies, int depth) {
         for (Node x : adjacencies.keySet()) {
             Set<Node> opposites = adjacencies.get(x);
@@ -405,7 +392,7 @@ public class FasStableConcurrent implements IFas {
         return false;
     }
 
-    private void searchAtDepth(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies,
+    private boolean searchAtDepth(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies,
                                   final int depth) {
 
         if (verbose) {
@@ -507,6 +494,8 @@ public class FasStableConcurrent implements IFas {
         if (verbose) {
             System.out.println("Done with depth");
         }
+
+        return freeDegree(nodes, adjacencies) > 0;
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
@@ -593,14 +582,6 @@ public class FasStableConcurrent implements IFas {
     public PrintStream getOut() {
         return out;
     }
-
-//    public boolean isSepsetsRecorded() {
-//        return sepsetsRecorded;
-//    }
-//
-//    public void setSepsetsRecorded(boolean sepsetsRecorded) {
-//        this.sepsetsRecorded = sepsetsRecorded;
-//    }
 }
 
 
