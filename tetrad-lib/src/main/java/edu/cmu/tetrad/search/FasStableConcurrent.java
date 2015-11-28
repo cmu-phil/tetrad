@@ -95,7 +95,7 @@ public class FasStableConcurrent implements IFas {
     private boolean verbose = false;
 
     // The concurrency pool.
-    private ForkJoinPool pool = ForkJoinPool.commonPool();
+    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
     /**
      * Where verbose output is sent.
