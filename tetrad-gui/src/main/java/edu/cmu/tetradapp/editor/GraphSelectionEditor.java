@@ -150,6 +150,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         JCheckBoxMenuItem adjacentsOfAdjacents = new JCheckBoxMenuItem("Adjacents of Adjacents");
         JCheckBoxMenuItem adjacentsOfAdjacentsOfAdjacents = new JCheckBoxMenuItem("Adjacents of Adjacents of Adjacents");
         JCheckBoxMenuItem markovBlankets = new JCheckBoxMenuItem("Markov Blankets");
+        JCheckBoxMenuItem yStructures = new JCheckBoxMenuItem("Y Structures");
         JCheckBoxMenuItem treks = new JCheckBoxMenuItem("Treks");
         JCheckBoxMenuItem trekEdges = new JCheckBoxMenuItem("Trek Edges");
         JCheckBoxMenuItem paths = new JCheckBoxMenuItem("Undirected Paths");
@@ -165,6 +166,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         group.add(adjacentsOfAdjacents);
         group.add(adjacentsOfAdjacentsOfAdjacents);
         group.add(markovBlankets);
+        group.add(yStructures);
         group.add(treks);
         group.add(trekEdges);
         group.add(paths);
@@ -192,8 +194,18 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
             editorPanel.setNLabel("");
         }
 
+        if (wrapper.getType() == GraphSelectionWrapper.Type.yStructures) {
+            yStructures.setSelected(true);
+            editorPanel.setNLabel("");
+        }
+
         if (wrapper.getType() == GraphSelectionWrapper.Type.markovBlankets) {
             markovBlankets.setSelected(true);
+            editorPanel.setNLabel("");
+        }
+
+        if (wrapper.getType() == GraphSelectionWrapper.Type.yStructures) {
+            yStructures.setSelected(true);
             editorPanel.setNLabel("");
         }
 
@@ -274,6 +286,14 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
             }
         });
 
+        yStructures.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                wrapper.setType(GraphSelectionWrapper.Type.yStructures);
+                editorPanel.setNLabel("");
+            }
+        });
+
         treks.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -350,6 +370,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         select.add(adjacentsOfAdjacents);
         select.add(adjacentsOfAdjacentsOfAdjacents);
         select.add(markovBlankets);
+        select.add(yStructures);
         select.add(treks);
         select.add(trekEdges);
         select.add(paths);

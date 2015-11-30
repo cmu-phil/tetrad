@@ -52,7 +52,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
     public enum Type {
         adjacents, adjacentsOfAdjacents, adjacentsOfAdjacentsOfAdjacents, markovBlankets, treks, trekEdges,
-        paths, pathEdges, directedPaths, directedPathEdges, indegree, outdegree, degree
+        paths, pathEdges, directedPaths, directedPathEdges, indegree, outdegree, yStructures, degree
     }
 
     // For relevant selection methods, the length or degree.
@@ -122,7 +122,6 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static GraphSelectionWrapper serializableInstance() {
@@ -176,6 +175,22 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
             selectedGraph = graph.subgraph(new ArrayList<Node>(adj));
             this.highlightInEditor = selectedVariables;
+        } else if (type == Type.yStructures) {
+            Set<Edge> edges = new HashSet<>();
+
+            for (Node node : selectedVariables) {
+                Set<Edge> ys = yStructures(graph, node);
+                edges.addAll(ys);
+            }
+
+            Graph subGraph = new EdgeListGraphSingleConnections(graph.getNodes());
+
+            for (Edge edge : edges) {
+                subGraph.addEdge(edge);
+            }
+
+            selectedGraph = subGraph;
+            this.highlightInEditor = selectedVariables;
         } else if (type == Type.markovBlankets) {
             Set<Node> _nodes = new HashSet<>();
 
@@ -187,8 +202,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
             selectedGraph = graph.subgraph(new ArrayList<Node>(_nodes));
             this.highlightInEditor = selectedVariables;
-        }
-        else if (type == Type.treks) {
+        } else if (type == Type.treks) {
             Graph g = new EdgeListGraph(selectedVariables);
 
             for (int i = 0; i < selectedVariables.size(); i++) {
@@ -224,8 +238,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
             selectedGraph = g;
             this.highlightInEditor = selectedVariables;
-        }
-        else if (type == Type.trekEdges) {
+        } else if (type == Type.trekEdges) {
             Set<Edge> edges = new HashSet<>();
 
             for (int i = 0; i < selectedVariables.size(); i++) {
@@ -260,8 +273,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
             selectedGraph = graphFromEdges(edges, new ArrayList<Node>());
             this.highlightInEditor = selectedVariables;
-        }
-        else if (type == Type.paths) {
+        } else if (type == Type.paths) {
             Graph g = new EdgeListGraph(selectedVariables);
 
             for (int i = 0; i < selectedVariables.size(); i++) {
@@ -511,7 +523,9 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         return selectionGraph;
     }
 
-    public Graph getOriginalGraph() { return graph;}
+    public Graph getOriginalGraph() {
+        return graph;
+    }
 
     public void setDialogText(String dialogText) {
         this.dialogText = dialogText;
@@ -606,6 +620,25 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         }
 
         return mb;
+    }
+
+    private Set<Edge> yStructures(Graph graph, Node z) {
+        Set<Edge> edges = new HashSet<>();
+
+        List<Node> parents = graph.getNodesInTo(z, Endpoint.ARROW);
+        List<Node> children = graph.getChildren(z);
+
+        if (parents.size() > 1 && children.size() > 0) {
+            for (Node node : parents) {
+                edges.add(graph.getEdge(node, z));
+            }
+
+            for (Node node : children) {
+                edges.add(graph.getEdge(node, z));
+            }
+        }
+
+        return edges;
     }
 
     private void log() {
