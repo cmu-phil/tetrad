@@ -194,7 +194,7 @@ public class TestMimbuild3 extends TestCase {
         return graph;
     }
 
-    public void test2() {
+    public void rtest2() {
         System.out.println("SHD\tP");
 //        System.out.println("MB1\tMB2\tMB3\tMB4\tMB5\tMB6");
 
@@ -471,7 +471,7 @@ public class TestMimbuild3 extends TestCase {
         System.out.println();
     }
 
-    public void test4() {
+    public void rtest4() {
         System.out.println("SHD\tP");
 //        System.out.println("MB1\tMB2\tMB3\tMB4\tMB5\tMB6");
 

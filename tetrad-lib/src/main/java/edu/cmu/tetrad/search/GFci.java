@@ -202,7 +202,7 @@ public final class GFci {
             ges = new Fgs(covarianceMatrix);
             ges.setKnowledge(getKnowledge());
             ges.setPenaltyDiscount(penaltyDiscount);
-            ges.setVerbose(true);
+            ges.setVerbose(verbose);
             ges.setLog(false);
             ges.setDepth(getDepth());
             ges.setNumPatternsToStore(0);

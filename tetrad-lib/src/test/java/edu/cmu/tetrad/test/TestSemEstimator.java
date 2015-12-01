@@ -114,10 +114,10 @@ public class TestSemEstimator extends TestCase {
         System.out.println("\nPowell");
         printStats(im, est);
 
-        SemIm est2 = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
-
-        System.out.println("\nRandom");
-        printStats(im, est2);
+//        SemIm est2 = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
+//
+//        System.out.println("\nRandom");
+//        printStats(im, est2);
     }
 
     private void printStats(SemIm im, SemIm est) {
@@ -172,17 +172,17 @@ public class TestSemEstimator extends TestCase {
             SemIm est1 = new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
             double[] imParamValues1 = est1.getFreeParamValues();
 
-            System.out.println("Random");
-            SemIm est2 = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
-            double[] imParamValues2 = est2.getFreeParamValues();
+//            System.out.println("Random");
+//            SemIm est2 = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
+//            double[] imParamValues2 = est2.getFreeParamValues();
 
             for (int j = 0; j < sum1.length; j++) sum1[j] += 100 * Math.abs(trueParamValues[j] - imParamValues1[j]) / Math.abs(trueParamValues[j]);
-            for (int j = 0; j < sum2.length; j++) sum2[j] += 100 * Math.abs(trueParamValues[j] - imParamValues2[j]) / Math.abs(trueParamValues[j]);
+//            for (int j = 0; j < sum2.length; j++) sum2[j] += 100 * Math.abs(trueParamValues[j] - imParamValues2[j]) / Math.abs(trueParamValues[j]);
 
             chisqSum1 += est1.getChiSquare();
-            chisqSum2 += est2.getChiSquare();
+//            chisqSum2 += est2.getChiSquare();
             pSum1 += est1.getPValue();
-            pSum2 += est2.getPValue();
+//            pSum2 += est2.getPValue();
         }
 
         for (int i = 0; i < sum1.length; i++) sum1[i] /= runs;

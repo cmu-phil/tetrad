@@ -61,9 +61,9 @@ public class TestGFci extends TestCase {
     }
 
     public void test1() {
-        int numNodes = 300;
-        int numLatents = 50;
-        int numEdges = 300;
+        int numNodes = 10;
+        int numLatents = 5;
+        int numEdges = 10;
         int sampleSize = 1000;
 
 //        int numNodes = 3000;

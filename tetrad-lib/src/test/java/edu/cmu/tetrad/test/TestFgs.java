@@ -60,8 +60,8 @@ public class TestFgs extends TestCase {
     }
 
     public void testFgs() {
-        int numVars = 1000;
-        double edgesPerNode = 2.0;
+        int numVars = 10;
+        double edgesPerNode = 1.0;
         int numCases = 1000;
         double penaltyDiscount = 4.0;
 
@@ -166,7 +166,7 @@ public class TestFgs extends TestCase {
     }
 
     public void testFgsDiscrete() {
-        int numVars = 40;
+        int numVars = 10;
         double edgeFactor = 1.0;
         int numCases = 1000;
         double structurePrior = .01;

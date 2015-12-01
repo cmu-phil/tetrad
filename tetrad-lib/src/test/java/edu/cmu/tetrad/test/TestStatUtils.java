@@ -156,7 +156,7 @@ public class TestStatUtils extends TestCase {
     }
 
     public void testNongaussianSums() {
-        int numTrials = 500;
+        int numTrials = 1;
         int sampleSize = 1000;
         int count = 0;
         int failed = 0;
@@ -331,7 +331,7 @@ public class TestStatUtils extends TestCase {
         double[] col2 = new double[n];
         double[] sum = new double[n];
 
-        for (int k = 0; k < 1000; k++) {
+        for (int k = 0; k < 10; k++) {
             double d1 = RandomUtil.getInstance().nextUniform(-10, 10);
             double d2 = RandomUtil.getInstance().nextUniform(-10, 10);
 
@@ -419,7 +419,7 @@ public class TestStatUtils extends TestCase {
     }
 
     public void testNongaussianSums5() {
-        int numTrials = 500;
+        int numTrials = 10;
         int sampleSize = 10;
         int count = 0;
         int failed = 0;
@@ -529,7 +529,7 @@ public class TestStatUtils extends TestCase {
     }
 
     public void testNongaussianSums6() {
-        int numTrials = 500;
+        int numTrials = 10;
         int sampleSize = 1000;
         int count = 0;
         int failed = 0;
@@ -668,20 +668,20 @@ public class TestStatUtils extends TestCase {
 
     // Tests to make sure the Normal CDF of an average of two numbers is between the Normal CDF of either number.
 
-    public void testAverageNormCdf() {
-        for (double d1 = -3.9; d1 <= 3.0; d1 += .1) {
-            for (double d2 = -3.0; d2 <= 3.0; d2 += .1) {
-                double e1 = ProbUtils.normalCdf(d1);
-                double e2 = ProbUtils.normalCdf(d2);
-                double s = ProbUtils.normalCdf((1 / sqrt(2)) * (d1 + d2));
-
-                if (!between(e1, e2, s)) {
-                    System.out.println("d1 = " + f(d1) + " d2 = " + f(d2) + " F(e1) = " + f(e1) + " F(e2) = " + f(e2) + " F((d1+d2)/sqrt(2)) = " + f(s)
-                            + " (F(e1) + F(e2)) / 2" + f((e1 + e2) / 2.0));
-                }
-            }
-        }
-    }
+//    public void testAverageNormCdf() {
+//        for (double d1 = -3.9; d1 <= 3.0; d1 += .1) {
+//            for (double d2 = -3.0; d2 <= 3.0; d2 += .1) {
+//                double e1 = ProbUtils.normalCdf(d1);
+//                double e2 = ProbUtils.normalCdf(d2);
+//                double s = ProbUtils.normalCdf((1 / sqrt(2)) * (d1 + d2));
+//
+//                if (!between(e1, e2, s)) {
+//                    System.out.println("d1 = " + f(d1) + " d2 = " + f(d2) + " F(e1) = " + f(e1) + " F(e2) = " + f(e2) + " F((d1+d2)/sqrt(2)) = " + f(s)
+//                            + " (F(e1) + F(e2)) / 2" + f((e1 + e2) / 2.0));
+//                }
+//            }
+//        }
+//    }
 
     public void testWeightedSum() {
         int n = 100;
@@ -711,23 +711,23 @@ public class TestStatUtils extends TestCase {
 
     }
 
-    public void test5() {
-        for (double d1 = -3.9; d1 <= 3.0; d1 += .01) {
-            for (double d2 = -3.0; d2 <= 3.0; d2 += .01) {
-
-                double s = (d1 + d2) / Math.sqrt(2);
-
-//                if (!between(d1, d2, s)) {
-                if (!(Math.abs(s) > Math.min(Math.abs(d1), Math.abs(d2)))) {
-                    System.out.println("d1 = " + f(d1) + " d2 = " + f(d2) + " (d1+d2)/sqrt(2) = " + f(s));
-                }
-            }
-        }
-    }
+//    public void test5() {
+//        for (double d1 = -3.9; d1 <= 3.0; d1 += .01) {
+//            for (double d2 = -3.0; d2 <= 3.0; d2 += .01) {
+//
+//                double s = (d1 + d2) / Math.sqrt(2);
+//
+////                if (!between(d1, d2, s)) {
+//                if (!(Math.abs(s) > Math.min(Math.abs(d1), Math.abs(d2)))) {
+//                    System.out.println("d1 = " + f(d1) + " d2 = " + f(d2) + " (d1+d2)/sqrt(2) = " + f(s));
+//                }
+//            }
+//        }
+//    }
 
     public void testLogCoshExp() {
         double sum = 0.0;
-        int numSamples = 10000000;
+        int numSamples = 100;
 
         for (int i = 0; i < numSamples; i++) {
             double randNorm = RandomUtil.getInstance().nextNormal(0, 1);

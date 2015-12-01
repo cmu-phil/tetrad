@@ -301,7 +301,7 @@ public class TestCcd extends TestCase {
     }
 
 
-    public void testRandom() {
+    public void rtestRandom() {
 //        RandomUtil.getInstance().setSeed(502938L);
 
         TetradLogger.getInstance().addOutputStream(System.out);
