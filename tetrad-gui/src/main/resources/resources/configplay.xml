@@ -1520,74 +1520,6 @@
                 <editor-class>edu.cmu.tetradapp.editor.LingSearchEditor
                 </editor-class>
             </model>
-            <!--<model name="LiNGAM2" acronym="lingam2" help="lingam2"-->
-            <!--category="DAG Searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="graph" description="Graph" default="on"/>-->
-            <!--<event id="edgeRemoved" description="Edge Removal"-->
-            <!--default="on"/>-->
-            <!--<event id="edgeOriented" description="Edge Orientations"/>-->
-            <!--<event id="colliderOrientations"-->
-            <!--description="Collider Orientations"/>-->
-            <!--<event id="details" description="Misc Fine Details"/>-->
-            <!--<event id="independenceDetails"-->
-            <!--description="Independence Details"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.LingamStructureRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
-            <!--</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
-            <!--</params-class>-->
-            <!--</model>-->
-            <!--<model name="LiNGAM Pattern" acronym="lingam_pattern" help="lingam_pattern"-->
-            <!--category="DAG Searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="graph" description="Graph" default="on"/>-->
-            <!--<event id="edgeRemoved" description="Edge Removal"-->
-            <!--default="on"/>-->
-            <!--<event id="edgeOriented" description="Edge Orientations"/>-->
-            <!--<event id="colliderOrientations"-->
-            <!--description="Collider Orientations"/>-->
-            <!--<event id="details" description="Misc Fine Details"/>-->
-            <!--<event id="independenceDetails"-->
-            <!--description="Independence Details"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.LingamStructureRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
-            <!--</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
-            <!--</params-class>-->
-            <!--</model>-->
-            <!--<model name="Lingam Pattern" acronym="PC LiNGAM" help="pc_lingam"-->
-            <!--category="DAG Searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="normalityTests" description="Normality Tests" default="on"/>-->
-            <!--<event id="nongaussianOrientations" description="Nongaussian Orientations" default="on"/>-->
-            <!--<event id="graph" description="Graph" default="on"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.LingamPatternRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
-            <!--</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
-            <!--</params-class>-->
-            <!--</model>-->
-            <model name="PC LiNGAM" acronym="PC LiNGAM" help="pc_lingam"
-                   category="DAG Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="normalityTests" description="Normality Tests" default="on"/>
-                    <event id="nongaussianOrientations" description="Nongaussian Orientations" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.LingamPatternRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
-                </editor-class>
-                <params-class>edu.cmu.tetradapp.model.PcSearchParams
-                </params-class>
-            </model>
             <model name="LOFS" acronym="LOFS" help="lofs"
                    category="DAG Searches">
                 <logger>
@@ -1600,23 +1532,6 @@
                 <params-class>edu.cmu.tetradapp.model.PcSearchParams
                 </params-class>
             </model>
-            <!--<model name="FCI" acronym="FCI" help="fci" category="PAG searches">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="graph" description="Graph"/>-->
-            <!--<event id="edgeOriented" description="Edge Orientations"/>-->
-            <!--<event id="colliderOrientations"-->
-            <!--description="Collider Orientations"/>-->
-            <!--<event id="independenceDetails"-->
-            <!--description="Independence Details"/>-->
-            <!--<event id="details" description="Misc. Fine Details"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradproj.tetradapp.model.FciRunnerOld</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
-            <!--</editor-class>-->
-            <!--<params-class>edu.cmu.tetradapp.model.FciSearchParams-->
-            <!--</params-class>-->
-            <!--</model>-->
             <model name="FCI" acronym="FCI" help="fci" category="PAG searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>

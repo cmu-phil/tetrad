@@ -52,7 +52,8 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
     public enum Type {
         adjacents, adjacentsOfAdjacents, adjacentsOfAdjacentsOfAdjacents, markovBlankets, treks, trekEdges,
-        paths, pathEdges, directedPaths, directedPathEdges, indegree, outdegree, yStructures, degree
+        paths, pathEdges, directedPaths, directedPathEdges, indegree, outdegree, yStructures, degree,
+        subgraph, pagYStructures
     }
 
     // For relevant selection methods, the length or degree.
@@ -78,7 +79,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     private List<Node> selectedVariables = new ArrayList<>();
 
     // The selection type.
-    private Type type = Type.adjacents;
+    private Type type = Type.subgraph;
 
     // The list of nodes that should be highlighted in the editor.
     private List<Node> highlightInEditor = new ArrayList<>();
@@ -136,7 +137,10 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         selectedVariables = GraphUtils.replaceNodes(selectedVariables, graph.getNodes());
         Graph selectedGraph;
 
-        if (type == Type.adjacents) {
+        if (type == Type.subgraph) {
+            selectedGraph = graph.subgraph(selectedVariables);
+            this.highlightInEditor = selectedVariables;
+        } else if (type == Type.adjacents) {
             Set<Node> adj = new HashSet<>(selectedVariables);
 
             for (Node node : selectedVariables) {
@@ -183,9 +187,41 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
                 edges.addAll(ys);
             }
 
-            Graph subGraph = new EdgeListGraphSingleConnections(graph.getNodes());
+            Graph subGraph = new EdgeListGraphSingleConnections();
 
             for (Edge edge : edges) {
+                if (!subGraph.containsNode(edge.getNode1())) {
+                    subGraph.addNode(edge.getNode1());
+                }
+
+                if (!subGraph.containsNode(edge.getNode2())) {
+                    subGraph.addNode(edge.getNode2());
+                }
+
+                subGraph.addEdge(edge);
+            }
+
+            selectedGraph = subGraph;
+            this.highlightInEditor = selectedVariables;
+        } else if (type == Type.pagYStructures) {
+            Set<Edge> edges = new HashSet<>();
+
+            for (Node node : selectedVariables) {
+                Set<Edge> ys = pagYStructures(graph, node);
+                edges.addAll(ys);
+            }
+
+            Graph subGraph = new EdgeListGraphSingleConnections();
+
+            for (Edge edge : edges) {
+                if (!subGraph.containsNode(edge.getNode1())) {
+                    subGraph.addNode(edge.getNode1());
+                }
+
+                if (!subGraph.containsNode(edge.getNode2())) {
+                    subGraph.addNode(edge.getNode2());
+                }
+
                 subGraph.addEdge(edge);
             }
 
@@ -625,13 +661,44 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
     private Set<Edge> yStructures(Graph graph, Node z) {
         Set<Edge> edges = new HashSet<>();
 
-        List<Node> parents = graph.getNodesInTo(z, Endpoint.ARROW);
+        List<Edge> parents = new ArrayList<>();
+
+        for (Node node : graph.getAdjacentNodes(z)) {
+            Edge edge = graph.getEdge(node, z);
+            if (Edges.isDirectedEdge(edge) && edge.pointsTowards(z)) {
+                parents.add(edge);
+            }
+        }
+
         List<Node> children = graph.getChildren(z);
 
         if (parents.size() > 1 && children.size() > 0) {
-            for (Node node : parents) {
+            edges.addAll(parents);
+
+            for (Node node : children) {
                 edges.add(graph.getEdge(node, z));
             }
+        }
+
+        return edges;
+    }
+
+    private Set<Edge> pagYStructures(Graph graph, Node z) {
+        Set<Edge> edges = new HashSet<>();
+
+        List<Edge> parents = new ArrayList<>();
+
+        for (Node node : graph.getAdjacentNodes(z)) {
+            Edge edge = graph.getEdge(node, z);
+            if (Edges.isPartiallyOrientedEdge(edge) && edge.pointsTowards(z)) {
+                parents.add(edge);
+            }
+        }
+
+        List<Node> children = graph.getChildren(z);
+
+        if (parents.size() > 1 && children.size() > 0) {
+            edges.addAll(parents);
 
             for (Node node : children) {
                 edges.add(graph.getEdge(node, z));

@@ -58,7 +58,6 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static LingamStructureRunner serializableInstance() {
