@@ -122,7 +122,7 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
 //        IndependenceFact key = new IndependenceFact(x, y, z);
 //
 //        if (!H.containsKey(key)) {
-            double pInd = probConstraint(BCInference.OP.independent, x, y, z);
+        double pInd = probConstraint(BCInference.OP.independent, x, y, z);
 //            H.put(key, pInd);
 //        }
 //
@@ -243,8 +243,7 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
 
         if (BCInference.OP.independent == type) {
             probOp = pInd;
-        }
-        else {
+        } else {
             probOp = 1.0 - pInd;
         }
 

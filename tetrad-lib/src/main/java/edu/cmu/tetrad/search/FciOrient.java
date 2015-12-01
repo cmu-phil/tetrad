@@ -37,7 +37,7 @@ import java.util.*;
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
- * <p/>
+ * <p>
  * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
@@ -158,7 +158,7 @@ public final class FciOrient {
 
     /**
      * Orients colliders in the graph.  (FCI Step C)
-     * <p/>
+     * <p>
      * Zhang's step F3, rule R0.
      */
     public void ruleR0(Graph graph) {
@@ -223,7 +223,7 @@ public final class FciOrient {
 
     /**
      * Orients the graph according to rules in the graph (FCI step D).
-     * <p/>
+     * <p>
      * Zhang's step F4, rules R1-R10.
      *
      * @param graph
@@ -348,7 +348,7 @@ public final class FciOrient {
     }
 
     private boolean isNoncollider(Node a, Node b, Node c) {
-        return  sepsets.isNoncollider(a, b, c);
+        return sepsets.isNoncollider(a, b, c);
     }
 
     //if a*-oc and either a-->b*->c or a*->b-->c, then a*->c
@@ -412,7 +412,7 @@ public final class FciOrient {
     /**
      * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, then
      * D*->B.
-     * <p/>
+     * <p>
      * This is Zhang's rule R3.
      */
     public void ruleR3(Graph graph) {
@@ -492,7 +492,7 @@ public final class FciOrient {
      *       v    v
      * L....A --> C
      * </pre>
-     * <p/>
+     * <p>
      * This is Zhang's rule R4, discriminating undirectedPaths.
      */
     private void ruleR4A(Graph graph) {
@@ -632,7 +632,7 @@ public final class FciOrient {
      *       v    v
      * L....A --> C
      * </pre>
-     * <p/>
+     * <p>
      * This is Zhang's rule R4, discriminating undirectedPaths.
      */
     public void ruleR4B(Graph graph) {
@@ -921,7 +921,7 @@ public final class FciOrient {
 
     /**
      * Orients every edge on a path as undirected (i.e. A---B).
-     * <p/>
+     * <p>
      * DOES NOT CHECK IF SUCH EDGES ACTUALLY EXIST: MAY DO WEIRD THINGS IF PASSED AN ARBITRARY LIST OF NODES THAT IS NOT
      * A PATH.
      *
@@ -942,7 +942,7 @@ public final class FciOrient {
 
     /**
      * Gets a list of every uncovered partially directed path between two nodes in the graph.
-     * <p/>
+     * <p>
      * Probably extremely slow.
      *
      * @param n1 The beginning node of the undirectedPaths.
@@ -965,9 +965,9 @@ public final class FciOrient {
 
     /**
      * Used in getUcPdPaths(n1,n2) to perform a breadth-first search on the graph.
-     * <p/>
+     * <p>
      * ASSUMES soFar CONTAINS AT LEAST ONE NODE!
-     * <p/>
+     * <p>
      * Probably extremely slow.
      *
      * @param curr      The getModel node to test for addition.
@@ -1010,7 +1010,7 @@ public final class FciOrient {
     /**
      * Gets a list of every uncovered circle path between two nodes in the graph by iterating through the uncovered
      * partially directed undirectedPaths and only keeping the circle undirectedPaths.
-     * <p/>
+     * <p>
      * Probably extremely slow.
      *
      * @param n1 The beginning node of the undirectedPaths.
@@ -1042,9 +1042,9 @@ public final class FciOrient {
 
     /**
      * Tries to apply Zhang's rule R8 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p/>
+     * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p/>
+     * <p>
      * R8: If Ao->C and A-->B-->C or A--oB-->C, then A-->C.
      *
      * @param a The node A.
@@ -1079,9 +1079,9 @@ public final class FciOrient {
 
     /**
      * Tries to apply Zhang's rule R9 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p/>
+     * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p/>
+     * <p>
      * R9: If Ao->C and there is an uncovered p.d. path u=<A,B,..,C> such that C,B nonadjacent, then A-->C.
      *
      * @param a The node A.
@@ -1109,9 +1109,9 @@ public final class FciOrient {
 
     /**
      * Tries to apply Zhang's rule R10 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p/>
+     * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p/>
+     * <p>
      * R10: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B> and an uncovered p.d. path
      * u2=<A,N,...,D> with M != N and M,N nonadjacent then A-->C.
      *

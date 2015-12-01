@@ -62,7 +62,7 @@ public class SessionEvent extends EventObject {
                 this.type = type;
                 break;
 
-            default :
+            default:
                 throw new IllegalArgumentException(
                         "Not the type of event that " +
                                 "requires zero session nodes " +
@@ -79,8 +79,7 @@ public class SessionEvent extends EventObject {
 
         if (node != null) {
             this.node = node;
-        }
-        else {
+        } else {
             throw new NullPointerException();
         }
 
@@ -103,8 +102,8 @@ public class SessionEvent extends EventObject {
             case REPETITION_CHANGED:
                 this.type = type;
                 break;
-                                                                           
-            default :
+
+            default:
                 throw new IllegalArgumentException(
                         "Not the type of event that " +
                                 "requires one session node " + "as argument.");
@@ -116,7 +115,7 @@ public class SessionEvent extends EventObject {
      * removed.
      */
     public SessionEvent(Object source, SessionNode parent, SessionNode child,
-            int type) {
+                        int type) {
 
         super(source);
 
@@ -131,7 +130,7 @@ public class SessionEvent extends EventObject {
                 this.type = type;
                 break;
 
-            default :
+            default:
                 throw new IllegalArgumentException(
                         "Not the type of event that " +
                                 "requires two session nodes " +

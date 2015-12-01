@@ -32,17 +32,17 @@ import java.util.*;
 /**
  * Implements a modification of BuildPureClusters-Simplified from Silva, Scheines, Glymour, and Spirtes,
  * Learning the Structure of Linear Latent Variable Models, JMLR 7 (2006), 191-246.
- * <p/>
+ * <p>
  * References:
- * <p/>
+ * <p>
  * Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models". Technical report
  * CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon University.
- * <p/>
+ * <p>
  * Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads." Sociological Methods and
  * Research 19, 80-92.
- * <p/>
+ * <p>
  * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of Psychology 19, 180-187.
- * <p/>
+ * <p>
  * Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph". Communications of ACM
  * 16, 575-577.
  *

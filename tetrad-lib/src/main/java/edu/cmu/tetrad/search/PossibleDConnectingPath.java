@@ -27,7 +27,7 @@ import java.util.*;
 
 /**
  * Finds possible d-connecting undirectedPaths for the IonSearch.
- * <p/>
+ * <p>
  * Not thread safe.
  *
  * @author Tyler Gibson

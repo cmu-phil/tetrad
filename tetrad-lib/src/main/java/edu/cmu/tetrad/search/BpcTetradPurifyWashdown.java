@@ -32,6 +32,7 @@ import java.util.List;
 
 /**
  * Implements a really simple idea for building pure clusters, just using the Purify algorithm.
+ *
  * @author Joseph Ramsey
  */
 public class BpcTetradPurifyWashdown {
@@ -84,7 +85,7 @@ public class BpcTetradPurifyWashdown {
 
         for (int i = 0; i < clustering.size(); i++) {
             List<Node> cluster = clustering.get(i);
-            Node latent = new GraphNode("_L" + (i+1));
+            Node latent = new GraphNode("_L" + (i + 1));
             latent.setNodeType(NodeType.LATENT);
             graph.addNode(latent);
 

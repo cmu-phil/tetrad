@@ -38,7 +38,9 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
 
     private Node x;
     private Node y;
-    /** deprecated **/
+    /**
+     * deprecated
+     **/
     private List<Node> z;
     private Set<Node> _z;
 
@@ -55,7 +57,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
         this._z = new HashSet<Node>(z);
     }
 
-    public IndependenceFact(Node x, Node y, Node...z) {
+    public IndependenceFact(Node x, Node y, Node... z) {
         if (x == null || y == null || z == null) {
             throw new NullPointerException();
         }
@@ -176,8 +178,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
             }
             if (factZ.size() <= i && z.size() > i) {
                 return +1;
-            }
-            else {
+            } else {
                 String s = z.get(i).getName();
                 String s2 = factZ.get(i).getName();
                 c = s.compareTo(s2);

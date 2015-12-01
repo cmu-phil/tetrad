@@ -48,7 +48,7 @@ public class ClusterUtils {
         for (int j = 0; j < data.columns(); j++) _cols[j] = j;
         return data.getSelection(_rows, _cols);
     }
-                                   
+
     private static int[] asArray(List<Integer> indices) {
         int[] _indices = new int[indices.size()];
         for (int i = 0; i < indices.size(); i++) _indices[i] = indices.get(i);
@@ -123,8 +123,8 @@ public class ClusterUtils {
     }
 
     public static PrintWriter writeOutPrototypesVertically(TetradMatrix prototypes,
-                                                          String path
-                                                          ) throws FileNotFoundException {
+                                                           String path
+    ) throws FileNotFoundException {
         System.out.println("Writing prototypes to file " + path);
         File file = new File(path);
         new File(file.getParent()).mkdirs();
@@ -217,8 +217,8 @@ public class ClusterUtils {
     }
 
     public static List<Integer> getTopFractionScoreRows(TetradVector scores,
-                                                 double topFraction,
-                                                 TetradMatrix timeSeries) {
+                                                        double topFraction,
+                                                        TetradMatrix timeSeries) {
         List<Integer> _points = new ArrayList<Integer>();
         final Map<Integer, Double> _values = new HashMap<Integer, Double>();
 
@@ -278,7 +278,7 @@ public class ClusterUtils {
     }
 
     public static boolean isSignificantlyChangingUp(TetradMatrix data, int i,
-                                                 int tIndex, double threshold) {
+                                                    int tIndex, double threshold) {
         if (!(tIndex >= 1 && tIndex < data.columns())) {
             throw new IllegalArgumentException("tIndex must be in range [1, " + data.columns() + "]");
         }
@@ -288,7 +288,7 @@ public class ClusterUtils {
     }
 
     public static boolean isSignificantlyChangingDown(TetradMatrix data, int i,
-                                                   int tIndex, double threshold) {
+                                                      int tIndex, double threshold) {
         if (!(tIndex >= 1 && tIndex < data.columns())) {
             throw new IllegalArgumentException("tIndex must be in range [1, " + data.columns() + "]");
         }
@@ -298,15 +298,12 @@ public class ClusterUtils {
     }
 
     /**
-     * @return the top fraction threshold for the entire data set--that is,
-     * if all of the values in the dataset were sorted bottom to top, the
-     * value the tresholds the top fraction is given.
-     * @param data A 2D real data set.
+     * @param data     A 2D real data set.
      * @param fraction A number between 0 and 1, inclusive.
      * @return The top frction threshold.
      */
     public static double getTopFactionThresholdOverall(TetradMatrix data,
-                                                              double fraction) {
+                                                       double fraction) {
         int numEntries = data.rows() * data.columns();
         int numTopFraction = (int) (numEntries * fraction);
         TreeSet<Double> set = new TreeSet<Double>();
@@ -317,8 +314,7 @@ public class ClusterUtils {
 
                 if (set.size() < numTopFraction) {
                     set.add(datum);
-                }
-                else {
+                } else {
                     if (datum > set.first()) {
                         set.remove(set.first());
                         set.add(datum);
@@ -334,7 +330,7 @@ public class ClusterUtils {
      * @return a list of view of the data corresponding to the given clusters.
      */
     public static List<TetradMatrix> getClusterViews(TetradMatrix xyzData,
-                                                       List<List<Integer>> clusters) {
+                                                     List<List<Integer>> clusters) {
         List<TetradMatrix> views = new ArrayList<TetradMatrix>();
 
         int[] cols = new int[xyzData.columns()];
@@ -410,8 +406,8 @@ public class ClusterUtils {
     }
 
     public static TetradMatrix loadMatrix(String path, int n, int m,
-                                            boolean ignoreFirstRow,
-                                            boolean ignoreFirstCol) throws IOException {
+                                          boolean ignoreFirstRow,
+                                          boolean ignoreFirstCol) throws IOException {
         System.out.println("Loading data from " + path);
 
         File file = new File(path);
@@ -469,9 +465,9 @@ public class ClusterUtils {
     }
 
     public static void writeClusterToGnuPlotFile(TetradMatrix xyzData,
-                                                   List<List<Integer>> clusters,
-                                                   List<List<Integer>> colors,
-                                                   String path
+                                                 List<List<Integer>> clusters,
+                                                 List<List<Integer>> colors,
+                                                 String path
     ) throws FileNotFoundException {
         PrintWriter out = new PrintWriter(new File(path));
 
@@ -736,7 +732,7 @@ public class ClusterUtils {
 
             clustering.add(adj);
         }
-        
+
         return clustering;
 
     }

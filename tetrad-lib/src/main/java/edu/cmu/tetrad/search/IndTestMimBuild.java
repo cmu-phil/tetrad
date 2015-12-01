@@ -26,12 +26,13 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
-//import edu.cmu.tetrad.sem.MimBuildEstimator;
-import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.MatrixUtils;
+import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.*;
+
+//import edu.cmu.tetrad.sem.MimBuildEstimator;
 
 /**
  * Checks the independence of latent variables in a measurement model by constructing estimating its parameters under
@@ -330,9 +331,6 @@ public final class IndTestMimBuild implements IndependenceTest {
     }
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
-     *
      * @return this list of variables.
      */
     public List<Node> getVariables() {
@@ -596,8 +594,7 @@ public final class IndTestMimBuild implements IndependenceTest {
             // Invert submatrix.
             try {
                 submatrix = MatrixUtils.inverse(submatrix);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException(
                         "Matrix singularity detected while using correlations " +
                                 "\nto check for independence; probably due to collinearity " +

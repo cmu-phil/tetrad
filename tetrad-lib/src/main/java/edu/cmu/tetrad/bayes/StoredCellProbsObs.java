@@ -107,7 +107,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
     // randomize the probability table
     /*
-	public void createRandomCellTable() {
+    public void createRandomCellTable() {
         double sum = 0.0;
 
         for (int i = 0; i < probs.length; i++) {

@@ -46,8 +46,7 @@ public class ExpressionUtils {
                 buf.append("(");
                 buf.append(expression1);
                 buf.append(")");
-            }
-            else {
+            } else {
                 buf.append(expression1);
             }
 
@@ -57,8 +56,7 @@ public class ExpressionUtils {
                 buf.append("(");
                 buf.append(expression2);
                 buf.append(")");
-            }
-            else {
+            } else {
                 buf.append(expression2);
             }
 
@@ -67,8 +65,7 @@ public class ExpressionUtils {
 
 //            return "(" + expression1 + middleToken +
 //                    expression2 + ")";
-        }
-        else {
+        } else {
             StringBuilder buf = new StringBuilder();
             buf.append(token);
             buf.append("(");

@@ -34,7 +34,7 @@ import java.util.*;
 /**
  * A utility to read in large tabular dataset efficiently. This class will most
  * likely be replaced as the support for different dataset grows.
- *
+ * <p>
  * Apr 30, 2015 11:30:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -51,7 +51,7 @@ public class BigDataSetUtility {
     /**
      * Read in continuous dataset.
      *
-     * @param file dataset
+     * @param file      dataset
      * @param delimiter a single character used to separate the data
      * @return
      * @throws IOException
@@ -160,8 +160,8 @@ public class BigDataSetUtility {
     /**
      * Read in continuous dataset.
      *
-     * @param file dataset
-     * @param delimiter a single character used to separate the data
+     * @param file             dataset
+     * @param delimiter        a single character used to separate the data
      * @param excludeVariables the names of the columns to be excluded
      * @return
      * @throws IOException
@@ -362,7 +362,7 @@ public class BigDataSetUtility {
     /**
      * Read in continuous dataset.
      *
-     * @param file dataset
+     * @param file      dataset
      * @param delimiter a single character used to separate the data
      * @return
      * @throws IOException
@@ -537,7 +537,7 @@ public class BigDataSetUtility {
     /**
      * Read in discrete dataset.
      *
-     * @param file dataset
+     * @param file      dataset
      * @param delimiter a single character used to separate the data
      * @return
      * @throws IOException
@@ -829,7 +829,8 @@ public class BigDataSetUtility {
 
         public DiscreteVar(String name, boolean excluded) {
             this.name = name;
-            this.values = new HashMap<>();;
+            this.values = new HashMap<>();
+            ;
             this.excluded = excluded;
             this.categories = new ArrayList<>();
         }
@@ -888,7 +889,7 @@ public class BigDataSetUtility {
     /**
      * Counts the number of column of the first line in the file.
      *
-     * @param file dataset
+     * @param file      dataset
      * @param delimiter a single character used to separate the data
      * @return
      * @throws IOException

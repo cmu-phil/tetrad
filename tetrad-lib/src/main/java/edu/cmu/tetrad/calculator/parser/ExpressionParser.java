@@ -38,7 +38,11 @@ public class ExpressionParser {
      * in the given list, or may not contain parameters in the given list, or that there is no restribution--whatever
      * parameters occur in the expression are OK.
      */
-    public enum RestrictionType {MAY_ONLY_CONTAIN, MAY_NOT_CONTAIN, NONE};
+    public enum RestrictionType {
+        MAY_ONLY_CONTAIN, MAY_NOT_CONTAIN, NONE
+    }
+
+    ;
 
 
     /**
@@ -132,7 +136,7 @@ public class ExpressionParser {
      */
     public Equation parseEquation(String equation) throws ParseException {
         int index = equation.indexOf("=");
-        if(index < 1){
+        if (index < 1) {
             throw new ParseException("Equations must be of the form Var = Exp", 0);
         }
         String variable = equation.substring(0, index).trim();
@@ -183,7 +187,7 @@ public class ExpressionParser {
             nextToken();
             Expression expression2 = parseOrExpression();
 
-            try{
+            try {
                 expression = descriptor.createExpression(expression, expression2);
             } catch (ExpressionInitializationException e) {
                 // Should never be thrown.
@@ -205,7 +209,7 @@ public class ExpressionParser {
             nextToken();
             Expression expression2 = parseXorExpression();
 
-            try{
+            try {
                 expression = descriptor.createExpression(expression, expression2);
             } catch (ExpressionInitializationException e) {
                 // Should never be thrown.
@@ -227,7 +231,7 @@ public class ExpressionParser {
             nextToken();
             Expression expression2 = parsePlusExpression();
 
-            try{
+            try {
                 expression = descriptor.createExpression(expression, expression2);
             } catch (ExpressionInitializationException e) {
                 // Should never be thrown.
@@ -255,7 +259,7 @@ public class ExpressionParser {
             nextToken();
             Expression expression2 = parsePlusExpression();
 
-            try{
+            try {
                 expression = descriptor.createExpression(expression, expression2);
             } catch (ExpressionInitializationException e) {
                 // Should never be thrown.
@@ -278,7 +282,7 @@ public class ExpressionParser {
             nextToken();
             Expression expression2 = parseMultDivExpression();
 
-            try{
+            try {
                 expression = descriptor.createExpression(expression, expression2);
             } catch (ExpressionInitializationException e) {
                 // Should never be thrown.
@@ -300,7 +304,7 @@ public class ExpressionParser {
             nextToken();
             Expression expression2 = parsePowerExpression();
 
-            try{
+            try {
                 expression = descriptor.createExpression(expression, expression2);
             } catch (ExpressionInitializationException e) {
                 // Should never be thrown.
@@ -322,7 +326,7 @@ public class ExpressionParser {
             nextToken();
             Expression expression2 = parseChompExpression();
 
-            try{
+            try {
                 expression = descriptor.createExpression(expression, expression2);
             } catch (ExpressionInitializationException e) {
                 // Should never be thrown.
@@ -369,8 +373,7 @@ public class ExpressionParser {
                 if (!this.restrictionParameters.contains(stringToken)) {
                     throw new ParseException("Variable " + stringToken + " is not known.", chompOffset);
                 }
-            }
-            else if (getRestrictionType() == RestrictionType.MAY_NOT_CONTAIN) {
+            } else if (getRestrictionType() == RestrictionType.MAY_NOT_CONTAIN) {
                 if (this.restrictionParameters.contains(stringToken)) {
                     throw new ParseException("Variable " + stringToken + " may not be used in this expression.", chompOffset);
                 }
@@ -379,7 +382,7 @@ public class ExpressionParser {
             this.parameters.add(stringToken);
             VariableExpression exp = new VariableExpression(stringToken);
             nextToken();
-            if(this.token == Token.EQUATION){
+            if (this.token == Token.EQUATION) {
                 return parseEvaluation(exp);
             }
 
@@ -397,18 +400,15 @@ public class ExpressionParser {
                 if (token == Token.RPAREN) {
                     nextToken();
                     expressions = new Expression[0];
-                }
-                else {
+                } else {
                     List<Expression> expressionList = parseExpressionList();
                     expect(Token.RPAREN);
                     expressions = expressionList.toArray(new Expression[expressionList.size()]);
                 }
-            }
-            else if ("+".equals(chompTokenString) || "-".equals(chompTokenString)) {
+            } else if ("+".equals(chompTokenString) || "-".equals(chompTokenString)) {
                 List<Expression> expressionList = parseSingleExpression();
                 expressions = expressionList.toArray(new Expression[expressionList.size()]);
-            }
-            else {
+            } else {
                 throw new ParseException("Expecting a parenthesized list of arguments.", chompOffset);
             }
 
@@ -437,7 +437,7 @@ public class ExpressionParser {
      */
     private Expression parseEvaluation(VariableExpression variable) throws ParseException {
         expect(Token.EQUATION);
-        if(token != Token.STRING){
+        if (token != Token.STRING) {
             throw new ParseException("Evaluations must be of the form Var = String", lexer.getCurrentOffset());
         }
         String s = lexer.getTokenString();

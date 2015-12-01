@@ -330,8 +330,7 @@ public final class CpcStable implements GraphSearch {
 
                         TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
                     }
-                }
-                else {
+                } else {
                     Triple triple = new Triple(x, y, z);
                     graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }

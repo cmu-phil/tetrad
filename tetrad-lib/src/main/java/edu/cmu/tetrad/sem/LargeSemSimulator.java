@@ -21,8 +21,10 @@
 
 package edu.cmu.tetrad.sem;
 
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -30,8 +32,6 @@ import edu.cmu.tetrad.util.TetradAlgebra;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import org.apache.commons.math3.random.*;
 
 import java.io.PrintStream;

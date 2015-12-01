@@ -31,9 +31,9 @@ import java.util.List;
 /**
  * Runs GES on the (hopefully small) list of variables, containing the given target, and trims the result to a Markov
  * blanket DAG for the target.
- * <p/>
+ * <p>
  * All of the variables must be in the specified data set.
- * <p/>
+ * <p>
  * The intended use for this is to filter the results of some other method of estimating the Markov blanket of thet
  * target, which includes the target, hopefully almost all (if not all) of the actual Markov blanket variables, and
  * possibly a few extra variables, to produce a good estimate of the Markov blanket DAG.

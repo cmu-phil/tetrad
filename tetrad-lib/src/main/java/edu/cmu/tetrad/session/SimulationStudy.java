@@ -46,7 +46,7 @@ public final class SimulationStudy {
 
     /**
      * The set of nodes with models; only these should be executed.
-     */                                                       
+     */
     private Set<SessionNode> nodesToExecute;
 
     //===========================CONSTRUCTORS==============================//
@@ -243,7 +243,7 @@ public final class SimulationStudy {
 
                 if (repetition > 1) {
                     TetradLogger.getInstance().forceLogMessage("\nREPETITION #" + (i + 1) + " FOR "
-                        + sessionNode.getDisplayName() + "\n");
+                            + sessionNode.getDisplayName() + "\n");
                 }
 
                 boolean created = sessionNode.createModel(simulation);
@@ -251,8 +251,7 @@ public final class SimulationStudy {
                 if (!created) {
                     return false;
                 }
-            }
-            catch (RuntimeException e) {
+            } catch (RuntimeException e) {
                 return false;
             }
 
@@ -296,7 +295,7 @@ public final class SimulationStudy {
         notFound.addAll(sessionNodes);
 
         while (!notFound.isEmpty()) {
-            for (Iterator<SessionNode> it = notFound.iterator(); it.hasNext();) {
+            for (Iterator<SessionNode> it = notFound.iterator(); it.hasNext(); ) {
                 SessionNode sessionNode = it.next();
 
                 if (found.containsAll(sessionNode.getParents())) {

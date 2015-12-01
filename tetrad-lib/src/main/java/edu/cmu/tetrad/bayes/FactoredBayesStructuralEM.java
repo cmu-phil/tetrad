@@ -29,7 +29,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TimerTask;
 
 /**
  * <p>Implements the procedure Factored-Bayesian-SEM found on page 6 of "The

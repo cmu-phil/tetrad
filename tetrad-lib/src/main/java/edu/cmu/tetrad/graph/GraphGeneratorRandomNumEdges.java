@@ -221,8 +221,7 @@ public final class GraphGeneratorRandomNumEdges {
     public void generate() {
         if (ANY_DAG == getStructure()) {
             generateArbitraryDag();
-        }
-        else {
+        } else {
             throw new IllegalStateException("Unknown structure type.");
         }
     }
@@ -293,8 +292,7 @@ public final class GraphGeneratorRandomNumEdges {
                     removeEdge();
                     numEdges--;
                 }
-            }
-            else {
+            } else {
                 if ((numEdges < getMaxEdges() && isAcyclic())) {
                     addEdge();
                     numEdges++;
@@ -337,8 +335,7 @@ public final class GraphGeneratorRandomNumEdges {
                     if (parentMatrix[currentNode][i] != randomChild) {
                         list[lastIndex] = parentMatrix[currentNode][i];
                         lastIndex++;
-                    }
-                    else {
+                    } else {
                         noCycle = false;
                     }
                     visited[parentMatrix[currentNode][i]] = true;
@@ -383,8 +380,7 @@ public final class GraphGeneratorRandomNumEdges {
         int rest = rand - randomParent * (getNumNodes() - 1);
         if (rest >= randomParent) {
             randomChild = rest + 1;
-        }
-        else {
+        } else {
             randomChild = rest;
         }
     }
@@ -411,15 +407,13 @@ public final class GraphGeneratorRandomNumEdges {
                 (childMatrix[randomParent][0] != 1)) {
             lastNode =
                     parentMatrix[randomChild][parentMatrix[randomChild][0] - 1];
-            for (int i = (parentMatrix[randomChild][0] - 1); (i > 0 && go); i--)
-            { // remove element from parentMatrix
+            for (int i = (parentMatrix[randomChild][0] - 1); (i > 0 && go); i--) { // remove element from parentMatrix
                 atualNode = parentMatrix[randomChild][i];
                 if (atualNode != randomParent) {
                     proxNode = atualNode;
                     parentMatrix[randomChild][i] = lastNode;
                     lastNode = proxNode;
-                }
-                else {
+                } else {
                     parentMatrix[randomChild][i] = lastNode;
                     go = false;
                 }
@@ -436,8 +430,7 @@ public final class GraphGeneratorRandomNumEdges {
                         proxNode = atualNode;
                         childMatrix[randomParent][i] = lastNode;
                         lastNode = proxNode;
-                    }
-                    else {
+                    } else {
                         childMatrix[randomParent][i] = lastNode;
                         go = false;
                     }

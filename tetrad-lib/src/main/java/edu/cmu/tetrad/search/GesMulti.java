@@ -78,8 +78,7 @@ public final class GesMulti implements GraphSearch, GraphScorer {
      */
     private List<Node> variables;
 
-    private final List<Node> dataVars
-            ;
+    private final List<Node> dataVars;
     /**
      * The true graph, if known. If this is provided, asterisks will be printed out next to false positive added edges
      * (that is, edges added that aren't adjacencies in the true graph).
@@ -1015,7 +1014,7 @@ public final class GesMulti implements GraphSearch, GraphScorer {
 
     private void addRequiredEdges(Graph graph) {
         for (Iterator<KnowledgeEdge> it =
-                     this.getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
+             this.getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge next = it.next();
             String a = next.getFrom();
             String b = next.getTo();
@@ -1314,8 +1313,7 @@ public final class GesMulti implements GraphSearch, GraphScorer {
             double c = getPenaltyDiscount();
 
             return 2 * (1.0 / q) * sumL - c * k * log(n);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -1458,8 +1456,7 @@ public final class GesMulti implements GraphSearch, GraphScorer {
             }
 
             return maxBIC;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }

@@ -540,9 +540,9 @@ public final class IndTestHsic implements IndependenceTest {
         TetradMatrix Gcxt = Gcx.transpose();
         TetradMatrix Kyx = B.times(Gcxt);
         double empHSIC = 0.0;
-        
+
         double xy = 0.0;
-        for (int i = 0; i < m; i++) {   
+        for (int i = 0; i < m; i++) {
             empHSIC += matrixProductEntry(B, Gcxt, i, i);
         }
 
@@ -675,8 +675,6 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * @return the HSIC test statistic
-     *
      * @return
      */
     public double getHsic() {
@@ -684,8 +682,6 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * @return the alpha level threshold
-     *
      * @return
      */
     public double getThreshold() {

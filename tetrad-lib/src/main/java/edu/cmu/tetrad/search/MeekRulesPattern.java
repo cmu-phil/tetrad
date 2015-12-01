@@ -35,7 +35,7 @@ import java.util.List;
  * Implements Meek's complete orientation rule set for PC (Chris Meek (1995), "Causal inference and causal explanation
  * with background IKnowledge"), modified for Conservative PC to check noncolliders against recorded noncolliders before
  * orienting.
- * <p/>
+ * <p>
  * For now, the fourth rule is always performed.
  *
  * @author Joseph Ramsey

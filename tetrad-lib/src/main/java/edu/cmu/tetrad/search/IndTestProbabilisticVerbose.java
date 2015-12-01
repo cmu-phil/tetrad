@@ -161,8 +161,7 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
 
         if (dsep) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -272,8 +271,7 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
 
         if (BCInference.OP.independent == type) {
             probOp = pInd;
-        }
-        else {
+        } else {
             probOp = 1.0 - pInd;
         }
 

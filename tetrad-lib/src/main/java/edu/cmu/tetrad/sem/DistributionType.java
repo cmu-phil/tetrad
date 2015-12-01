@@ -51,9 +51,10 @@ public enum DistributionType {
 
     /**
      * Constructs a distribution type. Private.
-     * @param name The name of the distribution.
+     *
+     * @param name           The name of the distribution.
      * @param functionSymbol The function symbol of the distribution.
-     * @param numArgs The number of arguments of the distribution.
+     * @param numArgs        The number of arguments of the distribution.
      */
     private DistributionType(String name, String functionSymbol, int numArgs) {
         this.name = name;
@@ -62,7 +63,6 @@ public enum DistributionType {
     }
 
     /**
-     * @return the name of the distribution. E.g. "Normal."
      * @return the name of the distribution.
      */
     public String getName() {
@@ -70,7 +70,6 @@ public enum DistributionType {
     }
 
     /**
-     * @return the function symbol. (For normal this is "N.")
      * @return the function symbol.
      */
     public String getFunctionSymbol() {
@@ -78,7 +77,6 @@ public enum DistributionType {
     }
 
     /**
-     * @return the number of argument of the function. (For normal, this is 2.)
      * @return The number of arguments.
      */
     public int getNumArgs() {

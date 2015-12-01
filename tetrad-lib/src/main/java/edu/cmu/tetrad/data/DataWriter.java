@@ -41,13 +41,14 @@ public final class DataWriter {
      * Writes a dataset to file. The dataset may have continuous and/or discrete
      * columns. Note that <code>out</code> is not closed by this method, so
      * the close method on <code>out</code> will need to be called externally.
+     *
      * @param dataSet   The data set to save.
      * @param out       The writer to write the output to.
      * @param separator The character separating fields, usually '\t' or ','.
      * @throws IOException If there is some problem dealing with the writer.
      */
     public static void writeRectangularData(DataSet dataSet,
-            Writer out, char separator) throws IOException {
+                                            Writer out, char separator) throws IOException {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         StringBuilder buf = new StringBuilder();
 
@@ -87,16 +88,14 @@ public final class DataWriter {
 
                     if (ContinuousVariable.isDoubleMissingValue(value)) {
                         buf.append("*");
-                    }
-                    else {
+                    } else {
                         buf.append(nf.format(value));
                     }
 
                     if (col < dataSet.getNumColumns() - 1) {
                         buf.append(separator);
                     }
-                }
-                else if (variable instanceof DiscreteVariable) {
+                } else if (variable instanceof DiscreteVariable) {
                     Object obj = dataSet.getObject(row, col);
                     String val = ((obj == null) ? "" : obj.toString());
 
@@ -118,13 +117,14 @@ public final class DataWriter {
      * Writes a dataset to file. The dataset may have continuous and/or discrete
      * columns. Note that <code>out</code> is not closed by this method, so
      * the close method on <code>out</code> will need to be called externally.
+     *
      * @param dataSet   The data set to save.
      * @param out       The writer to write the output to.
      * @param separator The character separating fields, usually '\t' or ','.
      * @throws IOException If there is some problem dealing with the writer.
      */
     public static void writeRectangularDataALittleFaster(DataSet dataSet,
-                                            PrintWriter out, char separator) throws IOException {
+                                                         PrintWriter out, char separator) throws IOException {
         NumberFormat nf = new DecimalFormat("0.0000");
 //        StringBuilder buf = new StringBuilder();
 
@@ -153,8 +153,7 @@ public final class DataWriter {
 
                     if (ContinuousVariable.isDoubleMissingValue(value)) {
                         out.print("*");
-                    }
-                    else {
+                    } else {
                         out.print(nf.format(value));
 //                        out.print(value);
                     }
@@ -162,8 +161,7 @@ public final class DataWriter {
                     if (col < dataSet.getNumColumns() - 1) {
                         out.print(separator);
                     }
-                }
-                else if (variable instanceof DiscreteVariable) {
+                } else if (variable instanceof DiscreteVariable) {
                     Object obj = dataSet.getObject(row, col);
                     String val = ((obj == null) ? "" : obj.toString());
 
@@ -185,11 +183,12 @@ public final class DataWriter {
      * Writes the lower triangle of a covariance matrix to file.  Note that
      * <code>out</code> is not closed by this method, so the close method on
      * <code>out</code> will need to be called externally.
-     * @param out       The writer to write the output to.
+     *
+     * @param out The writer to write the output to.
      * @throws IOException If there is some problem dealing with the writer.
      */
     public static void writeCovMatrix(ICovarianceMatrix covMatrix,
-            PrintWriter out, NumberFormat nf) {
+                                      PrintWriter out, NumberFormat nf) {
         int numVars = covMatrix.getVariableNames().size();
 //        out.println("/Covariance");
         out.println(covMatrix.getSampleSize());
@@ -205,8 +204,7 @@ public final class DataWriter {
             for (int i = 0; i <= j; i++) {
                 if (Double.isNaN(covMatrix.getValue(i, j))) {
                     out.print("*" + "\t");
-                }
-                else {
+                } else {
                     out.print(nf.format(covMatrix.getValue(i, j)) + "\t");
                 }
             }

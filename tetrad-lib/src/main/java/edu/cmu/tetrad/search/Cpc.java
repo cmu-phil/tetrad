@@ -439,11 +439,9 @@ public final class Cpc implements GraphSearch {
                     }
 
                     colliderTriples.add(new Triple(x, y, z));
-                }
-                else if (isNoncolliderSepset(x, y, z, graph, sepsetsxz)) {
+                } else if (isNoncolliderSepset(x, y, z, graph, sepsetsxz)) {
                     noncolliderTriples.add(new Triple(x, y, z));
-                }
-                else {
+                } else {
                     Triple triple = new Triple(x, y, z);
                     ambiguousTriples.add(triple);
                     graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());

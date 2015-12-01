@@ -102,10 +102,9 @@ public final class DataUtils {
     }
 
     /**
+     * @param index Ond plus the given index.
      * @return the default category for index i. (The default category should
      * ALWAYS be obtained by calling this method.)
-     *
-     * @param index Ond plus the given index.
      */
     public static String defaultCategory(int index) {
         return Integer.toString(index);
@@ -672,8 +671,6 @@ public final class DataUtils {
     }
 
     /**
-     * @return a new data sets, copying the given on but with the columns shuffled.
-     *
      * @param dataSet The data set to shuffle.
      * @return Ibid.
      */
@@ -1316,8 +1313,6 @@ public final class DataUtils {
     }
 
     /**
-     * @return a simulation from the given covariance matrix, zero means.
-     *
      * @param cov The variables and covariance matrix over the variables.
      * @return The simulated data.
      */
@@ -1469,9 +1464,6 @@ public final class DataUtils {
     }
 
     /**
-     * @return the covariance matrix of the data sets, for the given variable indices, over just the rows in
-     * the data with no missing values.
-     *
      * @param dataSet The data; missing values are permitted.
      * @param vars    The indices of the targeted variables in the data. The returned covariance matrix will have
      *                variables in the same order.

@@ -62,7 +62,7 @@ public class EstimateRank {
         Arrays.sort(rtCors);
         double[] Cors = new double[rtCors.length];
         for (int i = rtCors.length; i > 0; i--) {
-            Cors[rtCors.length - i] = Math.pow(rtCors[i - 1],.5);
+            Cors[rtCors.length - i] = Math.pow(rtCors[i - 1], .5);
         }
         return Cors;
     }
@@ -76,20 +76,21 @@ public class EstimateRank {
         this.alpha = alpha;
         this.A = A;
         this.B = B;
-        double[] Cors = CanCor(A,B);
+        double[] Cors = CanCor(A, B);
         int rank = 0;
         boolean reject = true;
 
         while (reject) {
             double sum = 0;
             int i;
-            for (i = rank; i < Math.min(A[0].length,B[0].length); i++) {
-                sum += Math.log(1 - Math.pow(Cors[i],2));
+            for (i = rank; i < Math.min(A[0].length, B[0].length); i++) {
+                sum += Math.log(1 - Math.pow(Cors[i], 2));
             }
-            double stat = -(A.length-.5*(A[0].length+B[0].length+3))*sum;
-            reject = ProbUtils.chisqCdf(stat,(A[0].length-rank)*(B[0].length-rank))>(1-alpha);
-            if (reject & rank < Math.min(A[0].length,B[0].length)) {rank++;}
-            else {
+            double stat = -(A.length - .5 * (A[0].length + B[0].length + 3)) * sum;
+            reject = ProbUtils.chisqCdf(stat, (A[0].length - rank) * (B[0].length - rank)) > (1 - alpha);
+            if (reject & rank < Math.min(A[0].length, B[0].length)) {
+                rank++;
+            } else {
                 reject = false;
             }
         }
@@ -110,13 +111,14 @@ public class EstimateRank {
         while (reject) {
             double sum = 0;
             int i;
-            for (i = rank; i < Math.min(iA.length,iB.length); i++) {
-                sum += Math.log(1 - Math.pow(Cors[i],2));
+            for (i = rank; i < Math.min(iA.length, iB.length); i++) {
+                sum += Math.log(1 - Math.pow(Cors[i], 2));
             }
-            double stat = -(N-.5*(iA.length+iB.length+3))*sum;
-            reject = ProbUtils.chisqCdf(stat,(iA.length-rank)*(iB.length-rank))>(1-alpha);
-            if (reject & rank < Math.min(iA.length,iB.length)) {rank++;}
-            else {
+            double stat = -(N - .5 * (iA.length + iB.length + 3)) * sum;
+            reject = ProbUtils.chisqCdf(stat, (iA.length - rank) * (iB.length - rank)) > (1 - alpha);
+            if (reject & rank < Math.min(iA.length, iB.length)) {
+                rank++;
+            } else {
                 reject = false;
             }
         }

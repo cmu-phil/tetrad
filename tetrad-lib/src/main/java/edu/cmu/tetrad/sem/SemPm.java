@@ -32,7 +32,7 @@ import java.util.*;
 
 /**
  * Parametric model for Structural Equation Models.
- * <p/>
+ * <p>
  * Note: Could not
  * get a copy constructor to work properly, so to copy SemPm objects, use object
  * serialization--e.g. java.rmu.MarshalledObject.
@@ -349,7 +349,7 @@ public final class SemPm implements PM, TetradSerializable {
         nodeA = getGraph().getExogenous(nodeA);
         nodeB = getGraph().getExogenous(nodeB);
 
-            if (nodeA.getNodeType() == NodeType.ERROR) {
+        if (nodeA.getNodeType() == NodeType.ERROR) {
             nodeA = getGraph().getChildren(nodeA).get(0);
         }
 
@@ -473,7 +473,7 @@ public final class SemPm implements PM, TetradSerializable {
 
             if (type == ParamType.VAR || type == ParamType.COVAR || type == ParamType.COEF) {
                 if (!_parameter.isFixed()) {
-                    freeParameters.add(_parameter);     
+                    freeParameters.add(_parameter);
                 }
             }
         }
@@ -559,7 +559,7 @@ public final class SemPm implements PM, TetradSerializable {
         Collections.sort(new ArrayList<Edge>(edges), new Comparator<Edge>() {
             public int compare(Edge o1, Edge o2) {
                 int compareFirst = o1.getNode1().getName().compareTo(o2.getNode1().toString());
-                int compareSecond = o1.getNode2 ().getName().compareTo(o2.getNode2().toString());
+                int compareSecond = o1.getNode2().getName().compareTo(o2.getNode2().toString());
 
                 if (compareFirst != 0) {
                     return compareFirst;
@@ -584,7 +584,7 @@ public final class SemPm implements PM, TetradSerializable {
             if (!SemGraph.isErrorEdge(edge) &&
                     edge.getEndpoint1() == Endpoint.TAIL &&
                     edge.getEndpoint2() == Endpoint.ARROW) {
-                if (!graph.isParameterizable(edge.getNode2()))  {
+                if (!graph.isParameterizable(edge.getNode2())) {
                     continue;
                 }
 
@@ -663,7 +663,7 @@ public final class SemPm implements PM, TetradSerializable {
             Parameter param = new Parameter(newTName(), ParamType.VAR, node, node);
             param.setDistribution(new Uniform(1.0, 3.0));
             parameters.add(param);
-                
+
         }
 
         List<Parameter> parameters = new ArrayList<Parameter>();
@@ -698,7 +698,7 @@ public final class SemPm implements PM, TetradSerializable {
             if (!SemGraph.isErrorEdge(edge) &&
                     edge.getEndpoint1() == Endpoint.TAIL &&
                     edge.getEndpoint2() == Endpoint.ARROW) {
-                if (!graph.isParameterizable(edge.getNode2()))  {
+                if (!graph.isParameterizable(edge.getNode2())) {
                     continue;
                 }
 

@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * <p></p>This is experimental; you should use it. It will probably be
  * removed from the repository.</p>
- *
+ * <p>
  * Replaces the FAS search in the previous version with GES followed by PC adjacency removals for more accuracy.
  * Uses conservative collider orientation. Gets sepsets for X---Y from among adjacencies of X or of Y. -jdramsey 3/10/2015
  * <p>

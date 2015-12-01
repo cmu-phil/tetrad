@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Implements the Anderson-Darling test against the given CDF, with P values calculated
  * as in R's ad.test method (in package nortest).
- * <p/>
+ * <p>
  * Note that in the calculation, points x such that log(1 - distributions.get(x)))
  * is infinite are ignored.
  *

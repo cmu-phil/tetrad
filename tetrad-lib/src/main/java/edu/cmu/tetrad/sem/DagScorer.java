@@ -68,8 +68,8 @@ public final class DagScorer implements TetradSerializable, Scorer {
     /**
      * Constructs a new SemEstimator that uses the specified optimizer.
      *
-     * @param dataSet      a DataSet, all of whose variables are contained in
-     *                     the given SemPm. (They are identified by name.)
+     * @param dataSet a DataSet, all of whose variables are contained in
+     *                the given SemPm. (They are identified by name.)
      */
     public DagScorer(DataSet dataSet) {
         this(new CovarianceMatrix(dataSet));
@@ -79,9 +79,9 @@ public final class DagScorer implements TetradSerializable, Scorer {
     /**
      * Constructs a new SemEstimator that uses the specified optimizer.
      *
-     * @param covMatrix    a covariance matrix, all of whose variables are
-     *                     contained in the given SemPm. (They are identified by
-     *                     name.)
+     * @param covMatrix a covariance matrix, all of whose variables are
+     *                  contained in the given SemPm. (They are identified by
+     *                  name.)
      */
     public DagScorer(ICovarianceMatrix covMatrix) {
         if (covMatrix == null) {
@@ -319,7 +319,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return getSampleCovar();
     }
 
-    private TetradMatrix implCovarMeas () {
+    private TetradMatrix implCovarMeas() {
         computeImpliedCovar();
         return this.implCovarMeasC;
     }
@@ -552,11 +552,9 @@ public final class DagScorer implements TetradSerializable, Scorer {
 
         if (dataSet != null) {
             return new SemEstimator(dataSet, pm, new SemOptimizerRegression()).estimate();
-        }
-        else if (covMatrix != null) {
+        } else if (covMatrix != null) {
             return new SemEstimator(covMatrix, pm, new SemOptimizerRegression()).estimate();
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
     }

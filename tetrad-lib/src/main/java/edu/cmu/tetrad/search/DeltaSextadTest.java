@@ -142,7 +142,7 @@ public class DeltaSextadTest implements IDeltaSextadTest {
     /**
      * Takes a list of tetrads for the given data set and returns the chi square value for the test. We assume that the
      * tetrads are non-redundant; if not, a matrix exception will be thrown.
-     * <p/>
+     * <p>
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
      */

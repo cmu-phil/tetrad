@@ -31,6 +31,7 @@ import java.util.List;
 /**
  * Optimizes a SEM by randomly selecting points in cubes of decreasing size about
  * a given point.
+ *
  * @author Joseph Ramsey
  */
 public class SemOptimizerScattershot implements SemOptimizer {
@@ -102,7 +103,6 @@ public class SemOptimizerScattershot implements SemOptimizer {
             double value = _sem.getParamValue(_nodeA, _nodeB);
             semIm.setParamValue(param, value);
         }
-
 
 
 //        optimize2(semIm);
@@ -187,7 +187,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
             double f = fcn.evaluate(pTemp);
 
             if (f == Double.POSITIVE_INFINITY) {
-                i--; continue;
+                i--;
+                continue;
             }
 
             // Try to find the lowest reachable spot for each of the trial points at width 1.
@@ -230,7 +231,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
             double f = fcn.evaluate(pTemp);
 
             if (f == Double.POSITIVE_INFINITY) {
-                i++; continue;
+                i++;
+                continue;
             }
 
             if (f < fP) {

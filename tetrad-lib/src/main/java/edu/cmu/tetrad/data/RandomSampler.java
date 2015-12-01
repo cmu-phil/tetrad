@@ -39,7 +39,7 @@ public final class RandomSampler {
      * original dataset.
      */
     public static DataSet sample(DataSet dataSet,
-                                            int newSampleSize) {
+                                 int newSampleSize) {
         if (newSampleSize < 1) {
             throw new IllegalArgumentException("Sample size must be > 0.");
         }

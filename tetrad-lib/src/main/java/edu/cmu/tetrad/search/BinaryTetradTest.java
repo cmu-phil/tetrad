@@ -29,9 +29,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-
-import java.util.List;
-
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
@@ -41,15 +38,18 @@ import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
+import java.util.List;
+
 
 /**
  * A tetrad test for binary variables.
+ *
  * @author Ricardo Silva
  * @deprecated
  */
 public final class BinaryTetradTest implements TetradTest {
     private DataSet dataSet;
-//    private int rawdata1[][];
+    //    private int rawdata1[][];
     private double pis[][];      //bivariate proportions only
     private double pis4[][][][]; //probabilities over four variables
     private int counts4[][][][][][][][]; //coefs over all groups of four variables
@@ -636,7 +636,7 @@ public final class BinaryTetradTest implements TetradTest {
                                         Math.pow(params[8], p1) *
                                         Math.pow(1 - params[8], 1 - p1) *
                                         Math.pow(Math.pow(params[9], p2) *
-                                                Math.pow(1 - params[9], 1 - p2),
+                                                        Math.pow(1 - params[9], 1 - p2),
                                                 1 - p1) * Math.pow(Math.pow(
                                         params[10], p2) *
                                         Math.pow(1 - params[10], 1 - p2), p1);
@@ -697,7 +697,7 @@ public final class BinaryTetradTest implements TetradTest {
                                         Math.pow(params[8], p1) *
                                         Math.pow(1 - params[8], 1 - p1) *
                                         Math.pow(Math.pow(params[9], p2) *
-                                                Math.pow(1 - params[9], 1 - p2),
+                                                        Math.pow(1 - params[9], 1 - p2),
                                                 1 - p1) * Math.pow(Math.pow(
                                         params[10], p2) *
                                         Math.pow(1 - params[10], 1 - p2), p1);
@@ -782,7 +782,7 @@ public final class BinaryTetradTest implements TetradTest {
                                         Math.pow(params[8], p1) *
                                         Math.pow(1 - params[8], 1 - p1) *
                                         Math.pow(Math.pow(params[9], p2) *
-                                                Math.pow(1 - params[9], 1 - p2),
+                                                        Math.pow(1 - params[9], 1 - p2),
                                                 1 - p1) * Math.pow(Math.pow(
                                         params[10], p2) *
                                         Math.pow(1 - params[10], 1 - p2), p1);
@@ -838,7 +838,7 @@ public final class BinaryTetradTest implements TetradTest {
                                         Math.pow(params[8], p1) *
                                         Math.pow(1 - params[8], 1 - p1) *
                                         Math.pow(Math.pow(params[9], p2) *
-                                                Math.pow(1 - params[9], 1 - p2),
+                                                        Math.pow(1 - params[9], 1 - p2),
                                                 1 - p1) * Math.pow(Math.pow(
                                         params[10], p2) *
                                         Math.pow(1 - params[10], 1 - p2), p1);

@@ -48,7 +48,7 @@ public interface DataBox extends TetradSerializable {
      * stored. A value of null is interpreted as a missing value.
      *
      * @throws IllegalArgumentException if the given value cannot be stored
-     * (because it's out of range or cannot be converted or whatever).
+     *                                  (because it's out of range or cannot be converted or whatever).
      */
     void set(int row, int col, Number value) throws IllegalArgumentException;
 

@@ -88,8 +88,7 @@ public final class CellTable {
             for (int j = 0; j < indices.length; j++) {
                 try {
                     coords[j] = dataSet.getInt(i, indices[j]);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     coords[j] = dataSet.getInt(i, j);
                 }
@@ -104,8 +103,6 @@ public final class CellTable {
     }
 
     /**
-     * @return the number of values for the given variable.
-     *
      * @param varIndex the index of the variable in question.
      * @return the number of dimensions of the variable.
      */

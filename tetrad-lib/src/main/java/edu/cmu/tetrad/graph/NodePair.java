@@ -41,11 +41,11 @@ public class NodePair {
     private Node second;
 
 
-    public NodePair(Node first, Node second){
-        if(first == null){
+    public NodePair(Node first, Node second) {
+        if (first == null) {
             throw new NullPointerException("First node must not be null.");
         }
-        if(second == null){
+        if (second == null) {
             throw new NullPointerException("Second node must not be null.");
         }
         this.first = first;
@@ -54,34 +54,34 @@ public class NodePair {
 
     //============================== Public methods =============================//
 
-    public Node getFirst(){
+    public Node getFirst() {
         return this.first;
     }
 
-    public Node getSecond(){
+    public Node getSecond() {
         return this.second;
     }
 
-    public int hashCode(){
+    public int hashCode() {
         return this.first.hashCode() + this.second.hashCode();
     }
 
 
-    public boolean equals(Object o){
-        if(o == this){
+    public boolean equals(Object o) {
+        if (o == this) {
             return true;
         }
-        if(!(o instanceof NodePair)){
+        if (!(o instanceof NodePair)) {
             return false;
         }
-        NodePair thatPair = (NodePair)o;
-        if(this.first.equals(thatPair.first) && this.second.equals(thatPair.second)){
+        NodePair thatPair = (NodePair) o;
+        if (this.first.equals(thatPair.first) && this.second.equals(thatPair.second)) {
             return true;
         }
         return this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
     }
 
-    public String toString(){
+    public String toString() {
         return "{" + this.first + ", " + this.second + "}";
     }
 

@@ -72,8 +72,9 @@ public class RegressionDataset implements Regression {
 
     /**
      * Constructs a linear regression model for the given tabular data set.
+     *
      * @param data A rectangular data set, the relevant variables of which
-     * are continuous.
+     *             are continuous.
      */
     public RegressionDataset(DataSet data) {
         this.data = data.getDoubleData();
@@ -90,7 +91,6 @@ public class RegressionDataset implements Regression {
     }
 
 
-
     //===========================PUBLIC METHODS========================//
 
     /**
@@ -102,7 +102,6 @@ public class RegressionDataset implements Regression {
     }
 
     /**
-     * @return the graph of signifiocant regressors into the target.
      * @return This graph.
      */
     public Graph getGraph() {
@@ -111,7 +110,8 @@ public class RegressionDataset implements Regression {
 
     /**
      * Regresses the target on the given regressors.
-     * @param target The target variable.
+     *
+     * @param target     The target variable.
      * @param regressors The regressor variables.
      * @return The regression plane, specifying for each regressors its
      * coefficeint, se, t, and p values, and specifying the same for the
@@ -147,14 +147,12 @@ public class RegressionDataset implements Regression {
                 for (int j = 0; j < x.columns(); j++) {
                     if (j == 0) {
                         x.set(i, j, 1);
-                    }
-                    else {
+                    } else {
                         x.set(i, j, xSub.get(i, j - 1));
                     }
                 }
             }
-        }
-        else {
+        } else {
             x = new TetradMatrix(xSub.rows(), xSub.columns());
 
             for (int i = 0; i < x.rows(); i++) {
@@ -225,13 +223,13 @@ public class RegressionDataset implements Regression {
 
     public RegressionResult regress(Node target, Node... regressors) {
         List<Node> _regressors = Arrays.asList(regressors);
-        return regress(target, _regressors);        
+        return regress(target, _regressors);
     }
 
     //=======================PRIVATE METHODS================================//
 
     private Graph createOutputGraph(String target, TetradMatrix x,
-                                   List<Node> regressors, TetradVector p) {
+                                    List<Node> regressors, TetradVector p) {
         // Create output graph.
         Node targetNode = new GraphNode(target);
 

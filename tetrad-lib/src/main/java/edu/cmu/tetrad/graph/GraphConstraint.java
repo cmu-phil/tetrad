@@ -40,7 +40,7 @@ public interface GraphConstraint extends TetradSerializable {
      * @param edge  the edge to check.
      * @param graph the graph to check.
      * @return true if adding the edge would satisfy the constraint, false if
-     *         not.
+     * not.
      */
     boolean isEdgeAddable(Edge edge, Graph graph);
 
@@ -51,7 +51,7 @@ public interface GraphConstraint extends TetradSerializable {
      * @param node  the node to check.
      * @param graph the graph to check.
      * @return true if adding the node would satisfy the constraint, false if
-     *         not.
+     * not.
      */
     boolean isNodeAddable(Node node, Graph graph);
 
@@ -62,7 +62,7 @@ public interface GraphConstraint extends TetradSerializable {
      * @param edge  the edge to check.
      * @param graph the graph to check.
      * @return true if removing the edge would satisfy the constraint, false if
-     *         not.
+     * not.
      */
     boolean isEdgeRemovable(Edge edge, Graph graph);
 
@@ -73,14 +73,11 @@ public interface GraphConstraint extends TetradSerializable {
      * @param node  the node to check.
      * @param graph the graph to check.
      * @return true if removing the node would satisfy the constraint, false, if
-     *         not.
+     * not.
      */
     boolean isNodeRemovable(Node node, Graph graph);
 
     /**
-     * @return a string representation of the graph constraint, of the form
-     * "<[Some sentence.]>.
-     *
      * @return this string.
      */
     String toString();

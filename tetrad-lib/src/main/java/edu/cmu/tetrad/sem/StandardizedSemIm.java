@@ -30,8 +30,6 @@ import edu.cmu.tetrad.util.*;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.abs;
-
 /**
  * A special SEM model in which variances of variables are always 1 and means of variables
  * are always 0. In order to ensure that means of variables are always zero, means or error
@@ -258,8 +256,7 @@ public class StandardizedSemIm implements TetradSerializable {
         if (covar > range.getLow() && covar < range.getHigh()) {
             edgeParameters.put(edge, covar);
             return true;
-        }
-        else {
+        } else {
             return false;
         }
 
@@ -443,8 +440,8 @@ public class StandardizedSemIm implements TetradSerializable {
     /**
      * @param error The error term. A node with NodeType.ERROR.
      * @return the error variance for the given error term. THIS IS NOT A PARAMETER OF THE
-     *         MODEL! Its value is simply calculated from the given coefficients of the model.
-     *         Returns Double.NaN if the error variance cannot be computed.
+     * MODEL! Its value is simply calculated from the given coefficients of the model.
+     * Returns Double.NaN if the error variance cannot be computed.
      */
     public double getErrorVariance(Node error) {
         return calculateErrorVarianceFromParams(error);
@@ -512,8 +509,8 @@ public class StandardizedSemIm implements TetradSerializable {
 
     /**
      * @return The edge coefficient matrix of the model, a la SemIm. Note that this will normally need to be
-     *         transposed, since [a][b] is the edge coefficient for a-->b, not b-->a. Sorry. History. THESE ARE
-     *         PARAMETERS OF THE MODEL--THE ONLY PARAMETERS.
+     * transposed, since [a][b] is the edge coefficient for a-->b, not b-->a. Sorry. History. THESE ARE
+     * PARAMETERS OF THE MODEL--THE ONLY PARAMETERS.
      */
     public TetradMatrix edgeCoef() {
         List<Node> variableNodes = getVariableNodes();
@@ -541,9 +538,9 @@ public class StandardizedSemIm implements TetradSerializable {
 
     /**
      * @return Returns the error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b,
-     *         with [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE
-     *         CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
-     *         elements cannot be calculated.
+     * with [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE
+     * CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
+     * elements cannot be calculated.
      */
     public TetradMatrix errCovar() {
         return errCovar(errorVariances());
@@ -551,8 +548,8 @@ public class StandardizedSemIm implements TetradSerializable {
 
     /**
      * @return For compatibility only. Returns the variable means of the model. These are always
-     *         zero, since this is a standardized model. THESE ARE ALSO NOT PARAMETERS OF THE MODEL. ONLY THE
-     *         COEFFICIENTS ARE PARAMETERS.
+     * zero, since this is a standardized model. THESE ARE ALSO NOT PARAMETERS OF THE MODEL. ONLY THE
+     * COEFFICIENTS ARE PARAMETERS.
      */
     public double[] means() {
         return new double[semPm.getVariableNodes().size()];
@@ -566,7 +563,7 @@ public class StandardizedSemIm implements TetradSerializable {
      * @param sampleSize      The sample size of the desired data set.
      * @param latentDataSaved True if latent variables should be included in the data set.
      * @return This returns a standardized data set simulated from the model, using the reduced form
-     *         method.
+     * method.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         return simulateDataReducedForm(sampleSize, latentDataSaved);
@@ -576,7 +573,7 @@ public class StandardizedSemIm implements TetradSerializable {
      * @param sampleSize      The sample size of the desired data set.
      * @param latentDataSaved True if latent variables should be included in the data set.
      * @return This returns a standardized data set simulated from the model, using the reduced form
-     *         method.
+     * method.
      */
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int numVars = getVariableNodes().size();
@@ -634,9 +631,9 @@ public class StandardizedSemIm implements TetradSerializable {
 
     /**
      * @return Returns the error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b,
-     *         with [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE
-     *         CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
-     *         elements cannot be calculated.
+     * with [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE
+     * CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
+     * elements cannot be calculated.
      */
     private TetradMatrix errCovar(Map<Node, Double> errorVariances) {
         List<Node> variableNodes = getVariableNodes();
@@ -728,8 +725,8 @@ public class StandardizedSemIm implements TetradSerializable {
      * @param randomUtil a random number generator, if null the method will make
      *                   a new generator for each random number needed
      * @return an array the same length as the width or length (cholesky should
-     *         have the same width and length) containing a randomly generate
-     *         data set.
+     * have the same width and length) containing a randomly generate
+     * data set.
      */
     private double[] exogenousData(TetradMatrix cholesky, RandomUtil
             randomUtil) {

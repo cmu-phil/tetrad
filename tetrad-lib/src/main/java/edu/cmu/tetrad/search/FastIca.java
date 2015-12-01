@@ -134,9 +134,9 @@ import org.apache.commons.math3.linear.SingularValueDecomposition;
  * <p>
  * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and
  * Applications, _Neural Networks_, *13(4-5)*:411-430
- *
+ * <p>
  * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015</p>
-
+ *
  * @author Joseph Ramsey (of the translation, that is)
  */
 public class FastIca {

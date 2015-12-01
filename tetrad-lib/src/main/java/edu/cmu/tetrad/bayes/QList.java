@@ -235,7 +235,7 @@ final class QList {
                 // This is so as to avoid duplicate summing with only
                 // the latent variable values varying
                 /*
-				boolean flag = true;
+                boolean flag = true;
 				for (int i = 0; i < nVarInMarginal; i++)
 				{
 					if ((bayesIm.getNode(pVar[i]).getNodeType() == 

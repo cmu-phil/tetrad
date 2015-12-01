@@ -620,7 +620,7 @@ public class Dci {
     /**
      * Finds the discriminating undirectedPaths relative only to variables measured jointly after the initial definite colliders
      * have been oriented.
-     * <p/>
+     * <p>
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
      * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
      * <pre>
@@ -786,8 +786,7 @@ public class Dci {
             if (thread.thisThread.isAlive()) {
                 try {
                     thread.thisThread.join();
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     throw new RuntimeException(e.getMessage());
                 }
             }
@@ -1935,8 +1934,7 @@ public class Dci {
                         condSet.add(newNode);
                         //    }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
 
                 }
                 try {
@@ -1946,8 +1944,7 @@ public class Dci {
                         condSet.add(newNode);
                         //    }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
 
                 }
             }
@@ -2136,7 +2133,7 @@ public class Dci {
 
         /**
          * @return an iterator over elements of type Collection<E> which enumerates the PowerSet of the collection used
-         *         in the constructor
+         * in the constructor
          */
 
         public Iterator<Set<E>> iterator() {

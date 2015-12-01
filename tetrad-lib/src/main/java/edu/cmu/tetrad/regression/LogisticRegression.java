@@ -41,7 +41,7 @@ import java.util.List;
  * implementation by John Pezzullo.  That implementation together with a
  * description of logistic regression and some examples appear on his web page
  * http://members.aol.com/johnp71/logistic.html
- * <p/>
+ * <p>
  * See also  Applied Logistic Regression, by D.W. Hosmer and S. Lemeshow. 1989,
  * John Wiley & Sons, New York which Pezzullo references.  In particular see
  * pages 27-29.
@@ -134,9 +134,9 @@ public class LogisticRegression implements TetradSerializable {
     /**
      * Regresses the single-column target onto the regressors which have been
      * previously set, generating a regression result.
-     * <p/>
+     * <p>
      * The target must be a two-valued variable with values 0 and 1.
-     * <p/>
+     * <p>
      * This implements an iterative search.
      */
     public Result regress(int[] target, String targetName, double[][] regressors, List<String> regressorNames) {

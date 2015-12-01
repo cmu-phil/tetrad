@@ -125,8 +125,6 @@ public class Discretizer {
     }
 
     /**
-     * @return a new data set that has been discretized.
-     *
      * @return - Discretized dataset.
      */
     public DataSet discretize() {
@@ -142,7 +140,7 @@ public class Discretizer {
                 for (Node node : specs.keySet()) {
                     if (node.getName().equals(variable.getName())) {
                         DiscretizationSpec _spec = specs.get(node);
-                        spec = (ContinuousDiscretizationSpec)_spec;
+                        spec = (ContinuousDiscretizationSpec) _spec;
                         _node = node;
                         break;
                     }
@@ -167,7 +165,7 @@ public class Discretizer {
                 for (Node node : specs.keySet()) {
                     if (node.getName().equals(variable.getName())) {
                         DiscretizationSpec _spec = specs.get(node);
-                        spec = (DiscreteDiscretizationSpec)_spec;
+                        spec = (DiscreteDiscretizationSpec) _spec;
                         _node = node;
                         break;
                     }
@@ -211,8 +209,7 @@ public class Discretizer {
                     for (int j = 0; j < _data.length; j++) {
                         newDataSet.setInt(j, _col, _data[j]);
                     }
-                }
-                else if (sourceVar instanceof DiscreteVariable) {
+                } else if (sourceVar instanceof DiscreteVariable) {
                     DiscreteDiscretizationSpec spec = (DiscreteDiscretizationSpec) specs.get(sourceVar);
 
                     int[] remap = spec.getRemap();
@@ -239,8 +236,6 @@ public class Discretizer {
     }
 
     /**
-     * @return an array of breakpoints that divides the data into equal sized buckets.
-     *
      * @param _data
      * @param numberOfCategories
      * @return
@@ -415,8 +410,6 @@ public class Discretizer {
         //============================ Public Methods =================================//
 
         /**
-         * @return the discretized varaible.
-         *
          * @return - discretized variable.
          */
         public final DiscreteVariable getVariable() {
@@ -424,8 +417,6 @@ public class Discretizer {
         }
 
         /**
-         * @return the discretized data.
-         *
          * @return - discretized data.
          */
         public final int[] getData() {

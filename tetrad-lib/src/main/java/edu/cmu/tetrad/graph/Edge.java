@@ -29,7 +29,7 @@ import java.io.ObjectInputStream;
 /**
  * Represents an edge node1 *-# node2 where * and # are endpoints of type
  * Endpoint--that is, Endpoint.TAIL, Endpoint.ARROW, or Endpoint.CIRCLE.
- * <p/>
+ * <p>
  * Note that because speed is of the essence, and Edge cannot be compared
  * to an object of any other type; this will throw an exception.
  *
@@ -147,7 +147,6 @@ public class Edge implements TetradSerializable, Comparable {
 
     /**
      * @return the endpoint nearest to the given node.
-     *
      * @throws IllegalArgumentException if the given node is not along the
      *                                  edge.
      */
@@ -163,7 +162,6 @@ public class Edge implements TetradSerializable, Comparable {
 
     /**
      * @return the endpoint furthest from the given node.
-     *
      * @throws IllegalArgumentException if the given node is not along the
      *                                  edge.
      */
@@ -195,8 +193,6 @@ public class Edge implements TetradSerializable, Comparable {
 
 
     /**
-     * @return true just in case this edge is directed. (Gustavo 7 May 2007.)
-     *
      * @return true just in case this edge is directed.
      */
     public boolean isDirected() {
@@ -380,11 +376,9 @@ public class Edge implements TetradSerializable, Comparable {
     public void setProximalEndpoint(Node y, Endpoint endpoint) {
         if (y == node1) {
             setEndpoint1(endpoint);
-        }
-        else if (y == node2) {
+        } else if (y == node2) {
             setEndpoint2(endpoint);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Node a node in this edge: " + y);
         }
     }

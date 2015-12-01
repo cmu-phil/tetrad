@@ -29,8 +29,6 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DoubleDataBox;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.io.IOException;
@@ -49,19 +47,19 @@ import java.util.*;
  * values of free freeParameters. For simulation, cyclic and acyclic methods are
  * provided; the cyclic method is used by default, although the acyclic method
  * is considerably faster for large data sets.
- * <p/>
+ * <p>
  * Let V be the set of variables in the model. The freeParameters of the model are
  * as follows: (a) the list of linear coefficients for all edges u-->v in the
  * model, where u, v are in V, (b) the list of variances for all variables in V,
  * (c) the list of all error covariances d<-->e, where d an e are exogenous
  * terms in the model (either exogenous variables or error terms for endogenous
  * variables), and (d) the list of means for all variables in V.
- * <p/>
+ * <p>
  * It is important to note that the likelihood functions this class calculates
  * do not depend on variable means. They depend only on edge coefficients and
  * error covariances. Hence, variable means are treated differently from edge
  * coefficients and error covariances in the model.
- * <p/>
+ * <p>
  * Reference: Bollen, K. A. (1989). Structural Equations with Latent Variables.
  * New York: John Wiley & Sons.
  *
@@ -802,8 +800,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * @return the intercept. For acyclic SEMs only.
-     *
      * @return the intercept, for acyclic models, or Double.NaN otherwise.
      * @throws UnsupportedOperationException if called on a cyclic SEM.
      */
@@ -1060,14 +1056,13 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * @return a copy of the implied covariance matrix over all the variables.
      * @param recalculate
+     * @return a copy of the implied covariance matrix over all the variables.
      */
     public TetradMatrix getImplCovar(boolean recalculate) {
         if (!recalculate && implCovar != null) {
             return this.implCovar;
-        }
-        else {
+        } else {
             return implCovar();
         }
     }
@@ -2138,8 +2133,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
 
     /**
-     * @return the standard error for the given parameter
-     *
      * @param parameter
      * @param maxFreeParams
      * @return
@@ -2275,7 +2268,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
     /**
      * @return the variable by the given name, or null if none exists.
-     *
      * @throws NullPointerException if name is null.
      */
     public Node getVariableNode(String name) {
@@ -2514,24 +2506,24 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         }
 
         if (parameter.isInitializedRandomly()) {
-             if (parameter.getType() == ParamType.COEF) {
-                 final double coefLow = getInitializationParams().getCoefLow();
-                 final double coefHigh = getInitializationParams().getCoefHigh();
-                 double value = new Split(coefLow, coefHigh).nextRandom();
-                 if (getInitializationParams().isCoefSymmetric()) {
-                     return value;
-                 } else {
-                     return Math.abs(value);
-                 }
+            if (parameter.getType() == ParamType.COEF) {
+                final double coefLow = getInitializationParams().getCoefLow();
+                final double coefHigh = getInitializationParams().getCoefHigh();
+                double value = new Split(coefLow, coefHigh).nextRandom();
+                if (getInitializationParams().isCoefSymmetric()) {
+                    return value;
+                } else {
+                    return Math.abs(value);
+                }
             } else if (parameter.getType() == ParamType.COVAR) {
-                 final double covLow = getInitializationParams().getCovLow();
-                 final double covHigh = getInitializationParams().getCovHigh();
-                 double value = new Split(covLow, covHigh).nextRandom();
-                 if (getInitializationParams().isCoefSymmetric()) {
-                     return value;
-                 } else {
-                     return Math.abs(value);
-                 }
+                final double covLow = getInitializationParams().getCovLow();
+                final double covHigh = getInitializationParams().getCovHigh();
+                double value = new Split(covLow, covHigh).nextRandom();
+                if (getInitializationParams().isCoefSymmetric()) {
+                    return value;
+                } else {
+                    return Math.abs(value);
+                }
             } else { //if (parameter.getType() == ParamType.VAR) {
                 return RandomUtil.getInstance().nextUniform(getInitializationParams().getVarLow(), getInitializationParams().getVarHigh());
             }

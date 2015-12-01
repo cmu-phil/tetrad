@@ -246,11 +246,6 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     /**
-     * @return <tt>true</tt> if the given category represents an integer inside
-     * the range of acceptable categories for <tt>this</tt> variable.  If the
-     * variable has <i>n</i> possible categories, then the given category should
-     * represent an integer from 0 to <i>n</i>-1.
-     *
      * @param category a category to be checked
      * @return true if the given category is legal.
      */
@@ -334,10 +329,10 @@ public final class DiscreteVariable extends AbstractVariable
     public final boolean equals(Object o) {
         NodeEqualityMode.Type equalityType = NodeEqualityMode.getEqualityType();
 
-		//AJ
-		if (!(o instanceof DiscreteVariable)) {
-			return false;
-		}
+        //AJ
+        if (!(o instanceof DiscreteVariable)) {
+            return false;
+        }
 
         // Updating needs the slow node equality. jdramsey 6/7/2015
 

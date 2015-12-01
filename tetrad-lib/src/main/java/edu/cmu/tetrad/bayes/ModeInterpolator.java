@@ -28,8 +28,6 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Creates a data set in which missing values in each column are filled using

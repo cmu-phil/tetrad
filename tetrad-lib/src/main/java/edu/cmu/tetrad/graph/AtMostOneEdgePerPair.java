@@ -78,8 +78,6 @@ public final class AtMostOneEdgePerPair implements GraphConstraint {
     }
 
     /**
-     * @return a string representation of the constraint.
-     *
      * @return this representation.
      */
     public String toString() {

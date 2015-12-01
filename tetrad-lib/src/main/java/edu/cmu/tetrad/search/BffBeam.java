@@ -846,7 +846,7 @@ public final class BffBeam implements Bff {
 
     private void addRequiredEdges(Graph graph) {
         for (Iterator<KnowledgeEdge> it =
-                     this.getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
+             this.getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge next = it.next();
             String a = next.getFrom();
             String b = next.getTo();
@@ -868,7 +868,7 @@ public final class BffBeam implements Bff {
             }
         }
         for (Iterator<KnowledgeEdge> it =
-                     getKnowledge().forbiddenEdgesIterator(); it.hasNext(); ) {
+             getKnowledge().forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge next = it.next();
             String a = next.getFrom();
             String b = next.getTo();
@@ -943,7 +943,7 @@ public final class BffBeam implements Bff {
 //                return pValue;
 //                return -fml;
 //            return -chisq;
-                return -bic;
+            return -bic;
 //                return -aic;
         }
 

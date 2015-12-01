@@ -30,9 +30,13 @@ package edu.cmu.tetrad.data;
  */
 public interface TriangularMatrix {
     public void create(int i);
+
     public short getShort(int i, int j);
+
     public double getDouble(int i, int j);
+
     public boolean set(int i, int j, short value);
+
     public boolean set(int i, int j, double value);
 }
 

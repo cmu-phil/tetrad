@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  *
  * @author Tyler Gibson
  */
-public interface ExpressionDescriptor extends  TetradSerializable {
+public interface ExpressionDescriptor extends TetradSerializable {
     static final long serialVersionUID = 23L;
 
 
@@ -39,6 +39,7 @@ public interface ExpressionDescriptor extends  TetradSerializable {
         BOTH;
 
         static final long serialVersionUID = 23L;
+
         public static Position serializableInstance() {
             return NEITHER;
         }
@@ -69,7 +70,7 @@ public interface ExpressionDescriptor extends  TetradSerializable {
      * Creates the actual expression that can be used to evaluate matters from the given
      * expressions.
      */
-    public Expression createExpression(Expression ... expressions) throws ExpressionInitializationException;
+    public Expression createExpression(Expression... expressions) throws ExpressionInitializationException;
 
 
 }

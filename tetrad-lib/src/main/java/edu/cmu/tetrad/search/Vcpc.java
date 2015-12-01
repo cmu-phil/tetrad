@@ -62,7 +62,6 @@ public final class Vcpc implements GraphSearch {
     private Graph graph;
 
 
-
     /**
      * Elapsed time of last search.
      */
@@ -228,7 +227,6 @@ public final class Vcpc implements GraphSearch {
     }
 
 
-
     /**
      * @return the set of collider triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
@@ -344,8 +342,6 @@ public final class Vcpc implements GraphSearch {
         }
 
 
-
-
         List<Triple> ambiguousTriples = new ArrayList(graph.getAmbiguousTriples());
 
         int[] dims = new int[ambiguousTriples.size()];
@@ -365,8 +361,6 @@ public final class Vcpc implements GraphSearch {
 //      basic rules to ensure consistent patterns.
 
 
-
-
         CombinationGenerator generator = new CombinationGenerator(dims);
         int[] combination;
 
@@ -383,7 +377,7 @@ public final class Vcpc implements GraphSearch {
                 _graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
 
 
-                if (combination[k] == 0){
+                if (combination[k] == 0) {
                     newColliders.get(_graph).add(triple);
 //                    System.out.println(newColliders.get(_graph));
                     Node x = triple.getX();
@@ -394,7 +388,7 @@ public final class Vcpc implements GraphSearch {
                     _graph.setEndpoint(z, y, Endpoint.ARROW);
 
                 }
-                if (combination[k] == 1){
+                if (combination[k] == 1) {
                     newNonColliders.get(_graph).add(triple);
                 }
             }
@@ -414,7 +408,6 @@ public final class Vcpc implements GraphSearch {
 //
             List<Triple> colliders = newColliders.get(graph);
             List<Triple> nonColliders = newNonColliders.get(graph);
-
 
 
             for (Triple triple : colliders) {
@@ -621,7 +614,9 @@ public final class Vcpc implements GraphSearch {
 //        logTriples();
         TetradLogger.getInstance().flush();
 //        SearchGraphUtils.verifySepsetIntegrity(Map<Edge, List<Node>>, graph);
-        return graph;}
+        return graph;
+    }
+
     /**
      * Orients the given graph using CPC orientation with the conditional independence test provided in the
      * constructor.
@@ -660,7 +655,7 @@ public final class Vcpc implements GraphSearch {
         for (Node a : boundaryX) {
             Graph dag = new EdgeListGraph(graph);
 
-            if (dag.getEdge(x,a).pointsTowards(a)) {
+            if (dag.getEdge(x, a).pointsTowards(a)) {
                 continue;
             }
 
@@ -672,7 +667,7 @@ public final class Vcpc implements GraphSearch {
             List<Node> otherNodesX = new ArrayList<Node>(boundaryX);
             otherNodesX.remove(a);
             for (Node b : otherNodesX) {
-                if (dag.getEdge(x,b).pointsTowards(x)) {
+                if (dag.getEdge(x, b).pointsTowards(x)) {
                     continue BOUNDARY1;
                 }
                 if (Edges.isUndirectedEdge(dag.getEdge(x, b))) {
@@ -731,7 +726,7 @@ public final class Vcpc implements GraphSearch {
         for (Node a : boundaryX) {
             Graph pattern = new EdgeListGraph(graph);
 
-            if (pattern.getEdge(x,a).pointsTowards(a)) {
+            if (pattern.getEdge(x, a).pointsTowards(a)) {
                 continue;
             }
 
@@ -742,7 +737,7 @@ public final class Vcpc implements GraphSearch {
             List<Node> otherNodesX = new ArrayList<Node>(boundaryX);
             otherNodesX.remove(a);
             for (Node b : otherNodesX) {
-                if (pattern.getEdge(x,b).pointsTowards(x)) {
+                if (pattern.getEdge(x, b).pointsTowards(x)) {
                     continue BOUNDARY1;
                 }
                 if (Edges.isUndirectedEdge(pattern.getEdge(x, b))) {
@@ -795,7 +790,7 @@ public final class Vcpc implements GraphSearch {
     private static void buildPowerSet(List<Node> boundary, int count) {
         powerSet.add(boundary);
 
-        for (int i=0; i<boundary.size(); i++) {
+        for (int i = 0; i < boundary.size(); i++) {
             List<Node> temp = new ArrayList<Node>(boundary);
             temp.remove(i);
             buildPowerSet(temp, temp.size());
@@ -906,8 +901,7 @@ public final class Vcpc implements GraphSearch {
                 if (path.contains(c)) {
                     continue;
                 }
-            }
-            else {
+            } else {
                 Node a = path.get(size - 2);
                 Edge edge1 = graph.getEdge(a, b);
                 c = traverseFuturePath(b, edge1, edge2);
@@ -922,7 +916,6 @@ public final class Vcpc implements GraphSearch {
         }
         path.removeLast();
     }
-
 
 
 //    private void logTriples() {
@@ -1137,8 +1130,6 @@ public final class Vcpc implements GraphSearch {
     }
 
 
-
-
     public CpcTripleType getPopulationTripleType(Node x, Node y, Node z,
                                                  IndependenceTest test, int depth,
                                                  Graph graph, boolean verbose) {
@@ -1178,7 +1169,7 @@ public final class Vcpc implements GraphSearch {
 
                     if (facts.isIndependent(x, z, cond)) {
 //                        if (verbose) {
-                            System.out.println("Indep Fact said: " + x + " _||_ " + z + " | " + cond);
+                        System.out.println("Indep Fact said: " + x + " _||_ " + z + " | " + cond);
 //                        }
 
                         if (cond.contains(y)) {
@@ -1186,7 +1177,9 @@ public final class Vcpc implements GraphSearch {
                         } else {
                             numSepsetsNotContainingY++;
                         }
-                    } else {System.out.println("This is not Indep by facts: " + x + " _||_ " + z + " | " + cond);}
+                    } else {
+                        System.out.println("This is not Indep by facts: " + x + " _||_ " + z + " | " + cond);
+                    }
 
 //                    if (!test1.isIndependent(x, z, cond)) {
 //                        if (facts.isIndependent(x, z, cond)) {
@@ -1309,7 +1302,6 @@ public final class Vcpc implements GraphSearch {
 //                pairs as definitely non-adjacent.
 
 
-
 //        NODES:
 //
 //        for (Node node : graph.getNodes()) {
@@ -1340,9 +1332,6 @@ public final class Vcpc implements GraphSearch {
 //                definitelyNonadjacencies.add(edge);
 //            }
 //        }
-
-
-
 
 
 //        Step V5* Instead of checking if Markov in every pattern, just find some pattern that is Markov.
@@ -1376,8 +1365,6 @@ public final class Vcpc implements GraphSearch {
 //                apparentlyNonadjacencies.remove(edge);
 //            }
 //        }
-
-
 
 
 //        //  Local Relative Markox condition. Tests if X is markov with respect to Y in all patterns.
@@ -1443,10 +1430,6 @@ public final class Vcpc implements GraphSearch {
 //        Set<List<Node>> bdryY = powerSet;
 //
 //
-
-
-
-
 
 
 //

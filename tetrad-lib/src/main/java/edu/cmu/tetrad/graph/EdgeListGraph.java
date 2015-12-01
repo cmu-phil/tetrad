@@ -895,8 +895,8 @@ public class EdgeListGraph implements Graph {
      * Determines whether an inducing path exists between node1 and node2, given
      * a set O of observed nodes and a set sem of conditioned nodes.
      *
-     * @param node1             the first node.
-     * @param node2             the second node.
+     * @param node1 the first node.
+     * @param node2 the second node.
      * @return true if an inducing path exists, false if not.
      */
     public boolean existsInducingPath(Node node1, Node node2) {
@@ -2036,9 +2036,6 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * @return the existing property change support object for this class, if
-     * there is one, or else creates a new one and returns that.
-     *
      * @return this object.
      */
     private PropertyChangeSupport getPcs() {

@@ -100,6 +100,7 @@ public class CovarianceMatrix2 implements ICovarianceMatrix {
 
     /**
      * Constructs a new covariance matrix from the given data set.
+     *
      * @throws IllegalArgumentException if this is not a continuous data set.
      */
     public CovarianceMatrix2(DataSet dataSet) {
@@ -405,8 +406,6 @@ public class CovarianceMatrix2 implements ICovarianceMatrix {
         }
 
 
-
-
 //        buf.append("\nCovariance matrix:");
 //        buf.append("\n\tVariables = ").append(getVariables());
 //        buf.append("\n\tSample size = ").append(getSampleSize());
@@ -472,7 +471,6 @@ public class CovarianceMatrix2 implements ICovarianceMatrix {
         int numVars = variables.size();
 
 
-
         for (int i = 0; i < numVars; i++) {
             if (variables.get(i) == null) {
                 throw new NullPointerException();
@@ -507,8 +505,7 @@ public class CovarianceMatrix2 implements ICovarianceMatrix {
 //                throw new IllegalArgumentException("Matrix is not positive definite.");
 //                System.out.println("Matrix is not positive definite.");
 //            }
-        }
-        else {
+        } else {
 //            System.out.println(
 //                    "Covariance matrix cannot be positive definite since " +
 //                            "\nthere are more variables than sample points. Spot-checking " +

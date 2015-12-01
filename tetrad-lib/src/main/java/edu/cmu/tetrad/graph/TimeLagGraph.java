@@ -77,7 +77,7 @@ public class TimeLagGraph implements Graph {
      * Nodes may be added into the getModel time step only. That is, node.getLag() must be 0.
      */
     public boolean addNode(Node node) {
-        
+
         NodeId id = getNodeId(node);
 
         if (id.getLag() != 0) {
@@ -99,8 +99,7 @@ public class TimeLagGraph implements Graph {
                     getGraph().addNode(node1);
                 }
             }
-        }
-        else {
+        } else {
             for (int i = 1; i <= getMaxLag(); i++) {
                 Node node1 = node.like(id.getName() + ":" + i);
                 getGraph().addNode(node1);
@@ -133,8 +132,7 @@ public class TimeLagGraph implements Graph {
 
         if (getGraph().containsNode(node)) {
             return getGraph().removeNode(node);
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -178,7 +176,8 @@ public class TimeLagGraph implements Graph {
     }
 
     public boolean removeEdge(Edge edge) {
-        if (!Edges.isDirectedEdge(edge)) throw new IllegalArgumentException("Only directed edges are expected in the model.");
+        if (!Edges.isDirectedEdge(edge))
+            throw new IllegalArgumentException("Only directed edges are expected in the model.");
 
         Node node1 = Edges.getDirectedEdgeTail(edge);
         Node node2 = Edges.getDirectedEdgeHead(edge);
@@ -333,8 +332,7 @@ public class TimeLagGraph implements Graph {
 
         if (tokens.length == 1) {
             lag = 0;
-        }
-        else {
+        } else {
             lag = Integer.parseInt(tokens[1]);
             if (lag == 0) throw new IllegalArgumentException("Lag 0 edges don't have :0 descriptors");
         }
@@ -353,8 +351,7 @@ public class TimeLagGraph implements Graph {
 
         if (lag == 0) {
             _name = name;
-        }
-        else {
+        } else {
             _name = name + ":" + lag;
         }
 
@@ -699,8 +696,7 @@ public class TimeLagGraph implements Graph {
     public List<Edge> getEdges(Node node) {
         if (getGraph().containsNode(node)) {
             return getGraph().getEdges(node);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -793,9 +789,6 @@ public class TimeLagGraph implements Graph {
     }
 
     /**
-     * @return the existing property change support object for this class, if
-     * there is one, or else creates a new one and returns that.
-     *
      * @return this object.
      */
     private PropertyChangeSupport getPcs() {

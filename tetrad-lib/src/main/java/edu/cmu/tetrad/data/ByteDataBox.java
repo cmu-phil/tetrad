@@ -35,6 +35,7 @@ public class ByteDataBox implements DataBox {
 
     /**
      * Constructs an 2D byte array consisting entirely of missing values (-99).
+     *
      * @param rows
      * @param cols
      */
@@ -105,8 +106,7 @@ public class ByteDataBox implements DataBox {
 
         if (datum == -99) {
             return null;
-        }
-        else {
+        } else {
             return datum;
         }
     }

@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.data;
 
 //import cern.colt.matrix.DoubleMatrix2D;
+
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradAlgebra;
@@ -100,6 +101,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     /**
      * Constructs a new covariance matrix from the given data set.
+     *
      * @throws IllegalArgumentException if this is not a continuous data set.
      */
     public CovarianceMatrix(DataSet dataSet) {
@@ -140,7 +142,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      *                                  the sample size is not positive.
      */
     public CovarianceMatrix(List<Node> variables, TetradMatrix matrix,
-                             int sampleSize) {
+                            int sampleSize) {
         this.variables = Collections.unmodifiableList(variables);
         this.sampleSize = sampleSize;
         this.matrix = matrix;
@@ -401,8 +403,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         }
 
 
-
-
 //        buf.append("\nCovariance matrix:");
 //        buf.append("\n\tVariables = ").append(getVariables());
 //        buf.append("\n\tSample size = ").append(getSampleSize());
@@ -468,7 +468,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         int numVars = variables.size();
 
 
-
         for (int i = 0; i < numVars; i++) {
             if (variables.get(i) == null) {
                 throw new NullPointerException();
@@ -503,8 +502,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 //                throw new IllegalArgumentException("Matrix is not positive definite.");
 //                System.out.println("Matrix is not positive definite.");
 //            }
-        }
-        else {
+        } else {
 //            System.out.println(
 //                    "Covariance matrix cannot be positive definite since " +
 //                            "\nthere are more variables than sample points. Spot-checking " +

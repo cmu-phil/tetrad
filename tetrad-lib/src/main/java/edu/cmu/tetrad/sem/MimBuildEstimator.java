@@ -30,15 +30,16 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
-//import pal.math.ConjugateGradientSearch;
-//import pal.math.MFWithGradient;
-//import pal.math.OrthogonalHints;
 
 import java.rmi.MarshalledObject;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+//import pal.math.ConjugateGradientSearch;
+//import pal.math.MFWithGradient;
+//import pal.math.OrthogonalHints;
 
 /**
  * Implements a variation of SemEstimator for  pure measurement/structural
@@ -117,7 +118,7 @@ public class MimBuildEstimator {
      */
 
     public MimBuildEstimator(ICovarianceMatrix covMatrix, SemPm semPm,
-            int numIter, int numIterTsls) {
+                             int numIter, int numIterTsls) {
 
         if (covMatrix == null) {
             throw new NullPointerException("DataWrapper must not be null.");
@@ -155,8 +156,6 @@ public class MimBuildEstimator {
     }
 
     /**
-     * @return a new SemEstimator for the given SemPm and continuous data set.
-     *
      * @param semPm   a SemPm specifying the graph and parameterization for the
      *                model.
      * @param dataSet a DataSet, all of whose variables are contained in the
@@ -165,7 +164,7 @@ public class MimBuildEstimator {
      */
 
     public static MimBuildEstimator newInstance(DataSet dataSet,
-            SemPm semPm) {
+                                                SemPm semPm) {
         MimBuildEstimator me = new MimBuildEstimator(
                 new CovarianceMatrix(dataSet), semPm, NUM_ITER, NUM_ITER_TSLS);
         me.dataSet = dataSet;
@@ -173,7 +172,7 @@ public class MimBuildEstimator {
     }
 
     public static MimBuildEstimator newInstance(DataSet dataSet,
-            SemPm semPm, int numIter, int numIterTsls) {
+                                                SemPm semPm, int numIter, int numIterTsls) {
         MimBuildEstimator me = new MimBuildEstimator(
                 new CovarianceMatrix(dataSet), semPm, numIter, numIterTsls);
         me.dataSet = dataSet;
@@ -182,8 +181,6 @@ public class MimBuildEstimator {
 
 
     /**
-     * @return a new SemEstimator for the given SemPm and covariance matrix.
-     *
      * @param semPm     a SemPm specifying the graph and parameterization for
      *                  the model.
      * @param covMatrix a CovarianceMatrix, all of whose variables are contained
@@ -192,12 +189,12 @@ public class MimBuildEstimator {
      */
 
     public static MimBuildEstimator newInstance(ICovarianceMatrix covMatrix,
-            SemPm semPm) {
+                                                SemPm semPm) {
         return new MimBuildEstimator(covMatrix, semPm, NUM_ITER, NUM_ITER_TSLS);
     }
 
     public static MimBuildEstimator newInstance(ICovarianceMatrix covMatrix,
-            SemPm semPm, int numIter, int numIterTsls) {
+                                                SemPm semPm, int numIter, int numIterTsls) {
         return new MimBuildEstimator(covMatrix, semPm, numIter, numIterTsls);
     }
 
@@ -215,8 +212,7 @@ public class MimBuildEstimator {
         for (Node nextNode : semPmVars) {
             if (nextNode.getNodeType() == NodeType.LATENT) {
                 latentsL.add(nextNode);
-            }
-            else {
+            } else {
                 indicatorsL.add(nextNode);
             }
         }
@@ -252,8 +248,7 @@ public class MimBuildEstimator {
             for (int j = 0; j < numIndicators; j++) {
                 if (i == j) {
                     iSigma[i][j] = 1.;
-                }
-                else {
+                } else {
                     iSigma[i][j] = 0.;
                 }
             }
@@ -274,8 +269,7 @@ public class MimBuildEstimator {
                     if (!markedLatents[j]) {
                         markedLatents[j] = true;
                         fixedIndicators[i] = true;
-                    }
-                    else {
+                    } else {
                         fixedIndicators[i] = false;
                     }
                     break;
@@ -288,8 +282,7 @@ public class MimBuildEstimator {
         for (int i = 0; i < numIndicators; i++) {
             if (fixedIndicators[i]) {
                 lambdaIndex[i] = -1;
-            }
-            else {
+            } else {
                 lambdaIndex[i] = count++;
             }
         }
@@ -308,8 +301,7 @@ public class MimBuildEstimator {
                 fi[i][j] = 0.;
                 if (i == j) {
                     iBeta[i][j] = 1.;
-                }
-                else {
+                } else {
                     iBeta[i][j] = 0.;
                 }
             }
@@ -366,8 +358,7 @@ public class MimBuildEstimator {
                             RandomUtil.getInstance().nextNormal(0, 1);
                     //theta[i] = r.nextDouble() + 0.1;
                 } while (Math.abs(theta[i]) < 0.1);
-            }
-            else {
+            } else {
                 theta[i] =
                         RandomUtil.getInstance().nextDouble() + 0.1;
             }
@@ -428,8 +419,7 @@ public class MimBuildEstimator {
                     if (lambdaIndex[bIndex] >= 0) {
                         theta[lambdaIndex[bIndex]] = semIm.getParamValue(nextP);
                     }
-                }
-                else {
+                } else {
                     int parents[] = latentParents.get(bIndex);
                     for (int i = 0; i < parents.length; i++) {
                         if (latents[parents[i]].getName().equals(
@@ -490,14 +480,12 @@ public class MimBuildEstimator {
                 double coeff1, coeff2;
                 if (lambdaIndex[i] < 0) {
                     coeff1 = 1.;
-                }
-                else {
+                } else {
                     coeff1 = theta[lambdaIndex[i]];
                 }
                 if (lambdaIndex[j] < 0) {
                     coeff2 = 1.;
-                }
-                else {
+                } else {
                     coeff2 = theta[lambdaIndex[j]];
                 }
                 observedImpliedCovar[i][j] = coeff1 * coeff2 *
@@ -505,8 +493,7 @@ public class MimBuildEstimator {
                 if (i == j) {
                     observedImpliedCovar[i][j] +=
                             theta[indicatorErrorsIndex + i];
-                }
-                else {
+                } else {
                     observedImpliedCovar[j][i] = observedImpliedCovar[i][j];
                 }
             }
@@ -539,8 +526,7 @@ public class MimBuildEstimator {
                     double coeff;
                     if (lambdaIndex[d2] < 0) {
                         coeff = 1.;
-                    }
-                    else {
+                    } else {
                         coeff = theta[lambdaIndex[d2]];
                     }
                     gradient[lambdaIndex[d1]] += 2. * gradient_sigma[d1][d2] *
@@ -555,8 +541,7 @@ public class MimBuildEstimator {
             for (int i = 0; i < numIndicators; i++) {
                 if (lambdaIndex[i] < 0) {
                     bigLambda[i][indicatorParents[i]] = 1.;
-                }
-                else {
+                } else {
                     bigLambda[i][indicatorParents[i]] = theta[lambdaIndex[i]];
                 }
             }
@@ -588,8 +573,7 @@ public class MimBuildEstimator {
                     }
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             for (int i = 0; i < gradient.length; i++) {
                 gradient[i] = 0.;
             }
@@ -599,12 +583,12 @@ public class MimBuildEstimator {
 
     /**
      * @return A submatrix of <code>covMatrix</code> with the order of its
-     *         variables the same as in <code>semPm</code>.
+     * variables the same as in <code>semPm</code>.
      * @throws IllegalArgumentException if not all of the variables of
      *                                  <code>semPm</code> are in <code>covMatrix</code>.
      */
     private ICovarianceMatrix fixVarOrder(SemPm semPm,
-            ICovarianceMatrix covMatrix) {
+                                          ICovarianceMatrix covMatrix) {
         List<Node> semPmVars = semPm.getVariableNodes();
         int observedNodes = 0;
         for (Node semPmVar : semPmVars) {
@@ -630,8 +614,7 @@ public class MimBuildEstimator {
         SemPm fixedPm;
         try {
             fixedPm = (SemPm) new MarshalledObject(semPm).get();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -687,12 +670,10 @@ public class MimBuildEstimator {
                     //It should never get to here, actually... (Ricardo, 07/07/2003)
                     {
                         semIm.setParamValue(nextP, 1.);
-                    }
-                    else {
+                    } else {
                         semIm.setParamValue(nextP, theta[lambdaIndex[bIndex]]);
                     }
-                }
-                else {
+                } else {
                     int[] parents = latentParents.get(bIndex);
                     for (int i = 0; i < parents.length; i++) {
                         if (latents[parents[i]].getName().equals(
@@ -703,8 +684,7 @@ public class MimBuildEstimator {
                         }
                     }
                 }
-            }
-            else if (nextP.getType() == ParamType.VAR) {
+            } else if (nextP.getType() == ParamType.VAR) {
                 Node nodeA = nextP.getNodeA();
                 if (nodeA.getNodeType() == NodeType.LATENT) {
                     //exogenous latent
@@ -715,8 +695,7 @@ public class MimBuildEstimator {
                             break;
                         }
                     }
-                }
-                else {
+                } else {
                     //error term
                     boolean foundIndicator = false;
 
@@ -909,8 +888,7 @@ public class MimBuildEstimator {
 
         if (this.estimatedSem == null) {
             buf.append("\n\t...SemIm has not been estimated yet.");
-        }
-        else {
+        } else {
             SemIm sem = this.estimatedSem;
 
             buf.append("\n\n\tfml = ");

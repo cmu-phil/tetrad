@@ -437,7 +437,7 @@ public final class CfciOld {
      */
     private static void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
         for (Iterator<KnowledgeEdge> it =
-                bk.forbiddenEdgesIterator(); it.hasNext();) {
+             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -458,7 +458,7 @@ public final class CfciOld {
         }
 
         for (Iterator<KnowledgeEdge> it =
-                bk.requiredEdgesIterator(); it.hasNext();) {
+             bk.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph

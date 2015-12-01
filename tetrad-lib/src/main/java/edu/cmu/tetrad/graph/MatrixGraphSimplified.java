@@ -481,7 +481,7 @@ public final class MatrixGraphSimplified implements Graph {
 
     /**
      * @return true iff node1 is a possible ancestor of at least one member of
-     *         nodes2
+     * nodes2
      */
     public boolean possibleAncestorSet(Node node1, List<Node> nodes2) {
         for (Object aNodes2 : nodes2) {
@@ -549,7 +549,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @param node2             the second node.
      * @param conditioningNodes the set of conditioning nodes.
      * @return true if node1 is d-connected to node2 given set
-     *         conditioningNodes, false if not.
+     * conditioningNodes, false if not.
      * @see #isDSeparatedFrom
      */
     public boolean isDConnectedTo(Node node1, Node node2,
@@ -588,7 +588,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @param node2 the second node.
      * @param z     the conditioning set.
      * @return true if node1 is d-separated from node2 given set z, false if
-     *         not.
+     * not.
      * @see #isDConnectedTo
      */
     public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
@@ -854,8 +854,7 @@ public final class MatrixGraphSimplified implements Graph {
             try {
                 addEdge(newEdge);
                 return true;
-            }
-            catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 addEdge(currentEdge);
                 return false;
             }
@@ -1135,11 +1134,9 @@ public final class MatrixGraphSimplified implements Graph {
     private byte endpointNumber(Endpoint endpoint) {
         if (endpoint == Endpoint.ARROW) {
             return 1;
-        }
-        else if (endpoint == Endpoint.TAIL) {
+        } else if (endpoint == Endpoint.TAIL) {
             return 2;
-        }
-        else if (endpoint == Endpoint.CIRCLE) {
+        } else if (endpoint == Endpoint.CIRCLE) {
             return 3;
         }
 
@@ -1412,7 +1409,7 @@ public final class MatrixGraphSimplified implements Graph {
     public List<Edge> getEdges(Node node1, Node node2) {
         List<Edge> edges = new LinkedList<Edge>(getEdges(node1));
 
-        for (Iterator<Edge> i = edges.iterator(); i.hasNext();) {
+        for (Iterator<Edge> i = edges.iterator(); i.hasNext(); ) {
             Edge edge = i.next();
 
             if (edge.getDistalNode(node1) != node2) {
@@ -1682,7 +1679,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @param conditioningNodesClosure the closure of the conditioning nodes
      *                                 under the ancestor relation.
      * @return true if a d-connection is found along this path (here or down
-     *         some sub-branch), false if not.
+     * some sub-branch), false if not.
      * @see #isDConnectedTo
      * @see #isDSeparatedFrom
      */
@@ -1773,7 +1770,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @param node2 the target node.
      * @param inEnd the endpoint type of the incoming edge.
      * @return true if an inducing path is found along this path (here or down
-     *         some sub-branch), false if not.
+     * some sub-branch), false if not.
      * @see Graph#existsInducingPath
      */
     private boolean existsInducingPathVisit(Node node1, Node node2,
@@ -1824,7 +1821,7 @@ public final class MatrixGraphSimplified implements Graph {
      *
      * @param node the node to check.
      * @return true if adding the node is permitted by all of the graph
-     *         constraints, false if not.
+     * constraints, false if not.
      */
     private boolean checkAddNode(Node node) {
         for (GraphConstraint graphConstraint : graphConstraints) {
@@ -1864,7 +1861,7 @@ public final class MatrixGraphSimplified implements Graph {
      *
      * @param node the node to check.
      * @return true if removing the node is permitted by all of the graph
-     *         constraints, false if not.
+     * constraints, false if not.
      */
     private boolean checkRemoveNode(Node node) {
         for (GraphConstraint graphConstraint : graphConstraints) {
@@ -1884,7 +1881,7 @@ public final class MatrixGraphSimplified implements Graph {
      *
      * @param edge the edge to check.
      * @return true if removing the edge is permitted by all of the graph
-     *         constraints, false if not.
+     * constraints, false if not.
      */
     private boolean checkRemoveEdge(Edge edge) {
         for (GraphConstraint graphConstraint : graphConstraints) {
@@ -1899,9 +1896,6 @@ public final class MatrixGraphSimplified implements Graph {
     }
 
     /**
-     * @return the existing property change support object for this class, if
-     * there is one, or else creates a new one and returns that.
-     *
      * @return this object.
      */
     private PropertyChangeSupport getPcs() {
@@ -2010,7 +2004,7 @@ public final class MatrixGraphSimplified implements Graph {
         }
 
         while (!notFound.isEmpty()) {
-            for (Iterator<Node> it = notFound.iterator(); it.hasNext();) {
+            for (Iterator<Node> it = notFound.iterator(); it.hasNext(); ) {
                 Node node = it.next();
 
                 if (found.containsAll(getParents(node))) {

@@ -35,6 +35,7 @@ public class IntDataBox implements DataBox {
 
     /**
      * Constructs an 2D short array consisting entirely of missing values (-99).
+     *
      * @param rows
      * @param cols
      */
@@ -69,7 +70,7 @@ public class IntDataBox implements DataBox {
     public static BoxDataSet serializableInstance() {
         return new BoxDataSet(new ShortDataBox(4, 4), null);
     }
-    
+
     /**
      * @return the number of rows in this data box.
      */
@@ -105,8 +106,7 @@ public class IntDataBox implements DataBox {
 
         if (datum == -99) {
             return null;
-        }
-        else {
+        } else {
             return datum;
         }
     }

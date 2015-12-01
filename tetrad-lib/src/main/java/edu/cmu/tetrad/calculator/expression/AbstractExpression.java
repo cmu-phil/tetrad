@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.calculator.expression;
 
-import edu.cmu.tetrad.sem.ShiftedRealDistribution;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -56,7 +55,7 @@ abstract class AbstractExpression implements Expression {
     /**
      * Constructs the abstract expression given the sub-expressions.
      */
-    public AbstractExpression(Expression...expressions) {
+    public AbstractExpression(Expression... expressions) {
         this.expressions = Arrays.asList(expressions);
     }
 
@@ -78,7 +77,7 @@ abstract class AbstractExpression implements Expression {
     /**
      * @return the sub expressions (unmodifiable).f
      */
-    public List<Expression> getExpressions(){
+    public List<Expression> getExpressions() {
         return this.expressions;
     }
 

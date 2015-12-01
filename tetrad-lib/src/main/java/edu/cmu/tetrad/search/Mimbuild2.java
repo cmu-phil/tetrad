@@ -208,7 +208,6 @@ public class Mimbuild2 {
     }
 
     /**
-     *
      * @return the full discovered graph, with latents and indicators.
      */
     public Graph getFullGraph() {

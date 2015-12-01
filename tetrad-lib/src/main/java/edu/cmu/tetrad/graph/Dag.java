@@ -257,7 +257,6 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
         //System.out.println(MatrixUtils.toString(dpath));
 
 
-
         int index1 = nodesHash.get(node1);
         int index2 = nodesHash.get(node2);
 
@@ -494,7 +493,7 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
     }
 
     public boolean isDConnectedTo(Node node1, Node node2,
-            List<Node> conditioningNodes) {
+                                  List<Node> conditioningNodes) {
         return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
     }
 
@@ -804,18 +803,18 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
     //this returns the nodes that have zero parents
     //  
     //should we use getTiers() instead?
-	public List<Node> getExogenousTerms() {
-		List<Node> errorTerms = new Vector();
+    public List<Node> getExogenousTerms() {
+        List<Node> errorTerms = new Vector();
 
-		List<Node> nodes = getNodes();
-		for (int i=0; i<nodes.size(); i++){
-			Node node = nodes.get(i);
-			if (getParents(node).isEmpty())
-				errorTerms.add(node);
-		}
-		
-		return errorTerms;
-	}
+        List<Node> nodes = getNodes();
+        for (int i = 0; i < nodes.size(); i++) {
+            Node node = nodes.get(i);
+            if (getParents(node).isEmpty())
+                errorTerms.add(node);
+        }
+
+        return errorTerms;
+    }
 
     private Graph getGraph() {
         return graph;
@@ -825,8 +824,7 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
         try {
             new Dag(graph);
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return false;
         }
     }

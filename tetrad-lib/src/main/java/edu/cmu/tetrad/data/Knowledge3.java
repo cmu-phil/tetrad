@@ -35,7 +35,7 @@ import java.util.regex.Matcher;
  * use in algorithms.  This information can be set edge by edge or else globally
  * via temporal tiers.  When setting temporal tiers, all edges from later tiers
  * to earlier tiers are forbidden.
- * <p/>
+ * <p>
  * For this class, all variable names are
  * referenced by name only.  This is because the same Knowledge object is
  * intended to plug into different graphs with nodes that possibly have the same
@@ -43,7 +43,7 @@ import java.util.regex.Matcher;
  * forbids any edge which connects a node named "X" to a node named "Y", even if
  * the underlying nodes themselves named "X" and "Y", respectively, are not the
  * same.
- * <p/>
+ * <p>
  * In place of variable names, wildcard expressions containing the wildcard '*'
  * may be substituted. These will be matched to as many variables as possible.
  * The '*' wildcard matches any string of consecutive characters up until the following
@@ -293,8 +293,6 @@ public final class Knowledge3 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * @return (a copy of) the given tier.
-     *
      * @param tier the index of the desired tier.
      * @return a copy of this tier.
      */

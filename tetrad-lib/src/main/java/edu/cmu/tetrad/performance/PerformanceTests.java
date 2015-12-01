@@ -692,7 +692,7 @@ public class PerformanceTests {
     }
 
     public void testFgsDiscrete(int numVars, double edgeFactor, int numCases,
-                               double structurePrior, double samplePrior) {
+                                double structurePrior, double samplePrior) {
 //        numVars = 5000;
 //        edgeFactor = 1.0;
 //        numCases = 1000;
@@ -1630,8 +1630,6 @@ public class PerformanceTests {
 
         return parents;
     }
-
-
 
 
     private void directedComparison(Graph dag, Graph truePag, Graph estGraph) {

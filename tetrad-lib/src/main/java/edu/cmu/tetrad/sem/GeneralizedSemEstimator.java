@@ -38,10 +38,12 @@ import org.apache.commons.math3.random.MersenneTwister;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.exp;
 import static java.lang.Math.log;
 
 /**
@@ -708,7 +710,7 @@ public class GeneralizedSemEstimator {
          * Constructs a new CoefFittingFunction for the given Sem.
          */
         public LikelihoodFittingFunction5(GeneralizedSemPm pm, List<String> parameters,
-                                         List<Node> tierOrdering, DataSet data, MyContext context) {
+                                          List<Node> tierOrdering, DataSet data, MyContext context) {
             this.pm = pm;
             this.parameters = parameters;
             this.tierOrdering = tierOrdering;

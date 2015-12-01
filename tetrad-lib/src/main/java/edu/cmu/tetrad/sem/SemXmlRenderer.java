@@ -33,14 +33,14 @@ import java.util.*;
  * User: mattheweasterday
  * Date: May 30, 2004
  * Time: 11:36:30 AM
- *
+ * <p>
  * This class converts a SemIm into xml.
- *
  */
 public class SemXmlRenderer {
 
     /**
      * Converts a Sem Im into xml.
+     *
      * @param semIm the instantiated structural equation model to convert
      * @return xml representation
      */
@@ -54,11 +54,11 @@ public class SemXmlRenderer {
     }
 
 
-    private static Element makeVariables(SemIm semIm){
+    private static Element makeVariables(SemIm semIm) {
         Element variablesElement = new Element(SemXmlConstants.SEM_VARIABLES);
         Element variable;
         Node measuredNode, latentNode;
-        for(Iterator measuredNodes = semIm.getSemPm().getMeasuredNodes().iterator(); measuredNodes.hasNext(); ){
+        for (Iterator measuredNodes = semIm.getSemPm().getMeasuredNodes().iterator(); measuredNodes.hasNext(); ) {
             measuredNode = (Node) measuredNodes.next();
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, measuredNode.getName()));
@@ -68,7 +68,7 @@ public class SemXmlRenderer {
             variable.addAttribute(new Attribute(SemXmlConstants.Y, new Integer(measuredNode.getCenterY()).toString()));
             variablesElement.appendChild(variable);
         }
-        for(Iterator latentNodes = semIm.getSemPm().getLatentNodes().iterator(); latentNodes.hasNext();){
+        for (Iterator latentNodes = semIm.getSemPm().getLatentNodes().iterator(); latentNodes.hasNext(); ) {
             latentNode = (Node) latentNodes.next();
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, latentNode.getName()));
@@ -81,14 +81,14 @@ public class SemXmlRenderer {
         return variablesElement;
     }
 
-    private static Element makeEdges(SemIm semIm){
+    private static Element makeEdges(SemIm semIm) {
         Element edgesElement = new Element(SemXmlConstants.EDGES);
         Parameter param;
         Element edge;
 
-        for(Iterator parameters = semIm.getSemPm().getParameters().iterator(); parameters.hasNext(); ){
+        for (Iterator parameters = semIm.getSemPm().getParameters().iterator(); parameters.hasNext(); ) {
             param = (Parameter) parameters.next();
-            if(param.getType() == ParamType.COEF){
+            if (param.getType() == ParamType.COEF) {
                 edge = new Element(SemXmlConstants.EDGE);
                 edge.addAttribute(new Attribute(SemXmlConstants.CAUSE_NODE, param.getNodeA().getName()));
                 edge.addAttribute(new Attribute(SemXmlConstants.EFFECT_NODE, param.getNodeB().getName()));
@@ -101,7 +101,7 @@ public class SemXmlRenderer {
     }
 
 
-    private static Element makeMarginalErrorDistribution(SemIm semIm){
+    private static Element makeMarginalErrorDistribution(SemIm semIm) {
         Element marginalErrorElement = new Element(SemXmlConstants.MARGINAL_ERROR_DISTRIBUTION);
         Element normal;
 
@@ -112,7 +112,7 @@ public class SemXmlRenderer {
             normal = new Element(SemXmlConstants.NORMAL);
             normal.addAttribute(new Attribute(SemXmlConstants.VARIABLE, node.getName()));
             normal.addAttribute(new Attribute(SemXmlConstants.MEAN, "0.0"));
-            normal.addAttribute(new Attribute(SemXmlConstants.VARIANCE, new Double(semIm.getParamValue(node,node)).toString()));
+            normal.addAttribute(new Attribute(SemXmlConstants.VARIANCE, new Double(semIm.getParamValue(node, node)).toString()));
             marginalErrorElement.appendChild(normal);
         }
         return marginalErrorElement;
@@ -130,14 +130,14 @@ public class SemXmlRenderer {
     }
 
 
-    private static Element makeJointErrorDistribution(SemIm semIm){
+    private static Element makeJointErrorDistribution(SemIm semIm) {
         Element jointErrorElement = new Element(SemXmlConstants.JOINT_ERROR_DISTRIBUTION);
         Element normal;
         Parameter param;
 
-        for(Iterator parameters = semIm.getSemPm().getParameters().iterator(); parameters.hasNext(); ){
+        for (Iterator parameters = semIm.getSemPm().getParameters().iterator(); parameters.hasNext(); ) {
             param = (Parameter) parameters.next();
-            if(param.getType() == ParamType.COVAR){
+            if (param.getType() == ParamType.COVAR) {
                 normal = new Element(SemXmlConstants.NORMAL);
                 normal.addAttribute(new Attribute(SemXmlConstants.NODE_1, param.getNodeA().getName()));
                 normal.addAttribute(new Attribute(SemXmlConstants.NODE_2, param.getNodeB().getName()));

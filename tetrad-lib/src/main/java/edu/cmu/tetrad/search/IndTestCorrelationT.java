@@ -258,7 +258,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
 
         if (independent) {
             TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, r)) ; //getPValue()));
+                    SearchLogUtils.independenceFactMsg(x, y, z, r)); //getPValue()));
         } else {
             if (pValueLogger != null) {
                 pValueLogger.println(getPValue());

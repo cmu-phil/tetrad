@@ -36,6 +36,7 @@ public class VerticalIntDataBox implements DataBox {
     /**
      * Constructs an 2D int array consisting entirely of missing values
      * (int.NaN).
+     *
      * @param rows
      * @param cols
      */
@@ -106,8 +107,7 @@ public class VerticalIntDataBox implements DataBox {
 
         if (datum == -99) {
             return null;
-        }
-        else {
+        } else {
             return datum;
         }
     }

@@ -381,8 +381,7 @@ public final class GFci {
                         logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
                         System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
                     }
-                }
-                else {
+                } else {
                     if (gesGraph.isDefCollider(a, b, c)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);

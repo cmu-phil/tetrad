@@ -459,7 +459,7 @@ public final class DirectedGraph implements TetradSerializable, Graph {
     }
 
     public boolean isDConnectedTo(Node node1, Node node2,
-            List<Node> conditioningNodes) {
+                                  List<Node> conditioningNodes) {
         return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
     }
 

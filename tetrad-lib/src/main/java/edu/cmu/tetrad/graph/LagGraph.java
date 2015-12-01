@@ -92,7 +92,6 @@ public class LagGraph implements Graph {
     }
 
 
-
     // Modified methods from graph.
     public boolean addDirectedEdge(Node node1, Node node2) {
         return getGraph().addDirectedEdge(node1, node2);

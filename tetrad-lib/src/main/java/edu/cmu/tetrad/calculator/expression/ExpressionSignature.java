@@ -29,7 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Tyler Gibson
  */
 public interface ExpressionSignature extends TetradSerializable {
-    static final long serialVersionUID = 23L;    
+    static final long serialVersionUID = 23L;
 
 
     /**

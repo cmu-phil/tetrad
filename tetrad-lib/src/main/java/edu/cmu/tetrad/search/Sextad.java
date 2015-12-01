@@ -112,7 +112,9 @@ public class Sextad implements TetradSerializable {
         return k;
     }
 
-    public Node getL() {return l; }
+    public Node getL() {
+        return l;
+    }
 
     public Node getM() {
         return m;

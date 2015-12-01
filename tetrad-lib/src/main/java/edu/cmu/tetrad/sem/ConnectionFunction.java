@@ -30,7 +30,7 @@ import edu.cmu.tetrad.graph.Node;
 public interface ConnectionFunction {
     Node[] getInputNodes();
 
-    double valueAt(double...inputValues);
+    double valueAt(double... inputValues);
 }
 
 

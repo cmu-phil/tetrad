@@ -218,7 +218,7 @@ public class SessionNode implements TetradSerializable {
      *                     session node.
      */
     public SessionNode(String boxType, String displayName,
-            Class[] modelClasses) {
+                       Class[] modelClasses) {
         setBoxType(boxType);
         setDisplayName(displayName);
 
@@ -296,8 +296,7 @@ public class SessionNode implements TetradSerializable {
                     parent.addSessionListener(getSessionHandler());
                     getSessionSupport().fireParentAdded(parent, this);
                     return true;
-                }
-                else {
+                } else {
                     this.parents.add(parent);
                     parent.addChild(this);
                     parent.addSessionListener(getSessionHandler());
@@ -353,8 +352,7 @@ public class SessionNode implements TetradSerializable {
                     parent.addSessionListener(getSessionHandler());
                     getSessionSupport().fireParentAdded(parent, this);
                     return true;
-                }
-                else {
+                } else {
 
                     // Allows nextEdgeAllowed to be set to false if the next
                     // edge should not be added.
@@ -372,8 +370,7 @@ public class SessionNode implements TetradSerializable {
                         // Destroys model & downstream models.
                         destroyModel();
                         return true;
-                    }
-                    else {
+                    } else {
                         return false;
                     }
                 }
@@ -483,15 +480,13 @@ public class SessionNode implements TetradSerializable {
             if (lastModelClass != null) {
                 try {
                     createModel(this.lastModelClass, simulation);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
 
                     // Allows creation of models downstream to continue
                     // once BayesPM is changed to SemPm... jdramsey 3/30/2005
                     getSessionSupport().fireModelUnclear(this);
                 }
-            }
-            else {
+            } else {
                 getSessionSupport().fireModelUnclear(this);
             }
         }
@@ -522,7 +517,7 @@ public class SessionNode implements TetradSerializable {
         this.loggerConfig = getLoggerConfig(modelClass);
         TetradLogger.getInstance().setTetradLoggerConfig(loggerConfig);
         TetradLogger.getInstance().log("info", "\n========LOGGING " + getDisplayName()
-            + "\n");
+                + "\n");
 
         // Collect up the parentModels from the parents. If any model is
         // null, throw an exception.
@@ -693,8 +688,7 @@ public class SessionNode implements TetradSerializable {
 
             if (model != null) {
                 parentModelClasses[i][0] = model.getClass();
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -854,8 +848,7 @@ public class SessionNode implements TetradSerializable {
                     return false;
                 }
             }
-        }
-        else if ((arr1 == null) && (arr2 != null)) {
+        } else if ((arr1 == null) && (arr2 != null)) {
             return false;
         }
 //        else if ((arr1 != null) && (arr2 != null)) {
@@ -868,13 +861,9 @@ public class SessionNode implements TetradSerializable {
 
         if ((model1 == null) && (model2 != null)) {
             return false;
-        }
-        else if ((model1 != null) && (model2 == null)) {
+        } else if ((model1 != null) && (model2 == null)) {
             return false;
-        }
-        else
-        if ((model1 != null) /*&& (model2 != null)*/ && !model1.equals(model2))
-        {
+        } else if ((model1 != null) /*&& (model2 != null)*/ && !model1.equals(model2)) {
             return false;
         }
 
@@ -1030,11 +1019,9 @@ public class SessionNode implements TetradSerializable {
             }
 
             return false;
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Could not construct model.", e);
         }
     }
@@ -1053,8 +1040,8 @@ public class SessionNode implements TetradSerializable {
 
     /**
      * @return true if the cloning operation was successful, false if not. If
-     *         the cloning operation was not successful, the model will not have
-     *         been altered.
+     * the cloning operation was not successful, the model will not have
+     * been altered.
      */
     public boolean useClonedModel() {
         try {
@@ -1074,8 +1061,7 @@ public class SessionNode implements TetradSerializable {
 
             this.savedModel = temp;
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -1149,8 +1135,7 @@ public class SessionNode implements TetradSerializable {
 
                 if (type == null) {
                     continue loop;
-                }
-                else {
+                } else {
                     remainingParameterTypes.remove(type);
                 }
             }
@@ -1299,8 +1284,7 @@ public class SessionNode implements TetradSerializable {
 
             if (model != null) {
                 models.add(model);
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -1348,17 +1332,14 @@ public class SessionNode implements TetradSerializable {
                 try {
                     this.model = (SessionModel) constructor.newInstance(arguments);
                     this.model.setName(getDisplayName());
-                }
-                catch (InstantiationException e) {
+                } catch (InstantiationException e) {
                     throw e;
-                }
-                catch (IllegalAccessException e) {
+                } catch (IllegalAccessException e) {
                     throw e;
-                }
-                catch (InvocationTargetException e) {
+                } catch (InvocationTargetException e) {
                     String packagePath = modelClass.getName();
                     int begin = packagePath.lastIndexOf('.') + 1;
-                    String name =  packagePath.substring(begin, packagePath.length());
+                    String name = packagePath.substring(begin, packagePath.length());
 
                     if (e.getTargetException() instanceof ThreadDeath) {
                         e.printStackTrace();
@@ -1386,7 +1367,7 @@ public class SessionNode implements TetradSerializable {
      * parentClasses.length - 1.
      */
     private boolean isConsistentModelClass1(Class modelClass,
-            Class[][] parentClasses) {
+                                            Class[][] parentClasses) {
 
         // Test whether for some combination of the model classes
         // for the parent nodes there is some model class for this
@@ -1438,7 +1419,7 @@ public class SessionNode implements TetradSerializable {
             for (int i = 0; i < types.length; i++) {
                 for (int j = 0; j < parentClasses.length; j++) {
                     for (int k = 0; k < parentClasses[j].length; k++) {
-                            if (types[i].isAssignableFrom(parentClasses[j][k])) {
+                        if (types[i].isAssignableFrom(parentClasses[j][k])) {
                             types2.add(parentClasses[j][k]);
                             continue TYPES;
                         }
@@ -1455,7 +1436,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     private Class findMatchingType(List<Class> parameterTypes,
-            Class argumentType) {
+                                   Class argumentType) {
         for (Class type : parameterTypes) {
             if (type.isAssignableFrom(argumentType)) {
                 return type;

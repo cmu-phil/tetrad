@@ -127,7 +127,7 @@ public interface Graph extends TetradSerializable {
 
     /**
      * @return true iff there is a semi-directed path from node1 to something in
-     *         nodes2 in the graph
+     * nodes2 in the graph
      */
     boolean existsUndirectedPathFromTo(Node node1, Node node2);
 
@@ -136,7 +136,7 @@ public interface Graph extends TetradSerializable {
      * edge has an arrowhead pointing "back" towards A.
      *
      * @return true iff there is a semi-directed path from node1 to something in
-     *         nodes2 in the graph
+     * nodes2 in the graph
      */
     boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes);
 
@@ -144,8 +144,8 @@ public interface Graph extends TetradSerializable {
      * Determines whether an inducing path exists between node1 and node2, given
      * a set O of observed nodes and a set sem of conditioned nodes.
      *
-     * @param node1             the first node.
-     * @param node2             the second node.
+     * @param node1 the first node.
+     * @param node2 the second node.
      * @return true if an inducing path exists, false if not.
      */
     boolean existsInducingPath(Node node1, Node node2);
@@ -208,7 +208,6 @@ public interface Graph extends TetradSerializable {
     /**
      * @return the edge connecting node1 and node2, provided a unique such edge
      * exists.
-     *
      * @throws UnsupportedOperationException if the graph allows multiple edges
      *                                       between node pairs.
      */
@@ -216,7 +215,6 @@ public interface Graph extends TetradSerializable {
 
     /**
      * @return the directed edge from node1 to node2, if there is one.
-     *
      * @throws UnsupportedOperationException if the graph allows multiple edges
      *                                       between node pairs.
      */
@@ -348,7 +346,7 @@ public interface Graph extends TetradSerializable {
     /**
      * A node Y is a definite nondescendent of a node X just in case there is no
      * semi-directed path from X to Y.
-     * <p/>
+     * <p>
      * added by ekorber, 2004/06/12.
      *
      * @return true if node 2 is a definite nondecendent of node 1
@@ -392,7 +390,7 @@ public interface Graph extends TetradSerializable {
      * set z.  A path U is possibly-d-connecting if every definite collider on U
      * is a possible ancestor of a node in z and every definite non-collider is
      * not in z.
-     * <p/>
+     * <p>
      * added by ekorber, 2004/06/15.
      *
      * @return true iff nodes 1 and 2 are possibly d-connected given z
@@ -524,9 +522,8 @@ public interface Graph extends TetradSerializable {
      * the old graph to the new graph.
      *
      * @param graph the graph from which nodes and edges are to be pilfered.
-     * @throws java.lang.IllegalArgumentException
-     *          This exception is thrown if adding some node or edge violates
-     *          one of the basicConstraints of this graph.
+     * @throws java.lang.IllegalArgumentException This exception is thrown if adding some node or edge violates
+     *                                            one of the basicConstraints of this graph.
      */
     void transferNodesAndEdges(Graph graph) throws IllegalArgumentException;
 
@@ -570,18 +567,21 @@ public interface Graph extends TetradSerializable {
 
     /**
      * Adds the triple <x, y, z> as an ambiguous triple in the graph.
+     *
      * @throws IllegalArgumentException if <x, y, z> does not lie along a path in the graph.
      */
     void addAmbiguousTriple(Node x, Node y, Node Z);
 
     /**
      * Adds the triple <x, y, z> as an underline triple in the graph.
+     *
      * @throws IllegalArgumentException if <x, y, z> does not lie along a path in the graph.
      */
     void addUnderlineTriple(Node x, Node y, Node Z);
 
     /**
      * Adds the triple <x, y, z> as a dotted underlined triple in the graph.
+     *
      * @throws IllegalArgumentException if <x, y, z> does not lie along a path in the graph.
      */
     void addDottedUnderlineTriple(Node x, Node y, Node Z);
@@ -603,6 +603,7 @@ public interface Graph extends TetradSerializable {
 
     /**
      * Sets the list of ambiguous triples to the triples in the given set.
+     *
      * @param triples The new set of ambiguous triples. This replaces the old list.
      * @throws IllegalArgumentException if any triple <x, y, z> in <code>triples</code> does not lie along a path in the graph.
      */
@@ -610,6 +611,7 @@ public interface Graph extends TetradSerializable {
 
     /**
      * Sets the list of underlined triples to the triples in the given set.
+     *
      * @param triples The new list of ambiguous triples. This replaces the old list.
      * @throws IllegalArgumentException if any triple <x, y, z> in <code>triples</code> does not lie along a path in the graph.
      */
@@ -617,6 +619,7 @@ public interface Graph extends TetradSerializable {
 
     /**
      * Sets the list of dotted underlined triples to the triples in the given set.
+     *
      * @param triples The new list of dotted underlined triples. This replaces the old list.
      * @throws IllegalArgumentException if any triple <x, y, z> in <code>triples</code> does not lie along a path in the graph.
      */

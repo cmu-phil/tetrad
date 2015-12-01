@@ -311,7 +311,7 @@ public class PurifySextadBased implements IPurify {
             Node m6 = cluster.get(_n);
 
             if (eliminated.contains(m1) || eliminated.contains(m2) || eliminated.contains(m3) || eliminated.contains(m4)
-                   || eliminated.contains(m5) || eliminated.contains(m6) ) {
+                    || eliminated.contains(m5) || eliminated.contains(m6)) {
                 continue;
             }
 

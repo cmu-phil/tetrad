@@ -26,8 +26,6 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-//import edu.cmu.tetrad.sem.MimBuildEstimator;
-import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -38,16 +36,18 @@ import java.util.List;
 
 import static java.lang.Math.abs;
 
+//import edu.cmu.tetrad.sem.MimBuildEstimator;
+
 /**
  * Implements different tests of tetrad constraints: using Wishart's test (CPS, Wishart 1928); Bollen's test (Bollen,
  * 1990) or a more computationally intensive test that fits one/two factor Gaussian models. These tests are the core
  * statistical procedure of search algorithms BuildPureClusters and Purify.
- * <p/>
+ * <p>
  * References:
- * <p/>
+ * <p>
  * Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads." Sociological Methods and
  * Research 19, 80-92.
- * <p/>
+ * <p>
  * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of Psychology 19, 180-187.
  *
  * @author Ricardo Silva
@@ -62,7 +62,7 @@ public final class ContinuousTetradTest implements TetradTest {
     //    private double fourthMM[][][][];
     private boolean bvalues[], outputMessage;
     private ICovarianceMatrix covMatrix;
-//    private CorrelationMatrix corrMatrix;
+    //    private CorrelationMatrix corrMatrix;
     private TetradMatrix rho;
     private TestType sigTestType;
     private int sampleSize;
@@ -275,8 +275,6 @@ public final class ContinuousTetradTest implements TetradTest {
 //        }
 //        return 3;
 //    }
-
-
     public int tetradScore(int v1, int v2, int v3, int v4) {
         boolean holds = wishartEvalTetradDifferences2(v1, v2, v3, v4, sig);
         if (!holds) return 1;
@@ -330,8 +328,9 @@ public final class ContinuousTetradTest implements TetradTest {
     }
 
 
-    /** --------------------------------------------------------------------------
-     *  PRIVATE METHODS
+    /**
+     * --------------------------------------------------------------------------
+     * PRIVATE METHODS
      */
 
 //    /**
@@ -400,7 +399,6 @@ public final class ContinuousTetradTest implements TetradTest {
 //        printlnMessage("Done with fourth moments");
 //        return fourthMM;
 //    }
-
     private void evalTetradDifferences(int i, int j, int k, int l) {
         switch (sigTestType) {
             case TETRAD_BASED:
@@ -665,8 +663,7 @@ public final class ContinuousTetradTest implements TetradTest {
         if (deltaTest == null) {
             if (dataSet != null) {
                 deltaTest = new DeltaTetradTest(dataSet);
-            }
-            else {
+            } else {
                 deltaTest = new DeltaTetradTest(covMatrix);
             }
         }
@@ -712,8 +709,7 @@ public final class ContinuousTetradTest implements TetradTest {
         if (deltaTest == null) {
             if (dataSet != null) {
                 deltaTest = new DeltaTetradTest(dataSet);
-            }
-            else {
+            } else {
                 deltaTest = new DeltaTetradTest(covMatrix);
             }
         }

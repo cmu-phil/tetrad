@@ -112,7 +112,6 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
 
     /**
      * @return the underlying data matrix as a TetradMatrix.
-     *
      * @throws IllegalStateException if this is not a continuous data set.
      */
     TetradMatrix getDoubleData();
@@ -141,13 +140,12 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     int getNumRows();
 
     /**
+     * @param row The index of the case.
+     * @param col The index of the variable.
      * @return the value at the given row and column as an Object. The type
      * returned is deliberately vague, allowing for variables of any type.
      * Primitives will be returned as corresponding wrapping objects (for
      * example, doubles as Doubles).
-     *
-     * @param row The index of the case.
-     * @param col The index of the variable.
      */
     Object getObject(int row, int col);
 
@@ -234,6 +232,7 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
 
     /**
      * Sets the case ID fo the given case numnber to the given value.
+     *
      * @throws IllegalArgumentException if the given case ID is already used.
      */
     void setCaseId(int caseNumber, String id);
@@ -336,8 +335,9 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     void permuteRows();
 
-	void setColumnToTooltip(Map<String, String> columnToTooltip);
-	Map<String, String> getColumnToTooltip();
+    void setColumnToTooltip(Map<String, String> columnToTooltip);
+
+    Map<String, String> getColumnToTooltip();
 
 
     /**

@@ -57,7 +57,7 @@ public class CalculatorParams implements Params {
     /**
      * @return the equations used in the calculator.
      */
-    public List<String> getEquations(){
+    public List<String> getEquations() {
         return this.equations;
     }
 
@@ -71,7 +71,7 @@ public class CalculatorParams implements Params {
     /**
      * Adds the given equations to the params
      */
-    public void addEquation(String equation){
+    public void addEquation(String equation) {
         this.equations.add(equation);
     }
 

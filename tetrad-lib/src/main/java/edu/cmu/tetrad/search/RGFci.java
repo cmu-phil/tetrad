@@ -43,12 +43,12 @@ import java.util.concurrent.ConcurrentMap;
  * <p>Not sure what this does.</p>
  * Replaces the FAS search in the previous version with GES followed by PC adjacency removals for more accuracy.
  * Uses conservative collider orientation. Gets sepsets for X---Y from among adjacencies of X or of Y. -jdramsey 3/10/2015
- * <p/>
+ * <p>
  * Previous:
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
- * <p/>
+ * <p>
  * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
@@ -361,7 +361,7 @@ public final class RGFci {
 
     /**
      * Orients colliders in the graph.  (FCI Step C)
-     * <p/>
+     * <p>
      * Zhang's step F3, rule R0.
      */
     private void ruleR0() {
@@ -885,7 +885,7 @@ public final class RGFci {
      *       v    v
      * L....A --> C
      * </pre>
-     * <p/>
+     * <p>
      * This is Zhang's rule R4, discriminating undirectedPaths.
      */
     private void ruleR4() {

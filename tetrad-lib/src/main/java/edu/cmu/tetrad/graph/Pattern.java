@@ -100,7 +100,7 @@ public final class Pattern implements TetradSerializable, Graph {
         this.getGraph().transferNodesAndEdges(graph);
     }
 
-     public Set<Triple> getAmbiguousTriples() {
+    public Set<Triple> getAmbiguousTriples() {
         return getGraph().getAmbiguousTriples();
     }
 
@@ -239,11 +239,9 @@ public final class Pattern implements TetradSerializable, Graph {
     private Edge appropriateClosingEdge(Node node1, Node node2) {
         if (isAncestorOf(node1, node2)) {
             return Edges.directedEdge(node1, node2);
-        }
-        else if (isAncestorOf(node2, node1)) {
+        } else if (isAncestorOf(node2, node1)) {
             return Edges.directedEdge(node2, node1);
-        }
-        else {
+        } else {
             return Edges.nondirectedEdge(node1, node2);
         }
     }
@@ -506,7 +504,7 @@ public final class Pattern implements TetradSerializable, Graph {
     }
 
     public boolean isDConnectedTo(Node node1, Node node2,
-            List<Node> conditioningNodes) {
+                                  List<Node> conditioningNodes) {
         return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
     }
 

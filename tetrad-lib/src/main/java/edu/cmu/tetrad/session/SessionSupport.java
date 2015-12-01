@@ -247,7 +247,7 @@ public class SessionSupport {
                     l.addingEdge(event);
                     break;
 
-                default :
+                default:
                     throw new IllegalStateException(
                             "No such state: " + event.getType());
             }

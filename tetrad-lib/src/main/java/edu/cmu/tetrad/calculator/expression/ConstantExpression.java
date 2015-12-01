@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.calculator.expression;
 
-import edu.cmu.tetrad.sem.ShiftedRealDistribution;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -34,7 +33,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class ConstantExpression implements Expression {
-     static final long serialVersionUID = 23L;
+    static final long serialVersionUID = 23L;
 
     /**
      * Constant expression for PI.
@@ -71,8 +70,8 @@ public class ConstantExpression implements Expression {
     /**
      * Constructs the constant expression given the value and the name.
      */
-    public ConstantExpression(double value, String name){
-        if(name == null){
+    public ConstantExpression(double value, String name) {
+        if (name == null) {
             throw new NullPointerException("name was null.");
         }
         this.value = value;
@@ -89,7 +88,7 @@ public class ConstantExpression implements Expression {
     /**
      * @return the name of the constant or null if there isn't one.
      */
-    public String getName(){
+    public String getName() {
         return this.name;
     }
 
@@ -115,8 +114,7 @@ public class ConstantExpression implements Expression {
     public String toString() {
         if (name == null) {
             return Double.toString(value);
-        }
-        else {
+        } else {
             return name;
         }
     }
@@ -125,6 +123,7 @@ public class ConstantExpression implements Expression {
     public RealDistribution getRealDistribution(Context context) {
         return null;
     }
+
     public IntegerDistribution getIntegerDistribution(Context context) {
         return null;
     }

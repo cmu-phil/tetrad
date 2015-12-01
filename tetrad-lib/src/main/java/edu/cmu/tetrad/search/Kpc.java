@@ -199,7 +199,7 @@ public class Kpc implements GraphSearch {
 
     /**
      * @return the getModel depth of search--that is, the maximum number of conditioning nodes for any conditional
-     *         independence checked.
+     * independence checked.
      */
     public int getDepth() {
         return depth;
@@ -242,7 +242,7 @@ public class Kpc implements GraphSearch {
      * is consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
      * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
      * or due to statistical errors in conditional independence judgments.
-     * <p/>
+     * <p>
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {

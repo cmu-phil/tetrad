@@ -114,17 +114,14 @@ public final class ContinuousVariable extends AbstractVariable
     public boolean checkValue(final Object value) {
         if (value instanceof Double) {
             return true;
-        }
-        else if (value instanceof String) {
+        } else if (value instanceof String) {
             try {
                 Double.parseDouble((String) value);
                 return true;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 return false;
             }
-        }
-        else {
+        } else {
             throw new IllegalArgumentException();
         }
     }
@@ -136,9 +133,6 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     /**
-     * @return the double value that represents missing data for this
-     * variable, wrapped in a Double.  The default is Double.NaN.
-     *
      * @return the missing value marker, wrapped as a Double.
      */
     public Object getMissingValueMarker() {
@@ -146,9 +140,6 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     /**
-     * @return the double value that represents missing data for this
-     * variable. The default is Double.NaN.
-     *
      * @return the missing value marker.
      */
     public static double getDoubleMissingValue() {
@@ -161,7 +152,7 @@ public final class ContinuousVariable extends AbstractVariable
      * @param value the Object to test--should be a wrapped version of the
      *              missing value marker.
      * @return true iff it really is a wrapped version of the missing value
-     *         marker.
+     * marker.
      */
     public static boolean isDoubleMissingValue(double value) {
         return Double.isNaN(value);
@@ -173,7 +164,7 @@ public final class ContinuousVariable extends AbstractVariable
      * @param value the Object to test--should be a wrapped version of the
      *              missing value marker.
      * @return true iff it really is a wrapped version of the missing value
-     *         marker.
+     * marker.
      */
     public boolean isMissingValue(Object value) {
         if (value instanceof Double) {
@@ -187,8 +178,7 @@ public final class ContinuousVariable extends AbstractVariable
     public int hashCode() {
         if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             return super.hashCode();
-        }
-        else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
+        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
             return getName().hashCode();
         }
 
@@ -204,9 +194,8 @@ public final class ContinuousVariable extends AbstractVariable
         if (o == null) return false;
         if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             return o == this;
-        }
-        else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return getName().equals(((Node)o).getName());
+        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
+            return getName().equals(((Node) o).getName());
         }
 
         throw new IllegalStateException();

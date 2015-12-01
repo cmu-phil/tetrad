@@ -186,14 +186,12 @@ public final class LayeredDrawing {
 
         if (parents.isEmpty() && children.isEmpty()) {
             tiers.put(node, 0);
-        }
-        else if (parents.isEmpty()) {
+        } else if (parents.isEmpty()) {
             int cMin = getCMin(children, tiers);
             tiers.put(node, cMin - 1);
             placeChildren(node, tiers, graph);
             return;
-        }
-        else {
+        } else {
             int pMax = getPMax(parents, tiers);
             int cMin = getCMin(children, tiers);
             tiers.put(node, pMax + 1);

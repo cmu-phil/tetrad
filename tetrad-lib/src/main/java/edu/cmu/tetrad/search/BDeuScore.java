@@ -21,13 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DataBox;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
 
 import java.util.List;
 

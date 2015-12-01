@@ -119,7 +119,7 @@ public final class FruchtermanReingoldLayout {
 
         List<Edge> edges = new ArrayList<Edge>(graph().getEdges());
 
-        for (Iterator<Edge> i = edges.iterator(); i.hasNext();) {
+        for (Iterator<Edge> i = edges.iterator(); i.hasNext(); ) {
             Edge edge = i.next();
             if (!nodes.contains(edge.getNode1()) ||
                     !nodes.contains(edge.getNode2())) {

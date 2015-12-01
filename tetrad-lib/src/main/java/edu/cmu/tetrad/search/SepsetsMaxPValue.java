@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * Selects the maximum p value sepset
- *
+ * <p>
  * Created by josephramsey on 3/24/15.
  */
 public class SepsetsMaxPValue implements SepsetProducer {

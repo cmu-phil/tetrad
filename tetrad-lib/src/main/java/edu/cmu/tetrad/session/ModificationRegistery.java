@@ -38,14 +38,14 @@ import java.util.Set;
  */
 public final class ModificationRegistery {
     private static final Set<Object> EDITED_MODELS = new HashSet<Object>();
-    private static final Map<JComponent,SessionNode> EDITORS_TO_SESSION_NODES = new HashMap<JComponent, SessionNode>();
-    private static final Map<JComponent,PropertyChangeListener> EDITORS_TO_LISTENERS = new HashMap<JComponent, PropertyChangeListener>();
+    private static final Map<JComponent, SessionNode> EDITORS_TO_SESSION_NODES = new HashMap<JComponent, SessionNode>();
+    private static final Map<JComponent, PropertyChangeListener> EDITORS_TO_LISTENERS = new HashMap<JComponent, PropertyChangeListener>();
 
     /**
      * Registers an editor which could modify model.
      */
     public static void registerEditor(SessionNode sessionNode,
-            JComponent editor) {
+                                      JComponent editor) {
         if (editor == null) {
             throw new NullPointerException();
         }

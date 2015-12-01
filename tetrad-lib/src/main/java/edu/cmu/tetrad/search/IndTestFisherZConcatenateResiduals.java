@@ -31,8 +31,6 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DoubleDataBox;
 
 import java.util.ArrayList;
 import java.util.Arrays;

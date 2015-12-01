@@ -21,18 +21,19 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-//import edu.cmu.tetrad.sem.MimBuildEstimator;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.Iterator;
 import java.util.List;
+
+//import edu.cmu.tetrad.sem.MimBuildEstimator;
 
 /**
  * Implementation of a test of tetrad constraints with discrete variables. We are assuming that variables are ordinal or
@@ -1369,7 +1370,7 @@ public final class DiscreteTetradTest implements TetradTest {
     }
 
     public boolean twoFactorTest(int i, int j, int k, int l, int x) {
-       throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
+        throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 
 //        //System.out.println("twoFactorTest: " + i + " " + j + " " + k + " " + l + " " + x);
 //
@@ -1659,7 +1660,7 @@ public final class DiscreteTetradTest implements TetradTest {
             Node uParent = null, uError = null;
             for (Iterator<Node> it =
                  semIm.getSemPm().getGraph().getParents(uNode)
-                         .iterator(); it.hasNext();) {
+                         .iterator(); it.hasNext(); ) {
                 Node parent = it.next();
                 if (parent.getNodeType() == NodeType.LATENT) {
                     uParent = parent;

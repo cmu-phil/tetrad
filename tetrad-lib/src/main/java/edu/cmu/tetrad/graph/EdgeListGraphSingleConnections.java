@@ -1042,7 +1042,7 @@ public class EdgeListGraphSingleConnections implements Graph {
             throw new NullPointerException("Endpoint not specified");
         } else if (edge == null) {
             throw new NullPointerException("No such edge.");
-        } else  {
+        } else {
             Edge newEdge = new Edge(from, to, edge.getProximalEndpoint(from), endPoint);
             removeEdge(edge);
             addEdge(newEdge);
@@ -1975,9 +1975,6 @@ public class EdgeListGraphSingleConnections implements Graph {
 //    }
 
     /**
-     * @return the existing property change support object for this class, if
-     * there is one, or else creates a new one and returns that.
-     *
      * @return this object.
      */
     private PropertyChangeSupport getPcs() {

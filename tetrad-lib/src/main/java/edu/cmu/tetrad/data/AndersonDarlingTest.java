@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Implements the Anderson-Darling test for normality, with P values calculated
  * as in R's ad.test method (in package nortest).
- * <p/>
+ * <p>
  * Note that in the calculation, points x such that log(1 - normal_cdf(x))
  * is infinite are ignored.
  *

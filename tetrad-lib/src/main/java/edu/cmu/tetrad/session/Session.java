@@ -248,8 +248,7 @@ public final class Session implements TetradSerializable {
             nodes.remove(node);
             node.removeSessionListener(getSessionHandler());
             getSessionSupport().fireNodeRemoved(node);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(
                     "Node doesn't exist in" + "graph: " + node);
         }

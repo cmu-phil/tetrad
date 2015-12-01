@@ -123,7 +123,7 @@ public final class DataReader {
     //============================PUBLIC METHODS========================//
 
 
-    public void setLogEmptyTokens(boolean log){
+    public void setLogEmptyTokens(boolean log) {
         this.logEmptyTokens = log;
     }
 
@@ -660,8 +660,7 @@ public final class DataReader {
 
         try {
             n = Integer.parseInt(token);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             throw new IllegalArgumentException(
                     "Expected a sample size here, got \"" + token + "\".");
         }
@@ -757,7 +756,7 @@ public final class DataReader {
     public IKnowledge parseKnowledge(File file) throws IOException {
         FileReader reader = new FileReader(file);
         Lineizer lineizer = new Lineizer(reader, commentMarker);
-        IKnowledge knowledge =  parseKnowledge(lineizer, delimiterType.getPattern());
+        IKnowledge knowledge = parseKnowledge(lineizer, delimiterType.getPattern());
         this.logger.reset();
         return knowledge;
     }
@@ -769,7 +768,7 @@ public final class DataReader {
     public IKnowledge parseKnowledge(char[] chars) {
         CharArrayReader reader = new CharArrayReader(chars);
         Lineizer lineizer = new Lineizer(reader, commentMarker);
-        IKnowledge knowledge =  parseKnowledge(lineizer, delimiterType.getPattern());
+        IKnowledge knowledge = parseKnowledge(lineizer, delimiterType.getPattern());
         this.logger.reset();
         return knowledge;
     }
@@ -783,8 +782,7 @@ public final class DataReader {
             if (idLabel == null) {
                 idIndex = 0;
                 varNames.add(0, "");
-            }
-            else {
+            } else {
                 idIndex = varNames.indexOf(idLabel);
 
                 if (idIndex == -1) {
@@ -812,19 +810,16 @@ public final class DataReader {
             try {
                 double value = Double.parseDouble(s);
                 dataSet.setDouble(row, col, value);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 dataSet.setDouble(row, col, Double.NaN);
             }
-        }
-        else if (node instanceof DiscreteVariable) {
+        } else if (node instanceof DiscreteVariable) {
             DiscreteVariable var = (DiscreteVariable) node;
             int value = var.getCategories().indexOf(s.trim());
 
             if (value == -1) {
                 dataSet.setInt(row, col, -99);
-            }
-            else {
+            } else {
                 dataSet.setInt(row, col, value);
             }
         }
@@ -1058,14 +1053,14 @@ public final class DataReader {
     /**
      * Scans the file for variable definitions and number of cases.
      *
-     * @param varNames  Names of variables, if known. Otherwise, if null,
-     *                  variables in the series X1, X2, ..., Xn will be made up,
-     *                  one for each token in the first row.
-     * @param lineizer  Parses lines, skipping comments.
-     * @param delimiter Delimiter to tokenize tokens in each row.
-     * @param firstLine Non-null if a non-variable first line had to be
-     *                  lineized
-     * @param idIndex   The index of the ID column.
+     * @param varNames                Names of variables, if known. Otherwise, if null,
+     *                                variables in the series X1, X2, ..., Xn will be made up,
+     *                                one for each token in the first row.
+     * @param lineizer                Parses lines, skipping comments.
+     * @param delimiter               Delimiter to tokenize tokens in each row.
+     * @param firstLine               Non-null if a non-variable first line had to be
+     *                                lineized
+     * @param idIndex                 The index of the ID column.
      * @param variableSectionIncluded
      */
     private DataSetDescription scanForDescription(List<String> varNames,
@@ -1254,8 +1249,7 @@ public final class DataReader {
         for (String s : strings) {
             try {
                 Integer.parseInt(s);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 return false;
             }
         }
@@ -1267,8 +1261,7 @@ public final class DataReader {
         for (String s : strings) {
             try {
                 Double.parseDouble(s);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 return false;
             }
         }

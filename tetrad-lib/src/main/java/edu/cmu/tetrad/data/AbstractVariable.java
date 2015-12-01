@@ -120,7 +120,7 @@ public abstract class AbstractVariable implements Variable {
      *
      * @param value a value
      * @return <tt>true</tt> if the value is an acceptable value for
-     *         <tt>this</tt> variable, and <tt>false</tt> otherwise
+     * <tt>this</tt> variable, and <tt>false</tt> otherwise
      */
     public boolean checkValue(Object value) {
         return true;

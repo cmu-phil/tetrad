@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * <p></p>This is experimental; you should use it. It will probably be
  * removed from the repository.</p>
- *
+ * <p>
  * <p></p>Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
@@ -47,6 +47,7 @@ import java.util.concurrent.ConcurrentMap;
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  * </p>
+ *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
  * @author Joseph Ramsey

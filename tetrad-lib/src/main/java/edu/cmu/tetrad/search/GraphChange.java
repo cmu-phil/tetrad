@@ -30,10 +30,10 @@ import java.util.*;
  * **************************************************************************************
  *
  * @author: Trevor Burns
- * <p/>
+ * <p>
  * GraphChange is a data structure created mainly for use in the ION search algorithm. However, it models a general
  * concept: storage for a variety of seperate changes one could possibly apply to a PAG.
- * <p/>
+ * <p>
  * By convention, the NodePairs in the orients ArrayList are ordered such that Node1 is the "from" node and Node2 is the
  * "to" node (ie 1 o-> 2)
  */
@@ -269,8 +269,8 @@ public class GraphChange {
     /**
      * ******************************************************************************** /* Private
      * /***********************************************************************************
-     * <p/>
-     * <p/>
+     * <p>
+     * <p>
      * /** creates OrderedNodePairs out of given List. For use in consistent and applyTo
      */
     private Collection<OrderedNodePair> makePairs(List<Triple> input) {

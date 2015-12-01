@@ -69,8 +69,9 @@ public class RegressionDatasetGeneralized implements Regression {
 
     /**
      * Constructs a linear regression model for the given tabular data set.
+     *
      * @param data A rectangular data set, the relevant variables of which
-     * are continuous.
+     *             are continuous.
      */
     public RegressionDatasetGeneralized(DataSet data) {
         this.data = data.getDoubleData();
@@ -93,7 +94,6 @@ public class RegressionDatasetGeneralized implements Regression {
     }
 
     /**
-     * @return the graph of signifiocant regressors into the target.
      * @return This graph.
      */
     public Graph getGraph() {
@@ -102,7 +102,8 @@ public class RegressionDatasetGeneralized implements Regression {
 
     /**
      * Regresses the target on the given regressors.
-     * @param target The target variable.
+     *
+     * @param target     The target variable.
      * @param regressors The regressor variables.
      * @return The regression plane, specifying for each regressors its
      * coefficeint, se, t, and p values, and specifying the same for the
@@ -135,8 +136,7 @@ public class RegressionDatasetGeneralized implements Regression {
             for (int j = 0; j < X.columns(); j++) {
                 if (j == 0) {
                     X.set(i, j, 1);
-                }
-                else {
+                } else {
                     X.set(i, j, xSub.get(i, j - 1));
                 }
             }
@@ -211,7 +211,7 @@ public class RegressionDatasetGeneralized implements Regression {
     //=======================PRIVATE METHODS================================//
 
     private Graph createOutputGraph(String target, TetradMatrix x,
-                                   List<Node> regressors, TetradVector p) {
+                                    List<Node> regressors, TetradVector p) {
         // Create output graph.
         Node targetNode = new GraphNode(target);
 

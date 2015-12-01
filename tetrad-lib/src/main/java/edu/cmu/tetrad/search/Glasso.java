@@ -214,7 +214,6 @@ public class Glasso {
         }
 
 
-
         shr = getThr() * shr / nm1;
 
         if (approximateAlgorithm) {
@@ -254,45 +253,43 @@ public class Glasso {
 
 //        System.out.println("wwi = " + wwi);
 
-        if(!warmStart) {
+        if (!warmStart) {
             ww.assign(ss);
 
             if (xs != null) {
                 zero(xs);
             }
-        }
-        else {
+        } else {
             for (int j = 0; j < n; j++) {
-                double xjj=-wwi.get(j,j);
+                double xjj = -wwi.get(j, j);
 //                System.out.println("xjj = " + xjj);
-                int l=-1;
+                int l = -1;
 
                 for (int k = 0; k < n; k++) {
-                    if(k == j) continue ;
-                    l=l+1;
-                    xs.set(l,j, wwi.get(k,j)/xjj);
+                    if (k == j) continue;
+                    l = l + 1;
+                    xs.set(l, j, wwi.get(k, j) / xjj);
                 }
             }
         }
 
         for (int j = 0; j < n; j++) {
-            if(pen) {
-                ww.set(j,j, ss.get(j,j)+rho.get(j,j));
-            }
-            else {
-                ww.set(j,j, ss.get(j,j));
+            if (pen) {
+                ww.set(j, j, ss.get(j, j) + rho.get(j, j));
+            } else {
+                ww.set(j, j, ss.get(j, j));
 //                System.out.println(ww);
             }
         }
 
 
-        niter=0;
+        niter = 0;
 
         while (true) {
-            dlx=0.0;
+            dlx = 0.0;
 
             for (int m = 0; m < n; m++) {
-                if(itr) {
+                if (itr) {
                     System.out.println("Outer loop = " + m);
                 }
 
@@ -304,7 +301,7 @@ public class Glasso {
                 ws = ww.viewColumn(m);
 
                 // This sets up vv, s, and ro--i.e., W.11, s.12, and r.12.
-                setup(m,n,ss,rho,ww,vv,s,ro);
+                setup(m, n, ss, rho, ww, vv, s, ro);
 
 
                 so.assign(s);
@@ -313,29 +310,29 @@ public class Glasso {
 
                 // This updates s and x--the estimated correlation matrix and the reduced form of the
                 // estimated inverse covariance.
-                lasso(ro,nm1,vv,s,shr/sum_abs(vv),x,z,mm);
+                lasso(ro, nm1, vv, s, shr / sum_abs(vv), x, z, mm);
 //                lasso(ro,nm1,vv,s,thr/sum_abs(vv),x,z,mm);
-                int l=-1;
+                int l = -1;
 
                 for (int j = 0; j < n; j++) {
-                    if(j == m) continue;
-                    l=l+1;
-                    ww.set(j,m, so.get(l)-s.get(l));
-                    ww.set(m,j, ww.get(j,m));
+                    if (j == m) continue;
+                    l = l + 1;
+                    ww.set(j, m, so.get(l) - s.get(l));
+                    ww.set(m, j, ww.get(j, m));
                 }
 
-                dlx=Math.max(dlx,sum_abs_diff(ww.viewColumn(m), ws));
+                dlx = Math.max(dlx, sum_abs_diff(ww.viewColumn(m), ws));
 //                xs(:,m)=x
                 xs.viewColumn(m).assign(x);
             }
 
-            niter=niter+1;
-            if(niter < getMaxit()) break;
-            if(dlx < shr) break;
+            niter = niter + 1;
+            if (niter < getMaxit()) break;
+            if (dlx < shr) break;
         }
 
-        del=dlx/nm1;
-        inv(n,ww,xs,wwi);
+        del = dlx / nm1;
+        inv(n, ww, xs, wwi);
 
         return new Result(ww, wwi, niter, del);
     }
@@ -368,7 +365,7 @@ public class Glasso {
 
         for (int j = 0; j < n; j++) {
             if (j == m) continue;
-            l=l+1;
+            l = l + 1;
             r.set(l, rho.get(j, m));                // r is r12
             s.set(l, ss.get(j, m));                 // s is s12
             int i = -1;
@@ -444,7 +441,7 @@ public class Glasso {
 
         for (int j = 0; j < n; j++) {
             if (x.get(j) == 0.0) continue;
-            l=l+1;
+            l = l + 1;
             m[l] = j;
         }
 
@@ -485,33 +482,33 @@ public class Glasso {
 
     private void inv(int n, DoubleMatrix2D ww, DoubleMatrix2D xs, DoubleMatrix2D wwi) {
         xs.assign(Mult.mult(-1));
-        int nm1=n-1;
+        int nm1 = n - 1;
 
         double dp3 = 0.0;
 
         for (int k = 0; k < n - 1; k++) {
-            dp3 += xs.get(k, 0) * ww.get(k+1, 0);
+            dp3 += xs.get(k, 0) * ww.get(k + 1, 0);
         }
 
         wwi.set(0, 0, 1.0 / (ww.get(0, 0) + dp3));
 
-        for (int i = 1; i < n; i++) wwi.set(i,0, wwi.get(0,0) * xs.get(i-1,0));
+        for (int i = 1; i < n; i++) wwi.set(i, 0, wwi.get(0, 0) * xs.get(i - 1, 0));
 
         double dp4 = 0.0;
 
         for (int k = 0; k < n - 1; k++) {
-            dp4 += xs.get(k, n-1) * ww.get(k,n-1);
-         }
-
-        wwi.set(n-1,n-1,1.0/(ww.get(n-1,n-1) + dp4));
-
-        for (int i = 0; i < nm1; i++)  {
-            wwi.set(i,n-1, wwi.get(n-1, n-1) * xs.get(i, n-1));
+            dp4 += xs.get(k, n - 1) * ww.get(k, n - 1);
         }
 
-        for (int j = 1; j < n-1; j++) {
-            int jm1=j-1;
-            int jp1=j+1;
+        wwi.set(n - 1, n - 1, 1.0 / (ww.get(n - 1, n - 1) + dp4));
+
+        for (int i = 0; i < nm1; i++) {
+            wwi.set(i, n - 1, wwi.get(n - 1, n - 1) * xs.get(i, n - 1));
+        }
+
+        for (int j = 1; j < n - 1; j++) {
+            int jm1 = j - 1;
+            int jp1 = j + 1;
 
             double dp1 = 0.0;
 
@@ -521,13 +518,13 @@ public class Glasso {
 
             double dp2 = 0.0;
 
-            for (int k = j; k <= n-2; k++) {
-                dp2 += xs.get(k, j) * ww.get(k+1, j);
+            for (int k = j; k <= n - 2; k++) {
+                dp2 += xs.get(k, j) * ww.get(k + 1, j);
             }
 
-            wwi.set(j,j, 1.0 / (ww.get(j,j) + dp1 + dp2));
-            for (int p = 0; p <= jm1; p++) wwi.set(p,j, wwi.get(j,j) * xs.get(p, j));
-            for (int p = jp1; p < n; p++) wwi.set(p,j, wwi.get(j,j) * xs.get(p - 1, j));
+            wwi.set(j, j, 1.0 / (ww.get(j, j) + dp1 + dp2));
+            for (int p = 0; p <= jm1; p++) wwi.set(p, j, wwi.get(j, j) * xs.get(p, j));
+            for (int p = jp1; p < n; p++) wwi.set(p, j, wwi.get(j, j) * xs.get(p - 1, j));
         }
     }
 
@@ -654,7 +651,6 @@ public class Glasso {
 
         this.maxit = maxit;
     }
-
 
 
     public void setThr(double thr) {

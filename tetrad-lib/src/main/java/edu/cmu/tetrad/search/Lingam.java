@@ -37,9 +37,9 @@ import static java.lang.Math.min;
 /**
  * Implements the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen, and Kerminen, A linear nongaussian acyclic model for
  * causal discovery, JMLR 7 (2006). Largely follows the Matlab code.
- *
+ * <p>
  * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015</p>
-
+ *
  * @author Gustavo Lacerda
  */
 public class Lingam {
@@ -55,7 +55,8 @@ public class Lingam {
     /**
      * Constructs a new LiNGAM algorithm with the given alpha level (used for pruning).
      */
-    public Lingam() {}
+    public Lingam() {
+    }
 
     public Graph search(DataSet data) {
         TetradMatrix X = data.getDoubleData();
@@ -117,7 +118,6 @@ public class Lingam {
 //                rowp = Arrays.copyOf(perm, perm.length);
 //            }
 //        }
-
 
 
         // The method that calls assign() twice could be a problem for the

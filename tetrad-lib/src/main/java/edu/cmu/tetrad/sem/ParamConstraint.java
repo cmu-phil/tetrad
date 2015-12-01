@@ -49,7 +49,7 @@ public class ParamConstraint implements TetradSerializable {
      * freeParameters' values are determined by it.
      */
     public ParamConstraint(SemIm semIm, Parameter param1,
-            ParamConstraintType type, double number) {
+                           ParamConstraintType type, double number) {
         this.semIm = semIm;
         this.param1 = param1;
         this.param2 = null;
@@ -62,7 +62,7 @@ public class ParamConstraint implements TetradSerializable {
      * between their values.
      */
     public ParamConstraint(SemIm semIm, Parameter param1, Parameter param2,
-            ParamConstraintType type) {
+                           ParamConstraintType type) {
         this.semIm = semIm;
         this.param1 = param1;
         this.param2 = param2;
@@ -121,8 +121,7 @@ public class ParamConstraint implements TetradSerializable {
             if (type == ParamConstraintType.LT &&
                     semIm.getParamValue(param1) < number) {
                 return true;
-            }
-            else {
+            } else {
                 if (type == ParamConstraintType.EQ && semIm.getParamValue(
                         param1) == semIm.getParamValue(param2)) {
                     return true;

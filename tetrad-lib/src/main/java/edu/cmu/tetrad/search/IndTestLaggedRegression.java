@@ -200,7 +200,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
             }
         }
 
-        System.out.println(xVar + " conditioning on " +  regressors);
+        System.out.println(xVar + " conditioning on " + regressors);
 
 //        Regression regression = new RegressionDataset(dataSet);
         RegressionResult result = null;

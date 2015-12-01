@@ -35,7 +35,7 @@ import java.util.*;
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
- * <p/>
+ * <p>
  * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
@@ -107,9 +107,11 @@ public final class ProbFci implements GraphSearch {
      */
     private TetradLogger logger = TetradLogger.getInstance();
 
-	/****** use RFCI *******/
-	// set to true for now
-	private boolean RFCI_Used = false;
+    /******
+     * use RFCI
+     *******/
+    // set to true for now
+    private boolean RFCI_Used = false;
 
     /**
      * True iff verbose output should be printed.
@@ -221,54 +223,52 @@ public final class ProbFci implements GraphSearch {
         graph.reorientAllWith(Endpoint.CIRCLE);
         this.sepsets = adj.getSepsets();
 
-		// The original FCI, with or without JiJi Zhang's orientation rules
-		if (!RFCI_Used)  
-		{
-	//        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
-			if (isPossibleDsepSearchDone()) {
-				long time1 = System.currentTimeMillis();
-				ruleR0();
+        // The original FCI, with or without JiJi Zhang's orientation rules
+        if (!RFCI_Used) {
+            //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
+            if (isPossibleDsepSearchDone()) {
+                long time1 = System.currentTimeMillis();
+                ruleR0();
 
-				long time2 = System.currentTimeMillis();
-				logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
+                long time2 = System.currentTimeMillis();
+                logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
 
-				// Step FCI D.
-				long time3 = System.currentTimeMillis();
+                // Step FCI D.
+                long time3 = System.currentTimeMillis();
 
-				PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
-				possibleDSep.setDepth(getDepth());
-				possibleDSep.setKnowledge(getKnowledge());
-				possibleDSep.setMaxPathLength(getMaxReachablePathLength());
-				this.sepsets.addAll(possibleDSep.search());
-				long time4 = System.currentTimeMillis();
-				logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
+                PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
+                possibleDSep.setDepth(getDepth());
+                possibleDSep.setKnowledge(getKnowledge());
+                possibleDSep.setMaxPathLength(getMaxReachablePathLength());
+                this.sepsets.addAll(possibleDSep.search());
+                long time4 = System.currentTimeMillis();
+                logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
 
-				// Reorient all edges as o-o.
-				graph.reorientAllWith(Endpoint.CIRCLE);
-			}
+                // Reorient all edges as o-o.
+                graph.reorientAllWith(Endpoint.CIRCLE);
+            }
 
-			// Step CI C (Zhang's step F3.)
-			long time5 = System.currentTimeMillis();
-			//fciOrientbk(getKnowledge(), graph, independenceTest.getVariables());    - Robert Tillman 2008
-			fciOrientbk(getKnowledge(), graph, variables);
-			ruleR0();
+            // Step CI C (Zhang's step F3.)
+            long time5 = System.currentTimeMillis();
+            //fciOrientbk(getKnowledge(), graph, independenceTest.getVariables());    - Robert Tillman 2008
+            fciOrientbk(getKnowledge(), graph, variables);
+            ruleR0();
 
-			long time6 = System.currentTimeMillis();
-			logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
+            long time6 = System.currentTimeMillis();
+            logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
-			// Step CI D. (Zhang's step F4.)
-			doFinalOrientation();
+            // Step CI D. (Zhang's step F4.)
+            doFinalOrientation();
 
-		}
-		// RFCI (Colombo et al, 2012)
-		else 
-		{
-			fciOrientbk(getKnowledge(), graph, variables);
-			ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
-			doFinalOrientation_RFCI();
-		}
+        }
+        // RFCI (Colombo et al, 2012)
+        else {
+            fciOrientbk(getKnowledge(), graph, variables);
+            ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
+            doFinalOrientation_RFCI();
+        }
 
-		
+
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - beginTime;
 
@@ -295,7 +295,7 @@ public final class ProbFci implements GraphSearch {
 
     /**
      * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
-     *         should be used. False by default.
+     * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
         return completeRuleSetUsed;
@@ -318,12 +318,12 @@ public final class ProbFci implements GraphSearch {
     public void setRFCI_Used(boolean RFCI_Used) {
         this.RFCI_Used = RFCI_Used;
     }
-	
+
     //===========================PRIVATE METHODS=========================//
 
     /**
      * Orients colliders in the graph.  (FCI Step C)
-     * <p/>
+     * <p>
      * Zhang's step F3, rule R0.
      */
     private void ruleR0() {
@@ -369,136 +369,123 @@ public final class ProbFci implements GraphSearch {
         }
     }
 
-	////////////////////////////////////////////
-	// RFCI Algorithm 4.4 (Colombo et al, 2012)
-	// Orient colliders
-	////////////////////////////////////////////
+    ////////////////////////////////////////////
+    // RFCI Algorithm 4.4 (Colombo et al, 2012)
+    // Orient colliders
+    ////////////////////////////////////////////
     private void ruleR0_RFCI(List<Node[]> rTuples) {
-		List<Node[]> lTuples = new ArrayList<Node[]>();
-		
+        List<Node[]> lTuples = new ArrayList<Node[]>();
+
         List<Node> nodes = graph.getNodes();
-		
-		///////////////////////////////
-		// process tuples in rTuples
-		while (!rTuples.isEmpty())
-		{
-			Node[] thisTuple = rTuples.remove(0);
-			
-			Node i = thisTuple[0];
-			Node j = thisTuple[1];
-			Node k = thisTuple[2];
+
+        ///////////////////////////////
+        // process tuples in rTuples
+        while (!rTuples.isEmpty()) {
+            Node[] thisTuple = rTuples.remove(0);
+
+            Node i = thisTuple[0];
+            Node j = thisTuple[1];
+            Node k = thisTuple[2];
 
             List<Node> sepSet = new ArrayList<Node>();
-			sepSet.remove(j);
-			
-			boolean independent1 = false;
-			if (knowledge.noEdgeRequired(i.getName(), j.getName()))  // if BK allows
-			{
-				try {
-					independent1 = independenceTest.isIndependent(i, j, sepSet);
-				} catch (Exception e) {
-					independent1 = false;
-				}
-			}
-			
-			boolean independent2 = false;
-			if (knowledge.noEdgeRequired(j.getName(), k.getName()))  // if BK allows
-			{
-				try {
-					independent2 = independenceTest.isIndependent(j, k, sepSet);
-				} catch (Exception e) {
-					independent2 = false;
-				}
-			}
-			
-			if (!independent1 && !independent2)
-			{
-				lTuples.add(thisTuple);
-			}
-			else 
-			{
-				// set sepSets to minimal separating sets
-				if (independent1)  
-				{
-					setMinSepSet(sepSet, i, j);
-					graph.removeEdge(i, j);
-				}
-				if (independent2)  
-				{
-					setMinSepSet(sepSet, j, k);
-					graph.removeEdge(j, k);
-				}
-				
-				// add new unshielded tuples to rTuples
-				for (Node thisNode: nodes)
-				{
-					List<Node> adjacentNodes = graph.getAdjacentNodes(thisNode);
-					if (independent1) // <i, ., j> 
-					{
-						if (adjacentNodes.contains(i) && adjacentNodes.contains(j))
-						{
-							Node[] newTuple  = {i, thisNode, j};  
-							rTuples.add(newTuple);
-						}
-					}
-					if (independent2) // <j, ., k> 
-					{
-						if (adjacentNodes.contains(j) && adjacentNodes.contains(k))
-						{
-							Node[] newTuple  = {j, thisNode, k};  
-							rTuples.add(newTuple);
-						}
-					}
-				}
-				
-				// remove tuples involving either (if independent1) <i, j> 
-				// or (if independent2) <j, k> from rTuples
-				Iterator<Node[]> iter = rTuples.iterator();
-				while (iter.hasNext())
-				{
-					Node[] curTuple = iter.next();
-					if ((independent1 && (curTuple[1] == i) &&
-							((curTuple[0] == j) || (curTuple[2] == j)))
-						|| 
-						(independent2 && (curTuple[1] == k) &&
-						 ((curTuple[0] == j) || (curTuple[2] == j)))
-						|| 
-						(independent1 && (curTuple[1] == j) &&
-						 ((curTuple[0] == i) || (curTuple[2] == i)))
-						|| 
-						(independent2 && (curTuple[1] == j) &&
-						 ((curTuple[0] == k) || (curTuple[2] == k))))
-					{
-						iter.remove();
-					}
-				}	
-				
-				// remove tuples involving either (if independent1) <i, j> 
-				// or (if independent2) <j, k> from lTuples
-				iter = lTuples.iterator();
-				while (iter.hasNext())
-				{
-					Node[] curTuple = iter.next();
-					if ((independent1 && (curTuple[1] == i) &&
-						 ((curTuple[0] == j) || (curTuple[2] == j)))
-						|| 
-						(independent2 && (curTuple[1] == k) &&
-						 ((curTuple[0] == j) || (curTuple[2] == j)))
-						|| 
-						(independent1 && (curTuple[1] == j) &&
-						 ((curTuple[0] == i) || (curTuple[2] == i)))
-						|| 
-						(independent2 && (curTuple[1] == j) &&
-						 ((curTuple[0] == k) || (curTuple[2] == k))))
-					{
-						iter.remove();
-					}
-				}	
-			}
+            sepSet.remove(j);
+
+            boolean independent1 = false;
+            if (knowledge.noEdgeRequired(i.getName(), j.getName()))  // if BK allows
+            {
+                try {
+                    independent1 = independenceTest.isIndependent(i, j, sepSet);
+                } catch (Exception e) {
+                    independent1 = false;
+                }
+            }
+
+            boolean independent2 = false;
+            if (knowledge.noEdgeRequired(j.getName(), k.getName()))  // if BK allows
+            {
+                try {
+                    independent2 = independenceTest.isIndependent(j, k, sepSet);
+                } catch (Exception e) {
+                    independent2 = false;
+                }
+            }
+
+            if (!independent1 && !independent2) {
+                lTuples.add(thisTuple);
+            } else {
+                // set sepSets to minimal separating sets
+                if (independent1) {
+                    setMinSepSet(sepSet, i, j);
+                    graph.removeEdge(i, j);
+                }
+                if (independent2) {
+                    setMinSepSet(sepSet, j, k);
+                    graph.removeEdge(j, k);
+                }
+
+                // add new unshielded tuples to rTuples
+                for (Node thisNode : nodes) {
+                    List<Node> adjacentNodes = graph.getAdjacentNodes(thisNode);
+                    if (independent1) // <i, ., j>
+                    {
+                        if (adjacentNodes.contains(i) && adjacentNodes.contains(j)) {
+                            Node[] newTuple = {i, thisNode, j};
+                            rTuples.add(newTuple);
+                        }
+                    }
+                    if (independent2) // <j, ., k>
+                    {
+                        if (adjacentNodes.contains(j) && adjacentNodes.contains(k)) {
+                            Node[] newTuple = {j, thisNode, k};
+                            rTuples.add(newTuple);
+                        }
+                    }
+                }
+
+                // remove tuples involving either (if independent1) <i, j>
+                // or (if independent2) <j, k> from rTuples
+                Iterator<Node[]> iter = rTuples.iterator();
+                while (iter.hasNext()) {
+                    Node[] curTuple = iter.next();
+                    if ((independent1 && (curTuple[1] == i) &&
+                            ((curTuple[0] == j) || (curTuple[2] == j)))
+                            ||
+                            (independent2 && (curTuple[1] == k) &&
+                                    ((curTuple[0] == j) || (curTuple[2] == j)))
+                            ||
+                            (independent1 && (curTuple[1] == j) &&
+                                    ((curTuple[0] == i) || (curTuple[2] == i)))
+                            ||
+                            (independent2 && (curTuple[1] == j) &&
+                                    ((curTuple[0] == k) || (curTuple[2] == k)))) {
+                        iter.remove();
+                    }
+                }
+
+                // remove tuples involving either (if independent1) <i, j>
+                // or (if independent2) <j, k> from lTuples
+                iter = lTuples.iterator();
+                while (iter.hasNext()) {
+                    Node[] curTuple = iter.next();
+                    if ((independent1 && (curTuple[1] == i) &&
+                            ((curTuple[0] == j) || (curTuple[2] == j)))
+                            ||
+                            (independent2 && (curTuple[1] == k) &&
+                                    ((curTuple[0] == j) || (curTuple[2] == j)))
+                            ||
+                            (independent1 && (curTuple[1] == j) &&
+                                    ((curTuple[0] == i) || (curTuple[2] == i)))
+                            ||
+                            (independent2 && (curTuple[1] == j) &&
+                                    ((curTuple[0] == k) || (curTuple[2] == k)))) {
+                        iter.remove();
+                    }
+                }
+            }
         }
-		
-		///////////////////////////////////////////////////////
-		// orient colliders (similar to original FCI ruleR0)
+
+        ///////////////////////////////////////////////////////
+        // orient colliders (similar to original FCI ruleR0)
         for (Node[] thisTuple : lTuples) {
             Node i = thisTuple[0];
             Node j = thisTuple[1];
@@ -525,53 +512,50 @@ public final class ProbFci implements GraphSearch {
                 graph.setEndpoint(k, j, Endpoint.ARROW);
             }
         }
-		
+
     }
 
-	////////////////////////////////////////////////
-	// collect in rTupleList all unshielded tuples
-	////////////////////////////////////////////////
-	private List<Node[]> getRTuples()
-	{
-		List<Node[]> rTuples = new ArrayList<Node[]>();
-		List<Node> nodes = graph.getNodes();
-		
-		for (Node j : nodes) {
-			List<Node> adjacentNodes = graph.getAdjacentNodes(j);
-			
-			if (adjacentNodes.size() < 2) {
-				continue;
-			}
-			
-			ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-			int[] combination;
-			
-			while ((combination = cg.next()) != null) {
-				Node i = adjacentNodes.get(combination[0]);
-				Node k = adjacentNodes.get(combination[1]);
-				
-				// Skip triples that are shielded.
-				if (!graph.isAdjacentTo(i, k))
-				{
-					Node[] newTuple  = {i, j, k};
-					rTuples.add(newTuple);
-				}
-				
-			}
-		}
-		
-		return(rTuples);
-	}
-	
-	/////////////////////////////////////////////////////////////////////////////
-	// set the sepSet of x and y to the minimal such subset of the given sepSet
-	// and remove the edge <x, y> if background knowledge allows
-	/////////////////////////////////////////////////////////////////////////////
-	private void setMinSepSet(List<Node> sepSet, Node x, Node y)
-	{
-		// It is assumed that BK has been considered before calling this method
-		// (for example, setting independent1 and independent2 in ruleR0_RFCI)
-		/* 
+    ////////////////////////////////////////////////
+    // collect in rTupleList all unshielded tuples
+    ////////////////////////////////////////////////
+    private List<Node[]> getRTuples() {
+        List<Node[]> rTuples = new ArrayList<Node[]>();
+        List<Node> nodes = graph.getNodes();
+
+        for (Node j : nodes) {
+            List<Node> adjacentNodes = graph.getAdjacentNodes(j);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node i = adjacentNodes.get(combination[0]);
+                Node k = adjacentNodes.get(combination[1]);
+
+                // Skip triples that are shielded.
+                if (!graph.isAdjacentTo(i, k)) {
+                    Node[] newTuple = {i, j, k};
+                    rTuples.add(newTuple);
+                }
+
+            }
+        }
+
+        return (rTuples);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    // set the sepSet of x and y to the minimal such subset of the given sepSet
+    // and remove the edge <x, y> if background knowledge allows
+    /////////////////////////////////////////////////////////////////////////////
+    private void setMinSepSet(List<Node> sepSet, Node x, Node y) {
+        // It is assumed that BK has been considered before calling this method
+        // (for example, setting independent1 and independent2 in ruleR0_RFCI)
+        /*
 		// background knowledge requires this edge
 		if (knowledge.noEdgeRequired(x.getName(), y.getName()))
 		{
@@ -580,94 +564,90 @@ public final class ProbFci implements GraphSearch {
 		 */
 
 
-		List<Node> empty = Collections.emptyList();
-		boolean indep;
-		
-		try {
-			indep = independenceTest.isIndependent(x, y, empty);
-		} catch (Exception e) {
-			indep = false;
-		}
-		
-		if (indep)
-		{
-			getSepsets().set(x, y, empty);
-			return;
-		}
-		
-		int sepSetSize = sepSet.size();
-		for (int i = 1; i <= sepSetSize; i++)
-		{
-			ChoiceGenerator cg = new ChoiceGenerator(sepSetSize, i);
-			int[] combination;
-			
-			while ((combination = cg.next()) != null) 
-			{
-				List<Node> condSet = GraphUtils.asList(combination, sepSet);
+        List<Node> empty = Collections.emptyList();
+        boolean indep;
 
-				try {
-					indep = independenceTest.isIndependent(x, y, condSet);
-				} catch (Exception e) {
-					indep = false;
-				}
-								
-				if (indep)
-				{
-					getSepsets().set(x, y, condSet);
-					return;
-				}
-			}
-		}
-	}
-	
+        try {
+            indep = independenceTest.isIndependent(x, y, empty);
+        } catch (Exception e) {
+            indep = false;
+        }
+
+        if (indep) {
+            getSepsets().set(x, y, empty);
+            return;
+        }
+
+        int sepSetSize = sepSet.size();
+        for (int i = 1; i <= sepSetSize; i++) {
+            ChoiceGenerator cg = new ChoiceGenerator(sepSetSize, i);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                List<Node> condSet = GraphUtils.asList(combination, sepSet);
+
+                try {
+                    indep = independenceTest.isIndependent(x, y, condSet);
+                } catch (Exception e) {
+                    indep = false;
+                }
+
+                if (indep) {
+                    getSepsets().set(x, y, condSet);
+                    return;
+                }
+            }
+        }
+    }
+
     //////////////////////////////////////////////////
     // Orients the graph according to rules for RFCI
     //////////////////////////////////////////////////
     private void doFinalOrientation_RFCI() {
-		
+
         // This loop handles Zhang's rules R1-R3 (same as in the original FCI)
         changeFlag = true;
-		
+
         while (changeFlag) {
             changeFlag = false;
             rulesR1R2cycle();
             ruleR3();
-			ruleR4();   // some changes to the original R4 inline
+            ruleR4();   // some changes to the original R4 inline
         }
 
-		// For RFCI always executes R5-10
-		
+        // For RFCI always executes R5-10
+
         // if (isCompleteRuleSetUsed()) {
-            // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
-            // R5 once.
-            ruleR5();
-			
-            // Now, by a further remark on page 102, we apply R6,R7 as many times
-            // as possible.
-            changeFlag = true;
-			
-            while (changeFlag) {
-                changeFlag = false;
-                ruleR6R7();
-            }
+        // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
+        // R5 once.
+        ruleR5();
+
+        // Now, by a further remark on page 102, we apply R6,R7 as many times
+        // as possible.
+        changeFlag = true;
+
+        while (changeFlag) {
+            changeFlag = false;
+            ruleR6R7();
+        }
 
         // Finally, we apply R8-R10 as many times as possible.
-            changeFlag = true;
-			
-            while (changeFlag) {
-                changeFlag = false;
-                rulesR8R9R10();
-            }
+        changeFlag = true;
+
+        while (changeFlag) {
+            changeFlag = false;
+            rulesR8R9R10();
+        }
         //}
     }
-		
-	
+
+
     ///////////////////////////////////////////////////////////////////////////////////
 
-	
+
     /**
      * Orients the graph according to rules in the graph (FCI step D).
-     * <p/>
+     * <p>
      * Zhang's step F4, rules R1-R10.
      */
     private void doFinalOrientation() {
@@ -857,7 +837,7 @@ public final class ProbFci implements GraphSearch {
     /**
      * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, then
      * D*->B.
-     * <p/>
+     * <p>
      * This is Zhang's rule R3.
      */
     private void ruleR3() {
@@ -919,7 +899,7 @@ public final class ProbFci implements GraphSearch {
      *       v    v
      * L....A --> C
      * </pre>
-     * <p/>
+     * <p>
      * This is Zhang's rule R4, discriminating undirectedPaths.
      */
     private void ruleR4() {
@@ -942,13 +922,12 @@ public final class ProbFci implements GraphSearch {
                     reachable.add(a);
                     reachablePathFind(a, b, c, reachable);
 
-					// process only one disciminating path per execution of this method
-					// because edges might have been removed and nodes in possA and possC 
-					// might not be adjacent to b anymore
-					if (RFCI_Used && changeFlag)   
-					{
-						return;
-					}
+                    // process only one disciminating path per execution of this method
+                    // because edges might have been removed and nodes in possA and possC
+                    // might not be adjacent to b anymore
+                    if (RFCI_Used && changeFlag) {
+                        return;
+                    }
                 }
             }
         }
@@ -962,13 +941,13 @@ public final class ProbFci implements GraphSearch {
     private void reachablePathFind(Node a, Node b, Node c,
                                    LinkedList<Node> reachable) {
 
-		Map<Node, Node> next = new HashMap<Node, Node>();   // RFCI: stores the next node in the disciminating path
-		// path containing the nodes in the traiangle
-		next.put(a, b);  
-		next.put(b, c);
-		
-		Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
-		
+        Map<Node, Node> next = new HashMap<Node, Node>();   // RFCI: stores the next node in the disciminating path
+        // path containing the nodes in the traiangle
+        next.put(a, b);
+        next.put(b, c);
+
+        Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
+
         // Needed to avoid cycles in failure case.
         Set<Node> visited = new HashSet<Node>();
         visited.add(b);
@@ -980,7 +959,7 @@ public final class ProbFci implements GraphSearch {
         while (reachable.size() > 0) {
             Node x = reachable.removeFirst();
             visited.add(x);
-			
+
             // Possible DDP path endpoints.
             List<Node> pathExtensions = graph.getNodesInTo(x, Endpoint.ARROW);
             pathExtensions.removeAll(visited);
@@ -990,27 +969,25 @@ public final class ProbFci implements GraphSearch {
                 // endpoint, so do DDP orientation. Otherwise, if d <-> c,
                 // add d to the list of reachable nodes.
                 if (!graph.isAdjacentTo(d, c)) {
-					if (RFCI_Used) // RFCI
-					{
-						next.put(d, x);
-						doDdpOrientation_RFCI(d, a, b, c, next);
-					}
-					else  // non-RFCI 
-					{
-						// Check whether <a, b, c> should be reoriented given
-						// that d is not adjacent to c; if so, orient and stop.
-						doDdpOrientation(d, a, b, c);
-					}
-					return;
+                    if (RFCI_Used) // RFCI
+                    {
+                        next.put(d, x);
+                        doDdpOrientation_RFCI(d, a, b, c, next);
+                    } else  // non-RFCI
+                    {
+                        // Check whether <a, b, c> should be reoriented given
+                        // that d is not adjacent to c; if so, orient and stop.
+                        doDdpOrientation(d, a, b, c);
+                    }
+                    return;
                 } else if (cParents.contains(d)) {
                     if (graph.getEndpoint(x, d) == Endpoint.ARROW) {
                         reachable.add(d);
 
-						// RFCI: only record the next node of the first (shortest) occurence
-						if (next.get(d) == null)  
-						{
-							next.put(d, x);  // next node of d is x in the shortest path from a
-						}
+                        // RFCI: only record the next node of the first (shortest) occurence
+                        if (next.get(d) == null) {
+                            next.put(d, x);  // next node of d is x in the shortest path from a
+                        }
                     }
                 }
             }
@@ -1053,108 +1030,101 @@ public final class ProbFci implements GraphSearch {
 
     /////////////////////////////////////////////////////////////////////////
     // Orients the edges inside the definte discriminating path triangle. 
-	// Arguments: the left endpoint (i), the last three points (l, j, k), 
-	// and the hashMap (next) which contains the next nodes of the path
+    // Arguments: the left endpoint (i), the last three points (l, j, k),
+    // and the hashMap (next) which contains the next nodes of the path
     /////////////////////////////////////////////////////////////////////////
-    private void doDdpOrientation_RFCI(Node i, Node l, Node j, Node k, 
-									   Map<Node, Node> next) 
-	{
+    private void doDdpOrientation_RFCI(Node i, Node l, Node j, Node k,
+                                       Map<Node, Node> next) {
         List<Node> nodes = graph.getNodes();
 
-		List<Node> sepset = this.sepsets.get(i, k);
+        List<Node> sepset = this.sepsets.get(i, k);
 
         if (sepset == null) return;
-		
+
 //        if (sepset == null) {
 //            throw new IllegalArgumentException("The edge from i to k needs to have " +
 //											   "been removed at this point.");
 //        }
-		
-		Node r = i;  // first node on the path
-		
-		while (r != k)  
-		{
-			Node q = next.get(r);  // next node on the path after r
-			
-			if (knowledge.noEdgeRequired(r.getName(), q.getName()))  // if BK allows
-			{
+
+        Node r = i;  // first node on the path
+
+        while (r != k) {
+            Node q = next.get(r);  // next node on the path after r
+
+            if (knowledge.noEdgeRequired(r.getName(), q.getName()))  // if BK allows
+            {
                 List<Node> sepset1 = this.sepsets.get(i, k);
 
                 if (sepset1 == null) continue;
 
                 List<Node> sepSet2 = new ArrayList<Node>(sepset1);
-				sepSet2.remove(r);
-				sepSet2.remove(q);
-				
-				for (int setSize = 0; setSize <= sepSet2.size() ; setSize++)
-				{
-					ChoiceGenerator cg = new ChoiceGenerator(sepSet2.size(), setSize);
-					int[] combination;
-					
-					while ((combination = cg.next()) != null) 
-					{
-						List<Node> condSet = GraphUtils.asList(combination, sepSet2);
-						
-						boolean indep;
-						try {
-							indep = independenceTest.isIndependent(r, q, condSet);
-						} catch (Exception e) {
-							indep = false;
-						}
-						
-						if (indep)
-						{
-							getSepsets().set(r, q, condSet);
+                sepSet2.remove(r);
+                sepSet2.remove(q);
 
-							// add new unshielded tuples to rTuples
-							List<Node[]> rTuples = new ArrayList<Node[]>();
-							for (Node thisNode: nodes)
-							{
-								List<Node> adjacentNodes = graph.getAdjacentNodes(thisNode);
-								if (adjacentNodes.contains(r) && adjacentNodes.contains(q))
-								{
-									Node[] newTuple  = {r, thisNode, q};  
-									rTuples.add(newTuple);
-								}
-								
-							}
-							
-							graph.removeEdge(r, q);
-							changeFlag = true;
-							
-							ruleR0_RFCI(rTuples);   // Algorithm 4.4 (Colombo et al, 2012)
-							
-							return;
-						}
-						
-					}	
-				}
-			}
-			
-			r = q;
-			
-		}
-		
-		// similar to original rule R4 orientation of the triangle
+                for (int setSize = 0; setSize <= sepSet2.size(); setSize++) {
+                    ChoiceGenerator cg = new ChoiceGenerator(sepSet2.size(), setSize);
+                    int[] combination;
+
+                    while ((combination = cg.next()) != null) {
+                        List<Node> condSet = GraphUtils.asList(combination, sepSet2);
+
+                        boolean indep;
+                        try {
+                            indep = independenceTest.isIndependent(r, q, condSet);
+                        } catch (Exception e) {
+                            indep = false;
+                        }
+
+                        if (indep) {
+                            getSepsets().set(r, q, condSet);
+
+                            // add new unshielded tuples to rTuples
+                            List<Node[]> rTuples = new ArrayList<Node[]>();
+                            for (Node thisNode : nodes) {
+                                List<Node> adjacentNodes = graph.getAdjacentNodes(thisNode);
+                                if (adjacentNodes.contains(r) && adjacentNodes.contains(q)) {
+                                    Node[] newTuple = {r, thisNode, q};
+                                    rTuples.add(newTuple);
+                                }
+
+                            }
+
+                            graph.removeEdge(r, q);
+                            changeFlag = true;
+
+                            ruleR0_RFCI(rTuples);   // Algorithm 4.4 (Colombo et al, 2012)
+
+                            return;
+                        }
+
+                    }
+                }
+            }
+
+            r = q;
+
+        }
+
+        // similar to original rule R4 orientation of the triangle
         if (sepset.contains(j)) {
-			//            System.out.println("DDP orientation: " + c + " *-- " + b);
-			
+            //            System.out.println("DDP orientation: " + c + " *-- " + b);
+
             if (!isArrowpointAllowed(j, k)) {
                 return;
             }
 
             graph.setEndpoint(j, k, Endpoint.ARROW);
-			graph.setEndpoint(k, j, Endpoint.TAIL);
-			
+            graph.setEndpoint(k, j, Endpoint.TAIL);
+
             //logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             changeFlag = true;
         } else {
 
-            if (!isArrowpointAllowed(l, j) || !isArrowpointAllowed(j, l) 
-				|| !isArrowpointAllowed(j, k) || !isArrowpointAllowed(k, j)) {
+            if (!isArrowpointAllowed(l, j) || !isArrowpointAllowed(j, l)
+                    || !isArrowpointAllowed(j, k) || !isArrowpointAllowed(k, j)) {
                 return;
             }
-						
+
             graph.setEndpoint(l, j, Endpoint.ARROW);
             graph.setEndpoint(j, l, Endpoint.ARROW);
             graph.setEndpoint(j, k, Endpoint.ARROW);
@@ -1164,7 +1134,7 @@ public final class ProbFci implements GraphSearch {
         }
 
     }
-	
+
     /**
      * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u =
      * <A,C,...,D,B> such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
@@ -1283,7 +1253,7 @@ public final class ProbFci implements GraphSearch {
 
     /**
      * Orients every edge on a path as undirected (i.e. A---B).
-     * <p/>
+     * <p>
      * DOES NOT CHECK IF SUCH EDGES ACTUALLY EXIST: MAY DO WEIRD THINGS IF PASSED AN ARBITRARY LIST OF NODES THAT IS NOT
      * A PATH.
      *
@@ -1306,7 +1276,7 @@ public final class ProbFci implements GraphSearch {
 
     /**
      * Gets a list of every uncovered partially directed path between two nodes in the graph.
-     * <p/>
+     * <p>
      * Probably extremely slow.
      *
      * @param n1 The beginning node of the undirectedPaths.
@@ -1329,9 +1299,9 @@ public final class ProbFci implements GraphSearch {
 
     /**
      * Used in getUcPdPaths(n1,n2) to perform a breadth-first search on the graph.
-     * <p/>
+     * <p>
      * ASSUMES soFar CONTAINS AT LEAST ONE NODE!
-     * <p/>
+     * <p>
      * Probably extremely slow.
      *
      * @param curr      The getModel node to test for addition.
@@ -1374,7 +1344,7 @@ public final class ProbFci implements GraphSearch {
     /**
      * Gets a list of every uncovered circle path between two nodes in the graph by iterating through the uncovered
      * partially directed undirectedPaths and only keeping the circle undirectedPaths.
-     * <p/>
+     * <p>
      * Probably extremely slow.
      *
      * @param n1 The beginning node of the undirectedPaths.
@@ -1406,9 +1376,9 @@ public final class ProbFci implements GraphSearch {
 
     /**
      * Tries to apply Zhang's rule R8 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p/>
+     * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p/>
+     * <p>
      * R8: If Ao->C and A-->B-->C or A--oB-->C, then A-->C.
      *
      * @param a The node A.
@@ -1443,9 +1413,9 @@ public final class ProbFci implements GraphSearch {
 
     /**
      * Tries to apply Zhang's rule R9 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p/>
+     * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p/>
+     * <p>
      * R9: If Ao->C and there is an uncovered p.d. path u=<A,B,..,C> such that C,B nonadjacent, then A-->C.
      *
      * @param a The node A.
@@ -1473,9 +1443,9 @@ public final class ProbFci implements GraphSearch {
 
     /**
      * Tries to apply Zhang's rule R10 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p/>
+     * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p/>
+     * <p>
      * R10: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B> and an uncovered p.d. path
      * u2=<A,N,...,D> with M != N and M,N nonadjacent then A-->C.
      *
@@ -1530,7 +1500,7 @@ public final class ProbFci implements GraphSearch {
         logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it =
-                bk.forbiddenEdgesIterator(); it.hasNext();) {
+             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -1554,7 +1524,7 @@ public final class ProbFci implements GraphSearch {
         }
 
         for (Iterator<KnowledgeEdge> it =
-                bk.requiredEdgesIterator(); it.hasNext();) {
+             bk.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph

@@ -173,8 +173,7 @@ public class IndTestDSep implements IndependenceTest {
             }
 
             pvalue = 1.0;
-        }
-        else {
+        } else {
             pvalue = 0.0;
         }
 

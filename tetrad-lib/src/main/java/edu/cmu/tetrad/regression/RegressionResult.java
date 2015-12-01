@@ -36,7 +36,7 @@ import java.text.NumberFormat;
  * @author Joseph Ramsey
  */
 public class RegressionResult implements TetradSerializable {
-    static final long serialVersionUID = 23L;    
+    static final long serialVersionUID = 23L;
 
     /**
      * True iff this model assumes a zero intercept.
@@ -125,28 +125,28 @@ public class RegressionResult implements TetradSerializable {
      *                             doing the regression, in which case this
      *                             coefficient is provided; otherwise, not.
      * @param regressorNames       The list of regressor variable names, in
- *                             order.
+     *                             order.
      * @param n                    The sample size.
      * @param b                    The list of coefficients, in order. If a zero
-*                             intercept was not assumed, this list begins
-*                             with the intercept.
+     *                             intercept was not assumed, this list begins
+     *                             with the intercept.
      * @param t                    The list of t-statistics for the
-*                             coefficients, in order. If a zero intercept
-*                             was not assumed, this list begins with the t
-*                             statistic for the intercept.
+     *                             coefficients, in order. If a zero intercept
+     *                             was not assumed, this list begins with the t
+     *                             statistic for the intercept.
      * @param p                    The p-values for the coefficients, in order.
-*                             If a zero intercept was not assumed, this
-*                             list begins with the p value for the
-*                             intercept.
+     *                             If a zero intercept was not assumed, this
+     *                             list begins with the p value for the
+     *                             intercept.
      * @param se                   The standard errors for the coefficients, in
-*                             order. If a zero intercept was not assumed,
-*                             this list begins with the standard error of
-*                             the intercept.
+     *                             order. If a zero intercept was not assumed,
+     *                             this list begins with the standard error of
+     *                             the intercept.
      * @param r2                   The R squared statistic for the regression.
      * @param rss                  The residual sum of squares of the
-*                             regression.
+     *                             regression.
      * @param alpha                The alpha value for the regression,
-*                             determining which regressors are taken to be
+     *                             determining which regressors are taken to be
      * @param yHat
      * @param res
      */

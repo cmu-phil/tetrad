@@ -30,16 +30,16 @@ import java.util.Set;
  * **************************************************************************
  *
  * @author: Trevor Burns
- * <p/>
+ * <p>
  * Provides a static method which implements a correct version of Reiter's hitting set algorithm as described by
  * Greiner, Smith, and Wilkerson in "A Correction to the Algorithm in Reiter's Theory of Diagnosis" Artificial
  * Intellegence 41 (1989) (see for detailed specification). However, this is not a general implementation, it is
  * tailored for use in the ION search by dealing with GraphChange objects instead of something more general.
- * <p/>
+ * <p>
  * Varies mainly in that no explicit DAG is constructed, it is only implied by the structure of the calls. This is
  * because this implementation is concerned solely with finding the hitting sets and once a node is processed its
  * information is never again accessed if one stores the necessary path of edge labels in newly constructed nodes.
- * <p/>
+ * <p>
  * There is one exception to the above claim. If one follows the revised algorithm strictly, in Enhancement Step 3 one
  * does need information from previous levels. The author decided this step was easier to code if one precomputes
  * instead of doing it on the fly, so this exception is inconsiquential.

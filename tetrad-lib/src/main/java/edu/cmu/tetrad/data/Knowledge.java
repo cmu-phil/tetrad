@@ -73,7 +73,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 
     /**
      * This is the set of edges explicitly required by the user
-     * <p/>
+     * <p>
      * Note: Should really be called "explicitlyRequiredEdges" (can't change though).
      *
      * @serial
@@ -268,8 +268,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
 
 
     /**
-     * @return an unmodifiable list of all the knowledge groups.
-     *
      * @return - all the knowledge groups.
      */
     public List<KnowledgeGroup> getKnowledgeGroups() {
@@ -404,8 +402,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * @return (a copy of) the given tier.
-     *
      * @param tier the index of the desired tier.
      * @return a copy of this tier.
      */
@@ -603,7 +599,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         buf.append("\n\nforbiddirect");
 
         for (Iterator<KnowledgeEdge> i =
-                     knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
+             knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
             KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();
@@ -618,7 +614,7 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         buf.append("\n\nrequiredirect");
 
         for (Iterator<KnowledgeEdge> i =
-                     knowledge.requiredEdgesIterator(); i.hasNext(); ) {
+             knowledge.requiredEdgesIterator(); i.hasNext(); ) {
             KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();

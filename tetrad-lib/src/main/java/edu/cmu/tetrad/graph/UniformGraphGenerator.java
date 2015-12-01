@@ -210,8 +210,7 @@ public final class UniformGraphGenerator {
             throw new IllegalArgumentException("Max indegree must be >= 1 " +
                     "when generating DAGs without the assumption of " +
                     "connectedness.");
-        }
-        else if (CONNECTED_DAG == getStructure() && getMaxInDegree() < 2) {
+        } else if (CONNECTED_DAG == getStructure() && getMaxInDegree() < 2) {
             throw new IllegalArgumentException("Max indegree must be >= 2 " +
                     "when generating DAGs under the assumption of " +
                     "connectedness.");
@@ -279,11 +278,9 @@ public final class UniformGraphGenerator {
     public void generate() {
         if (ANY_DAG == getStructure()) {
             generateArbitraryDag();
-        }
-        else if (CONNECTED_DAG == getStructure()) {
+        } else if (CONNECTED_DAG == getStructure()) {
             generateConnectedDag();
-        }
-        else {
+        } else {
             throw new IllegalStateException("Unknown structure type.");
         }
     }
@@ -314,7 +311,7 @@ public final class UniformGraphGenerator {
             throw new IllegalArgumentException("Only " + nodes.size() + " nodes were provided, but the " +
                     "simulated graph has " + getNumNodes() + ".");
         }
-        
+
         Graph dag = new EdgeListGraph(nodes);
 
         for (int i = 0; i < getNumNodes(); i++) {
@@ -384,8 +381,7 @@ public final class UniformGraphGenerator {
             if (edgeExists()) {
                 removeEdge();
                 numEdges--;
-            }
-            else {
+            } else {
                 if ((numEdges < getMaxEdges() && maxDegreeNotExceeded() &&
                         maxIndegreeNotExceeded() && maxOutdegreeNotExceeded() &&
                         isAcyclic())) {
@@ -435,18 +431,15 @@ public final class UniformGraphGenerator {
                             maxIndegreeNotExceeded() &&
                             maxOutdegreeNotExceeded() && isAcyclic()) {
                         addEdge();
-                    }
-                    else {
+                    } else {
                         reverseDirection();
                         addEdge();
                     }
-                }
-                else {
+                } else {
                     removeEdge();
                     totalEdges--;
                 }
-            }
-            else {
+            } else {
                 if (totalEdges < getMaxEdges() && maxDegreeNotExceeded() &&
                         maxIndegreeNotExceeded() && maxOutdegreeNotExceeded() &&
                         isAcyclic()) {
@@ -582,8 +575,7 @@ public final class UniformGraphGenerator {
                     if (parentMatrix[currentNode][i] != randomChild) {
                         list[lastIndex] = parentMatrix[currentNode][i];
                         lastIndex++;
-                    }
-                    else {
+                    } else {
                         noCycle = false;
                     }
                     visited[parentMatrix[currentNode][i]] = true;
@@ -656,8 +648,7 @@ public final class UniformGraphGenerator {
         int rest = rand - randomParent * (getNumNodes() - 1);
         if (rest >= randomParent) {
             randomChild = rest + 1;
-        }
-        else {
+        } else {
             randomChild = rest;
         }
     }
@@ -684,15 +675,13 @@ public final class UniformGraphGenerator {
                 (childMatrix[randomParent][0] != 1)) {
             lastNode =
                     parentMatrix[randomChild][parentMatrix[randomChild][0] - 1];
-            for (int i = (parentMatrix[randomChild][0] - 1); (i > 0 && go); i--)
-            { // remove element from parentMatrix
+            for (int i = (parentMatrix[randomChild][0] - 1); (i > 0 && go); i--) { // remove element from parentMatrix
                 atualNode = parentMatrix[randomChild][i];
                 if (atualNode != randomParent) {
                     proxNode = atualNode;
                     parentMatrix[randomChild][i] = lastNode;
                     lastNode = proxNode;
-                }
-                else {
+                } else {
                     parentMatrix[randomChild][i] = lastNode;
                     go = false;
                 }
@@ -709,8 +698,7 @@ public final class UniformGraphGenerator {
                         proxNode = atualNode;
                         childMatrix[randomParent][i] = lastNode;
                         lastNode = proxNode;
-                    }
-                    else {
+                    } else {
                         childMatrix[randomParent][i] = lastNode;
                         go = false;
                     }

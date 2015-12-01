@@ -40,7 +40,7 @@ import static java.lang.Math.*;
 public final class IndTestFisherZFisherPValue implements IndependenceTest {
     private final List<Node> variables;
     private final int sampleSize;
-        private List<DataSet> dataSets;
+    private List<DataSet> dataSets;
     private double alpha;
     private double pValue = Double.NaN;
     private int[] rows;

@@ -49,9 +49,6 @@ public class TemplateExpander {
     }
 
     /**
-     * @return the expanded template, which needs to be checked to make sure it can be used. Try setting it as the
-     * expression for the node or freeParameters you wish to use it for.
-     *
      * @param template A template formula, which includes the functions TSUM and TPROD, which are not nestable,
      *                 and NEW. TSUM(f($)) = f(X1) + f(X2) + .... TPROD(f($)) = f(X1) * f(X2) * .... NEW(a) = a new parameter with
      *                 name beginning with a, such as a3, if a1 and a2 have already been used.
@@ -251,9 +248,7 @@ public class TemplateExpander {
 
         if (error != null) {
             return formula.replaceAll("ERROR", error.getName());
-        }
-
-        else return formula;
+        } else return formula;
     }
 
     private String removeOperatorStrings(String formula) {

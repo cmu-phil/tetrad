@@ -98,7 +98,6 @@ public final class IndTestMulti implements IndependenceTest {
         boolean independent = ResolveSepsets.isIndependentPooled(method, independenceTests, x, y, z);
 
 
-
         if (independent) {
             TetradLogger.getInstance().log("independencies", "In aggregate independent: " + SearchLogUtils.independenceFact(x, y, z));
         } else {

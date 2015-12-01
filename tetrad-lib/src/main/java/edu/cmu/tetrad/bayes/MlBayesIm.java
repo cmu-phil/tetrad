@@ -21,17 +21,13 @@
 
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.io.IOException;
@@ -39,9 +35,7 @@ import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.log;
-import static java.lang.Math.pow;
+import static java.lang.Math.*;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm

@@ -35,6 +35,7 @@ public class LongDataBox implements DataBox {
 
     /**
      * Constructs an 2D long array consisting entirely of missing values (-99).
+     *
      * @param rows
      * @param cols
      */
@@ -105,8 +106,7 @@ public class LongDataBox implements DataBox {
 
         if (datum == -99L) {
             return null;
-        }
-        else {
+        } else {
             return datum;
         }
     }

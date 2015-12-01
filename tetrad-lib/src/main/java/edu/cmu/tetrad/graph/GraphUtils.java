@@ -923,7 +923,10 @@ public final class GraphUtils {
         for (int i = 0; i < numLatentConfounders; i++) {
             Node n1 = measures.get(RandomUtil.getInstance().nextInt(measures.size()));
             Node n2 = measures.get(RandomUtil.getInstance().nextInt(measures.size()));
-            if (n1 == n2) {i--; continue;}
+            if (n1 == n2) {
+                i--;
+                continue;
+            }
 
             List<Node> parents1 = graph.getParents(n1);
             parents1.removeAll(latents);
@@ -944,8 +947,10 @@ public final class GraphUtils {
         int index = 0;
 
         while (index++ < numLatentConfounders) {
-            if (commonCausesAndEffects.size() == 0)
-            { index--; break;}
+            if (commonCausesAndEffects.size() == 0) {
+                index--;
+                break;
+            }
             int i = RandomUtil.getInstance().nextInt(commonCausesAndEffects.size());
             Node node = commonCausesAndEffects.get(i);
             node.setNodeType(NodeType.LATENT);
@@ -955,10 +960,10 @@ public final class GraphUtils {
         List<Node> nodes = graph.getNodes();
         while (index++ < numLatentConfounders) {
             int r = RandomUtil.getInstance().nextInt(nodes.size());
-            if (nodes.get(r).getNodeType() == NodeType.LATENT){
-                index--; continue;
-            }
-            else {
+            if (nodes.get(r).getNodeType() == NodeType.LATENT) {
+                index--;
+                continue;
+            } else {
                 nodes.get(r).setNodeType(NodeType.LATENT);
             }
         }
@@ -978,10 +983,9 @@ public final class GraphUtils {
 
             if (children.size() >= 2) {
                 commonCausesAndEffects.add(node);
-            }
-            else {
+            } else {
                 List<Node> parents = dag.getParents(node);
-                if(parents.size() >= 2 && children.size() >= 1){
+                if (parents.size() >= 2 && children.size() >= 1) {
                     commonCausesAndEffects.add(node);
                 }
             }
@@ -1674,9 +1678,6 @@ public final class GraphUtils {
     }
 
     /**
-     * @return the first directed cycle encountered, or null if none is
-     * encountered.
-     *
      * @param graph The graph in which a directed cycle is sought.
      * @return the first directed cycle encountered in <code>graph</code>.
      */
@@ -1693,9 +1694,6 @@ public final class GraphUtils {
     }
 
     /**
-     * @return the first directed path encountered from <code>node1</code>
-     * to <code>node2</code>, or null if no such path is found.
-     *
      * @param graph The graph in which a directed path is sought.
      * @param node1 The 'from' node.
      * @param node2 The 'to'node.
@@ -2269,8 +2267,6 @@ public final class GraphUtils {
     }
 
     /**
-     * @return the edges that are in <code>graph1</code> but not in <code>graph2</code>.
-     *
      * @param graph1 An arbitrary graph.
      * @param graph2 Another arbitrary graph with the same number of nodes
      *               and node names.
@@ -2319,8 +2315,6 @@ public final class GraphUtils {
     }
 
     /**
-     * @return the edges up to endpoints that are in graph1 but not in graph2.
-     *
      * @param graph1 An arbitrary graph.
      * @param graph2 Another arbitrary graph with the same number of nodes
      *               and node names.
@@ -3709,16 +3703,6 @@ public final class GraphUtils {
     }
 
     /**
-     * @return a matrix suitable for reading into R--e.g.
-     * <pre>
-     *   V1 V2 V3 V4 V5
-     * 1  0  1  0  0 -1
-     * 2 -1  0 -1 -1 -1
-     * 3  0  1  0 -1  0
-     * 4  0  1  1  0  0
-     * 5  1  1  0  0  0
-     * </pre>
-     *
      * @param graph
      * @return
      */
@@ -4211,11 +4195,9 @@ public final class GraphUtils {
             for (Graph graph : directedGraphs2) {
                 if (graph.containsEdge(edge)) {
                     count++;
-                }
-                else if (uncontradicted(edge, graph.getEdge(edge.getNode1(), edge.getNode2()))) {
+                } else if (uncontradicted(edge, graph.getEdge(edge.getNode1(), edge.getNode2()))) {
                     count2++;
-                }
-                else if (!contradicted.contains(edge) && !contradicted.contains(edge.reverse())) {
+                } else if (!contradicted.contains(edge) && !contradicted.contains(edge.reverse())) {
                     contradicted.add(edge);
                 }
             }

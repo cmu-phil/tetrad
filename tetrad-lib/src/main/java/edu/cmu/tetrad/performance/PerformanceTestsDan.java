@@ -250,6 +250,7 @@ public class PerformanceTestsDan {
 
         out.println();
     }
+
     public static void main(String... args) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
         System.out.println("Start ");

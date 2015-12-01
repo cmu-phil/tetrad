@@ -45,25 +45,25 @@ import java.util.*;
  * consider making a copy of it first, using the TetradMatrix copy() method.
  * <p/>                                                            n
  * The tetradMatrix set may be given a name; this name is not used internally.
- * <p/>
+ * <p>
  * The tetradMatrix set has a list of variables associated with it, as described above.
  * This list is coordinated with the stored tetradMatrix, in that tetradMatrix for the i'th
  * variable will be in the i'th column.
- * <p/>
+ * <p>
  * A subset of variables in the tetradMatrix set may be designated as selected. This
  * selection set is stored with the tetradMatrix set and may be manipulated using the
  * <code>select</code> and <code>deselect</code> methods.
- * <p/>
+ * <p>
  * A multiplicity m_i may be associated with each case c_i in the dataset, which
  * is interpreted to mean that that c_i occurs m_i times in the dataset.
- * <p/>
+ * <p>
  * Knowledge may be associated with the tetradMatrix set, using the
  * <code>setKnowledge</code> method. This knowledge is not used internally to
  * the tetradMatrix set, but it may be retrieved by algorithms and used.
- * <p/>
+ * <p>
  * This tetradMatrix set replaces an earlier Minitab-style DataSet class. The reasons
  * for replacement are as follows.
- * <p/>
+ * <p>
  * <ul> <li>COLT marices are optimized for double 2D matrix calculations in ways
  * that Java-style double[][] matrices are not. <li>The COLT library comes with
  * a wide range of linear algebra library methods that are better tested and
@@ -479,13 +479,12 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     }
 
     /**
+     * @param row The index of the case.
+     * @param col The index of the variable.
      * @return the value at the given row and column as an Object. The type
      * returned is deliberately vague, allowing for variables of any type.
      * Primitives will be returned as corresponding wrapping objects (for
      * example, doubles as Doubles).
-     *
-     * @param row The index of the case.
-     * @param col The index of the variable.
      */
     public final Object getObject(int row, int col) {
         Object variable = getVariable(col);
@@ -507,13 +506,12 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     }
 
     /**
+     * @param row The index of the case.
+     * @param col The index of the variable.
      * @return the value at the given row and column as an Object. The type
      * returned is deliberately vague, allowing for variables of any type.
      * Primitives will be returned as corresponding wrapping objects (for
      * example, doubles as Doubles).
-     *
-     * @param row The index of the case.
-     * @param col The index of the variable.
      */
     public final void setObject(int row, int col, Object value) {
         Object variable = getVariable(col);
@@ -1030,7 +1028,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         return cov;
 
 
-
 //        return Statistic.correlation(Statistic.covariance(tetradMatrix));
     }
 
@@ -1102,10 +1099,9 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * separated by '\n', tokens in the line by whatever character is set in the
      * <code>setOutputDelimiter()<code> method. The list of variables is printed
      * first, followed by one line for each case.
-     * <p/>
+     * <p>
      * This method should probably not be used for saving to files. If that's
      * your goal, use the DataSavers class instead.
-     *
      * @see #setOutputDelimiter(Character)
      * @see DataWriter
      */
@@ -1192,12 +1188,11 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * will be represented by ints cast to doubles. Rows in this matrix are
      * cases, and columns are variables. The list of variable, in the order in
      * which they occur in the matrix, is given by getVariables().
-     * <p/>
+     * <p>
      * If isMultipliersCollapsed() returns false, multipliers in the dataset are
      * first expanded before returning the matrix, so the number of rows in the
      * returned matrix may not be the same as the number of rows in this
      * dataset.
-     *
      * @throws IllegalStateException if this is not a continuous tetradMatrix set.
      * @see #getVariables
      * @see #isMulipliersCollapsed()
@@ -1453,7 +1448,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     /**
      * @return true iff this variable is set to accomodate new categories
      * encountered.
-     *
      * @deprecated This is set in DiscreteVariable now.
      */
     public boolean isNewCategoriesAccommodated() {
@@ -1771,7 +1765,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * @return the number format, which by default is the one at
      * <code>NumberFormatUtil.getInstance().getNumberFormat()</code>, but can be
      * set by the user if desired.
-     *
      * @see #setNumberFormat(java.text.NumberFormat)
      */
     public NumberFormat getNumberFormat() {

@@ -24,7 +24,7 @@ package edu.cmu.tetrad.graph;
 /**
  * I couldn't find a mechanism in place to manage algorithms that return
  * potentially more than 1 graph. As such, this interface helps with that.
- *
+ * <p>
  * Created by IntelliJ IDEA.
  * User: Mark Whitehouse
  * Date: Nov 28, 2008
@@ -34,27 +34,25 @@ package edu.cmu.tetrad.graph;
 
 public interface GraphGroup {
 
-	/**
-	 * @return the number of graphs that the class is storing
-	 *
-	 * @return int
-	 */
-	public int getNumGraphs();
+    /**
+     * @return int
+     */
+    public int getNumGraphs();
 
-	/**
-	 * Gets a graph at a specific index
-	 *
-	 * @param g		The index of the graph to return
-	 * @return Graph
-	 */
-	public Graph getGraph(int g);
+    /**
+     * Gets a graph at a specific index
+     *
+     * @param g The index of the graph to return
+     * @return Graph
+     */
+    public Graph getGraph(int g);
 
-	/**
-	 * Adds a graph to the class.
-	 *
-	 * @param g		The graph to add to the class.
-	 */
-	public void addGraph(Graph g);
+    /**
+     * Adds a graph to the class.
+     *
+     * @param g The graph to add to the class.
+     */
+    public void addGraph(Graph g);
 
 }
 

@@ -111,7 +111,8 @@ public class DagInPatternIterator {
      * them in which an arbitrary undirected edge is picked, oriented one way, Meek rules applied, then a remaining
      * unoriented edge is picked, oriented one way, and so on, until a DAG is obtained, and then by backtracking the
      * other orientation of each chosen edge is tried. Nonrecursive, obviously.
-     * <p/>
+     * <p>
+     *
      * @return a Graph instead of a DAG because sometimes, due to faulty patterns, a cyclic graph is produced, and the
      * end-user may need to decide what to do with it. The simplest thing is to construct a DAG (Dag(graph)) and catch
      * an exception.

@@ -135,7 +135,7 @@ public class SemBicScore implements GesScore {
         final double covXX = getCovariances().getValue(parent, parent);
 
         if (covXX == 0) {
-            if (isVerbose()){
+            if (isVerbose()) {
                 out.println("Dividing by zero");
             }
             return Double.NaN;

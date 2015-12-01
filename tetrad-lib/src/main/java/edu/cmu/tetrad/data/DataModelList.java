@@ -80,8 +80,7 @@ public final class DataModelList extends AbstractList<DataModel>
 
         try {
             throw new NullPointerException();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -101,8 +100,6 @@ public final class DataModelList extends AbstractList<DataModel>
     //===========================PUBLIC METHODS (see AbstractList too)===//
 
     /**
-     * @return the model at the given index. Required for AbstractList.
-     *
      * @return this model, as an Object.
      */
     public DataModel get(int index) {
@@ -175,11 +172,9 @@ public final class DataModelList extends AbstractList<DataModel>
     public DataModel getSelectedModel() {
         if (this.selectedModel != null) {
             return this.selectedModel;
-        }
-        else if (this.modelList.size() > 0) {
+        } else if (this.modelList.size() > 0) {
             return this.modelList.get(0);
-        }
-        else {
+        } else {
             return null;
         }
     }

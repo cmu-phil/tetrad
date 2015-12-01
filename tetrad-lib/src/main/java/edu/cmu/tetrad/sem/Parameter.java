@@ -86,7 +86,6 @@ public final class Parameter implements TetradSerializable {
 
     /**
      * @return true iff this parameter should be initialized randomly.
-     *
      * @serial Any value.
      */
     private boolean initializedRandomly = true;

@@ -102,11 +102,10 @@ public final class SemGraph implements Graph, TetradSerializable {
         if (graph instanceof SemGraph) {
             if (graph.isTimeLagModel()) {
                 this.graph = new TimeLagGraph((TimeLagGraph) ((SemGraph) graph).graph);
-            }
-            else {
+            } else {
                 this.graph = new EdgeListGraph(graph);
             }
-            
+
             this.errorNodes =
                     new HashMap<Node, Node>(((SemGraph) graph).errorNodes);
 
@@ -117,8 +116,7 @@ public final class SemGraph implements Graph, TetradSerializable {
             }
 
             this.showErrorTerms = ((SemGraph) graph).showErrorTerms;
-        }
-        else if (graph instanceof TimeLagGraph) {
+        } else if (graph instanceof TimeLagGraph) {
             this.graph = new TimeLagGraph((TimeLagGraph) graph);
 
 //            setShowErrorTerms(true);
@@ -152,8 +150,7 @@ public final class SemGraph implements Graph, TetradSerializable {
 //            }
 //
 //            setGraphConstraintsChecked(true);
-        }
-        else {
+        } else {
             this.graph = new EdgeListGraph(graph.getNodes());
             setGraphConstraintsChecked(false);
 
@@ -166,14 +163,12 @@ public final class SemGraph implements Graph, TetradSerializable {
             for (Edge edge : graph.getEdges()) {
                 if (Edges.isDirectedEdge(edge)) {
                     addEdge(edge);
-                }
-                else if (Edges.isBidirectedEdge(edge)) {
+                } else if (Edges.isBidirectedEdge(edge)) {
                     Node node1 = edge.getNode1();
                     Node node2 = edge.getNode2();
 
                     addBidirectedEdge(getExogenous(node1), getExogenous(node2));
-                }
-                else {
+                } else {
                     throw new IllegalArgumentException("A SEM graph may contain " +
                             "only directed and bidirected edges: " + edge);
                 }
@@ -197,11 +192,10 @@ public final class SemGraph implements Graph, TetradSerializable {
     public SemGraph(SemGraph graph) {
         if (graph.isTimeLagModel()) {
             this.graph = new TimeLagGraph((TimeLagGraph) graph.graph);
-        }
-        else {
+        } else {
             this.graph = new EdgeListGraph(graph.getGraph());
         }
-        
+
         this.errorNodes = new HashMap<Node, Node>(graph.errorNodes);
 
         for (Node node : this.graph.getNodes()) {
@@ -282,8 +276,8 @@ public final class SemGraph implements Graph, TetradSerializable {
      * parents of any node are contained lower down in the list.
      *
      * @return a tier ordering for the nodes in this graph.
-     * @see #printTierOrdering
      * @throws IllegalStateException if the graph is cyclic.
+     * @see #printTierOrdering
      */
     public List<Node> getCausalOrdering() {
         return GraphUtils.getCausalOrdering(this);
@@ -328,7 +322,7 @@ public final class SemGraph implements Graph, TetradSerializable {
 //        notFound.removeAll(errorTerms);
 
         while (!notFound.isEmpty()) {
-            for (Iterator<Node> it = notFound.iterator(); it.hasNext();) {
+            for (Iterator<Node> it = notFound.iterator(); it.hasNext(); ) {
                 Node node = it.next();
 
                 List<Node> parents = getParents(node);
@@ -391,8 +385,8 @@ public final class SemGraph implements Graph, TetradSerializable {
      */
     public Node getVarNode(Node node) {
         boolean isError = node.getNodeType() == NodeType.ERROR;
-     //   if (!containsNode(node) && (!isError || this.showErrorTerms)) {
-        if(!containsNode(node)){
+        //   if (!containsNode(node) && (!isError || this.showErrorTerms)) {
+        if (!containsNode(node)) {
             return null;
 //            throw new IllegalArgumentException("Node is not in graph: " + node);
         }
@@ -402,15 +396,12 @@ public final class SemGraph implements Graph, TetradSerializable {
 //                return null;
 //            }
             return GraphUtils.getAssociatedNode(node, this);
-        }
-        else {
+        } else {
             return node;
         }
     }
 
     /**
-     * @return the exogenous node for the given node--either the error node for
-     * the node, if there is one, or else the node itself, it it's exogenous.
      * @param node the node you want the exogenous node for.
      * @return the exogenous node for that node.
      */
@@ -496,7 +487,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     public List<String> getNodeNames() {
-        return getGraph().getNodeNames();        
+        return getGraph().getNodeNames();
     }
 
 
@@ -623,8 +614,7 @@ public final class SemGraph implements Graph, TetradSerializable {
             getGraph().addEdge(edge);
             adjustErrorForNode(head);
             return true;
-        }
-        else if (Edges.isBidirectedEdge(edge)) {
+        } else if (Edges.isBidirectedEdge(edge)) {
             if (getGraph().containsEdge(edge)) {
                 return false;
             }
@@ -636,8 +626,7 @@ public final class SemGraph implements Graph, TetradSerializable {
 
             getGraph().addEdge(edge);
             return true;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(
                     "Only directed and bidirected edges allowed.");
         }
@@ -719,15 +708,12 @@ public final class SemGraph implements Graph, TetradSerializable {
                 getGraph().removeEdge(edge);
                 adjustErrorForNode(head);
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
-        }
-        else if (Edges.isBidirectedEdge(edge)) {
+        } else if (Edges.isBidirectedEdge(edge)) {
             return getGraph().removeEdge(edge);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(
                     "Only directed and bidirected edges allowed.");
         }
@@ -868,7 +854,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     public boolean isDConnectedTo(Node node1, Node node2,
-            List<Node> conditioningNodes) {
+                                  List<Node> conditioningNodes) {
         return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
     }
 
@@ -1045,8 +1031,7 @@ public final class SemGraph implements Graph, TetradSerializable {
                 errorNodes.remove(node);
                 errorNodes.remove(errorNode);
             }
-        }
-        else {
+        } else {
             Node errorNode = getErrorNode(node);
 
             if (errorNode == null) {

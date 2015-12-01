@@ -35,14 +35,14 @@ import java.util.concurrent.*;
 /**
  * GesSearch is an implementation of the GES algorithm, as specified in Chickering (2002) "Optimal structure
  * identification with greedy search" Journal of Machine Learning Research. It works for both BayesNets and SEMs.
- * <p/>
+ * <p>
  * Some code optimization could be done for the scoring part of the graph for discrete models (method scoreGraphChange).
  * Some of Andrew Moore's approaches for caching sufficient statistics, for instance.
- * <p/>
+ * <p>
  * To speed things up, it has been assumed that variables X and Y with zero correlation do not correspond to edges in
  * the graph. This is a restricted form of the faithfulness assumption, something GES does not assume. This
  * faithfulness assumption needs to be explicitly turned on using setFaithfulnessAssumed(true).
- * <p/>
+ * <p>
  * A number of other optimizations were added 5/2015. See code for details.
  *
  * @author Ricardo Silva, Summer 2003
@@ -490,8 +490,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
         if (gesScore instanceof SemBicScore) {
             ((SemBicScore) gesScore).setIgnoreLinearDependent(ignoreLinearDependent);
-        }
-        else {
+        } else {
             throw new UnsupportedOperationException("Operation supported only for SemBicScore.");
         }
     }

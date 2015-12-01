@@ -193,9 +193,6 @@ public class ChiSquareTest {
     }
 
     /**
-     * @return true if the variable at index 0 is determined by the variables at the other indices at the given
-     * probability p.
-     *
      * @param testIndices An array of indices for variables in the dataset supplied in the constructor.
      * @param p           The probability that some marginal for some table dominates. A good value is 0.99.
      * @return True if the variable at index 0 is determined by the variables at the other indices.
@@ -253,9 +250,6 @@ public class ChiSquareTest {
     }
 
     /**
-     * @return true if the variables at index 0 and 1 are each determined by the variables at the other indices at the
-     * given probability p.
-     *
      * @param testIndices An array of indices for variables in the dataset supplied in the constructor.
      * @param p           The probability that some marginal for some table dominates. A good value is 0.99.
      * @return True if the variables at index 0 and 1 are each determined by the variables at the other indices.

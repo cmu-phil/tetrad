@@ -120,8 +120,7 @@ public final class RegexTokenizer {
 
             previousTokenQuoted = true;
             return token.toString();
-        }
-        else {
+        } else {
             boolean match = delimiterMatcher.find(position);
             int start = match ? delimiterMatcher.start() : chars.length();
             int end = match ? delimiterMatcher.end() : chars.length();

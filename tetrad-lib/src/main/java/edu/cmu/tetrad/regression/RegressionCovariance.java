@@ -140,7 +140,6 @@ public class RegressionCovariance implements Regression {
     }
 
     /**
-     * @return the graph of significant regressors into the target
      * @return This graph.
      */
     public Graph getGraph() {
@@ -290,7 +289,7 @@ public class RegressionCovariance implements Regression {
                 graph.addEdge(newEdge);
             }
         }
-        
+
         return graph;
     }
 

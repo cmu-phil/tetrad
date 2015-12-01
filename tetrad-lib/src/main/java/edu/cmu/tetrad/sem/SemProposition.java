@@ -143,8 +143,7 @@ public final class SemProposition implements TetradSerializable {
         for (int i = 0; i < values.length; i++) {
             if (Double.isNaN(values[i]) && Double.isNaN(proposition.values[i])) {
                 continue;
-            }
-            else if (values[i] != proposition.values[i]) {
+            } else if (values[i] != proposition.values[i]) {
                 return false;
             }
         }

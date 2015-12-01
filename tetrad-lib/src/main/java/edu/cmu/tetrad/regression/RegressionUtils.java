@@ -23,7 +23,6 @@ package edu.cmu.tetrad.regression;
 
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;

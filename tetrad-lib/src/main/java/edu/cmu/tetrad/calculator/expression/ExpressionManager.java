@@ -1047,6 +1047,7 @@ public class ExpressionManager {
 
             return new AbstractExpression("Beta", Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
+
                 public double evaluate(Context context) {
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);

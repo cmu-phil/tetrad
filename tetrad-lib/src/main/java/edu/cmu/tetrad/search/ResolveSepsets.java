@@ -266,7 +266,7 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Fisher's method.
-     * <p/>
+     * <p>
      * See R. A. Fisher. Statistical Methods for Research Workers. Oliver and Boyd, 11th edition, 1950.
      *
      * @param independenceTests
@@ -303,8 +303,8 @@ public final class ResolveSepsets {
 
         for (double p : pValues) {
 //            if (p > 0) {
-                tf += -2.0 * Math.log(p);
-                numPValues++;
+            tf += -2.0 * Math.log(p);
+            numPValues++;
 //            }
         }
 
@@ -315,7 +315,7 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Tippett's method
-     * <p/>
+     * <p>
      * See L. H. C. Tippett. The Method of Statistics. Williams and Norgate, 1st edition, 1950.
      *
      * @param independenceTests
@@ -348,7 +348,7 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Wilkinson's method
-     * <p/>
+     * <p>
      * I don't have a reference for this but its basically in between Tippett and Worsley and Friston.
      *
      * @param independenceTests
@@ -372,7 +372,7 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Worsley and Friston's method
-     * <p/>
+     * <p>
      * See K. J. Worsely and K. J. Friston. A test for conjunction. Statistics and Probability Letters
      * 2000.
      *
@@ -406,7 +406,7 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Stouffer et al.'s method
-     * <p/>
+     * <p>
      * See S. A. Stouffer, E. A. Suchman, L. C. Devinney, S. A. Star, and R. M. Williams. The American Soldier: Vol. 1.
      * Adjustment During Army Life. Princeton University Press, 1949.
      *
@@ -433,7 +433,7 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Mudholker and George's method
-     * <p/>
+     * <p>
      * See G. S. Mudholkar and E. O. George. The logit method for combining probabilities. In J. Rustagi, editor,
      * Symposium on Optimizing Method in Statistics, pages 345-366. Academic Press, 1979.
      *

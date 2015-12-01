@@ -36,6 +36,7 @@ public class DoubleDataBox implements DataBox {
     /**
      * Constructs an 2D double array consisting entirely of missing values
      * (Double.NaN).
+     *
      * @param rows
      * @param cols
      */
@@ -106,8 +107,7 @@ public class DoubleDataBox implements DataBox {
 
         if (Double.isNaN(datum)) {
             return null;
-        }
-        else {
+        } else {
             return datum;
         }
     }

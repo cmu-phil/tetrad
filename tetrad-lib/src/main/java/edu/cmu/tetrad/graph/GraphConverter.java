@@ -42,7 +42,7 @@ public final class GraphConverter {
         Graph graph = new EdgeListGraph();
         StringTokenizer st1, st2;
 
-        for (st1 = new StringTokenizer(spec, ", "); st1.hasMoreTokens();) {
+        for (st1 = new StringTokenizer(spec, ", "); st1.hasMoreTokens(); ) {
             String edgeSpec = st1.nextToken();
 
             st2 = new StringTokenizer(edgeSpec, "<>-o ");
@@ -89,20 +89,15 @@ public final class GraphConverter {
 
             if (edgeSpec.lastIndexOf("<--") != -1) {
                 graph.addDirectedEdge(nodeB, nodeA);
-            }
-            else if (edgeSpec.lastIndexOf("---") != -1) {
+            } else if (edgeSpec.lastIndexOf("---") != -1) {
                 graph.addUndirectedEdge(nodeA, nodeB);
-            }
-            else if (edgeSpec.lastIndexOf("<->") != -1) {
+            } else if (edgeSpec.lastIndexOf("<->") != -1) {
                 graph.addBidirectedEdge(nodeA, nodeB);
-            }
-            else if (edgeSpec.lastIndexOf("o->") != -1) {
+            } else if (edgeSpec.lastIndexOf("o->") != -1) {
                 graph.addPartiallyOrientedEdge(nodeA, nodeB);
-            }
-            else if (edgeSpec.lastIndexOf("<-o") != -1) {
+            } else if (edgeSpec.lastIndexOf("<-o") != -1) {
                 graph.addPartiallyOrientedEdge(nodeB, nodeA);
-            }
-            else if (edgeSpec.lastIndexOf("o-o") != -1) {
+            } else if (edgeSpec.lastIndexOf("o-o") != -1) {
                 graph.addNondirectedEdge(nodeB, nodeA);
             }
         }

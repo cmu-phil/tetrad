@@ -25,12 +25,10 @@ import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.text.NumberFormat;
 import java.util.*;
 
 /**

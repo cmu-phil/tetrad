@@ -21,19 +21,15 @@
 
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataFilter;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * @author Joseph Ramsey
  * @return a data set in which missing values in each column are filled using
  * the mean of that column.
- *
- * @author Joseph Ramsey
  */
 public final class MeanInterpolator implements DataFilter {
     public DataSet filter(DataSet dataSet) {

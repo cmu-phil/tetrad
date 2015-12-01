@@ -161,8 +161,6 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
-     * @return (a copy of) the given index.
-     *
      * @param index the index of the desired index.
      * @return a copy of this index.
      */

@@ -36,7 +36,7 @@ import java.util.*;
  * in one sweep, assign each point to its nearest center, and then in a second
  * sweep, reset each center to the mean of the cluster for that center,
  * repeating until convergence.
- * <p/>
+ * <p>
  * Note that this algorithm is guaranteed to converge, since the total squared
  * error is guaranteed to be reduced at each step.
  *
@@ -257,7 +257,7 @@ public class KMeans implements ClusteringAlgorithm {
         return centers.copy();
     }
 
-    /**            
+    /**
      * Return the maximum number of iterations, or -1 if the algorithm is
      * allowed to run unconstrainted.
      *
@@ -298,8 +298,6 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     /**
-     * @return the getModel iteration.
-     *
      * @return the number of iterations.
      */
     public int iterations() {

@@ -23,11 +23,10 @@ package edu.cmu.tetrad.data;
 
 
 /**
+ * @author Joseph Ramsey
  * @return a new data set in which cases in the given data set that have been
  * assigned multiplicies other than n = 1 are copied out n times. This increases
  * the number of rows in the data set.
- *
- * @author Joseph Ramsey
  */
 public final class CaseExpander implements DataFilter {
 
@@ -63,11 +62,9 @@ public final class CaseExpander implements DataFilter {
                 for (int j = 0; j < cols; j++) {
                     if (dataSet.getVariable(j) instanceof ContinuousVariable) {
                         newDataSet.setDouble(index, j, dataSet.getDouble(i, j));
-                    }
-                    else if (dataSet.getVariable(j) instanceof DiscreteVariable) {
+                    } else if (dataSet.getVariable(j) instanceof DiscreteVariable) {
                         newDataSet.setInt(index, j, dataSet.getInt(i, j));
-                    }
-                    else {
+                    } else {
                         throw new IllegalStateException("Expecting either a " +
                                 "continuous or a discrete variable.");
                     }

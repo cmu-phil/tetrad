@@ -419,8 +419,7 @@ public class Jcpc implements GraphSearch {
             if (test.isIndependent(x, y, _boundary)) {
                 return _boundary;
             }
-        }
-        else {
+        } else {
             _boundary.remove(y);
 
             DepthChoiceGenerator gen = new DepthChoiceGenerator(_boundary.size(), 2);

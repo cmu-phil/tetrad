@@ -315,8 +315,6 @@ public class PcPattern implements GraphSearch {
     }
 
     /**
-     * @return the first directed cycle encountered, or null if none is encountered.
-     *
      * @param graph The graph in which a directed cycle is sought.
      * @return the first directed cycle encountered in <code>graph</code>.
      */
@@ -331,9 +329,6 @@ public class PcPattern implements GraphSearch {
     }
 
     /**
-     * @return the first directed path encountered from <code>node1</code> to <code>node2</code>, or null if no such
-     * path is found.
-     *
      * @param graph The graph in which a directed path is sought.
      * @param node1 The 'from' node.
      * @param node2 The 'to'node.

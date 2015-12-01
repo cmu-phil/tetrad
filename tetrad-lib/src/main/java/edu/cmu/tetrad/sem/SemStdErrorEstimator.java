@@ -177,7 +177,7 @@ public class SemStdErrorEstimator {
 //            TetradMatrix hessInv = hess.ginverse();
 
 //            System.out.println("Inverse: " + hessInv);
-            
+
 //            for (int i = 0; i < freeParameters.size(); i++) {
 //                System.out.println(i + " = " + freeParameters.get(i));
 //            }
@@ -190,13 +190,12 @@ public class SemStdErrorEstimator {
                 double v = Math.sqrt((2.0 / (estSem.getSampleSize() - 1)) * hessInv.get(i, i));
 
                 if (v == 0) {
-                    System.out.println("v = " + v + " hessInv(i, i) = " + hessInv.get(i,i));
+                    System.out.println("v = " + v + " hessInv(i, i) = " + hessInv.get(i, i));
                 }
 
                 if (v == 0) {
                     stdErrs[i] = Double.NaN;
-                }
-                else {
+                } else {
                     stdErrs[i] = v;
                 }
             }
@@ -463,7 +462,7 @@ public class SemStdErrorEstimator {
 
             // This needs to be FML-- see Bollen p. 109.
 //            try {
-                return sem.getScore();
+            return sem.getScore();
 //            } catch (Exception e) {
 //                return Double.NEGATIVE_INFINITY;
 //            }

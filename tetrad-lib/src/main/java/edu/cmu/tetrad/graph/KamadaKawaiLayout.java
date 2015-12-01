@@ -209,8 +209,7 @@ public final class KamadaKawaiLayout {
                 p[i][0] = RandomUtil.getInstance().nextInt(600);
                 p[i][1] = RandomUtil.getInstance().nextInt(600);
             }
-        }
-        else {
+        } else {
             for (int i = 0; i < nodes.size(); i++) {
                 Node node = nodes.get(i);
                 p[i][0] = node.getCenterX();
@@ -362,8 +361,7 @@ public final class KamadaKawaiLayout {
 
                 try {
                     c = TetradAlgebra.solve(a, b);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     p[m[0]][0] += RandomUtil.getInstance().nextInt(
                             2 * jump) - jump;
                     p[m[0]][1] += RandomUtil.getInstance().nextInt(
@@ -371,7 +369,7 @@ public final class KamadaKawaiLayout {
                     continue;
                 }
 
-                double dx = c.get(0, 0); 
+                double dx = c.get(0, 0);
                 double dy = c.get(1, 0);
 
                 p[m[0]][0] += dx;
@@ -487,8 +485,7 @@ public final class KamadaKawaiLayout {
                 Node node2 = getComponentNodes().get(j);
                 if (graph.getEdge(node1, node2) != null) {
                     I2[i][j] = 1;
-                }
-                else {
+                } else {
                     I2[i][j] = infinity;
                 }
             }

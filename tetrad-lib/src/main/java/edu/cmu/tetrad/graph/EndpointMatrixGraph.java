@@ -1045,8 +1045,8 @@ public class EndpointMatrixGraph implements Graph {
      * Determines whether an inducing path exists between node1 and node2, given
      * a set O of observed nodes and a set sem of conditioned nodes.
      *
-     * @param node1             the first node.
-     * @param node2             the second node.
+     * @param node1 the first node.
+     * @param node2 the second node.
      * @return true if an inducing path exists, false if not.
      */
     public boolean existsInducingPath(Node node1, Node node2) {
@@ -1373,7 +1373,7 @@ public class EndpointMatrixGraph implements Graph {
                 int j1 = nodes.indexOf(nodes1.get(i));
 
                 if (i1 != -1 && j1 != -1)
-                newGraphMatrix[i][j] = graphMatrix[i1][j1];
+                    newGraphMatrix[i][j] = graphMatrix[i1][j1];
             }
         }
 

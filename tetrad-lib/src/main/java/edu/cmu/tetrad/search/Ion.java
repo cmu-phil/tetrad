@@ -1493,8 +1493,8 @@ public class Ion {
      * A PowerSet constructed with a collection with elements of type E can construct an Iterator which enumerates all
      * possible subsets (of type Collection<E>) of the collection used to construct the PowerSet.
      *
-     * @author pingel
      * @param <E> The type of elements in the Collection passed to the constructor.
+     * @author pingel
      */
 
     private class PowerSet<E> implements Iterable<Set<E>> {
@@ -1506,7 +1506,7 @@ public class Ion {
 
         /**
          * @return an iterator over elements of type Collection<E> which enumerates the PowerSet of the collection used
-         *         in the constructor
+         * in the constructor
          */
 
         public Iterator<Set<E>> iterator() {

@@ -1610,8 +1610,8 @@ public class IonJoeModifications {
      * A PowerSet constructed with a collection with elements of type E can construct an Iterator which enumerates all
      * possible subsets (of type Collection<E>) of the collection used to construct the PowerSet.
      *
-     * @author pingel
      * @param <E> The type of elements in the Collection passed to the constructor.
+     * @author pingel
      */
 
     private class PowerSet<E> implements Iterable<Set<E>> {
@@ -1623,7 +1623,7 @@ public class IonJoeModifications {
 
         /**
          * @return an iterator over elements of type Collection<E> which enumerates the PowerSet of the collection used
-         *         in the constructor
+         * in the constructor
          */
 
         public Iterator<Set<E>> iterator() {
@@ -1746,7 +1746,7 @@ public class IonJoeModifications {
     }
 
     private Graph screenForKnowledge(Graph pag) {
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext();) {
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge next = it.next();
             Node y = pag.getNode(next.getFrom());
             Node x = pag.getNode(next.getTo());
@@ -1773,7 +1773,7 @@ public class IonJoeModifications {
         }
 
 
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext();) {
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge next = it.next();
             Node x = pag.getNode(next.getFrom());
             Node y = pag.getNode(next.getTo());

@@ -185,7 +185,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
         /*
-		this.manipulatedBayesIm = bayesIm;
+        this.manipulatedBayesIm = bayesIm;
 		this.bayesImProbs = new BayesImProbs(manipulatedBayesIm);
 		 */
 		/*

@@ -61,7 +61,8 @@ public class SemOptimizerEm implements SemOptimizer {
     private double[][][] parentsCov;
     private int numRestarts = 1;
 
-    public SemOptimizerEm() {}
+    public SemOptimizerEm() {
+    }
 
     public void optimize(SemIm semIm) {
         if (numRestarts < 1) numRestarts = 1;

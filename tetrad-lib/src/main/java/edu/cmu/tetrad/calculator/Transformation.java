@@ -36,9 +36,9 @@ import java.util.Map;
 /**
  * Represents a transformation on some dataset. For instance if the
  * equation is X = Z + W, where Z and W are columns in the data set,
- * @return a column that is the sum of Z and W row-wise.
  *
  * @author Tyler Gibson
+ * @return a column that is the sum of Z and W row-wise.
  */
 public class Transformation {
 
@@ -150,22 +150,22 @@ public class Transformation {
         private int row;
 
 
-        public DataBackedContext(DataSet data, List<String> vars){
+        public DataBackedContext(DataSet data, List<String> vars) {
             this.data = data;
-            for(String v : vars){
+            for (String v : vars) {
                 Node n = data.getVariable(v);
                 indexes.put(v, data.getColumn(n));
             }
         }
 
-        public void setRow(int row){
+        public void setRow(int row) {
             this.row = row;
         }
 
         public Double getValue(String var) {
             Integer i = indexes.get(var);
-            if(i != null){
-               return data.getDouble(row, i);
+            if (i != null) {
+                return data.getDouble(row, i);
             }
             return null;
         }

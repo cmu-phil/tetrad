@@ -33,20 +33,20 @@ import java.util.*;
 /**
  * Purify is a implementation of the automated purification methods described on CPS and the report "Learning
  * Measurement Models" CMU-CALD-03-100.
- * <p/>
+ * <p>
  * No background knowledge is allowed yet. Future versions of this algorithm will include it.
- * <p/>
+ * <p>
  * References:
- * <p/>
+ * <p>
  * Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models". Technical report
  * CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon University.
- * <p/>
+ * <p>
  * Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads." Sociological Methods and
  * Research 19, 80-92.
- * <p/>
+ * <p>
  * Drton, M. and Richardson, T. (2003). "Iterative conditional fitting for Gaussian ancestral graphical models".
  * Technical report, Department of Statistics, University of Washington.
- * <p/>
+ * <p>
  * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of Psychology 19, 180-187.
  *
  * @author Ricardo Silva
@@ -1738,7 +1738,7 @@ public class Purify {
                         new int[semMag.getParents(node).size() - 1];
                 int count = 0;
                 for (Iterator it =
-                             semMag.getParents(node).iterator(); it.hasNext(); ) {
+                     semMag.getParents(node).iterator(); it.hasNext(); ) {
                     Node parent = (Node) it.next();
                     if (parent.getNodeType() == NodeType.LATENT) {
                         this.parentsLat[i][count++] =
@@ -1786,7 +1786,7 @@ public class Purify {
             this.parentsL[i] = new boolean[semMag.getParents(node).size() - 1];
             int count = 0;
             for (Iterator it =
-                         semMag.getParents(node).iterator(); it.hasNext(); ) {
+                 semMag.getParents(node).iterator(); it.hasNext(); ) {
                 Node parent = (Node) it.next();
                 if (parent.getNodeType() == NodeType.LATENT) {
                     this.parents[i][count] =
@@ -1973,8 +1973,8 @@ public class Purify {
                 MatrixUtils.inverse(MatrixUtils.subtract(identityI, lambdaI));
         double indImpliedCovar[][] = MatrixUtils.product(MatrixUtils.product(
                 iMinusI, MatrixUtils.sum(MatrixUtils.product(
-                MatrixUtils.product(lambdaL, latentImpliedCovar),
-                MatrixUtils.transpose(lambdaL)), tau)),
+                        MatrixUtils.product(lambdaL, latentImpliedCovar),
+                        MatrixUtils.transpose(lambdaL)), tau)),
                 MatrixUtils.transpose(iMinusI));
         double loadingLatentCovar[][] = MatrixUtils.product(iMinusI,
                 MatrixUtils.product(lambdaL, latentImpliedCovar));
@@ -3040,8 +3040,8 @@ public class Purify {
                     semIm.setParamValue(node, node, this.varErrorLatent[i]);
                 } else {
                     for (Iterator it =
-                                 semIm.getSemPm().getGraph().getParents(node)
-                                         .iterator(); it.hasNext(); ) {
+                         semIm.getSemPm().getGraph().getParents(node)
+                                 .iterator(); it.hasNext(); ) {
                         Node nextParent = (Node) it.next();
                         if (nextParent.getNodeType() == NodeType.ERROR) {
                             semIm.setParamValue(nextParent, nextParent,
