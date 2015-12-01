@@ -41,7 +41,7 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public final class EmBayesProperties {
-    public static interface Estimator {
+    public interface Estimator {
         BayesIm estimate(BayesPm bayesPm, DataSet dataSet);
     }
 
@@ -61,8 +61,7 @@ public final class EmBayesProperties {
                 double tolerance = 0.0001;
                 estimator.maximization(tolerance);
                 return estimator.getEstimatedIm();
-            }
-            catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 e.printStackTrace();
                 throw new RuntimeException(
                         "Please specify the search tolerance first.");
@@ -82,7 +81,7 @@ public final class EmBayesProperties {
 
         List<Node> vars = dataSet.getVariables();
         Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<String, DiscreteVariable>();
+                new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             DiscreteVariable var = (DiscreteVariable) vars.get(i);
             String name = var.getName();
@@ -98,7 +97,7 @@ public final class EmBayesProperties {
         for (Node node1 : nodes) {
             Node var = nodesToVars.get(node1.getName());
 
-            if (var instanceof DiscreteVariable) {
+            if (var != null) {
                 DiscreteVariable var2 = (DiscreteVariable) var;
                 List<String> categories = var2.getCategories();
                 bayesPm.setCategories(node1, categories);
@@ -175,13 +174,6 @@ public final class EmBayesProperties {
 
         double[] scoresf = scorerf.logsProbDataGivenStructure();
         double[] scoresg = scorerg.logsProbDataGivenStructure();
-
-//        System.out.println("l1 = " + l1);
-//        System.out.println("l0 = " + l0);
-
-        int kf = scorerf.numNonredundantParams();
-        int kg = scorerg.numNonredundantParams();
-
 
         int n = getDataSet().getNumRows();
 

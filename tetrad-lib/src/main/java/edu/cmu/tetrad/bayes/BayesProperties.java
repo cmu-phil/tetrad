@@ -40,7 +40,7 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public final class BayesProperties {
-    public static interface Estimator {
+    public interface Estimator {
         BayesIm estimate(BayesPm bayesPm, DataSet dataSet);
     }
 
@@ -69,7 +69,7 @@ public final class BayesProperties {
 
         List<Node> vars = dataSet.getVariables();
         Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<String, DiscreteVariable>();
+                new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             DiscreteVariable var = (DiscreteVariable) vars.get(i);
             String name = var.getName();
@@ -85,7 +85,7 @@ public final class BayesProperties {
         for (Node node1 : nodes) {
             Node var = nodesToVars.get(node1.getName());
 
-            if (var instanceof DiscreteVariable) {
+            if (var != null) {
                 DiscreteVariable var2 = (DiscreteVariable) var;
                 List<String> categories = var2.getCategories();
                 bayesPm.setCategories(node1, categories);
@@ -119,10 +119,10 @@ public final class BayesProperties {
         for (Node node : nodes) {
             graph0.addNode(node);
         }
-        for (int i=0; i < nodes.size()-1; i++){
-            for (int j = i+1; j <= nodes.size()-1;j++)
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            for (int j = i + 1; j <= nodes.size() - 1; j++)
                 graph0.addDirectedEdge(nodes.get(i), nodes.get(j));
-        };
+        }
         BayesProperties scorer1 = new BayesProperties(getDataSet(), graph1);
         BayesProperties scorer0 = new BayesProperties(getDataSet(), graph0);
 
@@ -202,13 +202,6 @@ public final class BayesProperties {
 
         double[] scoresf = scorerf.logsProbDataGivenStructure();
         double[] scoresg = scorerg.logsProbDataGivenStructure();
-
-//        System.out.println("l1 = " + l1);
-//        System.out.println("l0 = " + l0);
-
-        int kf = scorerf.numNonredundantParams();
-        int kg = scorerg.numNonredundantParams();
-
 
         int n = getDataSet().getNumRows();
 

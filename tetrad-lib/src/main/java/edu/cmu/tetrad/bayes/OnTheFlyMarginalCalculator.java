@@ -109,7 +109,7 @@ public final class OnTheFlyMarginalCalculator
      *                should be estimated on the fly.
      */
     public OnTheFlyMarginalCalculator(BayesPm bayesPm,
-            DataSet dataSet) throws IllegalArgumentException {
+                                      DataSet dataSet) throws IllegalArgumentException {
         if (bayesPm == null) {
             throw new NullPointerException();
         }
@@ -129,7 +129,7 @@ public final class OnTheFlyMarginalCalculator
         // in the BayesIm, independently of any change to the BayesPm.
         // (This order must be maintained.)
         Graph graph = bayesPm.getDag();
-        this.nodes = graph.getNodes().toArray(new Node[0]);
+        this.nodes = graph.getNodes().toArray(new Node[graph.getNodes().size()]);
 
         // Initialize.
         initialize();
@@ -167,13 +167,11 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * @return the node index for the given node.
-     *
      * @param node the given node.
      * @return the index for that node, or -1 if the node is not in the
-     *         BayesIm.
+     * BayesIm.
      */
-    public int getNodeIndex(Node node) {
+    private int getNodeIndex(Node node) {
         for (int i = 0; i < nodes.length; i++) {
             if (node == nodes[i]) {
                 return i;
@@ -184,7 +182,7 @@ public final class OnTheFlyMarginalCalculator
     }
 
     public List<Node> getVariables() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < getNumNodes(); i++) {
             Node node = getNode(i);
@@ -195,7 +193,7 @@ public final class OnTheFlyMarginalCalculator
     }
 
     public List<String> getVariableNames() {
-        List<String> variableNames = new LinkedList<String>();
+        List<String> variableNames = new LinkedList<>();
 
         for (int i = 0; i < getNumNodes(); i++) {
             Node node = getNode(i);
@@ -206,11 +204,6 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * @return (a defensive copy of) the array representing the dimensionality
-     * of each parent of a node, that is, the number of values which that node
-     * can take on.  The order of entries in this array is the same as the order
-     * of entries of nodes returned by getParents() for that node.
-     *
      * @return this array of parent dimensions.
      */
     public int[] getParentDims(int nodeIndex) {
@@ -254,7 +247,7 @@ public final class OnTheFlyMarginalCalculator
         double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
-                i < getBayesIm().getNumColumns(nodeIndex); i++) {
+             i < getBayesIm().getNumColumns(nodeIndex); i++) {
             marginals[i] = getMarginal(nodeIndex, i);
         }
 
@@ -266,7 +259,7 @@ public final class OnTheFlyMarginalCalculator
         double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
-                i < getBayesIm().getNumColumns(nodeIndex); i++) {
+             i < getBayesIm().getNumColumns(nodeIndex); i++) {
             marginals[i] = getMarginal(nodeIndex, i);
         }
 
@@ -298,8 +291,6 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * @return the node corresponding to the given node index.
-     *
      * @param nodeIndex
      * @return this node.
      */
@@ -308,12 +299,6 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * @return the number of columns in the table of the given node N with index
-     * 'nodeIndex'--that is, the number of possible values that N can take on.
-     * That is, if P(N=v0 | P1=v1, P2=v2, ... Pn=vn) is a conditional
-     * probability stored in 'probs', then the maximum number of rows in the
-     * table for N is #vals(N).
-     *
      * @param nodeIndex
      * @return this number.
      */
@@ -325,7 +310,6 @@ public final class OnTheFlyMarginalCalculator
     /**
      * @return (a defensive copy of) the array containing all of the parents of
      * a given node in the order in which they are stored internally.
-     *
      * @see #getParentDims
      */
     private int[] getParents(int nodeIndex) {
@@ -372,7 +356,7 @@ public final class OnTheFlyMarginalCalculator
         // Set up parents array.  Should store the parents of
         // each node as ints in a particular order.
         Graph graph = getBayesPm().getDag();
-        List<Node> parentList = new ArrayList<Node>(graph.getParents(node));
+        List<Node> parentList = new ArrayList<>(graph.getParents(node));
         int[] parentArray = new int[parentList.size()];
 
         for (int i = 0; i < parentList.size(); i++) {
@@ -443,8 +427,7 @@ public final class OnTheFlyMarginalCalculator
                     for (int j = i + 1; j < evidence.getNumVariables(); j++) {
                         if (hasNextValue(evidence, j, -1)) {
                             variableValues[j] = nextValue(evidence, j, -1);
-                        }
-                        else {
+                        } else {
                             break loop;
                         }
                     }
@@ -547,14 +530,14 @@ public final class OnTheFlyMarginalCalculator
 //    }
 
     private static boolean hasNextValue(Proposition proposition, int variable,
-            int currentIndex) {
+                                        int currentIndex) {
         return nextValue(proposition, variable, currentIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
-            int currentIndex) {
+                                 int currentIndex) {
         for (int i = currentIndex + 1;
-                i < proposition.getNumCategories(variable); i++) {
+             i < proposition.getNumCategories(variable); i++) {
             if (proposition.isAllowed(variable, i)) {
                 return i;
             }

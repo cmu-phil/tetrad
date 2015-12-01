@@ -38,7 +38,7 @@ import edu.cmu.tetrad.util.ProbUtils;
  *
  * @author Frank Wimberly
  */
-public final class BdeMetric {
+final class BdeMetric {
     private final DataSet dataSet;
     private final BayesPm bayesPm;
     private BayesIm bayesIm;
@@ -62,17 +62,18 @@ public final class BdeMetric {
         double[][] priorProbsRowSum;
 
         Graph graph = bayesPm.getDag();
-        Node[] nodes = new Node[graph.getNumNodes()];
 
-        observedCounts = new int[nodes.length][][];
-        priorProbs = new double[nodes.length][][];
+        int n = graph.getNumNodes();
 
-        int[][] observedCountsRowSum = new int[nodes.length][];
-        priorProbsRowSum = new double[nodes.length][];
+        observedCounts = new int[n][][];
+        priorProbs = new double[n][][];
+
+        int[][] observedCountsRowSum = new int[n][];
+        priorProbsRowSum = new double[n][];
 
         bayesIm = new MlBayesIm(bayesPm);
 
-        for (int i = 0; i < nodes.length; i++) {
+        for (int i = 0; i < n; i++) {
             //int numRows = bayesImMixed.getNumRows(i);
             int numRows = bayesIm.getNumRows(i);
             observedCounts[i] = new int[numRows][];
@@ -98,7 +99,7 @@ public final class BdeMetric {
         computeObservedCounts();
         //Set all priorProbs (i.e. estimated counts) to 1.0.  Eventually they may be
         //supplied as a parameter of the constructor of this class.
-        for (int i = 0; i < nodes.length; i++) {
+        for (int i = 0; i < n; i++) {
             for (int j = 0; j < bayesIm.getNumRows(i); j++) {
                 for (int k = 0; k < bayesIm.getNumColumns(i); k++) {
                     priorProbs[i][j][k] = 1.0;
@@ -107,7 +108,7 @@ public final class BdeMetric {
         }
 
 
-        for (int i = 0; i < nodes.length; i++) {
+        for (int i = 0; i < n; i++) {
             for (int j = 0; j < bayesIm.getNumRows(i); j++) {
                 for (int k = 0; k < bayesIm.getNumColumns(i); k++) {
                     observedCountsRowSum[i][j] += observedCounts[i][j][k];
@@ -117,8 +118,6 @@ public final class BdeMetric {
         }
 
         double product = 1.0;
-
-        int n = nodes.length;
 
         //Debug print
         //System.out.println("counts and priors");
@@ -139,8 +138,7 @@ public final class BdeMetric {
                             observedCountsRowSum[i][j]);
                     //System.out.println("num = " + numerator + " denom = " + denom);
                     prodj *= (numerator / denom);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -151,8 +149,7 @@ public final class BdeMetric {
                         prodk *= Gamma.gamma(
                                 priorProbs[i][j][k] + observedCounts[i][j][k]) /
                                 Gamma.gamma(priorProbs[i][j][k]);
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -171,17 +168,18 @@ public final class BdeMetric {
         double[][] priorProbsRowSum;
 
         Graph graph = bayesPm.getDag();
-        Node[] nodes = new Node[graph.getNumNodes()];
 
-        observedCounts = new int[nodes.length][][];
-        priorProbs = new double[nodes.length][][];
+        int n = graph.getNumNodes();
 
-        int[][] observedCountsRowSum = new int[nodes.length][];
-        priorProbsRowSum = new double[nodes.length][];
+        observedCounts = new int[n][][];
+        priorProbs = new double[n][][];
+
+        int[][] observedCountsRowSum = new int[n][];
+        priorProbsRowSum = new double[n][];
 
         bayesIm = new MlBayesIm(bayesPm);
 
-        for (int i = 0; i < nodes.length; i++) {
+        for (int i = 0; i < n; i++) {
             //int numRows = bayesImMixed.getNumRows(i);
             int numRows = bayesIm.getNumRows(i);
             observedCounts[i] = new int[numRows][];
@@ -207,7 +205,7 @@ public final class BdeMetric {
         computeObservedCounts();
         //Set all priorProbs (i.e. estimated counts) to 1.0.  Eventually they may be
         //supplied as a parameter of the constructor of this class.
-        for (int i = 0; i < nodes.length; i++) {
+        for (int i = 0; i < n; i++) {
             for (int j = 0; j < bayesIm.getNumRows(i); j++) {
                 for (int k = 0; k < bayesIm.getNumColumns(i); k++) {
                     priorProbs[i][j][k] = 1.0;
@@ -216,7 +214,7 @@ public final class BdeMetric {
         }
 
 
-        for (int i = 0; i < nodes.length; i++) {
+        for (int i = 0; i < n; i++) {
             for (int j = 0; j < bayesIm.getNumRows(i); j++) {
                 for (int k = 0; k < bayesIm.getNumColumns(i); k++) {
                     observedCountsRowSum[i][j] += observedCounts[i][j][k];
@@ -227,8 +225,6 @@ public final class BdeMetric {
 
         //double outerProduct = 1.0;
         double sum = 0.0;
-
-        int n = nodes.length;
 
         //Debug print
         //System.out.println("counts and priors");
@@ -251,8 +247,7 @@ public final class BdeMetric {
                             observedCountsRowSum[i][j]);
                     //System.out.println("num = " + numerator + " denom = " + denom);
                     sumj += (numerator - denom);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -265,8 +260,7 @@ public final class BdeMetric {
                         sumk += ProbUtils.lngamma(
                                 priorProbs[i][j][k] + observedCounts[i][j][k]) -
                                 ProbUtils.lngamma(priorProbs[i][j][k]);
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -320,8 +314,7 @@ public final class BdeMetric {
                 //for(int m = 0; m < ar.getNumSplits(); m++)
                 //    System.out.print("    " + m + " " + observedCounts[j][0][m]);
                 //System.out.println();
-            }
-            else {    //For variables with parents:
+            } else {    //For variables with parents:
                 int numRows = bayesIm.getNumRows(varIndex);
 
                 for (int row = 0; row < numRows; row++) {

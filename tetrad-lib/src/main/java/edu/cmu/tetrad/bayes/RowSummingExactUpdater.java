@@ -154,7 +154,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
             throw new NullPointerException();
         }
 
-        if (!evidence.isCompatibleWith(bayesIm)) {
+        if (evidence.isIncompatibleWith(bayesIm)) {
             throw new IllegalArgumentException("The variable list for the " +
                     "given bayesIm must be compatible with the variable list " +
                     "for this evidence.");
@@ -190,8 +190,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
 
         if (condition.existsCombination()) {
             return bayesImProbs.getConditionalProb(assertion, condition);
-        }
-        else {
+        } else {
             return Double.NaN;
         }
     }
@@ -207,8 +206,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
 
         if (condition.existsCombination()) {
             return bayesImProbs.getConditionalProb(assertion, condition);
-        }
-        else {
+        } else {
             return Double.NaN;
         }
     }
@@ -268,8 +266,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
                     condition.setToTautology();
 
                     for (int i = 0; i < numNodes; i++) {
-                        for (int j = 0; j < evidence2.getNumCategories(i); j++)
-                        {
+                        for (int j = 0; j < evidence2.getNumCategories(i); j++) {
                             if (!evidence2.getProposition().isAllowed(i, j)) {
                                 condition.removeCategory(i, j);
                             }
@@ -287,8 +284,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
                         double p = bayesImProbs.getConditionalProb(assertion,
                                 condition);
                         updatedBayesIm.setProbability(node, row, col, p);
-                    }
-                    else {
+                    } else {
                         updatedBayesIm.setProbability(node, row, col,
                                 Double.NaN);
                     }

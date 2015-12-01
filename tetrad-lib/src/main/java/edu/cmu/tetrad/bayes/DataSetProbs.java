@@ -164,7 +164,7 @@ public final class DataSetProbs implements DiscreteProbs {
      * conditional on the given condition.
      */
     public double getConditionalProb(Proposition assertion,
-            Proposition condition) {
+                                     Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
@@ -176,8 +176,8 @@ public final class DataSetProbs implements DiscreteProbs {
 
         assertionVars = GraphUtils.replaceNodes(assertionVars, dataVars);
 
-        if (!new HashSet<Node>(assertionVars).equals(
-                new HashSet<Node>(dataVars))) {
+        if (!new HashSet<>(assertionVars).equals(
+                new HashSet<>(dataVars))) {
             throw new IllegalArgumentException(
                     "Assertion variable and data variables" +
                             " are either different or in a different order: " +

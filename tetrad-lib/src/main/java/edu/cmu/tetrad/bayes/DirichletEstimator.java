@@ -33,7 +33,7 @@ import edu.cmu.tetrad.graph.Node;
  */
 public final class DirichletEstimator {
     public static DirichletBayesIm estimate(DirichletBayesIm prior,
-            DataSet dataSet) {
+                                            DataSet dataSet) {
         if (prior == null) {
             throw new NullPointerException();
         }

@@ -148,7 +148,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
             throw new NullPointerException();
         }
 
-        if (!evidence.isCompatibleWith(bayesIm)) {
+        if (evidence.isIncompatibleWith(bayesIm)) {
             throw new IllegalArgumentException("The variables for the given " +
                     "evidence must be compatible with the Bayes IM being updated.");
         }
@@ -179,7 +179,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * @return the joint maringal.
+     * @return the joint marginal.
      */
     public double getJointMarginal(int[] variables, int[] values) {
         throw new UnsupportedOperationException();
@@ -192,7 +192,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
-                i < getBayesIm().getNumColumns(nodeIndex); i++) {
+             i < getBayesIm().getNumColumns(nodeIndex); i++) {
             marginals[i] = getMarginal(nodeIndex, i);
         }
 
@@ -204,7 +204,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
-                i < getBayesIm().getNumColumns(nodeIndex); i++) {
+             i < getBayesIm().getNumColumns(nodeIndex); i++) {
             marginals[i] = getMarginal(nodeIndex, i);
         }
 
@@ -251,14 +251,13 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         int numSurveyed = 0;
 
         // Construct the sample.
-        while (numCounted < 1000 && ++ numSurveyed < 10000) {
+        while (numCounted < 1000 && ++numSurveyed < 10000) {
             int[] point = getSinglePoint(getManipulatedBayesIm(), tiers);
 
             if (evidence.getProposition().isPermissibleCombination(point)) {
                 numCounted++;
 
-                for (int j = 0; j < getManipulatedBayesIm().getNumNodes(); j++)
-                {
+                for (int j = 0; j < getManipulatedBayesIm().getNumNodes(); j++) {
                     counts[j][point[j]]++;
                 }
             }

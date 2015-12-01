@@ -54,7 +54,7 @@ public final class CellTableProbs implements DiscreteProbs {
      * given dimension array--in other words, the length must be greater than or
      * equal to dims[0] & dims[1] ... * dims[dims.length - 1].
      */
-    private int[] cells;
+    private final int[] cells;
 
     /**
      * The total number of points in the cell count table.
@@ -86,7 +86,6 @@ public final class CellTableProbs implements DiscreteProbs {
         dims = new int[dataSet.getNumColumns()];
 
         for (int i = 0; i < dims.length; i++) {
-            assert dataSet != null;
             DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(i);
             dims[i] = variable.getNumCategories();
@@ -100,7 +99,6 @@ public final class CellTableProbs implements DiscreteProbs {
 
         this.cells = new int[size];
 
-        assert dataSet != null;
         int numRows = dataSet.getNumRows();
 
         int[] point = new int[dims.length];
@@ -160,8 +158,7 @@ public final class CellTableProbs implements DiscreteProbs {
                     for (int j = i + 1; j < assertion.getNumVariables(); j++) {
                         if (hasNextValue(assertion, j, -1)) {
                             variableValues[j] = nextValue(assertion, j, -1);
-                        }
-                        else {
+                        } else {
                             break loop;
                         }
                     }
@@ -183,7 +180,7 @@ public final class CellTableProbs implements DiscreteProbs {
      * conditional on the given condition.
      */
     public double getConditionalProb(Proposition assertion,
-            Proposition condition) {
+                                     Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
@@ -221,8 +218,7 @@ public final class CellTableProbs implements DiscreteProbs {
                     for (int j = i + 1; j < condition.getNumVariables(); j++) {
                         if (hasNextValue(condition, j, -1)) {
                             variableValues[j] = nextValue(condition, j, -1);
-                        }
-                        else {
+                        } else {
                             break loop;
                         }
                     }
@@ -286,14 +282,11 @@ public final class CellTableProbs implements DiscreteProbs {
     //===========================PRIVATE METHODS===========================//
 
     /**
-     * @return the index in the cells array for the cell at the given
-     * coordinates.
-     *
      * @param coords The coordinates of the cell. Each value must be less
      *               than the number of possible value for the corresponding
      *               dimension in the table. (Enforced.)
      * @return the row in the table for the given node and combination of parent
-     *         values.
+     * values.
      */
     private int getCellIndex(int[] coords) {
         int cellIndex = 0;
@@ -328,14 +321,14 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     private static boolean hasNextValue(Proposition proposition, int variable,
-            int curIndex) {
+                                        int curIndex) {
         return nextValue(proposition, variable, curIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
-            int curIndex) {
+                                 int curIndex) {
         for (int i = curIndex + 1;
-                i < proposition.getNumCategories(variable); i++) {
+             i < proposition.getNumCategories(variable); i++) {
             if (proposition.isAllowed(variable, i)) {
                 return i;
             }

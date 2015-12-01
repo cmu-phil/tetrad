@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -262,8 +263,7 @@ public final class Proposition implements TetradSerializable {
 
         if (count != 1) {
             return -1;
-        }
-        else {
+        } else {
             return lastEncountered;
         }
     }
@@ -398,6 +398,10 @@ public final class Proposition implements TetradSerializable {
             return false;
         }
 
+        if (!(o instanceof Proposition)) {
+            return false;
+        }
+
         Proposition proposition = (Proposition) o;
 
         if (!(variableSource == proposition.variableSource)) {
@@ -419,7 +423,7 @@ public final class Proposition implements TetradSerializable {
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + variableSource.hashCode();
-        hashCode = 19 * hashCode + allowedCategories.hashCode();
+        hashCode = 19 * hashCode + Arrays.deepHashCode(allowedCategories);
         return hashCode;
     }
 
@@ -448,8 +452,7 @@ public final class Proposition implements TetradSerializable {
                 if (i < getNumCategories(j)) {
                     boolean allowed = isAllowed(j, i);
                     buf.append(allowed ? "true" : "*   ").append("\t");
-                }
-                else {
+                } else {
                     buf.append("    \t");
                 }
             }

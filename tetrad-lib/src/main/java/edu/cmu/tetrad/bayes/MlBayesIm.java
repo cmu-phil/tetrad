@@ -204,7 +204,7 @@ public final class MlBayesIm implements BayesIm {
         // in the BayesIm, independently of any change to the BayesPm.
         // (This order must be maintained.)
         Graph graph = bayesPm.getDag();
-        this.nodes = graph.getNodes().toArray(new Node[0]);
+        this.nodes = graph.getNodes().toArray(new Node[graph.getNodes().size()]);
 
         // Initialize.
         initialize(oldBayesIm, initializationMethod);
@@ -243,8 +243,6 @@ public final class MlBayesIm implements BayesIm {
     //===============================PUBLIC METHODS========================//
 
     /**
-     * @return the underlying Bayes PM.
-     *
      * @return this PM.
      */
     public BayesPm getBayesPm() {
@@ -252,8 +250,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return the DAG as a Graph.
-     *
      * @return the DAG.
      */
     public Dag getDag() {
@@ -268,8 +264,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return the node corresponding to the given node index.
-     *
      * @param nodeIndex
      * @return this node.
      */
@@ -278,8 +272,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return the node with the given name in the associated graph.
-     *
      * @param name the name of the node.
      * @return the node.
      */
@@ -288,8 +280,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return the node index for the given node.
-     *
      * @param node the given node.
      * @return the index for that node, or -1 if the node is not in the
      * BayesIm.
@@ -305,7 +295,7 @@ public final class MlBayesIm implements BayesIm {
     }
 
     public List<Node> getVariables() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < getNumNodes(); i++) {
             Node node = getNode(i);
@@ -323,7 +313,7 @@ public final class MlBayesIm implements BayesIm {
     }
 
     public List<String> getVariableNames() {
-        List<String> variableNames = new LinkedList<String>();
+        List<String> variableNames = new LinkedList<>();
 
         for (int i = 0; i < getNumNodes(); i++) {
             Node node = getNode(i);
@@ -334,12 +324,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return the number of columns in the table of the given node N with index
-     * 'nodeIndex'--that is, the number of possible values that N can take on.
-     * That is, if P(N=v0 | P1=v1, P2=v2, ... Pn=vn) is a conditional
-     * probability stored in 'probs', then the maximum number of rows in the
-     * table for N is #vals(N).
-     *
      * @param nodeIndex
      * @return this number.
      * @see #getNumRows
@@ -349,12 +333,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return the number of rows in the table of the given node, which would be
-     * the total number of possible combinations of parent values for a given
-     * node.  That is, if P(N=v0 | P1=v1, P2=v2, ... Pn=vn) is a conditional
-     * probability stored in 'probs', then the maximum number of rows in the
-     * table for N is #vals(P1) x #vals(P2) x ... x #vals(Pn).
-     *
      * @param nodeIndex
      * @return this number.
      * @see #getRowIndex
@@ -365,8 +343,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return the number of parents of the given node.
-     *
      * @param nodeIndex the given node.
      * @return the number of parents for this node.
      */
@@ -389,11 +365,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return (a defensive copy of) the array representing the dimensionality
-     * of each parent of a node, that is, the number of values which that node
-     * can take on.  The order of entries in this array is the same as the order
-     * of entries of nodes returned by getParents() for that node.
-     *
      * @return this array of parent dimensions.
      * @see #getParents
      */
@@ -407,7 +378,6 @@ public final class MlBayesIm implements BayesIm {
     /**
      * @return (a defensive copy of) the array containing all of the parents of
      * a given node in the order in which they are stored internally.
-     *
      * @see #getParentDims
      */
     public int[] getParents(int nodeIndex) {
@@ -418,19 +388,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return an array containing the combination of parent values for a given
-     * node and given row in the probability table for that node.  To get the
-     * combination of parent values from the row number, the row number is
-     * represented using a variable-base place value system, where the bases for
-     * each place value are the dimensions of the parents in the order in which
-     * they are given by getParentDims().  For instance, if the row number (base
-     * 10) is 103 and the parent dimension array is [3 5 7], we calculate the
-     * first value as 103 / 7 = 14 with a remainder of 5.  We then divide 14 / 5
-     * = 2 with a remainder of 4.  We then divide 2 / 3 = 0 with a remainder of
-     * 2.  The variable place value representation is [2 4 5], which is the
-     * combination of parent values.  This is the inverse function of
-     * getRowIndex().
-     *
      * @param nodeIndex the index of the node.
      * @param rowIndex  the index of the row in question.
      * @return the array representing the combination of parent values for this
@@ -459,15 +416,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return the probability for the given node at the given row and column in
-     * the table for that node.  To get the node index, use getNodeIndex().  To
-     * get the row index, use getRowIndex().  To get the column index, use
-     * getCategoryIndex() from the underlying BayesPm().  The value returned
-     * will represent a conditional probability of the form P(N=v0 | P1=v1,
-     * P2=v2, ... , Pn=vn), where N is the node referenced by nodeIndex, v0 is
-     * the value referenced by colIndex, and the combination of parent values
-     * indicated is the combination indicated by rowIndex.
-     *
      * @param nodeIndex the index of the node in question.
      * @param rowIndex  the row in the table for this for node which represents
      *                  the combination of parent values in question.
@@ -482,15 +430,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @return the row in the table at which the given combination of parent
-     * values is represented for the given node.  The row is calculated as a
-     * variable-base place-value number.  For instance, if the array of parent
-     * dimensions is [3, 5, 7] and the parent value combination is [2, 4, 5],
-     * then the row number is (7 * (5 * (3 * 0 + 2) + 4)) + 5 = 103. This is the
-     * inverse function to getVariableValues().  <p> Note: If the node has n
-     * values, the length of 'values' must be >= the number of parents. Only the
-     * first n values are used.
-     *
      * @param nodeIndex
      * @param values
      * @return the row in the table for the given node and combination of parent
@@ -623,7 +562,7 @@ public final class MlBayesIm implements BayesIm {
         probs[nodeIndex][rowIndex] = getRandomWeights(size);
     }
 
-    public void randomizeRow2(int nodeIndex, int rowIndex, double[] biases) {
+    private void randomizeRow2(int nodeIndex, int rowIndex, double[] biases) {
         final int size = getNumColumns(nodeIndex);
         probs[nodeIndex][rowIndex] = getRandomWeights2(size, biases);
     }
@@ -675,19 +614,14 @@ public final class MlBayesIm implements BayesIm {
     }
 
     private void randomizeTable2(int nodeIndex) {
-        boolean existsIncomplete = true;
-
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
             if (isIncomplete(nodeIndex, rowIndex)) {
-                existsIncomplete = true;
                 break;
             }
         }
 
-        if (!existsIncomplete) return;
-
         // Trying for some more power ..jdramsey 5/7/10
-        List<Integer> rowIndices = new ArrayList<Integer>();
+        List<Integer> rowIndices = new ArrayList<>();
 
         for (int i = 0; i < getNumRows(nodeIndex); i++) {
             rowIndices.add(i);
@@ -874,8 +808,8 @@ public final class MlBayesIm implements BayesIm {
     private double sumCol(double[][] marginals, int j) {
         double sum = 0.0;
 
-        for (int h = 0; h < marginals.length; h++) {
-            sum += marginals[h][j];
+        for (double[] marginal : marginals) {
+            sum += marginal[j];
         }
 
         return sum;
@@ -1006,7 +940,7 @@ public final class MlBayesIm implements BayesIm {
     private DataSet simulateTimeSeries(int sampleSize) {
         TimeLagGraph timeSeriesGraph = getBayesPm().getDag().getTimeLagGraph();
 
-        List<Node> variables = new ArrayList<Node>();
+        List<Node> variables = new ArrayList<>();
 
         for (Node node : timeSeriesGraph.getLag0Nodes()) {
             final DiscreteVariable e = new DiscreteVariable(timeSeriesGraph.getNodeId(node).getName());
@@ -1018,12 +952,6 @@ public final class MlBayesIm implements BayesIm {
 
 //        DataSet fullData = new ColtDataSet(sampleSize, variables);
         DataSet fullData = new BoxDataSet(new VerticalIntDataBox(sampleSize, variables.size()), variables);
-
-        Map<Node, Integer> nodeIndices = new HashMap<Node, Integer>();
-
-        for (int i = 0; i < lag0Nodes.size(); i++) {
-            nodeIndices.put(lag0Nodes.get(i), i);
-        }
 
         Graph contemporaneousDag = timeSeriesGraph.subgraph(lag0Nodes);
         List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
@@ -1102,7 +1030,7 @@ public final class MlBayesIm implements BayesIm {
     private DataSet simulateDataHelper(int sampleSize, boolean latentDataSaved) {
         int numMeasured = 0;
         int[] map = new int[nodes.length];
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int j = 0; j < nodes.length; j++) {
 //            if (!latentDataSaved && nodes[j].getNodeType() != NodeType.MEASURED) {
@@ -1110,7 +1038,7 @@ public final class MlBayesIm implements BayesIm {
 //            }
 
             int numCategories = bayesPm.getNumCategories(nodes[j]);
-            List<String> categories = new LinkedList<String>();
+            List<String> categories = new LinkedList<>();
 
             for (int k = 0; k < numCategories; k++) {
                 categories.add(bayesPm.getCategory(nodes[j], k));
@@ -1149,7 +1077,7 @@ public final class MlBayesIm implements BayesIm {
 
         int numVars = 0;
         int[] map = new int[nodes.length];
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int j = 0; j < nodes.length; j++) {
 //            if (!latentDataSaved && nodes[j].getNodeType() != NodeType.MEASURED) {
@@ -1157,7 +1085,7 @@ public final class MlBayesIm implements BayesIm {
 //            }
 
             int numCategories = bayesPm.getNumCategories(nodes[j]);
-            List<String> categories = new LinkedList<String>();
+            List<String> categories = new LinkedList<>();
 
             for (int k = 0; k < numCategories; k++) {
                 categories.add(bayesPm.getCategory(nodes[j], k));

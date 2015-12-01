@@ -84,7 +84,7 @@ public final class MlBayesEstimator {
                 int[] parentValues = estimatedIm.getParentValues(node, row);
 
                 for (int col = 0; col < numCols; col++) {
-                                             
+
                     // Remove values from the proposition in various ways; if
                     // a combination exists in the end, calculate a contitional
                     // probability.
@@ -108,8 +108,7 @@ public final class MlBayesEstimator {
                     if (condition.existsCombination()) {
                         double p = discreteProbs.getConditionalProb(assertion, condition);
                         estimatedIm.setProbability(node, row, col, p);
-                    }
-                    else {
+                    } else {
                         estimatedIm.setProbability(node, row, col, Double.NaN);
                     }
                 }

@@ -38,7 +38,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class StoredCellProbs implements TetradSerializable, DiscreteProbs  {
+public final class StoredCellProbs implements TetradSerializable, DiscreteProbs {
     static final long serialVersionUID = 23L;
 
     private List<Node> variables;
@@ -161,8 +161,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
                     for (int j = i + 1; j < assertion.getNumVariables(); j++) {
                         if (hasNextValue(assertion, j, -1)) {
                             variableValues[j] = nextValue(assertion, j, -1);
-                        }
-                        else {
+                        } else {
                             break loop;
                         }
                     }
@@ -179,14 +178,14 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     }
 
     private static boolean hasNextValue(Proposition proposition, int variable,
-            int curIndex) {
+                                        int curIndex) {
         return nextValue(proposition, variable, curIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
-            int curIndex) {
+                                 int curIndex) {
         for (int i = curIndex + 1;
-                i < proposition.getNumCategories(variable); i++) {
+             i < proposition.getNumCategories(variable); i++) {
             if (proposition.isAllowed(variable, i)) {
                 return i;
             }
@@ -196,7 +195,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     }
 
     public double getConditionalProb(Proposition assertion,
-            Proposition condition) {
+                                     Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
@@ -224,8 +223,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
                     for (int j = i + 1; j < condition.getNumVariables(); j++) {
                         if (hasNextValue(condition, j, -1)) {
                             variableValues[j] = nextValue(condition, j, -1);
-                        }
-                        else {
+                        } else {
                             break loop;
                         }
                     }
@@ -305,17 +303,8 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     //============================PRIVATE METHODS==========================//
 
     /**
-     * @return the row in the table at which the given combination of parent
-     * values is represented for the given node.  The row is calculated as a
-     * variable-base place-value number.  For instance, if the array of
-     * parent dimensions is [3, 5, 7] and the parent value combination is [2,
-     * 4, 5], then the row number is (7 * (5 * (3 * 0 + 2) + 4)) + 5 = 103. This
-     * is the inverse function to getVariableValues().  <p> Note: If the node
-     * has n values, the length of 'values' must be >= the number of parents.
-     * Only the first n values are used.
-     *
      * @return the row in the table for the given node and combination of parent
-     *         values.
+     * values.
      */
     private int getOffset(int[] values) {
         int[] dim = getParentDims();

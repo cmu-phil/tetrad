@@ -49,7 +49,7 @@ public final class ModelGenerator {
                     "Input must not contain cycles.");
         }
 
-        List<Graph> graphs = new LinkedList<Graph>();
+        List<Graph> graphs = new LinkedList<>();
 
         Set<Edge> allEdges = graph.getEdges();
         List<Node> allNodes = graph.getNodes();

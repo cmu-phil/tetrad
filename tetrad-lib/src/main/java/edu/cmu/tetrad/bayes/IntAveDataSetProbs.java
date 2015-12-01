@@ -163,7 +163,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
      * conditional on the given condition.
      */
     public double getConditionalProb(Proposition assertion,
-            Proposition condition) {
+                                     Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +

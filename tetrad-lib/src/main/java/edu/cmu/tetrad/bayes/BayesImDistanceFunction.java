@@ -40,7 +40,6 @@ final class BayesImDistanceFunction {
     /**
      * The static distance method's arguments are the two BayesIM's whose
      * BayesPm's are "equal".
-     *
      */
     public static double distance(BayesIm firstBn, BayesIm secondBn) {
         if (!firstBn.getBayesPm().equals(secondBn.getBayesPm())) {
@@ -70,7 +69,7 @@ final class BayesImDistanceFunction {
                     double diff = firstBn.getProbability(i, j, k) -
                             secondBn.getProbability(i, j, k);
 //                    if (!Double.isNaN(diff)) {
-                        sum += diff * diff;
+                    sum += diff * diff;
 //                    }
                 }
             }

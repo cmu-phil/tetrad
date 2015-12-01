@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.bayes;               
+package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.graph.Graph;
 
@@ -32,7 +32,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @author Joseph Ramsey
  */
 public interface ManipulatingBayesUpdater extends BayesUpdater {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @return the Bayes instantiated model after manipulations have been

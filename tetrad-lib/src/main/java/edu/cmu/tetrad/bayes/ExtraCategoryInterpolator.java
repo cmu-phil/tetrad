@@ -28,11 +28,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * @author Joseph Ramsey
  * @return a data set in variables for columns with missing values are augmented
  * with an extra category that represents the missing values, with missing
  * values being reported as belong this category.
- *
- * @author Joseph Ramsey
  */
 public final class ExtraCategoryInterpolator implements DataFilter {
     public final DataSet filter(DataSet dataSet) {
@@ -44,7 +43,7 @@ public final class ExtraCategoryInterpolator implements DataFilter {
 //            throw new IllegalArgumentException("Data set must be discrete.");
 //        }
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         // Add all of the variables to the new data set.
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
@@ -59,7 +58,7 @@ public final class ExtraCategoryInterpolator implements DataFilter {
 
             String oldName = variable.getName();
             List<String> oldCategories = variable.getCategories();
-            List<String> newCategories = new LinkedList<String>(oldCategories);
+            List<String> newCategories = new LinkedList<>(oldCategories);
 
             String newCategory = "Missing";
             int _j = 0;
@@ -86,8 +85,7 @@ public final class ExtraCategoryInterpolator implements DataFilter {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     newDataSet.setDouble(i, j, dataSet.getDouble(i, j));
                 }
-            }
-            else if (_var instanceof DiscreteVariable) {
+            } else if (_var instanceof DiscreteVariable) {
                 DiscreteVariable variable = (DiscreteVariable) _var;
                 int numCategories = variable.getNumCategories();
 
@@ -96,8 +94,7 @@ public final class ExtraCategoryInterpolator implements DataFilter {
 
                     if (value == DiscreteVariable.MISSING_VALUE) {
                         newDataSet.setInt(i, j, numCategories);
-                    }
-                    else {
+                    } else {
                         newDataSet.setInt(i, j, value);
                     }
                 }

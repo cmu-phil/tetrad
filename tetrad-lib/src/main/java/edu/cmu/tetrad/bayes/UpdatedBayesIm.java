@@ -103,7 +103,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
             throw new NullPointerException();
         }
 
-        if (!evidence.isCompatibleWith(bayesIm)) {
+        if (evidence.isIncompatibleWith(bayesIm)) {
             throw new IllegalArgumentException(
                     "Variables for this evidence must be compatible with those " +
                             "of the model Bayes IM");
@@ -236,7 +236,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     }
 
     public void setProbability(int nodeIndex, int rowIndex, int colIndex,
-            double value) {
+                               double value) {
         getBayesIm().setProbability(nodeIndex, rowIndex, colIndex, value);
     }
 
@@ -389,7 +389,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      */
     private boolean[] ancestorsOfEvidence(Evidence evidence) {
         List<Node> variablesInEvidence = evidence.getVariablesInEvidence();
-        List<Node> nodesInEvidence = new LinkedList<Node>();
+        List<Node> nodesInEvidence = new LinkedList<>();
 
         for (Node _node : variablesInEvidence) {
             String nodeName = _node.getName();
@@ -433,16 +433,14 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         }
 
         if (condition.existsCombination()) {
-            double conditionalProb = getConditionalProb(assertion, condition, relevantVars);
-            return conditionalProb;
-        }
-        else {
+            return getConditionalProb(assertion, condition, relevantVars);
+        } else {
             return Double.NaN;
         }
     }
 
     private double getConditionalProb(Proposition assertion,
-            Proposition condition, boolean[] relevantVars) {
+                                      Proposition condition, boolean[] relevantVars) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
@@ -485,8 +483,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
                     if (!Double.isNaN(cellProb)) {
                         conditionTrue += cellProb;
 
-                        if (assertion.isPermissibleCombination(variableValues))
-                        {
+                        if (assertion.isPermissibleCombination(variableValues)) {
                             assertionTrue += cellProb;
                         }
                     }
@@ -502,14 +499,14 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     }
 
     private static boolean hasNextValue(Proposition proposition, int variable,
-            int curIndex) {
+                                        int curIndex) {
         return nextValue(proposition, variable, curIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
-            int curIndex) {
+                                 int curIndex) {
         for (int i = curIndex + 1;
-                i < proposition.getNumCategories(variable); i++) {
+             i < proposition.getNumCategories(variable); i++) {
             if (proposition.isAllowed(variable, i)) {
                 return i;
             }
@@ -531,7 +528,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
             int[] parents = getBayesIm().getParents(node);
             int[] parentValues = new int[parents.length];
             for (int parentIndex = 0;
-                    parentIndex < parentValues.length; parentIndex++) {
+                 parentIndex < parentValues.length; parentIndex++) {
                 parentValues[parentIndex] =
                         variableValues[parents[parentIndex]];
             }
@@ -561,14 +558,14 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
 
         List<Node> variablesInEvidence = evidence.getVariablesInEvidence();
 
-        List<Node> nodesInEvidence = new LinkedList<Node>();
+        List<Node> nodesInEvidence = new LinkedList<>();
 
         for (Node _node : variablesInEvidence) {
             nodesInEvidence.add(bayesIm.getBayesPm().getNode(_node.getName()));
         }
 
         List<Node> conditionedNodes =
-                new LinkedList<Node>(nodesInEvidence);
+                new LinkedList<>(nodesInEvidence);
         conditionedNodes.addAll(bayesIm.getDag().getParents(node));
 
         for (int i = 0; i < bayesIm.getNumNodes(); i++) {
