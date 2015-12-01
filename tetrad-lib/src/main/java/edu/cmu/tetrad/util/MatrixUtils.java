@@ -95,7 +95,7 @@ public final class MatrixUtils {
                                  double tolerance) {
         return new TetradMatrix(ma).equals(new TetradMatrix(mb), tolerance);
         //new Property(tolerance).equals(TetradMatrix.instance(ma),
-           //     TetradMatrix.instance(mb));
+        //     TetradMatrix.instance(mb));
     }
 
     /**
@@ -114,8 +114,6 @@ public final class MatrixUtils {
     }
 
     /**
-     * @return true iff <code>m</code> is square.
-     *
      * @param m A 2D double matrix.
      * @return Ibid.
      */
@@ -125,10 +123,6 @@ public final class MatrixUtils {
     }
 
     /**
-     * @return true iff <code>m</code> is symmetric to within the given
-     * tolerance--that is, Math.abs(m[i][j] - m[j][i]) <= tolernance for each i,
-     * j.
-     *
      * @param m         The matrix to check.
      * @param tolerance A double >= 0.
      * @return Ibid.
@@ -147,8 +141,6 @@ public final class MatrixUtils {
     }
 
     /**
-     * @return the determinant of a (square) m.
-     *
      * @param m The matrix whose determinant is sought. Must be square.
      * @return Ibid.
      */
@@ -196,7 +188,7 @@ public final class MatrixUtils {
         for (int i = 0; i < S.getRowDimension(); i++) {
             for (int j = 0; j < S.getColumnDimension(); j++) {
                 double v = S.getEntry(i, j);
-                S.setEntry(i,  j, v == 0 ? 0.0 : 1.0 / v);
+                S.setEntry(i, j, v == 0 ? 0.0 : 1.0 / v);
             }
         }
 
@@ -358,7 +350,7 @@ public final class MatrixUtils {
     /**
      * @return the vector as an n x 1 column matrix.
      */
-    public static double[][] asCol(double[] v) {
+    private static double[][] asCol(double[] v) {
         double[][] arr = new double[v.length][1];
         for (int i = 0; i < v.length; i++) {
             arr[i][0] = v[i];
@@ -367,11 +359,6 @@ public final class MatrixUtils {
     }
 
     /**
-     * @return the implied covariance matrix for a structural equation model
-     * with measured and possibly latent variables. ErrCovar should be
-     * positive definite for this method to work properly, though this is
-     * not checked. To check it, call <code>MatrixUtils.isSymmetricPositiveDefinite(errCovar)</code>.
-     *
      * @param edgeCoef The edge covariance matrix. edgeCoef(i, j) is a parameter
      *                 in this matrix just in case i-->j is an edge in the model. All other
      *                 entries in the matrix are zero.
@@ -379,7 +366,7 @@ public final class MatrixUtils {
      *                 variance of i; off-diagonal errCovar(i, j) are covariance parameters
      *                 that are specified in the model. All other matrix entries are zero.
      * @return The implied covariance matrix, which is the covariance matrix
-     *         over the measured variables that is implied by all the given information.
+     * over the measured variables that is implied by all the given information.
      * @throws IllegalArgumentException if edgeCoef or errCovar contains an
      *                                  undefined value (Double.NaN).
      */
@@ -429,7 +416,7 @@ public final class MatrixUtils {
         }
 
         // I - B
-        TetradMatrix m1 =  TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
+        TetradMatrix m1 = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
 
         // (I - B) ^ -1
         TetradMatrix m3 = m1.inverse();
@@ -441,12 +428,11 @@ public final class MatrixUtils {
         TetradMatrix m5 = m3.times(errCovar);
 
         // ((I - B) ^ -1) Cov(e) ((I - B) ^ -1)'
-        TetradMatrix m6 = m5.times(m4);
 
-        return m6;
+        return m5.times(m4);
     }
 
-    public static boolean containsNaN(TetradMatrix m) {
+    private static boolean containsNaN(TetradMatrix m) {
         for (int i = 0; i < m.rows(); i++) {
             for (int j = 0; j < m.columns(); j++) {
                 if (Double.isNaN(m.get(i, j))) {
@@ -517,9 +503,9 @@ public final class MatrixUtils {
         double[] vec = new double[vecSize];
 
         int index = -1;
-        for (int i = 0; i < order; i++) {
+        for (double[] aM : m) {
             for (int j = 0; j < order; j++) {
-                vec[++index] = m[i][j];
+                vec[++index] = aM[j];
             }
         }
 
@@ -617,17 +603,17 @@ public final class MatrixUtils {
         return correlation(m);
     }
 
-    public static TetradMatrix correlation(TetradMatrix var0) {
+    private static TetradMatrix correlation(TetradMatrix var0) {
         int var1 = var0.columns();
 
-        while(true) {
+        while (true) {
             --var1;
-            if(var1 < 0) {
+            if (var1 < 0) {
                 var1 = var0.columns();
 
-                while(true) {
+                while (true) {
                     --var1;
-                    if(var1 < 0) {
+                    if (var1 < 0) {
                         return var0;
                     }
 
@@ -637,9 +623,9 @@ public final class MatrixUtils {
 
             int var2 = var1;
 
-            while(true) {
+            while (true) {
                 --var2;
-                if(var2 < 0) {
+                if (var2 < 0) {
                     break;
                 }
 
@@ -687,7 +673,7 @@ public final class MatrixUtils {
         return toString(m, nf, variables);
     }
 
-    public static String toString(double[][] m, NumberFormat nf) {
+    private static String toString(double[][] m, NumberFormat nf) {
         return toString(m, nf, null);
     }
 
@@ -696,14 +682,14 @@ public final class MatrixUtils {
      * formatter and beginning each line with the given lineInit. The number
      * format is DecimalFormat(" 0.0000;-0.0000").
      */
-    public static String toString(double[][] m, NumberFormat nf, List<String> variables) {
+    private static String toString(double[][] m, NumberFormat nf, List<String> variables) {
         String result;
         if (nf == null) {
             throw new NullPointerException("NumberFormat must not be null.");
         }
 
         if (variables == null) {
-            variables = new ArrayList<String>();
+            variables = new ArrayList<>();
 
             for (int i = 0; i < m[0].length; i++) {
                 variables.add("V" + (i + 1));
@@ -743,7 +729,7 @@ public final class MatrixUtils {
         }
 
         if (variables == null) {
-            variables = new ArrayList<String>();
+            variables = new ArrayList<>();
 
             for (int i = 0; i < m.length; i++) {
                 variables.add("V" + (i + 1));
@@ -786,7 +772,7 @@ public final class MatrixUtils {
         String result;
 
         if (variables == null) {
-            variables = new ArrayList<String>();
+            variables = new ArrayList<>();
 
             for (int i = 0; i < m.length; i++) {
                 variables.add("V" + (i + 1));
@@ -821,7 +807,7 @@ public final class MatrixUtils {
             result = nullMessage();
         } else {
             if (variables == null) {
-                variables = new ArrayList<String>();
+                variables = new ArrayList<>();
 
                 for (int i = 0; i < m.length; i++) {
                     variables.add("V" + (i + 1));
@@ -905,16 +891,13 @@ public final class MatrixUtils {
     //=========================PRIVATE METHODS===========================//
 
     private static String nullMessage() {
-        StringBuilder buf = new StringBuilder();
-        buf.append("\n");
-        buf.append("\t");
-        buf.append("<Matrix is null>");
-        return buf.toString();
+        return "\n" +
+                "\t" +
+                "<Matrix is null>";
     }
 
     /**
      * @return the order of the matrix for which this is the vech.
-     *
      * @throws IllegalArgumentException in case this matrix does not have
      *                                  dimension n x 1 for some n = 0 + 1 + 2 +
      *                                  ... + k for some k.
@@ -943,9 +926,7 @@ public final class MatrixUtils {
         double[][] copy = new double[arr.length][arr[0].length];
 
         for (int i = 0; i < arr.length; i++) {
-            for (int j = 0; j < arr[0].length; j++) {
-                copy[i][j] = arr[i][j];
-            }
+            System.arraycopy(arr[i], 0, copy[i], 0, arr[0].length);
         }
 
         return copy;
@@ -953,37 +934,37 @@ public final class MatrixUtils {
 
     public static RealMatrix transposeWithoutCopy(final RealMatrix apacheData) {
         return new AbstractRealMatrix(apacheData.getColumnDimension(), apacheData.getRowDimension()) {
-                @Override
-                public int getRowDimension() {
-                    return apacheData.getColumnDimension();
-                }
+            @Override
+            public int getRowDimension() {
+                return apacheData.getColumnDimension();
+            }
 
-                @Override
-                public int getColumnDimension() {
-                    return apacheData.getRowDimension();
-                }
+            @Override
+            public int getColumnDimension() {
+                return apacheData.getRowDimension();
+            }
 
-                @Override
-                public RealMatrix createMatrix(int rowDimension, int columnDimension) throws NotStrictlyPositiveException {
-                    return apacheData.createMatrix(rowDimension, columnDimension);
-                }
+            @Override
+            public RealMatrix createMatrix(int rowDimension, int columnDimension) throws NotStrictlyPositiveException {
+                return apacheData.createMatrix(rowDimension, columnDimension);
+            }
 
-                @Override
-                public RealMatrix copy() {
-                    throw new IllegalArgumentException("Can't copy");
-                }
+            @Override
+            public RealMatrix copy() {
+                throw new IllegalArgumentException("Can't copy");
+            }
 
-                @Override
-                public double getEntry(int i, int j) throws OutOfRangeException {
-    //                throw new UnsupportedOperationException();
-                    return apacheData.getEntry(j, i);
-                }
+            @Override
+            public double getEntry(int i, int j) throws OutOfRangeException {
+                //                throw new UnsupportedOperationException();
+                return apacheData.getEntry(j, i);
+            }
 
-                @Override
-                public void setEntry(int i, int j, double v) throws OutOfRangeException {
-                    throw new UnsupportedOperationException();
-                }
-            };
+            @Override
+            public void setEntry(int i, int j, double v) throws OutOfRangeException {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 }
 

@@ -33,7 +33,7 @@ import cern.jet.stat.Probability;
 @SuppressWarnings({"ConstantConditions", "WeakerAccess", "UnusedDeclaration"})
 public class ProbUtils {
 
-    private static double r[] = {1.253314137315500251207883, 1.193182964731915311846094,
+    private static final double[] r = {1.253314137315500251207883, 1.193182964731915311846094,
             1.137490921203604514832235, 1.085827027468003637553896,
             1.037824575853726812300365, .9931557904881572182738326,
             .9515271920712067152786701, .9126755670832121676776603,
@@ -174,8 +174,7 @@ public class ProbUtils {
 
         if (Math.abs(x) > 15.) {
             dcphi = 0.;
-        }
-        else {
+        } else {
             j = (int) Math.floor(Math.abs(x) * 16. + .5);
             z = j * .0625;
             h = Math.abs(x) - z;
@@ -193,8 +192,7 @@ public class ProbUtils {
 
         if (x < 0.) {
             return dcphi;
-        }
-        else {
+        } else {
             return (1.0 - dcphi);
         }
     }
@@ -360,8 +358,7 @@ public class ProbUtils {
             if ((y != x) || (p != pin)) {
                 dbetai = 1.0 - dbetai;
             }
-        }
-        else {
+        } else {
 
             //
             // evaluate the infinite sum first.  term will equal
@@ -452,17 +449,13 @@ public class ProbUtils {
 
         if (k < 0) {
             dp = 0.0;
-        }
-        else if (k >= n) {
+        } else if (k >= n) {
             dp = 1.0;
-        }
-        else if (p == 0.0) {
+        } else if (p == 0.0) {
             dp = (k < 0) ? 0.0 : 1.0;
-        }
-        else if (p == 1.0) {
+        } else if (p == 1.0) {
             dp = (k < n) ? 0.0 : 1.0;
-        }
-        else {
+        } else {
             da = (double) k + 1.0;
             db = (double) (n - k);
             dp = 1.0 - betaCdf(p, da, db);
@@ -498,8 +491,7 @@ public class ProbUtils {
 
         if ((x <= 0.0) || (a <= 0.0)) {
             return 0.0;
-        }
-        else {
+        } else {
             sx = Math.sqrt(a) * 3.0 *
                     (Math.pow(x / a, 1.0 / 3.0) + 1.0 / (a * 9.0) - 1.0);
 
@@ -515,8 +507,7 @@ public class ProbUtils {
 
         if ((x <= 0.0) || (a <= 0.0)) {
             p = 0.0;
-        }
-        else {
+        } else {
             ap = a;
             del = 1.0 / a;
             sum = del;
@@ -584,17 +575,14 @@ public class ProbUtils {
 
         if ((x <= 0.0) || (a <= 0.0)) {
             return Double.NaN;
-        }
-        else if (a > LARGE_A) {
+        } else if (a > LARGE_A) {
             return gnorm(a, x);
-        }
-        else {
+        } else {
             gln = lngamma(a);
 
             if (x < (a + 1.0)) {
                 return gser(a, x, gln);
-            }
-            else {
+            } else {
                 return (1.0 - gcf(a, x, gln));
             }
         }
@@ -613,11 +601,9 @@ public class ProbUtils {
 
         if (k < 0) {
             dp = 0.0;
-        }
-        else if (y == 0.0) {
+        } else if (y == 0.0) {
             dp = (k < 0) ? 0.0 : 1.0;
-        }
-        else {
+        } else {
             dx = k + 1.0;
             dp = 1.0 - gammaCdf(dx, y);
         }
@@ -652,8 +638,7 @@ public class ProbUtils {
                 dx = db / (db + da * t);
                 dp = betaCdf(dx, db, da);
                 cdf = (x >= 0) ? 1.0 - .5 * dp : .5 * dp;
-            }
-            else {
+            } else {
 
                 /* asymptotic series for large or non-integer df */
                 if (y > TOL) {
@@ -673,8 +658,7 @@ public class ProbUtils {
                     cdf = 1.0 - cdf;
                 }
             }
-        }
-        else {
+        } else {
 
             /* nested summation of cosine series */
             if ((n < 20.0) && (t < 4.0)) {
@@ -684,8 +668,7 @@ public class ProbUtils {
                 if (n == 1.0) {
                     a = 0.0;
                 }
-            }
-            else {
+            } else {
                 a = Math.sqrt(b);
                 y = a * n;
 
@@ -711,8 +694,7 @@ public class ProbUtils {
 
             if (x > 0.0) {
                 cdf = 1.0 - 0.5 * cdf;
-            }
-            else {
+            } else {
                 cdf = 0.5 * cdf;
             }
         }
@@ -779,8 +761,7 @@ public class ProbUtils {
             pp = p;
             qq = q;
             indx = false;
-        }
-        else {
+        } else {
             a = one - alpha;
             pp = q;
             qq = p;
@@ -800,8 +781,7 @@ public class ProbUtils {
             d_2 = (t - s) * (r + five / six - two / (three * h));
             w = d_1 - d_2;
             ret_val = pp / (pp + qq * Math.exp(w + w));
-        }
-        else {
+        } else {
             r = qq + qq;
             t = one / (qq * 9.);
 
@@ -812,14 +792,12 @@ public class ProbUtils {
             if (t <= zero) {
                 ret_val =
                         one - Math.exp((Math.log((one - a) * qq) + beta) / qq);
-            }
-            else {
+            } else {
                 t = (four * pp + r - two) / t;
 
                 if (t <= one) {
                     ret_val = Math.exp((Math.log(a * pp) + beta) / pp);
-                }
-                else {
+                } else {
                     ret_val = one - two / (t + one);
                 }
             }
@@ -946,8 +924,7 @@ public class ProbUtils {
             if (pk < x) {
                 k1 = k;
                 p1 = pk;
-            }
-            else {
+            } else {
                 k2 = k;
                 p2 = pk;
             }
@@ -1047,8 +1024,7 @@ public class ProbUtils {
 
                 return ret_val;
             }
-        }
-        else if (v > c3) {
+        } else if (v > c3) {
 
             // call to algorithm AS 111 - note that p has been tested above.
             // AS 241 could be used as an alternative.
@@ -1065,8 +1041,7 @@ public class ProbUtils {
             if (ch > c6 * v + six) {
                 ch = -two * (Math.log(one - p) - c * Math.log(half * ch) + g);
             }
-        }
-        else {
+        } else {
 
             // starting approximation for v less than or equal to 0.32
             ch = c4;
@@ -1118,8 +1093,7 @@ public class ProbUtils {
 
         if (p == 0.0) {
             return 0.0;
-        }
-        else {
+        } else {
             dx = betaCdf(1.0 - p, 0.5 * df2, 0.5 * df1);
 
             return (df2 * (1.0 / dx - 1.0) / df1);
@@ -1162,8 +1136,7 @@ public class ProbUtils {
             r = q * q;
             ppn = q * (((a3 * r + a2) * r + a1) * r + a0) /
                     ((((b4 * r + b3) * r + b2) * r + b1) * r + one);
-        }
-        else {
+        } else {
             r = p;
 
             if (q > zero) {
@@ -1225,8 +1198,7 @@ public class ProbUtils {
             if (pk < x) {
                 k1 = k;
                 p1 = pk;
-            }
-            else {
+            } else {
                 k2 = k;
                 p2 = pk;
             }
@@ -1248,19 +1220,16 @@ public class ProbUtils {
         if (n <= 3.0) {
             if (n == 1) {
                 sq = Math.tan(HALF_PI * (1.0 - p));
-            }
-            else if (n == 2.0) {
+            } else if (n == 2.0) {
                 sq = Math.sqrt(2.0 / (p * (2.0 - p)) - 2.0);
-            }
-            else {
+            } else {
                 sq = betaQuantile(p, 0.5 * n, 0.5);
 
                 if (sq != 0.0) {
                     sq = Math.sqrt(n / sq - n);
                 }
             }
-        }
-        else {
+        } else {
             a = 1.0 / (n - 0.5);
             b = 48.0 / (a * a);
             c = ((20700.0 * a / b - 98.0) * a - 16) * a + 96.36;
@@ -1283,8 +1252,7 @@ public class ProbUtils {
                         b + 1.0) * x;
                 y = a * y * y;
                 y = (y > .002) ? Math.exp(y) - 1.0 : 0.5 * y * y + y;
-            }
-            else {
+            } else {
                 y = ((1.0 / (((n + 6.0) / (n * y) - 0.089 * d - 0.822) *
                         (n + 2.0) * 3.0) + 0.5 / (n + 4.0)) * y - 1.0) *
                         (n + 1.0) / (n + 2.0) + 1.0 / y;
@@ -1305,8 +1273,7 @@ public class ProbUtils {
 
         if ((x <= 0.0) || (x >= 1.0)) {
             return 0.0;
-        }
-        else {
+        } else {
             return (Math.exp(Math.log(x) * (a - 1) + Math.log(1 - x) * (b - 1) -
                     logbeta(a, b)));
         }
@@ -1316,14 +1283,11 @@ public class ProbUtils {
 
         if (p == 0.0) {
             return ((k == 0) ? 1.0 : 0.0);
-        }
-        else if (p == 1.0) {
+        } else if (p == 1.0) {
             return ((k == n) ? 1.0 : 0.0);
-        }
-        else if ((k < 0) || (k > n)) {
+        } else if ((k < 0) || (k > n)) {
             return 0.0;
-        }
-        else {
+        } else {
             return (Math.exp(lngamma(n + 1.0) - lngamma(k + 1.0) -
                     lngamma(n - k + 1.0) + k * Math.log(p) +
                     (n - k) * Math.log(1.0 - p)));
@@ -1342,8 +1306,7 @@ public class ProbUtils {
 
         if (x <= 0.0) {
             return 0.0;
-        }
-        else {
+        } else {
             return (Math.exp(0.5 * a * Math.log(a) + 0.5 * b * Math.log(b) +
                     (0.5 * a - 1.0) * Math.log(x) - logbeta(0.5 * a, 0.5 * b) -
                     0.5 * (a + b) * Math.log(b + a * x)));
@@ -1354,8 +1317,7 @@ public class ProbUtils {
 
         if (x <= 0.0) {
             return 0.0;
-        }
-        else {
+        } else {
             return Math.exp(Math.log(x) * (a - 1) - x - lngamma(a));
         }
     }
@@ -1368,11 +1330,9 @@ public class ProbUtils {
 
         if (lambda == 0.0) {
             return ((k == 0) ? 1.0 : 0.0);
-        }
-        else if (k < 0) {
+        } else if (k < 0) {
             return 0.0;
-        }
-        else {
+        } else {
             return (Math.exp(k * Math.log(lambda) - lambda - lngamma(k + 1.0)));
         }
     }
@@ -1427,8 +1387,7 @@ public class ProbUtils {
 
                 t *= uniformRand();
             } while (t > expxm);
-        }
-        else {
+        } else {
             sqrt2xm = Math.sqrt(2.0 * xm);
             logxm = Math.log(xm);
             g = xm * logxm - lngamma(xm + 1.0);
@@ -1461,11 +1420,9 @@ public class ProbUtils {
 
         if (p == 0.0) {
             k = 0;
-        }
-        else if (p == 1.0) {
+        } else if (p == 1.0) {
             k = n;
-        }
-        else if (n < 50) {
+        } else if (n < 50) {
             k = 0;
 
             for (j = 0; j < n; j++) {
@@ -1473,8 +1430,7 @@ public class ProbUtils {
                     k++;
                 }
             }
-        }
-        else if (am < 1.0) {
+        } else if (am < 1.0) {
             g = Math.exp(-am);
             t = 1.0;
             k = -1;
@@ -1488,8 +1444,7 @@ public class ProbUtils {
             if (k > n) {
                 k = n;
             }
-        }
-        else {
+        } else {
             en = n;
             g = lngamma(en + 1.0);
             pc = 1.0 - p;
@@ -1584,8 +1539,7 @@ public class ProbUtils {
                     if (u1 <= Math.exp(-x)) {
                         done = true;
                     }
-                }
-                else {
+                } else {
                     x = -Math.log((c - v) / a);
 
                     if ((x > 0.0) && (u1 < Math.exp((a - 1.0) * Math.log(x)))) {
@@ -1593,11 +1547,9 @@ public class ProbUtils {
                     }
                 }
             } while (!done);
-        }
-        else if (a == 1.0) {
+        } else if (a == 1.0) {
             x = -Math.log(uniformRand());
-        }
-        else {
+        } else {
 
             /* Cheng and Feast algorithm */
             c1 = a - 1.0;
@@ -1695,8 +1647,7 @@ public class ProbUtils {
 
         if (r == 0) {
             b = 4 * gh * gk;
-        }
-        else {
+        } else {
             rr = 1 - r * r;
             assert rr >= 0;
             if (rr != 0) {
@@ -1713,8 +1664,7 @@ public class ProbUtils {
                         return (b);
                     }
                     b = b + gk;
-                }
-                else {
+                } else {
                     b = gh;
                     if (ah * ak != 0) {
                         if (ah * ak < 0) {
@@ -1731,8 +1681,7 @@ public class ProbUtils {
                 do {
                     if (myflag == -1) {
                         myflag = 1;
-                    }
-                    else {
+                    } else {
                         wh = -ak;
                         wk = (ah / ak - r) / sqr;
                         gw = 2 * gk;
@@ -1779,8 +1728,7 @@ public class ProbUtils {
                                 ap = -ap * a2;
                             } while (true);
                             t = (Math.atan(wk) - wk * s1) / (2 * Math.PI);
-                        }
-                        else {
+                        } else {
                             t = wk * gw * (1 - gw) / 2;
                         }
 
@@ -1790,16 +1738,13 @@ public class ProbUtils {
                         break;
                     }
                 } while (ak != 0);
-            }
-            else if (r >= 0) {
+            } else if (r >= 0) {
                 if (ah >= ak) {
                     b = 2 * gh;
-                }
-                else {
+                } else {
                     b = 2 * gk;
                 }
-            }
-            else if (ah + ak < 0) {
+            } else if (ah + ak < 0) {
                 b = 2 * (gh + gk) - 1;
             }
         }
@@ -1826,7 +1771,7 @@ public class ProbUtils {
      * @param b upper bounds (use Double.POSITIVE_INFINITY if necessary)
      */
     public static double multinormalProb(double a[], double b[],
-            double cov[][]) {
+                                         double cov[][]) {
         assert a.length == b.length;
         for (int i = 0; i < a.length; i++) {
             assert a[i] <= b[i];
@@ -1858,14 +1803,12 @@ public class ProbUtils {
 
         if (a[0] == Double.NEGATIVE_INFINITY) {
             d[0] = 0.;
-        }
-        else {
+        } else {
             d[0] = ProbUtils.normalCdf(a[0] / c[0][0]);
         }
         if (b[0] == Double.POSITIVE_INFINITY) {
             e[0] = 1.;
-        }
-        else {
+        } else {
             e[0] = ProbUtils.normalCdf(b[0] / c[0][0]);
         }
         f[0] = e[0] - d[0];
@@ -1878,11 +1821,9 @@ public class ProbUtils {
                 double quant = d[i - 1] + w[i - 1] * (e[i - 1] - d[i - 1]);
                 if (quant == 1.) {
                     y[i - 1] = Double.MAX_VALUE;
-                }
-                else if (quant == 0.) {
+                } else if (quant == 0.) {
                     y[i - 1] = -Double.MAX_VALUE;
-                }
-                else {
+                } else {
                     y[i - 1] = ProbUtils.normalQuantile(
                             d[i - 1] + w[i - 1] * (e[i - 1] - d[i - 1]));
                 }
@@ -1892,14 +1833,12 @@ public class ProbUtils {
                 }
                 if (a[i] == Double.NEGATIVE_INFINITY) {
                     d[i] = 0.;
-                }
-                else {
+                } else {
                     d[i] = ProbUtils.normalCdf((a[i] - auxSum) / c[i][i]);
                 }
                 if (b[i] == Double.POSITIVE_INFINITY) {
                     e[i] = 1.;
-                }
-                else {
+                } else {
                     e[i] = ProbUtils.normalCdf((b[i] - auxSum) / c[i][i]);
                 }
                 f[i] = (e[i] - d[i]) * f[i - 1];
@@ -1923,49 +1862,31 @@ public class ProbUtils {
                     if (b[j] < b[smallest]) {
                         smallest = j;
                     }
-                }
-                else
-                if (Double.isInfinite(b[j]) && Double.isInfinite(b[smallest])) {
+                } else if (Double.isInfinite(b[j]) && Double.isInfinite(b[smallest])) {
                     if (a[j] > a[smallest]) {
                         smallest = j;
                     }
-                }
-                else
-                if (Double.isInfinite(a[smallest]) && Double.isInfinite(b[j])) {
-                    if (b[smallest] <= 0. && a[j] >= 0. && a[j] > -b[smallest])
-                    {
+                } else if (Double.isInfinite(a[smallest]) && Double.isInfinite(b[j])) {
+                    if (b[smallest] <= 0. && a[j] >= 0. && a[j] > -b[smallest]) {
+                        smallest = j;
+                    } else if (b[smallest] >= 0. && a[j] >= 0.) {
+                        smallest = j;
+                    } else if (b[smallest] >= 0. && a[j] <= 0. && -a[j] < b[smallest]) {
                         smallest = j;
                     }
-                    else if (b[smallest] >= 0. && a[j] >= 0.) {
+                } else if (Double.isInfinite(b[smallest]) && Double.isInfinite(a[j])) {
+                    if (a[smallest] <= 0. && b[j] >= 0. && b[j] < -a[smallest]) {
+                        smallest = j;
+                    } else if (a[smallest] <= 0. && b[j] <= 0.) {
+                        smallest = j;
+                    } else if (a[smallest] >= 0. && b[j] <= 0. && -b[j] > a[smallest]) {
                         smallest = j;
                     }
-                    else
-                    if (b[smallest] >= 0. && a[j] <= 0. && -a[j] < b[smallest])
-                    {
-                        smallest = j;
-                    }
-                }
-                else
-                if (Double.isInfinite(b[smallest]) && Double.isInfinite(a[j])) {
-                    if (a[smallest] <= 0. && b[j] >= 0. && b[j] < -a[smallest])
-                    {
-                        smallest = j;
-                    }
-                    else if (a[smallest] <= 0. && b[j] <= 0.) {
-                        smallest = j;
-                    }
-                    else
-                    if (a[smallest] >= 0. && b[j] <= 0. && -b[j] > a[smallest])
-                    {
-                        smallest = j;
-                    }
-                }
-                else if ((Double.isInfinite(a[smallest]) ||
+                } else if ((Double.isInfinite(a[smallest]) ||
                         Double.isInfinite(b[smallest])) &&
                         !Double.isInfinite(a[j]) && !Double.isInfinite(b[j])) {
                     smallest = j;
-                }
-                else if (!Double.isInfinite(a[smallest]) &&
+                } else if (!Double.isInfinite(a[smallest]) &&
                         !Double.isInfinite(b[smallest]) &&
                         !Double.isInfinite(a[j]) && !Double.isInfinite(b[j]) &&
                         Math.abs(b[j] - a[j]) <
@@ -1982,12 +1903,10 @@ public class ProbUtils {
             if (smallest > i) {
                 idx1 = smallest;
                 idx2 = i;
-            }
-            else if (smallest < i) {
+            } else if (smallest < i) {
                 idx1 = i;
                 idx2 = smallest;
-            }
-            else {
+            } else {
                 continue;
             }
             temp1 = cov[idx1][idx2];

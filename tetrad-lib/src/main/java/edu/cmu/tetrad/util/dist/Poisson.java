@@ -25,8 +25,9 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 /**
  * Created by IntelliJ IDEA. User: jdramsey Date: Jan 15, 2008 Time: 5:06:49 PM
-* To change this template use File | Settings | File Templates.
-*/
+ * To change this template use File | Settings | File Templates.
+ */
+
 /**
  * Wraps a chi square distribution for purposes of drawing random samples.
  * Methods are provided to allow parameters to be manipulated in an interface.
@@ -38,8 +39,8 @@ public class Poisson implements Distribution {
 
     private double mean;
 
-    public Poisson(double mean) {
-        this.mean = mean;
+    private Poisson() {
+        this.mean = (double) 1;
     }
 
     /**
@@ -48,7 +49,7 @@ public class Poisson implements Distribution {
      * @return The exemplar.
      */
     public static Poisson serializableInstance() {
-        return new Poisson(1);
+        return new Poisson();
     }
 
     public int getNumParameters() {

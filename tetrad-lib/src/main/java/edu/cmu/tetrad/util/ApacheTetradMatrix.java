@@ -31,6 +31,7 @@ import java.io.ObjectInputStream;
 /**
  * Wraps the Apache math3 linear algebra library for most uses in Tetrad. Specialized uses will still have to use
  * the library directly.
+ *
  * @author Joseph Ramsey
  */
 public class ApacheTetradMatrix implements TetradSerializable {
@@ -42,8 +43,7 @@ public class ApacheTetradMatrix implements TetradSerializable {
     private ApacheTetradMatrix(double[][] apacheData) {
         if (apacheData.length == 0) {
             this.apacheData = new Array2DRowRealMatrix();
-        }
-        else {
+        } else {
             this.apacheData = new BlockRealMatrix(apacheData);
         }
     }
@@ -60,7 +60,7 @@ public class ApacheTetradMatrix implements TetradSerializable {
         return new ApacheTetradMatrix(data);
     }
 
-    public static ApacheTetradMatrix instance(int m, int n) {
+    private static ApacheTetradMatrix instance(int m, int n) {
         return new ApacheTetradMatrix(m, n);
     }
 
@@ -119,8 +119,8 @@ public class ApacheTetradMatrix implements TetradSerializable {
         return new ApacheTetradMatrix(apacheData.getRowDimension(), apacheData.getColumnDimension());
     }
 
-    public void set(int i, int j, double v) {
-        apacheData.setEntry(i, j, v);
+    private void set(int i, int j) {
+        apacheData.setEntry(i, j, (double) 1);
     }
 
     public TetradVector viewRow(int i) {
@@ -142,7 +142,7 @@ public class ApacheTetradMatrix implements TetradSerializable {
 
     public ApacheTetradMatrix identity(int rows) {
         ApacheTetradMatrix m = ApacheTetradMatrix.instance(rows, rows);
-        for (int i = 0; i < rows; i++) m.set(i, i, 1);
+        for (int i = 0; i < rows; i++) m.set(i, i);
         return m;
     }
 

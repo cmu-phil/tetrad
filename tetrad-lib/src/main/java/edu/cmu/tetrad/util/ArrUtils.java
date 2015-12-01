@@ -29,7 +29,7 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey
  */
-public final class ArrUtils {
+final class ArrUtils {
 
     //=========================PUBLIC METHODS===========================//
 
@@ -128,7 +128,7 @@ public final class ArrUtils {
      * @param nf  The number format to use.
      * @return The formatted string.
      */
-    public static String toString(double[] arr, NumberFormat nf) {
+    private static String toString(double[] arr, NumberFormat nf) {
         String result;
         if (nf == null) {
             throw new NullPointerException("NumberFormat must not be null.");
@@ -152,11 +152,9 @@ public final class ArrUtils {
 
 
     private static String nullMessage() {
-        StringBuilder buf = new StringBuilder();
-        buf.append("\n");
-        buf.append("\t");
-        buf.append("<Matrix is null>");
-        return buf.toString();
+        return "\n" +
+                "\t" +
+                "<Matrix is null>";
     }
 }
 

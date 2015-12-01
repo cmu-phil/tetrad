@@ -33,7 +33,7 @@ import cern.jet.math.Functions;
 public class ColtTetradVector implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private DoubleMatrix1D data;
+    private final DoubleMatrix1D data;
 
     private ColtTetradVector(double[] data) {
         this.data = new DenseDoubleMatrix1D(data);
@@ -51,7 +51,7 @@ public class ColtTetradVector implements TetradSerializable {
         return new ColtTetradVector(data);
     }
 
-    public static ColtTetradVector instance(int size) {
+    private static ColtTetradVector instance(int size) {
         return new ColtTetradVector(size);
     }
 

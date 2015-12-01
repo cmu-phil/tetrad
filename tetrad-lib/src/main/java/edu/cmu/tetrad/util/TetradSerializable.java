@@ -48,7 +48,7 @@ import java.io.Serializable;
  * minutes.</p> <p>The test class that checks the above conditions are
  * TestSerialization, which in turn uses methods in TetradSerializableUtils.
  * More details can be find there.</p>
- *
+ * <p>
  * <p>See TestSerialization and TestSerializiableUtils.</p>
  *
  * @author Joseph Ramsey

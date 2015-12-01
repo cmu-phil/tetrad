@@ -43,7 +43,7 @@ public class Discrete implements Distribution {
      * supplied values must be in (0, 1), and each must be less than its
      * successor (if it has one).
      */
-    public Discrete(double... p) {
+    private Discrete(double... p) {
         this.p = convert(p);
     }
 

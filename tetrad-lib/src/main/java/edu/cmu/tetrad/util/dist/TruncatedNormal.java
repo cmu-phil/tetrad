@@ -67,11 +67,11 @@ public class TruncatedNormal implements Distribution {
 
     //=========================CONSTRUCTORS===========================//
 
-    public TruncatedNormal(double mean, double sd, double low, double high) {
-        setParameter(0, mean);
-        setParameter(1, sd);
-        setParameter(2, low);
-        setParameter(3, high);
+    private TruncatedNormal() {
+        setParameter(0, (double) 0);
+        setParameter(1, (double) 1);
+        setParameter(2, Double.NEGATIVE_INFINITY);
+        setParameter(3, Double.POSITIVE_INFINITY);
     }
 
     /**
@@ -80,7 +80,7 @@ public class TruncatedNormal implements Distribution {
      * @return The exemplar.
      */
     public static TruncatedNormal serializableInstance() {
-        return new TruncatedNormal(0, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        return new TruncatedNormal();
     }
 
     //=========================PUBLIC METHODS=========================//

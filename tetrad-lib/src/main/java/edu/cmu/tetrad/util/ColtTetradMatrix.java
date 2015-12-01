@@ -41,7 +41,7 @@ public class ColtTetradMatrix implements TetradSerializable {
 
     private DoubleMatrix2D data;
     private RealMatrix apacheMatrix;
-    private static Algebra algebra = new Algebra();
+    private static final Algebra algebra = new Algebra();
 
     private ColtTetradMatrix(double[][] data) {
         this.data = new DenseDoubleMatrix2D(data);
@@ -94,7 +94,7 @@ public class ColtTetradMatrix implements TetradSerializable {
         return new TetradVector(algebra.mult(data, new DenseDoubleMatrix1D(v.toArray())).toArray());
     }
 
-    public double[][] toArray() {
+    private double[][] toArray() {
         return data.toArray();
     }
 
@@ -217,7 +217,7 @@ public class ColtTetradMatrix implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject (ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

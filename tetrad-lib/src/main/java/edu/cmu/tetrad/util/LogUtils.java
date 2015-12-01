@@ -51,7 +51,7 @@ public class LogUtils {
      * Map from streams to handlers.
      */
     private final Map<OutputStream, StreamHandler> streams
-            = new HashMap<OutputStream, StreamHandler>();
+            = new HashMap<>();
 
     //============================CONSTRUCTORS===========================//
 
@@ -64,8 +64,6 @@ public class LogUtils {
     }
 
     /**
-     * @return singleton instance.
-     *
      * @return Ibid.
      */
     @SuppressWarnings({"UnusedDeclaration"})
@@ -92,10 +90,8 @@ public class LogUtils {
 
         SimpleFormatter formatter = new SimpleFormatter() {
             public synchronized String format(LogRecord record) {
-                StringBuilder buf = new StringBuilder();
-                buf.append(record.getMessage());
-                buf.append("\n");
-                return buf.toString();
+                return record.getMessage() +
+                        "\n";
             }
         };
 
@@ -125,7 +121,7 @@ public class LogUtils {
      *
      * @param stream Ibid.
      */
-    public void remove(OutputStream stream) {
+    private void remove(OutputStream stream) {
         if (stream == null) {
             return;
         }

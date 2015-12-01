@@ -48,7 +48,7 @@ import static java.lang.Math.*;
  * @author Joseph Ramsey
  */
 public final class StatUtils {
-    public static double logCoshExp = logCoshExp();
+    private static final double logCoshExp = logCoshExp();
 
     /**
      * @param array a long array.
@@ -71,7 +71,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the mean of the first N values in this array.
      */
-    public static double mean(long array[], int N) {
+    private static double mean(long array[], int N) {
 
         int i;
         long sum = 0;
@@ -88,7 +88,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the mean of the first N values in this array.
      */
-    public static double mean(double array[], int N) {
+    private static double mean(double array[], int N) {
         double sum = 0.0;
 
         for (int i = 0; i < N; i++) {
@@ -103,7 +103,7 @@ public final class StatUtils {
      * @param N    the number of values of array which should be considered.
      * @return the mean of the first N values in this array.
      */
-    public static double mean(TetradVector data, int N) {
+    private static double mean(TetradVector data, int N) {
         double sum = 0.0;
 
         for (int i = 0; i < N; i++) {
@@ -260,7 +260,7 @@ public final class StatUtils {
      * @param quartileNumber 1, 2, or 3.
      * @return the requested quartile of the first N values in this array.
      */
-    public static double quartile(long array[], int N, int quartileNumber) {
+    private static double quartile(long array[], int N, int quartileNumber) {
 
         if ((quartileNumber < 1) || (quartileNumber > 3)) {
             throw new IllegalArgumentException("StatUtils.quartile:  " +
@@ -331,7 +331,7 @@ public final class StatUtils {
      * @param quartileNumber 1, 2, or 3.
      * @return the requested quartile of the first N values in this array.
      */
-    public static double quartile(double array[], int N, int quartileNumber) {
+    private static double quartile(double array[], int N, int quartileNumber) {
 
         if ((quartileNumber < 1) || (quartileNumber > 3)) {
             throw new IllegalArgumentException("StatUtils.quartile:  " +
@@ -415,7 +415,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the minimum of the first N values in this array.
      */
-    public static double min(long array[], int N) {
+    private static double min(long array[], int N) {
 
         double min = array[0];
 
@@ -433,7 +433,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the minimum of the first N values in this array.
      */
-    public static double min(double array[], int N) {
+    private static double min(double array[], int N) {
 
         double min = array[0];
 
@@ -467,7 +467,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the maximum of the first N values in this array.
      */
-    public static double max(long array[], int N) {
+    private static double max(long array[], int N) {
 
         double max = array[0];
 
@@ -485,7 +485,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the maximum of the first N values in this array.
      */
-    public static double max(double array[], int N) {
+    private static double max(double array[], int N) {
 
         double max = array[0];
 
@@ -570,7 +570,7 @@ public final class StatUtils {
      * @return the sum of the squared differences from the mean of the first N
      * values in array.
      */
-    public static double ssx(long array[], int N) {
+    private static double ssx(long array[], int N) {
 
         int i;
         double difference;
@@ -591,7 +591,7 @@ public final class StatUtils {
      * @return the sum of the squared differences from the mean of the first N
      * values in array.
      */
-    public static double ssx(double array[], int N) {
+    private static double ssx(double array[], int N) {
 
         int i;
         double difference;
@@ -654,7 +654,7 @@ public final class StatUtils {
      * products of the sample means for the first N values in array1 and
      * array2..
      */
-    public static double sxy(long array1[], long array2[], int N) {
+    private static double sxy(long array1[], long array2[], int N) {
 
         int i;
         double sum = 0.0;
@@ -676,7 +676,7 @@ public final class StatUtils {
      * products of the sample means for the first N values in array1 and
      * array2..
      */
-    public static double sxy(double array1[], double array2[], int N) {
+    private static double sxy(double array1[], double array2[], int N) {
         double sum = 0.0;
         double meanX = mean(array1, N);
         double meanY = mean(array2, N);
@@ -696,7 +696,7 @@ public final class StatUtils {
      * products of the sample means for the first N values in array1 and
      * array2..
      */
-    public static double sxy(TetradVector data1, TetradVector data2, int N) {
+    private static double sxy(TetradVector data1, TetradVector data2, int N) {
         double sum = 0.0;
         double meanX = mean(data1, N);
         double meanY = mean(data2, N);
@@ -729,7 +729,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the variance of the first N values in array.
      */
-    public static double variance(long array[], int N) {
+    private static double variance(long array[], int N) {
         return ssx(array, N) / (N - 1);
     }
 
@@ -738,7 +738,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the variance of the first N values in array.
      */
-    public static double variance(double array[], int N) {
+    private static double variance(double array[], int N) {
         return ssx(array, N) / (N - 1);
     }
 
@@ -763,7 +763,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the standard deviation of the first N values in array.
      */
-    public static double sd(long array[], int N) {
+    private static double sd(long array[], int N) {
         return Math.pow(ssx(array, N) / (N - 1), .5);
     }
 
@@ -772,7 +772,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the standard deviation of the first N values in array.
      */
-    public static double sd(double array[], int N) {
+    private static double sd(double array[], int N) {
         return Math.pow(ssx(array, N) / (N - 1), .5);
     }
 
@@ -820,7 +820,7 @@ public final class StatUtils {
      *               array2.
      * @return the covariance of the first N values in array1 and array2.
      */
-    public static double covariance(long array1[], long array2[], int N) {
+    private static double covariance(long array1[], long array2[], int N) {
         return sxy(array1, array2, N) / (N - 1);
     }
 
@@ -831,7 +831,7 @@ public final class StatUtils {
      *               array2.
      * @return the covariance of the first N values in array1 and array2.
      */
-    public static double covariance(double array1[], double array2[], int N) {
+    private static double covariance(double array1[], double array2[], int N) {
         return sxy(array1, array2, N) / (N - 1);
     }
 
@@ -873,7 +873,7 @@ public final class StatUtils {
         return correlation(array1, array2, N1);
     }
 
-    public static double correlation(TetradVector data1, TetradVector data2) {
+    private static double correlation(TetradVector data1, TetradVector data2) {
         int N = data1.size();
         double covXY = sxy(data1, data2, N);
         double covXX = sxy(data1, data1, N);
@@ -893,7 +893,7 @@ public final class StatUtils {
      * @return the Pearson's correlation of the first N values in array1 and
      * array2.
      */
-    public static double correlation(long array1[], long array2[], int N) {
+    private static double correlation(long array1[], long array2[], int N) {
         double covXY = sxy(array1, array2, N);
         double covXX = sxy(array1, array1, N);
         double covYY = sxy(array2, array2, N);
@@ -901,15 +901,14 @@ public final class StatUtils {
     }
 
     /**
-     * @return the Pearson correlation of the first N values in array1 and
-     * array2.
-     *
      * @param array1 a double array.
      * @param array2 a second double array.
      * @param N      the number of values to be considered in array1 and
      *               array2.
+     * @return the Pearson correlation of the first N values in array1 and
+     * array2.
      */
-    public static double correlation(double array1[], double array2[], int N) {
+    private static double correlation(double array1[], double array2[], int N) {
         double covXY = sxy(array1, array2, N);
         double covXX = sxy(array1, array1, N);
         double covYY = sxy(array2, array2, N);
@@ -992,7 +991,7 @@ public final class StatUtils {
      * @return the unbaised estimate of the variance of the distribution of the
      * first N values in array asuming the mean is unknown.
      */
-    public static double sSquare(long array[], int N) {
+    private static double sSquare(long array[], int N) {
         return ssx(array, N) / (N - 1);
     }
 
@@ -1030,7 +1029,7 @@ public final class StatUtils {
      * @return the unbaised estimate of the variance of the distribution of the
      * first N values in array asuming the mean is known.
      */
-    public static double varHat(long array[], int N) {
+    private static double varHat(long array[], int N) {
         double sum = 0;
         double difference;
         double meanX = mean(array, N);
@@ -1049,7 +1048,7 @@ public final class StatUtils {
      * @return the unbaised estimate of the variance of the distribution of the
      * first N values in array asuming the mean is known.
      */
-    public static double varHat(double array[], int N) {
+    private static double varHat(double array[], int N) {
         double sum = 0.;
         double difference;
         double meanX = mean(array, N);
@@ -1124,7 +1123,7 @@ public final class StatUtils {
      * @return the maximum likelihood estimate of the mean of the distribution
      * of the first N values in array.
      */
-    public static double muHat(long array[], int N) {
+    private static double muHat(long array[], int N) {
         return mean(array, N);
     }
 
@@ -1134,7 +1133,7 @@ public final class StatUtils {
      * @return the maximum likelihood estimate of the mean of the distribution
      * of the first N values in array.
      */
-    public static double muHat(double array[], int N) {
+    private static double muHat(double array[], int N) {
         return mean(array, N);
     }
 
@@ -1159,7 +1158,7 @@ public final class StatUtils {
      * @param N     the number of values to be considered in array.
      * @return the average deviation of the first N values in array.
      */
-    public static double averageDeviation(long array[], int N) {
+    private static double averageDeviation(long array[], int N) {
         double mean = StatUtils.mean(array, N);
         double adev = 0.0;
 
@@ -1177,7 +1176,7 @@ public final class StatUtils {
      * @param N     the number of values to be considered in array.
      * @return the average deviation of the first N values in array.
      */
-    public static double averageDeviation(double array[], int N) {
+    private static double averageDeviation(double array[], int N) {
         double mean = StatUtils.mean(array, N);
         double adev = 0.0;
 
@@ -1212,7 +1211,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the skew of the first N values in array.
      */
-    public static double skewness(long array[], int N) {
+    private static double skewness(long array[], int N) {
         double mean = StatUtils.mean(array, N);
         double secondMoment = 0.0; // StatUtils.variance(array, N);
         double thirdMoment = 0.0;
@@ -1228,10 +1227,8 @@ public final class StatUtils {
                     "when the variance is zero.");
         }
 
-        double skewness = thirdMoment / Math.pow(secondMoment, 1.5);
-
-//        thirdMoment /= (N * Math.pow(secondMoment, 1.5));
-        return skewness;
+        //        thirdMoment /= (N * Math.pow(secondMoment, 1.5));
+        return thirdMoment / Math.pow(secondMoment, 1.5);
     }
 
     /**
@@ -1239,7 +1236,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the skew of the first N values in array.
      */
-    public static double skewness(double array[], int N) {
+    private static double skewness(double array[], int N) {
         double mean = StatUtils.mean(array, N);
         double variance = StatUtils.variance(array, N);
         double skew = 0.0;
@@ -1295,7 +1292,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the curtosis of the first N values in array.
      */
-    public static double kurtosis(long array[], int N) {
+    private static double kurtosis(long array[], int N) {
         double mean = StatUtils.mean(array, N);
         double variance = StatUtils.variance(array, N);
         double kurt = 0.0;
@@ -1321,7 +1318,7 @@ public final class StatUtils {
         return standardizedFifthMoment(array, array.length);
     }
 
-    public static double standardizedFifthMoment(double array[], int N) {
+    private static double standardizedFifthMoment(double array[], int N) {
         double mean = StatUtils.mean(array, N);
         double variance = StatUtils.variance(array, N);
         double kurt = 0.0;
@@ -1370,7 +1367,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the curtosis of the first N values in array.
      */
-    public static double kurtosis(double array[], int N) {
+    private static double kurtosis(double array[], int N) {
         double mean = StatUtils.mean(array, N);
         double variance = StatUtils.variance(array, N);
         double kurt = 0.0;
@@ -1397,14 +1394,14 @@ public final class StatUtils {
 
     /**
      * GAMMA FUNCTION  (From DStat, used by permission).
-     * <p/>
+     * <p>
      * Calculates the value of gamma(double z) using Handbook of Mathematical
      * Functions AMS 55 by Abromowitz page 256.
      *
      * @param z nonnegative double value.
      * @return the gamma value of z.
      */
-    public static double gamma(double z) {
+    private static double gamma(double z) {
 
         // if z is < 2 then do straight gamma
         if (z < 2.0) {
@@ -1476,7 +1473,7 @@ public final class StatUtils {
      * @return incomplete gamma of (a, x).
      * @throws Exception
      */
-    public static double igamma(double a, double x) {
+    private static double igamma(double a, double x) {
         double coef = (Math.exp(-x) * Math.pow(x, a)) / gamma(a);
         double sum = 0.0;
 
@@ -1658,13 +1655,13 @@ public final class StatUtils {
         return fdrCutoff(alpha, pValues, new int[1], negativelyCorrelated, false);
     }
 
-    public static double fdrCutoff(double alpha, List<Double> pValues, int[] _k, boolean negativelyCorrelated, boolean pSorted) {
+    private static double fdrCutoff(double alpha, List<Double> pValues, int[] _k, boolean negativelyCorrelated, boolean pSorted) {
         if (_k.length != 1) {
             throw new IllegalArgumentException("k must be a length 1 int array, to return the index of q.");
         }
 
         if (!pSorted) {
-            pValues = new ArrayList<Double>(pValues);
+            pValues = new ArrayList<>(pValues);
             Collections.sort(pValues);
         }
 
@@ -1676,13 +1673,13 @@ public final class StatUtils {
      * @return the index, >=, in the sorted list of p values of which all p values are rejected. It
      * the index is -1, all p values are rejected.
      */
-    public static int fdr(double alpha, List<Double> pValues, boolean negativelyCorrelated) {
-        return fdr(alpha, pValues, negativelyCorrelated, false);
+    private static int fdr(double alpha, List<Double> pValues) {
+        return fdr(alpha, pValues, true, false);
     }
 
-    public static int fdr(double alpha, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
+    private static int fdr(double alpha, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
         if (!pSorted) {
-            pValues = new ArrayList<Double>(pValues);
+            pValues = new ArrayList<>(pValues);
             Collections.sort(pValues);
         }
 
@@ -1732,16 +1729,14 @@ public final class StatUtils {
 
         while (high - low > 0) {
             q = (high + low) / 2.0;
-            int _k = fdr(q, pValues, true);
+            int _k = fdr(q, pValues);
 
             if (_k == lastK) {
                 high = q;
                 low = q;
-            }
-            else if (_k > k) {
+            } else if (_k > k) {
                 high = q;
-            }
-            else if (_k < k) {
+            } else if (_k < k) {
                 low = q;
             }
 
@@ -1760,7 +1755,7 @@ public final class StatUtils {
      *
      * @return the given partial covariance.
      */
-    public static double partialCovariance(TetradMatrix submatrix) {
+    private static double partialCovariance(TetradMatrix submatrix) {
 //        submatrix = TetradAlgebra.inverse(submatrix);
 //        return -1.0 * submatrix.get(0, 1);
 
@@ -1794,13 +1789,13 @@ public final class StatUtils {
 
         if (x > covariance.rows()) throw new IllegalArgumentException();
         if (y > covariance.rows()) throw new IllegalArgumentException();
-        for (int i = 0; i < z.length; i++) if (z[i] > covariance.rows()) throw new IllegalArgumentException();
+        for (int aZ : z) if (aZ > covariance.rows()) throw new IllegalArgumentException();
 
         int[] selection = new int[z.length + 2];
 
         selection[0] = x;
         selection[1] = y;
-        for (int i = 0; i < z.length; i++) selection[2 + i] = z[i];
+        System.arraycopy(z, 0, selection, 2, z.length);
 
         return partialCovariance(covariance.getSelection(selection, selection));
     }
@@ -1867,13 +1862,13 @@ public final class StatUtils {
     public static double partialCorrelation(TetradMatrix covariance, int x, int y, int... z) {
         if (x > covariance.rows()) throw new IllegalArgumentException();
         if (y > covariance.rows()) throw new IllegalArgumentException();
-        for (int i = 0; i < z.length; i++) if (z[i] > covariance.rows()) throw new IllegalArgumentException();
+        for (int aZ : z) if (aZ > covariance.rows()) throw new IllegalArgumentException();
 
         int[] selection = new int[z.length + 2];
 
         selection[0] = x;
         selection[1] = y;
-        for (int i = 0; i < z.length; i++) selection[2 + i] = z[i];
+        System.arraycopy(z, 0, selection, 2, z.length);
 
         return partialCorrelation(covariance.getSelection(selection, selection));
     }
@@ -1912,16 +1907,15 @@ public final class StatUtils {
 
     static double pow2 = pow();
 
-    static double pow() {
-        double[] p = new double[1000];
+    private static double pow() {
         double sum = 0.0;
 
-        for (int i = 0; i < p.length; i++) {
+        for (int i = 0; i < 1000; i++) {
 //            sum += Math.pow(Math.tanh(RandomUtil.getInstance().nextNormal(0, 1)), 2);
             sum += Math.abs(RandomUtil.getInstance().nextNormal(0, 1));
         }
 
-        return sum / p.length;
+        return sum / 1000;
     }
 
     public static double expScore(double[] _f) {
@@ -1933,15 +1927,14 @@ public final class StatUtils {
         }
 
         double expected = Descriptive.mean(f);
-        double logExpected = Math.log(expected);
 
-        return logExpected;
+        return Math.log(expected);
 
 //        double diff = logExpected - 0.5;
 //        return Math.abs(diff);
     }
 
-    public static double logCoshExp() {
+    private static double logCoshExp() {
 //        return 0.3745232061467262;
         return 0.3746764078432371;
     }
@@ -1957,8 +1950,7 @@ public final class StatUtils {
         int[] v = new int[numBins];
         double width = max - min;
 
-        for (int i = 0; i < _f.length; i++) {
-            double x = _f[i];
+        for (double x : _f) {
             double x3 = (x - min) / width; // 0 to 1
             int bin = (int) (x3 * (numBins - 1));  // 0 to numBins - 1
             v[bin]++;
@@ -1967,9 +1959,9 @@ public final class StatUtils {
         // Calculate entropy.
         double sum = 0.0;
 
-        for (int i = 0; i < v.length; i++) {
-            if (v[i] != 0) {
-                double p = v[i] / (double) (numBins - 1);
+        for (int aV : v) {
+            if (aV != 0) {
+                double p = aV / (double) (numBins - 1);
                 sum += p * Math.log(p);
             }
         }
@@ -1990,25 +1982,23 @@ public final class StatUtils {
         // This is negentropy
         double b1 = 0.0;
 
-        for (int i = 0; i < x.length; i++) {
-            b1 += log(cosh(x[i]));
+        for (double aX1 : x) {
+            b1 += log(cosh(aX1));
         }
 
         b1 /= x.length;
 
         double b2 = 0.0;
 
-        for (int i = 0; i < x.length; i++) {
-            b2 += x[i] * exp(Math.pow(-x[i], 2) / 2);
+        for (double aX : x) {
+            b2 += aX * exp(Math.pow(-aX, 2) / 2);
         }
 
         b2 /= x.length;
 
         double negentropy = k2 * Math.pow(b1 - gamma, 2) + k1 * Math.pow(b2, 2);
 
-        double entropy = gaussianEntropy - negentropy + log(xstd);
-
-        return entropy;
+        return gaussianEntropy - negentropy + log(xstd);
     }
 
     public static double[] standardizeData(double[] data) {
@@ -2016,8 +2006,8 @@ public final class StatUtils {
 
         double sum = 0.0;
 
-        for (int i = 0; i < data.length; i++) {
-            sum += data[i];
+        for (double aData : data) {
+            sum += aData;
         }
 
         double mean = sum / data.length;
@@ -2028,8 +2018,7 @@ public final class StatUtils {
 
         double norm = 0.0;
 
-        for (int i = 0; i < data2.length; i++) {
-            double v = data2[i];
+        for (double v : data2) {
             norm += v * v;
         }
 
@@ -2042,7 +2031,7 @@ public final class StatUtils {
         return data2;
     }
 
-    public static double factorial(int c) {
+    private static double factorial(int c) {
         if (c < 0) throw new IllegalArgumentException("Can't take the factorial of a negative number: " + c);
         if (c == 0) return 1;
         return c * factorial(c - 1);

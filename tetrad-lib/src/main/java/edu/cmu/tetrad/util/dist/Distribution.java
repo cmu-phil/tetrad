@@ -33,29 +33,27 @@ import edu.cmu.tetrad.util.TetradSerializable;
  */
 @SuppressWarnings({"UnusedDeclaration"})
 public interface Distribution extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
-     * @return the number of parameters.
      * @return Ibid.
      */
     int getNumParameters();
 
     /**
-     * @return the name of the distribution.
      * @return Ibid.
      */
     String getName();
 
     /**
      * Sets the index'th parameter to the given value.
+     *
      * @param index Ibid. Must be >= 0 and < # parameters.
      * @param value Ibid.
      */
     void setParameter(int index, double value);
 
     /**
-     * @return the value of the index'th parameter.
      * @param index Ibid. Muist be <= 0 and < # parameters.
      * @return The Ibid.
      */
@@ -63,13 +61,13 @@ public interface Distribution extends TetradSerializable {
 
     /**
      * The name of the index'th parameter, for display purposes.
+     *
      * @param index Ibid. Must be >= 0 and < # parameters.
      * @return Ibid.
      */
     String getParameterName(int index);
 
     /**
-     * @return a new random value drawn from the underlying distribution.
      * @return Ibid.
      */
     double nextRandom();

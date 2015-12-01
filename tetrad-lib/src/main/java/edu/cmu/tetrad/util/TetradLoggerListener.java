@@ -35,7 +35,7 @@ public interface TetradLoggerListener {
      *
      * @param evt
      */
-    public void configurationActived(TetradLoggerEvent evt);
+    void configurationActived(TetradLoggerEvent evt);
 
 
     /**
@@ -44,11 +44,8 @@ public interface TetradLoggerListener {
      *
      * @param evt
      */
-    public void configurationDeactived(TetradLoggerEvent evt);
+    void configurationDeactived(TetradLoggerEvent evt);
 
-
-
-    
 
 }
 

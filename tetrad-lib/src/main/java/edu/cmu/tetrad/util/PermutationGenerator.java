@@ -29,11 +29,11 @@ import java.util.LinkedList;
  * integer.  The values of numObjects is given in the constructor, and the sequence of
  * choices is obtained by repeatedly calling the next() method.  When the
  * sequence is finished, null is returned.
- * <p/>
+ * <p>
  * A valid combination for the sequence of combinations for numObjects choose b generated
  * by this class is an array x[] of b integers representing the above
  * permutation.
- * <p/>
+ * <p>
  * To see what this class does, try calling PermutationGenerator.testPrint(5),
  * for instance.
  *
@@ -92,17 +92,7 @@ public final class PermutationGenerator {
 
     /**
      * @return the next combination in the series, or null if the series is
-     * finished.  The array that is produced should not be altered by the user,
-     * as it is reused by the choice generator.
-     * <p/>
-     * If the number of items chosen is zero, numObjects zero-length array will be
-     * returned once, with null after that.
-     * <p/>
-     * The array that is returned is reused, but modifying it will not change
-     * the sequence of choices returned.
-     *
-     * @return the next combination in the series, or null if the series is
-     *         finished.
+     * finished.
      */
     public int[] next() {
         if (choiceReturned == null) {
@@ -118,7 +108,7 @@ public final class PermutationGenerator {
         // its expected maximum (i + diff) and perform the fill() operation
         // at that index.
         while (--i > -1) {
-            LinkedList<Integer> h = new LinkedList<Integer>();
+            LinkedList<Integer> h = new LinkedList<>();
 
             for (int j = i; j < choiceLocal.length; j++) {
                 h.add(choiceLocal[j]);
@@ -177,7 +167,7 @@ public final class PermutationGenerator {
     /**
      * @return the number of objects being chosen from.
      */
-    int getNumObjects() {
+    private int getNumObjects() {
         return this.numObjects;
     }
 
@@ -186,10 +176,10 @@ public final class PermutationGenerator {
      * with successive integers starting with choice[index] + 1.
      *
      * @param index the index to begin this incrementing operation.
-     * @param h the list of integers at index or later.
+     * @param h     the list of integers at index or later.
      */
     private void fill(int index, LinkedList<Integer> h) {
-        h = new LinkedList<Integer>(h);
+        h = new LinkedList<>(h);
         int t = h.indexOf(this.choiceLocal[index]);
         Integer newVal = h.get(t + 1);
         this.choiceLocal[index] = newVal;

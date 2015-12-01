@@ -33,13 +33,13 @@ import java.util.regex.Pattern;
  * work on levels, instead one can set events need to be logged. This is done by giving
  * the logger a <code>TetradLoggerConfig</code> which will be used to determine whether
  * some event should be logged.
- * <p/>
+ * <p>
  * Although one can explicity construct instance of <code>TetradLoggerConfig</code> and
  * set them in the logger, the configuration details for most models is defined in the
  * <code>configuration.xml</code> file and added to the logger at startup.  A pre-configured
  * <code>TetradLoggerConfig</code> for some model can be found by calling
  * <code>getTetradLoggerConfigForModel(Class)</code>
- * <p/>
+ * <p>
  * Furthermore the logger supports logging to a sequence of files in some directory. To start logging
  * to a new file in the logging directory (assuming it has been set) call <code>setNextOutputStream</code>
  * to remove this stream from the logger call <code>removeNextOutputStream</code>. In addiong to the feature
@@ -55,7 +55,7 @@ public class TetradLogger {
     /**
      * A mapping between output streams and writers used to wrap them.
      */
-    private final Map<OutputStream, Writer> writers = new LinkedHashMap<OutputStream, Writer>();
+    private final Map<OutputStream, Writer> writers = new LinkedHashMap<>();
 
 
     /**
@@ -68,15 +68,15 @@ public class TetradLogger {
     /**
      * A mapping from model classes to their configured loggers.
      */
-    private final Map<Class, TetradLoggerConfig> classConfigMap = new ConcurrentHashMap<Class, TetradLoggerConfig>();
+    private final Map<Class, TetradLoggerConfig> classConfigMap = new ConcurrentHashMap<>();
 
     /**
      * A mapping from models to their configured loggers.
      */
-    private final Map<Object, TetradLoggerConfig> nodeConfigMap = new ConcurrentHashMap<Object, TetradLoggerConfig>();
+    private final Map<Object, TetradLoggerConfig> nodeConfigMap = new ConcurrentHashMap<>();
 
 
-    private Map<Object, Object> nodeModelMap = new ConcurrentHashMap<Object, Object>();
+    private Map<Object, Object> nodeModelMap = new ConcurrentHashMap<>();
 
     /**
      * The configuration to use to determine which events to log.
@@ -87,7 +87,7 @@ public class TetradLogger {
     /**
      * The listeners.
      */
-    private final List<TetradLoggerListener> listeners = new ArrayList<TetradLoggerListener>();
+    private final List<TetradLoggerListener> listeners = new ArrayList<>();
 
 
     /**
@@ -124,8 +124,6 @@ public class TetradLogger {
 
 
     /**
-     * @return the singleton instance of the <code>TetradLogger</code>.
-     *
      * @return - instance
      */
     public static TetradLogger getInstance() {
@@ -229,8 +227,6 @@ public class TetradLogger {
 
 
     /**
-     * @return the <code>TetradLoggerConfig</code> associated with the given model.
-     *
      * @param clazz
      * @return - config
      */
@@ -474,8 +470,6 @@ public class TetradLogger {
     }
 
     /**
-     * @return the logging prefix.
-     *
      * @return - prefix
      */
     public String getLoggingFilePrefix() {
@@ -561,8 +555,6 @@ public class TetradLogger {
 
 
     /**
-     * @return the the default logging directory.
-     *
      * @return - logging directory.
      */
     public String getLoggingDirectory() {
@@ -598,7 +590,8 @@ public class TetradLogger {
                 throw new IllegalStateException("That output directory cannot be written to. " +
                         "Keeping the old one.");
             }
-            selectedFile.delete();
+
+            boolean deleted = selectedFile.delete();
         }
 
         Preferences.userRoot().put("loggingDirectory", selectedFile.getAbsolutePath());
@@ -712,7 +705,7 @@ public class TetradLogger {
     /**
      * Represents an output stream that can get its own length.
      */
-    public static interface LogDisplayOutputStream {
+    public interface LogDisplayOutputStream {
 
 
         /**
@@ -721,13 +714,13 @@ public class TetradLogger {
          * @return The total string length written to the text area.
          */
         @SuppressWarnings({"UnusedDeclaration"})
-        public int getLengthWritten();
+        int getLengthWritten();
 
 
         /**
          * Should move the log to the end of the stream.
          */
-        public void moveToEnd();
+        void moveToEnd();
 
     }
 

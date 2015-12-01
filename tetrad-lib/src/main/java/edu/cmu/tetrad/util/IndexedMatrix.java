@@ -22,14 +22,12 @@
 package edu.cmu.tetrad.util;
 
 
-
 /**
+ * @author Joseph Ramsey
  * @return values of the given square matrix, where the indices are remapped via
  * the given indices array. If the supplied matrix is 6 x 6, for example, and
  * the indices set are [5 4 2 1], then getValue(1, 2) will return element [4][2]
  * of the given matrix.
- *
- * @author Joseph Ramsey
  */
 public final class IndexedMatrix {
 
@@ -55,8 +53,6 @@ public final class IndexedMatrix {
     }
 
     /**
-     * @return the index array.
-     *
      * @return Ibid.
      */
     public final int[] getIndices() {
@@ -82,9 +78,6 @@ public final class IndexedMatrix {
     }
 
     /**
-     * @return the value of the implied submatrix at the given indices-- that
-     * is, matrix[getIndices()[i]][getIndices()[j]].
-     *
      * @param i The row value in the remapped indices of the cell desired.
      * @param j The column value in teh remapped indices of the cell desired.
      * @return Ibid.
@@ -94,9 +87,6 @@ public final class IndexedMatrix {
     }
 
     /**
-     * @return true iff the given array consists only of numbers in the range
-     * 0..indices.length - 1, with no duplicates.
-     *
      * @param indices The array indices to check.
      * @return Ibid.
      */

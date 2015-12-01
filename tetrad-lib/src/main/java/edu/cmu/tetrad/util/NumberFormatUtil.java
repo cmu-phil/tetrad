@@ -38,16 +38,13 @@ public class NumberFormatUtil {
 
         try {
             nf = new DecimalFormat(Preferences.userRoot().get("numberFormat", "0.0000"));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             nf = new DecimalFormat("0.0000");
         }
 
     }
 
     /**
-     * @return the singleton instance of this class.
-     *
      * @return Ibid.
      */
     public static NumberFormatUtil getInstance() {
@@ -69,8 +66,6 @@ public class NumberFormatUtil {
     }
 
     /**
-     * @return the stored number format.
-     *
      * @return Ibid.
      */
     public NumberFormat getNumberFormat() {

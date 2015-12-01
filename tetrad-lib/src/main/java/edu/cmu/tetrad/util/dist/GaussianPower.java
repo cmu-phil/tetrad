@@ -40,17 +40,13 @@ public class GaussianPower implements Distribution {
      * @return The exemplar.
      */
     public static GaussianPower serializableInstance() {
-        return new GaussianPower(1, 2);
+        return new GaussianPower(2);
     }
 
     public GaussianPower(double power) {
-        this(1, power);
-    }
-
-    public GaussianPower(double sd, double power) {
-        this.sd = sd;
+        this.sd = (double) 1;
         this.power = power;
-        this.name = "N^" + power + "(" + 0 + "," + sd + ")";
+        this.name = "N^" + power + "(" + 0 + "," + (double) 1 + ")";
     }
 
     public void setParameter(int index, double value) {
@@ -64,8 +60,7 @@ public class GaussianPower implements Distribution {
     public double getParameter(int index) {
         if (index == 0) {
             return sd;
-        }
-        else if (index == 1) {
+        } else if (index == 1) {
             return power;
         }
 
@@ -75,8 +70,7 @@ public class GaussianPower implements Distribution {
     public String getParameterName(int index) {
         if (index == 0) {
             return "Standard Deviation";
-        }
-        else if (index == 1) {
+        } else if (index == 1) {
             return "Power";
         }
 

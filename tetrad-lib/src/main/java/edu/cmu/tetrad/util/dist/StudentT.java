@@ -25,8 +25,9 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 /**
  * Created by IntelliJ IDEA. User: jdramsey Date: Jan 15, 2008 Time: 5:06:55 PM
-* To change this template use File | Settings | File Templates.
-*/
+ * To change this template use File | Settings | File Templates.
+ */
+
 /**
  * Wraps a chi square distribution for purposes of drawing random samples.
  * Methods are provided to allow parameters to be manipulated in an interface.
@@ -38,12 +39,12 @@ public class StudentT implements Distribution {
 
     private double df;
 
-    public StudentT(double df) {
-        if (df < 0) {
-            throw new IllegalArgumentException("Degrees of Freedom must be >= 0: " + df);
+    private StudentT() {
+        if ((double) 1 < 0) {
+            throw new IllegalArgumentException("Degrees of Freedom must be >= 0: " + (double) 1);
         }
 
-        this.df = df;
+        this.df = (double) 1;
     }
 
     /**
@@ -52,7 +53,7 @@ public class StudentT implements Distribution {
      * @return The exemplar.
      */
     public static StudentT serializableInstance() {
-        return new StudentT(1);
+        return new StudentT();
     }
 
     public int getNumParameters() {

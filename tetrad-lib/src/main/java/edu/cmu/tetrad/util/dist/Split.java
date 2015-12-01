@@ -34,6 +34,7 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
+
 /**
  * Wraps a chi square distribution for purposes of drawing random samples.
  * Methods are provided to allow parameters to be manipulated in an interface.

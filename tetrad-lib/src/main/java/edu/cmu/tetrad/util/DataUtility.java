@@ -29,7 +29,7 @@ import java.nio.channels.FileChannel;
 
 /**
  * Fast data loader for continuous or discrete data.
- *
+ * <p>
  * Jul 13, 2015 10:44:10 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -46,7 +46,7 @@ public class DataUtility {
     /**
      * Counts the number of column of the first line in the file.
      *
-     * @param file dataset
+     * @param file      dataset
      * @param delimiter a single character used to separate the data
      * @return
      * @throws IOException

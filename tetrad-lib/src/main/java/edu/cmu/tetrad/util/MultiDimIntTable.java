@@ -70,14 +70,11 @@ public class MultiDimIntTable {
     }
 
     /**
-     * @return the index in the cells array for the cell at the given
-     * coordinates.
-     *
      * @param coords The coordinates of the cell. Each value must be less
      *               than the number of possible value for the corresponding
      *               dimension in the table. (Enforced.)
      * @return the row in the table for the given node and combination of parent
-     *         values.
+     * values.
      */
     public int getCellIndex(int[] coords) {
         int cellIndex = 0;
@@ -91,12 +88,9 @@ public class MultiDimIntTable {
     }
 
     /**
-     * @return an array containing the coordinates of the cell at the given
-     * index in the cells array.
-     *
      * @param cellIndex an <code>int</code> value
      * @return the array representing the combination of parent values for this
-     *         row.
+     * row.
      */
     @SuppressWarnings({"SameParameterValue"})
     public int[] getCoordinates(int cellIndex) {
@@ -147,8 +141,6 @@ public class MultiDimIntTable {
     }
 
     /**
-     * @return the value at the given coordinates.
-     *
      * @param coords The coordinates of the table cell to update.
      * @return the new value at that table cell.
      */
@@ -163,8 +155,6 @@ public class MultiDimIntTable {
     }
 
     /**
-     * @return the number of cells.
-     *
      * @return this number.
      */
     public int getNumCells() {
@@ -172,8 +162,6 @@ public class MultiDimIntTable {
     }
 
     /**
-     * @return the dimension array.
-     *
      * @return this number.
      */
     @SuppressWarnings({"UnusedDeclaration"})
@@ -192,8 +180,6 @@ public class MultiDimIntTable {
     }
 
     /**
-     * @return the number of dimensions.
-     *
      * @return an <code>int</code> value
      */
     public int getNumDimensions() {
@@ -230,7 +216,7 @@ public class MultiDimIntTable {
             }
 
             // Construct (or reset) cells array.
-            cells = new HashMap<Integer, Long>();
+            cells = new HashMap<>();
 
             // Store the dimensions, making a copy for security.
             this.dims = new int[dims.length];

@@ -46,7 +46,7 @@ public class CutoffFinder {
      * @return the cutoff value for these conditions.
      */
     public static double getCutoff(Function f, double xUpperBound, double alpha,
-            double deltaX) {
+                                   double deltaX) {
 
         double area = 0.0;
         double x1 = 0.0, x2 = 0.0;

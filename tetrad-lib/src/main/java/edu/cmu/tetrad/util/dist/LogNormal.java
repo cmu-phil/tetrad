@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.RandomUtil;
  * Represents a lognormal distribution for purposes of sampling.
  *
  * @author Joseph Ramsey
-*/
+ */
 public class LogNormal implements Distribution {
     static final long serialVersionUID = 23L;
 
@@ -46,7 +46,7 @@ public class LogNormal implements Distribution {
         return new LogNormal(.5);
     }
 
-    public LogNormal(double sd) {
+    private LogNormal(double sd) {
         this.sd = sd;
     }
 

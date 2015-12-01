@@ -141,9 +141,7 @@ public class LingUtils {
     public static TetradMatrix inverse(DoubleMatrix2D mat) {
         TetradMatrix m = new TetradMatrix(mat.toArray());
 
-        TetradMatrix inv = m.inverse();
-
-        return inv;
+        return m.inverse();
     }
 
     public static boolean isPositiveDefinite(TetradMatrix matrix) {

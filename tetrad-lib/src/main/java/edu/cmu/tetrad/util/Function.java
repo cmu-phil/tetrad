@@ -31,16 +31,12 @@ package edu.cmu.tetrad.util;
 public interface Function {
 
     /**
-     * @return the value of the function at the given point.
-     *
      * @param x the domain value
      * @return the range value
      */
     double valueAt(double x);
 
     /**
-     * @return a string name or description of the function.
-     *
      * @return this name or description.
      */
     String toString();

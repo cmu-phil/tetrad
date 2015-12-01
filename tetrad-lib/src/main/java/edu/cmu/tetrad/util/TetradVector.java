@@ -30,7 +30,7 @@ import org.apache.commons.math3.linear.RealVector;
 public class TetradVector implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private RealVector data;
+    private final RealVector data;
 
     public TetradVector(double[] data) {
         this.data = new ArrayRealVector(data);
@@ -81,11 +81,11 @@ public class TetradVector implements TetradSerializable {
 
     public TetradVector viewSelection(int[] selection) {
         double[] _selection = new double[selection.length];
-        
+
         for (int i = 0; i < selection.length; i++) {
             _selection[i] = data.getEntry(selection[i]);
         }
-        
+
         return new TetradVector(_selection);
     }
 
@@ -117,6 +117,8 @@ public class TetradVector implements TetradSerializable {
 
     public boolean equals(Object o) {
         if (o == this) return true;
+
+        if (!(o instanceof TetradVector)) return false;
 
         TetradVector v = (TetradVector) o;
 

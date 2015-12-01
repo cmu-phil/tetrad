@@ -25,8 +25,8 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 /**
  * Created by IntelliJ IDEA. User: jdramsey Date: Jan 15, 2008 Time: 5:07:01 PM
-* To change this template use File | Settings | File Templates.
-*/
+ * To change this template use File | Settings | File Templates.
+ */
 public class Indicator implements Distribution {
     static final long serialVersionUID = 23L;
 
@@ -34,20 +34,19 @@ public class Indicator implements Distribution {
 
     /**
      * @return 0 with probably 1 - p and 1 with probability p.
-     * @param p Ibid.
      */
-    public Indicator(double p) {
-        if (p < 0 || p > 1) throw new IllegalArgumentException("P is in [0, 1].");
-        this.p = p;
+    private Indicator() {
+        this.p = 0.5;
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return The exemplar.
-f     */
+     * f
+     */
     public static Indicator serializableInstance() {
-        return new Indicator(0.5);
+        return new Indicator();
     }
 
     public int getNumParameters() {
