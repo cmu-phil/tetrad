@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.cli;
 
+import edu.cmu.tetrad.cli.search.FgsCli;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
