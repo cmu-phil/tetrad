@@ -32,7 +32,7 @@ public interface ExpressionDescriptor extends TetradSerializable {
     static final long serialVersionUID = 23L;
 
 
-    public static enum Position implements TetradSerializable {
+    public enum Position implements TetradSerializable {
         NEITHER,
         INFIX,
         PREFIX,
