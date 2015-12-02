@@ -49,7 +49,7 @@ import org.apache.commons.cli.ParseException;
  */
 public class FgsCli {
 
-    private static final String USAGE = "java -cp tetrad-cli.jar edu.cmu.tetrad.cli.FgsCli";
+    private static final String USAGE = "java -cp tetrad-cli.jar edu.cmu.tetrad.cli.search.FgsCli";
 
     private static final Options HELP_OPTIONS = new Options();
     private static final Options MAIN_OPTIONS = new Options();
