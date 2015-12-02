@@ -229,7 +229,6 @@ public class ProbUtils {
      * Java. </p> The static double array above goes with this. </p> Converted
      * to Java by Frank Wimberly
      *
-     * @param xx
      * @return the value ln[?(xx)] for xx > 0
      */
     public static double lngamma(double xx) {

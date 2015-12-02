@@ -1459,7 +1459,6 @@ public final class StatUtils {
      * @param x1 the first double
      * @param x2 the second double.
      * @return beta(x1, x2).
-     * @throws Exception
      */
     public static double beta(double x1, double x2) {
         return ((gamma(x1) * gamma(x2)) / gamma(x1 + x2));
@@ -1471,7 +1470,6 @@ public final class StatUtils {
      * @param a first double.
      * @param x second double.
      * @return incomplete gamma of (a, x).
-     * @throws Exception
      */
     private static double igamma(double a, double x) {
         double coef = (Math.exp(-x) * Math.pow(x, a)) / gamma(a);
@@ -1490,7 +1488,6 @@ public final class StatUtils {
      *
      * @param x argument.
      * @return error function of this argument.
-     * @throws Exception
      */
     public static double erf(double x) {
         return (igamma(0.5, Math.pow(x, 2.0)));
@@ -1505,7 +1502,6 @@ public final class StatUtils {
      * @param x   mean
      * @param cum true if the cumulative Poisson is desired.
      * @return the value of the Poisson (or cumPoisson) at x.
-     * @throws Exception
      */
     public static double poisson(double k, double x, boolean cum) {
         if ((x < 0) || (k < 1)) {
@@ -1526,10 +1522,7 @@ public final class StatUtils {
      * Calculates the one-tail probability of the Chi-squared distribution for
      * doubles
      *
-     * @param x
-     * @param degreesOfFreedom
      * @return value of Chi at x with the stated degrees of freedom.
-     * @throws Exception
      */
     public static double chidist(double x, int degreesOfFreedom) {
         if ((x < 0.0) || (degreesOfFreedom < 0)) {
@@ -1540,85 +1533,6 @@ public final class StatUtils {
         return (1.0 - igamma((double) degreesOfFreedom / 2.0, x / 2.0));
     }
 
-
-    /**
-     * Calculates and returns a double array with elements Chi-squared,
-     * Cramers's V, and Contigency Coeeficient Cross Tab for an Array of nominal
-     * values.
-     *
-     * @param IArray
-     * @return ???
-     * @throws Exception
-     */
-    public static double[] ContTable1(int[][] IArray) {
-        int sumiDot;
-        int sumjDot;
-        int counti;
-        int countj;
-        int countTotal = 0;
-        int minCount;
-        double expectedN;
-        int i;
-        int j;
-        int looper;
-        double chisquare;
-        double cramerV;
-        double contCoef;
-        double[] retValues = new double[3];
-
-        // Count elements
-        counti = IArray.length;
-        countj = IArray[0].length;
-
-        for (i = 0; i < counti; i++) {
-            for (j = 0; j < countj; j++) {
-                countTotal += IArray[i][j];
-            }
-        }
-
-        // Calculate chi-squared
-        chisquare = 0.0;
-
-        for (i = 0; i < counti; i++) {
-            for (j = 0; j < countj; j++) {
-                sumiDot = 0;
-                sumjDot = 0;
-
-                for (looper = 0; looper < countj; looper++) {
-                    sumiDot += IArray[i][looper];
-                }
-
-                for (looper = 0; looper < counti; looper++) {
-                    sumjDot += IArray[looper][j];
-                }
-
-                expectedN =
-                        (double) (sumiDot * sumjDot) / (double) countTotal;
-                chisquare +=
-                        Math.pow((IArray[i][j] - expectedN), 2) / expectedN;
-            }
-        }
-
-        // Calculate Cramer's V
-        if (counti < countj) {
-            minCount = counti - 1;
-        } else {
-            minCount = countj - 1;
-        }
-
-        cramerV =
-                Math.sqrt((chisquare / ((double) (countTotal * minCount))));
-
-        // Calculate Contingency Coefficient
-        contCoef =
-                Math.sqrt((chisquare / (chisquare + (double) countTotal)));
-
-        retValues[0] = chisquare;
-        retValues[1] = cramerV;
-        retValues[2] = contCoef;
-
-        return retValues;
-    }
 
     //returns the value of a toss of an n-sided die
     public static int dieToss(int n) {

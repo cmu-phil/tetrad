@@ -33,7 +33,7 @@ public class Indicator implements Distribution {
     private double p;
 
     /**
-     * @return 0 with probably 1 - p and 1 with probability p.
+     * Returns 0 with probably 1 - p and 1 with probability p.
      */
     private Indicator() {
         this.p = 0.5;
@@ -43,7 +43,6 @@ public class Indicator implements Distribution {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return The exemplar.
-     * f
      */
     public static Indicator serializableInstance() {
         return new Indicator();
