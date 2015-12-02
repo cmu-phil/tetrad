@@ -36,9 +36,6 @@ public class VerticalDoubleDataBox implements DataBox {
     /**
      * Constructs an 2D double array consisting entirely of missing values
      * (Double.NaN).
-     *
-     * @param rows
-     * @param cols
      */
     public VerticalDoubleDataBox(int rows, int cols) {
         this.data = new double[cols][rows];

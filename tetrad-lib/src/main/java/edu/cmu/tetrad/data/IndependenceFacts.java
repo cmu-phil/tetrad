@@ -37,7 +37,7 @@ import java.util.Set;
 public class IndependenceFacts implements DataModel {
     static final long serialVersionUID = 23L;
 
-    private Set<IndependenceFact> unsortedFacts = new HashSet<IndependenceFact>();
+    private Set<IndependenceFact> unsortedFacts = new HashSet<>();
     private String name = "";
     private IKnowledge knowledge = new Knowledge2();
 
@@ -51,7 +51,7 @@ public class IndependenceFacts implements DataModel {
 
     public IndependenceFacts(IndependenceFacts facts) {
         this();
-        this.unsortedFacts = new HashSet<IndependenceFact>(facts.unsortedFacts);
+        this.unsortedFacts = new HashSet<>(facts.unsortedFacts);
     }
 
     /**
@@ -105,7 +105,7 @@ public class IndependenceFacts implements DataModel {
     }
 
     public List<Node> getVariables() {
-        Set<Node> variables = new HashSet<Node>();
+        Set<Node> variables = new HashSet<>();
 
         for (IndependenceFact fact : unsortedFacts) {
             variables.add(fact.getX());
@@ -116,12 +116,12 @@ public class IndependenceFacts implements DataModel {
             }
         }
 
-        return new ArrayList<Node>(variables);
+        return new ArrayList<>(variables);
     }
 
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 
         for (Node node : variables) {
             names.add(node.getName());

@@ -35,11 +35,8 @@ public class LongDataBox implements DataBox {
 
     /**
      * Constructs an 2D long array consisting entirely of missing values (-99).
-     *
-     * @param rows
-     * @param cols
      */
-    public LongDataBox(int rows, int cols) {
+    private LongDataBox(int rows, int cols) {
         this.data = new long[rows][cols];
 
         for (int i = 0; i < rows; i++) {

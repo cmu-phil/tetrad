@@ -53,7 +53,6 @@ public class BigDataSetUtility {
      *
      * @param file      dataset
      * @param delimiter a single character used to separate the data
-     * @return
      * @throws IOException
      */
     public static DataSet readInContinuousData(File file, char delimiter) throws IOException {
@@ -163,7 +162,6 @@ public class BigDataSetUtility {
      * @param file             dataset
      * @param delimiter        a single character used to separate the data
      * @param excludeVariables the names of the columns to be excluded
-     * @return
      * @throws IOException
      */
     public static DataSet readInContinuousData(File file, char delimiter, Set<String> excludeVariables) throws IOException {
@@ -364,7 +362,6 @@ public class BigDataSetUtility {
      *
      * @param file      dataset
      * @param delimiter a single character used to separate the data
-     * @return
      * @throws IOException
      * @deprecated use readInContinuousData instead
      */
@@ -459,7 +456,7 @@ public class BigDataSetUtility {
         return new BoxDataSet(new IntDataBox(data), nodes);
     }
 
-    public static DataSet readInDiscreteData(File file, char delimiter) throws IOException {
+    private static DataSet readInDiscreteData(File file, char delimiter) throws IOException {
         DiscreteDataAnalysis dataAnalysis = analyDiscreteData(file, delimiter);
         dataAnalysis.recategorizeDiscreteVariables();
 
@@ -539,7 +536,6 @@ public class BigDataSetUtility {
      *
      * @param file      dataset
      * @param delimiter a single character used to separate the data
-     * @return
      * @throws IOException
      * @deprecated use method readInDiscreteData instead
      */
@@ -547,7 +543,7 @@ public class BigDataSetUtility {
         return readInDiscreteData(file, delimiter, Collections.singleton("MULT"));
     }
 
-    public static DiscreteDataAnalysis analyDiscreteData(File file, char delimiter, Set<String> excludeVariables) throws IOException {
+    private static DiscreteDataAnalysis analyDiscreteData(File file, char delimiter, Set<String> excludeVariables) throws IOException {
         DiscreteDataAnalysis dataAnalysis = new DiscreteDataAnalysis();
         byte delim = (byte) delimiter;
 
@@ -658,7 +654,7 @@ public class BigDataSetUtility {
         return dataAnalysis;
     }
 
-    public static DiscreteDataAnalysis analyDiscreteData(File file, char delimiter) throws IOException {
+    private static DiscreteDataAnalysis analyDiscreteData(File file, char delimiter) throws IOException {
         DiscreteDataAnalysis dataAnalysis = new DiscreteDataAnalysis();
         byte delim = (byte) delimiter;
 
@@ -781,7 +777,8 @@ public class BigDataSetUtility {
 
         @Override
         public String toString() {
-            return "DiscreteDataAnalysis{" + "discreteVars=" + discreteVars + ", numOfRows=" + numOfRows + ", numOfCols=" + numOfCols + '}';
+            return "DiscreteDataAnalysis{" + "numOfRows=" + numOfRows +
+                    ", numOfCols=" + numOfCols + '}';
         }
 
         public void recategorizeDiscreteVariables() {
@@ -821,16 +818,15 @@ public class BigDataSetUtility {
      */
     public static class DiscreteVar {
 
-        private String name;
-        private Map<String, Integer> values;
+        private final String name;
+        private final Map<String, Integer> values;
         private boolean excluded;
 
-        private List<String> categories;
+        private final List<String> categories;
 
         public DiscreteVar(String name, boolean excluded) {
             this.name = name;
             this.values = new HashMap<>();
-            ;
             this.excluded = excluded;
             this.categories = new ArrayList<>();
         }
@@ -891,7 +887,6 @@ public class BigDataSetUtility {
      *
      * @param file      dataset
      * @param delimiter a single character used to separate the data
-     * @return
      * @throws IOException
      */
     public static int countColumn(File file, char delimiter) throws IOException {
@@ -931,7 +926,6 @@ public class BigDataSetUtility {
      * Counts the number of lines that contain data.
      *
      * @param file dataset
-     * @return
      * @throws IOException
      */
     public static int countLine(File file) throws IOException {

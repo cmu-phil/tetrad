@@ -86,7 +86,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      *
      * @serial Cannot be null.
      */
-    private Set<Node> selectedVariables = new HashSet<Node>();
+    private Set<Node> selectedVariables = new HashSet<>();
 
     /**
      * The knowledge for this data.
@@ -98,9 +98,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     private double[][] vectors = null;
 
     private double[] variances;
-
-    private int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
-    private final int minChunk = 100;
 
 
     //=============================CONSTRUCTORS=========================//
@@ -191,7 +188,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
                     int step = (to - from) / numIntervals + 1;
 
-                    List<VarianceTask> tasks = new ArrayList<VarianceTask>();
+                    List<VarianceTask> tasks = new ArrayList<>();
 
                     for (int i = 0; i < numIntervals; i++) {
                         tasks.add(new VarianceTask(chunk, from + i * step, Math.min(from + (i + 1) * step, to)));
@@ -204,7 +201,9 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
             }
         }
 
+        int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
         int _chunk = variables.size() / NTHREADS + 1;
+        int minChunk = 100;
         final int chunk = _chunk < minChunk ? minChunk : _chunk;
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(new VarianceTask(chunk, 0, variables.size()));
@@ -230,8 +229,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      *                                  does not equal the dimension of m, or if
      *                                  the sample size is not positive.
      */
-    public CovarianceMatrixOnTheFly(List<Node> variables, TetradMatrix matrix,
-                                    int sampleSize) {
+    private CovarianceMatrixOnTheFly(List<Node> variables, TetradMatrix matrix,
+                                     int sampleSize) {
         throw new UnsupportedOperationException();
     }
 
@@ -252,7 +251,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static ICovarianceMatrix serializableInstance() {
-        List<Node> variables = new ArrayList<Node>();
+        List<Node> variables = new ArrayList<>();
         Node x = new ContinuousVariable("X");
         variables.add(x);
         TetradMatrix matrix = TetradAlgebra.identity(1);
@@ -272,7 +271,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * @return the variable names, in order.
      */
     public final List<String> getVariableNames() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 
         for (int i = 0; i < getVariables().size(); i++) {
             Node variable = getVariables().get(i);
@@ -347,7 +346,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
-        List<Node> submatrixVars = new LinkedList<Node>();
+        List<Node> submatrixVars = new LinkedList<>();
 
         for (int indice : indices) {
             submatrixVars.add(variables.get(indice));
@@ -372,7 +371,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * order.
      */
     public final CovarianceMatrixOnTheFly getSubmatrix(String[] submatrixVarNames) {
-        List<Node> submatrixVars = new LinkedList<Node>();
+        List<Node> submatrixVars = new LinkedList<>();
 
         for (String submatrixVarName : submatrixVarNames) {
             submatrixVars.add(getVariable(submatrixVarName));
@@ -469,7 +468,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     public final List<String> getSelectedVariableNames() {
-        List<String> selectedVariableNames = new LinkedList<String>();
+        List<String> selectedVariableNames = new LinkedList<>();
 
         for (Node variable : selectedVariables) {
             selectedVariableNames.add(variable.getName());
@@ -491,14 +490,14 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         for (int i = 0; i < numVars; i++) {
             String name = getVariableNames().get(i);
-            buf.append(name + "\t");
+            buf.append(name).append("\t");
         }
 
         buf.append("\n");
 
         for (int j = 0; j < numVars; j++) {
             for (int i = 0; i <= j; i++) {
-                buf.append(nf.format(getValue(i, j)) + "\t");
+                buf.append(nf.format(getValue(i, j))).append("\t");
             }
             buf.append("\n");
         }
@@ -577,8 +576,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     private void checkMatrix() {
         int numVars = variables.size();
 
-        for (int i = 0; i < numVars; i++) {
-            if (variables.get(i) == null) {
+        for (Node variable : variables) {
+            if (variable == null) {
                 throw new NullPointerException();
             }
 
@@ -595,39 +594,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         if (numVars != matrix.rows() || numVars != matrix.columns()) {
             throw new IllegalArgumentException("Number of variables does not " +
                     "equal the dimension of the matrix.");
-        }
-
-
-        if (sampleSize > matrix.rows()) {
-//            if (!MatrixUtils.isSymmetricPositiveDefinite(matrixC)) {
-//                throw new IllegalArgumentException("Matrix is not positive definite.");
-//                System.out.println("Matrix is not positive definite.");
-//            }
-        } else {
-//            System.out.println(
-//                    "Covariance matrix cannot be positive definite since " +
-//                            "\nthere are more variables than sample points. Spot-checking " +
-//                            "\nsome submatrices.");
-//
-//            for (int from = 0; from < numVars; from += sampleSize / 2) {
-//                int to = from + sampleSize / 2;
-//
-//                if (to > numVars) {
-//                    to = numVars;
-//                }
-//
-//                int[] indices = new int[to - from];
-//
-//                for (int i = 0; i < indices.length; i++) {
-//                    indices[i] = from + i;
-//                }
-//
-//                TetradMatrix m2 = matrixC.viewSelection(indices, indices);
-//
-//                if (!MatrixUtils.isPositiveDefinite(m2)) {
-//                    System.out.println("Positive definite spot-check failed.");
-//                }
-//            }
         }
     }
 
@@ -666,7 +632,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         }
 
         if (selectedVariables == null) {
-            selectedVariables = new HashSet<Node>();
+            selectedVariables = new HashSet<>();
         }
     }
 }

@@ -33,16 +33,13 @@ public class ColtDataBox implements DataBox {
     /**
      * The stored short data.
      */
-    private TetradMatrix data;
+    private final TetradMatrix data;
 
     /**
      * Constructs an 2D COLT array consisting entirely of missing values
      * (Double.NaN).
-     *
-     * @param rows
-     * @param cols
      */
-    public ColtDataBox(int rows, int cols) {
+    private ColtDataBox(int rows, int cols) {
         this.data = new TetradMatrix(rows, cols);
 
         for (int i = 0; i < rows; i++) {

@@ -90,29 +90,19 @@ public final class DataReader {
      * Known variable definitions. These will usurp any guessed variable
      * definitions by name.
      */
-    private List<Node> knownVariables = new LinkedList<Node>();
+    private List<Node> knownVariables = new LinkedList<>();
 
 
     /**
      * The tetrad logger.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
-
-    /**
-     * Log empty token messages.
-     */
-    private boolean logEmptyTokens = false;
 
     /**
      * True if variable names should be read lowercase.
      */
     private boolean readVariablesLowercase = false;
-
-    /**
-     * True if variable names should be read uppercase.
-     */
-    private boolean readVariablesUppercase = false;
 
     /**
      * Constructs a new data parser.
@@ -121,12 +111,6 @@ public final class DataReader {
     }
 
     //============================PUBLIC METHODS========================//
-
-
-    public void setLogEmptyTokens(boolean log) {
-        this.logEmptyTokens = log;
-    }
-
 
     /**
      * Lines beginning with blanks or this marker will be skipped.
@@ -362,7 +346,7 @@ public final class DataReader {
                     ContinuousVariable variable = new ContinuousVariable(name);
                     knownVariables.add(variable);
                 } else {
-                    List<String> categories = new LinkedList<String>();
+                    List<String> categories = new LinkedList<>();
                     tokenizer = new RegexTokenizer(values,
                             delimiterType.getPattern(), quoteChar);
 
@@ -406,7 +390,7 @@ public final class DataReader {
         List<String> varNames;
 
         if (varNamesSupplied) {
-            varNames = new ArrayList<String>();
+            varNames = new ArrayList<>();
             RegexTokenizer tokenizer =
                     new RegexTokenizer(dataFirstLine, delimiter, quoteChar);
 
@@ -423,6 +407,10 @@ public final class DataReader {
                             + ": Duplicate variable name (" + name + ").");
                 }
 
+                /*
+      True if variable names should be read uppercase.
+     */
+                boolean readVariablesUppercase = false;
                 if (readVariablesLowercase) {
                     varNames.add(name.toLowerCase());
                 } else if (readVariablesUppercase) {
@@ -434,7 +422,7 @@ public final class DataReader {
 
             dataFirstLine = null;
         } else {
-            varNames = new LinkedList<String>();
+            varNames = new LinkedList<>();
             RegexTokenizer tokenizer =
                     new RegexTokenizer(dataFirstLine, delimiter, quoteChar);
 
@@ -617,7 +605,6 @@ public final class DataReader {
 
         // Do first pass to get a description of the file.
         CharArrayReader reader = new CharArrayReader(chars);
-        DataSetDescription description = doFirstTabularPass(reader);
 
         // Close the reader and re-open for a second pass to load the data.
         reader.close();
@@ -630,7 +617,7 @@ public final class DataReader {
     }
 
 
-    public ICovarianceMatrix doCovariancePass(Reader reader) {
+    private ICovarianceMatrix doCovariancePass(Reader reader) {
         this.logger.log("info", "\nDATA LOADING PARAMETERS:");
         this.logger.log("info", "File type = COVARIANCE");
         this.logger.log("info", "Comment marker = " + commentMarker);
@@ -680,7 +667,7 @@ public final class DataReader {
 
         st = new RegexTokenizer(line, delimiterType.getPattern(), quoteChar);
 
-        List<String> vars = new ArrayList<String>();
+        List<String> vars = new ArrayList<>();
 
         while (st.hasMoreTokens()) {
             String _token = st.nextToken();
@@ -1007,12 +994,12 @@ public final class DataReader {
     }
 
     private static class DataSetDescription {
-        private List<Node> variables;
-        private int numRows;
-        private int idIndex;
-        private boolean variablesSectionIncluded;
-        private Pattern delimiter;
-        private boolean multColumnIncluded;
+        private final List<Node> variables;
+        private final int numRows;
+        private final int idIndex;
+        private final boolean variablesSectionIncluded;
+        private final Pattern delimiter;
+        private final boolean multColumnIncluded;
 
         public DataSetDescription(List<Node> variables, int numRows, int idIndex,
                                   boolean variablesSectionIncluded, Pattern delimiter,
@@ -1061,7 +1048,6 @@ public final class DataReader {
      * @param firstLine               Non-null if a non-variable first line had to be
      *                                lineized
      * @param idIndex                 The index of the ID column.
-     * @param variableSectionIncluded
      */
     private DataSetDescription scanForDescription(List<String> varNames,
                                                   Lineizer lineizer, Pattern delimiter,
@@ -1069,7 +1055,7 @@ public final class DataReader {
                                                   boolean variableSectionIncluded) {
 
         // Scan file, collecting up the set of range values for each variables.
-        List<Set<String>> dataStrings = new ArrayList<Set<String>>();
+        List<Set<String>> dataStrings = new ArrayList<>();
 
         for (int i = 0; i < varNames.size(); i++) {
             dataStrings.add(new HashSet<String>(varNames.size()));
@@ -1130,7 +1116,7 @@ public final class DataReader {
         int numRows = row + 1;
 
         // Convert these range values into variable definitions.
-        List<Node> variables = new ArrayList<Node>();
+        List<Node> variables = new ArrayList<>();
 
         VARNAMES:
         for (int i = 0; i < varNames.size(); i++) {
@@ -1162,7 +1148,7 @@ public final class DataReader {
 
                 variables.add(new ContinuousVariable(name));
             } else {
-                List<String> categories = new LinkedList<String>(strings);
+                List<String> categories = new LinkedList<>(strings);
                 categories.remove(null);
                 categories.remove("");
                 categories.remove(missingValueMarker);

@@ -121,10 +121,9 @@ public final class DataWriter {
      * @param dataSet   The data set to save.
      * @param out       The writer to write the output to.
      * @param separator The character separating fields, usually '\t' or ','.
-     * @throws IOException If there is some problem dealing with the writer.
      */
     public static void writeRectangularDataALittleFaster(DataSet dataSet,
-                                                         PrintWriter out, char separator) throws IOException {
+                                                         PrintWriter out, char separator) {
         NumberFormat nf = new DecimalFormat("0.0000");
 //        StringBuilder buf = new StringBuilder();
 
@@ -185,7 +184,6 @@ public final class DataWriter {
      * <code>out</code> will need to be called externally.
      *
      * @param out The writer to write the output to.
-     * @throws IOException If there is some problem dealing with the writer.
      */
     public static void writeCovMatrix(ICovarianceMatrix covMatrix,
                                       PrintWriter out, NumberFormat nf) {

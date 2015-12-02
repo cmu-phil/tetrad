@@ -31,7 +31,7 @@ import edu.cmu.tetrad.session.SessionModel;
  * @author kaalpurush
  */
 public interface KnowledgeBoxInput extends SessionModel, VariableSource {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     Graph getSourceGraph();
 
