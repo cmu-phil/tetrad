@@ -27,9 +27,9 @@ import java.io.Reader;
 
 /**
  * @author Joseph Ramsey
- * Returns one line at a time, with a method to determine whether another
- * line is available. Blank lines and lines beginning with the given comment
- * marker are skipped.
+ *         Returns one line at a time, with a method to determine whether another
+ *         line is available. Blank lines and lines beginning with the given comment
+ *         marker are skipped.
  */
 final class Lineizer {
 

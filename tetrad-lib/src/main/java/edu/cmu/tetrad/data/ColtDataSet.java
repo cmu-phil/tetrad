@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.data;
 
-import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -271,10 +270,8 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             }
         }
 
-        ColtDataSet dataSet = new ColtDataSet(data.length, nodes, data);
-//        BoxDataSet dataSet = new BoxDataSet(new DoubleDataBox(data), nodes);
-
-        return dataSet;
+        return new ColtDataSet(data.length, nodes, data);
+//       return new BoxDataSet(new DoubleDataBox(data), nodes);
     }
 
     public static ColtDataSet makeData(List<Node> variables,

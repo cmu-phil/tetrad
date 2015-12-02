@@ -407,14 +407,9 @@ public final class DataReader {
                             + ": Duplicate variable name (" + name + ").");
                 }
 
-                /*
-      True if variable names should be read uppercase.
-     */
-                boolean readVariablesUppercase = false;
+//               True if variable names should be read uppercase.
                 if (readVariablesLowercase) {
                     varNames.add(name.toLowerCase());
-                } else if (readVariablesUppercase) {
-                    varNames.add(name.toUpperCase());
                 } else {
                     varNames.add(name);
                 }
@@ -1040,14 +1035,14 @@ public final class DataReader {
     /**
      * Scans the file for variable definitions and number of cases.
      *
-     * @param varNames                Names of variables, if known. Otherwise, if null,
-     *                                variables in the series X1, X2, ..., Xn will be made up,
-     *                                one for each token in the first row.
-     * @param lineizer                Parses lines, skipping comments.
-     * @param delimiter               Delimiter to tokenize tokens in each row.
-     * @param firstLine               Non-null if a non-variable first line had to be
-     *                                lineized
-     * @param idIndex                 The index of the ID column.
+     * @param varNames  Names of variables, if known. Otherwise, if null,
+     *                  variables in the series X1, X2, ..., Xn will be made up,
+     *                  one for each token in the first row.
+     * @param lineizer  Parses lines, skipping comments.
+     * @param delimiter Delimiter to tokenize tokens in each row.
+     * @param firstLine Non-null if a non-variable first line had to be
+     *                  lineized
+     * @param idIndex   The index of the ID column.
      */
     private DataSetDescription scanForDescription(List<String> varNames,
                                                   Lineizer lineizer, Pattern delimiter,
