@@ -35,9 +35,6 @@ public interface TetradLoggerConfig extends TetradSerializable {
     /**
      * States whether the event associated with the given id is active, that is whether
      * it should be logged or not.
-     *
-     * @param id
-     * @return
      */
     boolean isEventActive(String id);
 
@@ -59,9 +56,6 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
     /**
      * Sets whether the event associated with the given id is active or not.
-     *
-     * @param id
-     * @param active
      */
     void setEventActive(String id, boolean active);
 
@@ -82,13 +76,13 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
 
         /**
-         * @return
+         * @return the Sting ID fo the event.
          */
         String getId();
 
 
         /**
-         * @return
+         * @return the String description of the event.
          */
         String getDescription();
 

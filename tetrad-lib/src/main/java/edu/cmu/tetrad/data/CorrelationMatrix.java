@@ -69,8 +69,8 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * Constructs a correlation matrix data set using the given information. The
      * matrix matrix is internally converted to a correlation matrix.
      */
-    public CorrelationMatrix(List<Node> variables, TetradMatrix matrix,
-                             int sampleSize) {
+    private CorrelationMatrix(List<Node> variables, TetradMatrix matrix,
+                              int sampleSize) {
         super(variables, MatrixUtils.convertCovToCorr(matrix), sampleSize);
     }
 
@@ -98,11 +98,6 @@ public final class CorrelationMatrix extends CovarianceMatrix
         }
 
         super.setMatrix(matrix);
-    }
-
-    @Override
-    public void setVariables(List<Node> variables) {
-        super.setVariables(variables);
     }
 
     @Override

@@ -57,7 +57,7 @@ public final class CellTable {
      */
     private int missingValue = -99;
 
-    private MultiDimIntTable table;
+    private final MultiDimIntTable table;
 
     /**
      * Constructs a new cell table using the given array for dimensions,

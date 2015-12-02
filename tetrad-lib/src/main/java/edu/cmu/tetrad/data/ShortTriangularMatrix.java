@@ -37,7 +37,7 @@ public class ShortTriangularMatrix implements TriangularMatrix {
 
     private short matrix[][];
 
-    public ShortTriangularMatrix() {
+    private ShortTriangularMatrix() {
     }
 
     public ShortTriangularMatrix(int size) {

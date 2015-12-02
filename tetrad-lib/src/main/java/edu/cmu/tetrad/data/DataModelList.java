@@ -46,7 +46,7 @@ public final class DataModelList extends AbstractList<DataModel>
      *
      * @serial
      */
-    private List<DataModel> modelList = new LinkedList<DataModel>();
+    private List<DataModel> modelList = new LinkedList<>();
 
     /**
      * The selected model (may be null).
@@ -84,7 +84,7 @@ public final class DataModelList extends AbstractList<DataModel>
             e.printStackTrace();
         }
 
-        this.modelList = new ArrayList<DataModel>(dataModelList);
+        this.modelList = new ArrayList<>(dataModelList);
         this.selectedModel = dataModelList.selectedModel;
         this.name = dataModelList.name;
         this.knowledge = dataModelList.knowledge.copy();
@@ -114,6 +114,7 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     public List<Node> getVariables() {
+        if (getSelectedModel() == null) throw new NullPointerException();
         return getSelectedModel().getVariables();
     }
 
@@ -133,6 +134,7 @@ public final class DataModelList extends AbstractList<DataModel>
      * @return the list of variable names for columns, in order.
      */
     public List<String> getVariableNames() {
+        if (getSelectedModel() == null) throw new NullPointerException();
         return getSelectedModel().getVariableNames();
     }
 
@@ -186,8 +188,6 @@ public final class DataModelList extends AbstractList<DataModel>
 
         if (this.modelList.contains(model)) {
             this.selectedModel = model;
-        } else {
-//            throw new IllegalArgumentException("That model is not in the list.");
         }
     }
 
@@ -239,19 +239,8 @@ public final class DataModelList extends AbstractList<DataModel>
             return false;
         }
 
-        if (!(modelList.equals(list.modelList))) {
-            return false;
-        }
+        return modelList.equals(list.modelList) && knowledge.equals(list.knowledge) && selectedModel.equals(list.selectedModel);
 
-        if (!(knowledge.equals(list.knowledge))) {
-            return false;
-        }
-
-        if (!selectedModel.equals(list.selectedModel)) {
-            return false;
-        }
-
-        return true;
     }
 
     /**

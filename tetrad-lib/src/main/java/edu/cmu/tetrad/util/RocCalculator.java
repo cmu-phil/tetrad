@@ -110,8 +110,6 @@ public class RocCalculator {
      * the unscaled ROC Curve plot.  The first subscript of the array is the
      * index of the point and the second subscript is 0 for x values and 1 for y
      * values.
-     *
-     * @return Ibid.
      */
     private void getUnscaledRocPlot() {
         sortCases();

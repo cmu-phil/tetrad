@@ -846,7 +846,6 @@ final class RegularDataPanel extends JPanel {
             tabbedPane.setSelectedIndex(1);
 
             DataReader reader = new DataReader();
-            reader.setLogEmptyTokens(logEmptyTokens.isSelected());
 
             reader.setCommentMarker(getCommentString());
             reader.setDelimiter(getDelimiterType());

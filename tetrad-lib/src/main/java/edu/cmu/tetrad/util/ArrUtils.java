@@ -39,23 +39,6 @@ final class ArrUtils {
      * @param arr the array to copy.
      * @return the copied array.
      */
-    public static double[] copy(double[] arr) {
-        if (arr == null) {
-            return null;
-        }
-
-        double[] copy = new double[arr.length];
-        System.arraycopy(arr, 0, copy, 0, arr.length);
-
-        return copy;
-    }
-
-    /**
-     * Copies a 2D double arr.
-     *
-     * @param arr the array to copy.
-     * @return the copied array.
-     */
     public static int[] copy(int[] arr) {
         if (arr == null) {
             return null;
@@ -65,28 +48,6 @@ final class ArrUtils {
         System.arraycopy(arr, 0, copy, 0, arr.length);
 
         return copy;
-    }
-
-    /**
-     * Tests two vectors for equality.
-     *
-     * @param va the first vector to be tested for equality.
-     * @param vb the second vector to be tested for equality. Same length as the first.
-     * @return true if the vectors are the same length and va[i] == vb[i] for each i.
-     */
-    public static boolean equals(double[] va, double[] vb) {
-        if (va.length != vb.length) {
-            throw new IllegalArgumentException(
-                    "Incompatible matrix dimensions.");
-        }
-
-        for (int i = 0; i < va.length; i++) {
-            if (Math.abs(va[i] - vb[i]) != 0.0) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
