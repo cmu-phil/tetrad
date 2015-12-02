@@ -13,6 +13,7 @@
     <modules>
         <module>tetrad-lib</module>
         <module>tetrad-gui</module>
+        <module>tetrad-cli</module>
     </modules>
 
     <licenses>
