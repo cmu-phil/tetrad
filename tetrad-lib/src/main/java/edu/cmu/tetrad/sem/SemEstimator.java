@@ -271,10 +271,6 @@ public final class SemEstimator implements TetradSerializable {
         return semOptimizer;
     }
 
-    public SemIm getTrueSemIm() {
-        return trueSemIm;
-    }
-
     public void setTrueSemIm(SemIm semIm) {
         trueSemIm = new SemIm(semIm);
         trueSemIm.setCovMatrix(this.getCovMatrix());

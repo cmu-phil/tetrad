@@ -76,27 +76,27 @@ public final class SemProposition implements TetradSerializable {
         return new SemProposition(semIm);
     }
 
-    /**
-     * Copies the info out of the old proposition into a new proposition for the
-     * new BayesIm.
-     */
-    public SemProposition(SemIm semIm, SemProposition proposition) {
-        this(semIm);
+//    /**
+//     * Copies the info out of the old proposition into a new proposition for the
+//     * new BayesIm.
+//     */
+//    public SemProposition(SemIm semIm, SemProposition proposition) {
+//        this(semIm);
+//
+//        if (proposition == null) {
+//            throw new NullPointerException();
+//        }
+//    }
 
-        if (proposition == null) {
-            throw new NullPointerException();
-        }
-    }
-
-    /**
-     * Copies the info out of the old proposition into a new proposition for the
-     * new BayesIm.
-     */
-    public SemProposition(SemProposition proposition) {
-        this.semIm = proposition.semIm;
-        this.values = new double[proposition.values.length];
-        System.arraycopy(proposition.values, 0, this.values, 0, values.length);
-    }
+//    /**
+//     * Copies the info out of the old proposition into a new proposition for the
+//     * new BayesIm.
+//     */
+//    public SemProposition(SemProposition proposition) {
+//        this.semIm = proposition.semIm;
+//        this.values = new double[proposition.values.length];
+//        System.arraycopy(proposition.values, 0, this.values, 0, values.length);
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -146,10 +146,10 @@ public final class SemProposition implements TetradSerializable {
         }
 
         for (int i = 0; i < values.length; i++) {
-            if (Double.isNaN(values[i]) && Double.isNaN(proposition.values[i])) {
-//                continue;
-            } else if (values[i] != proposition.values[i]) {
-                return false;
+            if (!(Double.isNaN(values[i]) && Double.isNaN(proposition.values[i]))) {
+                if (values[i] != proposition.values[i]) {
+                    return false;
+                }
             }
         }
 

@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -440,7 +438,7 @@ final class SemEstimatorGibbs {
         // this is only called when flatprior is false, which it will never be with the getModel code
 
         double answer = 0.0;
-        int n = 0;
+        int n = dataSet.columns();
         int numParameters = parameters.size();
         double[] xvec = new double[numParameters];
         double[] temp = new double[numParameters];
@@ -514,56 +512,52 @@ final class SemEstimatorGibbs {
     }
 
 
-    private DataSet subset(DataSet dataSet, SemPm semPm) {
+//    private DataSet subset(DataSet dataSet, SemPm semPm) {
+//
+//        String[] measuredVarNames = semPm.getMeasuredVarNames();
+//        int[] varIndices = new int[measuredVarNames.length];
+//
+//        for (int i = 0; i < measuredVarNames.length; i++) {
+//            Node variable = dataSet.getVariable(measuredVarNames[i]);
+//            varIndices[i] = dataSet.getVariables().indexOf(variable);
+//        }
+//
+//        return dataSet.subsetColumns(varIndices);
+//    }
 
-        String[] measuredVarNames = semPm.getMeasuredVarNames();
-        int[] varIndices = new int[measuredVarNames.length];
 
-        for (int i = 0; i < measuredVarNames.length; i++) {
-            Node variable = dataSet.getVariable(measuredVarNames[i]);
-            varIndices[i] = dataSet.getVariables().indexOf(variable);
-        }
-
-        return dataSet.subsetColumns(varIndices);
-    }
-
-
-    /**
-     * Sets the means of variables in the SEM IM based on the given data set.
-     *
-     * @param semIm   SemIm
-     * @param dataSet The data produced by iterating the sampler
-     */
-    private void setMeans(SemIm semIm, TetradMatrix dataSet) {
-
-        double[] means = new double[semIm.getSemPm().getVariableNodes().size()];
-        int numMeans = means.length;
-
-        if (dataSet == null) {
-            for (int i = 0; i < numMeans; i++) {
-                means[i] = 0.0;
-            }
-        } else {
-            double[] sum = new double[numMeans];
-
-            for (int j = 0; j < dataSet.columns(); j++) {
-                for (int i = 0; i < dataSet.rows(); i++) {
-                    sum[j] += dataSet.get(i, j);
-                }
-
-                means[j] = sum[j] / dataSet.rows();
-            }
-        }
-
-        for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
-            Node node = semIm.getVariableNodes().get(i);
-            semIm.setMean(node, means[i]);
-        }
-    }
-
-    public void setEstimatedSem(SemIm estimatedSem) {
-        this.estimatedSem = estimatedSem;
-    }
+//    /**
+//     * Sets the means of variables in the SEM IM based on the given data set.
+//     *
+//     * @param semIm   SemIm
+//     * @param dataSet The data produced by iterating the sampler
+//     */
+//    private void setMeans(SemIm semIm, TetradMatrix dataSet) {
+//
+//        double[] means = new double[semIm.getSemPm().getVariableNodes().size()];
+//        int numMeans = means.length;
+//
+//        if (dataSet == null) {
+//            for (int i = 0; i < numMeans; i++) {
+//                means[i] = 0.0;
+//            }
+//        } else {
+//            double[] sum = new double[numMeans];
+//
+//            for (int j = 0; j < dataSet.columns(); j++) {
+//                for (int i = 0; i < dataSet.rows(); i++) {
+//                    sum[j] += dataSet.get(i, j);
+//                }
+//
+//                means[j] = sum[j] / dataSet.rows();
+//            }
+//        }
+//
+//        for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
+//            Node node = semIm.getVariableNodes().get(i);
+//            semIm.setMean(node, means[i]);
+//        }
+//    }
 
     public SemPm getSemPm() {
         return semPm;

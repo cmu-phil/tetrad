@@ -272,39 +272,39 @@ public class TemplateExpander {
                 boolean plusOrTimes = '+' == symbol || '*' == symbol;
                 boolean space = ' ' == symbol;
 
-                if (space) {
-                    // continue; // (last statement)
-                } else if (plusOrTimes) {
-                    if (operatorList.isEmpty()) {
-                        first = i;
-                    }
+                if (!space) {
+                    if (plusOrTimes) {
+                        if (operatorList.isEmpty()) {
+                            first = i;
+                        }
 
-                    operatorList.add(symbol);
-                } else {
-                    last = i - 1;
+                        operatorList.add(symbol);
+                    } else {
+                        last = i - 1;
 
-                    if (operatorList.size() > 1) {
-                        found = true;
-                        boolean allStar = true;
+                        if (operatorList.size() > 1) {
+                            found = true;
+                            boolean allStar = true;
 
-                        for (Character c : operatorList) {
-                            if (c != '*') {
-                                allStar = false;
-                                break;
+                            for (Character c : operatorList) {
+                                if (c != '*') {
+                                    allStar = false;
+                                    break;
+                                }
+                            }
+
+                            if (allStar) {
+                                formula = formula.substring(0, first - 1) + " * " +
+                                        formula.substring(last + 1, formula.length());
+                            } else {
+                                formula = formula.substring(0, first - 1) + " + " +
+                                        formula.substring(last + 1, formula.length());
                             }
                         }
 
-                        if (allStar) {
-                            formula = formula.substring(0, first - 1) + " * " +
-                                    formula.substring(last + 1, formula.length());
-                        } else {
-                            formula = formula.substring(0, first - 1) + " + " +
-                                    formula.substring(last + 1, formula.length());
-                        }
+                        operatorList.clear();
+                        continue WHILE;
                     }
-
-                    operatorList.clear();
-                    continue WHILE;
                 }
             }
         }
