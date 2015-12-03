@@ -75,7 +75,7 @@ public final class LayeredDrawing {
     private List<List<Node>> placeInTiers(Graph graph) {
         List<List<Node>> connectedComponents =
                 GraphUtils.connectedComponents(graph);
-        List<List<Node>> tiers = new ArrayList<List<Node>>();
+        List<List<Node>> tiers = new ArrayList<>();
 
         for (List<Node> component : connectedComponents) {
 
@@ -83,20 +83,19 @@ public final class LayeredDrawing {
             // starting with the first node. These tiers are relative and
             // can be negative.
             Node firstNode = component.get(0);
-            Map<Node, Integer> componentTiers = new HashMap<Node, Integer>();
+            Map<Node, Integer> componentTiers = new HashMap<>();
             placeNodes(firstNode, componentTiers, graph);
 
             // Reverse the map. The domain of this map is now possibly negative
             // tiers.
-            Map<Integer, Node> reversedMap = new MultiKeyMap();
+            Map reversedMap = new MultiKeyMap();
 
             for (Node _node : component) {
                 Integer _tier = componentTiers.get(_node);
                 reversedMap.put(_tier, _node);
             }
 
-            List<Integer> indices =
-                    new ArrayList<Integer>(reversedMap.keySet());
+            List<Integer> indices = new ArrayList<>(reversedMap.keySet());
             Collections.sort(indices);
 
             // Add these tiers low to high to the list of all tiers. Note that
@@ -106,7 +105,7 @@ public final class LayeredDrawing {
 
             for (int i : indices) {
                 Collection<Node> collection = (Collection<Node>) reversedMap.get(i);
-                tiers.add(new ArrayList<Node>(collection));
+                tiers.add(new ArrayList<>(collection));
             }
 
             // Do some heuristic uncrossing of edges in successive tiers.
@@ -114,7 +113,7 @@ public final class LayeredDrawing {
                 List<Node> tier1 = tiers.get(i);
                 List<Node> tier2 = tiers.get(i + 1);
 
-                List<Node> reorderTier2 = new ArrayList<Node>();
+                List<Node> reorderTier2 = new ArrayList<>();
 
                 for (Node node : tier1) {
                     List<Node> adj = graph.getAdjacentNodes(node);

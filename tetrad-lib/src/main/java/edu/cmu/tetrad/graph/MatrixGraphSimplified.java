@@ -72,23 +72,17 @@ public final class MatrixGraphSimplified implements Graph {
      * Set of ambiguous triples. Note the name can't be changed due to
      * serialization.
      */
-    private Set<Triple> ambiguousTriples = new HashSet<Triple>();
+    private Set<Triple> ambiguousTriples = new HashSet<>();
 
     /**
      * @serial
      */
-    private Set<Triple> underLineTriples = new HashSet<Triple>();
+    private Set<Triple> underLineTriples = new HashSet<>();
 
     /**
      * @serial
      */
-    private Set<Triple> dottedUnderLineTriples = new HashSet<Triple>();
-
-    /**
-     * @serial
-     * @deprecated 7/8/09
-     */
-    private Set<NodePair> ambiguousPairs = new HashSet<>();
+    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
 
     /**
      * True iff nodes were removed since the last call to an accessor for ambiguous, underline, or dotted underline
@@ -100,7 +94,7 @@ public final class MatrixGraphSimplified implements Graph {
     /**
      * The set of highlighted edges.
      */
-    private Set<Edge> highlightedEdges = new HashSet<Edge>();
+    private Set<Edge> highlightedEdges = new HashSet<>();
     private byte[][] matrix;
     private Map<Node, Integer> nodeMap;
 
@@ -111,8 +105,8 @@ public final class MatrixGraphSimplified implements Graph {
      * names.
      */
     public MatrixGraphSimplified(List<Node> nodes) {
-        this.graphConstraints = new LinkedList<GraphConstraint>();
-        this.nodes = new ArrayList<Node>(nodes);
+        this.graphConstraints = new LinkedList<>();
+        this.nodes = new ArrayList<>(nodes);
 
         this.matrix = new byte[nodes.size()][nodes.size()];
 
@@ -128,7 +122,7 @@ public final class MatrixGraphSimplified implements Graph {
             }
         }
 
-        nodeMap = new HashMap<Node, Integer>();
+        nodeMap = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             nodeMap.put(nodes.get(i), i);
@@ -246,8 +240,14 @@ public final class MatrixGraphSimplified implements Graph {
 
             while (!adjToA.isEmpty()) {
                 Node Curr = adjToA.remove(0);
+                Edge edge1 = getEdge(Curr, A);
+
+                if (edge1 == null) {
+                    throw new NullPointerException();
+                }
+
                 if (!((getAdjacentNodes(Curr)).contains(B)) &&
-                        ((getEdge(Curr, A)).getProximalEndpoint(A) == Endpoint
+                        (edge1.getProximalEndpoint(A) == Endpoint
                                 .ARROW)) {
                     return true;
                 }
@@ -328,7 +328,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @return the list of children for a node.
      */
     public List<Node> getChildren(Node node) {
-        List<Node> children = new LinkedList<Node>();
+        List<Node> children = new LinkedList<>();
 
         for (Object o : getEdges(node)) {
             Edge edge = (Edge) (o);
@@ -358,14 +358,14 @@ public final class MatrixGraphSimplified implements Graph {
     }
 
     public List<Node> getDescendants(List<Node> nodes) {
-        HashSet<Node> descendants = new HashSet<Node>();
+        HashSet<Node> descendants = new HashSet<>();
 
         for (Object node1 : nodes) {
             Node node = (Node) node1;
             collectDescendantsVisit(node, descendants);
         }
 
-        return new LinkedList<Node>(descendants);
+        return new LinkedList<>(descendants);
     }
 
     /**
@@ -422,7 +422,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @return the list of parents for a node.
      */
     public List<Node> getParents(Node node) {
-        List<Node> parents = new LinkedList<Node>();
+        List<Node> parents = new LinkedList<>();
 
         for (Object o : getEdges(node)) {
             Edge edge = (Edge) (o);
@@ -483,7 +483,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @return true iff node1 is a possible ancestor of at least one member of
      * nodes2
      */
-    public boolean possibleAncestorSet(Node node1, List<Node> nodes2) {
+    private boolean possibleAncestorSet(Node node1, List<Node> nodes2) {
         for (Object aNodes2 : nodes2) {
             if (possibleAncestor(node1, (Node) aNodes2)) {
                 return true;
@@ -493,14 +493,14 @@ public final class MatrixGraphSimplified implements Graph {
     }
 
     public List<Node> getAncestors(List<Node> nodes) {
-        HashSet<Node> ancestors = new HashSet<Node>();
+        HashSet<Node> ancestors = new HashSet<>();
 
         for (Object node1 : nodes) {
             Node node = (Node) node1;
             collectAncestorsVisit(node, ancestors);
         }
 
-        return new LinkedList<Node>(ancestors);
+        return new LinkedList<>(ancestors);
     }
 
     /**
@@ -557,10 +557,10 @@ public final class MatrixGraphSimplified implements Graph {
 
         // Set up a linked list to hold nodes along the getModel path (to check
         // for cycles).
-        LinkedList<Node> path = new LinkedList<Node>();
+        LinkedList<Node> path = new LinkedList<>();
 
         // Fine the closure of conditioningNodes under the parent relation.
-        Set<Node> conditioningNodesClosure = new HashSet<Node>();
+        Set<Node> conditioningNodesClosure = new HashSet<>();
 
         for (Node conditioningNode : conditioningNodes) {
             doParentClosureVisit(conditioningNode, conditioningNodesClosure);
@@ -569,8 +569,7 @@ public final class MatrixGraphSimplified implements Graph {
         // Calls the recursive method to discover a d-connecting path from node1
         // to node2, if one exists.  If such a path is found, true is returned;
         // otherwise, false is returned.
-        Endpoint incomingEndpoint = null;
-        return isDConnectedToVisit(node1, incomingEndpoint, incomingEndpoint, node2, path,
+        return isDConnectedToVisit(node1, null, null, node2, path,
                 conditioningNodes, conditioningNodesClosure);
     }
 
@@ -598,7 +597,7 @@ public final class MatrixGraphSimplified implements Graph {
     //added by ekorber, June 2004
     public boolean possDConnectedTo(Node node1, Node node2,
                                     List<Node> condNodes) {
-        LinkedList<Node> allNodes = new LinkedList<Node>(getNodes());
+        LinkedList<Node> allNodes = new LinkedList<>(getNodes());
         int sz = allNodes.size();
         int[][] edgeStage = new int[sz][sz];
         int stage = 1;
@@ -610,7 +609,7 @@ public final class MatrixGraphSimplified implements Graph {
         edgeStage[n2x][n2x] = 1;
 
         List<int[]> currEdges;
-        List<int[]> nextEdges = new LinkedList<int[]>();
+        List<int[]> nextEdges = new LinkedList<>();
 
         int[] temp1 = new int[2];
         temp1[0] = n1x;
@@ -624,10 +623,10 @@ public final class MatrixGraphSimplified implements Graph {
 
         while (true) {
             currEdges = nextEdges;
-            nextEdges = new LinkedList<int[]>();
+            nextEdges = new LinkedList<>();
             for (int[] edge : currEdges) {
                 Node center = allNodes.get(edge[1]);
-                List<Node> adj = new LinkedList<Node>(getAdjacentNodes(center));
+                List<Node> adj = new LinkedList<>(getAdjacentNodes(center));
 
                 for (Node anAdj : adj) {
                     // check if we've hit this edge before
@@ -685,9 +684,8 @@ public final class MatrixGraphSimplified implements Graph {
      * Determines whether an inducing path exists between node1 and node2, given
      * a set O of observed nodes and a set sem of conditioned nodes.
      *
-     * @param conditioningNodes the set of nodes conditioned upon.
-     * @param node1             the first node.
-     * @param node2             the second node.
+     * @param node1 the first node.
+     * @param node2 the second node.
      * @return true if an inducing path exists, false if not.
      */
     public boolean existsInducingPath(Node node1, Node node2) {
@@ -774,8 +772,8 @@ public final class MatrixGraphSimplified implements Graph {
      * @return the set of nodes adjacent to the given node.
      */
     public List<Node> getAdjacentNodes(Node node) {
-        Set<Node> adjacentNodesHash = new HashSet<Node>();
-        List<Node> adjacentNodes = new LinkedList<Node>();
+        Set<Node> adjacentNodesHash = new HashSet<>();
+        List<Node> adjacentNodes = new LinkedList<>();
         List<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
@@ -870,7 +868,7 @@ public final class MatrixGraphSimplified implements Graph {
      * Nodes adjacent to the given node with the given proximal endpoint.
      */
     public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
         List<Edge> edges = getEdges(node);
 
         for (Object edge1 : edges) {
@@ -888,7 +886,7 @@ public final class MatrixGraphSimplified implements Graph {
      * Nodes adjacent to the given node with the given distal endpoint.
      */
     public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
         List<Edge> edges = getEdges(node);
 
         for (Object edge1 : edges) {
@@ -988,7 +986,7 @@ public final class MatrixGraphSimplified implements Graph {
      * edges in the list is guaranteed.
      */
     public Set<Edge> getEdges() {
-        Set<Edge> edges = new HashSet<Edge>();
+        Set<Edge> edges = new HashSet<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -1049,7 +1047,7 @@ public final class MatrixGraphSimplified implements Graph {
      * ordering of the edges in the list is guaranteed.
      */
     public List<Edge> getEdges(Node node) {
-        List<Edge> edges = new ArrayList<Edge>();
+        List<Edge> edges = new ArrayList<>();
         int i = nodeMap.get(node);
 
         for (int j = 0; j < nodes.size(); j++) {
@@ -1102,13 +1100,15 @@ public final class MatrixGraphSimplified implements Graph {
             return false;
         }
 
+        if (!(o instanceof MatrixGraphSimplified)) return false;
+
         Graph graph = (Graph) o;
 
-        if (!new HashSet<String>(graph.getNodeNames()).equals(new HashSet<String>(getNodeNames()))) {
+        if (!new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(getNodeNames()))) {
             return false;
         }
 
-        if (!new HashSet<Edge>(graph.getEdges()).equals(new HashSet<Edge>(getEdges()))) {
+        if (!new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()))) {
             return false;
         }
 
@@ -1220,7 +1220,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @return the list of graph constraints for this graph.
      */
     public List<GraphConstraint> getGraphConstraints() {
-        return new LinkedList<GraphConstraint>(graphConstraints);
+        return new LinkedList<>(graphConstraints);
     }
 
     /**
@@ -1240,7 +1240,7 @@ public final class MatrixGraphSimplified implements Graph {
     }
 
     public List<Node> getNodes() {
-        return new ArrayList<Node>(nodes);
+        return new ArrayList<>(nodes);
     }
 
     /**
@@ -1320,14 +1320,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @return true if nodes from the collection were removed, false if not.
      */
     public boolean removeNodes(List<Node> newNodes) {
-        boolean changed = false;
-
-        for (Object newNode : newNodes) {
-            boolean _changed = removeNode((Node) newNode);
-            changed = changed || _changed;
-        }
-
-        return changed;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1340,13 +1333,13 @@ public final class MatrixGraphSimplified implements Graph {
 
         for (int i = 0; i < nodes.size(); i++) {
 //            buf.append("\n" + (i + 1) + ". " + nodes.get(i));
-            buf.append(nodes.get(i) + " ");
+            buf.append(nodes.get(i)).append(" ");
             if ((i + 1) % 30 == 0) buf.append("\n");
         }
 
         buf.append("\n\nGraph Edges: ");
 
-        List<Edge> edges = new ArrayList<Edge>(getEdges());
+        List<Edge> edges = new ArrayList<>(getEdges());
         Edges.sortEdges(edges);
 
         for (int i = 0; i < edges.size(); i++) {
@@ -1407,7 +1400,7 @@ public final class MatrixGraphSimplified implements Graph {
      * @return the edges connecting node1 and node2.
      */
     public List<Edge> getEdges(Node node1, Node node2) {
-        List<Edge> edges = new LinkedList<Edge>(getEdges(node1));
+        List<Edge> edges = new LinkedList<>(getEdges(node1));
 
         for (Iterator<Edge> i = edges.iterator(); i.hasNext(); ) {
             Edge edge = i.next();
@@ -1422,17 +1415,17 @@ public final class MatrixGraphSimplified implements Graph {
 
     public Set<Triple> getAmbiguousTriples() {
         removeTriplesNotInGraph();
-        return new HashSet<Triple>(ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     public Set<Triple> getUnderLines() {
         removeTriplesNotInGraph();
-        return new HashSet<Triple>(underLineTriples);
+        return new HashSet<>(underLineTriples);
     }
 
     public Set<Triple> getDottedUnderlines() {
         removeTriplesNotInGraph();
-        return new HashSet<Triple>(dottedUnderLineTriples);
+        return new HashSet<>(dottedUnderLineTriples);
     }
 
 
@@ -1452,10 +1445,6 @@ public final class MatrixGraphSimplified implements Graph {
      * States whether x-y-x is an underline triple or not.
      */
     public boolean isUnderlineTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
-//        if (!triple.alongPathIn(this)) {
-//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> is not along a path.");
-//        }
         removeTriplesNotInGraph();
         return underLineTriples.contains(new Triple(x, y, z));
     }
@@ -1541,7 +1530,7 @@ public final class MatrixGraphSimplified implements Graph {
     }
 
     public List<String> getNodeNames() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 
         for (Node node : getNodes()) {
             names.add(node.getName());
@@ -1556,7 +1545,7 @@ public final class MatrixGraphSimplified implements Graph {
     public void removeTriplesNotInGraph() {
         if (!stuffRemovedSinceLastTripleAccess) return;
 
-        for (Triple triple : new HashSet<Triple>(ambiguousTriples)) {
+        for (Triple triple : new HashSet<>(ambiguousTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
                 ambiguousTriples.remove(triple);
                 continue;
@@ -1567,7 +1556,7 @@ public final class MatrixGraphSimplified implements Graph {
             }
         }
 
-        for (Triple triple : new HashSet<Triple>(underLineTriples)) {
+        for (Triple triple : new HashSet<>(underLineTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
                 underLineTriples.remove(triple);
                 continue;
@@ -1578,7 +1567,7 @@ public final class MatrixGraphSimplified implements Graph {
             }
         }
 
-        for (Triple triple : new HashSet<Triple>(dottedUnderLineTriples)) {
+        for (Triple triple : new HashSet<>(dottedUnderLineTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
                 dottedUnderLineTriples.remove(triple);
                 continue;
@@ -1764,78 +1753,6 @@ public final class MatrixGraphSimplified implements Graph {
     }
 
     /**
-     * This is the main visit method for the existsInducingPath() method.
-     *
-     * @param node1 the getModel node in the recursion.
-     * @param node2 the target node.
-     * @param inEnd the endpoint type of the incoming edge.
-     * @return true if an inducing path is found along this path (here or down
-     * some sub-branch), false if not.
-     * @see Graph#existsInducingPath
-     */
-    private boolean existsInducingPathVisit(Node node1, Node node2,
-                                            Endpoint inEnd, Set<Node> pathNodes, Set<Node> observedNodes,
-                                            Set<Node> conditioningNodes, Set<Node> sClosure) {
-        if (node1 == node2) {
-            return true;
-        } else if (pathNodes.contains(node1)) {
-            return false;
-        } else {
-            pathNodes.add(node1);
-
-            for (Edge edge1 : getEdges(node1)) {
-                Endpoint outEnd = edge1.getProximalEndpoint(node1);
-
-                // apply the definition of inducing path to determine whether
-                // we can pass through on a path from this incoming edge to
-                // this outgoing edge through this node.  it all depends
-                // on whether this path through the node is a collider or
-                // not--that is, whether the incoming endpoint and the outgoing
-                // endpoint are both arrows.
-                boolean isCollider =
-                        (inEnd == Endpoint.ARROW) && (outEnd == Endpoint.ARROW);
-                boolean passAsCollider = isCollider && sClosure.contains(node1);
-                boolean passAsNonCollider = !isCollider &&
-                        !observedNodes.contains(node1) &&
-                        !conditioningNodes.contains(node1);
-
-                if (passAsCollider || passAsNonCollider) {
-                    Node sub = Edges.traverse(node1, edge1);
-                    Endpoint newIn = edge1.getProximalEndpoint(sub);
-
-                    if (existsInducingPathVisit(sub, node2, newIn, pathNodes,
-                            observedNodes, conditioningNodes, sClosure)) {
-                        return true;
-                    }
-                }
-            }
-
-            pathNodes.remove(node1);
-            return false;
-        }
-    }
-
-    /**
-     * Checks to see whether all of the graph basicConstraints will be satisfied
-     * on adding a particular node.
-     *
-     * @param node the node to check.
-     * @return true if adding the node is permitted by all of the graph
-     * constraints, false if not.
-     */
-    private boolean checkAddNode(Node node) {
-        for (GraphConstraint graphConstraint : graphConstraints) {
-            GraphConstraint gc = (graphConstraint);
-
-            if (!gc.isNodeAddable(node, this)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * Checks to see whether all of the graph constraints will be satisfied on
      * adding a particular edge.
      *
@@ -1848,46 +1765,6 @@ public final class MatrixGraphSimplified implements Graph {
 
             if (!gc.isEdgeAddable(edge, this)) {
                 System.out.println("Edge " + edge + " failed " + gc);
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks to see whether all of the graph constraints will be satisfied on
-     * removing a particular node.
-     *
-     * @param node the node to check.
-     * @return true if removing the node is permitted by all of the graph
-     * constraints, false if not.
-     */
-    private boolean checkRemoveNode(Node node) {
-        for (GraphConstraint graphConstraint : graphConstraints) {
-            GraphConstraint gc = (graphConstraint);
-
-            if (!gc.isNodeRemovable(node, this)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks to see whether all of the graph constraints will be satisfied on
-     * removing a particular edge.
-     *
-     * @param edge the edge to check.
-     * @return true if removing the edge is permitted by all of the graph
-     * constraints, false if not.
-     */
-    private boolean checkRemoveEdge(Edge edge) {
-        for (GraphConstraint graphConstraint : graphConstraints) {
-            GraphConstraint gc = (graphConstraint);
-
-            if (!gc.isEdgeRemovable(edge, this)) {
                 return false;
             }
         }
@@ -1996,8 +1873,8 @@ public final class MatrixGraphSimplified implements Graph {
     }
 
     public List<Node> getCausalOrdering() {
-        List<Node> found = new LinkedList<Node>();
-        Set<Node> notFound = new HashSet<Node>();
+        List<Node> found = new LinkedList<>();
+        Set<Node> notFound = new HashSet<>();
 
         for (Node node1 : getNodes()) {
             notFound.add(node1);
@@ -2063,15 +1940,11 @@ public final class MatrixGraphSimplified implements Graph {
         }
 
         if (ambiguousTriples == null) {
-            ambiguousTriples = new HashSet<Triple>();
-        }
-
-        if (ambiguousPairs == null) {
-            ambiguousPairs = new HashSet<NodePair>();
+            ambiguousTriples = new HashSet<>();
         }
 
         if (highlightedEdges == null) {
-            highlightedEdges = new HashSet<Edge>();
+            highlightedEdges = new HashSet<>();
         }
     }
 }

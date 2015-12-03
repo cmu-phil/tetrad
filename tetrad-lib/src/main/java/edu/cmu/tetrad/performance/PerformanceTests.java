@@ -1144,7 +1144,7 @@ public class PerformanceTests {
         System.out.println("FCI DAG with dsep = " + left);
         System.out.println("DAG to PAG = " + top);
 
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, out);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
         Set<Edge> leftEdges = left.getEdges();
@@ -1202,7 +1202,7 @@ public class PerformanceTests {
 
         top = GraphUtils.replaceNodes(top, left.getNodes());
 //
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, out);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top);
 //        int[][] counts = edgeMisclassificationCounts(top, top);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
@@ -1258,7 +1258,7 @@ public class PerformanceTests {
 
         top = GraphUtils.replaceNodes(top, left.getNodes());
 //
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, out);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top);
 //        int[][] counts = edgeMisclassificationCounts(top, top);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
@@ -1307,7 +1307,7 @@ public class PerformanceTests {
 //        top = DataGraphUtils.replaceNodes(top, left.getNodes());
 
 //        int[][] counts = edgeMisclassificationCounts(left, top);
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(top, top, out);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(top, top);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
 //        System.out.println("Elapsed fci = " + (time1b - time1a) + " ms");

@@ -40,7 +40,7 @@ import java.util.Set;
  * @see Endpoint
  */
 public interface Graph extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Adds a bidirected edges <-> to the graph.

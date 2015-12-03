@@ -60,11 +60,6 @@ public final class FruchtermanReingoldLayout {
     private double optimalDistance;
 
     /**
-     * The number of iterations.
-     */
-    private final int numIterations = 6000;
-
-    /**
      * Temperature.
      */
     private double temperature;
@@ -117,7 +112,7 @@ public final class FruchtermanReingoldLayout {
             //pos[i][1] = RandomUtil.nextInt(600);
         }
 
-        List<Edge> edges = new ArrayList<Edge>(graph().getEdges());
+        List<Edge> edges = new ArrayList<>(graph().getEdges());
 
         for (Iterator<Edge> i = edges.iterator(); i.hasNext(); ) {
             Edge edge = i.next();
@@ -297,6 +292,10 @@ public final class FruchtermanReingoldLayout {
     }
 
     private int numIterations() {
+        /*
+      The number of iterations.
+     */
+        int numIterations = 6000;
         return numIterations;
     }
 

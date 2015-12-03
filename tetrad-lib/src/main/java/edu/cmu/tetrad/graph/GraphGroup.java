@@ -37,7 +37,7 @@ public interface GraphGroup {
     /**
      * @return int
      */
-    public int getNumGraphs();
+    int getNumGraphs();
 
     /**
      * Gets a graph at a specific index
@@ -45,14 +45,14 @@ public interface GraphGroup {
      * @param g The index of the graph to return
      * @return Graph
      */
-    public Graph getGraph(int g);
+    Graph getGraph(int g);
 
     /**
      * Adds a graph to the class.
      *
      * @param g The graph to add to the class.
      */
-    public void addGraph(Graph g);
+    void addGraph(Graph g);
 
 }
 
