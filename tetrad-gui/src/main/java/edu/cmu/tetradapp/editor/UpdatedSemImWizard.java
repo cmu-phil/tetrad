@@ -174,7 +174,7 @@ public final class UpdatedSemImWizard extends JPanel {
         boolean foundACondition = false;
 
         for (int i = 0; i < evidence.getNumNodes(); i++) {
-            if (evidence.hasNoEvidence(i)) {
+            if (evidence.hasNoEvidence()) {
                 continue;
             }
 

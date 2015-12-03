@@ -145,7 +145,11 @@ public class TemplateExpander {
 
     private String replaceLists(String operator, GeneralizedSemPm semPm, String formula, Node node)
             throws ParseException {
-        List<String> templateOperators = new ArrayList<String>();
+        if (semPm == null) {
+            throw new NullPointerException("Generalized Sem PM has not been provided.");
+        }
+
+        List<String> templateOperators = new ArrayList<>();
         templateOperators.add("TSUM");
         templateOperators.add("TPROD");
         templateOperators.add("tsum");
@@ -190,9 +194,9 @@ public class TemplateExpander {
                 }
             }
 
-            List<Node> parents = new ArrayList<Node>();
+            List<Node> parents = new ArrayList<>();
 
-            if (semPm != null && node != null) {
+            if (node != null) {
                 parents = semPm.getParents(node);
             }
 
@@ -259,7 +263,7 @@ public class TemplateExpander {
         while (found) {
             found = false;
 
-            List<Character> operatorList = new ArrayList<Character>();
+            List<Character> operatorList = new ArrayList<>();
             int first = 0;
             int last = 0;
 
@@ -308,7 +312,7 @@ public class TemplateExpander {
     }
 
     private String replaceNewParameters(GeneralizedSemPm semPm, String formula, List<String> usedNames) {
-        String parameterPattern = "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/]*))";
+        String parameterPattern = "\\$|(([a-zA-Z])([a-zA-Z0-9-_/]*))";
         Pattern p = Pattern.compile("NEW\\((" + parameterPattern + ")\\)");
 
         while (true) {
@@ -321,7 +325,7 @@ public class TemplateExpander {
             String group0 = Pattern.quote(m.group(0));
             String group1 = m.group(1);
 
-            String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
         }
@@ -338,7 +342,7 @@ public class TemplateExpander {
             String group0 = Pattern.quote(m.group(0));
             String group1 = m.group(1);
 
-            String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
         }

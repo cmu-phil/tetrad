@@ -3077,7 +3077,7 @@ public class Purify {
         structuralEmInitialization(partition);
         SemPm semPm0 = new SemPm(purePartitionGraph);
         MimBuildEstimator estimator0 =
-                new MimBuildEstimator(this.covarianceMatrix, semPm0, 5, 5);
+                new MimBuildEstimator(this.covarianceMatrix, semPm0);
         estimator0.estimate();
         SemIm bestModel = estimator0.getEstimatedSem();
         double bestPValue = bestModel.getPValue();
@@ -3114,7 +3114,7 @@ public class Purify {
                 SemIm nextModel = new SemIm(semPm);
                 nextModel.setCovMatrix(this.covarianceMatrix);
                 MimBuildEstimator estimator = new MimBuildEstimator(
-                        this.covarianceMatrix, semPm, 5, 5);
+                        this.covarianceMatrix, semPm);
                 estimator.estimate();
                 nextModel = estimator.getEstimatedSem();
                 printlnMessage(" * pvalue = " + nextModel.getPValue() +

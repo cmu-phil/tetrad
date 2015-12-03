@@ -71,6 +71,10 @@ public class SemOptimizerRegression implements SemOptimizer {
 
         TetradMatrix covar = semIm.getSampleCovar();
 
+        if (covar == null) {
+            throw new NullPointerException("Sample covar has not been set.");
+        }
+
         SemGraph graph = semIm.getSemPm().getGraph();
         List<Node> nodes = graph.getNodes();
 

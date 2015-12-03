@@ -28,7 +28,10 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A special SEM model in which variances of variables are always 1 and means of variables
@@ -83,7 +86,6 @@ public class StandardizedSemIm implements TetradSerializable {
 
     private TetradMatrix implCovar;
     private TetradMatrix implCovarMeas;
-    private List<Node> measuredNodes;
     private Edge editingEdge;
     private ParameterRange range;
 
@@ -126,7 +128,7 @@ public class StandardizedSemIm implements TetradSerializable {
 
         if (initialization == Initialization.CALCULATE_FROM_SEM) {
 //         This code calculates the new coefficients directly from the old ones.
-            edgeParameters = new HashMap<Edge, Double>();
+            edgeParameters = new HashMap<>();
 
             List<Node> nodes = im.getVariableNodes();
             TetradMatrix impliedCovar = im.getImplCovar(true);
@@ -164,7 +166,7 @@ public class StandardizedSemIm implements TetradSerializable {
             SemEstimator estimator = new SemEstimator(dataSetStandardized, im.getSemPm());
             SemIm imStandardized = estimator.estimate();
 
-            edgeParameters = new HashMap<Edge, Double>();
+            edgeParameters = new HashMap<>();
 
             for (Parameter parameter : imStandardized.getSemPm().getParameters()) {
                 if (parameter.getType() == ParamType.COEF) {
@@ -182,8 +184,6 @@ public class StandardizedSemIm implements TetradSerializable {
                 }
             }
         }
-
-        this.measuredNodes = Collections.unmodifiableList(semPm.getMeasuredNodes());
     }
 
     public boolean containsParameter(Edge edge) {
@@ -450,8 +450,8 @@ public class StandardizedSemIm implements TetradSerializable {
     /**
      * @return a map from error to error variances, or to Double.NaN where these cannot be computed.
      */
-    public Map<Node, Double> errorVariances() {
-        Map<Node, Double> errorVarances = new HashMap<Node, Double>();
+    private Map<Node, Double> errorVariances() {
+        Map<Node, Double> errorVarances = new HashMap<>();
 
         for (Node error : getErrorNodes()) {
             errorVarances.put(error, getErrorVariance(error));
@@ -475,7 +475,7 @@ public class StandardizedSemIm implements TetradSerializable {
                 continue;
             }
 
-            buf.append("\n" + edge + " " + nf.format(edgeParameters.get(edge)));
+            buf.append("\n").append(edge).append(" ").append(nf.format(edgeParameters.get(edge)));
         }
 
         buf.append("\n\nError covariances (parameters):\n");
@@ -485,14 +485,14 @@ public class StandardizedSemIm implements TetradSerializable {
                 continue;
             }
 
-            buf.append("\n" + edge + " " + nf.format(edgeParameters.get(edge)));
+            buf.append("\n").append(edge).append(" ").append(nf.format(edgeParameters.get(edge)));
         }
 
         buf.append("\n\nError variances (calculated):\n");
 
         for (Node error : getErrorNodes()) {
             double variance = getErrorVariance(error);
-            buf.append("\n" + error + " " + (Double.isNaN(variance) ? "Undefined" : nf.format(variance)));
+            buf.append("\n").append(error).append(" ").append(Double.isNaN(variance) ? "Undefined" : nf.format(variance));
         }
 
         buf.append("\n");
@@ -512,7 +512,7 @@ public class StandardizedSemIm implements TetradSerializable {
      * transposed, since [a][b] is the edge coefficient for a-->b, not b-->a. Sorry. History. THESE ARE
      * PARAMETERS OF THE MODEL--THE ONLY PARAMETERS.
      */
-    public TetradMatrix edgeCoef() {
+    private TetradMatrix edgeCoef() {
         List<Node> variableNodes = getVariableNodes();
 
         TetradMatrix edgeCoef = new TetradMatrix(variableNodes.size(), variableNodes.size());
@@ -637,7 +637,7 @@ public class StandardizedSemIm implements TetradSerializable {
      */
     private TetradMatrix errCovar(Map<Node, Double> errorVariances) {
         List<Node> variableNodes = getVariableNodes();
-        List<Node> errorNodes = new ArrayList<Node>();
+        List<Node> errorNodes = new ArrayList<>();
 
         for (Node node : variableNodes) {
             errorNodes.add(semGraph.getExogenous(node));
@@ -755,7 +755,7 @@ public class StandardizedSemIm implements TetradSerializable {
     }
 
     public List<Node> getErrorNodes() {
-        List<Node> errorNodes = new ArrayList<Node>();
+        List<Node> errorNodes = new ArrayList<>();
 
         for (Node node : getVariableNodes()) {
             errorNodes.add(semGraph.getExogenous(node));
@@ -818,14 +818,11 @@ public class StandardizedSemIm implements TetradSerializable {
         }
 
         public String toString() {
-            StringBuilder buf = new StringBuilder();
 
-            buf.append("\n\nRange for " + edge);
-            buf.append("\nCurrent value = " + coef);
-            buf.append("\nLow end of range = " + low);
-            buf.append("\nHigh end of range = " + high);
-
-            return buf.toString();
+            return "\n\nRange for " + edge +
+                    "\nCurrent value = " + coef +
+                    "\nLow end of range = " + low +
+                    "\nHigh end of range = " + high;
         }
     }
 
@@ -833,7 +830,7 @@ public class StandardizedSemIm implements TetradSerializable {
 
     private boolean paramInBounds(Edge edge, double newValue) {
         edgeParameters.put(edge, newValue);
-        Map<Node, Double> errorVariances = new HashMap<Node, Double>();
+        Map<Node, Double> errorVariances = new HashMap<>();
         for (Node node : semPm.getVariableNodes()) {
             Node error = semGraph.getExogenous(node);
             double d2 = calculateErrorVarianceFromParams(error);
@@ -844,11 +841,7 @@ public class StandardizedSemIm implements TetradSerializable {
             errorVariances.put(error, d2);
         }
 
-        if (!MatrixUtils.isPositiveDefinite(errCovar(errorVariances))) {
-            return false;
-        }
-
-        return true;
+        return MatrixUtils.isPositiveDefinite(errCovar(errorVariances));
     }
 
     /**

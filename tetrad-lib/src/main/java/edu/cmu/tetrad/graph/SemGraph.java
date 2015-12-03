@@ -385,16 +385,12 @@ public final class SemGraph implements Graph, TetradSerializable {
      */
     public Node getVarNode(Node node) {
         boolean isError = node.getNodeType() == NodeType.ERROR;
-        //   if (!containsNode(node) && (!isError || this.showErrorTerms)) {
+
         if (!containsNode(node)) {
-            return null;
-//            throw new IllegalArgumentException("Node is not in graph: " + node);
+            throw new NullPointerException("Node is not in graph: " + node);
         }
 
         if (isError) {
-//            if(!this.showErrorTerms){
-//                return null;
-//            }
             return GraphUtils.getAssociatedNode(node, this);
         } else {
             return node;
