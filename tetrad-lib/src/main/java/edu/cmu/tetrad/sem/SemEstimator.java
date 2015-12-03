@@ -89,12 +89,6 @@ public final class SemEstimator implements TetradSerializable {
      */
     private DataSet dataSet;
 
-    /**
-     * The true SEM IM. If this is included. then its score will be printed
-     * out.
-     */
-    private SemIm trueSemIm;
-
     private SemIm.ScoreType scoreType = SemIm.ScoreType.Fgls;
     private int numRestarts = 1;
 
@@ -272,7 +266,11 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     public void setTrueSemIm(SemIm semIm) {
-        trueSemIm = new SemIm(semIm);
+        /*
+      The true SEM IM. If this is included. then its score will be printed
+      out.
+     */
+        SemIm trueSemIm = new SemIm(semIm);
         trueSemIm.setCovMatrix(this.getCovMatrix());
     }
 
