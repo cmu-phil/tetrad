@@ -395,7 +395,7 @@ public final class GraphEditor extends JPanel
 //
 //                            graph = DataGraphUtils.addCycles2(dag, minNumCycles, minCycleLength);
 
-                            graph = GraphUtils.cyclicGraph4(editor.getNumNodes(), editor.getMaxEdges());
+                            graph = GraphUtils.cyclicGraph2(editor.getNumNodes(), editor.getMaxEdges());
                         } else {
                             graph = new EdgeListGraph(dag);
                         }

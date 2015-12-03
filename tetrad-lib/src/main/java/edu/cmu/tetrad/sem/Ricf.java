@@ -48,7 +48,6 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class Ricf {
-    private ICovarianceMatrix covMatrix;
 
     //==============================CONSTRUCTORS==========================//
 
@@ -58,7 +57,6 @@ public class Ricf {
     //=============================PUBLIC METHODS=========================//
 
     public RicfResult ricf(SemGraph mag, ICovarianceMatrix covMatrix, double tolerance) {
-        this.covMatrix = covMatrix;
         mag.setShowErrorTerms(false);
 
         DoubleFactory2D factory = DoubleFactory2D.dense;
@@ -71,7 +69,7 @@ public class Ricf {
             return new RicfResult(S, S, null, null, 1, Double.NaN, covMatrix);
         }
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (String name : covMatrix.getVariableNames()) {
             nodes.add(mag.getNode(name));
@@ -84,7 +82,7 @@ public class Ricf {
         int[] ugComp = complement(p, ug);
 
         if (ug.length > 0) {
-            List<Node> _ugNodes = new LinkedList<Node>();
+            List<Node> _ugNodes = new LinkedList<>();
 
             for (int i : ug) {
                 _ugNodes.add(nodes.get(i));
@@ -302,15 +300,15 @@ public class Ricf {
      */
     public List<List<Node>> cliques(Graph graph) {
         List<Node> nodes = graph.getNodes();
-        List<List<Node>> cliques = new ArrayList<List<Node>>();
+        List<List<Node>> cliques = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             List<Node> adj = graph.getAdjacentNodes(nodes.get(i));
 
-            SortedSet<Integer> L1 = new TreeSet<Integer>();
+            SortedSet<Integer> L1 = new TreeSet<>();
             L1.add(i);
 
-            SortedSet<Integer> L2 = new TreeSet<Integer>();
+            SortedSet<Integer> L2 = new TreeSet<>();
 
             for (Node _adj : adj) {
                 L2.add(nodes.indexOf(_adj));
@@ -339,7 +337,7 @@ public class Ricf {
     /**
      * Fits a concentration graph. Coding algorithm #2 only.
      */
-    public FitConGraphResult fitConGraph(Graph graph, ICovarianceMatrix cov, int n, double tol) {
+    private FitConGraphResult fitConGraph(Graph graph, ICovarianceMatrix cov, int n, double tol) {
         DoubleFactory2D factory = DoubleFactory2D.dense;
         Algebra algebra = new Algebra();
 
@@ -379,8 +377,8 @@ public class Ricf {
             DoubleMatrix2D KOld = K.copy();
             it++;
 
-            for (int i = 0; i < nc; i++) {
-                int[] a = asIndices(cli.get(i), nodes);
+            for (List<Node> aCli : cli) {
+                int[] a = asIndices(aCli, nodes);
                 int[] b = complement(all, a);
                 DoubleMatrix2D a1 = S.viewSelection(a, a);
                 DoubleMatrix2D a2 = algebra.inverse(a1);
@@ -475,7 +473,7 @@ public class Ricf {
 
 
     private int[] ugNodes(Graph mag, List<Node> nodes) {
-        List<Node> ugNodes = new LinkedList<Node>();
+        List<Node> ugNodes = new LinkedList<>();
 
         for (Node node : nodes) {
             if (mag.getNodesInTo(node, Endpoint.ARROW).size() == 0) {
@@ -517,7 +515,7 @@ public class Ricf {
             List<Node> list2 = mag.getNodesInTo(nodes.get(i), Endpoint.ARROW);
             list1.retainAll(list2);
 
-            List<Node> list3 = new LinkedList<Node>(nodes);
+            List<Node> list3 = new LinkedList<>(nodes);
             list3.removeAll(list1);
 
             int[] indices = new int[list1.size()];
@@ -552,7 +550,7 @@ public class Ricf {
      */
     private void addNodesToRight(SortedSet<Integer> L1, SortedSet<Integer> L2,
                                  Graph graph, List<Node> nodes, int moved) {
-        for (int j : new TreeSet<Integer>(L2)) {
+        for (int j : new TreeSet<>(L2)) {
             if (j > max(L1) && j > moved && addable(j, L1, graph, nodes)) {
                 L1.add(j);
                 L2.remove(j);
@@ -562,7 +560,7 @@ public class Ricf {
 
     private void record(SortedSet<Integer> L1, List<List<Node>> cliques,
                         List<Node> nodes) {
-        List<Node> clique = new LinkedList<Node>();
+        List<Node> clique = new LinkedList<>();
 
         for (int i : L1) {
             clique.add(nodes.get(i));
@@ -629,26 +627,18 @@ public class Ricf {
         }
 
         public String toString() {
-            StringBuilder buf = new StringBuilder();
 
-            buf.append("\nSigma hat\n");
-            buf.append(MatrixUtils.toStringSquare(getShat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()));
-
-            buf.append("\n\nLambda hat\n");
-            buf.append(MatrixUtils.toStringSquare(getLhat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()));
-
-            buf.append("\n\nBeta hat\n");
-            buf.append(MatrixUtils.toStringSquare(getBhat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()));
-
-            buf.append("\n\nOmega hat\n");
-            buf.append(MatrixUtils.toStringSquare(getOhat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()));
-
-            buf.append("\n\nIterations\n");
-            buf.append(getIterations());
-
-            buf.append("\n\ndiff = " + diff);
-
-            return buf.toString();
+            return "\nSigma hat\n" +
+                    MatrixUtils.toStringSquare(getShat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()) +
+                    "\n\nLambda hat\n" +
+                    MatrixUtils.toStringSquare(getLhat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()) +
+                    "\n\nBeta hat\n" +
+                    MatrixUtils.toStringSquare(getBhat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()) +
+                    "\n\nOmega hat\n" +
+                    MatrixUtils.toStringSquare(getOhat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()) +
+                    "\n\nIterations\n" +
+                    getIterations() +
+                    "\n\ndiff = " + diff;
         }
 
         public DoubleMatrix2D getShat() {
@@ -687,21 +677,15 @@ public class Ricf {
         }
 
         public String toString() {
-            StringBuilder buf = new StringBuilder();
 
-            buf.append("\nSigma hat\n");
-            buf.append(shat);
-
-            buf.append("\nDeviance\n");
-            buf.append(deviance);
-
-            buf.append("\nDf\n");
-            buf.append(df);
-
-            buf.append("\nIterations\n");
-            buf.append(iterations);
-
-            return buf.toString();
+            return "\nSigma hat\n" +
+                    shat +
+                    "\nDeviance\n" +
+                    deviance +
+                    "\nDf\n" +
+                    df +
+                    "\nIterations\n" +
+                    iterations;
         }
     }
 }

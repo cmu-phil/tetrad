@@ -67,18 +67,18 @@ public class SemOptimizerEm implements SemOptimizer {
     public void optimize(SemIm semIm) {
         if (numRestarts < 1) numRestarts = 1;
 
-//        if (numRestarts != 1) {
-//            throw new IllegalArgumentException("Number of restarts must be 1 for this method.");
-//        }
+        TetradMatrix sampleCovar = semIm.getSampleCovar();
 
-        if (DataUtils.containsMissingValue(semIm.getSampleCovar())) {
+        if (sampleCovar == null) {
+            throw new NullPointerException("Sample covar has not been set.");
+        }
+
+        if (DataUtils.containsMissingValue(sampleCovar)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
         if (numRestarts < 1) numRestarts = 1;
 
-
-//        new SemOptimizerEm().optimize(semIm);
 
         // Optimize the semIm. Note that the the covariance matrix of the
         // sample data is made available to the following CoefFittingFunction.
@@ -87,7 +87,6 @@ public class SemOptimizerEm implements SemOptimizer {
 
         for (int count = 0; count < numRestarts; count++) {
             TetradLogger.getInstance().log("details", "Trial " + (count + 1));
-//            System.out.println("Trial " + (count + 1));
             SemIm _sem2 = new SemIm(semIm);
 
             List<Parameter> freeParameters = _sem2.getFreeParameters();
@@ -108,7 +107,6 @@ public class SemOptimizerEm implements SemOptimizer {
 
             double chisq = _sem2.getChiSquare();
             TetradLogger.getInstance().log("details", "chisq = " + chisq);
-//            System.out.println("chisq = " + chisq);
 
             if (chisq < min) {
                 min = chisq;
@@ -178,12 +176,16 @@ public class SemOptimizerEm implements SemOptimizer {
         this.semIm = semIm;
         graph = semIm.getSemPm().getGraph();
         yCov = semIm.getSampleCovar();
+
+        if (yCov == null) {
+            throw new NullPointerException("Sample covar has not been set.");
+        }
+
         numObserved = 0;
         numLatent = 0;
         List<Node> nodes = graph.getNodes();
 
-        for (int i = 0; i < nodes.size(); i++) {
-            Node node = nodes.get(i);
+        for (Node node : nodes) {
             if (node.getNodeType() == NodeType.LATENT) {
                 numLatent++;
             } else if (node.getNodeType() == NodeType.MEASURED) {

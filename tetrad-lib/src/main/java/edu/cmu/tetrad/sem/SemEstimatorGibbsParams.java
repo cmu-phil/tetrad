@@ -48,8 +48,8 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     /**
      *
      */
-    public SemEstimatorGibbsParams(SemIm startIm, boolean flatPrior,
-                                   double stretch, int numIterations) {
+    private SemEstimatorGibbsParams(SemIm startIm, boolean flatPrior,
+                                    double stretch, int numIterations) {
 
         // note that seed is never used... just as well to get rid of it?
 

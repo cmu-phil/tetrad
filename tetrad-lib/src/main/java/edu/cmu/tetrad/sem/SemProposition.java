@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -124,7 +125,7 @@ public final class SemProposition implements TetradSerializable {
      * @return the index of the variable with the given name, or -1 if such a
      * variable does not exist.
      */
-    public int getNodeIndex(String name) {
+    public int getNodeIndex() {
 
         return -1;
     }
@@ -132,6 +133,10 @@ public final class SemProposition implements TetradSerializable {
     public boolean equals(Object o) {
         if (o == null) {
             return false;
+        }
+
+        if (!(o instanceof SemProposition)) {
+            throw new IllegalArgumentException();
         }
 
         SemProposition proposition = (SemProposition) o;
@@ -142,7 +147,7 @@ public final class SemProposition implements TetradSerializable {
 
         for (int i = 0; i < values.length; i++) {
             if (Double.isNaN(values[i]) && Double.isNaN(proposition.values[i])) {
-                continue;
+//                continue;
             } else if (values[i] != proposition.values[i]) {
                 return false;
             }
@@ -154,7 +159,7 @@ public final class SemProposition implements TetradSerializable {
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + semIm.hashCode();
-        hashCode = 19 * hashCode + values.hashCode();
+        hashCode = 19 * hashCode + Arrays.hashCode(values);
         return hashCode;
     }
 

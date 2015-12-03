@@ -38,10 +38,6 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
 
     private Node x;
     private Node y;
-    /**
-     * deprecated
-     **/
-    private List<Node> z;
     private Set<Node> _z;
 
     /**
@@ -54,7 +50,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
 
         this.x = x;
         this.y = y;
-        this._z = new HashSet<Node>(z);
+        this._z = new HashSet<>(z);
     }
 
     public IndependenceFact(Node x, Node y, Node... z) {
@@ -65,11 +61,9 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
         this.x = x;
         this.y = y;
 
-        Set<Node> cond = new HashSet<Node>();
+        Set<Node> cond = new HashSet<>();
 
-        for (Node _z : z) {
-            cond.add(_z);
-        }
+        Collections.addAll(cond, z);
 
 
         this._z = cond;
@@ -91,7 +85,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
     }
 
     public final List<Node> getZ() {
-        return new LinkedList<Node>(_z);
+        return new LinkedList<>(_z);
     }
 
     public final int hashCode() {
@@ -105,13 +99,13 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
 
         IndependenceFact fact = (IndependenceFact) obj;
 
-        Set<String> zString1 = new HashSet<String>();
+        Set<String> zString1 = new HashSet<>();
 
         for (Node n : _z) {
             zString1.add(n.getName());
         }
 
-        Set<String> zString2 = new HashSet<String>();
+        Set<String> zString2 = new HashSet<>();
 
         for (Node n : fact._z) {
             zString2.add(n.getName());
@@ -131,12 +125,12 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        builder.append(x + " _||_ " + y);
+        builder.append(x).append(" _||_ ").append(y);
 
         if (!_z.isEmpty()) {
             builder.append(" | ");
 
-            List<Node> z = new ArrayList<Node>(this._z);
+            List<Node> z = new ArrayList<>(this._z);
             Collections.sort(z);
 
             for (int i = 0; i < z.size(); i++) {
@@ -206,10 +200,6 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (_z == null && !(z == null)) {
-            _z = new HashSet<Node>(z);
-        }
     }
 }
 

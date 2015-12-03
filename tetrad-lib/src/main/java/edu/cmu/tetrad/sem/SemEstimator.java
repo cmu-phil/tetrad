@@ -267,7 +267,7 @@ public final class SemEstimator implements TetradSerializable {
         return covMatrix;
     }
 
-    public SemOptimizer getSemOptimizer() {
+    private SemOptimizer getSemOptimizer() {
         return semOptimizer;
     }
 
@@ -372,8 +372,7 @@ public final class SemEstimator implements TetradSerializable {
             varIndices[i] = dataVars.indexOf(variable);
         }
 
-        final DataSet subset = dataSet.subsetColumns(varIndices);
-        return subset;
+        return dataSet.subsetColumns(varIndices);
     }
 
     private static boolean containsCovarParam(SemPm semPm) {
@@ -423,7 +422,7 @@ public final class SemEstimator implements TetradSerializable {
         }
     }
 
-    public void setSemOptimizer(SemOptimizer semOptimizer) {
+    private void setSemOptimizer(SemOptimizer semOptimizer) {
         this.semOptimizer = semOptimizer;
     }
 
@@ -438,7 +437,7 @@ public final class SemEstimator implements TetradSerializable {
     private void setDataSet(DataSet dataSet) {
         List<Node> nodes1 = semPm.getMeasuredNodes();
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (Node node : nodes1) {
             Node _node = dataSet.getVariable(node.getName());
@@ -483,7 +482,7 @@ public final class SemEstimator implements TetradSerializable {
         this.scoreType = scoreType;
     }
 
-    public SemIm.ScoreType getScoreType() {
+    private SemIm.ScoreType getScoreType() {
         return scoreType;
     }
 

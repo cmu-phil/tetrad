@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.sem;
 
-import java.io.ObjectStreamException;
-
 /**
  * A typesafe enum of the types of the various comparisons parameter may have
  * with respect to one another for SEM estimation.
@@ -39,7 +37,7 @@ public class ParamComparison {
     /**
      * Indicates that the first parameter is less than the second.
      */
-    public static final ParamComparison LT = new ParamComparison("LT");
+    private static final ParamComparison LT = new ParamComparison("LT");
 
     /**
      * Indicates that the first parameter is equal to the second.
@@ -49,7 +47,7 @@ public class ParamComparison {
     /**
      * Indicates that the first parameter is less than or equal to the second.
      */
-    public static final ParamComparison LE = new ParamComparison("LE");
+    private static final ParamComparison LE = new ParamComparison("LE");
 
     /**
      * The name of this type.
@@ -60,7 +58,7 @@ public class ParamComparison {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    protected ParamComparison(String name) {
+    private ParamComparison(String name) {
         this.name = name;
     }
 
@@ -76,7 +74,7 @@ public class ParamComparison {
     private final int ordinal = nextOrdinal++;
     private static final ParamComparison[] TYPES = {NC, LT, EQ, LE};
 
-    Object readResolve() throws ObjectStreamException {
+    Object readResolve() {
         return TYPES[ordinal]; // Canonicalize.
     }
 }

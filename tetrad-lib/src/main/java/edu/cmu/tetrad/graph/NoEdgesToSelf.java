@@ -79,7 +79,6 @@ public final class NoEdgesToSelf implements GraphConstraint {
     }
 
     /**
-     * @param node
      * @param graph the graph to check.
      * @return true.
      */

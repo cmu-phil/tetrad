@@ -75,10 +75,7 @@ public class NodePair {
             return false;
         }
         NodePair thatPair = (NodePair) o;
-        if (this.first.equals(thatPair.first) && this.second.equals(thatPair.second)) {
-            return true;
-        }
-        return this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
+        return this.first.equals(thatPair.first) && this.second.equals(thatPair.second) || this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
     }
 
     public String toString() {

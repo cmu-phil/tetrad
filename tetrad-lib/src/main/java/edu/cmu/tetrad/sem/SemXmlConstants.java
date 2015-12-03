@@ -31,7 +31,7 @@ package edu.cmu.tetrad.sem;
  * This class contains all the constants used in the xml representation of a SEM
  * graph.
  */
-public class SemXmlConstants {
+class SemXmlConstants {
     public static final String SEM = "sem";
 
     public static final String SEM_VARIABLES = "semVariables";

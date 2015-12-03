@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stores information for a BayesIm about evidence we have for each variable as
+ * Stores information for a SemIm about evidence we have for each variable as
  * well as whether each variable has been manipulated.
  *
  * @author Joseph Ramsey
@@ -202,7 +202,7 @@ public final class SemEvidence implements TetradSerializable {
      */
     public List<Node> getNodesInEvidence() {
         List<Node> nodes = semIm.getVariableNodes();
-        List<Node> nodesInEvidence = new ArrayList<Node>();
+        List<Node> nodesInEvidence = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             if (!Double.isNaN(proposition.getValue(i))) {
@@ -218,17 +218,14 @@ public final class SemEvidence implements TetradSerializable {
             return false;
         }
 
+        if (!(o instanceof SemEvidence)) {
+            throw new IllegalArgumentException();
+        }
+
         SemEvidence evidence = (SemEvidence) o;
 
-        if (!(semIm == evidence.semIm)) {
-            return false;
-        }
+        return semIm == evidence.semIm && proposition.equals(evidence.proposition) && manipulation.equals(evidence.manipulation);
 
-        if (!(proposition.equals(evidence.proposition))) {
-            return false;
-        }
-
-        return manipulation.equals(evidence.manipulation);
     }
 
     public int hashCode() {
@@ -261,7 +258,7 @@ public final class SemEvidence implements TetradSerializable {
         }
     }
 
-    public boolean hasNoEvidence(int variable) {
+    public boolean hasNoEvidence() {
         return false;
     }
 }

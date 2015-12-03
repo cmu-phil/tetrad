@@ -106,7 +106,7 @@ public final class Triple implements TetradSerializable {
     }
 
     public static String pathString(Graph graph, Node x, Node y, Node z) {
-        List<Node> path = new ArrayList<Node>();
+        List<Node> path = new ArrayList<>();
         path.add(x);
         path.add(y);
         path.add(z);

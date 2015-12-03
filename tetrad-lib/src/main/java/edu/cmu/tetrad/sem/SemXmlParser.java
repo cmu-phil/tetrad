@@ -84,12 +84,8 @@ public class SemXmlParser {
             }
             x = new Integer(var.getAttributeValue(SemXmlConstants.X));
             y = new Integer(var.getAttributeValue(SemXmlConstants.Y));
-            if (x != null) {
-                node.setCenterX(x.intValue());
-            }
-            if (y != null) {
-                node.setCenterY(y.intValue());
-            }
+            node.setCenterX(x);
+            node.setCenterY(y);
             semGraph.addNode(node);
         }
         return semGraph;
@@ -117,14 +113,14 @@ public class SemXmlParser {
             edge = edges.get(i);
             causeNode = semGraph.getNode(edge.getAttributeValue(SemXmlConstants.CAUSE_NODE));
             effectNode = semGraph.getNode(edge.getAttributeValue(SemXmlConstants.EFFECT_NODE));
-            semIm.setParamValue(causeNode, effectNode, new Double(edge.getAttributeValue(SemXmlConstants.VALUE)).doubleValue());
+            semIm.setParamValue(causeNode, effectNode, new Double(edge.getAttributeValue(SemXmlConstants.VALUE)));
             //semIm.getSemPm().getParameter(causeNode, effectNode).setFixed(new Boolean(edge.getAttributeValue(SemXmlConstants.FIXED)).booleanValue());
 
             Parameter covarianceParameter = semIm.getSemPm().getCovarianceParameter(causeNode, effectNode);
 
             if (covarianceParameter != null) {
-                Boolean aBoolean = new Boolean(edge.getAttributeValue(SemXmlConstants.FIXED));
-                covarianceParameter.setFixed(aBoolean.booleanValue());
+                Boolean aBoolean = Boolean.valueOf(edge.getAttributeValue(SemXmlConstants.FIXED));
+                covarianceParameter.setFixed(aBoolean);
             }
         }
 
@@ -162,7 +158,7 @@ public class SemXmlParser {
 
             node = graph.getExogenous(graph.getNode(normal.getAttributeValue(SemXmlConstants.VARIABLE)));
             //can't set mean at this point...
-            semIm.setParamValue(node, node, new Double(normal.getAttributeValue(SemXmlConstants.VARIANCE)).doubleValue());
+            semIm.setParamValue(node, node, new Double(normal.getAttributeValue(SemXmlConstants.VARIANCE)));
         }
     }
 
@@ -179,7 +175,7 @@ public class SemXmlParser {
             normal = normals.get(i);
             node1 = semIm.getSemPm().getGraph().getExogenous(semIm.getSemPm().getGraph().getNode(normal.getAttributeValue(SemXmlConstants.NODE_1)));
             node2 = semIm.getSemPm().getGraph().getExogenous(semIm.getSemPm().getGraph().getNode(normal.getAttributeValue(SemXmlConstants.NODE_2)));
-            semIm.setParamValue(node1, node2, new Double(normal.getAttributeValue(SemXmlConstants.COVARIANCE)).doubleValue());
+            semIm.setParamValue(node1, node2, new Double(normal.getAttributeValue(SemXmlConstants.COVARIANCE)));
         }
     }
 

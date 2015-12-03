@@ -2963,7 +2963,7 @@ public final class SearchGraphUtils {
         out.println("Arrow Orientations:");
         out.println("TP " + arrowptTp + " FP = " + arrowptFp + " FN = " + arrowptFn);
 
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern, out);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern);
         out.println(GraphUtils.edgeMisclassifications(counts));
 
         double adjRecall = adjTp / (double) (adjTp + adjFn);

@@ -69,7 +69,6 @@ public final class LargeSemSimulator {
     private double varHigh = 3.0;
     private PrintStream out = System.out;
     private int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
-    private final int minChunk = 11;
     private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
     private int[] tierIndices;
 
@@ -101,18 +100,9 @@ public final class LargeSemSimulator {
         this.variableNodes = nodes;
         this.tierIndices = tierIndices;
 
-//        this.variableNodes = graph.getNodes();
-        final List<Node> causalOrdering = graph.getCausalOrdering();
-        this.tierIndices = new int[causalOrdering.size()];
-
-        for (int i = 0; i < causalOrdering.size(); i++) {
-            this.tierIndices[i] = variableNodes.indexOf(causalOrdering.get(i));
-        }
-
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
-
     }
 
     /**
@@ -123,19 +113,13 @@ public final class LargeSemSimulator {
      * various values--could be improved).
      */
     public DataSet simulateDataAcyclic(int sampleSize) {
-        if (false) {
-            return simulateDataAcyclicConcurrent(sampleSize);
-        }
-
         int size = variableNodes.size();
         setupModel(size);
 
 //        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
         final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variableNodes);
 
-        for (int i = 0; i < tierIndices.length; i++) {
-            int col = tierIndices[i];
-
+        for (int col : tierIndices) {
             for (int row = 0; row < sampleSize; row++) {
                 double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
 
@@ -176,16 +160,12 @@ public final class LargeSemSimulator {
 
             int[] parents = this.parents[_head];
             int[] newParents = new int[parents.length + 1];
-            for (int i = 0; i < parents.length; i++) {
-                newParents[i] = parents[i];
-            }
+            System.arraycopy(parents, 0, newParents, 0, parents.length);
             newParents[newParents.length - 1] = _tail;
             double[] coefs = this.coefs[_head];
             double[] newCoefs = new double[coefs.length + 1];
 
-            for (int i = 0; i < coefs.length; i++) {
-                newCoefs[i] = coefs[i];
-            }
+            System.arraycopy(coefs, 0, newCoefs, 0, coefs.length);
 
             newCoefs[newCoefs.length - 1] = edgeCoefDist.nextRandom();
 
@@ -241,9 +221,7 @@ public final class LargeSemSimulator {
                     for (int row = from; row < to; row++) {
                         if (row % 100 == 0) out.println("Row " + row);
 
-                        for (int i = 0; i < tierIndices.length; i++) {
-                            int col = tierIndices[i];
-
+                        for (int col : tierIndices) {
                             double value = generatorLocal.nextGaussian(0, sqrt(errorVars[col]));
 
                             for (int j = 0; j < _parents[col].length; j++) {
@@ -265,7 +243,7 @@ public final class LargeSemSimulator {
 
                     return true;
                 } else {
-                    List<SimulationTask> simulationTasks = new ArrayList<SimulationTask>();
+                    List<SimulationTask> simulationTasks = new ArrayList<>();
 
                     int mid = (to - from) / 2;
 
@@ -338,8 +316,7 @@ public final class LargeSemSimulator {
 
                     for (int row = from; row < to; row++) {
 //                        System.out.println("Row = " + row);
-                        for (int i = 0; i < tierIndices.length; i++) {
-                            int col = tierIndices[i];
+                        for (int col : tierIndices) {
                             double value1 = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
 
                             for (int j = 0; j < _parents[col].length; j++) {
@@ -360,7 +337,7 @@ public final class LargeSemSimulator {
 
                     int step = (to - from) / numIntervals + 1;
 
-                    List<Task> tasks = new ArrayList<Task>();
+                    List<Task> tasks = new ArrayList<>();
 
                     for (int i = 0; i < numIntervals; i++) {
 //                        System.out.println("From = " + (from + i * step) + " to + " + Math.min(from + (i + 1) * step, to));
@@ -377,6 +354,7 @@ public final class LargeSemSimulator {
         }
 
         int _chunk = variables.size() / NTHREADS;
+        int minChunk = 11;
         final int chunk = _chunk < minChunk ? minChunk : _chunk;
 
         System.out.println("Starting data simulation 2");

@@ -36,8 +36,6 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.*;
 import org.apache.commons.math3.random.MersenneTwister;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,15 +57,10 @@ public class GeneralizedSemEstimator {
      */
     public GeneralizedSemIm estimate(GeneralizedSemPm pm, DataSet data) {
         StringBuilder builder = new StringBuilder();
-        NumberFormat nf = new DecimalFormat("0.0000000");
-
         GeneralizedSemIm estIm = new GeneralizedSemIm(pm);
-
         List<Node> nodes = pm.getGraph().getNodes();
         nodes.removeAll(pm.getErrorNodes());
-
         MyContext context = new MyContext();
-
         List<List<Double>> allResiduals = new ArrayList<>();
         List<RealDistribution> allDistributions = new ArrayList<>();
 
@@ -100,9 +93,9 @@ public class GeneralizedSemEstimator {
             allDistributions.add(distribution);
             GeneralAndersonDarlingTest test = new GeneralAndersonDarlingTest(residuals, distribution);
 
-            builder.append("\nEquation: " + node + " := " + estIm.getNodeSubstitutedString(node));
-            builder.append("\n\twhere " + pm.getErrorNode(node) + " ~ " + estIm.getNodeSubstitutedString(pm.getErrorNode(node)));
-            builder.append("\nAnderson Darling A^2* for this equation =  " + test.getASquaredStar() + "\n");
+            builder.append("\nEquation: ").append(node).append(" := ").append(estIm.getNodeSubstitutedString(node));
+            builder.append("\n\twhere ").append(pm.getErrorNode(node)).append(" ~ ").append(estIm.getNodeSubstitutedString(pm.getErrorNode(node)));
+            builder.append("\nAnderson Darling A^2* for this equation =  ").append(test.getASquaredStar()).append("\n");
         }
 
         List<String> parameters = new ArrayList<>();
@@ -117,15 +110,13 @@ public class GeneralizedSemEstimator {
 
         optimize(likelihoodFittingFunction, values, 1);
 
-        StringBuilder builder2 = new StringBuilder();
-        builder2.append("Report:\n");
-
         MultiGeneralAndersonDarlingTest test = new MultiGeneralAndersonDarlingTest(allResiduals, allDistributions);
-        builder2.append("\nModel A^2* (Anderson Darling) = " + test.getASquaredStar() + "\n");
 
-        builder2.append(builder);
+        String builder2 = "Report:\n" +
+                "\nModel A^2* (Anderson Darling) = " + test.getASquaredStar() + "\n" +
+                builder;
 
-        this.report = builder2.toString();
+        this.report = builder2;
 
         return estIm;
     }
@@ -210,9 +201,11 @@ public class GeneralizedSemEstimator {
         }
     }
 
-    public static double[][] calcResiduals(double[][] data, List<Node> tierOrdering,
-                                           List<String> params, double[] paramValues,
-                                           GeneralizedSemPm pm, MyContext context) {
+    private static double[][] calcResiduals(double[][] data, List<Node> tierOrdering,
+                                            List<String> params, double[] paramValues,
+                                            GeneralizedSemPm pm, MyContext context) {
+        if (pm == null) throw new NullPointerException();
+
         double[][] calculatedValues = new double[data.length][data[0].length];
         double[][] residuals = new double[data.length][data[0].length];
 
@@ -243,11 +236,12 @@ public class GeneralizedSemEstimator {
         return residuals;
     }
 
-    public static double[] calcOneResiduals(int index, double[][] data, List<Node> tierOrdering,
-                                            List<String> params, double[] values,
-                                            GeneralizedSemPm pm, MyContext context) {
-        double[] residuals = new double[data.length];
+    private static double[] calcOneResiduals(int index, double[][] data, List<Node> tierOrdering,
+                                             List<String> params, double[] values,
+                                             GeneralizedSemPm pm, MyContext context) {
+        if (pm == null) throw new NullPointerException();
 
+        double[] residuals = new double[data.length];
 
         for (Node node : tierOrdering) {
             context.putVariableValue(pm.getErrorNode(node).toString(), 0.0);
@@ -291,7 +285,7 @@ public class GeneralizedSemEstimator {
     }
 
     private double[] optimize(MultivariateFunction function, double[] values, int optimizer) {
-        PointValuePair pair = null;
+        PointValuePair pair;
 
         if (optimizer == 1) {
 //            0.01, 0.000001
@@ -354,6 +348,8 @@ public class GeneralizedSemEstimator {
                     GoalType.MAXIMIZE,
                     new MaxEval(10000)
             );
+        } else {
+            throw new IllegalStateException();
         }
 
         return pair.getPoint();
@@ -384,8 +380,8 @@ public class GeneralizedSemEstimator {
 
         @Override
         public double value(final double[] parameters) {
-            for (int i = 0; i < parameters.length; i++) {
-                if (Double.isNaN(parameters[i])) {
+            for (double parameter : parameters) {
+                if (Double.isNaN(parameter)) {
                     return Double.POSITIVE_INFINITY;
                 }
             }
@@ -414,8 +410,8 @@ public class GeneralizedSemEstimator {
 
                 List<Double> residuals = new ArrayList<>();
 
-                for (int k = 0; k < r.length; k++) {
-                    residuals.add(r[k][index]);
+                for (double[] aR : r) {
+                    residuals.add(aR[index]);
                 }
 
                 double likelihood = getLikelihood(residuals, dist);
@@ -481,8 +477,8 @@ public class GeneralizedSemEstimator {
 
         @Override
         public double value(final double[] values) {
-            for (int i = 0; i < values.length; i++) {
-                if (Double.isNaN(values[i])) {
+            for (double value : values) {
+                if (Double.isNaN(value)) {
                     return Double.POSITIVE_INFINITY;
                 }
             }
@@ -539,48 +535,20 @@ public class GeneralizedSemEstimator {
 
         private double getLikelihood(List<Double> residuals, RealDistribution dist) {
             double sum = 0.0;
-//            int count = 0;
 
-            for (int i = 0; i < residuals.size(); i++) {
-                double r = residuals.get(i);
-                double t = 0;
+            for (Double residual : residuals) {
+                double r = residual;
+                double t;
                 try {
                     t = dist.density(r);
                 } catch (Exception e) {
                     return Double.NaN;
                 }
                 if (Double.isNaN(t) || Double.isInfinite(t) || t < 0) t = 0.0;
-//                count++;
-//                if (Double.isNaN(t)) throw new IllegalArgumentException("Undefined density point.");
                 sum += log(t + 1e-15);
             }
 
             return sum;
-        }
-
-        /**
-         * @return the number of arguments. Required by the MultivariateFunction
-         * interface.
-         */
-        public int getNumArguments() {
-            return parameters.size();
-        }
-
-        /**
-         * @return the lower bound of argument n. Required by the
-         * MultivariateFunction interface.
-         */
-        public double getLowerBound(final int n) {
-            if (n == 0) return -100;
-            else return 0;
-        }
-
-        /**
-         * @return the upper bound of argument n. Required by the
-         * MultivariateFunction interface.
-         */
-        public double getUpperBound(final int n) {
-            return 100.0;
         }
 
         public List<Node> getTierOrdering() {
@@ -721,8 +689,8 @@ public class GeneralizedSemEstimator {
 
         @Override
         public double value(final double[] parameters) {
-            for (int i = 0; i < parameters.length; i++) {
-                if (Double.isNaN(parameters[i])) {
+            for (double parameter : parameters) {
+                if (Double.isNaN(parameter)) {
                     return Double.POSITIVE_INFINITY;
                 }
             }
@@ -735,6 +703,10 @@ public class GeneralizedSemEstimator {
                 Node node = tierOrdering.get(index);
                 Node error = pm.getErrorNode(node);
 
+                if (error == null) {
+                    throw new NullPointerException();
+                }
+
                 for (int k = 0; k < parameters.length; k++) {
                     context.putParameterValue(this.parameters.get(k), parameters[k]);
                 }
@@ -744,21 +716,18 @@ public class GeneralizedSemEstimator {
                     context.putVariableValue(error.getName(), expression.evaluate(context));
                 }
 
-                Expression expression = pm.getNodeExpression(error);
-                RealDistribution dist = null;//expression.getRealDistribution(context);
+                RealDistribution dist;
 
-                if (dist == null) {
-                    try {
-                        dist = new EmpiricalDistributionForExpression(pm, node, context).getDist();
-                    } catch (Exception e) {
-                        return Double.POSITIVE_INFINITY;
-                    }
+                try {
+                    dist = new EmpiricalDistributionForExpression(pm, node, context).getDist();
+                } catch (Exception e) {
+                    return Double.POSITIVE_INFINITY;
                 }
 
                 List<Double> data = new ArrayList<>();
 
-                for (int k = 0; k < dataValues.length; k++) {
-                    data.add(dataValues[k][index]);
+                for (double[] dataValue : dataValues) {
+                    data.add(dataValue[index]);
                 }
 
                 double likelihood = getLikelihood(data, dist);

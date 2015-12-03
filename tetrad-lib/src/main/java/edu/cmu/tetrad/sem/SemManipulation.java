@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -110,7 +111,7 @@ public final class SemManipulation implements TetradSerializable {
     /**
      * @return the Bayes IM that this is evidence for.
      */
-    public SemIm getSemIm() {
+    private SemIm getSemIm() {
         return this.semIm;
     }
 
@@ -128,7 +129,7 @@ public final class SemManipulation implements TetradSerializable {
         return -1;
     }
 
-    public int getNumNodes() {
+    private int getNumNodes() {
         return semIm.getVariableNodes().size();
     }
 
@@ -163,6 +164,10 @@ public final class SemManipulation implements TetradSerializable {
             return false;
         }
 
+        if (!(o instanceof SemManipulation)) {
+            throw new IllegalArgumentException();
+        }
+
         SemManipulation evidence = (SemManipulation) o;
 
         if (!(semIm == evidence.semIm)) {
@@ -181,7 +186,7 @@ public final class SemManipulation implements TetradSerializable {
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + semIm.hashCode();
-        hashCode = 19 * hashCode + manipulated.hashCode();
+        hashCode = 19 * hashCode + Arrays.hashCode(manipulated);
         return hashCode;
     }
 

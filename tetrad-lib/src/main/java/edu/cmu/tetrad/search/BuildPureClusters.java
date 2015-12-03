@@ -64,7 +64,7 @@ public final class BuildPureClusters {
     private int labels[];
     private boolean scoreTestMode;
 
-    private List impurePairs;
+    private List<Node> impurePairs;
 
     /**
      * Color code for the different edges that show up during search
@@ -189,7 +189,7 @@ public final class BuildPureClusters {
                 tetradTest = new ContinuousTetradTest(getCovarianceMatrix(), type, alpha);
             }
         }
-        impurePairs = new ArrayList();
+        impurePairs = new ArrayList<Node>();
         labels = new int[numVariables()];
         for (int i = 0; i < numVariables(); i++) {
             labels[i] = i + 1;
@@ -388,24 +388,24 @@ public final class BuildPureClusters {
      */
     private List convertGraphToList(Graph solutionGraph) {
         impurePairs.clear();
-        Iterator it1 = solutionGraph.getNodes().iterator();
-        List latentsList = new ArrayList();
-        List clusters = new ArrayList();
+        Iterator<Node> it1 = solutionGraph.getNodes().iterator();
+        List<Node> latentsList = new ArrayList<Node>();
+        List<ArrayList<Node>> clusters = new ArrayList<ArrayList<Node>>();
         while (it1.hasNext()) {
-            Node next = (Node) it1.next();
+            Node next = it1.next();
             if (next.getNodeType() == NodeType.LATENT) {
                 latentsList.add(next);
-                clusters.add(new ArrayList());
+                clusters.add(new ArrayList<Node>());
             }
         }
         it1 = solutionGraph.getNodes().iterator();
         while (it1.hasNext()) {
-            Node next = (Node) it1.next();
+            Node next = it1.next();
             if (!(next.getNodeType() == NodeType.LATENT)) {
                 for (int w = 0; w < latentsList.size(); w++) {
                     if (solutionGraph.getNodesInTo(next, Endpoint.ARROW)
                             .contains(latentsList.get(w))) {
-                        ((ArrayList) clusters.get(w)).add(next);
+                        (clusters.get(w)).add(next);
                     }
                 }
             }
@@ -413,7 +413,7 @@ public final class BuildPureClusters {
         List arrayClusters = new ArrayList();
         String names[] = tetradTest.getVarNames();
         for (int w = 0; w < clusters.size(); w++) {
-            List listCluster = (List) clusters.get(w);
+            List<Node> listCluster = clusters.get(w);
             int newCluster[] = new int[listCluster.size()];
             for (int v = 0; v < newCluster.length; v++) {
                 for (int s = 0; s < names.length; s++) {
@@ -916,13 +916,13 @@ public final class BuildPureClusters {
      * than Stage 2 of the FindMeasurementPattern algorithm.
      */
 
-    private List findComponents(int graph[][], int size, int color) {
+    private List<int[]> findComponents(int graph[][], int size, int color) {
         boolean marked[] = new boolean[size];
         for (int i = 0; i < size; i++) {
             marked[i] = false;
         }
         int numMarked = 0;
-        List output = new ArrayList();
+        List<int[]> output = new ArrayList<int[]>();
 
         int tempComponent[] = new int[size];
         while (numMarked != size) {
@@ -965,7 +965,7 @@ public final class BuildPureClusters {
      * given number of calls. </p> This is an implementation of Algorithm 2 from Bron and Kerbosch (1973).
      */
 
-    private List findMaximalCliques(int elements[], int ng[][]) {
+    private List<int[]> findMaximalCliques(int elements[], int ng[][]) {
         boolean connected[][] = new boolean[this.numVariables()][this.numVariables()];
         for (int i = 0; i < connected.length; i++) {
             for (int j = i; j < connected.length; j++) {
@@ -981,7 +981,7 @@ public final class BuildPureClusters {
         numCalls[0] = 0;
         int c[] = new int[1];
         c[0] = 0;
-        List output = new ArrayList();
+        List<int[]> output = new ArrayList<int[]>();
         int compsub[] = new int[elements.length];
         int old[] = new int[elements.length];
         for (int i = 0; i < elements.length; i++) {
@@ -993,7 +993,7 @@ public final class BuildPureClusters {
     }
 
     private void findMaximalCliquesOperator(int numCalls[], int elements[],
-                                            List output, boolean connected[][], int compsub[], int c[],
+                                            List<int[]> output, boolean connected[][], int compsub[], int c[],
                                             int old[], int ne, int ce) {
         if (numCalls[0] > MAX_CLIQUE_TRIALS) {
             return;
@@ -1064,10 +1064,10 @@ public final class BuildPureClusters {
      * @return true iff "newClique" is contained in some element of "clustering".
      */
 
-    private boolean cliqueContained(int newClique[], int size, List clustering) {
-        Iterator it = clustering.iterator();
+    private boolean cliqueContained(int newClique[], int size, List<int[]> clustering) {
+        Iterator<int[]> it = clustering.iterator();
         while (it.hasNext()) {
-            int next[] = (int[]) it.next();
+            int next[] = it.next();
             if (size > next.length) {
                 continue;
             }
@@ -1091,14 +1091,14 @@ public final class BuildPureClusters {
     /**
      * Remove cliques that are contained into another ones in cliqueList.
      */
-    private List trimCliqueList(List cliqueList) {
+    private List trimCliqueList(List<int[]> cliqueList) {
         List trimmed = new ArrayList();
-        List cliqueCopy = new ArrayList();
+        List<int[]> cliqueCopy = new ArrayList<int[]>();
         cliqueCopy.addAll(cliqueList);
 
-        Iterator it = cliqueList.iterator();
+        Iterator<int[]> it = cliqueList.iterator();
         while (it.hasNext()) {
-            int cluster[] = (int[]) it.next();
+            int cluster[] = it.next();
             cliqueCopy.remove(cluster);
             if (!cliqueContained(cluster, cluster.length, cliqueCopy)) {
                 trimmed.add(cluster);
@@ -1234,7 +1234,7 @@ public final class BuildPureClusters {
     }
 
     private List filterAndOrderClusterings(List baseListOfClusterings,
-                                           List baseListOfIds, List clusteringIds, int ng[][]) {
+                                           List<List<Integer>> baseListOfIds, List clusteringIds, int ng[][]) {
         assert clusteringIds != null;
         List listOfClusterings = new ArrayList();
         clusteringIds.clear();
@@ -1248,12 +1248,12 @@ public final class BuildPureClusters {
             System.out.println("* Base mimClustering");
             printClustering(baseClustering);
 
-            List baseIds = (List) baseListOfIds.get(i);
-            List usedIds = new ArrayList();
+            List<Integer> baseIds = baseListOfIds.get(i);
+            List<Integer> usedIds = new ArrayList<Integer>();
 
             for (int j = 0; j < baseClustering.size(); j++) {
                 int currentCluster[] = (int[]) baseClustering.get(j);
-                Integer currentId = (Integer) baseIds.get(j);
+                Integer currentId = baseIds.get(j);
                 int draftArea[] = new int[currentCluster.length];
                 int draftCount = 0;
                 next_item:
@@ -1314,7 +1314,7 @@ public final class BuildPureClusters {
             List newClustering2 = removeMarkedImpurities(newClustering,
                     impurities);
             List finalNewClustering = new ArrayList();
-            List finalUsedIds = new ArrayList();
+            List<Integer> finalUsedIds = new ArrayList<Integer>();
             for (int j = 0; j < newClustering2.size(); j++) {
                 if (((int[]) newClustering2.get(j)).length > 0) {
                     finalNewClustering.add(newClustering2.get(j));
@@ -1325,8 +1325,7 @@ public final class BuildPureClusters {
                 listOfClusterings.add(finalNewClustering);
                 int usedIdsArray[] = new int[finalUsedIds.size()];
                 for (int j = 0; j < finalUsedIds.size(); j++) {
-                    usedIdsArray[j] =
-                            ((Integer) finalUsedIds.get(j)).intValue();
+                    usedIdsArray[j] = finalUsedIds.get(j);
                 }
                 clusteringIds.add(usedIdsArray);
                 System.out.println("* Filtered mimClustering 2");
@@ -1875,14 +1874,14 @@ public final class BuildPureClusters {
         /* Stage 3: find maximal cliques */
         print(">> Stage 0.3.1");
         List clustering = new ArrayList();
-        List components = findComponents(ng, numVariables(), EDGE_BLUE);
-        Iterator it = components.iterator();
+        List<int[]> components = findComponents(ng, numVariables(), EDGE_BLUE);
+        Iterator<int[]> it = components.iterator();
         print(">> Stage 0.3.2");
         while (it.hasNext()) {
-            int component[] = (int[]) it.next();
+            int component[] = it.next();
             print(">>> Searching for cliques in ");
             printClusterIds(component);
-            List nextClustering = findMaximalCliques(component, ng);
+            List<int[]> nextClustering = findMaximalCliques(component, ng);
             System.out.println(
                     "nextClustering.size() = " + nextClustering.size());
             clustering.addAll(trimCliqueList(nextClustering));
@@ -1910,7 +1909,7 @@ public final class BuildPureClusters {
         printClustering(individualOneFactors);
         clustering = individualOneFactors;
         print(">> Stage 0.4 - Finding pairwise cluster relations");
-        List ids = new ArrayList();
+        List<List<Integer>> ids = new ArrayList<List<Integer>>();
         List clusterings = chooseClusterings(clustering, ng, ids, true, cv);
         print(">> Stage 0.5 - Finding a pure measurement model");
         List orderedIds = new ArrayList();
@@ -1921,7 +1920,7 @@ public final class BuildPureClusters {
 
     private List<int[]> individualPurification(List clustering) {
         boolean oldOutputMessage = this.outputMessage;
-        List<int[]> purified = new ArrayList();
+        List<int[]> purified = new ArrayList<int[]>();
         int ids[] = {1};
         for (int i = 0; i < clustering.size(); i++) {
             print(" * Solving cluster #" + (i + 1));
@@ -2023,13 +2022,13 @@ public final class BuildPureClusters {
         List initialClustering = initialMeasurementPattern(ng, cv);
         print("Initial mimClustering:");
         printClustering(initialClustering);
-        List forbiddenList = new ArrayList();
+        List<Set<String>> forbiddenList = new ArrayList<Set<String>>();
         for (int c1 = 0; c1 < initialClustering.size(); c1++) {
             int nextCluster[] = (int[]) initialClustering.get(c1);
             for (int i = 0; i < nextCluster.length; i++) {
                 selected[nextCluster[i]] = true;
                 for (int j = i + 1; j < nextCluster.length; j++) {
-                    Set nextPair = new HashSet();
+                    Set<String> nextPair = new HashSet<String>();
                     nextPair.add(this.tetradTest.getVarNames()[nextCluster[i]]);
                     nextPair.add(this.tetradTest.getVarNames()[nextCluster[j]]);
                     forbiddenList.add(nextPair);
@@ -2039,7 +2038,7 @@ public final class BuildPureClusters {
                 int nextCluster2[] = (int[]) initialClustering.get(c2);
                 for (int i = 0; i < nextCluster.length; i++) {
                     for (int j = 0; j < nextCluster2.length; j++) {
-                        Set nextPair = new HashSet();
+                        Set<String> nextPair = new HashSet<String>();
                         nextPair.add(
                                 this.tetradTest.getVarNames()[nextCluster[i]]);
                         nextPair.add(
@@ -2346,14 +2345,14 @@ public final class BuildPureClusters {
         /* Stage 3: find maximal cliques */
         print(">> Stage 3.1");
         List clustering = new ArrayList();
-        List components = findComponents(ng, numVariables(), EDGE_BLUE);
-        Iterator it = components.iterator();
+        List<int[]> components = findComponents(ng, numVariables(), EDGE_BLUE);
+        Iterator<int[]> it = components.iterator();
         print(">> Stage 3.2");
         while (it.hasNext()) {
-            int component[] = (int[]) it.next();
+            int component[] = it.next();
             print(">>> Searching for cliques in ");
             printClusterIds(component);
-            List nextClustering = findMaximalCliques(component, ng);
+            List<int[]> nextClustering = findMaximalCliques(component, ng);
             clustering.addAll(trimCliqueList(nextClustering));
         }
         //Sort cliques by size: better visualization when printing
@@ -2374,7 +2373,7 @@ public final class BuildPureClusters {
         print("**** CLUSTERING OUTPUT: ");
         printClustering(clustering);
         print(">> Stage 4 - Choosing clusters");
-        List ids = new ArrayList();
+        List<List<Integer>> ids = new ArrayList<List<Integer>>();
         List clusterings = chooseClusterings(clustering, ng, ids, false, cv);
         print(">> Stage 5 - Finding a pure measurement model");
         List orderedIds = new ArrayList();
@@ -2396,7 +2395,7 @@ public final class BuildPureClusters {
         return finalPureModel;
     }
 
-    private List chooseClusterings(List clustering, int ng[][], List outputIds,
+    private List chooseClusterings(List clustering, int ng[][], List<List<Integer>> outputIds,
                                    boolean need3, int cv[][]) {
         List clusterings = new ArrayList();
         boolean marked[] = new boolean[clustering.size()];
@@ -2425,7 +2424,7 @@ public final class BuildPureClusters {
         System.out.println("Total number of clusters: " + clustering.size());
         for (int i = 0; i < max; i++) {
             //System.out.println("Step " + i);
-            List nextIds = new ArrayList();
+            List<Integer> nextIds = new ArrayList<Integer>();
             List newClustering = new ArrayList();
             nextIds.add(new Integer(i));
             newClustering.add(clustering.get(i));
@@ -2689,7 +2688,7 @@ public final class BuildPureClusters {
      */
 
     private List<int[]> purify(List actualClusterings, List clusterIds,
-                               List forbiddenList) {
+                               List<Set<String>> forbiddenList) {
 //        if (true) return (List<int[]>) actualClusterings;
 
 
@@ -2755,11 +2754,11 @@ public final class BuildPureClusters {
             } else if (actualClusterings.size() > 1) {
                 rebuildClusteringList(actualClusterings, i, clusterIds);
             }
-            return new ArrayList();
+            return new ArrayList<int[]>();
 
         }
 
-        return new ArrayList();
+        return new ArrayList<int[]>();
     }
 
     private List<int[]> convertListToInt(List<List<Node>> partition) {

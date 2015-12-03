@@ -51,7 +51,7 @@ public final class NodeType implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    protected NodeType(String name) {
+    private NodeType(String name) {
         this.name = name;
     }
 

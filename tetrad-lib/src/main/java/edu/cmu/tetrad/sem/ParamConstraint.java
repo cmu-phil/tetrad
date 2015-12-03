@@ -147,25 +147,11 @@ public class ParamConstraint implements TetradSerializable {
      * optimal with respect to some measure of fit of the parameterized SEM to
      * some dataset.
      *
-     * @param testValue
      * @return true if the value would satisfy the constraint.
      */
     public boolean wouldBeSatisfied(double testValue) {
-        if (type == ParamConstraintType.NONE) {
-            return true;
-        }
+        return type == ParamConstraintType.NONE || param2 == null && (type == ParamConstraintType.EQ && testValue == number || type == ParamConstraintType.GT && testValue > number || type == ParamConstraintType.LT && testValue < number);
 
-        if (param2 == null) {
-            if (type == ParamConstraintType.EQ && testValue == number) {
-                return true;
-            }
-            if (type == ParamConstraintType.GT && testValue > number) {
-                return true;
-            }
-            return type == ParamConstraintType.LT && testValue < number;
-        }
-
-        return false;
     }
 }
 

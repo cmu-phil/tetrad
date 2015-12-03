@@ -26,16 +26,13 @@ import org.apache.commons.math3.exception.NumberIsTooLargeException;
 import org.apache.commons.math3.exception.OutOfRangeException;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Only the cumulativeProbability, density, setShift methods are implemented.
  */
 public class EmpiricalCdf implements RealDistribution {
     private List<Double> data;
-    private Map<Double, Double> map = new HashMap<Double, Double>();
 
     public EmpiricalCdf(List<Double> data) {
         if (data == null) throw new NullPointerException();
