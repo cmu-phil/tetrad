@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.cli;
+package edu.cmu.tetrad.cli.search;
 
 import java.io.BufferedReader;
 import java.nio.charset.Charset;
