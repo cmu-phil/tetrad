@@ -19,6 +19,7 @@
 package edu.cmu.tetrad.cli.data;
 
 import edu.cmu.tetrad.cli.graph.GraphFactory;
+import edu.cmu.tetrad.cli.graph.GraphIO;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -53,14 +54,14 @@ public class SimulateDataCli {
         Option helpOption = new Option("h", "help", false, "Show help.");
         HELP_OPTIONS.addOption(helpOption);
 
-        Option option;
-        option = new Option("c", "case", true, "Number of cases to generate.");
-        option.setRequired(true);
-        MAIN_OPTIONS.addOption(option);
+        Option requiredOption;
+        requiredOption = new Option("c", "case", true, "Number of cases to generate.");
+        requiredOption.setRequired(true);
+        MAIN_OPTIONS.addOption(requiredOption);
 
-        option = new Option("m", "var", true, "Number of variables to generate.");
-        option.setRequired(true);
-        MAIN_OPTIONS.addOption(option);
+        requiredOption = new Option("m", "var", true, "Number of variables to generate.");
+        requiredOption.setRequired(true);
+        MAIN_OPTIONS.addOption(requiredOption);
 
         MAIN_OPTIONS.addOption("e", "edge", true, "Number of edges per node. Default is 1.");
         MAIN_OPTIONS.addOption("n", "name", true, "Name of output file.");
@@ -95,7 +96,7 @@ public class SimulateDataCli {
             numOfEdges = Args.parseInteger(cmd.getOptionValue("e", "1"));
             delimiter = Args.getCharacter(cmd.getOptionValue("l", "\t"));
             dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
-            fileName = cmd.getOptionValue("n", String.format("sim_data_%dvars_%dcases_%d.txt", numOfVariables, numOfCases, System.currentTimeMillis()));
+            fileName = cmd.getOptionValue("n", String.format("sim_data_%dvars_%dcases_%d", numOfVariables, numOfCases, System.currentTimeMillis()));
         } catch (ParseException | FileNotFoundException exception) {
             System.err.println(exception.getMessage());
             return;
@@ -109,8 +110,8 @@ public class SimulateDataCli {
             Graph graph = GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges);
             DataSet dataSet = DataSetFactory.buildSemSimulateDataAcyclic(graph, numOfCases);
 
-            Path fileOut = Paths.get(dirOut.toString(), fileName);
-            DataSetIO.write(dataSet, delimiter, fileOut);
+            GraphIO.write(graph, Paths.get(dirOut.toString(), fileName + ".graph"));
+            DataSetIO.write(dataSet, delimiter, Paths.get(dirOut.toString(), fileName + ".txt"));
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }

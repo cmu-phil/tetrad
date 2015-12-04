@@ -18,12 +18,6 @@
  */
 package edu.cmu.tetrad.cli.search;
 
-import java.io.BufferedReader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
@@ -150,29 +144,5 @@ public abstract class AbstractAlgorithmTest {
         "forbiddirect",
         "X5 X17"
     };
-
-    protected List<String> extractFile(Path file) {
-        List<String> list = new LinkedList<>();
-
-        try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                list.add(line);
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace(System.err);
-        }
-
-        return list;
-    }
-
-    protected void readFile(Path file) {
-        try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                System.out.println(line);
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace(System.err);
-        }
-    }
 
 }
