@@ -45,30 +45,22 @@ public class Args {
     }
 
     public static int parseInteger(String value, int min) {
-        try {
-            int intValue = Integer.parseInt(value);
-            if (min <= intValue) {
-                return intValue;
-            } else {
-                throw new IllegalArgumentException(
-                        String.format("Value (%d) must be greater than or equal to %d.", intValue, min));
-            }
-        } catch (NumberFormatException exception) {
-            throw new IllegalArgumentException(String.format("'%s' is not an integer.", value));
+        int intValue = parseInteger(value);
+        if (min > intValue) {
+            throw new IllegalArgumentException(
+                    String.format("Value (%d) must be greater than or equal to %d.", intValue, min));
         }
+
+        return intValue;
     }
 
     public static int parseInteger(String value, int min, int max) {
-        try {
-            int intValue = Integer.parseInt(value);
-            if (min <= intValue && intValue <= max) {
-                return intValue;
-            } else {
-                throw new IllegalArgumentException(
-                        String.format("Value (%d) must be between %d and %d.", intValue, min, max));
-            }
-        } catch (NumberFormatException exception) {
-            throw new IllegalArgumentException(String.format("'%s' is not an integer.", value));
+        int intValue = parseInteger(value);
+        if (min <= intValue && intValue <= max) {
+            return intValue;
+        } else {
+            throw new IllegalArgumentException(
+                    String.format("Value (%d) must be between %d and %d.", intValue, min, max));
         }
     }
 

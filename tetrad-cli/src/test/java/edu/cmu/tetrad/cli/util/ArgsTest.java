@@ -48,12 +48,39 @@ public class ArgsTest {
      * Test of parseInteger method, of class Args.
      */
     @Test
-    public void testParseInteger() {
-        System.out.println("parseInteger");
+    public void testParseInteger_String() {
+        System.out.println("parseInteger(String value)");
 
         String value = "10";
-        int expResult = 10;
+        int expResult = Integer.parseInt(value);
         int result = Args.parseInteger(value);
+        Assert.assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of parseInteger method, of class Args.
+     */
+    @Test
+    public void testParseInteger_String_int() {
+        System.out.println("parseInteger(String value, int min)");
+        String value = "-1";
+        int min = -1;
+        int expResult = Integer.parseInt(value);
+        int result = Args.parseInteger(value, min);
+        Assert.assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of parseInteger method, of class Args.
+     */
+    @Test
+    public void testParseInteger_3args() {
+        System.out.println("parseInteger(String value, int min, int max)");
+        String value = "2";
+        int min = 2;
+        int max = 5;
+        int expResult = Integer.parseInt(value);
+        int result = Args.parseInteger(value, min, max);
         Assert.assertEquals(expResult, result);
     }
 
@@ -62,7 +89,7 @@ public class ArgsTest {
      */
     @Test
     public void testParseDouble() {
-        System.out.println("parseDouble");
+        System.out.println("parseDouble(String value)");
 
         String value = "2.9999";
         double expResult = 2.9999;
@@ -77,7 +104,7 @@ public class ArgsTest {
      */
     @Test
     public void testGetFiles() throws IOException {
-        System.out.println("getFiles");
+        System.out.println("getFiles(String... files)");
 
         String dir = tempFolder.getRoot().toString();
         List<String> files = new LinkedList<>();
@@ -98,7 +125,7 @@ public class ArgsTest {
      */
     @Test
     public void testGetCharacter() {
-        System.out.println("getCharacter");
+        System.out.println("getCharacter(String character)");
 
         String character = "\t";
         char expResult = '\t';
@@ -114,7 +141,7 @@ public class ArgsTest {
      */
     @Test
     public void testGetPathDir() throws FileNotFoundException, IOException {
-        System.out.println("getPathDir");
+        System.out.println("getPathDir(String dir, boolean required)");
 
         String dir = tempFolder.getRoot().toString();
 
@@ -131,7 +158,7 @@ public class ArgsTest {
      */
     @Test
     public void testGetPathFile() throws IOException {
-        System.out.println("getPathFile");
+        System.out.println("getPathFile(String file, boolean requireNotNull)");
 
         String dir = tempFolder.getRoot().toString();
         String fileName = "twinkle_little_star.txt";
