@@ -43,11 +43,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by josephramsey on 12/17/14.
+ * @author Joseph Ramsey.
+ * Contains some tests for Dan Malinsky, that might be of interest to others.
  */
 public class PerformanceTestsDan {
     PrintStream out = System.out;
-    private boolean writeToFile = true;
 
     public void setOut(PrintStream out) {
         this.out = out;
@@ -83,30 +83,28 @@ public class PerformanceTestsDan {
             PrintStream out11 = System.out;
             PrintStream out12 = System.out;
 
-            if (writeToFile) {
-                File dir0 = new File("fci..ges.output");
-                dir0.mkdirs();
+            File dir0 = new File("fci..ges.output");
+            dir0.mkdirs();
 
-                File dir = new File(dir0, "" + (run + 1));
-                dir.mkdir();
+            File dir = new File(dir0, "" + (run + 1));
+            dir.mkdir();
 
-                try {
-                    out1 = new PrintStream(new File(dir, "hyperparameters.txt"));
-                    out2 = new PrintStream(new File(dir, "variables.txt"));
-                    out3 = new PrintStream(new File(dir, "dag.long.txt"));
-                    out4 = new PrintStream(new File(dir, "dag.matrix.txt"));
-                    out5 = new PrintStream(new File(dir, "coef.matrix.txt"));
-                    out6 = new PrintStream(new File(dir, "pag.long.txt"));
-                    out7 = new PrintStream(new File(dir, "pag.matrix.txt"));
-                    out8 = new PrintStream(new File(dir, "pattern.long.txt"));
-                    out9 = new PrintStream(new File(dir, "pattern.matrix.txt"));
-                    out10 = new PrintStream(new File(dir, "data.txt"));
-                    out11 = new PrintStream(new File(dir, "true.pag.long.txt"));
-                    out12 = new PrintStream(new File(dir, "true.pag.matrix.txt"));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                    throw new RuntimeException(e);
-                }
+            try {
+                out1 = new PrintStream(new File(dir, "hyperparameters.txt"));
+                out2 = new PrintStream(new File(dir, "variables.txt"));
+                out3 = new PrintStream(new File(dir, "dag.long.txt"));
+                out4 = new PrintStream(new File(dir, "dag.matrix.txt"));
+                out5 = new PrintStream(new File(dir, "coef.matrix.txt"));
+                out6 = new PrintStream(new File(dir, "pag.long.txt"));
+                out7 = new PrintStream(new File(dir, "pag.matrix.txt"));
+                out8 = new PrintStream(new File(dir, "pattern.long.txt"));
+                out9 = new PrintStream(new File(dir, "pattern.matrix.txt"));
+                out10 = new PrintStream(new File(dir, "data.txt"));
+                out11 = new PrintStream(new File(dir, "true.pag.long.txt"));
+                out12 = new PrintStream(new File(dir, "true.pag.matrix.txt"));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
             }
 
             out1.println("Num _vars = " + numVars);
