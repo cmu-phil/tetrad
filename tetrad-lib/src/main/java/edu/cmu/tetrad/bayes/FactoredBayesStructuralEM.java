@@ -32,7 +32,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TimerTask;
 
 /**
  * <p>Implements the procedure Factored-Bayesian-SEM found on page 6 of "The
@@ -68,11 +67,10 @@ public final class FactoredBayesStructuralEM {
 
     private final int[] ncategories;
 
-    private double resultScore = -1;
-    private Graph resultGraph = new EdgeListGraph();
+//    private double resultScore = -1;
+//    private Graph resultGraph = new EdgeListGraph();
 
-    private int timeout = -1;
-    private int totaliterations = 0;
+    //    private int totaliterations = 0;
 
     public FactoredBayesStructuralEM(DataSet dataSet,
                                      BayesPm bayesPmM0) {
@@ -254,11 +252,11 @@ public final class FactoredBayesStructuralEM {
     //    }
 
     /**
-     * Sets maximum time for iterations
-     */
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
+//     * Sets maximum time for iterations
+//     */
+//    public void setTimeout(int timeout) {
+//        this.timeout = timeout;
+//    }
 
     /**
      * This method allows specification of the tolerance parameter used in Bayes
@@ -306,27 +304,27 @@ public final class FactoredBayesStructuralEM {
         }
 
         bayesPmMnplus1 = ti.bayesPmMnplus1;
-        oldBestScore = ti.oldBestScore;
+//        oldBestScore = ti.oldBestScore;
         bayesPmMn = bayesPmMnplus1;
-        resultScore = oldBestScore;
-        totaliterations = ti.iteration;
+//        resultScore = oldBestScore;
+//        totaliterations = ti.iteration;
 
         EmBayesEstimator emBayesEst = new EmBayesEstimator(bayesPmMn, dataSet);
         return emBayesEst.maximization(tolerance);
 
     }
 
-    public double returnScore() {
-        return resultScore;
-    }
-
-    public Graph returnGraph() {
-        return resultGraph;
-    }
-
-    public int returnIterations() {
-        return totaliterations;
-    }
+//    public double returnScore() {
+//        return resultScore;
+//    }
+//
+//    public Graph returnGraph() {
+//        return resultGraph;
+//    }
+//
+//    public int returnIterations() {
+//        return totaliterations;
+//    }
 
     public void scoreTest() {
         TetradLogger.getInstance().log("details", "scoreTest");
@@ -476,19 +474,19 @@ public final class FactoredBayesStructuralEM {
         return this.dataSet;
     }
 
-    private class InterruptScheduler extends TimerTask {
-        Thread target = null;
-
-        public InterruptScheduler(Thread target) {
-            this.target = target;
-        }
-
-        @Override
-        public void run() {
-            target.interrupt();
-        }
-
-    }
+//    private class InterruptScheduler extends TimerTask {
+//        Thread target = null;
+//
+//        public InterruptScheduler(Thread target) {
+//            this.target = target;
+//        }
+//
+//        @Override
+//        public void run() {
+//            target.interrupt();
+//        }
+//
+//    }
 
     private class TimedIterate implements Runnable {
 
@@ -511,10 +509,11 @@ public final class FactoredBayesStructuralEM {
         public void run() {
             while (!bayesPmMnplus1.equals(bayesPmMn)) {
 
-                if (System.currentTimeMillis() - this.start > timeout && timeout > 0) {
-                    bayesPmMn = bayesPmMnplus1;
-                    break;
-                }
+//                int timeout = -1;
+//                if (System.currentTimeMillis() - this.start > timeout && timeout > 0) {
+//                    bayesPmMn = bayesPmMnplus1;
+//                    break;
+//                }
 
                 iteration++;
 
@@ -599,7 +598,7 @@ public final class FactoredBayesStructuralEM {
 
                 //if(   Math.abs(bestScore - oldBestScore) < 1.0e-40) convergence = true;
                 oldBestScore = bestScore;
-                resultGraph = edgesBest;
+//                resultGraph = edgesBest;
 
                 //if(iteration == 1) System.exit(0);  //Temporary during development
             }
