@@ -44,6 +44,34 @@ public class Args {
         }
     }
 
+    public static int parseInteger(String value, int min) {
+        try {
+            int intValue = Integer.parseInt(value);
+            if (min <= intValue) {
+                return intValue;
+            } else {
+                throw new IllegalArgumentException(
+                        String.format("Value (%d) must be greater than or equal to %d.", intValue, min));
+            }
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(String.format("'%s' is not an integer.", value));
+        }
+    }
+
+    public static int parseInteger(String value, int min, int max) {
+        try {
+            int intValue = Integer.parseInt(value);
+            if (min <= intValue && intValue <= max) {
+                return intValue;
+            } else {
+                throw new IllegalArgumentException(
+                        String.format("Value (%d) must be between %d and %d.", intValue, min, max));
+            }
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(String.format("'%s' is not an integer.", value));
+        }
+    }
+
     public static double parseDouble(String value) {
         try {
             return Double.parseDouble(value);
@@ -56,7 +84,7 @@ public class Args {
         List<Path> fileList = new LinkedList<>();
 
         for (String file : files) {
-            fileList.add(getPathFile(file));
+            fileList.add(getPathFile(file, true));
         }
 
         return fileList;
@@ -86,7 +114,15 @@ public class Args {
         return path;
     }
 
-    public static Path getPathFile(String file) throws FileNotFoundException {
+    public static Path getPathFile(String file, boolean requireNotNull) throws FileNotFoundException {
+        if (file == null) {
+            if (requireNotNull) {
+                throw new IllegalArgumentException("File argument is null.");
+            } else {
+                return null;
+            }
+        }
+
         Path path = Paths.get(file);
 
         if (Files.exists(path)) {

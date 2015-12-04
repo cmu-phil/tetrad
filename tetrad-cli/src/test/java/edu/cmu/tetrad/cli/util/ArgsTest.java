@@ -138,7 +138,7 @@ public class ArgsTest {
 
         String file = tempFolder.newFile(fileName).toString();
         Path expResult = Paths.get(dir, fileName);
-        Path result = Args.getPathFile(file);
+        Path result = Args.getPathFile(file, true);
         Assert.assertEquals(expResult, result);
     }
 

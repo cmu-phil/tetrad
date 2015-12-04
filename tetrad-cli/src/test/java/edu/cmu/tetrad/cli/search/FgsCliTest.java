@@ -45,18 +45,34 @@ public class FgsCliTest extends AbstractAlgorithmTest {
      */
     @Test
     public void testMain() throws IOException {
+        System.out.println("main");
+
+        // create dataset file
         String dataDir = tempFolder.newFolder("data").toString();
         Path dataFile = Paths.get(dataDir, "sim_data_20vars_100cases.txt");
-        Files.write(dataFile, Arrays.asList(sim_data_20vars_100cases), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+        Files.write(dataFile, Arrays.asList(dataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+
+        // create prior knowledge file
+        Path knowledgeFile = Paths.get(dataDir, "knowledge_sim_data_20vars_100cases.txt");
+        Files.write(knowledgeFile, Arrays.asList(knowledgeDataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
         String outDir = tempFolder.newFolder("results").toString();
         String fileName = "fgs.txt";
 
+        // run without prior knowledge
         String[] args = {
             "-d", dataFile.toAbsolutePath().toString(),
             "-o", outDir,
+            "-n", fileName
+        };
+        FgsCli.main(args);
+
+        // run with prior knowledge
+        args = new String[]{
+            "-d", dataFile.toAbsolutePath().toString(),
+            "-o", outDir,
             "-n", fileName,
-            "-v"
+            "-k", knowledgeFile.toAbsolutePath().toString()
         };
         FgsCli.main(args);
     }

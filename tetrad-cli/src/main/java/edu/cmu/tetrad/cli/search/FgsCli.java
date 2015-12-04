@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.cli.search;
 
+import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.data.BigDataSetUtility;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
@@ -36,7 +37,6 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -58,21 +58,23 @@ public class FgsCli {
         Option helpOption = new Option("h", "help", false, "Show help.");
         HELP_OPTIONS.addOption(helpOption);
 
-        OptionGroup requiredOptionGroup = new OptionGroup();
-        requiredOptionGroup.setRequired(true);
-        requiredOptionGroup.addOption(new Option("d", "data", true, "Data file."));
+        // added required option
+        Option requiredOption = new Option("d", "data", true, "Data file.");
+        requiredOption.setRequired(true);
+        MAIN_OPTIONS.addOption(requiredOption);
 
-        MAIN_OPTIONS.addOptionGroup(requiredOptionGroup);
+        MAIN_OPTIONS.addOption("k", "knowledge", true, "Prior knowledge file.");
         MAIN_OPTIONS.addOption("l", "delimiter", true, "Data file delimiter.");
-        MAIN_OPTIONS.addOption("k", "depth", true, "Search depth.");
+        MAIN_OPTIONS.addOption("m", "depth", true, "Search depth.");
         MAIN_OPTIONS.addOption("v", "verbose", false, "Verbose message.");
         MAIN_OPTIONS.addOption("p", "penalty-discount", true, "Penalty discount.");
-        MAIN_OPTIONS.addOption("n", "name", true, "Name of output file.");
-        MAIN_OPTIONS.addOption("o", "dir-out", true, "Directory where results is written to.");
+        MAIN_OPTIONS.addOption("n", "name", true, "Output file name.");
+        MAIN_OPTIONS.addOption("o", "dir-out", true, "Result directory.");
         MAIN_OPTIONS.addOption(helpOption);
     }
 
     private static Path dataFile;
+    private static Path knowledgeFile;
     private static Path dirOut;
     private static char delimiter;
     private static Double penaltyDiscount;
@@ -95,15 +97,16 @@ public class FgsCli {
 
             cmd = cmdParser.parse(MAIN_OPTIONS, args);
 
-            dataFile = Args.getPathFile(cmd.getOptionValue("d"));
+            dataFile = Args.getPathFile(cmd.getOptionValue("d"), true);
+            knowledgeFile = Args.getPathFile(cmd.getOptionValue("k", null), false);
             delimiter = Args.getCharacter(cmd.getOptionValue("l", "\t"));
             penaltyDiscount = Args.parseDouble(cmd.getOptionValue("p", "4.0"));
-            depth = Args.parseInteger(cmd.getOptionValue("k", "3"));
+            depth = Args.parseInteger(cmd.getOptionValue("m", "3"), -1);
             verbose = cmd.hasOption("v");
             dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
             fileOut = cmd.getOptionValue("n", String.format("fgs_pd%1.2f_d%d_%d.txt", penaltyDiscount, depth, System.currentTimeMillis()));
-        } catch (ParseException | FileNotFoundException exception) {
-            System.err.println(exception.getMessage());
+        } catch (ParseException | FileNotFoundException | IllegalArgumentException exception) {
+            System.err.println(exception.getLocalizedMessage());
             return;
         }
 
@@ -121,6 +124,9 @@ public class FgsCli {
             fgs.setNumPatternsToStore(0);  // always set to zero
             fgs.setFaithfulnessAssumed(true);
             fgs.setVerbose(verbose);
+            if (knowledgeFile != null) {
+                fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
+            }
             stream.flush();
 
             Graph graph = fgs.search();

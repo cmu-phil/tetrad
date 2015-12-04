@@ -38,7 +38,7 @@ public abstract class AbstractAlgorithmTest {
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    protected final String[] sim_data_20vars_100cases = {
+    protected final String[] dataset20var100case = {
         "MULT\tX0\tX1\tX2\tX3\tX4\tX5\tX6\tX7\tX8\tX9\tX10\tX11\tX12\tX13\tX14\tX15\tX16\tX17\tX18\tX19",
         "1\t2.4475\t0.5148\t2.5901\t-0.0721\t1.4016\t0.0888\t-7.9602\t1.1406\t4.4783\t1.8136\t-1.9697\t1.8451\t2.7634\t4.5470\t8.3919\t-1.8954\t-1.6719\t-1.9283\t0.3101\t4.7454",
         "1\t-0.8261\t0.0612\t-3.6800\t4.0955\t1.2874\t-0.8010\t4.1415\t-0.7477\t-0.5047\t0.6948\t0.5274\t-1.0396\t0.5155\t0.7066\t-6.6644\t-0.3088\t2.0915\t-7.3785\t-5.5573\t2.3495",
@@ -140,6 +140,15 @@ public abstract class AbstractAlgorithmTest {
         "1\t1.0799\t0.8449\t0.2453\t0.9705\t2.2293\t0.3701\t-6.7608\t0.8151\t5.6784\t2.8083\t0.5383\t-0.6699\t2.7289\t-3.5445\t-1.2149\t0.1752\t0.9559\t-2.9651\t0.7729\t6.5342",
         "1\t1.1772\t0.5902\t-2.3611\t2.0941\t3.4715\t-0.7691\t3.6203\t1.0170\t-1.9883\t2.6255\t-0.3081\t1.4883\t-1.8289\t-2.4243\t-5.3778\t2.9992\t-0.5412\t-7.4438\t-2.5642\t3.7675",
         "1\t-1.1967\t0.2924\t4.3650\t0.8240\t-2.4474\t0.7087\t-3.6837\t2.9900\t3.5126\t-1.6827\t-0.6423\t1.7077\t4.1402\t2.3348\t3.4332\t0.1896\t0.6287\t1.1611\t0.0811\t-2.4162"
+    };
+
+    protected final String[] knowledgeDataset20var100case = {
+        "/knowledge",
+        "requiredirect",
+        "X12 X8",
+        "",
+        "forbiddirect",
+        "X5 X17"
     };
 
     protected List<String> extractFile(Path file) {
