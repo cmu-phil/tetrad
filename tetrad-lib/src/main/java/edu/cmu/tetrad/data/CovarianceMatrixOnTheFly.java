@@ -214,40 +214,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * Protected constructor to construct a new covariance matrix using the
-     * supplied continuous variables and the the given symmetric, positive
-     * definite matrix and sample size. The number of variables must equal the
-     * dimension of the array.
-     *
-     * @param variables  the list of variables (in order) for the covariance
-     *                   matrix.
-     * @param matrix     an square array of containing covariances.
-     * @param sampleSize the sample size of the data for these covariances.
-     * @throws IllegalArgumentException if the given matrix is not symmetric (to
-     *                                  a tolerance of 1.e-5) and positive
-     *                                  definite, if the number of variables
-     *                                  does not equal the dimension of m, or if
-     *                                  the sample size is not positive.
-     */
-    private CovarianceMatrixOnTheFly(List<Node> variables, TetradMatrix matrix,
-                                     int sampleSize) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Copy constructor.
-     */
-    public CovarianceMatrixOnTheFly(CovarianceMatrixOnTheFly covMatrix) {
-        this(covMatrix.variables, covMatrix.matrix,
-                covMatrix.sampleSize);
-    }
-
-    public CovarianceMatrixOnTheFly(ICovarianceMatrix covMatrix) {
-        this(covMatrix.getVariables(), covMatrix.getMatrix(),
-                covMatrix.getSampleSize());
-    }
-
-    /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static ICovarianceMatrix serializableInstance() {
@@ -346,24 +312,11 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
-        List<Node> submatrixVars = new LinkedList<>();
-
-        for (int indice : indices) {
-            submatrixVars.add(variables.get(indice));
-        }
-
-        TetradMatrix cov = matrix.getSelection(indices, indices);
-        return new CovarianceMatrixOnTheFly(submatrixVars, cov, getSampleSize());
+        throw new UnsupportedOperationException();
     }
 
     public final ICovarianceMatrix getSubmatrix(List<String> submatrixVarNames) {
-        String[] varNames = new String[submatrixVarNames.size()];
-
-        for (int i = 0; i < submatrixVarNames.size(); i++) {
-            varNames[i] = submatrixVarNames.get(i);
-        }
-
-        return getSubmatrix(varNames);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -371,33 +324,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * order.
      */
     public final CovarianceMatrixOnTheFly getSubmatrix(String[] submatrixVarNames) {
-        List<Node> submatrixVars = new LinkedList<>();
-
-        for (String submatrixVarName : submatrixVarNames) {
-            submatrixVars.add(getVariable(submatrixVarName));
-        }
-
-        if (!getVariables().containsAll(submatrixVars)) {
-            throw new IllegalArgumentException(
-                    "The variables in the submatrix " +
-                            "must be in the original matrix: original==" +
-                            getVariables() + ", sub==" + submatrixVars);
-        }
-
-        for (int i = 0; i < submatrixVars.size(); i++) {
-            if (submatrixVars.get(i) == null) {
-                throw new NullPointerException(
-                        "The variable name at index " + i + " is null.");
-            }
-        }
-
-        int[] indices = new int[submatrixVars.size()];
-        for (int i = 0; i < indices.length; i++) {
-            indices[i] = getVariables().indexOf(submatrixVars.get(i));
-        }
-
-        TetradMatrix cov = matrix.getSelection(indices, indices);
-        return new CovarianceMatrixOnTheFly(submatrixVars, cov, getSampleSize());
+        throw new UnsupportedOperationException();
     }
 
     /**

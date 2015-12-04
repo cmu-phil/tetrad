@@ -201,15 +201,9 @@ public final class KnowledgeGroup implements TetradSerializable {
 
         KnowledgeGroup thatGroup = (KnowledgeGroup) o;
 
-        if (this.type != thatGroup.type) {
-            return false;
-        }
+        return this.type == thatGroup.type && this.fromGroup.equals(thatGroup.fromGroup)
+                && this.toGroup.equals(thatGroup.toGroup);
 
-        if (!this.fromGroup.equals(thatGroup.fromGroup)) {
-            return false;
-        }
-
-        return this.toGroup.equals(thatGroup.toGroup);
     }
 
     //=========================== Private Methods ==========================//

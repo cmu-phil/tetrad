@@ -792,7 +792,7 @@ public final class DataUtils {
         int numColumns = dataSets[0].columns();
         TetradMatrix allData = new TetradMatrix(totalSampleSize, numColumns);
         int q = 0;
-        int r = 0;
+        int r;
 
         for (TetradMatrix dataSet : dataSets) {
             r = dataSet.rows();
@@ -820,7 +820,7 @@ public final class DataUtils {
         int numColumns = dataSets.get(0).getNumColumns();
         TetradMatrix allData = new TetradMatrix(totalSampleSize, numColumns);
         int q = 0;
-        int r = 0;
+        int r;
 
         for (DataSet dataSet : dataSets) {
             TetradMatrix _data = dataSet.getDoubleData();
@@ -848,7 +848,7 @@ public final class DataUtils {
         int numColumns = dataSets.get(0).columns();
         TetradMatrix allData = new TetradMatrix(totalSampleSize, numColumns);
         int q = 0;
-        int r = 0;
+        int r;
 
         for (TetradMatrix _data : dataSets) {
             r = _data.rows();
@@ -875,7 +875,7 @@ public final class DataUtils {
         int numRows = dataSets.get(0).getNumRows();
         TetradMatrix allData = new TetradMatrix(numRows, totalNumColumns);
         int q = 0;
-        int cc = 0;
+        int cc;
 
         for (DataSet dataSet : dataSets) {
             TetradMatrix _data = dataSet.getDoubleData();

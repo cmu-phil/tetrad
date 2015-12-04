@@ -491,7 +491,7 @@ public final class NumberObjectDataSet
         int col = variables.indexOf(_from);
 
         List<String> oldCategories = _from.getCategories();
-        List newCategories = _to.getCategories();
+        List<String> newCategories = _to.getCategories();
 
         int[] indexArray = new int[oldCategories.size()];
 
@@ -1578,22 +1578,22 @@ public final class NumberObjectDataSet
     }
 
 
-    /**
-     * @return the index of the last row of the data that does not consist
-     * entirely of missing values (that is, Double.NaN's), or -1, if there are
-     * no rows in the data that do not consist entirely of missing values.
-     */
-    private int lastInterestingRow() {
-        for (int lastRow = data.length - 1; lastRow >= 0; lastRow--) {
-            for (int j = 0; j < data[0].length; j++) {
-                if (data[lastRow][j] != null) {
-                    return lastRow + 1;
-                }
-            }
-        }
-
-        return -1;
-    }
+//    /**
+//     * @return the index of the last row of the data that does not consist
+//     * entirely of missing values (that is, Double.NaN's), or -1, if there are
+//     * no rows in the data that do not consist entirely of missing values.
+//     */
+//    private int lastInterestingRow() {
+//        for (int lastRow = data.length - 1; lastRow >= 0; lastRow--) {
+//            for (int j = 0; j < data[0].length; j++) {
+//                if (data[lastRow][j] != null) {
+//                    return lastRow + 1;
+//                }
+//            }
+//        }
+//
+//        return -1;
+//    }
 }
 
 
