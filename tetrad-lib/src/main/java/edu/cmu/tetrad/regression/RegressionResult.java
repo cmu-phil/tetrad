@@ -147,8 +147,6 @@ public class RegressionResult implements TetradSerializable {
      *                             regression.
      * @param alpha                The alpha value for the regression,
      *                             determining which regressors are taken to be
-     * @param yHat
-     * @param res
      */
     public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames,
                             int n, double[] b, double[] t,
@@ -178,19 +176,6 @@ public class RegressionResult implements TetradSerializable {
 
         // Need to set this one before calling getNumRegressors.
         this.regressorNames = regressorNames;
-        int error = zeroInterceptAssumed ? 0 : 1;
-
-//        if (getNumRegressors() > 0 && b.length != getNumRegressors() + error) {
-//            throw new IllegalArgumentException();
-//        }
-
-//        if (t.length != getNumRegressors() + error) {
-//            throw new IllegalArgumentException();
-//        }
-//
-//        if (p.length != getNumRegressors() + error) {
-//            throw new IllegalArgumentException();
-//        }
 
         this.n = n;
         this.b = b;
@@ -286,7 +271,7 @@ public class RegressionResult implements TetradSerializable {
         StringBuilder summary = new StringBuilder(getPreamble());
         TextTable table = getResultsTable();
 
-        summary.append("\n" + table.toString());
+        summary.append("\n").append(table.toString());
         return summary.toString();
     }
 
@@ -342,14 +327,13 @@ public class RegressionResult implements TetradSerializable {
 
         String rssString = nf.format(rss);
         String r2String = nf.format(r2);
-        StringBuilder preamble = new StringBuilder();
-        preamble.append("\n REGRESSION RESULT");
-        preamble.append("\n n = ").append(n).append(", k = ");
-        preamble.append(getNumRegressors() + 1).append(", alpha = ").append(alpha);
-        preamble.append("\n").append(" SSE = ").append(rssString);
-        preamble.append("\n").append(" R^2 = ").append(r2String);
-        preamble.append("\n");
-        return preamble.toString();
+        String preamble = "\n REGRESSION RESULT" +
+                "\n n = " + n + ", k = " +
+                (getNumRegressors() + 1) + ", alpha = " + alpha +
+                "\n" + " SSE = " + rssString +
+                "\n" + " R^2 = " + r2String +
+                "\n";
+        return preamble;
     }
 
     public TetradVector getYHat() {
