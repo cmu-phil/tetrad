@@ -265,7 +265,6 @@ public class PerformanceTests {
 
 //        System.out.println(cov);
 
-        data = null;
         System.gc();
 
         System.out.println("Covariance matrix done");
@@ -386,8 +385,6 @@ public class PerformanceTests {
         SearchGraphUtils.graphComparison(outGraph, truePattern, out);
 
         out.println("# ambiguous triples = " + outGraph.getAmbiguousTriples().size());
-
-        int[][] counts = new int[3][4];
 
         out.close();
     }
@@ -1093,24 +1090,14 @@ public class PerformanceTests {
         System.out.println("Finishing list of vars");
 
         Graph dag;
-        int[] tierOrdering = new int[numVars];
-
         if (false) {
             dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
-//            printDegreeDistribution(dag, System.out);
-
-            for (int i = 0; i < numVars; i++) {
-                tierOrdering[i] = i;
-            }
         } else {
 //            dag = DataGraphUtils.randomDagRandomFowardEdges(vars, 0, numEdges);
             dag = GraphUtils.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
 //            dag = DataGraphUtils.randomDagUniform(vars, numEdges, false);
 //            dag = DataGraphUtils.randomDagUniform(vars, 0, numEdges, 100, 100, 100, false);
             List<Node> ordering = dag.getCausalOrdering();
-            for (int i = 0; i < vars.size(); i++) {
-                tierOrdering[i] = vars.indexOf(ordering.get(i));
-            }
         }
         System.out.println("DAG = " + dag);
 
@@ -1260,7 +1247,6 @@ public class PerformanceTests {
 
     public void testDagToPagOnly(int numVars, double edgesPerNode, int numLatents) {
         System.out.println("Making list of vars");
-        int maxPathLength = -1;
 
         List<Node> vars = new ArrayList<Node>();
 
@@ -1605,9 +1591,7 @@ public class PerformanceTests {
 
         List<Node> parents = new ArrayList<>();
 
-        for (int m = 0; m < ordering.size(); m++) {
-            Node n2 = ordering.get(m);
-
+        for (Node n2 : ordering) {
             if (graph.isParentOf(n2, n1)) {
                 parents.add(n2);
             }
@@ -1619,9 +1603,6 @@ public class PerformanceTests {
 
     private void directedComparison(Graph dag, Graph truePag, Graph estGraph) {
         System.out.println("Directed comparison");
-
-        List<Node> latents = new ArrayList<Node>();
-        for (Node node : dag.getNodes()) if (node.getNodeType() == NodeType.LATENT) latents.add(node);
 
         for (Edge edge : estGraph.getEdges()) {
             if (!estGraph.containsEdge(Edges.directedEdge(edge.getNode1(), edge.getNode2()))) {
@@ -1641,9 +1622,6 @@ public class PerformanceTests {
 
     private void bidirectedComparison(Graph dag, Graph truePag, Graph estGraph, Set<Node> missingNodes) {
         System.out.println("Bidirected comparison");
-
-        List<Node> latents = new ArrayList<Node>();
-        for (Node node : dag.getNodes()) if (node.getNodeType() == NodeType.LATENT) latents.add(node);
 
         for (Edge edge : estGraph.getEdges()) {
             if (!estGraph.containsEdge(Edges.bidirectedEdge(edge.getNode1(), edge.getNode2()))) {
