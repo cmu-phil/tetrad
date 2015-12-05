@@ -49,7 +49,7 @@ public enum TestType implements TetradSerializable {
 
     // TETRAD_DELTA is kept for purpospes of serialization.
     GAUSSIAN_FACTOR, DISCRETE, TETRAD_BOLLEN, TETRAD_DELTA, TETRAD_WISHART,
-    TETRAD_BASED, TETRAD_BASED2, POPULATION,
+    TETRAD_BASED, POPULATION,
 
     // For FTFC
     SAG, GAP;
@@ -67,7 +67,6 @@ public enum TestType implements TetradSerializable {
         return new TestType[]{
                 TestType.NONE,
                 TestType.TETRAD_BASED,
-                TestType.TETRAD_BASED2,
                 TestType.GAUSSIAN_PVALUE,
                 TestType.GAUSSIAN_SCORE_MARKS,
 //                TestType.GAUSSIAN_SCORE,

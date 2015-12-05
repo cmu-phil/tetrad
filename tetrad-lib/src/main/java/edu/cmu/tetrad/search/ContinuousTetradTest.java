@@ -402,7 +402,6 @@ public final class ContinuousTetradTest implements TetradTest {
     private void evalTetradDifferences(int i, int j, int k, int l) {
         switch (sigTestType) {
             case TETRAD_BASED:
-            case TETRAD_BASED2:
             case TETRAD_WISHART:
                 wishartEvalTetradDifferences(i, j, k, l);
                 break;
@@ -423,7 +422,6 @@ public final class ContinuousTetradTest implements TetradTest {
     private void evalTetradDifference(int i, int j, int k, int l) {
         switch (sigTestType) {
             case TETRAD_BASED:
-            case TETRAD_BASED2:
             case TETRAD_WISHART:
                 wishartEvalTetradDifference(i, j, k, l);
                 break;

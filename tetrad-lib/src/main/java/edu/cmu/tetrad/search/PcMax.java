@@ -40,7 +40,6 @@ import java.util.*;
  * set, see Chris Meek (1995), "Causal inference and causal explanation with background knowledge."
  *
  * @author Joseph Ramsey.
- * @deprecated
  */
 public class PcMax implements GraphSearch {
 

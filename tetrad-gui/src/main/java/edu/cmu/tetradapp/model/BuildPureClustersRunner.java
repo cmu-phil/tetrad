@@ -137,7 +137,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                 DataModel source = getData();
 
                 TestType testType = getParams().getTetradTestType();
-                TestType purifyType = TestType.TETRAD_BASED2;
+                TestType purifyType = TestType.TETRAD_BASED;
 
                 if (source instanceof ICovarianceMatrix) {
                     bpc = new BuildPureClusters((ICovarianceMatrix) source,
