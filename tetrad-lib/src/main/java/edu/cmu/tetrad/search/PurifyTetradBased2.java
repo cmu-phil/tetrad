@@ -35,14 +35,14 @@ import java.util.*;
  *
  * @author Joe Ramsey
  */
-public class PurifyTetradBased3 implements IPurify {
+public class PurifyTetradBased2 implements IPurify {
     private boolean outputMessage = true;
     private TetradTest tetradTest;
 
     private List<Node> nodes;
     private Graph mim;
 
-    public PurifyTetradBased3(TetradTest tetradTest) {
+    public PurifyTetradBased2(TetradTest tetradTest) {
         this.tetradTest = tetradTest;
         this.nodes = tetradTest.getVariables();
     }

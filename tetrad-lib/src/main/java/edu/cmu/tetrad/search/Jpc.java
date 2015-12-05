@@ -34,6 +34,7 @@ import java.util.*;
  * Implements the JCPC algorithm.
  *
  * @author Joseph Ramsey (this version).
+ * @deprecated JCPC is better.
  */
 public class Jpc implements GraphSearch {
     private int numAdded;

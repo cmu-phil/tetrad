@@ -37,8 +37,8 @@ import java.util.*;
  * form an input PAG that are consistent (same d-separations and d-connections) with every input PAG.
  *
  * @author Robert Tillman
+ * @author Joseph Ramsey
  */
-
 public class IonJoeModifications {
 
     // prune using path length

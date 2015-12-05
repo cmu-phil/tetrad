@@ -192,7 +192,7 @@ public class Purify {
             type = null;
 
             if (type == TestType.TETRAD_BASED) {
-                IPurify purifier = new PurifyTetradBased3(tetradTest);
+                IPurify purifier = new PurifyTetradBased2(tetradTest);
                 List<List<Node>> partition2 = purifier.purify(ClusterUtils.convertIntToList(getClusters(), getVariables()));
                 List<int[]> pureClusters = ClusterUtils.convertListToInt(partition2, getVariables());
                 return ClusterUtils.convertSearchGraph(pureClusters, tetradTest.getVarNames());
@@ -212,7 +212,7 @@ public class Purify {
             } else {
                 List pureClusters;
 //                if (constraintSearchVariation == 0) {
-                IPurify purifier = new PurifyTetradBased3(tetradTest);
+                IPurify purifier = new PurifyTetradBased2(tetradTest);
                 List<List<Node>> partition2 = purifier.purify(ClusterUtils.convertIntToList(getClusters(), tetradTest.getVariables()));
                 pureClusters = ClusterUtils.convertListToInt(partition2, tetradTest.getVariables());
 //                    pureClusters = tetradBasedPurify(getClusters());

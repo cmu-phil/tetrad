@@ -34,6 +34,7 @@ import java.util.*;
  * Implements the JFCI algorithm.
  *
  * @author Joseph Ramsey (this version).
+ * @deprecated
  */
 public class Jfci implements GraphSearch {
 
