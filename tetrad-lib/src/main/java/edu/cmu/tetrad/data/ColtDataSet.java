@@ -239,7 +239,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     }
 
 
-    private static DataSet makeContinuousData(List<Node> variables, double[][] data) {
+    public static DataSet makeContinuousData(List<Node> variables, double[][] data) {
 
         if (variables.size() != data[0].length) {
             throw new IllegalArgumentException("# vars = " + variables.size() + " but # columns = " + data[0].length);
