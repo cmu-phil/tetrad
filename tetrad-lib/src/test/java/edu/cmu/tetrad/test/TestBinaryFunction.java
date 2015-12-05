@@ -43,18 +43,6 @@ public class TestBinaryFunction extends TestCase {
         System.out.println("TOTAL " + numValidated + " OUT OF " + utils.getNumFunctions());
     }
 
-    public void rtest2() {
-        BinaryFunctionUtils utils = new BinaryFunctionUtils(4);
-        List<BinaryFunction> functions = utils.findNontransitiveTriple();
-    }
-
-    public void rtest3() {
-        BinaryFunctionUtils utils = new BinaryFunctionUtils(3);
-        long num = utils.count2();
-
-        System.out.println("... " + num);
-    }
-
     public void rtest4() {
         BinaryFunctionUtils utils = new BinaryFunctionUtils(4);
 

@@ -78,7 +78,6 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static BuildPureClustersRunner serializableInstance() {
@@ -110,49 +109,9 @@ public class BuildPureClustersRunner extends AbstractMimRunner
             }
 
             searchGraph = washdown.search();
-//        } else if (algorithm == BpcAlgorithmType.SIMPLIFIED_BPC_DEPTH_0) {
-//            BpcSimplified bpc;
-//            Object source = getData();
-//
-//            if (source instanceof DataSet) {
-//                bpc = new BpcSimplified(
-//                        (DataSet) source,
-//                        getParams().getTetradTestType(),
-//                        getParams().getAlpha());
-//                bpc.setDepthOne(false);
-//            } else {
-//                bpc = new BpcSimplified((ICovarianceMatrix) source,
-//                        getParams().getTetradTestType(), getParams().getAlpha());
-//                bpc.setDepthOne(false);
-//            }
-//
-//            searchGraph = bpc.search();
         } else {
             TestType tetradTestType = getParams().getTetradTestType();
 
-//            FindOneFactorClusters.TestType type = tetradTestType == TestType.TETRAD_WISHART ?
-//                    FindOneFactorClusters.TestType.wishart :
-//                    FindOneFactorClusters.TestType.delta;
-
-//            if (algorithm == BpcAlgorithmType.SIMPLIFIED_BPC) {
-//                BpcSimplified bpc;
-//                Object source = getData();
-//
-//                if (source instanceof DataSet) {
-//                    bpc = new BpcSimplified(
-//                            (DataSet) source,
-//                            tetradTestType,
-//                            getParams().getAlpha());
-//
-//                    bpc.setDepthOne(true);
-//                } else {
-//                    bpc = new BpcSimplified((ICovarianceMatrix) source,
-//                            tetradTestType, getParams().getAlpha());
-//                    bpc.setDepthOne(true);
-//                }
-//
-//                searchGraph = bpc.search();
-//            } else
             if (algorithm == BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN) {
                 BpcTetradPurifyWashdown bpc;
                 Object source = getData();

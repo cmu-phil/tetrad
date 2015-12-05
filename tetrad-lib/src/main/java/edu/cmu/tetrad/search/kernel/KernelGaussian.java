@@ -69,7 +69,6 @@ public final class KernelGaussian implements Kernel {
      *
      * @param i first point
      * @param j second point
-     * @return
      */
     public double eval(double i, double j) {
         double evalKernel = Math.exp(-.5 * (Math.pow((i - j), 2) / Math.pow(sigma, 2)));
@@ -78,10 +77,6 @@ public final class KernelGaussian implements Kernel {
 
     /**
      * Default setting of bandwidth based on median distance heuristic
-     *
-     * @param dataset
-     * @param node
-     * @return
      */
     public void setDefaultBw(DataSet dataset, Node node) {
         setMedianBandwidth(dataset, node);
