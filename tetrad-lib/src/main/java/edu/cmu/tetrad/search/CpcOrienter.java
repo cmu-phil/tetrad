@@ -250,27 +250,27 @@ public final class CpcOrienter implements Reorienter {
     }
 
 
-    public final Graph orientationForGraph(Dag trueGraph) {
-        Graph graph = new EdgeListGraph(independenceTest.getVariables());
-
-        for (Edge edge : trueGraph.getEdges()) {
-            Node nodeA = edge.getNode1();
-            Node nodeB = edge.getNode2();
-
-            Node _nodeA = independenceTest.getVariable(nodeA.getName());
-            Node _nodeB = independenceTest.getVariable(nodeB.getName());
-
-            graph.addUndirectedEdge(_nodeA, _nodeB);
-        }
-
-        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
-        orientUnshieldedTriples(knowledge, getIndependenceTest(), depth);
-        MeekRules meekRules = new MeekRules();
-        meekRules.setKnowledge(knowledge);
-        meekRules.orientImplied(graph);
-
-        return graph;
-    }
+//    public final Graph orientationForGraph(Dag trueGraph) {
+//        Graph graph = new EdgeListGraph(independenceTest.getVariables());
+//
+//        for (Edge edge : trueGraph.getEdges()) {
+//            Node nodeA = edge.getNode1();
+//            Node nodeB = edge.getNode2();
+//
+//            Node _nodeA = independenceTest.getVariable(nodeA.getName());
+//            Node _nodeB = independenceTest.getVariable(nodeB.getName());
+//
+//            graph.addUndirectedEdge(_nodeA, _nodeB);
+//        }
+//
+//        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
+//        orientUnshieldedTriples(knowledge, getIndependenceTest(), depth);
+//        MeekRules meekRules = new MeekRules();
+//        meekRules.setKnowledge(knowledge);
+//        meekRules.orientImplied(graph);
+//
+//        return graph;
+//    }
 
     //==========================PRIVATE METHODS===========================//
 

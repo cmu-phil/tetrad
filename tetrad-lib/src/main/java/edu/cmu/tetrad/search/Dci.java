@@ -1437,7 +1437,6 @@ public class Dci {
                     newGraph.setEndpoint(triple.getX(), triple.getY(), Endpoint.ARROW);
                     newGraph.setEndpoint(triple.getZ(), triple.getY(), Endpoint.ARROW);
                 }
-                long start = System.currentTimeMillis();
                 doFinalOrientation(newGraph);
                 for (Graph graph : finalGraphs) {
                     if (!predictsFalseDependence(graph)) {
