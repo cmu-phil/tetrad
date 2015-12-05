@@ -88,18 +88,11 @@ public final class Vcpc implements GraphSearch {
     private Set<Triple> ambiguousTriples;
 
     /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
-
-    /**
      *
      */
     // the set of definitely non-adjacencies
 
     private Set<Edge> definitelyNonadjacencies;
-
-// the set of variables that pass the local markov test in all consistent patterns.
 
     private Set<Node> markovInAllPatterns;
 

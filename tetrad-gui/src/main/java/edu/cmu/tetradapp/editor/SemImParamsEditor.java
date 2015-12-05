@@ -262,8 +262,6 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
     /**
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
-     *
-     * @return the stored simulation parameters model.
      */
     private synchronized SemImParams getParams() {
         return this.params;

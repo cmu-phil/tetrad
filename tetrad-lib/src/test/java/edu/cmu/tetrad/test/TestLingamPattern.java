@@ -133,7 +133,6 @@ public class TestLingamPattern extends TestCase {
      * through the SEM, assuming it is acyclic. Fast for large simulations but hangs for cyclic models.
      *
      * @param sampleSize    > 0.
-     * @param distributions
      * @return the simulated data set.
      */
     private DataSet simulateDataNonNormal(SemIm semIm, int sampleSize,

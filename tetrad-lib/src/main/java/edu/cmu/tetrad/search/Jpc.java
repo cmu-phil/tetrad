@@ -184,8 +184,6 @@ public class Jpc implements GraphSearch {
 
     /**
      * Sets the maximum number of adjacencies.
-     *
-     * @param maxAdjacencies
      */
     public void setSoftmaxAdjacencies(int maxAdjacencies) {
         if (maxAdjacencies < 1) {

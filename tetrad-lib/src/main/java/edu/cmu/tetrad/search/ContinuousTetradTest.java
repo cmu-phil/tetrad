@@ -216,65 +216,8 @@ public final class ContinuousTetradTest implements TetradTest {
         twoFactorsEst6 = new TwoFactorsEstimator(covMatrix, sig, 6);
         bufferMatrix = new TetradMatrix(4, 4);
         rho = covMatrix.getMatrix();
-
-//        int m = covMatrix.getVariables().size();
-//        tetradDifference = new HashMap<Tetrad, Double>();
-
     }
 
-    /**
-     * Note: this implementation could be more optimized. This is the
-     * simplest way of computing this corrMatrix, and will take exactly
-     * sampleSize * (corrMatrix.getSize() ^ 4) steps.
-     */
-
-    /**
-     * Sample scores: the real deal. The way by which significance is tested will vary from case to case. We are also
-     * using false discovery rate to make a mild adjustment in the p-values.
-     */
-
-//    public int tetradScore(int v1, int v2, int v3, int v4) {
-//        evalTetradDifferences(v1, v2, v3, v4);
-//        for (int i = 0; i < 3; i++) {
-//            bvalues[i] = (prob[i] >= sig);
-//        }
-//
-//        //Order p-values for FDR (false discovery rate) decision
-//        Arrays.sort(prob);     // jdramsey 5/22/10
-//
-////        double tempProb;
-////        if (prob[1] < prob[0] && prob[1] < prob[2]) {
-////            tempProb = prob[0];
-////            prob[0] = prob[1];
-////            prob[1] = tempProb;
-////        }
-////        else if (prob[2] < prob[0] && prob[2] < prob[0]) {
-////            tempProb = prob[0];
-////            prob[0] = prob[2];
-////            prob[2] = tempProb;
-////        }
-////        if (prob[2] < prob[1]) {
-////            tempProb = prob[1];
-////            prob[1] = prob[2];
-////            prob[2] = tempProb;
-////        }
-//        if (prob[2] <= sig3) {
-//            return 0;
-//        }
-//        if (prob[1] <= sig2) {
-//            //This is the case of 2 tetrad constraints holding, which is
-//            //a logical impossibility. On a future version we may come up with
-//            //better, more powerful ways of deciding what to do. Right now,
-//            //the default is to do just as follows:
-////            return 1;
-//            return 1;
-//        }
-//        if (prob[0] <= sig1) {
-////            throw new IllegalArgumentException();
-//            return 2;
-//        }
-//        return 3;
-//    }
     public int tetradScore(int v1, int v2, int v3, int v4) {
         boolean holds = wishartEvalTetradDifferences2(v1, v2, v3, v4, sig);
         if (!holds) return 1;
@@ -409,7 +352,7 @@ public final class ContinuousTetradTest implements TetradTest {
                 bollenEvalTetradDifferences(i, j, k, l);
                 break;
             default:
-                /**
+                /*
                  * The other tests are only for interface with Purify. The ContinuousTetradTest class is also
                  * used as a black box of arguments passed to Purify (e.g., see BuildPureClusters code), but it does
                  * not mean its internal tetrad tests are going to be used. See Purify.scoreBasedPurify(List) to

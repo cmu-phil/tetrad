@@ -63,9 +63,6 @@ public class NormalityTestEditorPanel extends JPanel {
 
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
-     *
-     * @param qqPlot
-     * @param dataSet
      */
     public NormalityTestEditorPanel(QQPlot qqPlot, DataSet dataSet) {
         //   construct components

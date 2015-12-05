@@ -146,13 +146,6 @@ public final class MlBayesImObs implements BayesIm {
     // there will be an infinite loop attempting to creating the MlBayesImObs
     private BayesIm bayesImObs;
 
-    /**
-     * Random source.
-     */
-//    private static final RandomUtil randomUtil =
-//            RandomUtil.getInstance();
-//    RandomUtil randomUtil = new SeededRandomUtil(522343L);
-
     //===============================CONSTRUCTORS=========================//
 
     /**

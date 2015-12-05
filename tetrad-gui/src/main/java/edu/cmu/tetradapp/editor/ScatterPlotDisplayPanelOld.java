@@ -93,8 +93,6 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
 
     /**
      * Constructs the scatterplot dipslay panel given the initial scatterplot to display.
-     *
-     * @param scatterPlot
      */
     public ScatterPlotDisplayPanelOld(ScatterPlotOld scatterPlot) {
         this.scatterPlot = scatterPlot;
@@ -111,8 +109,6 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
 
     /**
      * Updates the histogram that is dispalyed to the given one.
-     *
-     * @param scatterPlot
      */
     public synchronized void updateScatterPlot(ScatterPlotOld scatterPlot) {
         if (scatterPlot == null) {
@@ -131,8 +127,6 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
 
     /**
      * Paints the histogram and related items.
-     *
-     * @param graphics
      */
     public void paintComponent(Graphics graphics) {
 
@@ -224,7 +218,7 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
             //RegressionRunner regRunner;
             RegressionDataset regData;
 
-            /**
+            /*
              * In the following code, the complement of the indexSet (for all integers <= (n - 1)) is
              * calculated.  This set of indices is removed from a copy of our original dataSet, such
              * that the ScatterPlot only contains the appropriate points for rendering.

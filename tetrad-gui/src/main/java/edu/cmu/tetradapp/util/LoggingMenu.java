@@ -56,8 +56,6 @@ public class LoggingMenu extends JMenu {
 
     /**
      * Constructs the menu given the logger that the menu is to display.
-     *
-     * @param config
      */
     public LoggingMenu(TetradLoggerConfig config) {
         super("Logging");
@@ -72,9 +70,6 @@ public class LoggingMenu extends JMenu {
     /**
      * Constructs the logging menu, given the parent component that should be used
      * to center dialogs on.
-     *
-     * @param config
-     * @param parent
      */
     public LoggingMenu(TetradLoggerConfig config, Component parent){
         this(config);

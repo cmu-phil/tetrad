@@ -77,12 +77,8 @@ public class Purify {
      * INITIALIZATION                                                                                        o
      *********************************************************/
 
-    /**
+    /*
      * Constructor Purify
-     *
-     * @param correlationMatrix
-     * @param sig
-     * @param testType
      */
 
     public Purify(CorrelationMatrix correlationMatrix, double sig, TestType testType,
@@ -456,9 +452,6 @@ public class Purify {
      * Marks for deletion nodes within a single cluster that are part of some tetrad constraint that does not hold
      * according to a statistical test. </p> False discovery rates will be used to adjust for multiple hypothesis
      * tests.
-     *
-     * @param cluster
-     * @param eliminated
      */
     private void intraConstructPhase(int cluster[], boolean eliminated[],
                                      String clusterName) {
@@ -721,9 +714,6 @@ public class Purify {
      * Marks for deletion nodes that are part of some tetrad constraint between two clusters that does not hold
      * according to a statistical test. </p> False discovery rates will be used to adjust for multiple hypothesis
      * tests.
-     *
-     * @param partition
-     * @param eliminated
      */
 
     private void crossConstructPhase(List<int[]> partition, boolean eliminated[]) {
@@ -1413,8 +1403,6 @@ public class Purify {
 
     /**
      * Second main method of this variation of Purify
-     *
-     * @param partition
      */
 
     private SemGraph scoreBasedPurifyIterate(List partition) {

@@ -62,7 +62,7 @@ public class FactorAnalysis {
 
     //================= COMMUNALITY ESTIMATES =================//
 
-    /**
+    /*
      *  A GENERAL NOTE ABOUT COMMUNALITY ESTIMATES
      *
      * As of 8/3/09, none of these are used in any implemented algorithms.
@@ -118,7 +118,7 @@ public class FactorAnalysis {
 
     //================= FACTORING METHODS =================//
 
-    /**
+    /*
      * The "loadTestMatrix" method serves to load in the numerical example from
      * Horst's 1965 book (referenced at the top of this java file).
      *

@@ -147,8 +147,6 @@ public final class SemGraphEditor extends JPanel
      * SessionNodes and SessionEdges selected in the workbench. Note that the
      * workbench, not the SessionEditorNodes themselves, keeps track of the
      * selection.
-     *
-     * @return the set of selected model nodes.
      */
     public List getSelectedModelComponents() {
         List<Component> selectedComponents = getWorkbench().getSelectedComponents();

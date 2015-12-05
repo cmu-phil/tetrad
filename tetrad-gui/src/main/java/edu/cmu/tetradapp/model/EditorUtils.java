@@ -117,7 +117,6 @@ public class EditorUtils {
      * @param overwrite  True iff the file prefix.suffix should be overwritten.
      *                   If false, the next avialable filename in the series
      *                   prefix{n}.suffix will be suggested.
-     * @param dialogName
      * @return null, if the selection was cancelled or there was an error.
      */
     public static File getSaveFile(String prefix, String suffix,
@@ -169,8 +168,6 @@ public class EditorUtils {
 
     /**
      * @return a new JFileChooser properly set up for Tetrad.
-     *
-     * @param name
      */
     public static JFileChooser createJFileChooser(String name) {
         if (name == null) {

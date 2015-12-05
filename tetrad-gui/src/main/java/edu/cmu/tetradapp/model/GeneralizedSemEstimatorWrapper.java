@@ -155,8 +155,6 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 
     /**
      * The wrapped SemPm.
-     *
-     * @serial Cannot be null.
      */
     public GeneralizedSemPm getSemPm() {
         return semPm;

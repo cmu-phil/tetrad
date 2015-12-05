@@ -46,7 +46,7 @@ class Tier extends JPanel {
     private static IKnowledge know;
 
     /**
-     * @return a panel with a tier name, and all vars in that tier.
+     * A panel with a tier name, and all vars in that tier.
      */
     public Tier(TierList kn, int thisTier, String[] tierNames) {
 

@@ -271,7 +271,6 @@ public class BDeuScore implements LocalDiscreteScore, GesScore {
         return sampleSize;
     }
 
-    @Override
     /**
      * Must be called directly after the corresponding scoring call.
      */

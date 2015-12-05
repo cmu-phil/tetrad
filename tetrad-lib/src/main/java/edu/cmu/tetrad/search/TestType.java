@@ -82,7 +82,7 @@ public enum TestType implements TetradSerializable {
 //                TestType.GAUSSIAN_FACTOR
         };
 
-        /**
+        /*
          * Note: I'm not allowing the user to see the Gaussian Factors Test
          * because it seems to be unreliable. It seems to be working, but not
          * very well, and I can't tell why right now. In the future, I might

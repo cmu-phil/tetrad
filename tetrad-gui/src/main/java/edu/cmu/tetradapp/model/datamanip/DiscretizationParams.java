@@ -68,8 +68,6 @@ public class DiscretizationParams implements Params {
 
     /**
      * @return the specs.
-     *
-     * @return - specs.
      */
     public Map<Node, DiscretizationSpec> getSpecs() {
         return map;
@@ -78,8 +76,6 @@ public class DiscretizationParams implements Params {
 
     /**
      * Sets the mapping.
-     *
-     * @param map
      */
     public void setSpecs(Map<Node, DiscretizationSpec> map) {
         if (!(map instanceof Serializable)) {

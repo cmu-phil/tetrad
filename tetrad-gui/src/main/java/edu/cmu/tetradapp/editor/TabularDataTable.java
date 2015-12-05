@@ -85,8 +85,6 @@ class TabularDataTable extends AbstractTableModel {
     /**
      * @return the number of rows in the wrapper table model. Guarantees that
      * this number will be at least 100.
-     *
-     * @return the row count of the wrapped model or 100, whichever is larger.
      */
     public int getRowCount() {
         int maxRowCount = dataSet.getNumRows() + 3;
@@ -96,9 +94,6 @@ class TabularDataTable extends AbstractTableModel {
     /**
      * @return the number of columns in the wrapper table model. Guarantees that
      * this number will be at least 30.
-     *
-     * @return the column count of the wrapped model or 30, whichever is
-     *         larger.
      */
     public int getColumnCount() {
         return (dataSet.getNumColumns() < 30) ? 30 :
@@ -170,7 +165,7 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
-     * @return the value at the given (row, col) coordinates of the table as
+     * Sets the value at the given (row, col) coordinates of the table as
      * an Object.  If the variable for the col is a DiscreteVariable, the String
      * value (as opposed to the integer index value) is extracted and
      * returned. If the coordinates are out of range of the wrapped table model,

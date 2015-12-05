@@ -60,7 +60,6 @@ public class RandomGraphEditor extends JPanel {
     /**
      * Constructs a dialog to edit the given workbench randomization
      * parameters.
-     * @param cyclicAllowed
      */
     public RandomGraphEditor(boolean cyclicAllowed) {
         this(new EdgeListGraph(), cyclicAllowed);

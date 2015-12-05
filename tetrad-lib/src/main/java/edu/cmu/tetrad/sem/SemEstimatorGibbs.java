@@ -117,13 +117,6 @@ final class SemEstimatorGibbs {
         this.priorCov = new TetradMatrix(sampleCovars);
     }
 
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-//    public static SemEstimatorGibbs serializableInstance() {
-    //       return new SemEstimatorGibbs(null, null);
-    //  }
-
     //==============================PUBLIC METHODS=========================//
 
     /**

@@ -41,8 +41,6 @@ public class InverseMatrixWrapper extends DataWrapper {
 
     /**
      * Splits the given data set by collinear columns.
-     *
-     * @param wrapper
      */
     public InverseMatrixWrapper(DataWrapper wrapper) {
         if (wrapper == null) {

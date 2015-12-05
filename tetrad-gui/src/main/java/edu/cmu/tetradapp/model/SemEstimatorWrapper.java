@@ -295,16 +295,10 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 //        }
     }
 
-    /**
-     * @serial
-     */
     public boolean isMultipleResults() {
         return multipleResults;
     }
 
-    /**
-     * @serial
-     */
     public List<SemEstimator> getMultipleResultList() {
         return multipleResultList;
     }

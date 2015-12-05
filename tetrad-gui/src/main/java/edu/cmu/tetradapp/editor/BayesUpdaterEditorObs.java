@@ -131,33 +131,6 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     /**
      * Constructs a new instanted model editor from a Bayes IM wrapper.
      */
-	/*
-    public BayesUpdaterEditor(RowSummingExactWrapper wrapper) {
-        this((UpdaterWrapper) wrapper);
-    }
-	 */
-
-    /**
-     * Constructs a new instanted model editor from a Bayes IM wrapper.
-     */
-	/*
-    public BayesUpdaterEditor(CptInvariantUpdaterWrapper wrapper) {
-        this((UpdaterWrapper) wrapper);
-    }
-	 */
-
-    /**
-     * Constructs a new instanted model editor from a Bayes IM wrapper.
-     */
-	/*
-    public BayesUpdaterEditor(ApproximateUpdaterWrapper wrapper) {
-        this((UpdaterWrapper) wrapper);
-    }
-	 */
-
-    /**
-     * Constructs a new instanted model editor from a Bayes IM wrapper.
-     */
     public BayesUpdaterEditorObs(IdentifiabilityWrapper wrapper) {
         this((UpdaterWrapper) wrapper);
     }

@@ -556,9 +556,9 @@ public final class DiscreteTetradTest implements TetradTest {
         return -1;
     }
 
-    /*****************************************************************************************************
-     * ESTIMATION METHODS
-     */
+    //*****************************************************************************************************
+    // * ESTIMATION METHODS
+    // */
 
     /**
      * See Olsson (1979) for details.
@@ -605,8 +605,6 @@ public final class DiscreteTetradTest implements TetradTest {
 
     /**
      * Estimate the polychoric correlation of two variables.
-     *
-     * @param indices
      */
 
     private double estimatePolychoric(int indices[]) {

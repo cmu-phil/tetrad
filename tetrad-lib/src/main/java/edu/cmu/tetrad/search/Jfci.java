@@ -166,8 +166,6 @@ public class Jfci implements GraphSearch {
 
     /**
      * Sets the maximum number of adjacencies.
-     *
-     * @param maxAdjacencies
      */
     public void setMaxAdjacencies(int maxAdjacencies) {
         if (maxAdjacencies < 1) {

@@ -51,8 +51,6 @@ public class ScatterPlotAction extends AbstractAction {
     /**
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
      * that its attached to.
-     *
-     * @param editor
      */
     public ScatterPlotAction(DataEditor editor) {
         super("Scatter Plots...");

@@ -29,13 +29,6 @@ import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 
 /**
- * For given a, b (0 <= a < b), returns a point chosen uniformly from [-b, -a] U
- * [a, b].
- *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
- */
-
-/**
  * Wraps a chi square distribution for purposes of drawing random samples.
  * Methods are provided to allow parameters to be manipulated in an interface.
  *
