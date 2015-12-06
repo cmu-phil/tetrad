@@ -38,11 +38,10 @@ import java.util.Set;
 
 
 /**
- * Compares a target workbench with a reference workbench by counting errors of
- * omission and commission.  (for edge presence only, not orientation).
+ * Compares a target workbench with a reference workbench using an edge type
+ * misclassification matrix and an endpoint misclassification matrix.
  *
  * @author Joseph Ramsey
- * @author Erin Korber (added remove latents functionality July 2004)
  */
 public final class Misclassifications implements SessionModel {
     static final long serialVersionUID = 23L;
