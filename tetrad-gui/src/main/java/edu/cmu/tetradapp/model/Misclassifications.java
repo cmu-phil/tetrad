@@ -215,7 +215,6 @@ public final class Misclassifications implements SessionModel {
 
         }
 
-
         // Need to be able to construct this object even if the models are
         // null. Otherwise the interface is annoying.
         if (model2 == null) {
@@ -486,16 +485,6 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-//        Graph vpcpGraph = vcpc.getGraph();
-//        List<Node> vcpcNodes = vcpc.getGraph().getNodes();
-//        Graph cpcGraph = cpc.getGraph();
-//        cpcGraph = DataGraphUtils.replaceNodes(cpcGraph, vpcpGraph.getNodes());
-
-//        Set<Edge> vcpcAdjacent = vcpc.getAdj();
-//        Set<Edge> vcpcApparent = vcpc.getAppNon();
-//        Set<Edge> vcpcDefinite = vcpc.getDefNon();
-
-
         Set<Edge> adjAppNonAdj = new HashSet<Edge>();
         Set<Edge> adjDefNonAdj = new HashSet<Edge>();
         Set<Edge> nonAdjAppNonAdj = new HashSet<Edge>();
@@ -603,16 +592,6 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-//        Graph vpcpGraph = vcpc.getGraph();
-//        List<Node> vcpcNodes = vcpc.getGraph().getNodes();
-//        Graph cpcGraph = cpc.getGraph();
-//        cpcGraph = DataGraphUtils.replaceNodes(cpcGraph, vpcpGraph.getNodes());
-
-//        Set<Edge> vcpcAdjacent = vcpc.getAdj();
-//        Set<Edge> vcpcApparent = vcpc.getAppNon();
-//        Set<Edge> vcpcDefinite = vcpc.getDefNon();
-
-
         Set<Edge> adjAppNonAdj = new HashSet<Edge>();
         Set<Edge> adjDefNonAdj = new HashSet<Edge>();
         Set<Edge> nonAdjAppNonAdj = new HashSet<Edge>();
@@ -718,16 +697,6 @@ public final class Misclassifications implements SessionModel {
         }
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-//        Graph vpcpGraph = vcpc.getGraph();
-//        List<Node> vcpcNodes = vcpc.getGraph().getNodes();
-//        Graph cpcGraph = cpc.getGraph();
-//        cpcGraph = DataGraphUtils.replaceNodes(cpcGraph, vpcpGraph.getNodes());
-
-//        Set<Edge> vcpcAdjacent = vcpc.getAdj();
-//        Set<Edge> vcpcApparent = vcpc.getAppNon();
-//        Set<Edge> vcpcDefinite = vcpc.getDefNon();
-
 
         Set<Edge> adjAppNonAdj = new HashSet<Edge>();
         Set<Edge> adjDefNonAdj = new HashSet<Edge>();
@@ -836,16 +805,6 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-//        Graph vpcpGraph = vcpc.getGraph();
-//        List<Node> vcpcNodes = vcpc.getGraph().getNodes();
-//        Graph cpcGraph = cpc.getGraph();
-//        cpcGraph = DataGraphUtils.replaceNodes(cpcGraph, vpcpGraph.getNodes());
-
-//        Set<Edge> vcpcAdjacent = vcpc.getAdj();
-//        Set<Edge> vcpcApparent = vcpc.getAppNon();
-//        Set<Edge> vcpcDefinite = vcpc.getDefNon();
-
-
         Set<Edge> adjAppNonAdj = new HashSet<Edge>();
         Set<Edge> adjDefNonAdj = new HashSet<Edge>();
         Set<Edge> nonAdjAppNonAdj = new HashSet<Edge>();
@@ -953,15 +912,6 @@ public final class Misclassifications implements SessionModel {
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-//        Graph pcGraph = pc.getGraph();
-//        List<Node> pcNodes = pc.getGraph().getNodes();
-//        Graph cpcGraph = cpc.getGraph();
-//        cpcGraph = DataGraphUtils.replaceNodes(cpcGraph, pcGraph.getNodes());
-//
-//        Set<Edge> pcAdjacent = pc.getAdj();
-//        Set<Edge> pcNonadjacent = pc.getNonAdj();
-
-
         Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(cpcAdjacent, pcNodes);
         Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(cpcNonadjacent, pcNodes);
 
@@ -1042,15 +992,6 @@ public final class Misclassifications implements SessionModel {
         }
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-//        Graph vpcpGraph = vcpc.getGraph();
-//        List<Node> vcpcNodes = vcpc.getGraph().getNodes();
-//        Graph pcGraph = pc.getGraph();
-//        pcGraph = DataGraphUtils.replaceNodes(pcGraph, vcpcNodes);
-
-//        Set<Edge> vcpcAdjacent = vcpc.getAdj();
-//        Set<Edge> vcpcApparent = vcpc.getAppNon();
-//        Set<Edge> vcpcDefinite = vcpc.getDefNon();
 
         Set<Edge> adjAppNonAdj = new HashSet<Edge>();
         Set<Edge> adjDefNonAdj = new HashSet<Edge>();
