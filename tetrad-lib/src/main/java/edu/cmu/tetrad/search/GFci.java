@@ -206,9 +206,9 @@ public final class GFci {
             ges.setLog(false);
             ges.setDepth(getDepth());
             ges.setNumPatternsToStore(0);
-            ges.setFaithfulnessAssumed(true);
+          /*  ges.setFaithfulnessAssumed(true);
             Graph initialGraph = ges.search();
-            ges.setInitialGraph(initialGraph);
+            ges.setInitialGraph(initialGraph);*/
             ges.setFaithfulnessAssumed(false);
             graph = ges.search();
             gesGraph = new EdgeListGraphSingleConnections(graph);

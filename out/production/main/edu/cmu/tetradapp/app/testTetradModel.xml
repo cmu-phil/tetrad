@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE model SYSTEM "model.dtd">
+<model>
+    <var name="Education">
+        <value>High School</value>
+        <value>College</value>
+    </var>
+    <var name="Happiness">
+        <value>Low</value>
+        <value>High</value>
+    </var>
+    <var name="Income">
+        <value>Low</value>
+        <value>Medium</value>
+        <value>High</value>
+    </var>
+    <edge from="Education" to="Happiness"/>
+    <edge from="Education" to="Income"/>
+    <edge from="Income" to="Happiness"/>
+    <params>
+        <param var="Education">
+            <prob value="High School" p="0.7"/>
+            <prob value="College" p="0.3"/>
+        </param>
+        <param var="Happiness">
+            <parent var="Education" value="High School"/>
+            <parent var="Income" value="Low"/>
+            <prob value="Low" p="0.6"/>
+            <prob value="High" p="0.4"/>
+        </param>
+        <param var="Happiness">
+            <parent var="Education" value="High School"/>
+            <parent var="Income" value="Medium"/>
+            <prob value="Low" p="0.5"/>
+            <prob value="High" p="0.5"/>
+        </param>
+        <param var="Happiness">
+            <parent var="Education" value="High School"/>
+            <parent var="Income" value="High"/>
+            <prob value="Low" p="0.4"/>
+            <prob value="High" p="0.6"/>
+        </param>
+        <param var="Happiness">
+            <parent var="Education" value="College"/>
+            <parent var="Income" value="Low"/>
+            <prob value="Low" p="0.5"/>
+            <prob value="High" p="0.5"/>
+        </param>
+        <param var="Happiness">
+            <parent var="Education" value="College"/>
+            <parent var="Income" value="Medium"/>
+            <prob value="Low" p="0.4"/>
+            <prob value="High" p="0.6"/>
+        </param>
+        <param var="Happiness">
+            <parent var="Education" value="College"/>
+            <parent var="Income" value="High"/>
+            <prob value="Low" p="0.3"/>
+            <prob value="High" p="0.7"/>
+        </param>
+        <param var="Income">
+            <parent var="Education" value="High School"/>
+            <prob value="Low" p="0.6"/>
+            <prob value="Medium" p="0.3"/>
+            <prob value="High" p="0.1"/>
+        </param>
+        <param var="Income">
+            <parent var="Education" value="College"/>
+            <prob value="Low" p="0.2"/>
+            <prob value="Medium" p="0.6"/>
+            <prob value="High" p="0.2"/>
+        </param>
+    </params>
+</model>

@@ -1,0 +1,38 @@
+IMPORTANT!
+
+These files in this directory are used by Tetrad in the process of publishing
+new versions:
+
+copyright
+license
+version
+
+The 'copyright' file contains a message that will appear to users when they
+start Tetrad. The 'license' file contains the text of the GNU GPL license,
+as posted at http://www.gnu.org/licenses/gpl.txt.
+
+The 'version' file contains the version number of the most recently
+published version of Tetrad. It is updated automatically each time the Ant
+upload task is executed.
+
+The 'version' file normally contains a string of this form as
+its first line:
+
+    a.b.c
+
+where a is the major version, b the minor version, c the
+minor subversion. For example:
+
+    5.3.0
+
+No other string types are permitted; anything else will cause
+the lifecycle package goal to fail.
+
+This currently needs to be coordinated manually with the POM file.
+Might have to give this up.
+
+The configuration file that Tetrad uses is configuration.xml. The file
+configuration-post contains the version that's used for posting;
+configuration-play contains experimental items. Trying to figure out
+how to get Tetrad to automatically choose between the latter using
+Maven but haven't figured it out yet.

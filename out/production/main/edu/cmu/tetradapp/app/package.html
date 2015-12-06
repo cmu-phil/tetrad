@@ -1,0 +1,45 @@
+<html>
+<head>
+    <title>edu.cmu.tetrad.app</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p>Implements the main user interface of the Tetrad application. The
+    main user interface is a desktop that contains session workbenches
+    driven by mouse gestures and menu commands. The form of the interface
+    is described in the manual (please see).</p>
+
+<p>A session workbench an interface presentation of a Session
+    model. Please see the documentation for Session for further
+    description. The session workbench allows various nodes to be
+    constructed on the workbench that can be associated with various
+    underlying models. A graphical stucture can then be defined over the
+    nodes consistent with the parent objects needed to construct each
+    model. The user sets these parent relationships by drawing edges
+    between nodes in the workbench. The workbench provides a facility for
+    constructing models in the various nodes, launching editors for those
+    models, storing parameter objects for the models, launching parameter
+    editors, and running automatic simulated sessions over the nodes.</p>
+
+<p>Although the node types for a session of this type are in principle
+    arbitrary, for the Tetrad application they are fixed to be the
+    following:</p>
+
+<ul>
+    <li>Graph
+    <li>Parametric Model (PM)
+    <li>Instantiated Model (IM)
+    <li>Data
+    <li>Estimator
+    <li>Search
+    <li>Graph Comparison
+</ul>
+
+<p>The toolbar for the workbench contains a button for each of these
+    types, plus two additional buttons, one for selecting and moving nodes
+    and the other for adding edges.</p>
+
+</body>
+</html>
