@@ -53,34 +53,33 @@ public final class Misclassifications implements SessionModel {
     private boolean useSFcpcOutputs = false;
     private boolean useFcpcOutputs = false;
 
-    Set<Edge> vcpcAdjacent;
-    Set<Edge> vcpcApparent;
-    Set<Edge> vcpcDefinite;
-    List<Node> vcpcNodes;
+    private Set<Edge> vcpcAdjacent;
+    private Set<Edge> vcpcApparent;
+    private Set<Edge> vcpcDefinite;
+    private List<Node> vcpcNodes;
 
-    Set<Edge> fvcpcAdjacent;
-    Set<Edge> fvcpcApparent;
-    Set<Edge> fvcpcDefinite;
-    List<Node> fvcpcNodes;
+    private Set<Edge> fvcpcAdjacent;
+    private Set<Edge> fvcpcApparent;
+    private Set<Edge> fvcpcDefinite;
+    private List<Node> fvcpcNodes;
 
-    Set<Edge> sfVcpcAdjacent;
-    Set<Edge> sfVcpcApparent;
-    Set<Edge> sfVcpcDefinite;
-    List<Node> sfVcpcNodes;
+    private Set<Edge> sfVcpcAdjacent;
+    private Set<Edge> sfVcpcApparent;
+    private Set<Edge> sfVcpcDefinite;
+    private List<Node> sfVcpcNodes;
 
-    Set<Edge> sVcpcAdjacent;
-    Set<Edge> sVcpcApparent;
-    Set<Edge> sVcpcDefinite;
-    List<Node> sVcpcNodes;
+    private Set<Edge> sVcpcAdjacent;
+    private Set<Edge> sVcpcApparent;
+    private Set<Edge> sVcpcDefinite;
+    private List<Node> sVcpcNodes;
 
-    Set<Edge> pcAdjacent;
-    Set<Edge> pcNonadjacent;
-    List<Node> pcNodes;
+    private Set<Edge> pcAdjacent;
+    private Set<Edge> pcNonadjacent;
+    private List<Node> pcNodes;
 
-    Set<Edge> cpcAdjacent;
-    Set<Edge> cpcNonadjacent;
-    List<Node> cpcNodes;
-
+    private Set<Edge> cpcAdjacent;
+    private Set<Edge> cpcNonadjacent;
+    private List<Node> cpcNodes;
 
     /**
      * @serial Can be null.
