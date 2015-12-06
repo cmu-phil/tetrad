@@ -28,8 +28,6 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Creates a data set in which missing values in each column are filled using
@@ -41,13 +39,6 @@ public final class ModeInterpolator implements DataFilter {
 
 
     public DataSet filter(DataSet dataSet) {
-        List<Node> variables = new LinkedList<Node>();
-
-        for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            Node variable = dataSet.getVariable(i);
-            variables.add(variable);
-        }
-
         DataSet newDataSet = dataSet.copy();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
@@ -58,8 +49,7 @@ public final class ModeInterpolator implements DataFilter {
                 int[] categoryCounts = new int[numCategories];
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    if (dataSet.getInt(i, j) == DiscreteVariable.MISSING_VALUE)
-                    {
+                    if (dataSet.getInt(i, j) == DiscreteVariable.MISSING_VALUE) {
                         continue;
                     }
 
@@ -77,16 +67,14 @@ public final class ModeInterpolator implements DataFilter {
                 }
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    if (dataSet.getInt(i, j) == DiscreteVariable.MISSING_VALUE)
-                    {
+                    if (dataSet.getInt(i, j) == DiscreteVariable.MISSING_VALUE) {
                         newDataSet.setInt(i, j, mode);
                     }
 //                    else {
 //                        newDataSet.setInt(i, j, dataSet.getInt(i, j));
 //                    }
                 }
-            }
-            else if (dataSet.getVariable(j) instanceof ContinuousVariable) {
+            } else if (dataSet.getVariable(j) instanceof ContinuousVariable) {
                 double[] data = new double[dataSet.getNumRows()];
                 int k = -1;
 

@@ -58,8 +58,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     /**
      * Constructs a new directed acyclic graph (DAG).
-     *
-     * @param knowledge
      */
     public KnowledgeGraph(IKnowledge knowledge) {
         setGraphConstraintsChecked(false);

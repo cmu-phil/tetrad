@@ -122,11 +122,6 @@ public final class BayesUpdaterClassifier
      */
     private int totalUsableCases;
 
-    /**
-     * @serial
-     */
-    private int targetCategory;
-
     //===========================CONSTRUCTORS==========================//
 
     /*
@@ -179,7 +174,6 @@ public final class BayesUpdaterClassifier
         }
 
         this.targetVariable = targetVariable;
-        this.targetCategory = targetCategory;
     }
 
     /**
@@ -344,7 +338,7 @@ public final class BayesUpdaterClassifier
      * categories of the target variable.
      *
      * @return an int[][] array containing the coefs, or null if the target
-     *         variable is not in the test data.
+     * variable is not in the test data.
      */
     public int[][] crossTabulation() {
         int[] estimatedValues = classify();
@@ -401,7 +395,7 @@ public final class BayesUpdaterClassifier
 
     /**
      * @return the percentage of cases in which the target variable is correctly
-     *         classified.
+     * classified.
      */
     public double getPercentCorrect() {
         if (Double.isNaN(percentCorrect)) {

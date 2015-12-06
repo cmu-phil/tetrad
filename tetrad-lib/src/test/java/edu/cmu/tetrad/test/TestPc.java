@@ -418,7 +418,7 @@ public class TestPc extends TestCase {
 //    }
 
     public void testPcStable2() {
-        Graph graph = GraphUtils.randomGraph(50, 50, false);
+        Graph graph = GraphUtils.randomGraph(10, 10, false);
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(200, false);
@@ -430,13 +430,13 @@ public class TestPc extends TestCase {
         pc.setVerbose(false);
         Graph pattern = pc.search();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1; i++) {
             DataSet data2 = DataUtils.reorderColumns(data);
             IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
             PcStable pc2 = new PcStable(test2);
             pc2.setVerbose(false);
             Graph pattern2 = pc2.search();
-            System.out.println(pattern.equals(pattern2));
+            assertTrue(pattern.equals(pattern2));
         }
     }
 

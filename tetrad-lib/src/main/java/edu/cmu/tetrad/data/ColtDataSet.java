@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.data;
 
-import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -45,25 +44,25 @@ import java.util.*;
  * consider making a copy of it first, using the TetradMatrix copy() method.
  * <p/>                                                            n
  * The tetradMatrix set may be given a name; this name is not used internally.
- * <p/>
+ * <p>
  * The tetradMatrix set has a list of variables associated with it, as described above.
  * This list is coordinated with the stored tetradMatrix, in that tetradMatrix for the i'th
  * variable will be in the i'th column.
- * <p/>
+ * <p>
  * A subset of variables in the tetradMatrix set may be designated as selected. This
  * selection set is stored with the tetradMatrix set and may be manipulated using the
  * <code>select</code> and <code>deselect</code> methods.
- * <p/>
+ * <p>
  * A multiplicity m_i may be associated with each case c_i in the dataset, which
  * is interpreted to mean that that c_i occurs m_i times in the dataset.
- * <p/>
+ * <p>
  * Knowledge may be associated with the tetradMatrix set, using the
  * <code>setKnowledge</code> method. This knowledge is not used internally to
  * the tetradMatrix set, but it may be retrieved by algorithms and used.
- * <p/>
+ * <p>
  * This tetradMatrix set replaces an earlier Minitab-style DataSet class. The reasons
  * for replacement are as follows.
- * <p/>
+ * <p>
  * <ul> <li>COLT marices are optimized for double 2D matrix calculations in ways
  * that Java-style double[][] matrices are not. <li>The COLT library comes with
  * a wide range of linear algebra library methods that are better tested and
@@ -106,12 +105,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      *
      * @serial
      */
-    private List<Node> variables = new ArrayList<Node>();
-
-    /**
-     * @deprecated
-     */
-    private DoubleMatrix2D data;
+    private List<Node> variables = new ArrayList<>();
 
     /**
      * The container storing the data. Rows are cases; columns are variables.
@@ -127,7 +121,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      *
      * @serial
      */
-    private Set<Node> selection = new HashSet<Node>();
+    private Set<Node> selection = new HashSet<>();
 
     /**
      * Case ID's. These are strings associated with some or all of the cases of
@@ -135,7 +129,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      *
      * @serial
      */
-    private Map<Integer, String> caseIds = new HashMap<Integer, String>();
+    private final Map<Integer, String> caseIds = new HashMap<>();
 
     /**
      * A map from cases to case multipliers. If a case is not in the domain of
@@ -145,7 +139,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      *
      * @serial
      */
-    private Map<Integer, Integer> multipliers = new HashMap<Integer, Integer>();
+    private Map<Integer, Integer> multipliers = new HashMap<>();
 
     /**
      * The knowledge associated with this tetradMatrix.
@@ -153,15 +147,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * @serial
      */
     private IKnowledge knowledge = new Knowledge2();
-
-    /**
-     * True iff the column should adjust the discrete variable to accomodate new
-     * categories added, false if new categories should be rejected.
-     *
-     * @serial
-     * @deprecated Replaced by corresponding field on DiscreteVariable.
-     */
-    private boolean newCategoriesAccommodated = true;
 
     /**
      * The number formatter used for printing out continuous values.
@@ -187,7 +172,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      */
     public ColtDataSet(int rows, List<Node> variables) {
         tetradMatrix = new TetradMatrix(rows, variables.size());
-        this.variables = new LinkedList<Node>(variables);
+        this.variables = new LinkedList<>(variables);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < variables.size(); j++) {
@@ -195,7 +180,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             }
         }
 
-        this.multipliers = new HashMap<Integer, Integer>();
+        this.multipliers = new HashMap<>();
         for (int i = 0; i < rows; i++) {
             multipliers.put(i, 1);
         }
@@ -204,9 +189,9 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     /**
      * The data should have one row per case.
      */
-    public ColtDataSet(int rows, List<Node> variables, double[][] data) {
+    private ColtDataSet(int rows, List<Node> variables, double[][] data) {
         tetradMatrix = new TetradMatrix(rows, variables.size());
-        this.variables = new LinkedList<Node>(variables);
+        this.variables = new LinkedList<>(variables);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < variables.size(); j++) {
@@ -214,7 +199,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             }
         }
 
-        this.multipliers = new HashMap<Integer, Integer>();
+        this.multipliers = new HashMap<>();
         for (int i = 0; i < rows; i++) {
             multipliers.put(i, 1);
         }
@@ -232,12 +217,11 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      */
     public ColtDataSet(ColtDataSet dataSet) {
         name = dataSet.name;
-        variables = new LinkedList<Node>(dataSet.variables);
+        variables = new LinkedList<>(dataSet.variables);
         tetradMatrix = dataSet.tetradMatrix.copy();
-        selection = new HashSet<Node>(dataSet.selection);
-        multipliers = new HashMap<Integer, Integer>(dataSet.multipliers);
+        selection = new HashSet<>(dataSet.selection);
+        multipliers = new HashMap<>(dataSet.multipliers);
         knowledge = dataSet.knowledge.copy();
-        newCategoriesAccommodated = dataSet.newCategoriesAccommodated;
         this.nf = dataSet.nf;
     }
 
@@ -261,7 +245,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             throw new IllegalArgumentException("# vars = " + variables.size() + " but # columns = " + data[0].length);
         }
 
-        List<Node> convertedVars = new ArrayList<Node>();
+        List<Node> convertedVars = new ArrayList<>();
 
         for (Node node : variables) {
             if (!(node instanceof ContinuousVariable)) {
@@ -274,7 +258,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             }
         }
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (Node variable : convertedVars) {
             nodes.add(variable);
@@ -286,11 +270,8 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             }
         }
 
-        ColtDataSet dataSet = new ColtDataSet(data.length, nodes, data);
-//
-//        BoxDataSet dataSet = new BoxDataSet(new DoubleDataBox(data), nodes);
-
-        return dataSet;
+        return new ColtDataSet(data.length, nodes, data);
+//       return new BoxDataSet(new DoubleDataBox(data), nodes);
     }
 
     public static ColtDataSet makeData(List<Node> variables,
@@ -299,7 +280,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             throw new IllegalArgumentException();
         }
 
-        List<Node> convertedVars = new ArrayList<Node>(variables);
+        List<Node> convertedVars = new ArrayList<>(variables);
 
 //        for (Node node : variables) {
 //            if (!(node instanceof ContinuousVariable)) {
@@ -310,7 +291,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 //            }
 //        }
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (Node variable : convertedVars) {
             nodes.add(variable);
@@ -328,38 +309,38 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         return dataSet;
     }
 
-    public DataSet concatenateDataRowwise(ColtDataSet dataSet1, ColtDataSet dataSet2) {
-        if (!(dataSet1.variables.equals(dataSet2.variables))) {
-            throw new IllegalArgumentException();
-        }
-
-        int rows1 = dataSet1.getNumRows();
-        int rows2 = dataSet2.getNumRows();
-        int cols = dataSet1.getNumColumns();
-
-        ColtDataSet concat = new ColtDataSet(rows1 + rows2, dataSet1.variables);
-
-        TetradMatrix concatMatrix = concat.tetradMatrix;
-        TetradMatrix matrix1 = dataSet1.tetradMatrix;
-        TetradMatrix matrix2 = dataSet2.tetradMatrix;
-
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows1; j++) {
-                concatMatrix.set(j, i, matrix1.get(j, i));
-            }
-            for (int j = 0; j < rows2; j++) {
-                concatMatrix.set(j + rows1, i, matrix2.get(j, i));
-            }
-        }
-
-        return concat;
-    }
+//    public DataSet concatenateDataRowwise(ColtDataSet dataSet1, ColtDataSet dataSet2) {
+//        if (!(dataSet1.variables.equals(dataSet2.variables))) {
+//            throw new IllegalArgumentException();
+//        }
+//
+//        int rows1 = dataSet1.getNumRows();
+//        int rows2 = dataSet2.getNumRows();
+//        int cols = dataSet1.getNumColumns();
+//
+//        ColtDataSet concat = new ColtDataSet(rows1 + rows2, dataSet1.variables);
+//
+//        TetradMatrix concatMatrix = concat.tetradMatrix;
+//        TetradMatrix matrix1 = dataSet1.tetradMatrix;
+//        TetradMatrix matrix2 = dataSet2.tetradMatrix;
+//
+//        for (int i = 0; i < cols; i++) {
+//            for (int j = 0; j < rows1; j++) {
+//                concatMatrix.set(j, i, matrix1.get(j, i));
+//            }
+//            for (int j = 0; j < rows2; j++) {
+//                concatMatrix.set(j + rows1, i, matrix2.get(j, i));
+//            }
+//        }
+//
+//        return concat;
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static DataSet serializableInstance() {
-        List<Node> variables = new ArrayList<Node>();
+        List<Node> variables = new ArrayList<>();
         variables.add(new ContinuousVariable("X1"));
         ColtDataSet data = new ColtDataSet(2, variables);
         data.setDouble(0, 0, 1.0);
@@ -479,13 +460,12 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     }
 
     /**
+     * @param row The index of the case.
+     * @param col The index of the variable.
      * @return the value at the given row and column as an Object. The type
      * returned is deliberately vague, allowing for variables of any type.
      * Primitives will be returned as corresponding wrapping objects (for
      * example, doubles as Doubles).
-     *
-     * @param row The index of the case.
-     * @param col The index of the variable.
      */
     public final Object getObject(int row, int col) {
         Object variable = getVariable(col);
@@ -507,11 +487,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     }
 
     /**
-     * @return the value at the given row and column as an Object. The type
-     * returned is deliberately vague, allowing for variables of any type.
-     * Primitives will be returned as corresponding wrapping objects (for
-     * example, doubles as Doubles).
-     *
      * @param row The index of the case.
      * @param col The index of the variable.
      */
@@ -553,7 +528,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * @return the set of currently selected variables.
      */
     public final Set<Node> getSelectedVariables() {
-        return new HashSet<Node>(selection);
+        return new HashSet<>(selection);
     }
 
     /**
@@ -651,7 +626,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         int col = variables.indexOf(_from);
 
         List<String> oldCategories = _from.getCategories();
-        List newCategories = _to.getCategories();
+        List<String> newCategories = _to.getCategories();
 
         int[] indexArray = new int[oldCategories.size()];
 
@@ -700,7 +675,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * of their columns.
      */
     public final List<Node> getVariables() {
-        return new LinkedList<Node>(variables);
+        return new LinkedList<>(variables);
     }
 
 
@@ -729,7 +704,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      */
     public final List<String> getVariableNames() {
         List<Node> vars = getVariables();
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 
         for (Node variable : vars) {
             String name = variable.getName();
@@ -860,7 +835,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         vars = GraphUtils.replaceNodes(vars, getVariables());
 
         if (!(getVariables().containsAll(vars))) {
-            List<Node> missingVars = new ArrayList<Node>(vars);
+            List<Node> missingVars = new ArrayList<>(vars);
             missingVars.removeAll(getVariables());
 
             throw new IllegalArgumentException(
@@ -886,8 +861,8 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 
 //        _dataSet.name = name + "_copy";
         _dataSet.variables = vars;
-        _dataSet.selection = new HashSet<Node>();
-        _dataSet.multipliers = new HashMap<Integer, Integer>(multipliers);
+        _dataSet.selection = new HashSet<>();
+        _dataSet.multipliers = new HashMap<>(multipliers);
 
         // Might have to delete some knowledge.
         _dataSet.knowledge = knowledge.copy();
@@ -1030,7 +1005,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         return cov;
 
 
-
 //        return Statistic.correlation(Statistic.covariance(tetradMatrix));
     }
 
@@ -1102,10 +1076,9 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * separated by '\n', tokens in the line by whatever character is set in the
      * <code>setOutputDelimiter()<code> method. The list of variables is printed
      * first, followed by one line for each case.
-     * <p/>
+     * <p>
      * This method should probably not be used for saving to files. If that's
      * your goal, use the DataSavers class instead.
-     *
      * @see #setOutputDelimiter(Character)
      * @see DataWriter
      */
@@ -1132,7 +1105,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         for (int i = 0; i < getNumRows(); i++) {
 
             if (isLineNumbersWritten()) {
-                buf.append((i + 1) + ".\t");
+                buf.append(i + 1).append(".\t");
             }
 
             for (int j = 0; j < getNumColumns(); j++) {
@@ -1160,7 +1133,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
                         if (category.indexOf((int) outputDelimiter) == -1) {
                             buf.append(category);
                         } else {
-                            buf.append("\"" + category + "\"");
+                            buf.append("\"").append(category).append("\"");
                         }
                     }
 
@@ -1192,12 +1165,11 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * will be represented by ints cast to doubles. Rows in this matrix are
      * cases, and columns are variables. The list of variable, in the order in
      * which they occur in the matrix, is given by getVariables().
-     * <p/>
+     * <p>
      * If isMultipliersCollapsed() returns false, multipliers in the dataset are
      * first expanded before returning the matrix, so the number of rows in the
      * returned matrix may not be the same as the number of rows in this
      * dataset.
-     *
      * @throws IllegalStateException if this is not a continuous tetradMatrix set.
      * @see #getVariables
      * @see #isMulipliersCollapsed()
@@ -1213,9 +1185,9 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         }
     }
 
-    public final TetradMatrix getDoubleDataNoCopy() {
-        return tetradMatrix;
-    }
+//    public final TetradMatrix getDoubleDataNoCopy() {
+//        return tetradMatrix;
+//    }
 
     /**
      * @return a new tetradMatrix set in which the the column at indices[i] is placed at
@@ -1223,7 +1195,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      */
     public final DataSet subsetColumns(int indices[]) {
         List<Node> variables = getVariables();
-        List<Node> _variables = new LinkedList<Node>();
+        List<Node> _variables = new LinkedList<>();
 
         for (int index : indices) {
             if (index != -1) {
@@ -1245,8 +1217,8 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 //        _dataSet.name = name + "_copy";
         _dataSet.name = name;
         _dataSet.variables = _variables;
-        _dataSet.selection = new HashSet<Node>();
-        _dataSet.multipliers = new HashMap<Integer, Integer>(multipliers);
+        _dataSet.selection = new HashSet<>();
+        _dataSet.multipliers = new HashMap<>(multipliers);
 
         // Might have to delete some knowledge.
         _dataSet.knowledge = knowledge.copy();
@@ -1317,7 +1289,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             }
         }
 
-        List<Node> retainedVars = new LinkedList<Node>();
+        List<Node> retainedVars = new LinkedList<>();
 
         for (int retainedCol : retainedCols) {
             retainedVars.add(variables.get(retainedCol));
@@ -1325,8 +1297,8 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 
         tetradMatrix = tetradMatrix.getSelection(rows, retainedCols).copy();
         variables = retainedVars;
-        selection = new HashSet<Node>();
-        multipliers = new HashMap<Integer, Integer>(multipliers);
+        selection = new HashSet<>();
+        multipliers = new HashMap<>(multipliers);
         knowledge = knowledge.copy(); // Might have to delete some knowledge.
     }
 
@@ -1352,8 +1324,8 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         }
 
         tetradMatrix = tetradMatrix.getSelection(retainedRows, cols).copy();
-        selection = new HashSet<Node>();
-        multipliers = new HashMap<Integer, Integer>(multipliers);
+        selection = new HashSet<>();
+        multipliers = new HashMap<>(multipliers);
         knowledge = knowledge.copy(); // Might have to delete some knowledge.
     }
 
@@ -1450,26 +1422,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         return new ColtDataSet(getNumRows(), variables);
     }
 
-    /**
-     * @return true iff this variable is set to accomodate new categories
-     * encountered.
-     *
-     * @deprecated This is set in DiscreteVariable now.
-     */
-    public boolean isNewCategoriesAccommodated() {
-        return this.newCategoriesAccommodated;
-    }
-
-    /**
-     * Sets whether this variable should accomodate new categories encountered.
-     *
-     * @deprecated This is set in DiscreteVariable now.
-     */
-    public final void setNewCategoriesAccommodated(
-            boolean newCategoriesAccommodated) {
-        this.newCategoriesAccommodated = newCategoriesAccommodated;
-    }
-
     public void setNumberFormat(NumberFormat nf) {
         if (nf == null) {
             throw new NullPointerException();
@@ -1492,7 +1444,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * Randomly permutes the rows of the dataset.
      */
     public void permuteRows() {
-        List<Integer> permutation = new ArrayList<Integer>();
+        List<Integer> permutation = new ArrayList<>();
 
         for (int i = 0; i < getNumRows(); i++) {
             permutation.add(i);
@@ -1570,14 +1522,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.data != null) {
-            this.tetradMatrix = new TetradMatrix(this.data.toArray());
-        }
-
-//        if (this.nf == null) {
-//            this.nf = new DecimalFormat("0");
-//        }
-
     }
 
     /**
@@ -1585,7 +1529,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      */
     private Set<Node> getSelection() {
         if (selection == null) {
-            selection = new HashSet<Node>();
+            selection = new HashSet<>();
         }
         return selection;
     }
@@ -1708,7 +1652,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         List<String> categories = variable.getCategories();
 
         if (!categories.contains(category)) {
-            List<String> newCategories = new LinkedList<String>(categories);
+            List<String> newCategories = new LinkedList<>(categories);
             newCategories.add(category);
             DiscreteVariable newVariable =
                     new DiscreteVariable(variable.getName(), newCategories);
@@ -1742,8 +1686,8 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     private void adjustCategories(DiscreteVariable variable,
                                   int numCategories) {
         List<String> categories =
-                new LinkedList<String>(variable.getCategories());
-        List<String> newCategories = new LinkedList<String>(categories);
+                new LinkedList<>(variable.getCategories());
+        List<String> newCategories = new LinkedList<>(categories);
 
         if (categories.size() > numCategories) {
             for (int i = variable.getCategories().size() - 1;
@@ -1771,7 +1715,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      * @return the number format, which by default is the one at
      * <code>NumberFormatUtil.getInstance().getNumberFormat()</code>, but can be
      * set by the user if desired.
-     *
      * @see #setNumberFormat(java.text.NumberFormat)
      */
     public NumberFormat getNumberFormat() {
@@ -1783,7 +1726,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 //        return new DecimalFormat("0");
     }
 
-    public boolean isLineNumbersWritten() {
+    private boolean isLineNumbersWritten() {
         return lineNumbersWritten;
     }
 

@@ -113,7 +113,7 @@ public class SplashScreen {
             bar.setBorderPainted(false);
             b.add(bar);
 
-            /** Center the WINDOW */
+            /* Center the WINDOW */
             pack();
 
             Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();

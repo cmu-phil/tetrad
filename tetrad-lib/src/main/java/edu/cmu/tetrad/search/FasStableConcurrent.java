@@ -380,17 +380,17 @@ public class FasStableConcurrent implements IFas {
         return max;
     }
 
-    private boolean freeDegreeGreaterThanDepth(Map<Node, Set<Node>> adjacencies, int depth) {
-        for (Node x : adjacencies.keySet()) {
-            Set<Node> opposites = adjacencies.get(x);
-
-            if (opposites.size() - 1 > depth) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+//    private boolean freeDegreeGreaterThanDepth(Map<Node, Set<Node>> adjacencies, int depth) {
+//        for (Node x : adjacencies.keySet()) {
+//            Set<Node> opposites = adjacencies.get(x);
+//
+//            if (opposites.size() - 1 > depth) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
 
     private boolean searchAtDepth(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies,
                                   final int depth) {

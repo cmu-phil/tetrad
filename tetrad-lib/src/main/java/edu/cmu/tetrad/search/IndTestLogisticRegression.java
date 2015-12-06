@@ -289,7 +289,6 @@ public class IndTestLogisticRegression implements IndependenceTest {
 
     /**
      * @return the significance level of the independence test.
-     *
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {

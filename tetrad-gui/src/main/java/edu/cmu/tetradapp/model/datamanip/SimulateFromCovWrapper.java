@@ -35,8 +35,6 @@ public class SimulateFromCovWrapper extends DataWrapper {
 
     /**
      * Splits the given data set by collinear columns.
-     *
-     * @param wrapper
      */
     public SimulateFromCovWrapper(DataWrapper wrapper) {
         if (wrapper == null) {

@@ -65,7 +65,7 @@ public class TestDataLoadersRoundtrip extends TestCase {
             SemPm semPm1 = new SemPm(randomGraph);
             SemIm semIm1 = new SemIm(semPm1);
             DataSet dataSet = semIm1.simulateData(10, false);
-            System.out.println(dataSet);
+//            System.out.println(dataSet);
 
             FileWriter fileWriter = new FileWriter("target/test_data/roundtrip.dat");
             Writer writer = new PrintWriter(fileWriter);
@@ -79,8 +79,8 @@ public class TestDataLoadersRoundtrip extends TestCase {
             reader.setDelimiter(DelimiterType.COMMA);
             DataSet _dataSet = reader.parseTabular(file);
 
-            System.out.println(dataSet);
-            System.out.println(_dataSet);
+//            System.out.println(dataSet);
+//            System.out.println(_dataSet);
             assertTrue(dataSet.equals(_dataSet));
         }
         catch (IOException e) {
@@ -91,14 +91,14 @@ public class TestDataLoadersRoundtrip extends TestCase {
 
     public void testDiscreteRoundtrip() {
         try {
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < 1; i++) {
 
                 Graph randomGraph = new Dag(GraphUtils.randomGraph(5, 8, false));
                 Dag dag = new Dag(randomGraph);
                 BayesPm bayesPm1 = new BayesPm(dag);
                 MlBayesIm bayesIm1 = new MlBayesIm(bayesPm1, MlBayesIm.RANDOM);
                 DataSet dataSet = bayesIm1.simulateData(10, false);
-                System.out.println(dataSet);
+//                System.out.println(dataSet);
 
                 new File("target/test_data").mkdir();
 
@@ -114,7 +114,7 @@ public class TestDataLoadersRoundtrip extends TestCase {
                 reader.setKnownVariables(dataSet.getVariables());
                 DataSet _dataSet = reader.parseTabular(file);
 
-                System.out.println(_dataSet);
+//                System.out.println(_dataSet);
                 assertTrue(dataSet.equals(_dataSet));
             }
         }

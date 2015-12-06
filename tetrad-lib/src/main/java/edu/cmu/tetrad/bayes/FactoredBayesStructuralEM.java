@@ -29,7 +29,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Implements the procedure Factored-Bayesian-SEM found on page 6 of "The
@@ -65,12 +67,10 @@ public final class FactoredBayesStructuralEM {
 
     private final int[] ncategories;
 
-    private double resultScore = -1;
-    private Graph resultGraph = new EdgeListGraph();
+//    private double resultScore = -1;
+//    private Graph resultGraph = new EdgeListGraph();
 
-    private int timeout = -1;
-    private double start = -1;
-    private int totaliterations = 0;
+    //    private int totaliterations = 0;
 
     public FactoredBayesStructuralEM(DataSet dataSet,
                                      BayesPm bayesPmM0) {
@@ -88,174 +88,6 @@ public final class FactoredBayesStructuralEM {
                     ((DiscreteVariable) datasetVars.get(i)).getNumCategories();
         }
 
-    }
-
-    //    /**
-    //     * This method is obsolete and is an early development version.
-    //     *
-    //     * @return a Bayes PM containing the graph of the highest score model
-    //     */
-    //    public BayesPm iterate() {
-    //
-    //        //boolean convergence = false;           //vestige
-    //
-    //        BayesPm bayesPmMnplus1 = bayesPmM0;
-    //        //Graph graphPmMnplus1 = bayesPmMnplus1.getGraph();
-    //
-    //        //BayesIm bayesImMn = null;             //vestige
-    //        BayesPm bayesPmMn = null;
-    //        double oldBestScore = 0.0;
-    //        int iteration = 0;
-    //
-    //        //Loop for n = 0,1,... until convergence
-    //        while (!bayesPmMnplus1.equals(bayesPmMn)) {
-    //            iteration++;
-    //
-    //            bayesPmMn = bayesPmMnplus1;
-    //            System.out.println("In Factored Bayes Struct EM Iteration number " + iteration);
-    //
-    //            //Compute the MAP parameters for Mn given o.
-    //            //EmBayesEstimator emBayesEst = new EmBayesEstimator(bayesPmMn, dataSet);
-    //            //bayesImMn = emBayesEst.maximization(0.0001);
-    //
-    //            //Perform search over models...
-    //            List models = ModelGenerator.generate(bayesPmMn.getGraph());
-    //
-    //            //double bestScore = 0.0;
-    //            //Initialize bestScore to the score of bayesPmMn
-    //            //(whose graph is varied in the for loop).
-    //            BdeMetric bdeMetricMn = new BdeMetric(dataSet, bayesPmMn);
-    //
-    //            double bestScore = bdeMetricMn.scoreLnGam();
-    //
-    //            for (Iterator itm = models.iterator(); itm.hasNext();) {
-    //                Graph graph = (Graph) itm.next();
-    //                Dag dag = new Dag(graph);
-    //
-    //                BayesPm bayesPmTest = new BayesPm(dag);
-    //
-    //                //Having instantiated the BayesPm, set the number of categories correctly.
-    //                for (int i = 0; i < dataSet.getVariables().size(); i++) {
-    //                    String varName = (String) dataSet.getVariableNames().get(i);
-    //                    Node node = dag.getNode(varName);
-    //                    bayesPmTest.setNumSplits(node, ncategories[i]);
-    //                }
-    //
-    //
-    //                BdeMetric bdeMetric = new BdeMetric(dataSet, bayesPmTest);
-    //
-    //                double score = bdeMetric.scoreLnGam();
-    //
-    //                System.out.println("For the model with graph \n" + dag);
-    //                System.out.println("Score = " + score);
-    //
-    //                if (score <= bestScore) continue;  //This is not better than the best to date.
-    //                bestScore = score;
-    //                //oldBestScore = bestScore;
-    //
-    //                //Let M sub n+1 be the model with the highest score amonth those encountered
-    //                //during the search.
-    //                bayesPmMnplus1 = bayesPmTest;
-    //            }
-    //
-    //            System.out.println("bestScore, oldBestScore " + bestScore + " " + oldBestScore);
-    //
-    //            oldBestScore = bestScore;
-    //        }
-    //
-    //
-    //        //Returns the model (a BayesPm) with the best score.
-    //        return bayesPmMn;
-    //    }
-
-    //    /**
-    //     * This method uses BdeMetricCache instead of BdeMetric.  That is a score is computed
-    //     * per factor and then stored.  It can be accessed if it occurs during evaluating
-    //     * a different model.  This method is obsolete and has been replaced by iterate2()
-    //     * (below) since it does not deal with missing data nor latent variables.
-    //     */
-    //    public BayesPm iterate1() {
-    //
-    //        //boolean convergence = false;        //Vestige
-    //        BdeMetricCache bdeMetricCache = new BdeMetricCache(dataSet, bayesPmM0);
-    //
-    //        BayesPm bayesPmMnplus1 = bayesPmM0;
-    //        Graph graphPmMnplus1 = bayesPmMnplus1.getGraph();
-    //
-    //        //BayesIm bayesImMn = null;         //Vestige
-    //        BayesPm bayesPmMn = null;
-    //        double oldBestScore = Double.NEGATIVE_INFINITY;
-    //        int iteration = 0;
-    //
-    //        //Loop for n = 0,1,... until convergence
-    //        while (!bayesPmMnplus1.equals(bayesPmMn)) {
-    //            iteration++;
-    //
-    //            bayesPmMn = bayesPmMnplus1;
-    //            System.out.println("In Factored Bayes Struct EM Iteration number " + iteration);
-    //
-    //            //Compute the MAP parameters for Mn given o.
-    //            //EmBayesEstimator emBayesEst = new EmBayesEstimator(bayesPmMn, dataSet);
-    //            //bayesImMn = emBayesEst.maximization(0.0001);
-    //
-    //            //Perform search over models...
-    //            Graph graphMn = bayesPmMn.getGraph();
-    //            Dag dagMn = new Dag(graphMn);
-    //            List models = ModelGenerator.generate(graphMn);
-    //
-    //            //double bestScore = 0.0;
-    //            //Initialize bestScore to the score of bayesPmMn
-    //            //(whose graph is varied in the for loop).
-    //
-    //            double bestScore = factorScore(dagMn, bdeMetricCache);
-    //
-    //            for (Iterator itm = models.iterator(); itm.hasNext();) {
-    //                Graph graph = (Graph) itm.next();
-    //                //System.out.println("In iterate1 of FBSEM" + graph);
-    //                Dag dag = new Dag(graph);
-    //
-    //
-    //                BayesPm bayesPmTest = new BayesPm(dag);
-    //
-    //                //Having instantiated the BayesPm, set the number of categories correctly.
-    //                for (int i = 0; i < dataSet.getVariables().size(); i++) {
-    //                    String varName = (String) dataSet.getVariableNames().get(i);
-    //                    Node node = dag.getNode(varName);
-    //                    bayesPmTest.setNumSplits(node, ncategories[i]);
-    //                }
-    //
-    //
-    //                double score = factorScore(dag, bdeMetricCache);
-    //
-    //                System.out.println("For the model with graph \n" + dag);
-    //                System.out.println("Score = " + score);
-    //
-    //                if (score <= bestScore) continue;  //This is not better than the best to date.
-    //                bestScore = score;
-    //                //oldBestScore = bestScore;
-    //
-    //                //Let M sub n+1 be the model with the highest score amonth those encountered
-    //                //during the search.
-    //                bayesPmMnplus1 = bayesPmTest;
-    //            }
-    //
-    //            System.out.println("bestScore, oldBestScore " + bestScore + " " + oldBestScore);
-    //
-    //            //Test equality of graphs instead of scores.
-    //
-    //            //if(Math.abs(bestScore - oldBestScore) < 1.0e-40) convergence = true;
-    //            oldBestScore = bestScore;
-    //        }
-    //
-    //
-    //        return bayesPmMn;
-    //    }
-
-    /**
-     * Sets maximum time for iterations
-     */
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
     }
 
     /**
@@ -280,7 +112,7 @@ public final class FactoredBayesStructuralEM {
      */
     public BayesIm iterate() {
 
-        start = System.currentTimeMillis();
+        double start = System.currentTimeMillis();
 
         //boolean convergence = false;        //Vestige
         BdeMetricCache bdeMetricCache = new BdeMetricCache(dataSet, bayesPmM0);
@@ -288,52 +120,43 @@ public final class FactoredBayesStructuralEM {
         BayesPm bayesPmMnplus1 = bayesPmM0;
 
         //BayesIm bayesImMn = null;         //Vestige
-        BayesPm bayesPmMn = null;
+        BayesPm bayesPmMn;
         double oldBestScore = Double.NEGATIVE_INFINITY;
         int iteration = 0;
 
-        //stop iterating if timeout has exceeded
-        Timer timer = new Timer();
-
         //Loop for n = 0,1,... until convergence or timeout has been exceeded
 
-        TimedIterate ti = new TimedIterate(bdeMetricCache, bayesPmMnplus1, bayesPmMn, oldBestScore, iteration, start);
+        TimedIterate ti = new TimedIterate(bdeMetricCache, bayesPmMnplus1, oldBestScore, iteration, start);
         Thread tithread = new Thread(ti);
         tithread.start();
-        if (timeout > 0) {
-            //    timer.schedule(new InterruptScheduler(Thread.currentThread()), timeout);
-        }
         try {
             tithread.join();
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
-        bdeMetricCache = ti.bdeMetricCache;
         bayesPmMnplus1 = ti.bayesPmMnplus1;
-        bayesPmMn = ti.bayesPmMn;
-        oldBestScore = ti.oldBestScore;
-        iteration = ti.iteration;
+//        oldBestScore = ti.oldBestScore;
         bayesPmMn = bayesPmMnplus1;
-        resultScore = oldBestScore;
-        totaliterations = ti.iteration;
+//        resultScore = oldBestScore;
+//        totaliterations = ti.iteration;
 
         EmBayesEstimator emBayesEst = new EmBayesEstimator(bayesPmMn, dataSet);
         return emBayesEst.maximization(tolerance);
 
     }
 
-    public double returnScore() {
-        return resultScore;
-    }
-
-    public Graph returnGraph() {
-        return resultGraph;
-    }
-
-    public int returnIterations() {
-        return totaliterations;
-    }
+//    public double returnScore() {
+//        return resultScore;
+//    }
+//
+//    public Graph returnGraph() {
+//        return resultGraph;
+//    }
+//
+//    public int returnIterations() {
+//        return totaliterations;
+//    }
 
     public void scoreTest() {
         TetradLogger.getInstance().log("details", "scoreTest");
@@ -467,7 +290,7 @@ public final class FactoredBayesStructuralEM {
 
         for (Node node1 : nodes) {
             List<Node> parents = dag.getParents(node1);
-            Set<Node> parentsSet = new HashSet<Node>(parents);
+            Set<Node> parentsSet = new HashSet<>(parents);
             double fScore = bdeMetricCache.scoreLnGam(node1, parentsSet,
                     bayesPm, bayesIm);
 
@@ -483,33 +306,33 @@ public final class FactoredBayesStructuralEM {
         return this.dataSet;
     }
 
-    private class InterruptScheduler extends TimerTask {
-        Thread target = null;
-
-        public InterruptScheduler(Thread target) {
-            this.target = target;
-        }
-
-        @Override
-        public void run() {
-            target.interrupt();
-        }
-
-    }
+//    private class InterruptScheduler extends TimerTask {
+//        Thread target = null;
+//
+//        public InterruptScheduler(Thread target) {
+//            this.target = target;
+//        }
+//
+//        @Override
+//        public void run() {
+//            target.interrupt();
+//        }
+//
+//    }
 
     private class TimedIterate implements Runnable {
 
-        BdeMetricCache bdeMetricCache;
+        final BdeMetricCache bdeMetricCache;
         BayesPm bayesPmMnplus1;
         BayesPm bayesPmMn;
         double oldBestScore;
         int iteration;
-        double start;
+        final double start;
 
-        public TimedIterate(BdeMetricCache bdeMetricCache, BayesPm bayesPmMnplus1, BayesPm bayesPmMn, double oldBestScore, int iteration, double start) {
+        public TimedIterate(BdeMetricCache bdeMetricCache, BayesPm bayesPmMnplus1, double oldBestScore, int iteration, double start) {
             this.bdeMetricCache = bdeMetricCache;
             this.bayesPmMnplus1 = bayesPmMnplus1;
-            this.bayesPmMn = bayesPmMn;
+            this.bayesPmMn = null;
             this.oldBestScore = oldBestScore;
             this.iteration = iteration;
             this.start = start;
@@ -518,16 +341,17 @@ public final class FactoredBayesStructuralEM {
         public void run() {
             while (!bayesPmMnplus1.equals(bayesPmMn)) {
 
-                if (System.currentTimeMillis() - this.start > timeout && timeout > 0) {
-                    bayesPmMn = bayesPmMnplus1;
-                    break;
-                }
+//                int timeout = -1;
+//                if (System.currentTimeMillis() - this.start > timeout && timeout > 0) {
+//                    bayesPmMn = bayesPmMnplus1;
+//                    break;
+//                }
 
                 iteration++;
 
                 bayesPmMn = bayesPmMnplus1;
                 TetradLogger.getInstance().log("details", "In Factored Bayes Struct EM Iteration number " +
-                                iteration);
+                        iteration);
 
                 //Compute the MAP parameters for Mn given o.
                 TetradLogger.getInstance().log("details", "Starting EM Bayes estimator to get MAP parameters of Mn");
@@ -596,7 +420,7 @@ public final class FactoredBayesStructuralEM {
 
                 TetradLogger.getInstance().log("details", "In iteration:  " + iteration);
                 TetradLogger.getInstance().log("details", "bestScore, oldBestScore " + bestScore + " " +
-                                oldBestScore);
+                        oldBestScore);
                 EdgeListGraph edgesBest =
                         new EdgeListGraph(bayesPmMnplus1.getDag());
                 TetradLogger.getInstance().log("details", "Graph of model:  \n" + edgesBest);
@@ -606,7 +430,7 @@ public final class FactoredBayesStructuralEM {
 
                 //if(   Math.abs(bestScore - oldBestScore) < 1.0e-40) convergence = true;
                 oldBestScore = bestScore;
-                resultGraph = edgesBest;
+//                resultGraph = edgesBest;
 
                 //if(iteration == 1) System.exit(0);  //Temporary during development
             }

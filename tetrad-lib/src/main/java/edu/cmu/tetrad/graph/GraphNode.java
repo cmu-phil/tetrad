@@ -110,7 +110,6 @@ public class GraphNode implements Node, TetradSerializable {
 
     /**
      * @return the node type.
-     *
      * @see edu.cmu.tetrad.graph.NodeType
      */
     public final NodeType getNodeType() {
@@ -202,13 +201,6 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     /**
-     * Removes a property change listener.
-     */
-    public final void removePropertyChangeListener(PropertyChangeListener l) {
-        getPcs().removePropertyChangeListener(l);
-    }
-
-    /**
      * @return the name of the node as its string representation.
      */
     public String toString() {
@@ -218,8 +210,7 @@ public class GraphNode implements Node, TetradSerializable {
     public int hashCode() {
         if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             return super.hashCode();
-        }
-        else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
+        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
             return getName().hashCode();
         }
 
@@ -236,10 +227,8 @@ public class GraphNode implements Node, TetradSerializable {
     public boolean equals(Object o) {
         if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             return o == this;
-        }
-        else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            if (!(o instanceof GraphNode)) return false;
-            return getName().equals(((Node)o).getName());
+        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
+            return o instanceof GraphNode && getName().equals(((Node) o).getName());
         }
 
         throw new IllegalStateException();
@@ -297,8 +286,7 @@ public class GraphNode implements Node, TetradSerializable {
 
         if (i1 == 0) {
             return i2;
-        }
-        else {
+        } else {
             return i1;
         }
     }

@@ -56,7 +56,7 @@ public final class SplitCasesSpec implements TetradSerializable {
     /**
      * Sample size.
      */
-    private int sampleSize;
+    private final int sampleSize;
 
     //============================CONSTRUCTORS==========================//
 
@@ -70,7 +70,7 @@ public final class SplitCasesSpec implements TetradSerializable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    public static SplitCasesSpec serializableInstance() {                                
+    public static SplitCasesSpec serializableInstance() {
         return new SplitCasesSpec(0, new int[0], new ArrayList<String>());
     }
 

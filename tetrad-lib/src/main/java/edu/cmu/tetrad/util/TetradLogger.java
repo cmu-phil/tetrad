@@ -33,13 +33,13 @@ import java.util.regex.Pattern;
  * work on levels, instead one can set events need to be logged. This is done by giving
  * the logger a <code>TetradLoggerConfig</code> which will be used to determine whether
  * some event should be logged.
- * <p/>
+ * <p>
  * Although one can explicity construct instance of <code>TetradLoggerConfig</code> and
  * set them in the logger, the configuration details for most models is defined in the
  * <code>configuration.xml</code> file and added to the logger at startup.  A pre-configured
  * <code>TetradLoggerConfig</code> for some model can be found by calling
  * <code>getTetradLoggerConfigForModel(Class)</code>
- * <p/>
+ * <p>
  * Furthermore the logger supports logging to a sequence of files in some directory. To start logging
  * to a new file in the logging directory (assuming it has been set) call <code>setNextOutputStream</code>
  * to remove this stream from the logger call <code>removeNextOutputStream</code>. In addiong to the feature
@@ -55,7 +55,7 @@ public class TetradLogger {
     /**
      * A mapping between output streams and writers used to wrap them.
      */
-    private final Map<OutputStream, Writer> writers = new LinkedHashMap<OutputStream, Writer>();
+    private final Map<OutputStream, Writer> writers = new LinkedHashMap<>();
 
 
     /**
@@ -68,15 +68,15 @@ public class TetradLogger {
     /**
      * A mapping from model classes to their configured loggers.
      */
-    private final Map<Class, TetradLoggerConfig> classConfigMap = new ConcurrentHashMap<Class, TetradLoggerConfig>();
+    private final Map<Class, TetradLoggerConfig> classConfigMap = new ConcurrentHashMap<>();
 
     /**
      * A mapping from models to their configured loggers.
      */
-    private final Map<Object, TetradLoggerConfig> nodeConfigMap = new ConcurrentHashMap<Object, TetradLoggerConfig>();
+    private final Map<Object, TetradLoggerConfig> nodeConfigMap = new ConcurrentHashMap<>();
 
 
-    private Map<Object, Object> nodeModelMap = new ConcurrentHashMap<Object, Object>();
+    private Map<Object, Object> nodeModelMap = new ConcurrentHashMap<>();
 
     /**
      * The configuration to use to determine which events to log.
@@ -87,7 +87,7 @@ public class TetradLogger {
     /**
      * The listeners.
      */
-    private final List<TetradLoggerListener> listeners = new ArrayList<TetradLoggerListener>();
+    private final List<TetradLoggerListener> listeners = new ArrayList<>();
 
 
     /**
@@ -124,8 +124,6 @@ public class TetradLogger {
 
 
     /**
-     * @return the singleton instance of the <code>TetradLogger</code>.
-     *
      * @return - instance
      */
     public static TetradLogger getInstance() {
@@ -135,8 +133,6 @@ public class TetradLogger {
 
     /**
      * Adds the given listener to the logger.
-     *
-     * @param l
      */
     public void addTetradLoggerListener(TetradLoggerListener l) {
         this.listeners.add(l);
@@ -145,8 +141,6 @@ public class TetradLogger {
 
     /**
      * Removes the given listener from the logger.
-     *
-     * @param l
      */
     @SuppressWarnings({"UnusedDeclaration"})
     public void removeTetradLoggerListener(TetradLoggerListener l) {
@@ -157,8 +151,6 @@ public class TetradLogger {
     /**
      * Sets what configuration should be used to determine which events to log. Null can be
      * given to remove a previously set configuration from the logger.
-     *
-     * @param config
      */
     public void setTetradLoggerConfig(TetradLoggerConfig config) {
         TetradLoggerConfig previous = this.config;
@@ -183,8 +175,6 @@ public class TetradLogger {
     /**
      * This can be used to tell the logger which events to log without having
      * to first define a <code>TetradLoggerConfig</code>.
-     *
-     * @param events
      */
     @SuppressWarnings({"UnusedDeclaration"})
     public void setEventsToLog(String... events) {
@@ -206,8 +196,6 @@ public class TetradLogger {
     /**
      * If there is a pre-defined configuration for the given model it is set, otherwise
      * an exception is thrown.
-     *
-     * @param model
      */
     public void setConfigForClass(Class model) {
         TetradLoggerConfig config = this.classConfigMap.get(model);
@@ -220,20 +208,12 @@ public class TetradLogger {
     /**
      * Adds the given <code>TetradLoggerConfig</code> to the logger, so that it can be used
      * throughout the life of the application.
-     *
-     * @param model
      */
     public void addTetradLoggerConfig(Class model, TetradLoggerConfig config) {
         this.classConfigMap.put(model, config);
     }
 
 
-    /**
-     * @return the <code>TetradLoggerConfig</code> associated with the given model.
-     *
-     * @param clazz
-     * @return - config
-     */
     public TetradLoggerConfig getLoggerForClass(Class clazz) {
         TetradLoggerConfig config = this.classConfigMap.get(clazz);
 
@@ -266,8 +246,6 @@ public class TetradLogger {
 
     /**
      * Sets whether the logger is on or not.
-     *
-     * @param logging
      */
     public void setLogging(boolean logging) {
         Preferences.userRoot().putBoolean("loggingActivated", logging);
@@ -325,14 +303,9 @@ public class TetradLogger {
      * Logs an error, this will log the message regardless of any configuration information.
      * Although it won't be logged if the logger is off and of course if there are no streams
      * attached.
-     *
-     * @param message
      */
     public void error(String message) {
         if (this.logging) {
-            if (this.config == null) {
-
-            }
             try {
                 for (Writer writer : writers.values()) {
                     writer.write(message);
@@ -349,8 +322,6 @@ public class TetradLogger {
     /**
      * Logs the given message regardless of the logger's getModel settings. Although nothing
      * will be logged if the logger has been turned off.
-     *
-     * @param message
      */
     public void forceLogMessage(String message) {
         if (this.logging) {
@@ -372,8 +343,6 @@ public class TetradLogger {
 
     /**
      * Sets the <code>OutputStream</code> that is used to log matters out to.
-     *
-     * @param stream
      */
     public void addOutputStream(OutputStream stream) {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream));
@@ -383,8 +352,6 @@ public class TetradLogger {
 
     /**
      * Removes the given stream from the logger.
-     *
-     * @param stream
      */
     public void removeOutputStream(OutputStream stream) {
         this.writers.remove(stream);
@@ -474,8 +441,6 @@ public class TetradLogger {
     }
 
     /**
-     * @return the logging prefix.
-     *
      * @return - prefix
      */
     public String getLoggingFilePrefix() {
@@ -501,8 +466,6 @@ public class TetradLogger {
 
     /**
      * Sets the logging prefix.
-     *
-     * @param loggingFilePrefix
      */
     public void setLoggingFilePrefix(String loggingFilePrefix) {
         if (loggingFilePrefix == null) {
@@ -528,8 +491,6 @@ public class TetradLogger {
     /**
      * Sets whether "file logging" is enabled or not, that is whether
      * calls to <code>setNextOutputStream</code> will be respected.
-     *
-     * @param enabled
      */
     public void setFileLoggingEnabled(boolean enabled) {
         Preferences.userRoot().putBoolean("enableFileLogging", enabled);
@@ -561,8 +522,6 @@ public class TetradLogger {
 
 
     /**
-     * @return the the default logging directory.
-     *
      * @return - logging directory.
      */
     public String getLoggingDirectory() {
@@ -598,6 +557,7 @@ public class TetradLogger {
                 throw new IllegalStateException("That output directory cannot be written to. " +
                         "Keeping the old one.");
             }
+
             selectedFile.delete();
         }
 
@@ -712,7 +672,7 @@ public class TetradLogger {
     /**
      * Represents an output stream that can get its own length.
      */
-    public static interface LogDisplayOutputStream {
+    public interface LogDisplayOutputStream {
 
 
         /**
@@ -721,13 +681,13 @@ public class TetradLogger {
          * @return The total string length written to the text area.
          */
         @SuppressWarnings({"UnusedDeclaration"})
-        public int getLengthWritten();
+        int getLengthWritten();
 
 
         /**
          * Should move the log to the end of the stream.
          */
-        public void moveToEnd();
+        void moveToEnd();
 
     }
 

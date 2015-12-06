@@ -45,7 +45,7 @@ import java.util.List;
  * arbitrary distributions," UAI 2008. The test for normality used for residuals is Anderson-Darling, following ad.test
  * in the nortest package of R. The default alpha level is 0.05--that is, p values from AD below 0.05 are taken to
  * indicate nongaussianity.
- * <p/>
+ * <p>
  * It is assumed that the pattern is the result of a pattern search such as PC or GES. In any case, it is important that
  * the residuals be independent for ICA to work.
  *

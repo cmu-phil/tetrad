@@ -35,7 +35,7 @@ import static java.lang.Math.log;
 /**
  * GesSearch is an implentation of the GES algorithm, as specified in Chickering (2002) "Optimal structure
  * identification with greedy search" Journal of Machine Learning Research. It works for both BayesNets and SEMs.
- * <p/>
+ * <p>
  * Some code optimization could be done for the scoring part of the graph for discrete models (method scoreGraphChange).
  * Some of Andrew Moore's approaches for caching sufficient statistics, for instance.
  *
@@ -1010,7 +1010,7 @@ public final class Ges implements GraphSearch, GraphScorer {
 
     private void addRequiredEdges(Graph graph) {
         for (Iterator<KnowledgeEdge> it =
-                     this.getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
+             this.getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge next = it.next();
             String a = next.getFrom();
             String b = next.getTo();

@@ -29,10 +29,10 @@ import java.util.Set;
 
 /**
  * Given a pattern this class implements two algortithms for finding an associated directed acyclic graph (DAG).
- * <p/>
+ * <p>
  * The first algorithm (in patternToDagMeek) was described in Zhang and Spirtes (2005), "A Characterization of Markov
  * Equivalence Classes for Ancestral Graphical Models" on pp. 53-54.
- * <p/>
+ * <p>
  * The second algorithm (in patternToDagDorTarsi) was described by Chickering (2002) in "Optimal Structure
  * Identification with Greedy Search" in the Journal of Machine Learning Research.  The algorithm was proposed by Dor
  * and Tarsi (1992).
@@ -60,7 +60,7 @@ public class PatternToDag {
     /**
      * This algorithm is due to Meek (1995) and was described by Zhang and Spirtes (2005), "A Characterization of Markov
      * Equivalence Classes for Ancestral Graphical Models" on pp. 53-54.
-     * <p/>
+     * <p>
      * THIS IMPLEMENTATION IS NOT DEBUGGED.
      */
     public Dag patternToDagMeek() {
@@ -301,9 +301,6 @@ public class PatternToDag {
     }
 
     /**
-     * @return a boolean which indicates whether a list of nodes forms a clique. That is, is the subgraph determined by
-     * those nodes complete.  If so, every pair of the nodes is adjacent.
-     *
      * @param g a graph
      * @param s a list of nodes in the graph
      * @return true if the subgraph determined by the nodes in s is a clique.

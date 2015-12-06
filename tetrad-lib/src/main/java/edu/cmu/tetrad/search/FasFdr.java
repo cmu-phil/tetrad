@@ -42,7 +42,7 @@ import static java.lang.Math.sqrt;
  * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
  * search is different for different algorithms, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
- * <p/>
+ * <p>
  * This variant does each depth twice, gathering up the p values in the first round, using FDR to estimate a cutoff
  * for acceptance, and rerunning using the specified cutoff.
  *
@@ -125,7 +125,7 @@ public class FasFdr implements IFas {
      */
     private boolean verbose = false;
     private List pValueList = new ArrayList();
-    
+
     private PrintStream out = System.out;
 
     //==========================CONSTRUCTORS=============================//

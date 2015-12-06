@@ -24,10 +24,6 @@ package edu.cmu.tetrad.util.dist;
 import edu.cmu.tetrad.util.RandomUtil;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Jan 15, 2008 Time: 5:06:27 PM
-* To change this template use File | Settings | File Templates.
-*/
-/**
  * Wraps a chi square distribution for purposes of drawing random samples.
  * Methods are provided to allow parameters to be manipulated in an interface.
  *
@@ -39,9 +35,9 @@ public class Gamma implements Distribution {
     private double alpha;
     private double lambda;
 
-    public Gamma(double alpha, double lambda) {
-        this.alpha = alpha;
-        this.lambda = lambda;
+    private Gamma() {
+        this.alpha = .5;
+        this.lambda = .7;
     }
 
     /**
@@ -50,7 +46,7 @@ public class Gamma implements Distribution {
      * @return The exemplar.
      */
     public static Gamma serializableInstance() {
-        return new Gamma(.5, .7);
+        return new Gamma();
     }
 
     public int getNumParameters() {
@@ -64,8 +60,7 @@ public class Gamma implements Distribution {
     public void setParameter(int index, double value) {
         if (index == 0) {
             alpha = value;
-        }
-        else if (index == 1) {
+        } else if (index == 1) {
             lambda = value;
         }
 
@@ -75,8 +70,7 @@ public class Gamma implements Distribution {
     public double getParameter(int index) {
         if (index == 0) {
             return alpha;
-        }
-        else if (index == 1) {
+        } else if (index == 1) {
             return lambda;
         }
 
@@ -86,8 +80,7 @@ public class Gamma implements Distribution {
     public String getParameterName(int index) {
         if (index == 0) {
             return "Alpha";
-        }
-        else if (index == 1) {
+        } else if (index == 1) {
             return "Lambda";
         }
 

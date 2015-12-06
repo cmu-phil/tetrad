@@ -102,7 +102,7 @@ public final class TestDag extends TestCase {
     }
 
     private void checkCopy(Graph graph) {
-        Graph graph2 = new EdgeListGraph(graph);
+        Graph graph2 = new Dag(graph);
         assertEquals(graph, graph2);
     }
 

@@ -34,17 +34,17 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public interface ClusteringAlgorithm {
+interface ClusteringAlgorithm {
 
     /**
      * Clusters the given data set.
      *
      * @param data An n x m double matrix with n cases (rows) and m variables
      *             (columns).
-     * @return an int array c such that c[i] is the cluster that case i is
-     *         placed into, or -1 if case i is not placed into a cluster (as a
-     *         result of its being eliminated from consideration, for
-     *         instance).
+     * Makes an int array c such that c[i] is the cluster that case i is
+     * placed into, or -1 if case i is not placed into a cluster (as a
+     * result of its being eliminated from consideration, for
+     * instance).
      */
     void cluster(TetradMatrix data);
 
@@ -52,8 +52,6 @@ public interface ClusteringAlgorithm {
      * @return a list of clusters, each consisting of a list of indices in the
      * dataset provided as an argument to <code>cluster</code>, or null if the
      * data has not yet been clustered.
-     *
-     * @see #cluster(cern.colt.matrix.TetradMatrix)
      */
     List<List<Integer>> getClusters();
 
@@ -63,8 +61,6 @@ public interface ClusteringAlgorithm {
      * array at (k, j) is the jth element of the kth prototype. The number of
      * columns in this array is equal to the number of columns in the dataset
      * provided as an argument to <code>cluster</code>.
-     *
-     * @see #cluster(cern.colt.matrix.TetradMatrix)
      */
     TetradMatrix getPrototypes();
 

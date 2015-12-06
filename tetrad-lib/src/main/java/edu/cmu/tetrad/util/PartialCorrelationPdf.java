@@ -47,14 +47,6 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     private int k = 0;
 
     /**
-     * The ratio of the two gamma expressions in the distribution function for
-     * zero partial correlation.
-     *
-     * @serial
-     */
-    private double gammaRatio = Double.NaN;
-
-    /**
      * The aggregate value of the constant expression in the distribution
      * function for zero partial correlation.
      *
@@ -82,7 +74,12 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     public PartialCorrelationPdf(int n, int k) {
         this.n = n;
         this.k = k;
-        this.gammaRatio=gammaRatio(n, k);
+        /*
+      The ratio of the two gamma expressions in the distribution function for
+      zero partial correlation.
+
+      */
+        double gammaRatio = gammaRatio(n, k);
         this.constant = (1 / Math.pow(Math.PI, 0.5)) * gammaRatio;
         this.outsideExp = (double) (n - k - 2) / 2.0;
     }
@@ -131,12 +128,11 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
                 " and k = " + getK() + "\n\n";
     }
 
-    public int getN() {
+    private int getN() {
         return n;
     }
 
     /**
-     * @return the number of compared variables = 2 + # conditioning variables.
      * @return Ibid.
      */
     public int getK() {

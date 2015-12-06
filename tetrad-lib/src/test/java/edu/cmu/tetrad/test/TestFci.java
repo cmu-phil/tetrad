@@ -112,9 +112,9 @@ public class TestFci extends TestCase {
 
         ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-//        final IndependenceTest independenceTest = new IndTestDSep(dag, false);
+        final IndependenceTest independenceTest = new IndTestDSep(dag, false);
 //        final IndependenceTest independenceTest = new IndTestFisherZ(cov, alpha);
-        final IndependenceTest independenceTest = new IndTestRegressionAD(data, alpha);
+//        final IndependenceTest independenceTest = new IndTestRegressionAD(data, alpha);
 
         System.out.println("True PAG done");
         independenceTest.setAlpha(alpha);

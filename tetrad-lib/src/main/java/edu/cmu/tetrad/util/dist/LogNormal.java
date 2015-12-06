@@ -27,15 +27,11 @@ import edu.cmu.tetrad.util.RandomUtil;
  * Represents a lognormal distribution for purposes of sampling.
  *
  * @author Joseph Ramsey
-*/
+ */
 public class LogNormal implements Distribution {
     static final long serialVersionUID = 23L;
 
     private double sd;
-
-    public LogNormal() {
-        this(1);
-    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.

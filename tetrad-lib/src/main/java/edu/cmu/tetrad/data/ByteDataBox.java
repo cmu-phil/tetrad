@@ -35,10 +35,8 @@ public class ByteDataBox implements DataBox {
 
     /**
      * Constructs an 2D byte array consisting entirely of missing values (-99).
-     * @param rows
-     * @param cols
      */
-    public ByteDataBox(int rows, int cols) {
+    private ByteDataBox(int rows, int cols) {
         this.data = new byte[rows][cols];
 
         for (int i = 0; i < rows; i++) {
@@ -105,8 +103,7 @@ public class ByteDataBox implements DataBox {
 
         if (datum == -99) {
             return null;
-        }
-        else {
+        } else {
             return datum;
         }
     }

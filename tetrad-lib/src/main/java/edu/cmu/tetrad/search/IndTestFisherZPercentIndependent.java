@@ -107,13 +107,12 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             TetradMatrix inv = _ncov.inverse();
             double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
 
-            double fisherZ = sqrt(sampleSize - z.size()  - 3.0) *  0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+            double fisherZ = sqrt(sampleSize - z.size() - 3.0) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
             double pValue;
 
             if (Double.isInfinite(fisherZ)) {
                 pValue = 0;
-            }
-            else {
+            } else {
                 pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
             }
 

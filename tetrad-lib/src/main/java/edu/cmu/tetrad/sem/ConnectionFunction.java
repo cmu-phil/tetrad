@@ -27,10 +27,10 @@ import edu.cmu.tetrad.graph.Node;
  * Created by IntelliJ IDEA. User: jdramsey Date: Oct 25, 2008 Time: 11:49:32 AM
  * To change this template use File | Settings | File Templates.
  */
-public interface ConnectionFunction {
+interface ConnectionFunction {
     Node[] getInputNodes();
 
-    double valueAt(double...inputValues);
+    double valueAt(double... inputValues);
 }
 
 

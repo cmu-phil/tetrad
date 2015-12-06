@@ -42,8 +42,6 @@ public class JOptionUtils {
     }
 
     /**
-     * @return the centering component used throughout for JOptionPanes.
-     *
      * @return Ibid.
      */
     public static JComponent centeringComp() {

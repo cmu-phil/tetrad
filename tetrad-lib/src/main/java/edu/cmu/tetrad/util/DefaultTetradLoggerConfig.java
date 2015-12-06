@@ -42,7 +42,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
     /**
      * The event ids that are currently active.
      */
-    private Set<String> active = new HashSet<String>();
+    private Set<String> active = new HashSet<>();
 
 
     /**
@@ -54,7 +54,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         if (events == null) {
             throw new NullPointerException("The given list of events must not be null");
         }
-        this.events = new ArrayList<Event>(events);
+        this.events = new ArrayList<>(events);
     }
 
 
@@ -65,8 +65,8 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
      * @param events The events that the logger reports.
      */
     public DefaultTetradLoggerConfig(String... events) {
-        this.events = new ArrayList<Event>(events.length);
-        this.active = new HashSet<String>();
+        this.events = new ArrayList<>(events.length);
+        this.active = new HashSet<>();
         for (String event : events) {
             this.events.add(new DefaultEvent(event, "No Description"));
             this.active.add(event);
@@ -75,8 +75,8 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     public TetradLoggerConfig copy() {
         DefaultTetradLoggerConfig copy = new DefaultTetradLoggerConfig();
-        copy.events = new ArrayList<Event>(this.events);
-        copy.active = new HashSet<String>(this.active);
+        copy.events = new ArrayList<>(this.events);
+        copy.active = new HashSet<>(this.active);
         return copy;
     }
 
@@ -117,7 +117,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         buf.append("\nDefaultTetradLoggerConfig: events as follows:");
 
         for (Event event : events) {
-            buf.append("\n" + event + (active.contains(event.getId()) ? " (active)" : ""));
+            buf.append("\n").append(event).append(active.contains(event.getId()) ? " (active)" : "");
         }
 
         return buf.toString();

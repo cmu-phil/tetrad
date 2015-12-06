@@ -155,9 +155,6 @@ public class BuildPureClustersIndTestParams implements MimIndTestParams {
         }
     }
 
-    /**
-     * @serial
-     */
     public BpcAlgorithmType getAlgorithmType() {
         return algorithmType;
     }

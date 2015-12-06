@@ -78,7 +78,7 @@ public class TestMimbuild3 extends TestCase {
                 partition = fofc.getClusters();
             } else if (algorithm.equals("BPC")) {
                 TestType testType = TestType.TETRAD_WISHART;
-                TestType purifyType = TestType.TETRAD_BASED2;
+                TestType purifyType = TestType.TETRAD_BASED;
 
                 BuildPureClusters bpc = new BuildPureClusters(
                         data, 0.001,
@@ -194,7 +194,7 @@ public class TestMimbuild3 extends TestCase {
         return graph;
     }
 
-    public void test2() {
+    public void rtest2() {
         System.out.println("SHD\tP");
 //        System.out.println("MB1\tMB2\tMB3\tMB4\tMB5\tMB6");
 
@@ -234,7 +234,7 @@ public class TestMimbuild3 extends TestCase {
                 partition = MimUtils.convertToClusters2(searchGraph);
             } else if (algorithm.equals("BPC")) {
                 TestType testType = TestType.TETRAD_WISHART;
-                TestType purifyType = TestType.TETRAD_BASED2;
+                TestType purifyType = TestType.TETRAD_BASED;
 
                 BuildPureClusters bpc = new BuildPureClusters(
                         data, 0.001,
@@ -471,7 +471,7 @@ public class TestMimbuild3 extends TestCase {
         System.out.println();
     }
 
-    public void test4() {
+    public void rtest4() {
         System.out.println("SHD\tP");
 //        System.out.println("MB1\tMB2\tMB3\tMB4\tMB5\tMB6");
 
@@ -515,7 +515,7 @@ public class TestMimbuild3 extends TestCase {
                 partition = MimUtils.convertToClusters2(searchGraph);
             } else if (algorithm.equals("BPC")) {
                 TestType testType = TestType.TETRAD_WISHART;
-                TestType purifyType = TestType.TETRAD_BASED2;
+                TestType purifyType = TestType.TETRAD_BASED;
 
                 BuildPureClusters bpc = new BuildPureClusters(
                         data, 0.001,

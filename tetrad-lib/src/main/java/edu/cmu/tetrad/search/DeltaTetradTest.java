@@ -43,8 +43,8 @@ public class DeltaTetradTest {
     private int df;
     private double chisq;
     private double[][][][] fourthMoment;
-    private int numVars;
-    private double[] means;
+//    private int numVars;
+//    private double[] means;
     private List<Node> variables;
     private Map<Node, Integer> variablesHash;
     private boolean cacheFourthMoments = true;
@@ -81,7 +81,7 @@ public class DeltaTetradTest {
         this.data = this.dataSet.getDoubleData().transpose().toArray();
         this.N = dataSet.getNumRows();
         this.variables = dataSet.getVariables();
-        this.numVars = dataSet.getNumColumns();
+//        this.numVars = dataSet.getNumColumns();
 
         this.variablesHash = new HashMap<Node, Integer>();
 
@@ -89,11 +89,11 @@ public class DeltaTetradTest {
             variablesHash.put(variables.get(i), i);
         }
 
-        this.means = new double[numVars];
-
-        for (int i = 0; i < numVars; i++) {
-            means[i] = mean(data[i], N);
-        }
+//        this.means = new double[numVars];
+//
+//        for (int i = 0; i < numVars; i++) {
+//            means[i] = mean(data[i], N);
+//        }
     }
 
     /**
@@ -107,7 +107,7 @@ public class DeltaTetradTest {
 
         this.cov = cov;
         this.N = cov.getSampleSize();
-        this.numVars = cov.getVariables().size();
+//        this.numVars = cov.getVariables().size();
         this.variables = cov.getVariables();
 
         this.variablesHash = new HashMap<Node, Integer>();
@@ -125,7 +125,7 @@ public class DeltaTetradTest {
     /**
      * Takes a list of tetrads for the given data set and returns the chi square value for the test. We assume that the
      * tetrads are non-redundant; if not, a matrix exception will be thrown.
-     * <p/>
+     * <p>
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
      */
@@ -233,10 +233,6 @@ public class DeltaTetradTest {
         double chisq = N * v2.get(0, 0);
 
         this.chisq = chisq;
-
-//        double cdf = ProbUtils.chisqCdf(this.chisq, this.df);
-        double cdf = ProbUtils.chisqCdf(this.chisq, this.df);
-//        System.out.println(Arrays.asList(tetrads) + " chisq = " + chisq + " dof = " + df + " p = " + (1.0 - cdf));
 
         return chisq;
     }
@@ -429,8 +425,6 @@ public class DeltaTetradTest {
     private double sxy(double array1[], double array2[], int N) {
         int i;
         double sum = 0.0;
-//        double meanX = mean(array1, N);
-//        double meanY = mean(array2, N);
 
         for (i = 0; i < N; i++) {
 //            sum += (array1[i] - meanX) * (array2[i] - meanY);
@@ -440,16 +434,16 @@ public class DeltaTetradTest {
         return (1.0 / N) * sum;
     }
 
-    private double mean(double array[], int N) {
-        int i;
-        double sum = 0;
-
-        for (i = 0; i < N; i++) {
-            sum += array[i];
-        }
-
-        return sum / N;
-    }
+//    private double mean(double array[], int N) {
+//        int i;
+//        double sum = 0;
+//
+//        for (i = 0; i < N; i++) {
+//            sum += array[i];
+//        }
+//
+//        return sum / N;
+//    }
 }
 
 

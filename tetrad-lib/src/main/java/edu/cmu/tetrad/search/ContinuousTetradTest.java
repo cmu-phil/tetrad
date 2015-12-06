@@ -26,8 +26,6 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-//import edu.cmu.tetrad.sem.MimBuildEstimator;
-import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -38,16 +36,18 @@ import java.util.List;
 
 import static java.lang.Math.abs;
 
+//import edu.cmu.tetrad.sem.MimBuildEstimator;
+
 /**
  * Implements different tests of tetrad constraints: using Wishart's test (CPS, Wishart 1928); Bollen's test (Bollen,
  * 1990) or a more computationally intensive test that fits one/two factor Gaussian models. These tests are the core
  * statistical procedure of search algorithms BuildPureClusters and Purify.
- * <p/>
+ * <p>
  * References:
- * <p/>
+ * <p>
  * Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads." Sociological Methods and
  * Research 19, 80-92.
- * <p/>
+ * <p>
  * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of Psychology 19, 180-187.
  *
  * @author Ricardo Silva
@@ -62,7 +62,7 @@ public final class ContinuousTetradTest implements TetradTest {
     //    private double fourthMM[][][][];
     private boolean bvalues[], outputMessage;
     private ICovarianceMatrix covMatrix;
-//    private CorrelationMatrix corrMatrix;
+    //    private CorrelationMatrix corrMatrix;
     private TetradMatrix rho;
     private TestType sigTestType;
     private int sampleSize;
@@ -216,66 +216,7 @@ public final class ContinuousTetradTest implements TetradTest {
         twoFactorsEst6 = new TwoFactorsEstimator(covMatrix, sig, 6);
         bufferMatrix = new TetradMatrix(4, 4);
         rho = covMatrix.getMatrix();
-
-//        int m = covMatrix.getVariables().size();
-//        tetradDifference = new HashMap<Tetrad, Double>();
-
     }
-
-    /**
-     * Note: this implementation could be more optimized. This is the
-     * simplest way of computing this corrMatrix, and will take exactly
-     * sampleSize * (corrMatrix.getSize() ^ 4) steps.
-     */
-
-    /**
-     * Sample scores: the real deal. The way by which significance is tested will vary from case to case. We are also
-     * using false discovery rate to make a mild adjustment in the p-values.
-     */
-
-//    public int tetradScore(int v1, int v2, int v3, int v4) {
-//        evalTetradDifferences(v1, v2, v3, v4);
-//        for (int i = 0; i < 3; i++) {
-//            bvalues[i] = (prob[i] >= sig);
-//        }
-//
-//        //Order p-values for FDR (false discovery rate) decision
-//        Arrays.sort(prob);     // jdramsey 5/22/10
-//
-////        double tempProb;
-////        if (prob[1] < prob[0] && prob[1] < prob[2]) {
-////            tempProb = prob[0];
-////            prob[0] = prob[1];
-////            prob[1] = tempProb;
-////        }
-////        else if (prob[2] < prob[0] && prob[2] < prob[0]) {
-////            tempProb = prob[0];
-////            prob[0] = prob[2];
-////            prob[2] = tempProb;
-////        }
-////        if (prob[2] < prob[1]) {
-////            tempProb = prob[1];
-////            prob[1] = prob[2];
-////            prob[2] = tempProb;
-////        }
-//        if (prob[2] <= sig3) {
-//            return 0;
-//        }
-//        if (prob[1] <= sig2) {
-//            //This is the case of 2 tetrad constraints holding, which is
-//            //a logical impossibility. On a future version we may come up with
-//            //better, more powerful ways of deciding what to do. Right now,
-//            //the default is to do just as follows:
-////            return 1;
-//            return 1;
-//        }
-//        if (prob[0] <= sig1) {
-////            throw new IllegalArgumentException();
-//            return 2;
-//        }
-//        return 3;
-//    }
-
 
     public int tetradScore(int v1, int v2, int v3, int v4) {
         boolean holds = wishartEvalTetradDifferences2(v1, v2, v3, v4, sig);
@@ -330,8 +271,9 @@ public final class ContinuousTetradTest implements TetradTest {
     }
 
 
-    /** --------------------------------------------------------------------------
-     *  PRIVATE METHODS
+    /**
+     * --------------------------------------------------------------------------
+     * PRIVATE METHODS
      */
 
 //    /**
@@ -400,11 +342,9 @@ public final class ContinuousTetradTest implements TetradTest {
 //        printlnMessage("Done with fourth moments");
 //        return fourthMM;
 //    }
-
     private void evalTetradDifferences(int i, int j, int k, int l) {
         switch (sigTestType) {
             case TETRAD_BASED:
-            case TETRAD_BASED2:
             case TETRAD_WISHART:
                 wishartEvalTetradDifferences(i, j, k, l);
                 break;
@@ -412,7 +352,7 @@ public final class ContinuousTetradTest implements TetradTest {
                 bollenEvalTetradDifferences(i, j, k, l);
                 break;
             default:
-                /**
+                /*
                  * The other tests are only for interface with Purify. The ContinuousTetradTest class is also
                  * used as a black box of arguments passed to Purify (e.g., see BuildPureClusters code), but it does
                  * not mean its internal tetrad tests are going to be used. See Purify.scoreBasedPurify(List) to
@@ -425,7 +365,6 @@ public final class ContinuousTetradTest implements TetradTest {
     private void evalTetradDifference(int i, int j, int k, int l) {
         switch (sigTestType) {
             case TETRAD_BASED:
-            case TETRAD_BASED2:
             case TETRAD_WISHART:
                 wishartEvalTetradDifference(i, j, k, l);
                 break;
@@ -665,8 +604,7 @@ public final class ContinuousTetradTest implements TetradTest {
         if (deltaTest == null) {
             if (dataSet != null) {
                 deltaTest = new DeltaTetradTest(dataSet);
-            }
-            else {
+            } else {
                 deltaTest = new DeltaTetradTest(covMatrix);
             }
         }
@@ -712,8 +650,7 @@ public final class ContinuousTetradTest implements TetradTest {
         if (deltaTest == null) {
             if (dataSet != null) {
                 deltaTest = new DeltaTetradTest(dataSet);
-            }
-            else {
+            } else {
                 deltaTest = new DeltaTetradTest(covMatrix);
             }
         }

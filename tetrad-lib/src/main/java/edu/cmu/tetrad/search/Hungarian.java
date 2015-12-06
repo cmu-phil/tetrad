@@ -68,7 +68,7 @@ public class Hungarian {
     //*******************************************//
 
     public static void generateRandomArray        //Generates random 2-D array.
-            (double[][] array, String randomMethod) {
+    (double[][] array, String randomMethod) {
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[i].length; j++) {
                 if (randomMethod.equals("random")) {
@@ -89,7 +89,7 @@ public class Hungarian {
     }
 
     public static double findLargest                //Finds the largest element in a positive array.
-            (double[][] array)
+    (double[][] array)
     //works for arrays where all values are >= 0.
     {
         double largest = 0;
@@ -105,7 +105,7 @@ public class Hungarian {
     }
 
     public static double[][] transpose                //Transposes a double[][] array.
-            (double[][] array) {
+    (double[][] array) {
         double[][] transposedArray = new double[array[0].length][array.length];
         for (int i = 0; i < transposedArray.length; i++) {
             for (int j = 0; j < transposedArray[i].length; j++) {
@@ -116,7 +116,7 @@ public class Hungarian {
     }
 
     public static double[][] copyOf                        //Copies all elements of an array to a new array.
-            (double[][] original) {
+    (double[][] original) {
         double[][] copy = new double[original.length][original[0].length];
         for (int i = 0; i < original.length; i++) {
             //Need to do it this way, otherwise it copies only memory location
@@ -319,7 +319,7 @@ public class Hungarian {
     }
 
     public static int[] findUncoveredZero        //Aux 1 for hg_step4.
-            (int[] row_col, double[][] cost, int[] rowCover, int[] colCover) {
+    (int[] row_col, double[][] cost, int[] rowCover, int[] colCover) {
         row_col[0] = -1;        //Just a check value. Not a real index.
         row_col[1] = 0;
 
@@ -385,7 +385,7 @@ public class Hungarian {
     }
 
     public static int findStarInCol                        //Aux 1 for hg_step5.
-            (int[][] mask, int col) {
+    (int[][] mask, int col) {
         int r = -1;        //Again this is a check value.
         for (int i = 0; i < mask.length; i++) {
             if (mask[i][col] == 1) {
@@ -397,7 +397,7 @@ public class Hungarian {
     }
 
     public static int findPrimeInRow                //Aux 2 for hg_step5.
-            (int[][] mask, int row) {
+    (int[][] mask, int row) {
         int c = -1;
         for (int j = 0; j < mask[row].length; j++) {
             if (mask[row][j] == 2) {
@@ -409,7 +409,7 @@ public class Hungarian {
     }
 
     public static void convertPath                        //Aux 3 for hg_step5.
-            (int[][] mask, int[][] path, int count) {
+    (int[][] mask, int[][] path, int count) {
         for (int i = 0; i <= count; i++) {
             if (mask[(path[i][0])][(path[i][1])] == 1) {
                 mask[(path[i][0])][(path[i][1])] = 0;
@@ -420,7 +420,7 @@ public class Hungarian {
     }
 
     public static void erasePrimes                        //Aux 4 for hg_step5.
-            (int[][] mask) {
+    (int[][] mask) {
         for (int i = 0; i < mask.length; i++) {
             for (int j = 0; j < mask[i].length; j++) {
                 if (mask[i][j] == 2) {
@@ -431,7 +431,7 @@ public class Hungarian {
     }
 
     public static void clearCovers                        //Aux 5 for hg_step5 (and not only).
-            (int[] rowCover, int[] colCover) {
+    (int[] rowCover, int[] colCover) {
         for (int i = 0; i < rowCover.length; i++) {
             rowCover[i] = 0;
         }
@@ -463,7 +463,7 @@ public class Hungarian {
     }
 
     public static double findSmallest                //Aux 1 for hg_step6.
-            (double[][] cost, int[] rowCover, int[] colCover, double maxCost) {
+    (double[][] cost, int[] rowCover, int[] colCover, double maxCost) {
         double minval = maxCost;                                //There cannot be a larger cost than this.
         for (int i = 0; i < cost.length; i++)                //Now find the smallest uncovered value.
         {

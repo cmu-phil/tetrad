@@ -114,7 +114,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
     private void setup(BayesIm bayesIm, UpdaterParams params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
-        if (params.getEvidence() == null || !params.getEvidence().isCompatibleWith(bayesIm)) {
+        if (params.getEvidence() == null || params.getEvidence().isIncompatibleWith(bayesIm)) {
             bayesUpdater = new ApproximateUpdater(bayesIm);
         }
         else {

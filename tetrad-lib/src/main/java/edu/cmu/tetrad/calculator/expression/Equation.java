@@ -47,14 +47,14 @@ public class Equation {
     private String unparsedExpression;
 
 
-    public Equation(String variable, Expression expression, String unparsed){
-        if(variable == null){
+    public Equation(String variable, Expression expression, String unparsed) {
+        if (variable == null) {
             throw new NullPointerException("variable was null.");
         }
-        if(expression == null){
+        if (expression == null) {
             throw new NullPointerException("expression was null.");
         }
-        if(unparsed == null){
+        if (unparsed == null) {
             throw new NullPointerException("unparsed was null.");
         }
         this.unparsedExpression = unparsed;
@@ -65,17 +65,17 @@ public class Equation {
     //========================== Public Methods ======================//
 
 
-    public String getUnparsedExpression(){
+    public String getUnparsedExpression() {
         return this.unparsedExpression;
     }
 
 
-    public String getVariable(){
+    public String getVariable() {
         return this.variable;
     }
 
 
-    public Expression getExpression(){
+    public Expression getExpression() {
         return this.expression;
     }
 

@@ -86,10 +86,10 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         for (int parentDim : this.parentDims) {
             if (numCells > 1000000 /* Integer.MAX_VALUE / dim*/) {
                 throw new IllegalArgumentException(
-												   "The number of rows in the " +
-												   "probability table " +
-												   " is greater than 1,000,000 and cannot be " +
-												   "represented.");
+                        "The number of rows in the " +
+                                "probability table " +
+                                " is greater than 1,000,000 and cannot be " +
+                                "represented.");
             }
             numCells *= parentDim;
         }
@@ -106,8 +106,8 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
 
     // randomize the probability table
-	/*
-	public void createRandomCellTable() {
+    /*
+    public void createRandomCellTable() {
         double sum = 0.0;
 
         for (int i = 0; i < probs.length; i++) {
@@ -122,14 +122,14 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     }
 	 */
 
-	// clear the probability table
-	public void clearCellTable() {				
+    // clear the probability table
+    public void clearCellTable() {
         for (int i = 0; i < probs.length; i++) {
             probs[i] = Double.NaN;
         }
     }
-	
-	// get vaues by marginalizing probabilities from full bayesIm
+
+    // get vaues by marginalizing probabilities from full bayesIm
     public void createCellTable(MlBayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -137,34 +137,31 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
         BayesImProbs cellProbsOnTheFly = new BayesImProbs(bayesIm);
 
-        for (int i = 0; i < probs.length; i++) 
-		{
+        for (int i = 0; i < probs.length; i++) {
             int[] variableValues = getVariableValues(i);
-			
-			Proposition targetProp = Proposition.tautology(bayesIm);
-			for (int j = 0; j < variableValues.length; j++)
-			{
-				String nodeName = getVariables().get(j).getName();
-				Node node = bayesIm.getNode(nodeName);
-				targetProp.setCategory(bayesIm.getNodeIndex(node), 
-									   variableValues[j]);		
-			}
 
-			probs[i] = cellProbsOnTheFly.getProb(targetProp);
+            Proposition targetProp = Proposition.tautology(bayesIm);
+            for (int j = 0; j < variableValues.length; j++) {
+                String nodeName = getVariables().get(j).getName();
+                Node node = bayesIm.getNode(nodeName);
+                targetProp.setCategory(bayesIm.getNodeIndex(node),
+                        variableValues[j]);
+            }
+
+            probs[i] = cellProbsOnTheFly.getProb(targetProp);
         }
 
         //return cellProbs;
     }
 
-	// copy from another MlBayesImObs
+    // copy from another MlBayesImObs
     public void createCellTable(MlBayesImObs bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
-				
-        for (int i = 0; i < probs.length; i++) 
-		{
-			probs[i] = bayesIm.getProbability(i);
+
+        for (int i = 0; i < probs.length; i++) {
+            probs[i] = bayesIm.getProbability(i);
         }
     }
 
@@ -178,8 +175,8 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     public double getCellProb(int[] variableValues) {
         return probs[getOffset(variableValues)];
     }
-		
-	public double getProb(Proposition assertion) {
+
+    public double getProb(Proposition assertion) {
 
         // Initialize to 0's.
         int[] variableValues = new int[assertion.getNumVariables()];
@@ -201,18 +198,17 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
                     for (int j = i + 1; j < assertion.getNumVariables(); j++) {
                         if (hasNextValue(assertion, j, -1)) {
                             variableValues[j] = nextValue(assertion, j, -1);
-                        }
-                        else {
+                        } else {
                             break loop;
                         }
                     }
 
                     double cellProb = getCellProb(variableValues);
-					
+
                     if (Double.isNaN(cellProb)) {
                         continue;
                     }
-					
+
                     p += cellProb;
                     continue loop;
                 }
@@ -225,14 +221,14 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     }
 
     private static boolean hasNextValue(Proposition proposition, int variable,
-            int curIndex) {
+                                        int curIndex) {
         return nextValue(proposition, variable, curIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
-            int curIndex) {
+                                 int curIndex) {
         for (int i = curIndex + 1;
-                i < proposition.getNumCategories(variable); i++) {
+             i < proposition.getNumCategories(variable); i++) {
             if (proposition.isAllowed(variable, i)) {
                 return i;
             }
@@ -242,7 +238,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     }
 
     public double getConditionalProb(Proposition assertion,
-            Proposition condition) {
+                                     Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
@@ -270,8 +266,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
                     for (int j = i + 1; j < condition.getNumVariables(); j++) {
                         if (hasNextValue(condition, j, -1)) {
                             variableValues[j] = nextValue(condition, j, -1);
-                        }
-                        else {
+                        } else {
                             break loop;
                         }
                     }
@@ -309,10 +304,10 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         return this.variables;
     }
 
-	public int getNumRows() {
+    public int getNumRows() {
         return probs.length;
     }
-	
+
     public String toString() {
         StringBuilder buf = new StringBuilder();
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -366,46 +361,37 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
     ///////////////////////////////////////////////////////////
     // Sets the cell probability. 
-	// No guarantee the probabilities will add to 1.0 if they're
-	// set one at a time.
-	//
+    // No guarantee the probabilities will add to 1.0 if they're
+    // set one at a time.
+    //
     public void setCellProbability(int[] variableValues, double probability) {
         if (probability < 0.0 || probability > 1.0) {
             throw new IllegalArgumentException(
-							"Probability not in [0.0, 1.0]: " + probability);
+                    "Probability not in [0.0, 1.0]: " + probability);
         }
-		
+
         probs[getOffset(variableValues)] = probability;
     }
-		
+
     //============================PRIVATE METHODS==========================//
 
     /**
-     * @return the row in the table at which the given combination of parent
-     * values is represented for the given node.  The row is calculated as a
-     * variable-base place-value number.  For instance, if the array of
-     * parent dimensions is [3, 5, 7] and the parent value combination is [2,
-     * 4, 5], then the row number is (7 * (5 * (3 * 0 + 2) + 4)) + 5 = 103. This
-     * is the inverse function to getVariableValues().  <p> Note: If the node
-     * has n values, the length of 'values' must be >= the number of parents.
-     * Only the first n values are used.
-     *
      * @return the row in the table for the given node and combination of parent
-     *         values.
+     * values.
      */
     private int getOffset(int[] values) {
         int[] dim = getParentDims();
         int offset = 0;
-		
+
         for (int i = 0; i < dim.length; i++) {
             if (values[i] < 0 || values[i] >= dim[i]) {
                 throw new IllegalArgumentException();
             }
-			
+
             offset *= dim[i];
             offset += values[i];
         }
-		
+
         return offset;
     }
 
@@ -416,7 +402,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     private int[] getParentDims() {
         return this.parentDims;
     }
-	
+
 }
 
 

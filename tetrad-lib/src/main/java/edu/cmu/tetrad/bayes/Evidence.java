@@ -41,13 +41,6 @@ public final class Evidence implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
-     * Unused field. Keep to avoid breaking serialization.
-     * @serial
-     * @deprecated
-     */
-    private BayesIm bayesIm;
-
-    /**
      * A proposition stating what we know for each variable.
      *
      * @serial Cannot be null.
@@ -199,7 +192,7 @@ public final class Evidence implements TetradSerializable {
      * @return the variable for which there is evidence.
      */
     public List<Node> getVariablesInEvidence() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < getNumNodes(); i++) {
             if (proposition.getSingleCategory(i) != -1) {
                 nodes.add(getNode(i));
@@ -218,11 +211,11 @@ public final class Evidence implements TetradSerializable {
      * Returna true just in case this evidence has a list of variables
      * equal to those of the given variable source.
      */
-    public boolean isCompatibleWith(VariableSource variableSource) {
+    public boolean isIncompatibleWith(VariableSource variableSource) {
         List<Node> variables1 = getVariableSource().getVariables();
         List<Node> variables2 = variableSource.getVariables();
 
-        return variables1.equals(variables2);
+        return !variables1.equals(variables2);
     }
 
     public boolean equals(Object o) {
@@ -230,13 +223,13 @@ public final class Evidence implements TetradSerializable {
             return false;
         }
 
-        Evidence evidence = (Evidence) o;
-
-        if (!(proposition.equals(evidence.proposition))) {
+        if (!(o instanceof Evidence)) {
             return false;
         }
 
-        return manipulation.equals(evidence.manipulation);
+        Evidence evidence = (Evidence) o;
+
+        return proposition.equals(evidence.proposition) && manipulation.equals(evidence.manipulation);
 
     }
 

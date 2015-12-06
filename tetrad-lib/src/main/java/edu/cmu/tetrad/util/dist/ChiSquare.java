@@ -44,11 +44,9 @@ public class ChiSquare implements Distribution {
 
     /**
      * Constructs a new Chi Square distribution.
-     *
-     * @param df The degrees of freedom.
      */
-    public ChiSquare(double df) {
-        this.df = df;
+    private ChiSquare() {
+        this.df = 5.0;
     }
 
     /**
@@ -58,7 +56,7 @@ public class ChiSquare implements Distribution {
      */
     @SuppressWarnings({"UnusedDeclaration"})
     public static ChiSquare serializableInstance() {
-        return new ChiSquare(5.0);
+        return new ChiSquare();
     }
 
     public void setParameter(int index, double value) {

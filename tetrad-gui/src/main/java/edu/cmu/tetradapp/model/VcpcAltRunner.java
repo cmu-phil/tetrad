@@ -199,7 +199,6 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
-     * @param node
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<List<Triple>>();

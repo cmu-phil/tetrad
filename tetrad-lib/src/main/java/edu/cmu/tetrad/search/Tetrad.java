@@ -115,9 +115,8 @@ public class Tetrad {
         NumberFormat nf = new DecimalFormat("0.0000");
 
         if (Double.isNaN(pValue)) {
-            return "s("+i+","+j+")*s("+k+","+l+")-s("+i+","+k+")*s("+j+","+l+")";
-        }
-        else {
+            return "s(" + i + "," + j + ")*s(" + k + "," + l + ")-s(" + i + "," + k + ")*s(" + j + "," + l + ")";
+        } else {
             return "<" + i + ", " + j + ", " + k + ", " + l + ", " + nf.format(pValue) + ">";
         }
     }

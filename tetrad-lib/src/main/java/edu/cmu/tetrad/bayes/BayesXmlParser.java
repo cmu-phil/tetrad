@@ -62,7 +62,7 @@ public final class BayesXmlParser {
                     "Expecting 'bnVariables' element.");
         }
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         Elements elements = element0.getChildElements();
 
@@ -85,7 +85,7 @@ public final class BayesXmlParser {
             Integer y = new Integer(e1.getAttributeValue("y"));
 
             int numCategories = e2Elements.size();
-            List<String> categories = new LinkedList<String>();
+            List<String> categories = new LinkedList<>();
 
 
             for (int j = 0; j < numCategories; j++) {
@@ -109,7 +109,7 @@ public final class BayesXmlParser {
             variables.add(var);
         }
 
-        namesToVars = new HashMap<String, Node>();
+        namesToVars = new HashMap<>();
 
         for (Node v : variables) {
             String name = v.getName();
@@ -221,8 +221,7 @@ public final class BayesXmlParser {
                         double value = Double.parseDouble(token);
                         bayesIm.setProbability(nodeIndex, rowIndex, colIndex,
                                 value);
-                    }
-                    catch (NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         // Skip.
                     }
                 }

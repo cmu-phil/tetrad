@@ -43,8 +43,8 @@ public class DirectedGraphIterator {
 
 
     /**
-     * The given graphs must be a graphs. If it does not consist entirely of directed and undirected edges and if it is
-     * not acyclic, it is rejected.
+     * The given graphs must be a pattern. If it does not consist entirely of directed and
+     * undirected edges and if it is not acyclic, it is rejected.
      *
      * @throws IllegalArgumentException if the graphs is not a graphs.
      */
@@ -93,7 +93,8 @@ public class DirectedGraphIterator {
      * them in which an arbitrary undirected edge is picked, oriented one way, Meek rules applied, then a remaining
      * unoriented edge is picked, oriented one way, and so on, until a DAG is obtained, and then by backtracking the
      * other orientation of each chosen edge is tried. Nonrecursive, obviously.
-     * <p/>
+     * <p>
+     *
      * @return a Graph instead of a DAG because sometimes, due to faulty patterns, a cyclic graphs is produced, and the
      * end-user may need to decide what to do with it. The simplest thing is to construct a DAG (Dag(graphs)) and catch
      * an exception.

@@ -21,20 +21,19 @@
 
 package edu.cmu.tetrad.regression;
 
-import edu.cmu.tetrad.data.MeanInterpolator;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataFilter;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.MeanInterpolator;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @return a data set in which missing values in each column are filled using
- * the mean of that column.
- *
  * @author Joseph Ramsey
+ * Creates a data set in which missing values in each column are filled using
+ * the mean of that column.
  */
 public final class RegressionInterpolator implements DataFilter {
     public DataSet filter(DataSet dataSet) {
@@ -79,7 +78,7 @@ public final class RegressionInterpolator implements DataFilter {
                 if (m == j) continue;
 
                 ++k;
-//                regressors[k] = columns[m];
+//                `regressors[k] = columns[m];
                 regressorNames[k] = names[m];
 
                 _regressors.add(dataSet.getVariable(regressorNames[k]));

@@ -29,26 +29,9 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey
  */
-public final class ArrUtils {
+final class ArrUtils {
 
     //=========================PUBLIC METHODS===========================//
-
-    /**
-     * Copies a 2D double arr.
-     *
-     * @param arr the array to copy.
-     * @return the copied array.
-     */
-    public static double[] copy(double[] arr) {
-        if (arr == null) {
-            return null;
-        }
-
-        double[] copy = new double[arr.length];
-        System.arraycopy(arr, 0, copy, 0, arr.length);
-
-        return copy;
-    }
 
     /**
      * Copies a 2D double arr.
@@ -65,28 +48,6 @@ public final class ArrUtils {
         System.arraycopy(arr, 0, copy, 0, arr.length);
 
         return copy;
-    }
-
-    /**
-     * Tests two vectors for equality.
-     *
-     * @param va the first vector to be tested for equality.
-     * @param vb the second vector to be tested for equality. Same length as the first.
-     * @return true if the vectors are the same length and va[i] == vb[i] for each i.
-     */
-    public static boolean equals(double[] va, double[] vb) {
-        if (va.length != vb.length) {
-            throw new IllegalArgumentException(
-                    "Incompatible matrix dimensions.");
-        }
-
-        for (int i = 0; i < va.length; i++) {
-            if (Math.abs(va[i] - vb[i]) != 0.0) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -128,7 +89,7 @@ public final class ArrUtils {
      * @param nf  The number format to use.
      * @return The formatted string.
      */
-    public static String toString(double[] arr, NumberFormat nf) {
+    private static String toString(double[] arr, NumberFormat nf) {
         String result;
         if (nf == null) {
             throw new NullPointerException("NumberFormat must not be null.");
@@ -152,11 +113,9 @@ public final class ArrUtils {
 
 
     private static String nullMessage() {
-        StringBuilder buf = new StringBuilder();
-        buf.append("\n");
-        buf.append("\t");
-        buf.append("<Matrix is null>");
-        return buf.toString();
+        return "\n" +
+                "\t" +
+                "<Matrix is null>";
     }
 }
 

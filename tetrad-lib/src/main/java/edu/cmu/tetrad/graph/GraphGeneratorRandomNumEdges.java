@@ -57,7 +57,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public final class GraphGeneratorRandomNumEdges {
-    public static final int ANY_DAG = 0;
+    private static final int ANY_DAG = 0;
 
     /**
      * Indicates the structural assumption. May be ANY_DAG, CONNECTED_DAG.
@@ -137,7 +137,7 @@ public final class GraphGeneratorRandomNumEdges {
 
     //===============================PUBLIC METHODS========================//
 
-    public int getNumNodes() {
+    private int getNumNodes() {
         return numNodes;
     }
 
@@ -163,20 +163,16 @@ public final class GraphGeneratorRandomNumEdges {
         return maxEdges;
     }
 
-    public int getNumIterations() {
+    private int getNumIterations() {
         return numIterations;
     }
 
-    public void setNumIterations(int numIterations) {
-        this.numIterations = numIterations;
-    }
-
-    public int getStructure() {
+    private int getStructure() {
         return structure;
     }
 
 
-    public int getMinEdges() {
+    private int getMinEdges() {
         return minEdges;
     }
 
@@ -193,7 +189,7 @@ public final class GraphGeneratorRandomNumEdges {
         this.minEdges = minEdges;
     }
 
-    public int getMaxPossibleEdges() {
+    private int getMaxPossibleEdges() {
         return getNumNodes() * (getNumNodes() - 1) / 2;
     }
 
@@ -221,8 +217,7 @@ public final class GraphGeneratorRandomNumEdges {
     public void generate() {
         if (ANY_DAG == getStructure()) {
             generateArbitraryDag();
-        }
-        else {
+        } else {
             throw new IllegalStateException("Unknown structure type.");
         }
     }
@@ -230,7 +225,7 @@ public final class GraphGeneratorRandomNumEdges {
     public Dag getDag() {
         Dag dag = new Dag();
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(0);
 
@@ -258,24 +253,12 @@ public final class GraphGeneratorRandomNumEdges {
         return dag;
     }
 
-    public void printEdges() {
-        System.out.println("Edges:");
-        for (int i = 0; i < getNumNodes(); i++) {
-            for (int j = 1; j < childMatrix[i][0]; j++) {
-                System.out.println("\t" + i + " --> " + childMatrix[i][j]);
-            }
-        }
-    }
-
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        String buf = "\nStructural information for generated graph:" +
+                "\n\tNumber of nodes:" + getNumNodes() +
+                "\n\tNumber of transitions between samples:" + getNumIterations();
 
-        buf.append("\nStructural information for generated graph:");
-        buf.append("\n\tNumber of nodes:").append(getNumNodes());
-        buf.append("\n\tNumber of transitions between samples:").append(
-                getNumIterations());
-
-        return buf.toString();
+        return buf;
     }
 
     //================================PRIVATE METHODS======================//
@@ -293,8 +276,7 @@ public final class GraphGeneratorRandomNumEdges {
                     removeEdge();
                     numEdges--;
                 }
-            }
-            else {
+            } else {
                 if ((numEdges < getMaxEdges() && isAcyclic())) {
                     addEdge();
                     numEdges++;
@@ -337,8 +319,7 @@ public final class GraphGeneratorRandomNumEdges {
                     if (parentMatrix[currentNode][i] != randomChild) {
                         list[lastIndex] = parentMatrix[currentNode][i];
                         lastIndex++;
-                    }
-                    else {
+                    } else {
                         noCycle = false;
                     }
                     visited[parentMatrix[currentNode][i]] = true;
@@ -383,8 +364,7 @@ public final class GraphGeneratorRandomNumEdges {
         int rest = rand - randomParent * (getNumNodes() - 1);
         if (rest >= randomParent) {
             randomChild = rest + 1;
-        }
-        else {
+        } else {
             randomChild = rest;
         }
     }
@@ -411,15 +391,13 @@ public final class GraphGeneratorRandomNumEdges {
                 (childMatrix[randomParent][0] != 1)) {
             lastNode =
                     parentMatrix[randomChild][parentMatrix[randomChild][0] - 1];
-            for (int i = (parentMatrix[randomChild][0] - 1); (i > 0 && go); i--)
-            { // remove element from parentMatrix
+            for (int i = (parentMatrix[randomChild][0] - 1); (i > 0 && go); i--) { // remove element from parentMatrix
                 atualNode = parentMatrix[randomChild][i];
                 if (atualNode != randomParent) {
                     proxNode = atualNode;
                     parentMatrix[randomChild][i] = lastNode;
                     lastNode = proxNode;
-                }
-                else {
+                } else {
                     parentMatrix[randomChild][i] = lastNode;
                     go = false;
                 }
@@ -436,8 +414,7 @@ public final class GraphGeneratorRandomNumEdges {
                         proxNode = atualNode;
                         childMatrix[randomParent][i] = lastNode;
                         lastNode = proxNode;
-                    }
-                    else {
+                    } else {
                         childMatrix[randomParent][i] = lastNode;
                         go = false;
                     }

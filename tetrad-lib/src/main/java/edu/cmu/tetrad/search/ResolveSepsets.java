@@ -47,13 +47,6 @@ public final class ResolveSepsets {
      * Resolves all inconsistencies between sepsets using a paricular method. Returns a sepsetMapDci with the resolved
      * separations and associations. resolvedIndependent and resolvedDependent keep up with the number resolved to check
      * later against the truth
-     *
-     * @param sepsets
-     * @param independenceTests
-     * @param method
-     * @param resolvedIndependent
-     * @param resolvedDependent
-     * @return
      */
     public static SepsetMapDci ResolveSepsets(List<SepsetMapDci> sepsets, List<IndependenceTest> independenceTests,
                                               Method method, SepsetMapDci resolvedIndependent, SepsetMapDci resolvedDependent) {
@@ -226,13 +219,6 @@ public final class ResolveSepsets {
 
     /**
      * Tests for independence using one of the pooled methods
-     *
-     * @param method
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         if (method == Method.fisher) {
@@ -266,14 +252,8 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Fisher's method.
-     * <p/>
+     * <p>
      * See R. A. Fisher. Statistical Methods for Research Workers. Oliver and Boyd, 11th edition, 1950.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledFisher(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -303,8 +283,8 @@ public final class ResolveSepsets {
 
         for (double p : pValues) {
 //            if (p > 0) {
-                tf += -2.0 * Math.log(p);
-                numPValues++;
+            tf += -2.0 * Math.log(p);
+            numPValues++;
 //            }
         }
 
@@ -315,14 +295,8 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Tippett's method
-     * <p/>
+     * <p>
      * See L. H. C. Tippett. The Method of Statistics. Williams and Norgate, 1st edition, 1950.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledTippett(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -348,15 +322,8 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Wilkinson's method
-     * <p/>
+     * <p>
      * I don't have a reference for this but its basically in between Tippett and Worsley and Friston.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @param r
-     * @return
      */
     public static boolean isIndependentPooledWilkinson(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet, int r) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -372,15 +339,9 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Worsley and Friston's method
-     * <p/>
+     * <p>
      * See K. J. Worsely and K. J. Friston. A test for conjunction. Statistics and Probability Letters
      * 2000.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledWorsleyFriston(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -406,15 +367,9 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Stouffer et al.'s method
-     * <p/>
+     * <p>
      * See S. A. Stouffer, E. A. Suchman, L. C. Devinney, S. A. Star, and R. M. Williams. The American Soldier: Vol. 1.
      * Adjustment During Army Life. Princeton University Press, 1949.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledStouffer(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -433,15 +388,9 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples using Mudholker and George's method
-     * <p/>
+     * <p>
      * See G. S. Mudholkar and E. O. George. The logit method for combining probabilities. In J. Rustagi, editor,
      * Symposium on Optimizing Method in Statistics, pages 345-366. Academic Press, 1979.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -479,12 +428,6 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples by taking the average p value
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledAverage(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -555,12 +498,6 @@ public final class ResolveSepsets {
     /**
      * Checks independence from pooled samples by taking the average test statistic CURRENTLY ONLY WORKS FOR CHISQUARE
      * TEST
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledAverageTest(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -585,12 +522,6 @@ public final class ResolveSepsets {
 
     /**
      * Checks independence from pooled samples by randomly selecting a p value
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     public static boolean isIndependentPooledRandom(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
@@ -622,12 +553,6 @@ public final class ResolveSepsets {
      * Judges x to be independent of y conditional on condSet if the false discovery rate of the p values for the
      * separate judgements for their collective alpha level identifies no more than # p values / 2 values below
      * threshold.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     private static boolean isIndependentMajorityFdr(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         List<Double> allPValues = getAvailablePValues(independenceTests, x, y, condSet);
@@ -680,12 +605,6 @@ public final class ResolveSepsets {
      * Judges x to be independent of y conditional on condSet if the false discovery rate of the p values for the
      * separate judgements for their collective alpha level identifies no more than # p values / 2 values below
      * threshold.
-     *
-     * @param independenceTests
-     * @param x
-     * @param y
-     * @param condSet
-     * @return
      */
     private static boolean isIndependentMajorityIndep(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         List<Double> allPValues = getAvailablePValues(independenceTests, x, y, condSet);

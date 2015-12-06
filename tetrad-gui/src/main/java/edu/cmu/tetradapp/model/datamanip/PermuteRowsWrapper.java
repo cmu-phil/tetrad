@@ -37,8 +37,6 @@ public class PermuteRowsWrapper extends DataWrapper {
 
     /**
      * Constructs the wrapper given some data and the params.
-     *
-     * @param data
      */
     public PermuteRowsWrapper(DataWrapper data) {
         if (data == null) {

@@ -44,19 +44,17 @@ public class Beta implements Distribution {
 
     /**
      * Ibid.
-     * @param alpha Ibid.
-     * @param beta  Ibid.
      */
-    public Beta(double alpha, double beta) {
-        this.alpha = alpha;
-        this.beta = beta;
+    private Beta() {
+        this.alpha = .5;
+        this.beta = .5;
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static Beta serializableInstance() {
-        return new Beta(.5, .5);
+        return new Beta();
     }
 
     /**
@@ -107,6 +105,7 @@ public class Beta implements Distribution {
 
     /**
      * Uh, there are 2 parameters...
+     *
      * @return Ibid.
      */
     public int getNumParameters() {

@@ -417,10 +417,9 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     /**
+     * @param tIndex an int in the range [numReps - numTimeSteps + 1, numReps].
      * @return the row of the data indexed so that the last row has index numReps and the first row has index numReps -
      * numTimeSteps + 1.
-     *
-     * @param tIndex an int in the range [numReps - numTimeSteps + 1, numReps].
      */
     private double[][] yPrime(int tIndex) {
 
@@ -959,15 +958,15 @@ public final class IndTestTimeSeries implements IndependenceTest {
                         s(1, 2) * s(3, 5) * s(3, 5) -
                         s(1, 3) * s(2, 3) * s(5, 5) +
                         s(1, 2) * s(3, 3) * s(5, 5), s(1, 5) * s(2, 4) *
-                        s(3, 3) + s(1, 4) * s(2, 5) * s(3, 3) -
-                        s(1, 5) * s(2, 3) * s(3, 4) - s(1, 3) * s(2, 5) * s(3, 4) -
-                        s(1, 4) * s(2, 3) * s(3, 5) - s(1, 3) * s(2, 4) * s(3, 5) +
-                        2 * s(1, 2) * s(3, 4) * s(3, 5) +
-                        2 * s(1, 3) * s(2, 3) * s(4, 5) -
-                        2 * s(1, 2) * s(3, 3) * s(4, 5), -s(1, 4) * s(2, 4) * s(3, 3) +
-                        s(1, 4) * s(2, 3) * s(3, 4) + s(1, 3) * s(2, 4) * s(3, 4) -
-                        s(1, 2) * s(3, 4) * s(3, 4) - s(1, 3) * s(2, 3) * s(4, 4) +
-                        s(1, 2) * s(3, 3) * s(4, 4)};
+                s(3, 3) + s(1, 4) * s(2, 5) * s(3, 3) -
+                s(1, 5) * s(2, 3) * s(3, 4) - s(1, 3) * s(2, 5) * s(3, 4) -
+                s(1, 4) * s(2, 3) * s(3, 5) - s(1, 3) * s(2, 4) * s(3, 5) +
+                2 * s(1, 2) * s(3, 4) * s(3, 5) +
+                2 * s(1, 3) * s(2, 3) * s(4, 5) -
+                2 * s(1, 2) * s(3, 3) * s(4, 5), -s(1, 4) * s(2, 4) * s(3, 3) +
+                s(1, 4) * s(2, 3) * s(3, 4) + s(1, 3) * s(2, 4) * s(3, 4) -
+                s(1, 2) * s(3, 4) * s(3, 4) - s(1, 3) * s(2, 3) * s(4, 4) +
+                s(1, 2) * s(3, 3) * s(4, 4)};
     }
 
     /**

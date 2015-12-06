@@ -222,7 +222,6 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static GraphWrapper serializableInstance() {
@@ -298,7 +297,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 //
 //                graph = DataGraphUtils.addCycles2(dag, minNumCycles, minCycleLength);
 
-                graph = GraphUtils.cyclicGraph4(numMeasuredNodes + numLatents, newGraphNumEdges);
+                graph = GraphUtils.cyclicGraph2(numMeasuredNodes + numLatents, newGraphNumEdges);
             } else {
                 graph = new EdgeListGraph(dag);
             }

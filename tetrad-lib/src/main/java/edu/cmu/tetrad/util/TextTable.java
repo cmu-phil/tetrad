@@ -34,13 +34,13 @@ public class TextTable {
      * Set <code>justification</code> to this if the columns should be left
      * justified.
      */
-    public static int LEFT_JUSTIFIED = 0;
+    private static final int LEFT_JUSTIFIED = 0;
 
     /**
      * Set <code>justification</code> to this if the columns should be right
      * justified.
      */
-    public static int RIGHT_JUSTIFIED = 1;
+    private static final int RIGHT_JUSTIFIED = 1;
 
     /**
      * The tokens to be printed out.
@@ -119,7 +119,7 @@ public class TextTable {
     /**
      * @return the number of spaces between columns, by default 2.
      */
-    public int getColumnSpacing() {
+    private int getColumnSpacing() {
         return columnSpacing;
     }
 
@@ -137,7 +137,7 @@ public class TextTable {
     /**
      * @return the justification, either LEFT_JUSTIFIED or RIGHT_JUSTIFIED.
      */
-    public int getJustification() {
+    private int getJustification() {
         return justification;
     }
 

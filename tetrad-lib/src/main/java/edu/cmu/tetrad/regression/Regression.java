@@ -37,33 +37,35 @@ public interface Regression {
     /**
      * Sets the significance level at which coefficients are judged to be
      * significant.
+     *
      * @param alpha the significance level.
      */
     void setAlpha(double alpha);
 
     /**
-     * @return the graph of significant regressors into the target.
      * @return This graph.
      */
     Graph getGraph();
 
     /**
-     * Retresses <code>target</code> on the <code>regressors</code>, yielding
+     * Regresses <code>target</code> on the <code>regressors</code>, yielding
      * a regression plane.
-     * @param target the target variable, being regressed.
+     *
+     * @param target     the target variable, being regressed.
      * @param regressors the list of variables being regressed on.
      * @return the regression plane.
      */
     RegressionResult regress(Node target, List<Node> regressors);
 
     /**
-     * Retresses <code>target</code> on the <code>regressors</code>, yielding
+     * Regresses <code>target</code> on the <code>regressors</code>, yielding
      * a regression plane.
-     * @param target the target variable, being regressed.
+     *
+     * @param target     the target variable, being regressed.
      * @param regressors the list of variables being regressed on.
      * @return the regression plane.
      */
-    RegressionResult regress(Node target, Node...regressors);
+    RegressionResult regress(Node target, Node... regressors);
 }
 
 

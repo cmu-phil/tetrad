@@ -56,7 +56,7 @@ public final class Pattern implements TetradSerializable, Graph {
     /**
      * Constructs a new blank Pattern.
      */
-    public Pattern() {
+    private Pattern() {
         List<GraphConstraint> constraints1 = Arrays.asList(constraints);
 
         for (Object aConstraints1 : constraints1) {
@@ -100,7 +100,7 @@ public final class Pattern implements TetradSerializable, Graph {
         this.getGraph().transferNodesAndEdges(graph);
     }
 
-     public Set<Triple> getAmbiguousTriples() {
+    public Set<Triple> getAmbiguousTriples() {
         return getGraph().getAmbiguousTriples();
     }
 
@@ -206,8 +206,8 @@ public final class Pattern implements TetradSerializable, Graph {
         return graph.getSepset(n1, n2);
     }
 
-    public void closeInducingPaths() {
-        List<Node> list = new LinkedList<Node>(getNodes());
+    private void closeInducingPaths() {
+        List<Node> list = new LinkedList<>(getNodes());
 
         // look for inducing undirectedPaths over all pairs of nodes.
         for (int i = 0; i < list.size(); i++) {
@@ -219,9 +219,6 @@ public final class Pattern implements TetradSerializable, Graph {
 
                 Node node1 = list.get(i);
                 Node node2 = list.get(j);
-
-                Set<Node> allNodes = new HashSet<Node>(list);
-                Set<Node> empty = new HashSet<Node>();
 
                 if (existsInducingPath(node1, node2)) {
                     //is this the right check, or do I have to look at different cond sets?
@@ -239,11 +236,9 @@ public final class Pattern implements TetradSerializable, Graph {
     private Edge appropriateClosingEdge(Node node1, Node node2) {
         if (isAncestorOf(node1, node2)) {
             return Edges.directedEdge(node1, node2);
-        }
-        else if (isAncestorOf(node2, node1)) {
+        } else if (isAncestorOf(node2, node1)) {
             return Edges.directedEdge(node2, node1);
-        }
-        else {
+        } else {
             return Edges.nondirectedEdge(node1, node2);
         }
     }
@@ -302,7 +297,7 @@ public final class Pattern implements TetradSerializable, Graph {
     }
 
     public boolean equals(Object o) {
-        return getGraph().equals(o);
+        return (o instanceof Dag) && getGraph().equals(o);
     }
 
     public Graph subgraph(List<Node> nodes) {
@@ -506,7 +501,7 @@ public final class Pattern implements TetradSerializable, Graph {
     }
 
     public boolean isDConnectedTo(Node node1, Node node2,
-            List<Node> conditioningNodes) {
+                                  List<Node> conditioningNodes) {
         return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
     }
 

@@ -58,7 +58,7 @@ public class TestPcMax extends TestCase {
     }
 
     public void testPcMax() {
-        int numVars = 100;
+        int numVars = 10;
         double edgesPerNode = 1.0;
         int numCases = 1000;
         double alpha = .005;
@@ -160,7 +160,7 @@ public class TestPcMax extends TestCase {
     }
 
     public void testPcMaxDiscrete() {
-        int numVars = 100;
+        int numVars = 10;
         double edgesPerNode = 1.0;
         int numCases = 1000;
         double alpha = .01;

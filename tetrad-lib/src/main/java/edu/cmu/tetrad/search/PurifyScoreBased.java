@@ -280,7 +280,7 @@ public class PurifyScoreBased implements IPurify {
                     bestGraph.getNode(this.measuredNodes.get(i).toString()));
             if (parents.size() > 1) {
                 boolean latent_found = false;
-                for (Iterator it = parents.iterator(); it.hasNext();) {
+                for (Iterator it = parents.iterator(); it.hasNext(); ) {
                     Node parent = (Node) it.next();
                     if (parent.getNodeType() == NodeType.LATENT) {
                         if (latent_found) {
@@ -558,7 +558,7 @@ public class PurifyScoreBased implements IPurify {
                         new int[semMag.getParents(node).size() - 1];
                 int count = 0;
                 for (Iterator it =
-                        semMag.getParents(node).iterator(); it.hasNext();) {
+                     semMag.getParents(node).iterator(); it.hasNext(); ) {
                     Node parent = (Node) it.next();
                     if (parent.getNodeType() == NodeType.LATENT) {
                         this.parentsLat[i][count++] =
@@ -580,7 +580,7 @@ public class PurifyScoreBased implements IPurify {
                 correlatedErrors[i][j] = false;
             }
         }
-        for (Iterator it = semMag.getEdges().iterator(); it.hasNext();) {
+        for (Iterator it = semMag.getEdges().iterator(); it.hasNext(); ) {
             Edge nextEdge = (Edge) it.next();
             if (nextEdge.getEndpoint1() == Endpoint.ARROW &&
                     nextEdge.getEndpoint2() == Endpoint.ARROW) {
@@ -606,7 +606,7 @@ public class PurifyScoreBased implements IPurify {
             this.parentsL[i] = new boolean[semMag.getParents(node).size() - 1];
             int count = 0;
             for (Iterator it =
-                    semMag.getParents(node).iterator(); it.hasNext();) {
+                 semMag.getParents(node).iterator(); it.hasNext(); ) {
                 Node parent = (Node) it.next();
                 if (parent.getNodeType() == NodeType.LATENT) {
                     this.parents[i][count] =
@@ -932,7 +932,7 @@ public class PurifyScoreBased implements IPurify {
                 this.covErrors[i][j] = 0.;
             }
         }
-        for (Iterator it = semIm.getFreeParameters().iterator(); it.hasNext();) {
+        for (Iterator it = semIm.getFreeParameters().iterator(); it.hasNext(); ) {
             Parameter nextP = (Parameter) it.next();
             if (nextP.getType() == ParamType.COEF) {
                 Node node1 = nextP.getNodeA();
@@ -1568,8 +1568,8 @@ public class PurifyScoreBased implements IPurify {
                     semIm.setParamValue(node, node, this.varErrorLatent[i]);
                 } else {
                     for (Iterator it =
-                            semIm.getSemPm().getGraph().getParents(node)
-                                    .iterator(); it.hasNext();) {
+                         semIm.getSemPm().getGraph().getParents(node)
+                                 .iterator(); it.hasNext(); ) {
                         Node nextParent = (Node) it.next();
                         if (nextParent.getNodeType() == NodeType.ERROR) {
                             semIm.setParamValue(nextParent, nextParent,
@@ -1596,8 +1596,7 @@ public class PurifyScoreBased implements IPurify {
 
             return -semIm.getTruncLL() - 0.5 * semIm.getNumFreeParams() *
                     Math.log(this.covarianceMatrix.getSampleSize());
-        }
-        catch (java.lang.IllegalArgumentException e) {
+        } catch (java.lang.IllegalArgumentException e) {
             System.out.println("** Warning: " + e.toString());
             return -Double.MAX_VALUE;
         }
@@ -1914,7 +1913,7 @@ public class PurifyScoreBased implements IPurify {
         if (this.forbiddenList == null) {
             return false;
         }
-        for (Iterator it = this.forbiddenList.iterator(); it.hasNext();) {
+        for (Iterator it = this.forbiddenList.iterator(); it.hasNext(); ) {
             Set nextPair = (Set) it.next();
             if (nextPair.contains(name1) && nextPair.contains(name2)) {
                 return true;

@@ -140,12 +140,6 @@ public class GwpResult {
 
     /**
      * constructor for evaluations where the method evaluated purports to give us the entire structure.
-     *
-     * @param methodName
-     * @param adj
-     * @param ori
-     * @param coeffAll
-     * @param coeffSome
      */
     public GwpResult(String methodName, AdjacencyEvaluationResult adj, OrientationEvaluationResult ori,
                      CoefficientEvaluationResult coeffAll, CoefficientEvaluationResult coeffSome) {
@@ -161,10 +155,8 @@ public class GwpResult {
     /**
      * constructor for evaluations where the method evaluated purports to give us the Markov-equivalence class, represented
      * by a pattern.
-     * <p/>
+     * <p>
      * * @param methodName
-     *
-     * @param pat
      */
     public GwpResult(String methodName, PatternEvaluationResult pat) {
         super();

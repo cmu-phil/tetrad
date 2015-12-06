@@ -139,7 +139,7 @@ public class MimbuildTrek {
         this.latentsCov = latentscov;
         Graph graph;
 
-        Cpc search = new Cpc(new IndTestTrekSep(measuresCov, alpha, clustering, latents ));
+        Cpc search = new Cpc(new IndTestTrekSep(measuresCov, alpha, clustering, latents));
         search.setKnowledge(knowledge);
         graph = search.search();
 
@@ -204,7 +204,6 @@ public class MimbuildTrek {
     }
 
     /**
-     *
      * @return the full discovered graph, with latents and indicators.
      */
     public Graph getFullGraph() {

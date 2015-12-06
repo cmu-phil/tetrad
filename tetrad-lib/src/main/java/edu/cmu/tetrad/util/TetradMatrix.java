@@ -136,8 +136,8 @@ public class TetradMatrix implements TetradSerializable {
             return new TetradMatrix(rows.length, cols.length);
         }
 
-        for (int i = 0; i < cols.length; i++) {
-            if (cols[i] == -1) {
+        for (int col : cols) {
+            if (col == -1) {
                 System.out.println();
             }
         }

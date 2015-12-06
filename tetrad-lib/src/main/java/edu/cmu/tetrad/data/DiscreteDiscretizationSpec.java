@@ -107,14 +107,6 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (remap == null) {
-            throw new NullPointerException();
-        }
-
-        if (categories == null) {
-            throw new NullPointerException();
-        }
     }
 }
 

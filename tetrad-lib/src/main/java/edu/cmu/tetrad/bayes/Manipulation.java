@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 
 /**
  * Stores information for a variable source about evidence we have for each variable as
@@ -36,13 +37,6 @@ import java.io.ObjectInputStream;
 public final class Manipulation implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    /**
-     * Bayes IM that this is evidence for.
-     *
-     * @serial Cannot be null.
-     * @deprecated
-     */
-    private BayesIm bayesIm;
     private VariableSource variableSource;
 
     /**
@@ -120,6 +114,10 @@ public final class Manipulation implements TetradSerializable {
             return false;
         }
 
+        if (!(o instanceof Manipulation)) {
+            return false;
+        }
+
         Manipulation evidence = (Manipulation) o;
 
         if (!(getVariableSource() == evidence.getVariableSource())) {
@@ -138,7 +136,7 @@ public final class Manipulation implements TetradSerializable {
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + getVariableSource().hashCode();
-        hashCode = 19 * hashCode + manipulated.hashCode();
+        hashCode = 19 * hashCode + Arrays.hashCode(manipulated);
         return hashCode;
     }
 

@@ -21,13 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.PermutationGenerator;
-import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -48,11 +44,11 @@ public class BinaryFunctionUtils {
         this.numArgs = numArgs;
     }
 
-    public void printAllFunctions() {
-        for (int i = 0; i < getNumFunctions(); i++) {
-            System.out.println(new BinaryFunction(numArgs, i));
-        }
-    }
+//    public void printAllFunctions() {
+//        for (int i = 0; i < getNumFunctions(); i++) {
+//            System.out.println(new BinaryFunction(numArgs, i));
+//        }
+//    }
 
     public long getNumFunctions() {
         int numRows = getNumRows();
@@ -155,117 +151,6 @@ public class BinaryFunctionUtils {
         return false;
     }
 
-    public List<BinaryFunction> findNontransitiveTriple() {
-        long numFunctions = getNumFunctions();
-        int n = 0;
-
-        RandomUtil random = RandomUtil.getInstance();
-
-        for (long t1 = 0; t1 < numFunctions; t1++) {
-//        for (int i = 1; i < 500; i++) {
-//            long t1a = random.nextLong(numFunctions);
-
-            BinaryFunction g1 = new BinaryFunction(numArgs, t1);
-            if (!satisfiesTestPair(g1)) continue;
-
-            PermutationGenerator cg1 = new PermutationGenerator(numArgs);
-            int[] p1;
-
-            while ((p1 = cg1.next()) != null) {
-                long switched1 = g1.switchColsFull(p1);
-                BinaryFunction g2 = new BinaryFunction(g1.getNumArgs(), switched1);
-                if (g1.equals(g2)) continue;
-                if (!satisfiesTestPair(g2)) continue;
-
-                PermutationGenerator cg2 = new PermutationGenerator(numArgs);
-                int[] p2;
-
-                while ((p2 = cg2.next()) != null) {
-                    long switched2 = g2.switchColsFull(p2);
-                    BinaryFunction g3 = new BinaryFunction(g2.getNumArgs(), switched2);
-                    if (g3.equals(g1)) continue;
-                    if (g3.equals(g2)) continue;
-                    if (!satisfiesTestPair(g3)) continue;
-
-                    boolean transposable = equalsUnderSomePermutation(g1, g3);
-
-                    if (!transposable) {
-                        LinkedList<BinaryFunction> list = new LinkedList<BinaryFunction>();
-                        list.add(g1);
-                        list.add(g2);
-                        list.add(g3);
-
-                        ++n;
-
-                        System.out.println("#" + n);
-
-                        System.out.println("G1" + g1);
-                        System.out.println("G2" + g2);
-                        System.out.println("G3" + g3);
-                        System.out.println("==============");
-
-//                        if (n == 100) {
-//                            return list;
-//                        }
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public long count2() {
-        Set<Integer> variables = new HashSet<Integer>();
-        for (int i = 0; i < numArgs; i++) variables.add(i);
-        long numFunctions = getNumFunctions();
-
-        Set<BinaryFunction> prototypes = new HashSet<BinaryFunction>();
-
-        for (long index = 0; index < numFunctions; index++) {
-            if (index % 1000 == 0) System.out.println(index + " " + prototypes.size());
-
-            BinaryFunction candidate = new BinaryFunction(numArgs, index);
-
-            if (candidate.getOppositeFunction() < index) {
-                continue;
-            }
-
-            if (candidate.getSymmetricFunction() < index) {
-                continue;
-            }
-
-            if (candidate.getSymmetricOppositeFunction() < index) {
-                continue;
-            }
-
-            if (!satisfiesTestPair(candidate)) {
-                continue;
-            }
-
-//            System.out.println("a");
-
-            if (classOfSomePrototype(candidate, prototypes)) {
-                continue;
-            }
-
-            prototypes.add(candidate);
-        }
-
-        return prototypes.size();
-
-    }
-
-    private boolean classOfSomePrototype(BinaryFunction candidate, Set<BinaryFunction> prototypes) {
-        for (BinaryFunction f3 : prototypes) {
-            if (equalsUnderSomePermutation(candidate, f3)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * @return true if f1 is equal to f2 under some column permutation.
      */
@@ -282,18 +167,18 @@ public class BinaryFunctionUtils {
         return false;
     }
 
-    private boolean equalsUnderBinaryPermutation(BinaryFunction f1, BinaryFunction f2) {
-        ChoiceGenerator pg = new ChoiceGenerator(f1.getNumArgs(), 2);
-        int[] permutation;
-
-        while ((permutation = pg.next()) != null) {
-            if (equalsUnderBinaryPermutation(f1, f2, permutation)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+//    private boolean equalsUnderBinaryPermutation(BinaryFunction f1, BinaryFunction f2) {
+//        ChoiceGenerator pg = new ChoiceGenerator(f1.getNumArgs(), 2);
+//        int[] permutation;
+//
+//        while ((permutation = pg.next()) != null) {
+//            if (equalsUnderBinaryPermutation(f1, f2, permutation)) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
 
     public boolean checkTriple(int numArgs, boolean[] g1Rows, boolean[] g2Rows, boolean[] g3Rows) {
         BinaryFunction g1 = new BinaryFunction(numArgs, g1Rows);
@@ -344,26 +229,26 @@ public class BinaryFunctionUtils {
         return true;
     }
 
-    /**
-     * True if f1 equals f3, where f3 has been tranposed according to choice.
-     */
-    private boolean equalsUnderBinaryPermutation(BinaryFunction f1, BinaryFunction f3, int[] choice) {
-        boolean isTransposable = true;
-
-        for (int i = 0; i < f1.getNumRows(); i++) {
-            boolean[] row = f1.getRow(i);
-
-            boolean temp = row[choice[0]];
-            row[choice[0]] = row[choice[1]];
-            row[choice[1]] = temp;
-
-            if (f1.getValue(row) != f3.getValue(row)) {
-                isTransposable = false;
-            }
-        }
-
-        return isTransposable;
-    }
+//    /**
+//     * True if f1 equals f3, where f3 has been tranposed according to choice.
+//     */
+//    private boolean equalsUnderBinaryPermutation(BinaryFunction f1, BinaryFunction f3, int[] choice) {
+//        boolean isTransposable = true;
+//
+//        for (int i = 0; i < f1.getNumRows(); i++) {
+//            boolean[] row = f1.getRow(i);
+//
+//            boolean temp = row[choice[0]];
+//            row[choice[0]] = row[choice[1]];
+//            row[choice[1]] = temp;
+//
+//            if (f1.getValue(row) != f3.getValue(row)) {
+//                isTransposable = false;
+//            }
+//        }
+//
+//        return isTransposable;
+//    }
 
     private boolean equalsUnderPermutation(BinaryFunction f1,
                                            BinaryFunction f3,

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;

@@ -33,7 +33,9 @@ import edu.cmu.tetrad.util.TetradVector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.GaussianPower;
 import org.apache.commons.math3.analysis.MultivariateFunction;
-import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.QRDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.PointValuePair;
@@ -49,14 +51,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
-import static java.lang.Math.cosh;
-import static java.lang.Math.log;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 /**
  * The code used within this class is largely Gustave Lacerda's, which corresponds to his essay, Discovering Cyclic
  * Causal Models by Independent Components Analysis. The code models the LiNG algorithm.
- *
+ * <p>
  * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015</p>
  */
 public class Ling implements GraphGroupSearch {
@@ -478,7 +478,8 @@ public class Ling implements GraphGroupSearch {
                 System.out.println("Covariance matrix is not positive definite.");
             }
 
-            TetradMatrix sqrt = cov.sqrt();;
+            TetradMatrix sqrt = cov.sqrt();
+            ;
 
             TetradMatrix I = TetradMatrix.identity(rows);
             TetradMatrix AI = I.copy();
@@ -726,7 +727,7 @@ public class Ling implements GraphGroupSearch {
     private StoredGraphs findCandidateModel(List<Node> variables, TetradMatrix matrixW, boolean approximateZeros) {
 
         TetradMatrix normalizedZldW;
-        List<PermutationMatrixPair > zldPerms;
+        List<PermutationMatrixPair> zldPerms;
 
         StoredGraphs gs = new StoredGraphs();
 
@@ -741,7 +742,7 @@ public class Ling implements GraphGroupSearch {
         System.out.println("Calculated zeroless diagonal permutations.");
 
         //for each W~, compute a candidate B, and score it
-        for (PermutationMatrixPair  zldPerm : zldPerms) {
+        for (PermutationMatrixPair zldPerm : zldPerms) {
             TetradLogger.getInstance().log("lingDetails", "" + zldPerm);
             System.out.println(zldPerm);
 
@@ -793,7 +794,7 @@ public class Ling implements GraphGroupSearch {
 
 
     private List<PermutationMatrixPair> zerolessDiagonalPermutations(TetradMatrix ica_W, boolean approximateZeros,
-                                                                           List<Node> vars, DataSet dataSet) {
+                                                                     List<Node> vars, DataSet dataSet) {
 
         List<PermutationMatrixPair> permutations = new Vector<PermutationMatrixPair>();
 
@@ -825,10 +826,10 @@ public class Ling implements GraphGroupSearch {
         return permutations;
     }
 
-    private List<PermutationMatrixPair > zerolessDiagonalPermutation(TetradMatrix ica_W, boolean approximateZeros,
-                                                                          List<Node> vars, DataSet dataSet) {
+    private List<PermutationMatrixPair> zerolessDiagonalPermutation(TetradMatrix ica_W, boolean approximateZeros,
+                                                                    List<Node> vars, DataSet dataSet) {
 
-        List<PermutationMatrixPair > permutations = new Vector<PermutationMatrixPair >();
+        List<PermutationMatrixPair> permutations = new Vector<PermutationMatrixPair>();
 
         if (approximateZeros) {
 //            setInsignificantEntriesToZero(ica_W);

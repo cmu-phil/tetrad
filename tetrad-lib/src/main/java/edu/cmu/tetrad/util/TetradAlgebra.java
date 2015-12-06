@@ -38,13 +38,13 @@ public class TetradAlgebra {
         return new TetradMatrix(m.toArray());
     }
 
-    public static  TetradMatrix solve(TetradMatrix a, TetradMatrix b) {
+    public static TetradMatrix solve(TetradMatrix a, TetradMatrix b) {
         DoubleMatrix2D _a = new DenseDoubleMatrix2D(a.toArray());
         DoubleMatrix2D _b = new DenseDoubleMatrix2D(b.toArray());
         return new TetradMatrix(new Algebra().solve(_a, _b).toArray());
     }
 
-    public  static TetradMatrix identity(int rows) {
+    public static TetradMatrix identity(int rows) {
         return new TetradMatrix(DoubleFactory2D.dense.identity(rows).toArray());
     }
 }

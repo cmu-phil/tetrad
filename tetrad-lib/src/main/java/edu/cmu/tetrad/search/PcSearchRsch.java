@@ -200,7 +200,7 @@ public class PcSearchRsch implements GraphSearch {
         TetradLogger.getInstance().log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it =
-                bk.forbiddenEdgesIterator(); it.hasNext();) {
+             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -224,7 +224,7 @@ public class PcSearchRsch implements GraphSearch {
         }
 
         for (Iterator<KnowledgeEdge> it =
-                bk.requiredEdgesIterator(); it.hasNext();) {
+             bk.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph

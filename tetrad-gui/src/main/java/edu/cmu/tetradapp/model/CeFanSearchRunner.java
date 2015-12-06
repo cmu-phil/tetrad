@@ -155,7 +155,6 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
-     * @param node
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<List<Triple>>();

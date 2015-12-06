@@ -203,11 +203,11 @@ public class FindOneFactorClustersWithCausalIndicators {
         findSeeds();
         Set<Set<Integer>> ESeeds = findESeeds();
         List<Set<Integer>> CSeeds = findCSeeds();
-        return combineClusters(ESeeds,CSeeds);
+        return combineClusters(ESeeds, CSeeds);
 
     }
 
-    private Set<List<Set<Integer>>> combineClusters(Set<Set<Integer>> ESeeds,List<Set<Integer>> CSeeds) {
+    private Set<List<Set<Integer>>> combineClusters(Set<Set<Integer>> ESeeds, List<Set<Integer>> CSeeds) {
         Set<Set<Integer>> EClusters = finishESeeds(ESeeds);
         Set<Integer> Cs = new HashSet();
         for (int i = 0; i < variables.size(); i++) Cs.add(i);
@@ -217,7 +217,7 @@ public class FindOneFactorClustersWithCausalIndicators {
         List<List<Set<Integer>>> Clusters = new ArrayList();
         for (Set<Integer> ECluster : EClusters) {
             List<Set<Integer>> newCluster = new ArrayList<Set<Integer>>();
-            newCluster.add(1,ECluster);
+            newCluster.add(1, ECluster);
             Clusters.add(newCluster);
         }
         List<Set<Integer>> EClustersArray = new ArrayList<Set<Integer>>();
@@ -234,7 +234,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 if (_overlap > overlap) {
                     overlap = _overlap;
                     match = i;
-                    if (overlap/ECluster.size() > CIparameter) {
+                    if (overlap / ECluster.size() > CIparameter) {
                         pass = true;
                     }
                 }
@@ -245,7 +245,7 @@ public class FindOneFactorClustersWithCausalIndicators {
                 newCs.add(c);
                 modCluster.add(newCs);
                 modCluster.add(EClustersArray.get(match));
-                Clusters.set(match,modCluster);
+                Clusters.set(match, modCluster);
             }
         }
         Set<List<Set<Integer>>> ClusterSet = new HashSet<List<Set<Integer>>>(Clusters);
@@ -316,22 +316,22 @@ public class FindOneFactorClustersWithCausalIndicators {
 
                 if (deltaTest.getPValue(tetrad) > alpha) {
                     EPure = false;
-                    if (indTest.isDependent(v1,v4,empty)) {
+                    if (indTest.isDependent(v1, v4, empty)) {
                         CPure1 = false;
                     }
-                    if (indTest.isDependent(v2,v4,empty)) {
+                    if (indTest.isDependent(v2, v4, empty)) {
                         CPure2 = false;
                     }
                 }
                 tetrad = new Tetrad(v1, v3, v2, v4);
                 if (deltaTest.getPValue(tetrad) > alpha) {
                     EPure = false;
-                    if (indTest.isDependent(v3,v4,empty)) {
+                    if (indTest.isDependent(v3, v4, empty)) {
                         CPure3 = false;
                     }
                 }
 
-                if (!(EPure||CPure1||CPure2||CPure3)) {
+                if (!(EPure || CPure1 || CPure2 || CPure3)) {
                     continue CHOICE;
                 }
             }
@@ -367,11 +367,11 @@ public class FindOneFactorClustersWithCausalIndicators {
     }
 
     private Set<Set<Integer>> findESeeds() {
-        return(ESeeds);
+        return (ESeeds);
     }
 
     private List<Set<Integer>> findCSeeds() {
-        return(CSeeds);
+        return (CSeeds);
     }
 
     private Set<Set<Integer>> finishESeeds(Set<Set<Integer>> ESeeds) {

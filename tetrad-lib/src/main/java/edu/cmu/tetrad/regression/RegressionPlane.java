@@ -28,7 +28,7 @@ package edu.cmu.tetrad.regression;
  *
  * @author Joseph Ramsey
  */
-public class RegressionPlane {
+class RegressionPlane {
 
     /**
      * Summary string.
@@ -92,8 +92,8 @@ public class RegressionPlane {
      *                      coefficients.
      */
     public RegressionPlane(boolean zeroIntercept, String[] varNames,
-            int numRegressors, int sampleSize, double[] coefs, double[] coefT,
-            double[] coefP, double rsquare, double[] coefSE, String summary) {
+                           int numRegressors, int sampleSize, double[] coefs, double[] coefT,
+                           double[] coefP, double rsquare, double[] coefSE, String summary) {
         this.zeroIntercept = zeroIntercept;
 
         int error = zeroIntercept ? 0 : 1;

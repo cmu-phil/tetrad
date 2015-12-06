@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.sem;
 
 //import cern.colt.matrix.DoubleMatrix2D;
+
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -83,7 +84,7 @@ public class Mapping implements TetradSerializable {
      * @param j         Right coordinate of matrix[i][j].
      */
     public Mapping(ISemIm semIm, Parameter parameter, TetradMatrix matrix,
-            int i, int j) {
+                   int i, int j) {
         if (semIm == null) {
             throw new NullPointerException("SemIm must not be null.");
         }

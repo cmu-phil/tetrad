@@ -23,7 +23,6 @@ package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well19937c;
 import org.apache.commons.math3.random.Well44497b;
 
 import java.util.Date;
@@ -32,13 +31,13 @@ import java.util.Date;
  * Provides a common random number generator to be used throughout Tetrad, to avoid problems that happen when random
  * number generators are created more often than once per millisecond. When this happens, the generators are synced, and
  * there is less randomness than expected.
- * <p/>
+ * <p>
  * A seed can be set for the generator using the <code>setSeed</code> method. This is useful if an experiment needs to
  * be repeated under different conditions. The seed for an experiment can be printed using the <code>getSeed</code>
  * method.
- * <p/>
+ * <p>
  * The 64-bit Mersenne Twister implementation from the COLT library is used to generate random numbers.
- * <p/>
+ * <p>
  * To see what distributions are currently supported, look at the methods of the class. These many change over time.
  *
  * @author Joseph Ramsey
@@ -53,7 +52,7 @@ public class RandomUtil {
     // Random number generator from the Apache library.
     private RandomGenerator randomGenerator;
 
-    NormalDistribution normal = new NormalDistribution(0, 1);
+    private NormalDistribution normal = new NormalDistribution(0, 1);
 
     private long seed;
 
@@ -86,8 +85,6 @@ public class RandomUtil {
     //=======================================PUBLIC METHODS=================================//
 
     /**
-     * @return an integer in the range 0 to n - 1, inclusive.
-     *
      * @param n Ibid.
      * @return Ibid.
      */
@@ -100,9 +97,6 @@ public class RandomUtil {
     }
 
     /**
-     * 
-     * @return a random double from U(low, high).
-     *
      * @param low  Ibid.
      * @param high Ibid.
      * @return Ibid.
@@ -112,8 +106,6 @@ public class RandomUtil {
     }
 
     /**
-     * @return a random gaussian from N(mean, sd).
-     *
      * @param mean The mean of the Normal.
      * @param sd   The standard deviation of the Normal.
      * @return Ibid.
@@ -129,8 +121,6 @@ public class RandomUtil {
     }
 
     /**
-     * @return a random gaussian from N(mean, sd).
-     *
      * @param mean The mean of the Normal.
      * @param sd   The standard deviation of the Normal.
      * @return Ibid.
@@ -169,8 +159,6 @@ public class RandomUtil {
     }
 
     /**
-     * @return the next random number drawn from a Poisson distribution with the given mean.
-     *
      * @param lambda A positive real number equal to the expected number of occurrences during a given interval. See
      *               Wikipedia.
      * @return Ibid.
@@ -180,8 +168,6 @@ public class RandomUtil {
     }
 
     /**
-     * @return Normal PDF value for a normal with the given mean and standard deviation.
-     *
      * @param mean  The mean of the normal to be used.
      * @param sd    The standard deviation of the normal to be used.
      * @param value The domain value for the PDF.
@@ -192,8 +178,6 @@ public class RandomUtil {
     }
 
     /**
-     * @return Normal CDF value for a normal with the given mean and standard deviation.
-     *
      * @param mean  The mean of the normal to be used.
      * @param sd    The standard deviation of the normal to be used.
      * @param value The domain value for the CDF.
@@ -206,10 +190,6 @@ public class RandomUtil {
     }
 
     /**
-     * @return the next random number drawn from the Beta distribution with the given alpha and beta values. By changing
-     * the alpha and beta parameters, radically different distibutions can be achieved. The Beta function is related to
-     * order statistics.
-     *
      * @param alpha See Wikipedia. This is the first parameter.
      * @param beta  See Wikipedia. This is the second parameter.
      * @return Ibid.
@@ -219,8 +199,6 @@ public class RandomUtil {
     }
 
     /**
-     * @return the next random number drawn from the Student T distribution with the given degrees of freedom.
-     *
      * @param df The degrees of freedom. See any stats book.
      * @return Ibid.
      */
@@ -229,8 +207,6 @@ public class RandomUtil {
     }
 
     /**
-     * @return the next random number drawn from the Exponential distribution with the given lambda.
-     *
      * @param lambda The rate parameter. See Wikipedia.
      * @return Ibid.
      */
@@ -239,8 +215,6 @@ public class RandomUtil {
     }
 
     /**
-     * @return the next random number drawn from the given Chi Square distrubution with the given degrees of freedom.
-     *
      * @param df The degrees of freedom.
      * @return Ibid.
      */
@@ -249,8 +223,6 @@ public class RandomUtil {
     }
 
     /**
-     * @return the next random number drawn from the Gamma distribution with the given alpha and lambda.
-     *
      * @param shape The shape parameter.
      * @param scale The scale parameter.
      * @return Ibid.

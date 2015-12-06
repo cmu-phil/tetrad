@@ -148,8 +148,6 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * @return the value of the G Square statistic associated with the most recent call of isIndependent.
-     *
      * @return the G Square value.
      */
     public double getXSquare() {
@@ -158,7 +156,6 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     /**
      * @return degrees of freedom associated with the most recent call of isIndependent
-     *
      * @ return degrees of freedom
      */
     public int getDf() {
@@ -259,9 +256,6 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * @return true iff z determines x or z, with lower bound percentage p. Taht is, iff for either v = x or v = y, the
-     * percentage p of some category c of y is >= p, for each assignment of values of z1,...,zn.
-     *
      * @param z  The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
      * @param x1 The one variable whose determination by z we want to know.
      * @return true if it is estimated that z determines x or z determines y.

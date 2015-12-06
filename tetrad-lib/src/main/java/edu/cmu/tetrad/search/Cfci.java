@@ -35,7 +35,7 @@ import java.util.*;
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
- * <p/>
+ * <p>
  * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
@@ -43,7 +43,7 @@ import java.util.*;
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
  */
-public final class  Cfci implements GraphSearch {
+public final class Cfci implements GraphSearch {
 
     /**
      * The PAG being constructed.
@@ -91,11 +91,6 @@ public final class  Cfci implements GraphSearch {
     private int maxReachablePathLength = -1;
 
     /**
-     * The list of all unshielded triples.
-     */
-    private Set<Triple> allTriples;
-
-    /**
      * Set of unshielded colliders from the triple orientation step.
      */
     private Set<Triple> colliderTriples;
@@ -141,32 +136,32 @@ public final class  Cfci implements GraphSearch {
         this.variables.addAll(independenceTest.getVariables());
     }
 
-    /**
-     * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
-     * search over.
-     */
-    public Cfci(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null || knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
-
-        Set<Node> remVars = new HashSet<Node>();
-        for (Node node1 : this.variables) {
-            boolean search = false;
-            for (Node node2 : searchVars) {
-                if (node1.getName().equals(node2.getName())) {
-                    search = true;
-                }
-            }
-            if (!search) {
-                remVars.add(node1);
-            }
-        }
-        this.variables.removeAll(remVars);
-    }
+//    /**
+//     * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
+//     * search over.
+//     */
+//    public Cfci(IndependenceTest independenceTest, List<Node> searchVars) {
+//        if (independenceTest == null || knowledge == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.independenceTest = independenceTest;
+//        this.variables.addAll(independenceTest.getVariables());
+//
+//        Set<Node> remVars = new HashSet<Node>();
+//        for (Node node1 : this.variables) {
+//            boolean search = false;
+//            for (Node node2 : searchVars) {
+//                if (node1.getName().equals(node2.getName())) {
+//                    search = true;
+//                }
+//            }
+//            if (!search) {
+//                remVars.add(node1);
+//            }
+//        }
+//        this.variables.removeAll(remVars);
+//    }
 
     //========================PUBLIC METHODS==========================//
 
@@ -304,7 +299,7 @@ public final class  Cfci implements GraphSearch {
 
     /**
      * @return true if Zhang's complete rule set should be used, false if only R1-T1 (the rule set of the original FCI)
-     *         should be used. False by default.
+     * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
         return completeRuleSetUsed;
@@ -338,7 +333,9 @@ public final class  Cfci implements GraphSearch {
 
     private void ruleR0(IndependenceTest test, int depth) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
-        allTriples = new HashSet<Triple>();
+        /*
+      The list of all unshielded triples.
+     */
         colliderTriples = new HashSet<Triple>();
         noncolliderTriples = new HashSet<Triple>();
         ambiguousTriples = new HashSet<Triple>();
@@ -361,7 +358,6 @@ public final class  Cfci implements GraphSearch {
                     continue;
                 }
 
-                allTriples.add(new Triple(x, y, z));
                 TripleType type = getTripleType(x, y, z, test, depth);
 
                 if (type == TripleType.COLLIDER) {
@@ -397,7 +393,6 @@ public final class  Cfci implements GraphSearch {
         __nodes.remove(z);
 
         List<Node> _nodes = new LinkedList<Node>(__nodes);
-//        TetradLogger.getInstance().log("details", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         int _depth = depth;
         if (_depth == -1) {
@@ -426,7 +421,6 @@ public final class  Cfci implements GraphSearch {
         __nodes.remove(x);
 
         _nodes = new LinkedList<Node>(__nodes);
-//        TetradLogger.getInstance().log("details", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         _depth = depth;
         if (_depth == -1) {
@@ -485,7 +479,7 @@ public final class  Cfci implements GraphSearch {
 
     /**
      * Orients the graph according to rules in the graph (FCI step D).
-     * <p/>
+     * <p>
      * Zhang's step F4, rules R1-Tanh.
      */
     private void doFinalOrientation() {
@@ -512,7 +506,7 @@ public final class  Cfci implements GraphSearch {
             while (changeFlag) {
                 changeFlag = false;
                 ruleR6R7();
-            };
+            }
 
             // Finally, we apply T3-Tanh as many times as possible.
             changeFlag = true;
@@ -520,7 +514,7 @@ public final class  Cfci implements GraphSearch {
             while (changeFlag) {
                 changeFlag = false;
                 rulesR8R9R10();
-            };
+            }
         }
     }
 
@@ -615,7 +609,7 @@ public final class  Cfci implements GraphSearch {
     /**
      * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, then
      * D*->B.
-     * <p/>
+     * <p>
      * This is Zhang's rule R3.
      */
     private void ruleR3() {
@@ -681,7 +675,7 @@ public final class  Cfci implements GraphSearch {
      *       v    v
      * L....A --> C
      * </pre>
-     * <p/>
+     * <p>
      * This is Zhang's rule T1, discriminating undirectedPaths.
      */
     private void ruleR4() {
@@ -820,6 +814,7 @@ public final class  Cfci implements GraphSearch {
                     System.out.println(GraphUtils.pathString(path, graph));
                 }
 
+                CIRCLE_PATHS:
                 for (List<Node> u : ucCirclePaths) {
                     if (u.size() < 3) continue;
 
@@ -848,7 +843,7 @@ public final class  Cfci implements GraphSearch {
 
                     for (int i = 2; i < u2.size(); i++) {
                         if (!getNoncolliderTriples().contains(new Triple(u2.get(i - 2), u2.get(i - 1), u2.get(i)))) {
-                            continue;
+                            continue CIRCLE_PATHS;
                         }
                     }
 
@@ -944,7 +939,7 @@ public final class  Cfci implements GraphSearch {
 
     /**
      * Orients every edge on a path as undirected (i.e. A---B).
-     * <p/>
+     * <p>
      * DOES NOT CHECK IF SUCH EDGES ACTUALLY EXIST: MAY DO WEIRD THINGS IF PASSED AN ARBITRARY LIST OF NODES THAT IS NOT
      * A PATH.
      *
@@ -967,7 +962,7 @@ public final class  Cfci implements GraphSearch {
 
     /**
      * Gets a list of every uncovered partially directed path between two nodes in the graph.
-     * <p/>
+     * <p>
      * Probably extremely slow.
      *
      * @param n1 The beginning node of the undirectedPaths.
@@ -975,9 +970,9 @@ public final class  Cfci implements GraphSearch {
      * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
      */
     private List<List<Node>> getUcPdPaths(Node n1, Node n2) {
-        List<List<Node>> ucPdPaths = new LinkedList();
+        List<List<Node>> ucPdPaths = new LinkedList<>();
 
-        List<Node> soFar = new LinkedList();
+        List<Node> soFar = new LinkedList<>();
         soFar.add(n1);
 
         List<Node> adjacencies = graph.getAdjacentNodes(n1);
@@ -990,9 +985,9 @@ public final class  Cfci implements GraphSearch {
 
     /**
      * Used in getUcPdPaths(n1,n2) to perform a breadth-first search on the graph.
-     * <p/>
+     * <p>
      * ASSUMES soFar CONTAINS AT LEAST ONE NODE!
-     * <p/>
+     * <p>
      * Probably extremely slow.
      *
      * @param curr      The getModel node to test for addition.
@@ -1035,7 +1030,7 @@ public final class  Cfci implements GraphSearch {
     /**
      * Gets a list of every uncovered circle path between two nodes in the graph by iterating through the uncovered
      * partially directed undirectedPaths and only keeping the circle undirectedPaths.
-     * <p/>
+     * <p>
      * Probably extremely slow.
      *
      * @param n1 The beginning node of the undirectedPaths.
@@ -1067,9 +1062,9 @@ public final class  Cfci implements GraphSearch {
 
     /**
      * Tries to apply Zhang's rule T3 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p/>
+     * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p/>
+     * <p>
      * T3: If Ao->C and A-->B-->C or A--oB-->C, then A-->C.
      *
      * @param a The node A.
@@ -1104,9 +1099,9 @@ public final class  Cfci implements GraphSearch {
 
     /**
      * Tries to apply Zhang's rule R6 to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p/>
+     * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p/>
+     * <p>
      * R6: If Ao->C and there is an uncovered p.d. path u=<A,B,..,C> such that C,B nonadjacent, then A-->C.
      *
      * @param a The node A.
@@ -1141,9 +1136,9 @@ public final class  Cfci implements GraphSearch {
 
     /**
      * Tries to apply Zhang's rule Tanh to a pair of nodes A and C which are assumed to be such that Ao->C.
-     * <p/>
+     * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p/>
+     * <p>
      * Tanh: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B> and an uncovered p.d. path
      * u2=<A,N,...,D> with M != N and M,N nonadjacent then A-->C.
      *
@@ -1212,7 +1207,7 @@ public final class  Cfci implements GraphSearch {
         logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it =
-             bk.forbiddenEdgesIterator(); it.hasNext();) {
+             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -1234,7 +1229,7 @@ public final class  Cfci implements GraphSearch {
         }
 
         for (Iterator<KnowledgeEdge> it =
-             bk.requiredEdgesIterator(); it.hasNext();) {
+             bk.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
@@ -1289,16 +1284,7 @@ public final class  Cfci implements GraphSearch {
             if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.CIRCLE) {
-            return true;
-        }
-
-        return false;
-
-//        return graph.getEndpoint(y, x) == Endpoint.ARROW;
-
-
-//        return !knowledge.isForbiddenByTiers(x.getName(), y.getName());
+        return graph.getEndpoint(y, x) == Endpoint.CIRCLE;
     }
 
 

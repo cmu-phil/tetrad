@@ -76,7 +76,7 @@ public final class CptInvariantMarginalCalculator
             throw new NullPointerException();
         }
 
-        if (!evidence.isCompatibleWith(bayesIm)) {
+        if (evidence.isIncompatibleWith(bayesIm)) {
             throw new IllegalArgumentException("The variables for the given " +
                     "Bayes IM and evidence must be compatible.");
         }
@@ -165,8 +165,7 @@ public final class CptInvariantMarginalCalculator
                 if (!Double.isNaN(marginal)) {
                     probabilityOfRow *= marginal;
                 }
-            }
-            else {
+            } else {
                 Evidence evidence = new Evidence(this.evidence);
                 CptInvariantMarginalCalculator marginals =
                         new CptInvariantMarginalCalculator(bayesIm, evidence);
@@ -190,7 +189,7 @@ public final class CptInvariantMarginalCalculator
     private boolean noModifiedCpts(int[] parents, int i) {
         List<Node> target =
                 Collections.singletonList(bayesIm.getNode(parents[i]));
-        List<Node> conditioners = new LinkedList<Node>();
+        List<Node> conditioners = new LinkedList<>();
 
         for (int j = 0; j < i; j++) {
             conditioners.add(bayesIm.getNode(parents[j]));
@@ -198,7 +197,7 @@ public final class CptInvariantMarginalCalculator
 
         List<Node> condAncestors = bayesIm.getDag().getAncestors(conditioners);
         List<Node> targetAncestor = bayesIm.getDag().getAncestors(target);
-        Set<Node> intersection = new HashSet<Node>(condAncestors);
+        Set<Node> intersection = new HashSet<>(condAncestors);
         intersection.retainAll(targetAncestor);
 
         return intersection.isEmpty();

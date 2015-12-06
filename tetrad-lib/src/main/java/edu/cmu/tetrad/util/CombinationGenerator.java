@@ -26,7 +26,7 @@ package edu.cmu.tetrad.util;
  * number of objects in each dimension is specified. The sequence of choices is
  * obtained by repeatedly calling the next() method.  When the sequence is
  * finished, null is returned.
- * <p/>
+ * <p>
  * A valid combination for the sequence of combinations for a choose b generated
  * by this class is an array x[] of b integers i, 0 <= i < a, such that x[j] <
  * x[j + 1] for each j from 0 to b - 1.
@@ -38,7 +38,7 @@ public final class CombinationGenerator {
     /**
      * The number of items for each dimension.
      */
-    private final int[]  dims;
+    private final int[] dims;
 
     /**
      * The internally stored choice.
@@ -87,17 +87,7 @@ public final class CombinationGenerator {
 
     /**
      * @return the next combination in the series, or null if the series is
-     * finished.  The array that is produced should not be altered by the user,
-     * as it is reused by the choice generator.
-     * <p/>
-     * If the number of items chosen is zero, a zero-length array will be
-     * returned once, with null after that.
-     * <p/>
-     * The array that is returned is reused, but modifying it will not change
-     * the sequence of choices returned.
-     *
-     * @return the next combination in the series, or null if the series is
-     *         finished.
+     * finished.
      */
     public int[] next() {
         int i = getNumObjects();
@@ -163,11 +153,9 @@ public final class CombinationGenerator {
     }
 
     /**
-     * @return the number of objects being chosen.
-     *
      * @return Ibid.
      */
-    int getNumObjects() {
+    private int getNumObjects() {
         return local.length;
     }
 

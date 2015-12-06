@@ -38,8 +38,8 @@ import java.util.*;
  * @author Tyler Gibson
  */
 public class Discretizer {
-    private DataSet sourceDataSet;
-    Map<Node, DiscretizationSpec> specs;
+    private final DataSet sourceDataSet;
+    private final Map<Node, DiscretizationSpec> specs;
     private boolean variablesCopied = true;
 
     /**
@@ -49,7 +49,7 @@ public class Discretizer {
     public Discretizer(DataSet dataSet) {
         this.sourceDataSet = dataSet;
 
-        specs = new HashMap<Node, DiscretizationSpec>();
+        specs = new HashMap<>();
     }
 
     public Discretizer(DataSet dataSet, Map<Node, DiscretizationSpec> specs) {
@@ -120,18 +120,16 @@ public class Discretizer {
         this.variablesCopied = unselectedVariabledCopied;
     }
 
-    public boolean isVariablesCopied() {
+    private boolean isVariablesCopied() {
         return this.variablesCopied;
     }
 
     /**
-     * @return a new data set that has been discretized.
-     *
      * @return - Discretized dataset.
      */
     public DataSet discretize() {
         // build list of variables
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         Map<Node, Node> replacementMapping = new HashMap<>();
         for (int i = 0; i < sourceDataSet.getNumColumns(); i++) {
             Node variable = sourceDataSet.getVariable(i);
@@ -142,7 +140,7 @@ public class Discretizer {
                 for (Node node : specs.keySet()) {
                     if (node.getName().equals(variable.getName())) {
                         DiscretizationSpec _spec = specs.get(node);
-                        spec = (ContinuousDiscretizationSpec)_spec;
+                        spec = (ContinuousDiscretizationSpec) _spec;
                         _node = node;
                         break;
                     }
@@ -167,7 +165,7 @@ public class Discretizer {
                 for (Node node : specs.keySet()) {
                     if (node.getName().equals(variable.getName())) {
                         DiscretizationSpec _spec = specs.get(node);
-                        spec = (DiscreteDiscretizationSpec)_spec;
+                        spec = (DiscreteDiscretizationSpec) _spec;
                         _node = node;
                         break;
                     }
@@ -211,8 +209,7 @@ public class Discretizer {
                     for (int j = 0; j < _data.length; j++) {
                         newDataSet.setInt(j, _col, _data[j]);
                     }
-                }
-                else if (sourceVar instanceof DiscreteVariable) {
+                } else if (sourceVar instanceof DiscreteVariable) {
                     DiscreteDiscretizationSpec spec = (DiscreteDiscretizationSpec) specs.get(sourceVar);
 
                     int[] remap = spec.getRemap();
@@ -238,13 +235,6 @@ public class Discretizer {
         return newDataSet;
     }
 
-    /**
-     * @return an array of breakpoints that divides the data into equal sized buckets.
-     *
-     * @param _data
-     * @param numberOfCategories
-     * @return
-     */
     public static double[] getEqualFrequencyBreakPoints(double[] _data, int numberOfCategories) {
         double[] data = new double[_data.length];
         System.arraycopy(_data, 0, data, 0, data.length);
@@ -403,9 +393,6 @@ public class Discretizer {
 
         /**
          * Constructs the discretization given the variable and data.
-         *
-         * @param variable
-         * @param data
          */
         private Discretization(DiscreteVariable variable, int[] data) {
             this.variable = variable;
@@ -415,8 +402,6 @@ public class Discretizer {
         //============================ Public Methods =================================//
 
         /**
-         * @return the discretized varaible.
-         *
          * @return - discretized variable.
          */
         public final DiscreteVariable getVariable() {
@@ -424,8 +409,6 @@ public class Discretizer {
         }
 
         /**
-         * @return the discretized data.
-         *
          * @return - discretized data.
          */
         public final int[] getData() {
@@ -444,27 +427,6 @@ public class Discretizer {
             return buf.toString();
         }
     }
-
-    /**
-     * Represents a chunk of data in a sorted array of data.  If low == high then
-     * then the chunk only contains one member.
-     */
-    private static class Chunk {
-
-        private int valuesInChunk;
-        private double value;
-
-        public Chunk(int low, int high, double value) {
-            this.valuesInChunk = (high - low);
-            this.value = value;
-        }
-
-        public int getNumberOfValuesInChunk() {
-            return this.valuesInChunk;
-        }
-
-    }
-
 }
 
 

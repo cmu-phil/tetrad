@@ -31,18 +31,18 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public interface DiscreteProbs {
+interface DiscreteProbs {
 
     /**
      * @return the variables over which probabilities and conditional
      * probabilities will be calculated.
      */
-    public List<Node> getVariables();
+    List<Node> getVariables();
 
     /**
      * @return the probability in a given cell.
      */
-    public double getCellProb(int[] cell);
+    double getCellProb(int[] cell);
 
     /**
      * Calculates the probability P(a), where a is a two dimensional boolean

@@ -41,7 +41,7 @@ public class CalculatorParams implements Params {
     /**
      * String representation of the equations used by the calculator.
      */
-    private List<String> equations = new ArrayList<String>(5);
+    private List<String> equations = new ArrayList<>(5);
 
 
     /**
@@ -57,7 +57,7 @@ public class CalculatorParams implements Params {
     /**
      * @return the equations used in the calculator.
      */
-    public List<String> getEquations(){
+    public List<String> getEquations() {
         return this.equations;
     }
 
@@ -65,13 +65,13 @@ public class CalculatorParams implements Params {
      * Resets the list of equations to an empty list.
      */
     public void resetEquations() {
-        this.equations = new ArrayList<String>();
+        this.equations = new ArrayList<>();
     }
 
     /**
      * Adds the given equations to the params
      */
-    public void addEquation(String equation){
+    public void addEquation(String equation) {
         this.equations.add(equation);
     }
 

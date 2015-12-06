@@ -351,7 +351,7 @@ public final class MimBuild {
             }
         }
 
-        /**
+        /*
          * Now connect latent variables according
          */
         int size = latents.size();

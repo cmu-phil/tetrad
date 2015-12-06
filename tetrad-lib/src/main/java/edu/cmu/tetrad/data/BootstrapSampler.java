@@ -26,7 +26,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 /**
  * Provides a static method for sampling with replacement from a dataset to
  * create a new dataset with a sample size supplied by the user.
- * <p/>
+ * <p>
  * Since sampling is done with replacement, the output dataset can have more
  * samples than the input.
  *
@@ -35,13 +35,13 @@ import edu.cmu.tetrad.util.RandomUtil;
 public final class BootstrapSampler {
 
 
-   // private TetradLogger logger = TetradLogger.getInstance();
+    // private TetradLogger logger = TetradLogger.getInstance();
 
 
     /**
      * Constructs a sample that does not do any logging.
      */
-    public BootstrapSampler(){
+    public BootstrapSampler() {
 
     }
 
@@ -62,7 +62,7 @@ public final class BootstrapSampler {
         if (dataSet.getNumRows() < 1) {
             throw new IllegalArgumentException("Dataset must contain samples.");
         }
-     //   this.logger.log("sampleSize", String.valueOf(newSampleSize));
+        //   this.logger.log("sampleSize", String.valueOf(newSampleSize));
         //Number of samples in input dataset
         int oldSampleSize = dataSet.getNumRows();
         int ncols = dataSet.getNumColumns();
@@ -93,7 +93,7 @@ public final class BootstrapSampler {
                 newDataSet.setObject(row, col, dataSet.getObject(oldCase, col));
             }
         }
-                               // todo this doesn't treat case multipliers correctly. 5/11/2013 jdr
+        // todo this doesn't treat case multipliers correctly. 5/11/2013 jdr
         // With replacement.
 //        if (newSampleSize > oldSampleSize) {
 //            throw new IllegalArgumentException();
@@ -116,7 +116,7 @@ public final class BootstrapSampler {
 //        }
 
 
-    //    this.logger.flush();
+        //    this.logger.flush();
 
         newDataSet.setKnowledge(dataSet.getKnowledge().copy());
 

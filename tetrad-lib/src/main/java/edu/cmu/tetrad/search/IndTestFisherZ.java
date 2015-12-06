@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.distribution.TDistribution;
 
 import java.io.PrintStream;
 import java.text.NumberFormat;
@@ -32,7 +31,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.round;
 import static java.lang.Math.sqrt;
 
 /**

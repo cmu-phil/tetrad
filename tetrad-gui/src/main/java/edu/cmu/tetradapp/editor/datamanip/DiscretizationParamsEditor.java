@@ -284,8 +284,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     /**
      * @return true
-     *
-     * @return - true
      */
     public boolean mustBeShown() {
         return true;

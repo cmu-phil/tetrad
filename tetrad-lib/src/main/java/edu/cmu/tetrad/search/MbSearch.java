@@ -28,6 +28,7 @@ import java.util.List;
 
 /**
  * An interface for Markov blanket searches.
+ *
  * @author Joseph Ramsey
  */
 public interface MbSearch {

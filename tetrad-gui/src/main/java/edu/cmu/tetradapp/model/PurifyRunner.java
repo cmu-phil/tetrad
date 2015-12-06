@@ -137,7 +137,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
 
         List<List<Node>> inputPartition = ClusterUtils.clustersToPartition(getParams().getClusters(), test.getVariables());
 
-        IPurify purify = new PurifyTetradBased3(test);
+        IPurify purify = new PurifyTetradBased2(test);
 //        IPurify purify = new PurifySextadBased(sextadTest, test.getSignificance());
 //        IPurify purify = new PurifyTetradBasedH(test, 15);
 

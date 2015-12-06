@@ -110,8 +110,7 @@ public class MbClassify implements DiscreteClassifier {
             int maxMissing = Integer.parseInt(maxMissingString);
 
             setup(train, test, targetString, alpha, depth, prior, maxMissing);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -144,7 +143,7 @@ public class MbClassify implements DiscreteClassifier {
      * in B in the test data; these are reported as classifications. Estimation of B is done using a Dirichlet
      * estimator, with a symmetric prior, with the given alpha value. Updating is done using a row-summing exact
      * updater.
-     * <p/>
+     * <p>
      * One consequence of using the row-summing exact updater is that classification will be fast except for cases in
      * which there are lots of missing values. The reason for this is that for such cases the number of rows that need
      * to be summed over will be exponential in the number of missing values for that case. Hence the parameter for max

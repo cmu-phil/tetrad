@@ -36,7 +36,7 @@ import java.util.*;
  * in one sweep, assign each point to its nearest center, and then in a second
  * sweep, reset each center to the mean of the cluster for that center,
  * repeating until convergence.
- * <p/>
+ * <p>
  * Note that this algorithm is guaranteed to converge, since the total squared
  * error is guaranteed to be reduced at each step.
  *
@@ -48,19 +48,19 @@ public class KMeans implements ClusteringAlgorithm {
      * The type of initialization in which random points are selected from
      * the data to serve as initial centers.
      */
-    public static final int RANDOM_POINTS = 0;
+    private static final int RANDOM_POINTS = 0;
 
     /**
      * The type of initialization in which points are assigned randomly to
      * clusters.
      */
-    public static final int RANDOM_CLUSTERS = 1;
+    private static final int RANDOM_CLUSTERS = 1;
 
     /**
      * The type of initialiation in which explicit points are provided to
      * serve as clusters.
      */
-    public static final int EXPLICIT_POINTS = 2;
+    private static final int EXPLICIT_POINTS = 2;
 
     /**
      * The data, columns as features, rows as cases.
@@ -176,7 +176,7 @@ public class KMeans implements ClusteringAlgorithm {
 
         if (initializationType == RANDOM_POINTS) {
             centers = pickCenters(numCenters, data);
-            clusters = new ArrayList<Integer>();
+            clusters = new ArrayList<>();
 
             for (int i = 0; i < data.rows(); i++) {
                 clusters.add(-1);
@@ -186,7 +186,7 @@ public class KMeans implements ClusteringAlgorithm {
 
             // Randomly assign points to clusters and get the initial centers of
             // mass from that assignment.
-            clusters = new ArrayList<Integer>();
+            clusters = new ArrayList<>();
 
             for (int i = 0; i < data.rows(); i++) {
                 clusters.add(RandomUtil.getInstance()
@@ -195,7 +195,7 @@ public class KMeans implements ClusteringAlgorithm {
 
             moveCentersToMeans();
         } else if (initializationType == EXPLICIT_POINTS) {
-            clusters = new ArrayList<Integer>();
+            clusters = new ArrayList<>();
 
             for (int i = 0; i < data.rows(); i++) {
                 clusters.add(-1);
@@ -229,14 +229,14 @@ public class KMeans implements ClusteringAlgorithm {
         return convertClusterIndicesToLists(clusters);
     }
 
-    public static List<List<Integer>> convertClusterIndicesToLists(List<Integer> clusterIndices) {
+    private static List<List<Integer>> convertClusterIndicesToLists(List<Integer> clusterIndices) {
         int max = 0;
 
-        for (int i = 0; i < clusterIndices.size(); i++) {
-            if (clusterIndices.get(i) > max) max = clusterIndices.get(i);
+        for (Integer clusterIndice : clusterIndices) {
+            if (clusterIndice > max) max = clusterIndice;
         }
 
-        List<List<Integer>> clusters = new ArrayList<List<Integer>>();
+        List<List<Integer>> clusters = new ArrayList<>();
 
         for (int i = 0; i <= max; i++) {
             clusters.add(new LinkedList<Integer>());
@@ -257,7 +257,7 @@ public class KMeans implements ClusteringAlgorithm {
         return centers.copy();
     }
 
-    /**            
+    /**
      * Return the maximum number of iterations, or -1 if the algorithm is
      * allowed to run unconstrainted.
      *
@@ -282,7 +282,7 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     public List<Integer> getCluster(int k) {
-        List<Integer> cluster = new ArrayList<Integer>();
+        List<Integer> cluster = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
             if (clusters.get(i) == k) {
@@ -293,13 +293,11 @@ public class KMeans implements ClusteringAlgorithm {
         return cluster;
     }
 
-    public Dissimilarity getMetric() {
+    private Dissimilarity getMetric() {
         return metric;
     }
 
     /**
-     * @return the getModel iteration.
-     *
      * @return the number of iterations.
      */
     public int iterations() {
@@ -312,7 +310,7 @@ public class KMeans implements ClusteringAlgorithm {
      * @param k The index of the cluster in question.
      * @return this squared error.
      */
-    public double squaredError(int k) {
+    private double squaredError(int k) {
         double squaredError = 0.0;
 
         for (int i = 0; i < data.rows(); i++) {
@@ -330,7 +328,7 @@ public class KMeans implements ClusteringAlgorithm {
      *
      * @return the total squared error.
      */
-    public double totalSquaredError() {
+    private double totalSquaredError() {
         double totalSquaredError = 0.0;
 
         for (int k = 0; k < centers.rows(); k++) {
@@ -418,7 +416,7 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     private TetradMatrix pickCenters(int numCenters, TetradMatrix data) {
-        SortedSet<Integer> indexSet = new TreeSet<Integer>();
+        SortedSet<Integer> indexSet = new TreeSet<>();
 
         while (indexSet.size() < numCenters) {
             int candidate = RandomUtil.getInstance().nextInt(data.rows());

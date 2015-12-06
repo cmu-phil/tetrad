@@ -219,7 +219,7 @@ public final class IndTestCramerT implements IndependenceTest {
         // Invert submatrix.
         if (submatrix.rank() != submatrix.rows()) {
 //            if (TetradAlgebra.rank(submatrix) != submatrix.rows()) {
-                throw new IllegalArgumentException(
+            throw new IllegalArgumentException(
                     "Matrix singularity detected while using correlations " +
                             "\nto check for independence; probably due to collinearity " +
                             "\nin the data. The independence fact being checked was " +
@@ -341,8 +341,7 @@ public final class IndTestCramerT implements IndependenceTest {
             try {
                 inverse = Czz.inverse();
 //                inverse = MatrixUtils.ginverse(Czz);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 return true;
             }
 

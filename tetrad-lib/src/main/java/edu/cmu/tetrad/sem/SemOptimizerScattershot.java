@@ -25,12 +25,14 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.List;
 
 /**
  * Optimizes a SEM by randomly selecting points in cubes of decreasing size about
  * a given point.
+ *
  * @author Joseph Ramsey
  */
 public class SemOptimizerScattershot implements SemOptimizer {
@@ -59,11 +61,17 @@ public class SemOptimizerScattershot implements SemOptimizer {
      * from Numerical Recipes by adjusting the freeParameters of the Sem.
      */
     public void optimize(SemIm semIm) {
-        if (DataUtils.containsMissingValue(semIm.getSampleCovar())) {
+        TetradMatrix sampleCovar = semIm.getSampleCovar();
+
+        if (sampleCovar == null) {
+            throw new NullPointerException("Sample covar has not been set.");
+        }
+
+        if (DataUtils.containsMissingValue(sampleCovar)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
-        if (DataUtils.containsMissingValue(semIm.getSampleCovar())) {
+        if (DataUtils.containsMissingValue(sampleCovar)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
@@ -90,6 +98,10 @@ public class SemOptimizerScattershot implements SemOptimizer {
             }
         }
 
+        if (_sem == null) {
+            throw new NullPointerException("Minimal score SEM could not be found.");
+        }
+
 //        new SemOptimizerPalCds().optimize2(_sem);
 
         for (Parameter param : semIm.getFreeParameters()) {
@@ -102,7 +114,6 @@ public class SemOptimizerScattershot implements SemOptimizer {
             double value = _sem.getParamValue(_nodeA, _nodeB);
             semIm.setParamValue(param, value);
         }
-
 
 
 //        optimize2(semIm);
@@ -187,7 +198,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
             double f = fcn.evaluate(pTemp);
 
             if (f == Double.POSITIVE_INFINITY) {
-                i--; continue;
+                i--;
+                continue;
             }
 
             // Try to find the lowest reachable spot for each of the trial points at width 1.
@@ -230,7 +242,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
             double f = fcn.evaluate(pTemp);
 
             if (f == Double.POSITIVE_INFINITY) {
-                i++; continue;
+                i++;
+                continue;
             }
 
             if (f < fP) {
@@ -255,18 +268,13 @@ public class SemOptimizerScattershot implements SemOptimizer {
      *
      * @author Joseph Ramsey
      */
-    static interface FittingFunction {
+    interface FittingFunction {
 
         /**
          * @return the value of the function for the given array of parameter
          * values.
          */
         double evaluate(double[] argument);
-
-        /**
-         * @return the number of freeParameters.
-         */
-        int getNumParameters();
 
         void setAvoidNegativeVariances(boolean avoidNegativeVariances);
     }
@@ -302,8 +310,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
         public double evaluate(double[] parameters) {
             sem.setFreeParamValues(parameters);
 
-            for (int i = 0; i < parameters.length; i++) {
-                if (Double.isNaN(parameters[i]) || Double.isInfinite(parameters[i])) {
+            for (double parameter : parameters) {
+                if (Double.isNaN(parameter) || Double.isInfinite(parameter)) {
                     return Double.POSITIVE_INFINITY;
                 }
             }
@@ -331,14 +339,6 @@ public class SemOptimizerScattershot implements SemOptimizer {
             }
 
             return fml;
-        }
-
-        /**
-         * @return the number of arguments. Required by the MultivariateFunction
-         * interface.
-         */
-        public int getNumParameters() {
-            return this.sem.getNumFreeParams();
         }
 
         @Override

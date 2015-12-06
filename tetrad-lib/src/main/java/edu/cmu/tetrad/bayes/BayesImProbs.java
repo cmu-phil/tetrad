@@ -59,7 +59,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
         }
 
         this.bayesIm = bayesIm;
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         BayesPm bayesPm = bayesIm.getBayesPm();
 
         for (int i = 0; i < bayesIm.getNumNodes(); i++) {
@@ -67,7 +67,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
             String name = node.getName();
 
             int numCategories = bayesPm.getNumCategories(node);
-            List<String> categories = new LinkedList<String>();
+            List<String> categories = new LinkedList<>();
 
             for (int j = 0; j < numCategories; j++) {
                 categories.add(bayesPm.getCategory(node, j));
@@ -112,12 +112,11 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
             int[] parents = bayesIm.getParents(node);
             int[] parentValues = new int[parents.length];
             for (int parentIndex = 0;
-                    parentIndex < parentValues.length; parentIndex++) {
+                 parentIndex < parentValues.length; parentIndex++) {
                 parentValues[parentIndex] =
                         variableValues[parents[parentIndex]];
 
-                if (parentValues[parentIndex] == DiscreteVariable.MISSING_VALUE)
-                {
+                if (parentValues[parentIndex] == DiscreteVariable.MISSING_VALUE) {
                     continue VALUES;
                 }
             }
@@ -157,8 +156,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
                     for (int j = i + 1; j < assertion.getNumVariables(); j++) {
                         if (hasNextValue(assertion, j, -1)) {
                             variableValues[j] = nextValue(assertion, j, -1);
-                        }
-                        else {
+                        } else {
                             break loop;
                         }
                     }
@@ -181,7 +179,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     }
 
     public double getConditionalProb(Proposition assertion,
-            Proposition condition) {
+                                     Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
@@ -208,8 +206,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
                     for (int j = i + 1; j < condition.getNumVariables(); j++) {
                         if (hasNextValue(condition, j, -1)) {
                             variableValues[j] = nextValue(condition, j, -1);
-                        }
-                        else {
+                        } else {
                             break loop;
                         }
                     }
@@ -253,14 +250,14 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     }
 
     private static boolean hasNextValue(Proposition proposition, int variable,
-            int currentIndex) {
+                                        int currentIndex) {
         return nextValue(proposition, variable, currentIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
-            int currentIndex) {
+                                 int currentIndex) {
         for (int i = currentIndex + 1;
-                i < proposition.getNumCategories(variable); i++) {
+             i < proposition.getNumCategories(variable); i++) {
             if (proposition.isAllowed(variable, i)) {
                 return i;
             }

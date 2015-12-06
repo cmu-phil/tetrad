@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
  *
  * @author Joseph Ramsey
  */
+@SuppressWarnings("RedundantIfStatement")
 public class Version implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
@@ -110,8 +111,8 @@ public class Version implements TetradSerializable {
         }
     }
 
-    public Version(int majorVersion, int minorVersion, int minorSubversion,
-                   int incrementalRelease) {
+    private Version(int majorVersion, int minorVersion, int minorSubversion,
+                    int incrementalRelease) {
         if (majorVersion < 0) {
             throw new IllegalArgumentException();
         }
@@ -202,19 +203,19 @@ public class Version implements TetradSerializable {
 
     //==========================PUBLIC METHODS===========================//
 
-    public int majorVersion() {
+    private int majorVersion() {
         return majorVersion;
     }
 
-    public int minorVersion() {
+    private int minorVersion() {
         return minorVersion;
     }
 
-    public int minorSubversion() {
+    private int minorSubversion() {
         return minorSubversion;
     }
 
-    public int incrementalRelease() {
+    private int incrementalRelease() {
         return incrementalRelease;
     }
 

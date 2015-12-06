@@ -29,7 +29,7 @@ import java.io.ObjectInputStream;
 /**
  * Represents an edge node1 *-# node2 where * and # are endpoints of type
  * Endpoint--that is, Endpoint.TAIL, Endpoint.ARROW, or Endpoint.CIRCLE.
- * <p/>
+ * <p>
  * Note that because speed is of the essence, and Edge cannot be compared
  * to an object of any other type; this will throw an exception.
  *
@@ -147,7 +147,6 @@ public class Edge implements TetradSerializable, Comparable {
 
     /**
      * @return the endpoint nearest to the given node.
-     *
      * @throws IllegalArgumentException if the given node is not along the
      *                                  edge.
      */
@@ -163,7 +162,6 @@ public class Edge implements TetradSerializable, Comparable {
 
     /**
      * @return the endpoint furthest from the given node.
-     *
      * @throws IllegalArgumentException if the given node is not along the
      *                                  edge.
      */
@@ -195,8 +193,6 @@ public class Edge implements TetradSerializable, Comparable {
 
 
     /**
-     * @return true just in case this edge is directed. (Gustavo 7 May 2007.)
-     *
      * @return true just in case this edge is directed.
      */
     public boolean isDirected() {
@@ -267,6 +263,7 @@ public class Edge implements TetradSerializable, Comparable {
      */
     public final boolean equals(Object o) {
         if (o == this) return true;
+        if (!(o instanceof Edge)) return false;
 
         Edge edge = (Edge) o;
 
@@ -289,12 +286,8 @@ public class Edge implements TetradSerializable, Comparable {
 
             if (node1 == node1b && node2 == node2b) {
                 equal = end1 == end1b && end2 == end2b;
-            } else if (node1 == node2b && node2 == node1b) {
-                equal = end1 == end2b && end2 == end1b;
-            } else {
-                equal = false;
-
-            }
+            } else
+                equal = node1 == node2b && node2 == node1b && end1 == end2b && end2 == end1b;
 
             return equal;
         } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
@@ -310,11 +303,8 @@ public class Edge implements TetradSerializable, Comparable {
 
             if (name1.equals(name1b) && name2.equals(name2b)) {
                 return end1 == end1b && end2 == end2b;
-            } else if (name1.equals(name2b) && name2.equals(name1b)) {
-                return end1 == end2b && end2 == end1b;
-            } else {
-                return false;
-            }
+            } else
+                return name1.equals(name2b) && name2.equals(name1b) && end1 == end2b && end2 == end1b;
         } else {
             throw new IllegalStateException();
         }
@@ -375,18 +365,6 @@ public class Edge implements TetradSerializable, Comparable {
 
     public boolean isNull() {
         return endpoint1 == Endpoint.NULL && endpoint2 == Endpoint.NULL;
-    }
-
-    public void setProximalEndpoint(Node y, Endpoint endpoint) {
-        if (y == node1) {
-            setEndpoint1(endpoint);
-        }
-        else if (y == node2) {
-            setEndpoint2(endpoint);
-        }
-        else {
-            throw new IllegalArgumentException("Node a node in this edge: " + y);
-        }
     }
 }
 

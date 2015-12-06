@@ -202,7 +202,7 @@ public final class GFci {
             ges = new Fgs(covarianceMatrix);
             ges.setKnowledge(getKnowledge());
             ges.setPenaltyDiscount(penaltyDiscount);
-            ges.setVerbose(true);
+            ges.setVerbose(verbose);
             ges.setLog(false);
             ges.setDepth(getDepth());
             ges.setNumPatternsToStore(0);
@@ -381,8 +381,7 @@ public final class GFci {
                         logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
                         System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
                     }
-                }
-                else {
+                } else {
                     if (gesGraph.isDefCollider(a, b, c)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);

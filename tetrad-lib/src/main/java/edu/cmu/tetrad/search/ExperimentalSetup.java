@@ -31,10 +31,12 @@ import java.util.List;
 /**
  * Stores a graph with policy variables (randomizations and locks) as parents of measured and latent
  * variables in the graph. The original
+ *
  * @author Joseph Ramsey
  */
 public class ExperimentalSetup {
     private enum PmType {bayes, sem, generalized}
+
     private enum EsType {simpleSurgical, simpleSoft, fullExperimental, counterfactualExperimental}
 
     private PmType pmType;
@@ -78,14 +80,11 @@ public class ExperimentalSetup {
     private void updateManipulated() {
         if (esType == EsType.simpleSurgical) {
             addSimpleSurgicalEdges(gNat, gManip);
-        }
-        else if (esType == EsType.simpleSoft) {
+        } else if (esType == EsType.simpleSoft) {
             addSimpleSoftEdges(gNat, gManip);
-        }
-        else if (esType == EsType.fullExperimental) {
+        } else if (esType == EsType.fullExperimental) {
             addFullExperimentalEdges(gNat, gManip);
-        }
-        else if (esType == EsType.counterfactualExperimental) {
+        } else if (esType == EsType.counterfactualExperimental) {
             addCounterfactualExperimentalEdges(gNat, gManip);
         }
     }

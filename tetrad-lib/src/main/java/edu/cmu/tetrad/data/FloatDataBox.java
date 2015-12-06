@@ -35,10 +35,8 @@ public class FloatDataBox implements DataBox {
 
     /**
      * Constructs an 2D float array consisting entirely of missing values (-99).
-     * @param rows
-     * @param cols
      */
-    public FloatDataBox(int rows, int cols) {
+    private FloatDataBox(int rows, int cols) {
         this.data = new float[rows][cols];
 
         for (int i = 0; i < rows; i++) {
@@ -69,7 +67,7 @@ public class FloatDataBox implements DataBox {
     public static BoxDataSet serializableInstance() {
         return new BoxDataSet(new ShortDataBox(4, 4), null);
     }
-    
+
     /**
      * @return the number of rows in this data box.
      */
@@ -105,8 +103,7 @@ public class FloatDataBox implements DataBox {
 
         if (datum == Float.NaN) {
             return null;
-        }
-        else {
+        } else {
             return datum;
         }
     }

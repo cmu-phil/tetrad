@@ -35,7 +35,7 @@ import java.util.regex.Matcher;
  * use in algorithms.  This information can be set edge by edge or else globally
  * via temporal tiers.  When setting temporal tiers, all edges from later tiers
  * to earlier tiers are forbidden.
- * <p/>
+ * <p>
  * For this class, all variable names are
  * referenced by name only.  This is because the same Knowledge object is
  * intended to plug into different graphs with MyNodes that possibly have the same
@@ -43,7 +43,7 @@ import java.util.regex.Matcher;
  * forbids any edge which connects a MyNode named "X" to a MyNode named "Y", even if
  * the underlying MyNodes themselves named "X" and "Y", respectively, are not the
  * same.
- * <p/>
+ * <p>
  * In place of variable names, wildcard expressions containing the wildcard '*'
  * may be substituted. These will be matched to as many myNodes as possible.
  * The '*' wildcard matches any string of consecutive characters up until the following
@@ -55,14 +55,13 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     static final long serialVersionUID = 23L;
 
     private Set<MyNode> myNodes = new HashSet<>();
-    private TreeSet<String> variables = new TreeSet<>(); // legacy, no longer used.
 
     private List<OrderedPair<Set<MyNode>>> forbiddenRulesSpecs;
     private List<OrderedPair<Set<MyNode>>> requiredRulesSpecs;
     private List<Set<MyNode>> tierSpecs;
 
     // Legacy.
-    private List<KnowledgeGroup> knowledgeGroups = new ArrayList<>();
+    private final List<KnowledgeGroup> knowledgeGroups = new ArrayList<>();
     private Map<KnowledgeGroup, OrderedPair<Set<MyNode>>> knowledgeGroupRules;
 
     private boolean defaultToKnowledgeLayout = false;
@@ -72,11 +71,23 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     // Wraps a variable name so that it has object identity. For speed.
     public static class MyNode implements TetradSerializable {
         static final long serialVersionUID = 23L;
-        private String name;
-        public MyNode(String name) {this.name = name;}
-        public String getName() {return name;}
-        public String toString() {return getName();}
-        public static MyNode serializableInstance() {return new MyNode("X");}
+        private final String name;
+
+        public MyNode(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String toString() {
+            return getName();
+        }
+
+        public static MyNode serializableInstance() {
+            return new MyNode("X");
+        }
     }
 
 
@@ -118,20 +129,9 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     /**
      * Makes a shallow copy.
      */
-    public Knowledge2(Knowledge2 knowledge) {
-        if (knowledge.variables != null) {
-            this.myNodes = new HashSet<>();
-            myNodes = new HashSet<>();
-            for (String node : knowledge.variables) {
-                MyNode _node = new MyNode(node);
-                namesToVars.put(node, _node);
-                myNodes.add(_node);
-            }
-        }
-        else {
-            this.namesToVars = new HashMap<>(knowledge.namesToVars);
-            this.myNodes = new HashSet<>(knowledge.myNodes);
-        }
+    private Knowledge2(Knowledge2 knowledge) {
+        this.namesToVars = new HashMap<>(knowledge.namesToVars);
+        this.myNodes = new HashSet<>(knowledge.myNodes);
 
         this.forbiddenRulesSpecs = new ArrayList<>(knowledge.forbiddenRulesSpecs);
         this.requiredRulesSpecs = new ArrayList<>(knowledge.requiredRulesSpecs);
@@ -329,8 +329,6 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * @return (a copy of) the given tier.
-     *
      * @param tier the index of the desired tier.
      * @return a copy of this tier.
      */
@@ -467,7 +465,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         return forbiddenRulesSpecs.isEmpty() && requiredRulesSpecs.isEmpty() && tierSpecs.isEmpty();
     }
 
-    public void saveKnowledge(Writer out)
+    private void saveKnowledge(Writer out)
             throws IOException {
         StringBuilder buf = new StringBuilder();
         buf.append("/knowledge");

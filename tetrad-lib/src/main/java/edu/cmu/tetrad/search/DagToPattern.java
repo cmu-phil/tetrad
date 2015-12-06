@@ -227,7 +227,7 @@ public class DagToPattern {
         graph.fullyConnect(Endpoint.CIRCLE);
 
         for (int i = 0; i < measured.size(); i++) {
-            for (int j = i + 1; j< measured.size(); j++) {
+            for (int j = i + 1; j < measured.size(); j++) {
                 Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
                 List<Node> sepset = dag.getSepset(n1, n2);

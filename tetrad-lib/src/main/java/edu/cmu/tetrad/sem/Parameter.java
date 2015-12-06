@@ -85,7 +85,7 @@ public final class Parameter implements TetradSerializable {
     private boolean fixed = false;
 
     /**
-     * @return true iff this parameter should be initialized randomly.
+     * True iff this parameter should be initialized randomly.
      *
      * @serial Any value.
      */
@@ -306,14 +306,6 @@ public final class Parameter implements TetradSerializable {
         }
 
         if (type == null) {
-            throw new NullPointerException();
-        }
-
-        if (nodeA == null) {
-            throw new NullPointerException();
-        }
-
-        if (nodeB == null) {
             throw new NullPointerException();
         }
 

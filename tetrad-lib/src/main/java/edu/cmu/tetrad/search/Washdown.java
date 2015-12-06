@@ -34,10 +34,10 @@ import java.util.List;
 
 /**
  * Implements the Washdown algorithm,
- * <p/>
+ * <p>
  * Initialization: Current Model = M1 := single factor pure model in
  * which L1 is a cause of all Vi in V
- * <p/>
+ * <p>
  * 1) Purify step:  run Purify on getModel model.
  * 2) Create new model: for each indicator Vi in Vdiscard (variables
  * discarded) by Purify in step 1, move Vi from being an effect of its
@@ -45,7 +45,7 @@ import java.util.List;
  * create it and freely correlate Lj+1 with all latents L1 to Lj.
  * 3) stop check:  estimate new model and stop if goodness-of-fit test
  * passes, else getModel model:= new model, and go to step 1.
- * <p/>
+ * <p>
  * Purify
  * 1) Vkeep := V, Vdiscard := null set
  * 2) Do goodness-of-fit test on getModel model Mc, stop if Mc passes,
@@ -55,7 +55,7 @@ import java.util.List;
  * 3) New getModel model := Mc - Vi, for Vi with max gof(Vi) from step 3.
  * 4) Vkeep:= Vkeep - Vi, Vdiscard:= Vdiscard + Vi
  * 5) Go to step 2.
- * <p/>
+ * <p>
  * Clearly we can use any goodness of fit test we think is appropriate -
  * the default being the chi-square test.
  *
@@ -165,7 +165,7 @@ public class Washdown {
             for (int i = 0; i < keep.size(); i++) {
                 List<List<Node>> _clusters = removeVar(keep.get(i), clusters);
                 double _gof = gof(_clusters);
-                System.out.println("     GOF = " + gof(_clusters) +  "P value = " + pValue(_clusters) + " clusters = " + _clusters);
+                System.out.println("     GOF = " + gof(_clusters) + "P value = " + pValue(_clusters) + " clusters = " + _clusters);
 
                 if (_gof < bestGof) {
                     bestGof = _gof;
@@ -211,8 +211,7 @@ public class Washdown {
 
         if (cov != null) {
             estimator = new SemEstimator(cov, pm);
-        }
-        else {
+        } else {
             estimator = new SemEstimator(dataSet, pm);
         }
 
@@ -231,8 +230,7 @@ public class Washdown {
 
         if (cov != null) {
             estimator = new SemEstimator(cov, pm);
-        }
-        else {
+        } else {
             estimator = new SemEstimator(dataSet, pm);
         }
 

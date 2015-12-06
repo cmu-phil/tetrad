@@ -28,8 +28,8 @@ import java.util.concurrent.ForkJoinPool;
  * Created by josephramsey on 2/7/15.
  */
 public class ForkJoinPoolInstance {
-    private static ForkJoinPoolInstance INSTANCE =  new ForkJoinPoolInstance();
-    private ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+    private static final ForkJoinPoolInstance INSTANCE = new ForkJoinPoolInstance();
+    private final ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 
     private ForkJoinPoolInstance() {
 

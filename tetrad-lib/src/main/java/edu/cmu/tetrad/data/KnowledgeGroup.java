@@ -30,7 +30,7 @@ import java.util.*;
 /**
  * Represents a "Other Group" in Knowledge, which can be understood as: Group1 -> Group2 where there are
  * edges between all members of Group1 to Group2.
- *
+ * <p>
  * Immutable.
  *
  * @author Tyler Gibson
@@ -61,7 +61,6 @@ public final class KnowledgeGroup implements TetradSerializable {
     private int type;
 
 
-
     /**
      * The types of groups (Can an enum be used instead?)
      */
@@ -74,32 +73,30 @@ public final class KnowledgeGroup implements TetradSerializable {
      *
      * @param type - the type
      */
-    public KnowledgeGroup(int type, Set<String> from, Set<String> to){
-        if(type != REQUIRED && type != FORBIDDEN){
+    public KnowledgeGroup(int type, Set<String> from, Set<String> to) {
+        if (type != REQUIRED && type != FORBIDDEN) {
             throw new NullPointerException("The given type needs to be either REQUIRED or FORBIDDEN");
         }
-        if(from == null){
+        if (from == null) {
             throw new NullPointerException("The from set must not be null");
         }
-        if(to == null){
+        if (to == null) {
             throw new NullPointerException("The to set must not be null");
         }
-        if(intersect(from, to)){
+        if (intersect(from, to)) {
             throw new IllegalArgumentException("The from and to sets must not intersect");
         }
-        this.fromGroup = new HashSet<String>(from);
-        this.toGroup = new HashSet<String>(to);
+        this.fromGroup = new HashSet<>(from);
+        this.toGroup = new HashSet<>(to);
         this.type = type;
     }
 
 
     /**
      * Constructs an empty instance of a knowledge group.
-     *
-     * @param type
      */
-    public KnowledgeGroup(int type){
-        if(type != REQUIRED && type != FORBIDDEN){
+    public KnowledgeGroup(int type) {
+        if (type != REQUIRED && type != FORBIDDEN) {
             throw new NullPointerException("The given type needs to be either REQUIRED or FORBIDDEN");
         }
         this.type = type;
@@ -119,12 +116,7 @@ public final class KnowledgeGroup implements TetradSerializable {
     }
 
 
-    /**
-     * @return the type of group, currently either REQUIRED or FORBIDDEN.
-     *
-     * @return
-     */
-    public int getType(){
+    public int getType() {
         return this.type;
     }
 
@@ -132,44 +124,29 @@ public final class KnowledgeGroup implements TetradSerializable {
     /**
      * States whether this group is empty, that is there is no edges in it (Note there may be some
      * partial information though).
-     *
-     * @return
      */
-    public boolean isEmpty(){
-       return this.fromGroup.isEmpty() || this.toGroup.isEmpty(); 
+    public boolean isEmpty() {
+        return this.fromGroup.isEmpty() || this.toGroup.isEmpty();
     }
 
 
-
-    /**
-     * @return all the "from" variables in the group.
-     *
-     * @return
-     */
-    public Set<String> getFromVariables(){
+    public Set<String> getFromVariables() {
         return Collections.unmodifiableSet(this.fromGroup);
     }
 
 
-    /**
-     * @return all the "to" variables in the group.
-     *
-     * @return
-     */
-    public Set<String> getToVariables(){
+    public Set<String> getToVariables() {
         return Collections.unmodifiableSet(this.toGroup);
     }
 
 
     /**
-     * @return all the edges created in this group.
-     *
      * @return - edges.
      */
-    public List<KnowledgeEdge> getEdges(){
-        List<KnowledgeEdge> edges = new ArrayList<KnowledgeEdge>(this.fromGroup.size() + this.toGroup.size());
-        for(String from :this.fromGroup){
-            for(String to : this.toGroup){
+    public List<KnowledgeEdge> getEdges() {
+        List<KnowledgeEdge> edges = new ArrayList<>(this.fromGroup.size() + this.toGroup.size());
+        for (String from : this.fromGroup) {
+            for (String to : this.toGroup) {
                 edges.add(new KnowledgeEdge(from, to));
             }
         }
@@ -177,9 +154,8 @@ public final class KnowledgeGroup implements TetradSerializable {
     }
 
 
-
-    public boolean containsEdge(KnowledgeEdge edge){
-        return this.fromGroup.contains(edge.getFrom())  && this.toGroup.contains(edge.getTo());
+    public boolean containsEdge(KnowledgeEdge edge) {
+        return this.fromGroup.contains(edge.getFrom()) && this.toGroup.contains(edge.getTo());
     }
 
 
@@ -200,24 +176,20 @@ public final class KnowledgeGroup implements TetradSerializable {
      *
      * @return true iff there is a conflict.
      */
-    public boolean isConflict(KnowledgeGroup group){
+    public boolean isConflict(KnowledgeGroup group) {
         // if they have different types, then if they share an edge there is a conflict.
-        if(this.type != group.type){
+        if (this.type != group.type) {
             return intersect(this.fromGroup, group.fromGroup) && intersect(this.toGroup, group.toGroup);
         }
         // otherwise they either don't share edges or are the same type and no conflicts
         // exist (as at worst they will have edges in common).
         return false;
     }
-          
+
 
     /**
      * Equals when they are the same type and have the same edges.
-     *
-     * @param o
-     * @return
      */
-    @SuppressWarnings({"SimplifiableIfStatement"})
     public boolean equals(Object o) {
         if (o == this) {
             return true;
@@ -229,15 +201,9 @@ public final class KnowledgeGroup implements TetradSerializable {
 
         KnowledgeGroup thatGroup = (KnowledgeGroup) o;
 
-        if(this.type != thatGroup.type){
-            return false;
-        }
+        return this.type == thatGroup.type && this.fromGroup.equals(thatGroup.fromGroup)
+                && this.toGroup.equals(thatGroup.toGroup);
 
-        if(!this.fromGroup.equals(thatGroup.fromGroup)){
-            return false;
-        }
-
-        return this.toGroup.equals(thatGroup.toGroup);
     }
 
     //=========================== Private Methods ==========================//
@@ -246,15 +212,14 @@ public final class KnowledgeGroup implements TetradSerializable {
     /**
      * States whether the two have a non-empty intersection or not.
      */
-    private static boolean intersect(Set<String> set1, Set<String> set2){
-        for(String var : set1){
-            if(set2.contains(var)){
+    private static boolean intersect(Set<String> set1, Set<String> set2) {
+        for (String var : set1) {
+            if (set2.contains(var)) {
                 return true;
             }
         }
         return false;
     }
-
 
 
     /**
@@ -274,10 +239,10 @@ public final class KnowledgeGroup implements TetradSerializable {
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if(this.type != REQUIRED && this.type != FORBIDDEN){
+        if (this.type != REQUIRED && this.type != FORBIDDEN) {
             throw new IllegalStateException("Type must be REQUIRED or FORBIDDEN");
         }
-        
+
         if (fromGroup == null) {
             throw new NullPointerException();
         }

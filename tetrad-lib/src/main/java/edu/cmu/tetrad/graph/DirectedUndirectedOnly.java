@@ -78,7 +78,6 @@ public final class DirectedUndirectedOnly implements GraphConstraint {
     }
 
     /**
-     * @param node
      * @param graph the graph to check.
      * @return true.
      */
@@ -87,8 +86,6 @@ public final class DirectedUndirectedOnly implements GraphConstraint {
     }
 
     /**
-     * @return a string representation of the constraint.
-     *
      * @return this representation.
      */
     public String toString() {

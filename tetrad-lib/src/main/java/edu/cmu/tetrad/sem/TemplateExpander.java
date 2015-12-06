@@ -49,9 +49,6 @@ public class TemplateExpander {
     }
 
     /**
-     * @return the expanded template, which needs to be checked to make sure it can be used. Try setting it as the
-     * expression for the node or freeParameters you wish to use it for.
-     *
      * @param template A template formula, which includes the functions TSUM and TPROD, which are not nestable,
      *                 and NEW. TSUM(f($)) = f(X1) + f(X2) + .... TPROD(f($)) = f(X1) * f(X2) * .... NEW(a) = a new parameter with
      *                 name beginning with a, such as a3, if a1 and a2 have already been used.
@@ -148,7 +145,11 @@ public class TemplateExpander {
 
     private String replaceLists(String operator, GeneralizedSemPm semPm, String formula, Node node)
             throws ParseException {
-        List<String> templateOperators = new ArrayList<String>();
+        if (semPm == null) {
+            throw new NullPointerException("Generalized Sem PM has not been provided.");
+        }
+
+        List<String> templateOperators = new ArrayList<>();
         templateOperators.add("TSUM");
         templateOperators.add("TPROD");
         templateOperators.add("tsum");
@@ -193,9 +194,9 @@ public class TemplateExpander {
                 }
             }
 
-            List<Node> parents = new ArrayList<Node>();
+            List<Node> parents = new ArrayList<>();
 
-            if (semPm != null && node != null) {
+            if (node != null) {
                 parents = semPm.getParents(node);
             }
 
@@ -251,9 +252,7 @@ public class TemplateExpander {
 
         if (error != null) {
             return formula.replaceAll("ERROR", error.getName());
-        }
-
-        else return formula;
+        } else return formula;
     }
 
     private String removeOperatorStrings(String formula) {
@@ -264,7 +263,7 @@ public class TemplateExpander {
         while (found) {
             found = false;
 
-            List<Character> operatorList = new ArrayList<Character>();
+            List<Character> operatorList = new ArrayList<>();
             int first = 0;
             int last = 0;
 
@@ -273,39 +272,39 @@ public class TemplateExpander {
                 boolean plusOrTimes = '+' == symbol || '*' == symbol;
                 boolean space = ' ' == symbol;
 
-                if (space) {
-                    // continue; // (last statement)
-                } else if (plusOrTimes) {
-                    if (operatorList.isEmpty()) {
-                        first = i;
-                    }
+                if (!space) {
+                    if (plusOrTimes) {
+                        if (operatorList.isEmpty()) {
+                            first = i;
+                        }
 
-                    operatorList.add(symbol);
-                } else {
-                    last = i - 1;
+                        operatorList.add(symbol);
+                    } else {
+                        last = i - 1;
 
-                    if (operatorList.size() > 1) {
-                        found = true;
-                        boolean allStar = true;
+                        if (operatorList.size() > 1) {
+                            found = true;
+                            boolean allStar = true;
 
-                        for (Character c : operatorList) {
-                            if (c != '*') {
-                                allStar = false;
-                                break;
+                            for (Character c : operatorList) {
+                                if (c != '*') {
+                                    allStar = false;
+                                    break;
+                                }
+                            }
+
+                            if (allStar) {
+                                formula = formula.substring(0, first - 1) + " * " +
+                                        formula.substring(last + 1, formula.length());
+                            } else {
+                                formula = formula.substring(0, first - 1) + " + " +
+                                        formula.substring(last + 1, formula.length());
                             }
                         }
 
-                        if (allStar) {
-                            formula = formula.substring(0, first - 1) + " * " +
-                                    formula.substring(last + 1, formula.length());
-                        } else {
-                            formula = formula.substring(0, first - 1) + " + " +
-                                    formula.substring(last + 1, formula.length());
-                        }
+                        operatorList.clear();
+                        continue WHILE;
                     }
-
-                    operatorList.clear();
-                    continue WHILE;
                 }
             }
         }
@@ -313,7 +312,7 @@ public class TemplateExpander {
     }
 
     private String replaceNewParameters(GeneralizedSemPm semPm, String formula, List<String> usedNames) {
-        String parameterPattern = "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/]*))";
+        String parameterPattern = "\\$|(([a-zA-Z])([a-zA-Z0-9-_/]*))";
         Pattern p = Pattern.compile("NEW\\((" + parameterPattern + ")\\)");
 
         while (true) {
@@ -326,7 +325,7 @@ public class TemplateExpander {
             String group0 = Pattern.quote(m.group(0));
             String group1 = m.group(1);
 
-            String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
         }
@@ -343,7 +342,7 @@ public class TemplateExpander {
             String group0 = Pattern.quote(m.group(0));
             String group1 = m.group(1);
 
-            String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
         }

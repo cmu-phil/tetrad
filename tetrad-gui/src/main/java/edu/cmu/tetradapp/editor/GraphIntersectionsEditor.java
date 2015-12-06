@@ -44,8 +44,6 @@ public class GraphIntersectionsEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
-     *
-     * @param comparison
      */
     public GraphIntersectionsEditor(GraphAdjacencyIntersectionWrapper comparison) {
         this.graphs = comparison.getGraphs();

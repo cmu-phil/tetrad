@@ -45,8 +45,6 @@ public class NoteEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
-     *
-     * @param noteModel
      */
     public NoteEditor(NoteModel noteModel) {
         this.noteModel = noteModel;

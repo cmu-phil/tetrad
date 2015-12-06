@@ -46,7 +46,7 @@ import java.util.List;
  * and the columns of the table are variable values of the variable. Most of the
  * method in this interface are designed mainly to allow these values to be set
  * and retrieved. A few methods are dedicated to bookkeeping chores, like
- * clearing tables or initializing them randomly. One special method                            
+ * clearing tables or initializing them randomly. One special method
  * (simulateData) is dedicated to the task of generating randomly simulated data
  * sets consistent with the conditional probabilities implied by the information
  * stored in the conditional probability tables of the Bayes net. See
@@ -60,8 +60,6 @@ public interface BayesIm extends VariableSource, IM {
 
     /**
      * @return the underlying Bayes PM.
-     *
-     * @return this PM.
      */
     BayesPm getBayesPm();
 
@@ -77,26 +75,19 @@ public interface BayesIm extends VariableSource, IM {
 
     /**
      * @return the node corresponding to the given node index.
-     *
-     * @param nodeIndex
-     * @return this node.
      */
     Node getNode(int nodeIndex);
 
     /**
-     * @return the node with the given name in the associated graph.
-     *
      * @param name the name of the node.
-     * @return the node.
+     * @return the node with the given name in the associated graph.
      */
     Node getNode(String name);
 
     /**
-     * @return the node index for the given node.
-     *
      * @param node the given node.
      * @return the index for that node, or -1 if the node is not in the
-     *         BayesIm.
+     * BayesIm.
      */
     int getNodeIndex(Node node);
 
@@ -113,7 +104,7 @@ public interface BayesIm extends VariableSource, IM {
     /**
      * @return the list of measured variableNodes.
      */
-    public List<Node> getMeasuredNodes();
+    List<Node> getMeasuredNodes();
 
 
     /**
@@ -122,9 +113,6 @@ public interface BayesIm extends VariableSource, IM {
      * That is, if P(N=v0 | P1=v1, P2=v2, ... Pn=vn) is a conditional
      * probability stored in 'probs', then the maximum number of rows in the
      * table for N is #vals(N).
-     *
-     * @param nodeIndex
-     * @return this number.
      * @see #getNumRows
      */
     int getNumColumns(int nodeIndex);
@@ -135,19 +123,14 @@ public interface BayesIm extends VariableSource, IM {
      * node.  That is, if P(N=v0 | P1=v1, P2=v2, ... Pn=vn) is a conditional
      * probability stored in 'probs', then the maximum number of rows in the
      * table for N is #vals(P1) x #vals(P2) x ... x #vals(Pn).
-     *
-     * @param nodeIndex
-     * @return this number.
      * @see #getRowIndex
      * @see #getNumColumns
      */
     int getNumRows(int nodeIndex);
 
     /**
-     * @return the number of parents of the given node.
-     *
      * @param nodeIndex the given node.
-     * @return the number of parents for this node.
+     * @return the number of parents of the given node.
      */
     int getNumParents(int nodeIndex);
 
@@ -166,8 +149,6 @@ public interface BayesIm extends VariableSource, IM {
      * of each parent of a node, that is, the number of values which that node
      * can take on.  The order of entries in this array is the same as the order
      * of entries of nodes returned by getParents() for that node.
-     *
-     * @return this array of parent dimensions.
      * @see #getParents
      */
     int[] getParentDims(int nodeIndex);
@@ -175,12 +156,13 @@ public interface BayesIm extends VariableSource, IM {
     /**
      * @return (a defensive copy of) the array containing all of the parents of
      * a given node in the order in which they are stored internally.
-     *
      * @see #getParentDims
      */
     int[] getParents(int nodeIndex);
 
     /**
+     * @param nodeIndex the index of the node.
+     * @param rowIndex  the index of the row in question.
      * @return an array containing the combination of parent values for a given
      * node and given row in the probability table for that node.  To get the
      * combination of parent values from the row number, the row number is
@@ -193,11 +175,6 @@ public interface BayesIm extends VariableSource, IM {
      * remainder of 2.  The variable place value representation is [2 4 5],
      * which is the combination of parent values.  This is the inverse function
      * of getRowIndex().
-     *
-     * @param nodeIndex the index of the node.
-     * @param rowIndex  the index of the row in question.
-     * @return the array representing the combination of parent values for this
-     *         row.
      * @see #getNodeIndex
      * @see #getRowIndex
      */
@@ -210,6 +187,11 @@ public interface BayesIm extends VariableSource, IM {
     int getParentValue(int nodeIndex, int rowIndex, int colIndex);
 
     /**
+     * @param nodeIndex the index of the node in question.
+     * @param rowIndex  the row in the table for this for node which represents
+     *                  the combination of parent values in question.
+     * @param colIndex  the column in the table for this node which represents
+     *                  the value of the node in question.
      * @return the probability for the given node at the given row and column in
      * the table for that node.  To get the node index, use getNodeIndex().  To
      * get the row index, use getRowIndex().  To get the column index, use
@@ -218,13 +200,6 @@ public interface BayesIm extends VariableSource, IM {
      * P2=v2, ... , Pn=vn), where N is the node referenced by nodeIndex, v0 is
      * the value referenced by colIndex, and the combination of parent values
      * indicated is the combination indicated by rowIndex.
-     *
-     * @param nodeIndex the index of the node in question.
-     * @param rowIndex  the row in the table for this for node which represents
-     *                  the combination of parent values in question.
-     * @param colIndex  the column in the table for this node which represents
-     *                  the value of the node in question.
-     * @return the probability stored for this parameter.
      * @see #getNodeIndex
      * @see #getRowIndex
      */
@@ -239,11 +214,6 @@ public interface BayesIm extends VariableSource, IM {
      * is the inverse function to getVariableValues().  <p> Note: If the node
      * has n values, the length of 'values' must be >= the number of parents.
      * Only the first n values are used.
-     *
-     * @param nodeIndex
-     * @param values
-     * @return the row in the table for the given node and combination of parent
-     *         values.
      * @see #getParentValues
      */
     int getRowIndex(int nodeIndex, int[] values);
@@ -282,7 +252,7 @@ public interface BayesIm extends VariableSource, IM {
      * @see #getProbability
      */
     void setProbability(int nodeIndex, int rowIndex, int colIndex,
-            double value);
+                        double value);
 
     /**
      * @return the index of the node with the given name in the specified
@@ -346,7 +316,6 @@ public interface BayesIm extends VariableSource, IM {
      * Simulates a sample with the given sample size.
      *
      * @param sampleSize the sample size.
-     * @param latentDataSaved
      * @return the simulated sample as a DataSet.
      */
     DataSet simulateData(int sampleSize, boolean latentDataSaved);
@@ -355,7 +324,6 @@ public interface BayesIm extends VariableSource, IM {
      * Simulates a sample with the given sample size.
      *
      * @param sampleSize the sample size.
-     * @param latentDataSaved
      * @return the simulated sample as a DataSet.
      */
     DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved);

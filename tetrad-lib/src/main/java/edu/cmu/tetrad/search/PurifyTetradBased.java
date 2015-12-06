@@ -144,7 +144,7 @@ public class PurifyTetradBased implements IPurify {
         printlnMessage("INTRA-CONSTRUCT PHASE.");
         printlnMessage("----------------------");
         printlnMessage();
-        for (Iterator it = clustering.iterator(); it.hasNext();) {
+        for (Iterator it = clustering.iterator(); it.hasNext(); ) {
             intraConstructPhase2((int[]) it.next(), eliminated);
         }
         printlnMessage();

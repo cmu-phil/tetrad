@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.calculator.expression;
 
-import edu.cmu.tetrad.sem.ShiftedRealDistribution;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -42,8 +41,8 @@ public class VariableExpression implements Expression {
     private String variable;
 
 
-    public VariableExpression(String variable){
-        if(variable == null){
+    public VariableExpression(String variable) {
+        if (variable == null) {
             throw new NullPointerException("variable is null.");
         }
         this.variable = variable;
@@ -58,12 +57,12 @@ public class VariableExpression implements Expression {
     /**
      * @return the variable.
      */
-    public String getVariable(){
+    public String getVariable() {
         return this.variable;
     }
 
 
-    public Double evaluateGeneric(Context context){
+    public Double evaluateGeneric(Context context) {
         return context.getValue(variable);
     }
 
@@ -92,13 +91,14 @@ public class VariableExpression implements Expression {
     }
 
     public String toString() {
-        return variable.toString();
+        return variable;
     }
 
     @Override
     public RealDistribution getRealDistribution(Context context) {
         return null;
     }
+
     public IntegerDistribution getIntegerDistribution(Context context) {
         return null;
     }

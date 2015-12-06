@@ -157,8 +157,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         if (ind) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -268,8 +267,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         if (BCInference.OP.independent == type) {
             probOp = pInd;
-        }
-        else {
+        } else {
             probOp = 1.0 - pInd;
         }
 

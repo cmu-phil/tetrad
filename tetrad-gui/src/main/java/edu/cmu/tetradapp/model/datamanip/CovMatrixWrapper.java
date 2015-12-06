@@ -41,8 +41,6 @@ public class CovMatrixWrapper extends DataWrapper {
 
     /**
      * Splits the given data set by collinear columns.
-     *
-     * @param wrapper
      */
     public CovMatrixWrapper(DataWrapper wrapper) {
         if (wrapper == null) {

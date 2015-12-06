@@ -27,7 +27,7 @@ package edu.cmu.tetrad.util;
  * @author Joseph Ramsey
  */
 public interface IM extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
 }
 

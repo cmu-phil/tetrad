@@ -28,7 +28,8 @@ package edu.cmu.tetrad.graph;
  */
 public class NodeEqualityMode {
     public enum Type {NAME, OBJECT}
-    public static Type type = Type.NAME;
+
+    private static Type type = Type.NAME;
 
     public static void setEqualityMode(Type _type) {
         type = _type;

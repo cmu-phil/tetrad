@@ -67,7 +67,6 @@ class FciDsepLegalPairsCfci implements LegalPairs {
 
     /**
      * @return true iff x-->y<--z or else x is adjacent to z.
-     *
      * @throws IllegalArgumentException if x is not adjacent to y or y is not adjacent to z.
      */
     public boolean isLegalPair(Node x, Node y, Node z, List<Node> c,

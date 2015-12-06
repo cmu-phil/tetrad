@@ -91,23 +91,17 @@ public class EdgeListGraphSingleConnections implements Graph {
      * Set of ambiguous triples. Note the name can't be changed due to
      * serialization.
      */
-    private Set<Triple> ambiguousTriples = new HashSet<Triple>();
+    private Set<Triple> ambiguousTriples = new HashSet<>();
 
     /**
      * @serial
      */
-    private Set<Triple> underLineTriples = new HashSet<Triple>();
+    private Set<Triple> underLineTriples = new HashSet<>();
 
     /**
      * @serial
      */
-    private Set<Triple> dottedUnderLineTriples = new HashSet<Triple>();
-
-    /**
-     * @serial
-     * @deprecated 7/8/09
-     */
-    private Set<Pair> ambiguousPairs = new HashSet<Pair>();
+    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
 
     /**
      * True iff nodes were removed since the last call to an accessor for ambiguous, underline, or dotted underline
@@ -119,14 +113,12 @@ public class EdgeListGraphSingleConnections implements Graph {
     /**
      * The set of highlighted edges.
      */
-    private Set<Edge> highlightedEdges = new HashSet<Edge>();
+    private Set<Edge> highlightedEdges = new HashSet<>();
 
     /**
      * A hash from node names to nodes;
      */
-    private Map<String, Node> namesHash = new HashMap<String, Node>();
-
-    Map<List<Node>, Set<Node>> ancestors;
+    private Map<String, Node> namesHash = new HashMap<>();
 
 
     //==============================CONSTUCTORS===========================//
@@ -135,10 +127,10 @@ public class EdgeListGraphSingleConnections implements Graph {
      * Constructs a new (empty) EdgeListGraph.
      */
     public EdgeListGraphSingleConnections() {
-        this.graphConstraints = new LinkedList<GraphConstraint>();
-        this.edgeLists = new ConcurrentHashMap<Node, List<Edge>>();
-        this.nodes = new ArrayList<Node>();
-        this.edgesSet = new HashSet<Edge>();
+        this.graphConstraints = new LinkedList<>();
+        this.edgeLists = new ConcurrentHashMap<>();
+        this.nodes = new ArrayList<>();
+        this.edgesSet = new HashSet<>();
 
         for (Node node : nodes) {
             namesHash.put(node.getName(), node);
@@ -160,18 +152,18 @@ public class EdgeListGraphSingleConnections implements Graph {
 
         if (graph instanceof EdgeListGraphSingleConnections) {
             EdgeListGraphSingleConnections _graph = (EdgeListGraphSingleConnections) graph;
-            nodes = new ArrayList<Node>(_graph.nodes);
-            edgesSet = new HashSet<Edge>(_graph.edgesSet);
-            edgeLists = new ConcurrentHashMap<Node, List<Edge>>();
-            for (Node node : nodes) this.edgeLists.put(node, new ArrayList<Edge>(_graph.edgeLists.get(node)));
-            graphConstraints = new ArrayList<GraphConstraint>(_graph.graphConstraints);
+            nodes = new ArrayList<>(_graph.nodes);
+            edgesSet = new HashSet<>(_graph.edgesSet);
+            edgeLists = new ConcurrentHashMap<>();
+            for (Node node : nodes) this.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
+            graphConstraints = new ArrayList<>(_graph.graphConstraints);
             graphConstraintsChecked = _graph.graphConstraintsChecked;
-            ambiguousTriples = new HashSet<Triple>(_graph.ambiguousTriples);
-            underLineTriples = new HashSet<Triple>(_graph.underLineTriples);
-            dottedUnderLineTriples = new HashSet<Triple>(_graph.dottedUnderLineTriples);
+            ambiguousTriples = new HashSet<>(_graph.ambiguousTriples);
+            underLineTriples = new HashSet<>(_graph.underLineTriples);
+            dottedUnderLineTriples = new HashSet<>(_graph.dottedUnderLineTriples);
             stuffRemovedSinceLastTripleAccess = _graph.stuffRemovedSinceLastTripleAccess;
-            highlightedEdges = new HashSet<Edge>(_graph.highlightedEdges);
-            namesHash = new HashMap<String, Node>(_graph.namesHash);
+            highlightedEdges = new HashSet<>(_graph.highlightedEdges);
+            namesHash = new HashMap<>(_graph.namesHash);
         } else
 
         {
@@ -208,9 +200,7 @@ public class EdgeListGraphSingleConnections implements Graph {
         }
 
         for (Node variable : nodes) {
-            if (!addNode((Node) variable)) {
-//                throw new IllegalArgumentException();
-            }
+            addNode(variable);
         }
 
         for (Node node : nodes) {
@@ -223,18 +213,18 @@ public class EdgeListGraphSingleConnections implements Graph {
     public synchronized static Graph shallowCopy(EdgeListGraphSingleConnections _graph) {
         EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections();
 
-        graph.nodes = new ArrayList<Node>(_graph.nodes);
-        graph.edgesSet = new HashSet<Edge>(_graph.edgesSet);
-        graph.edgeLists = new ConcurrentHashMap<Node, List<Edge>>(_graph.edgeLists);
-        for (Node node : graph.nodes) graph.edgeLists.put(node, new ArrayList<Edge>(_graph.edgeLists.get(node)));
-        graph.graphConstraints = new ArrayList<GraphConstraint>(_graph.graphConstraints);
+        graph.nodes = new ArrayList<>(_graph.nodes);
+        graph.edgesSet = new HashSet<>(_graph.edgesSet);
+        graph.edgeLists = new ConcurrentHashMap<>(_graph.edgeLists);
+        for (Node node : graph.nodes) graph.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
+        graph.graphConstraints = new ArrayList<>(_graph.graphConstraints);
         graph.graphConstraintsChecked = _graph.graphConstraintsChecked;
-        graph.ambiguousTriples = new HashSet<Triple>(_graph.ambiguousTriples);
-        graph.underLineTriples = new HashSet<Triple>(_graph.underLineTriples);
-        graph.dottedUnderLineTriples = new HashSet<Triple>(_graph.dottedUnderLineTriples);
+        graph.ambiguousTriples = new HashSet<>(_graph.ambiguousTriples);
+        graph.underLineTriples = new HashSet<>(_graph.underLineTriples);
+        graph.dottedUnderLineTriples = new HashSet<>(_graph.dottedUnderLineTriples);
         graph.stuffRemovedSinceLastTripleAccess = _graph.stuffRemovedSinceLastTripleAccess;
-        graph.highlightedEdges = new HashSet<Edge>(_graph.highlightedEdges);
-        graph.namesHash = new HashMap<String, Node>(_graph.namesHash);
+        graph.highlightedEdges = new HashSet<>(_graph.highlightedEdges);
+        graph.namesHash = new HashMap<>(_graph.namesHash);
 
 //        _graph.nodes = new ArrayList(graph.nodes);
 //        _graph.edgesSet = new HashSet<Edge>(graph.edgesSet);
@@ -340,14 +330,12 @@ public class EdgeListGraphSingleConnections implements Graph {
 
     public boolean isDirectedFromTo(Node node1, Node node2) {
         Edge edge = getEdge(node1, node2);
-        if (edge == null) return false;
-        return edge.pointsTowards(node2);
+        return edge != null && edge.pointsTowards(node2);
     }
 
     public boolean isUndirectedFromTo(Node node1, Node node2) {
         Edge edge = getEdge(node1, node2);
-        if (edge == null) return false;
-        return edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL;
+        return edge != null && edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL;
     }
 
     /**
@@ -423,12 +411,8 @@ public class EdgeListGraphSingleConnections implements Graph {
         Edge edge1 = getEdge(node1, node2);
         Edge edge2 = getEdge(node2, node3);
 
-        if (edge1 == null || edge2 == null) {
-            return false;
-        }
+        return !(edge1 == null || edge2 == null) && edge1.getProximalEndpoint(node2) == Endpoint.ARROW && edge2.getProximalEndpoint(node2) == Endpoint.ARROW;
 
-        return edge1.getProximalEndpoint(node2) == Endpoint.ARROW &&
-                edge2.getProximalEndpoint(node2) == Endpoint.ARROW;
     }
 
     /**
@@ -468,7 +452,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * @return the list of children for a node.
      */
     public List<Node> getChildren(Node node) {
-        List<Node> children = new ArrayList<Node>(2);
+        List<Node> children = new ArrayList<>(2);
 
         for (Object o : getEdges(node)) {
             Edge edge = (Edge) (o);
@@ -498,14 +482,14 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     public List<Node> getDescendants(List<Node> nodes) {
-        Set<Node> descendants = new HashSet<Node>();
+        Set<Node> descendants = new HashSet<>();
 
         for (Object node1 : nodes) {
             Node node = (Node) node1;
             collectDescendantsVisit(node, descendants);
         }
 
-        return new LinkedList<Node>(descendants);
+        return new LinkedList<>(descendants);
     }
 
     /**
@@ -546,7 +530,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * @return the list of parents for a node.
      */
     public List<Node> getParents(Node node) {
-        List<Node> parents = new ArrayList<Node>();
+        List<Node> parents = new ArrayList<>();
         List<Edge> edges = edgeLists.get(node);
 
         for (Edge edge : edges) {
@@ -602,7 +586,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * @return true iff node1 is a possible ancestor of at least one member of
      * nodes2
      */
-    public boolean possibleAncestorSet(Node node1, List<Node> nodes2) {
+    private boolean possibleAncestorSet(Node node1, List<Node> nodes2) {
         for (Object aNodes2 : nodes2) {
             if (possibleAncestor(node1, (Node) aNodes2)) {
                 return true;
@@ -612,14 +596,14 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     public List<Node> getAncestors(List<Node> nodes) {
-        Set<Node> ancestors = new HashSet<Node>();
+        Set<Node> ancestors = new HashSet<>();
 
         for (Object node1 : nodes) {
             Node node = (Node) node1;
             collectAncestorsVisit(node, ancestors);
         }
 
-        return new ArrayList<Node>(ancestors);
+        return new ArrayList<>(ancestors);
     }
 
     /**
@@ -661,8 +645,8 @@ public class EdgeListGraphSingleConnections implements Graph {
     public boolean isDConnectedTo(List<Node> x, List<Node> y, List<Node> z) {
         Set<Node> zAncestors = zAncestors(z);
 
-        Queue<Pair> Q = new ArrayDeque<Pair>();
-        Set<Pair> V = new HashSet<Pair>();
+        Queue<Pair> Q = new ArrayDeque<>();
+        Set<Pair> V = new HashSet<>();
 
         for (Node _x : x) {
             for (Node node : getAdjacentNodes(_x)) {
@@ -702,23 +686,9 @@ public class EdgeListGraphSingleConnections implements Graph {
         return GraphUtils.getSepset(x, y, this);
     }
 
-    private boolean pass(Node a, Node b, Node c, List<Node> z) {
-        boolean collider = isDefCollider(a, b, c);
-
-        boolean ancestor = false;
-
-        for (Node n : z) {
-            if (isAncestorOf(b, n)) {
-                ancestor = true;
-                break;
-            }
-        }
-        return collider && ancestor || !collider && !z.contains(b);
-    }
-
     private Set<Node> zAncestors(List<Node> z) {
-        Queue<Node> Q = new ArrayDeque<Node>();
-        Set<Node> V = new HashSet<Node>();
+        Queue<Node> Q = new ArrayDeque<>();
+        Set<Node> V = new HashSet<>();
 
         for (Node node : z) {
             Q.offer(node);
@@ -765,6 +735,7 @@ public class EdgeListGraphSingleConnections implements Graph {
 
         public boolean equals(Object o) {
             if (o == this) return true;
+            if (!(o instanceof Pair)) return false;
             Pair pair = (Pair) o;
             return x == pair.getX() && y == pair.getY();
         }
@@ -800,7 +771,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     //added by ekorber, June 2004
     public boolean possDConnectedTo(Node node1, Node node2,
                                     List<Node> condNodes) {
-        LinkedList<Node> allNodes = new LinkedList<Node>(getNodes());
+        LinkedList<Node> allNodes = new LinkedList<>(getNodes());
         int sz = allNodes.size();
         int[][] edgeStage = new int[sz][sz];
         int stage = 1;
@@ -812,7 +783,7 @@ public class EdgeListGraphSingleConnections implements Graph {
         edgeStage[n2x][n2x] = 1;
 
         List<int[]> currEdges;
-        List<int[]> nextEdges = new LinkedList<int[]>();
+        List<int[]> nextEdges = new LinkedList<>();
 
         int[] temp1 = new int[2];
         temp1[0] = n1x;
@@ -826,10 +797,10 @@ public class EdgeListGraphSingleConnections implements Graph {
 
         while (true) {
             currEdges = nextEdges;
-            nextEdges = new LinkedList<int[]>();
+            nextEdges = new LinkedList<>();
             for (int[] edge : currEdges) {
                 Node center = allNodes.get(edge[1]);
-                List<Node> adj = new LinkedList<Node>(getAdjacentNodes(center));
+                List<Node> adj = new LinkedList<>(getAdjacentNodes(center));
 
                 for (Node anAdj : adj) {
                     // check if we've hit this edge before
@@ -977,7 +948,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      */
     public List<Node> getAdjacentNodes(Node node) {
         List<Edge> edges = edgeLists.get(node);
-        List<Node> adj = new ArrayList<Node>(edges.size());
+        List<Node> adj = new ArrayList<>(edges.size());
 
         for (Edge edge : edges) {
             adj.add(edge.getDistalNode(node));
@@ -1008,8 +979,6 @@ public class EdgeListGraphSingleConnections implements Graph {
                     "There is more than one edge between " + node1 + " and " +
                             node2);
         }
-
-        ancestors = null;
 
         return removeEdges(edges);
     }
@@ -1042,7 +1011,7 @@ public class EdgeListGraphSingleConnections implements Graph {
             throw new NullPointerException("Endpoint not specified");
         } else if (edge == null) {
             throw new NullPointerException("No such edge.");
-        } else  {
+        } else {
             Edge newEdge = new Edge(from, to, edge.getProximalEndpoint(from), endPoint);
             removeEdge(edge);
             addEdge(newEdge);
@@ -1054,7 +1023,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * Nodes adjacent to the given node with the given proximal endpoint.
      */
     public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<Node>(4);
+        List<Node> nodes = new ArrayList<>(4);
         List<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
@@ -1070,7 +1039,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * Nodes adjacent to the given node with the given distal endpoint.
      */
     public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         List<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
@@ -1171,8 +1140,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         nodes.add(node);
         namesHash.put(node.getName(), node);
 
-        ancestors = null;
-
         return true;
     }
 
@@ -1181,7 +1148,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * edges in the list is guaranteed.
      */
     public Set<Edge> getEdges() {
-        return new HashSet<Edge>(this.edgesSet);
+        return new HashSet<>(this.edgesSet);
     }
 
     /**
@@ -1239,21 +1206,14 @@ public class EdgeListGraphSingleConnections implements Graph {
 
         if (o instanceof EdgeListGraphSingleConnections) {
             EdgeListGraphSingleConnections _o = (EdgeListGraphSingleConnections) o;
-            boolean nodesEqual = new HashSet<Node>(_o.nodes).equals(new HashSet<Node>(this.nodes));
-            boolean edgesEqual = new HashSet<Edge>(_o.edgesSet).equals(new HashSet<Edge>(this.edgesSet));
+            boolean nodesEqual = new HashSet<>(_o.nodes).equals(new HashSet<>(this.nodes));
+            boolean edgesEqual = new HashSet<>(_o.edgesSet).equals(new HashSet<>(this.edgesSet));
             return (nodesEqual && edgesEqual);
         } else {
             Graph graph = (Graph) o;
 
-            if (!new HashSet<String>(graph.getNodeNames()).equals(new HashSet<String>(getNodeNames()))) {
-                return false;
-            }
+            return new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(getNodeNames())) && new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()));
 
-            if (!new HashSet<Edge>(graph.getEdges()).equals(new HashSet<Edge>(getEdges()))) {
-                return false;
-            }
-
-            return true;
         }
     }
 
@@ -1281,7 +1241,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     public void reorientAllWith(Endpoint endpoint) {
-        for (Edge edge : new ArrayList<Edge>(edgesSet)) {
+        for (Edge edge : new ArrayList<>(edgesSet)) {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
             setEndpoint(a, b, endpoint);
@@ -1296,7 +1256,7 @@ public class EdgeListGraphSingleConnections implements Graph {
         Node node = namesHash.get(name);
 
         if (node == null /*|| !name.equals(node.getName())*/) {
-            namesHash = new HashMap<String, Node>();
+            namesHash = new HashMap<>();
 
             for (Node _node : nodes) {
                 namesHash.put(_node.getName(), _node);
@@ -1344,7 +1304,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * @return the list of graph constraints for this graph.
      */
     public List<GraphConstraint> getGraphConstraints() {
-        return new LinkedList<GraphConstraint>(graphConstraints);
+        return new LinkedList<>(graphConstraints);
     }
 
     /**
@@ -1364,7 +1324,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     public List<Node> getNodes() {
-        return new ArrayList<Node>(nodes);
+        return new ArrayList<>(nodes);
     }
 
     /**
@@ -1459,7 +1419,7 @@ public class EdgeListGraphSingleConnections implements Graph {
         boolean changed = false;
         List<Edge> edgeList1 = edgeLists.get(node);    //list of edges connected to that node
 
-        for (Edge edge : new ArrayList<Edge>(edgeList1)) {
+        for (Edge edge : new ArrayList<>(edgeList1)) {
             Node node2 = edge.getDistalNode(node);
 
             if (node2 != node) {
@@ -1491,7 +1451,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         nodes.remove(node);
         namesHash.remove(node.getName());
         stuffRemovedSinceLastTripleAccess = true;
-        ancestors = null;
 
         getPcs().firePropertyChange("nodeRemoved", node, null);
         return changed;
@@ -1524,13 +1483,13 @@ public class EdgeListGraphSingleConnections implements Graph {
 
         for (int i = 0; i < nodes.size(); i++) {
 //            buf.append("\n" + (i + 1) + ". " + nodes.get(i));
-            buf.append(nodes.get(i) + " ");
+            buf.append(nodes.get(i)).append(" ");
             if ((i + 1) % 30 == 0) buf.append("\n");
         }
 
         buf.append("\n\nGraph Edges: ");
 
-        List<Edge> edges = new ArrayList<Edge>(this.edgesSet);
+        List<Edge> edges = new ArrayList<>(this.edgesSet);
         Edges.sortEdges(edges);
 
         for (int i = 0; i < edges.size(); i++) {
@@ -1598,7 +1557,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      */
     public List<Edge> getEdges(Node node1, Node node2) {
         Edge edge = getEdge(node1, node2);
-        if (edge == null) return new ArrayList<Edge>();
+        if (edge == null) return new ArrayList<>();
         else return Collections.singletonList(edge);
     }
 
@@ -1607,7 +1566,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     public Set<Triple> getUnderLines() {
-        return new HashSet<Triple>(underLineTriples);
+        return new HashSet<>(underLineTriples);
     }
 
     public Set<Triple> getDottedUnderlines() {
@@ -1725,7 +1684,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     }
 
     public List<String> getNodeNames() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 
         for (Node node : getNodes()) {
             names.add(node.getName());
@@ -1740,7 +1699,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     public void removeTriplesNotInGraph() {
 //        if (!stuffRemovedSinceLastTripleAccess) return;
 
-        for (Triple triple : new HashSet<Triple>(ambiguousTriples)) {
+        for (Triple triple : new HashSet<>(ambiguousTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
                 ambiguousTriples.remove(triple);
                 continue;
@@ -1751,7 +1710,7 @@ public class EdgeListGraphSingleConnections implements Graph {
             }
         }
 
-        for (Triple triple : new HashSet<Triple>(underLineTriples)) {
+        for (Triple triple : new HashSet<>(underLineTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
                 underLineTriples.remove(triple);
                 continue;
@@ -1762,7 +1721,7 @@ public class EdgeListGraphSingleConnections implements Graph {
             }
         }
 
-        for (Triple triple : new HashSet<Triple>(dottedUnderLineTriples)) {
+        for (Triple triple : new HashSet<>(dottedUnderLineTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
                 dottedUnderLineTriples.remove(triple);
                 continue;
@@ -1975,9 +1934,6 @@ public class EdgeListGraphSingleConnections implements Graph {
 //    }
 
     /**
-     * @return the existing property change support object for this class, if
-     * there is one, or else creates a new one and returns that.
-     *
      * @return this object.
      */
     private PropertyChangeSupport getPcs() {
@@ -2135,23 +2091,19 @@ public class EdgeListGraphSingleConnections implements Graph {
         }
 
         if (ambiguousTriples == null) {
-            ambiguousTriples = new HashSet<Triple>();
-        }
-
-        if (ambiguousPairs == null) {
-            ambiguousPairs = new HashSet<Pair>();
+            ambiguousTriples = new HashSet<>();
         }
 
         if (highlightedEdges == null) {
-            highlightedEdges = new HashSet<Edge>();
+            highlightedEdges = new HashSet<>();
         }
 
         if (underLineTriples == null) {
-            underLineTriples = new HashSet<Triple>();
+            underLineTriples = new HashSet<>();
         }
 
         if (dottedUnderLineTriples == null) {
-            dottedUnderLineTriples = new HashSet<Triple>();
+            dottedUnderLineTriples = new HashSet<>();
         }
     }
 

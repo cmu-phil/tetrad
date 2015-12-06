@@ -80,7 +80,7 @@ public final class MimUtils {
 
         for (Node node : clusterGraph.getNodes()) {
             if (!measuredVariables.contains(node)) {
-                    latents.add(node.getName());
+                latents.add(node.getName());
             }
         }
 
@@ -95,7 +95,7 @@ public final class MimUtils {
 
             for (Node _node : measured) {
                 if (measuredVariables.contains(_node)) {
-                        clusters.addToCluster(i, _node.getName());
+                    clusters.addToCluster(i, _node.getName());
                 }
             }
         }

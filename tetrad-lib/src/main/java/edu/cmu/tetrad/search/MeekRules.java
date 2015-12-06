@@ -36,7 +36,7 @@ import java.util.*;
  * Implements Meek's complete orientation rule set for PC (Chris Meek (1995), "Causal inference and causal explanation
  * with background knowledge"), modified for Conservative PC to check noncolliders against recorded noncolliders before
  * orienting.
- * <p/>
+ * <p>
  * For now, the fourth rule is always performed.
  *
  * @author Joseph Ramsey
@@ -472,14 +472,12 @@ public class MeekRules implements ImpliedOrientation {
         if (isOrientInPlace()) {
             if (before.getNode1() == c) {
                 before.setEndpoint1(Endpoint.ARROW);
-            }
-            else {
+            } else {
                 before.setEndpoint2(Endpoint.ARROW);
             }
 
             return before;
-        }
-        else {
+        } else {
             graph.removeEdge(before);
             graph.addDirectedEdge(a, c);
             return graph.getEdge(a, c);

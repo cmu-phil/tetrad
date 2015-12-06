@@ -111,10 +111,10 @@ public class TestDeltaSextadTest extends TestCase {
             double p = test.getPValue(_sextads);
 
 //            if (p > alpha) {
-                for (int i = 0; i < numSextads; i++) {
-                    System.out.print((choice[i] + 1 + " "));
-                }
-                System.out.println(" " + p);
+//                for (int i = 0; i < numSextads; i++) {
+//                    System.out.print((choice[i] + 1 + " "));
+//                }
+//                System.out.println(" " + p);
 //            }
         }
 
@@ -185,7 +185,7 @@ public class TestDeltaSextadTest extends TestCase {
 
         double p = test.getPValue(_sextads);
 
-        System.out.println(" " + p);
+//        System.out.println(" " + p);
     }
 
     public void test2() {
@@ -244,7 +244,7 @@ public class TestDeltaSextadTest extends TestCase {
             }
         }
 
-        System.out.println(g);
+//        System.out.println(g);
 
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm);
@@ -274,14 +274,14 @@ public class TestDeltaSextadTest extends TestCase {
         double a = test.getPValue(new Sextad(x1, x2, x3, x4, x5, x6));
         double b = test.getPValue(new Sextad(x2, x3, x1, x5, x4, x6));
 
-        System.out.println(a);
-        System.out.println(b);
+//        System.out.println(a);
+//        System.out.println(b);
 
         assertEquals(a, b, 1e-7);
 
         FindTwoFactorClusters ftfc = new FindTwoFactorClusters(data, TestType.TETRAD_DELTA, 0.01);
         Graph graph = ftfc.search();
-        System.out.println(graph);
+//        System.out.println(graph);
     }
 
     /**

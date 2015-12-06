@@ -24,9 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DataBox;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -36,22 +33,21 @@ import java.util.concurrent.*;
 /**
  * GesSearch is an implementation of the GES algorithm, as specified in Chickering (2002) "Optimal structure
  * identification with greedy search" Journal of Machine Learning Research. It works for both BayesNets and SEMs.
- * <p/>
+ * <p>
  * Some code optimization could be done for the scoring part of the graph for discrete models (method scoreGraphChange).
  * Some of Andrew Moore's approaches for caching sufficient statistics, for instance.
- * <p/>
+ * <p>
  * To speed things up, it has been assumed that variables X and Y with zero correlation do not correspond to edges in
  * the graph. This is a restricted form of the faithfulness assumption, something GES does not assume. This
  * faithfulness assumption needs to be explicitly turned on using setFaithfulnessAssumed(true).
- * <p/>
+ * <p>
  * A number of other optimizations were added 5/2015. See code for details.
  *
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
- * 
- * This Orients a given undirected graph such that the edges in the graph are a superset 
- * of the edges in the oriented graph
- * 
+ *         <p>
+ *         This Orients a given undirected graph such that the edges in the graph are a superset
+ *         of the edges in the oriented graph
  * @author AJ Sedgewick, 5/2015
  */
 public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
@@ -174,7 +170,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
 
     // A utility map to help with orientation.
     private WeakHashMap<Node, Set<Node>> neighbors = new WeakHashMap<>();
-    
+
     // Graph input by user as super-structure to search over
     private Graph graphToOrient = null;
 
@@ -204,8 +200,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
             setDiscreteScore(score);
             setStructurePrior(0.001);
             setSamplePrior(10.);
-        }
-        else {
+        } else {
             setCovMatrix(new CovarianceMatrixOnTheFly(dataSet));
         }
 
@@ -240,11 +235,11 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     //==========================PUBLIC METHODS==========================//
-    
+
     /**
-     *  Returns superstructure graph
+     * Returns superstructure graph
      */
-    public Graph getGraphToOrient(){
+    public Graph getGraphToOrient() {
         return graphToOrient;
     }
 
@@ -528,10 +523,12 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
 
     /**
      * A bound on cycle length.
+     *
      * @param cycleBound The bound, >= 1, or -1 for unlimited.
      */
     public void setCycleBound(int cycleBound) {
-        if (!(cycleBound == -1 || cycleBound >=1)) throw new IllegalArgumentException("Cycle bound needs to be -1 or >= 1: " + cycleBound);
+        if (!(cycleBound == -1 || cycleBound >= 1))
+            throw new IllegalArgumentException("Cycle bound needs to be -1 or >= 1: " + cycleBound);
         this.cycleBound = cycleBound;
     }
 
@@ -571,9 +568,9 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
                             Node x = nodes.get(j);
 //
                             if (!graphToOrient.isAdjacentTo(x, y)) {
-                    			continue;
-                			}
-                            
+                                continue;
+                            }
+
                             if (existsKnowledge()) {
                                 if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
                                     continue;

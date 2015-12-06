@@ -30,8 +30,6 @@ package edu.cmu.tetrad.util;
 public class NamingProtocol {
 
     /**
-     * @return true iff the given name is a legal variable name for Tetrad.
-     *
      * @param name Ibid.
      * @return Ibid.
      */
@@ -40,9 +38,6 @@ public class NamingProtocol {
     }
 
     /**
-     * @return a description of the protocol being used in Tetrad that can be
-     * displayed to the user when they enter illegal variable names.
-     *
      * @return Ibid.
      */
     public static String getProtocolDescription() {

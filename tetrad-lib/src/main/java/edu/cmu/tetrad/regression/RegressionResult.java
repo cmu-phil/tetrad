@@ -36,7 +36,7 @@ import java.text.NumberFormat;
  * @author Joseph Ramsey
  */
 public class RegressionResult implements TetradSerializable {
-    static final long serialVersionUID = 23L;    
+    static final long serialVersionUID = 23L;
 
     /**
      * True iff this model assumes a zero intercept.
@@ -125,30 +125,28 @@ public class RegressionResult implements TetradSerializable {
      *                             doing the regression, in which case this
      *                             coefficient is provided; otherwise, not.
      * @param regressorNames       The list of regressor variable names, in
- *                             order.
+     *                             order.
      * @param n                    The sample size.
      * @param b                    The list of coefficients, in order. If a zero
-*                             intercept was not assumed, this list begins
-*                             with the intercept.
+     *                             intercept was not assumed, this list begins
+     *                             with the intercept.
      * @param t                    The list of t-statistics for the
-*                             coefficients, in order. If a zero intercept
-*                             was not assumed, this list begins with the t
-*                             statistic for the intercept.
+     *                             coefficients, in order. If a zero intercept
+     *                             was not assumed, this list begins with the t
+     *                             statistic for the intercept.
      * @param p                    The p-values for the coefficients, in order.
-*                             If a zero intercept was not assumed, this
-*                             list begins with the p value for the
-*                             intercept.
+     *                             If a zero intercept was not assumed, this
+     *                             list begins with the p value for the
+     *                             intercept.
      * @param se                   The standard errors for the coefficients, in
-*                             order. If a zero intercept was not assumed,
-*                             this list begins with the standard error of
-*                             the intercept.
+     *                             order. If a zero intercept was not assumed,
+     *                             this list begins with the standard error of
+     *                             the intercept.
      * @param r2                   The R squared statistic for the regression.
      * @param rss                  The residual sum of squares of the
-*                             regression.
+     *                             regression.
      * @param alpha                The alpha value for the regression,
-*                             determining which regressors are taken to be
-     * @param yHat
-     * @param res
+     *                             determining which regressors are taken to be
      */
     public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames,
                             int n, double[] b, double[] t,
@@ -178,19 +176,6 @@ public class RegressionResult implements TetradSerializable {
 
         // Need to set this one before calling getNumRegressors.
         this.regressorNames = regressorNames;
-        int error = zeroInterceptAssumed ? 0 : 1;
-
-//        if (getNumRegressors() > 0 && b.length != getNumRegressors() + error) {
-//            throw new IllegalArgumentException();
-//        }
-
-//        if (t.length != getNumRegressors() + error) {
-//            throw new IllegalArgumentException();
-//        }
-//
-//        if (p.length != getNumRegressors() + error) {
-//            throw new IllegalArgumentException();
-//        }
 
         this.n = n;
         this.b = b;
@@ -286,7 +271,7 @@ public class RegressionResult implements TetradSerializable {
         StringBuilder summary = new StringBuilder(getPreamble());
         TextTable table = getResultsTable();
 
-        summary.append("\n" + table.toString());
+        summary.append("\n").append(table.toString());
         return summary.toString();
     }
 
@@ -342,14 +327,13 @@ public class RegressionResult implements TetradSerializable {
 
         String rssString = nf.format(rss);
         String r2String = nf.format(r2);
-        StringBuilder preamble = new StringBuilder();
-        preamble.append("\n REGRESSION RESULT");
-        preamble.append("\n n = ").append(n).append(", k = ");
-        preamble.append(getNumRegressors() + 1).append(", alpha = ").append(alpha);
-        preamble.append("\n").append(" SSE = ").append(rssString);
-        preamble.append("\n").append(" R^2 = ").append(r2String);
-        preamble.append("\n");
-        return preamble.toString();
+        String preamble = "\n REGRESSION RESULT" +
+                "\n n = " + n + ", k = " +
+                (getNumRegressors() + 1) + ", alpha = " + alpha +
+                "\n" + " SSE = " + rssString +
+                "\n" + " R^2 = " + r2String +
+                "\n";
+        return preamble;
     }
 
     public TetradVector getYHat() {

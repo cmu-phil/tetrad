@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -65,38 +66,38 @@ public final class SemManipulation implements TetradSerializable {
         this.manipulated = new boolean[semIm.getVariableNodes().size()];
     }
 
-    /**
-     * Copy constructor.
-     */
-    public SemManipulation(SemManipulation evidence) {
-        if (evidence == null) {
-            throw new NullPointerException();
-        }
+//    /**
+//     * Copy constructor.
+//     */
+//    public SemManipulation(SemManipulation evidence) {
+//        if (evidence == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.semIm = evidence.getSemIm();
+//        this.manipulated = new boolean[semIm.getVariableNodes().size()];
+//
+//        for (int i = 0; i < manipulated.length; i++) {
+//            this.manipulated[i] = evidence.isManipulated(i);
+//        }
+//    }
 
-        this.semIm = evidence.getSemIm();
-        this.manipulated = new boolean[semIm.getVariableNodes().size()];
-
-        for (int i = 0; i < manipulated.length; i++) {
-            this.manipulated[i] = evidence.isManipulated(i);
-        }
-    }
-
-    public SemManipulation(SemManipulation evidence, SemIm semIm) {
-        if (semIm == null) {
-            throw new NullPointerException();
-        }
-
-        if (evidence == null) {
-            throw new NullPointerException();
-        }
-
-        this.semIm = semIm;
-        this.manipulated = new boolean[semIm.getVariableNodes().size()];
-
-        for (int i = 0; i < manipulated.length; i++) {
-            this.manipulated[i] = evidence.isManipulated(i);
-        }
-    }
+//    public SemManipulation(SemManipulation evidence, SemIm semIm) {
+//        if (semIm == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (evidence == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.semIm = semIm;
+//        this.manipulated = new boolean[semIm.getVariableNodes().size()];
+//
+//        for (int i = 0; i < manipulated.length; i++) {
+//            this.manipulated[i] = evidence.isManipulated(i);
+//        }
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -107,12 +108,12 @@ public final class SemManipulation implements TetradSerializable {
 
     //===========================PUBLIC METHODS=========================//
 
-    /**
-     * @return the Bayes IM that this is evidence for.
-     */
-    public SemIm getSemIm() {
-        return this.semIm;
-    }
+//    /**
+//     * @return the Bayes IM that this is evidence for.
+//     */
+//    private SemIm getSemIm() {
+//        return this.semIm;
+//    }
 
     public int getNodeIndex(String nodeName) {
         List nodes = semIm.getSemPm().getVariableNodes();
@@ -128,7 +129,7 @@ public final class SemManipulation implements TetradSerializable {
         return -1;
     }
 
-    public int getNumNodes() {
+    private int getNumNodes() {
         return semIm.getVariableNodes().size();
     }
 
@@ -163,6 +164,10 @@ public final class SemManipulation implements TetradSerializable {
             return false;
         }
 
+        if (!(o instanceof SemManipulation)) {
+            throw new IllegalArgumentException();
+        }
+
         SemManipulation evidence = (SemManipulation) o;
 
         if (!(semIm == evidence.semIm)) {
@@ -181,7 +186,7 @@ public final class SemManipulation implements TetradSerializable {
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + semIm.hashCode();
-        hashCode = 19 * hashCode + manipulated.hashCode();
+        hashCode = 19 * hashCode + Arrays.hashCode(manipulated);
         return hashCode;
     }
 

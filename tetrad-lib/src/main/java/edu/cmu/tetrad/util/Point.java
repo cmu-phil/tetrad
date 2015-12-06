@@ -26,7 +26,7 @@ package edu.cmu.tetrad.util;
  *
  * @author Joseph Ramsey
  */
-public class Point implements Comparable {
+class Point implements Comparable {
 
     /**
      * A vector representing the point coordinates.
@@ -35,6 +35,7 @@ public class Point implements Comparable {
 
     /**
      * Constructs a point with coordinates as in the given vector.
+     *
      * @param vector a vector representing the point coordinates, in order.
      */
     public Point(TetradVector vector) {
@@ -42,25 +43,24 @@ public class Point implements Comparable {
     }
 
     /**
-     * @return the coordinate at the given index.
      * @param index Ibid.
      * @return Ibid.
      */
-    public double getValue(int index) {
+    private double getValue(int index) {
         return vector.get(index);
     }
 
     /**
-     * @return the size of the vector.
      * @return Ibid.
      */
-    public int getSize() {
+    private int getSize() {
         return vector.size();
     }
 
     /**
      * True iff the given object is a point with the same coordinates as
      * this one.
+     *
      * @param o Ibid.
      * @return Ibid.
      */
@@ -81,7 +81,6 @@ public class Point implements Comparable {
     }
 
     /**
-     * @return a string representation of this point.
      * @return Ibid.
      */
     public String toString() {
@@ -102,7 +101,6 @@ public class Point implements Comparable {
     }
 
     /**
-     * @return the vector of coordinates.
      * @return Ibid.
      */
     public TetradVector getVector() {

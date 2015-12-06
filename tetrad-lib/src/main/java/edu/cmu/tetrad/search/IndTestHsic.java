@@ -331,7 +331,6 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Ky centralized Gram matrix for Y
      * @param Kx centralized Gram matrix for X
      * @param m  sample size
-     * @return
      */
     public double empiricalHSIC(TetradMatrix Ky, TetradMatrix Kx, int m) {
         TetradMatrix Kyx = Ky.times(Kx);
@@ -350,7 +349,6 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Gy Choleksy approximate Gram matrix for Y
      * @param Gx Choleksy approximate Gram matrix for X
      * @param m  sample size
-     * @return
      */
     public double empiricalHSICincompleteCholesky(TetradMatrix Gy, TetradMatrix Gx, int m) {
         // centralized Choleksy
@@ -380,7 +378,6 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Kx centralized Gram matrix for X
      * @param Kz centralized Gram matrix for Z
      * @param m  sample size
-     * @return
      */
     private double empiricalHSIC(TetradMatrix Ky, TetradMatrix Kx, TetradMatrix Kz, int m) {
         TetradMatrix Kyx = Ky.times(Kx);
@@ -428,7 +425,6 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Gx Choleksy approximate Gram matrix for X
      * @param Gz Choleksy approximate Gram matrix for Z
      * @param m  sample size
-     * @return
      */
     public double empiricalHSICincompleteCholesky(TetradMatrix Gy, TetradMatrix Gx, TetradMatrix Gz, int m) {
         // centralize Choleksy
@@ -520,7 +516,6 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Gx Choleksy approximate Gram matrix for X
      * @param Gz Choleksy approximate Gram matrix for Z
      * @param m  sample size
-     * @return
      */
     public double empiricalHSICincompleteCholeskyOLD(TetradMatrix Gy, TetradMatrix Gx, TetradMatrix Gz, int m) {
         // centralize Choleksy
@@ -540,9 +535,9 @@ public final class IndTestHsic implements IndependenceTest {
         TetradMatrix Gcxt = Gcx.transpose();
         TetradMatrix Kyx = B.times(Gcxt);
         double empHSIC = 0.0;
-        
+
         double xy = 0.0;
-        for (int i = 0; i < m; i++) {   
+        for (int i = 0; i < m; i++) {
             empHSIC += matrixProductEntry(B, Gcxt, i, i);
         }
 
@@ -674,20 +669,10 @@ public final class IndTestHsic implements IndependenceTest {
         return isDependent(x, y, zList);
     }
 
-    /**
-     * @return the HSIC test statistic
-     *
-     * @return
-     */
     public double getHsic() {
         return this.hsic;
     }
 
-    /**
-     * @return the alpha level threshold
-     *
-     * @return
-     */
     public double getThreshold() {
         return this.thresh;
     }

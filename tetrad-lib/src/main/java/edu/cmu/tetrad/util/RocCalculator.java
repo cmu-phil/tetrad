@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class RocCalculator {
     public static final int ASCENDING = 0;
-    public static final int DESCENDING = 1;
+    private static final int DESCENDING = 1;
 
     private int direction = ASCENDING;
 
@@ -110,15 +110,13 @@ public class RocCalculator {
      * the unscaled ROC Curve plot.  The first subscript of the array is the
      * index of the point and the second subscript is 0 for x values and 1 for y
      * values.
-     *
-     * @return Ibid.
      */
-    public int[][] getUnscaledRocPlot() {
+    private void getUnscaledRocPlot() {
         sortCases();
 
         OrderedPairInt p0 = new OrderedPairInt(0, 0);
         OrderedPairInt pPrime;
-        List<OrderedPairInt> plot = new LinkedList<OrderedPairInt>();
+        List<OrderedPairInt> plot = new LinkedList<>();
         plot.add(p0);
         int numPairs = scoreCatPairs.length;
 
@@ -143,8 +141,6 @@ public class RocCalculator {
             points[i][0] = point.getFirst();
             points[i][1] = point.getSecond();
         }
-
-        return points;
     }
 
     public double[][] getScaledRocPlot() {

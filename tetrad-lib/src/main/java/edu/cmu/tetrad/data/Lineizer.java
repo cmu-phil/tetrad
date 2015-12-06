@@ -26,13 +26,12 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * @return one line at a time, with a method to determine whether another
- * line is available. Blank lines and lines beginning with the given comment
- * marker are skipped.
- *
  * @author Joseph Ramsey
+ *         Returns one line at a time, with a method to determine whether another
+ *         line is available. Blank lines and lines beginning with the given comment
+ *         marker are skipped.
  */
-public final class Lineizer {
+final class Lineizer {
 
     /**
      * The character sequence being tokenized.
@@ -80,12 +79,10 @@ public final class Lineizer {
             try {
                 tempLine = readLine();
                 return tempLine != null;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 return false;
             }
-        }
-        else {
+        } else {
             return true;
         }
     }
@@ -99,12 +96,10 @@ public final class Lineizer {
         if (tempLine == null) {
             try {
                 return readLine();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-        else {
+        } else {
             String line = tempLine;
             tempLine = null;
             return line;

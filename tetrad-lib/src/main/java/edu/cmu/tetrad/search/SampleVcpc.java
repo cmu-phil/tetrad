@@ -92,19 +92,8 @@ public final class SampleVcpc implements GraphSearch {
      */
     private Set<Triple> ambiguousTriples;
 
-    /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
-
-    /**
-     *
-     */
-    // the set of definitely non-adjacencies
 
     private Set<Edge> definitelyNonadjacencies;
-
-// the set of variables that pass the local markov test in all consistent patterns.
 
     private Set<Node> markovInAllPatterns;
 
@@ -156,9 +145,6 @@ public final class SampleVcpc implements GraphSearch {
      * The map from variables to nodes.
      */
     private Map<Node, Node> variablesToNodes;
-
-
-
 
 
     //=============================CONSTRUCTORS==========================//
@@ -880,14 +866,16 @@ public final class SampleVcpc implements GraphSearch {
                         if (semIm.existsEdgeCoef(a, b)) {
                             Double c = semIm.getEdgeCoef(a, b);
                             edgeCoefs.put(adjacency, c);
-                        } else { edgeCoefs.put(adjacency, 0.0); }
+                        } else {
+                            edgeCoefs.put(adjacency, 0.0);
+                        }
                     }
                     continue ESTIMATION;
                 }
             }
 
             for (Edge nonadj : definitelyNonadjacencies) {
-                if (nonadj.getNode1() == z|| nonadj.getNode2() == z) {
+                if (nonadj.getNode1() == z || nonadj.getNode2() == z) {
                     // return 0 for e
                     double[] d = {0, 0};
                     sampleRegress.put(nonadj, d);
@@ -896,7 +884,9 @@ public final class SampleVcpc implements GraphSearch {
                     if (semIm.existsEdgeCoef(a, b)) {
                         Double c = semIm.getEdgeCoef(a, b);
                         edgeCoefs.put(nonadj, c);
-                    } else { edgeCoefs.put(nonadj, 0.0); }
+                    } else {
+                        edgeCoefs.put(nonadj, 0.0);
+                    }
                 }
             }
 
@@ -912,7 +902,9 @@ public final class SampleVcpc implements GraphSearch {
                         if (semIm.existsEdgeCoef(a, b)) {
                             Double c = semIm.getEdgeCoef(a, b);
                             edgeCoefs.put(adjacency, c);
-                        } else { edgeCoefs.put(adjacency, 0.0); }
+                        } else {
+                            edgeCoefs.put(adjacency, 0.0);
+                        }
                     }
                 }
                 if (_adjacency.pointsTowards(z)) {
@@ -932,7 +924,9 @@ public final class SampleVcpc implements GraphSearch {
                     if (semIm.existsEdgeCoef(a, b)) {
                         Double c = semIm.getEdgeCoef(a, b);
                         edgeCoefs.put(edge, c);
-                    } else { edgeCoefs.put(edge, 0.0); }
+                    } else {
+                        edgeCoefs.put(edge, 0.0);
+                    }
                 }
 //                if (edge.pointsTowards(edge.getNode2())) {
 //                    RegressionResult result = sampleRegression.regress(edge.getNode2(), edge.getNode1());
@@ -961,8 +955,6 @@ public final class SampleVcpc implements GraphSearch {
 //
 //
 //        // Squared difference between true edge coefficients and results from edge estimation algroithm.
-
-
 
 
 //        SQUARE:
@@ -1086,7 +1078,6 @@ public final class SampleVcpc implements GraphSearch {
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
 
 
-
         TetradLogger.getInstance().log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
 
@@ -1096,9 +1087,6 @@ public final class SampleVcpc implements GraphSearch {
 //        SearchGraphUtils.verifySepsetIntegrity(Map<Edge, List<Node>>, graph);
         return graph;
     }
-
-
-
 
 
     /**
@@ -1162,7 +1150,6 @@ public final class SampleVcpc implements GraphSearch {
 //    Takes patterns and, with respect to a node and its boundary, finds all possible combinations of orientations
 //    of its boundary such that no new colliders are created. For each combination, a new pattern is added to the
 //    list dagPatterns.
-
 
 
     private Set<Edge> getAdj(Node node, Graph graph) {
@@ -1440,7 +1427,6 @@ public final class SampleVcpc implements GraphSearch {
 ////                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, graph);
 
 
-
                 if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
                     if (colliderAllowed(x, y, z, knowledge)) {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
@@ -1607,7 +1593,6 @@ public final class SampleVcpc implements GraphSearch {
 //    }
 
 
-
     private void orientUnshieldedTriplesConcurrent(final IKnowledge knowledge,
                                                    final IndependenceTest test, final int depth) {
         ExecutorService executor = Executors.newFixedThreadPool(NTHREDS);
@@ -1731,13 +1716,18 @@ public final class SampleVcpc implements GraphSearch {
         this.facts = facts;
     }
 
-    public void setSemPm(SemPm semPm) {this.semPm = semPm;}
+    public void setSemPm(SemPm semPm) {
+        this.semPm = semPm;
+    }
 
-    public void setSemIm(SemIm semIm) {this.semIm = semIm;}
+    public void setSemIm(SemIm semIm) {
+        this.semIm = semIm;
+    }
 
 
-
-    public SemPm getSemPm() { return semPm; }
+    public SemPm getSemPm() {
+        return semPm;
+    }
 
 }
 

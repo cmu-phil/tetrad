@@ -35,7 +35,7 @@ import java.util.List;
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
- * <p/>
+ * <p>
  * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
@@ -48,17 +48,12 @@ import java.util.List;
 public final class DagToPag {
 
     private final Graph dag;
-    private final IndTestDSep dsep;
+//    private final IndTestDSep dsep;
 
     /*
      * The background knowledge.
      */
     private IKnowledge knowledge = new Knowledge2();
-
-    /**
-     * The variables to search over (optional)
-     */
-    private List<Node> variables = new ArrayList<Node>();
 
     /**
      * Glag for complete rule set, true if should use complete rule set, false otherwise.
@@ -84,9 +79,6 @@ public final class DagToPag {
      */
     public DagToPag(Graph dag) {
         this.dag = dag;
-        this.variables.addAll(dag.getNodes());
-
-        this.dsep = new IndTestDSep(dag);
     }
 
     //========================PUBLIC METHODS==========================//

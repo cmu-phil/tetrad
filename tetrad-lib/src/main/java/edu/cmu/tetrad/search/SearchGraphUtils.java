@@ -361,7 +361,7 @@ public final class SearchGraphUtils {
 
                 // Skip triples with parents not adjacent in initialGraph
                 // may need a similar check for knowledge... -AJ
-                if (initialGraph != null && !initialGraph.isAdjacentTo(a,c)){
+                if (initialGraph != null && !initialGraph.isAdjacentTo(a, c)) {
                     continue;
                 }
 
@@ -1130,8 +1130,6 @@ public final class SearchGraphUtils {
 
     /**
      * Get a graph and direct only the unshielded colliders.
-     *
-     * @return the child nodes of unshielded colliders.
      */
     public static void basicPattern(Graph graph, boolean orientInPlace) {
         Set<Edge> undirectedEdges = new HashSet<Edge>();
@@ -1220,7 +1218,7 @@ public final class SearchGraphUtils {
                     if (!graph.isAdjacentTo(parent, _x)) {
                         continue NEXT_EDGE;
                     }
-               }
+                }
             }
 
             undirectedEdges.add(edge);
@@ -1505,22 +1503,20 @@ public final class SearchGraphUtils {
     }
 
     /**
-     * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
-     * criteria in the given legal pairs object.
-     * <p/>
-     * A variable V is reachable from initialNodes iff for some variable X in initialNodes thers is a path U [X, Y1,
-     * ..., V] such that legalPairs.isLegalFirstNode(X, Y1) and for each [H1, H2, H3] as subpaths of U,
-     * legalPairs.isLegalPairs(H1, H2, H3).
-     * <p/>
-     * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, & Pearl (1990).
-     *
      * @param initialNodes  The nodes that reachability undirectedPaths start from.
      * @param legalPairs    Specifies initial edges (given initial nodes) and legal edge pairs.
      * @param c             a set of vertices (intuitively, the set of variables to be conditioned on.
      * @param d             a set of vertices (intuitively to be used in tests of legality, for example, the set of
      *                      ancestors of c).
      * @param graph         the graph with respect to which reachability is
-     * @param maxPathLength
+     * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
+     * criteria in the given legal pairs object.
+     * <p>
+     * A variable V is reachable from initialNodes iff for some variable X in initialNodes thers is a path U [X, Y1,
+     * ..., V] such that legalPairs.isLegalFirstNode(X, Y1) and for each [H1, H2, H3] as subpaths of U,
+     * legalPairs.isLegalPairs(H1, H2, H3).
+     * <p>
+     * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, & Pearl (1990).
      */
     public static Set<Node> getReachableNodes(List<Node> initialNodes,
                                               LegalPairs legalPairs, List<Node> c, List<Node> d, Graph graph, int maxPathLength) {
@@ -2964,11 +2960,11 @@ public final class SearchGraphUtils {
         out.println("Arrow Orientations:");
         out.println("TP " + arrowptTp + " FP = " + arrowptFp + " FN = " + arrowptFn);
 
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern, out);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern);
         out.println(GraphUtils.edgeMisclassifications(counts));
 
         double adjRecall = adjTp / (double) (adjTp + adjFn);
-        
+
         double adjPrecision = adjTp / (double) (adjTp + adjFp);
 
         double arrowRecall = arrowptTp / (double) (arrowptTp + arrowptFn);
@@ -3031,7 +3027,7 @@ public final class SearchGraphUtils {
 
 
     public static Graph reorient(Graph graph, DataModel dataModel, IKnowledge knowledge) {
-        if (dataModel instanceof  DataModelList) {
+        if (dataModel instanceof DataModelList) {
             DataModelList list = (DataModelList) dataModel;
 
             List<DataModel> dataSets = new ArrayList<>();
@@ -3046,8 +3042,7 @@ public final class SearchGraphUtils {
             images.setBoundGraph(graph);
             images.setKnowledge(knowledge);
             return images.search();
-        }
-        else if (dataModel instanceof DataSet) {
+        } else if (dataModel instanceof DataSet) {
             DataSet dataSet = (DataSet) dataModel;
 
             Fgs ges = new Fgs(dataSet);
@@ -3055,8 +3050,7 @@ public final class SearchGraphUtils {
             ges.setBoundGraph(graph);
             ges.setKnowledge(knowledge);
             return ges.search();
-        }
-        else if (dataModel instanceof CovarianceMatrix) {
+        } else if (dataModel instanceof CovarianceMatrix) {
             ICovarianceMatrix cov = (CovarianceMatrix) dataModel;
 
             Fgs ges = new Fgs(cov);

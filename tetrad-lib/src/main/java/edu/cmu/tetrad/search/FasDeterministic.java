@@ -121,7 +121,7 @@ public class FasDeterministic implements IFas {
      * True iff verbose output should be printed.
      */
     private boolean verbose = false;
-    
+
     private PrintStream out = System.out;
 
     //==========================CONSTRUCTORS=============================//
@@ -151,7 +151,7 @@ public class FasDeterministic implements IFas {
      *
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
-    public Graph    search() {
+    public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
         graph.removeEdges(graph.getEdges());
 
@@ -493,8 +493,7 @@ public class FasDeterministic implements IFas {
                             }
 
                             continue EDGE;
-                        }
-                        else {
+                        } else {
 //                            if (verbose) {
 //                                out.println(SearchLogUtils.dependenceFactMsg(x, y, condSet, test.getPValue()));
 //                            }

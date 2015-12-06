@@ -61,7 +61,6 @@ public final class VcpcAlt implements GraphSearch {
     private Graph graph;
 
 
-
     /**
      * Elapsed time of last search.
      */
@@ -87,19 +86,7 @@ public final class VcpcAlt implements GraphSearch {
      */
     private Set<Triple> ambiguousTriples;
 
-    /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
-
-    /**
-     *
-     */
-    // the set of definitely non-adjacencies
-
     private Set<Edge> definitelyNonadjacencies;
-
-// the set of variables that pass the local markov test in all consistent patterns.
 
     private Set<Node> markovInAllPatterns;
 
@@ -321,8 +308,6 @@ public final class VcpcAlt implements GraphSearch {
         }
 
 
-
-
         List<Triple> ambiguousTriples = new ArrayList(graph.getAmbiguousTriples());
 
         int[] dims = new int[ambiguousTriples.size()];
@@ -338,8 +323,6 @@ public final class VcpcAlt implements GraphSearch {
 //      Using combination generator to generate a list of combinations of ambiguous triples dismabiguated into colliders
 //      and non-colliders. The combinations are added as graphs to the list patterns. The graphs are then subject to
 //      basic rules to ensure consistent patterns.
-
-
 
 
         CombinationGenerator generator = new CombinationGenerator(dims);
@@ -358,7 +341,7 @@ public final class VcpcAlt implements GraphSearch {
                 _graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
 
 
-                if (combination[k] == 0){
+                if (combination[k] == 0) {
                     newColliders.get(_graph).add(triple);
 //                    System.out.println(newColliders.get(_graph));
                     Node x = triple.getX();
@@ -369,7 +352,7 @@ public final class VcpcAlt implements GraphSearch {
                     _graph.setEndpoint(z, y, Endpoint.ARROW);
 
                 }
-                if (combination[k] == 1){
+                if (combination[k] == 1) {
                     newNonColliders.get(_graph).add(triple);
                 }
             }
@@ -377,7 +360,6 @@ public final class VcpcAlt implements GraphSearch {
         }
 
         List<Graph> _patterns = new ArrayList<Graph>(patterns);
-
 
 
         ///    Takes patterns and runs them through basic constraints to ensure consistent patterns (e.g. no cycles, no bidirected edges).
@@ -391,7 +373,6 @@ public final class VcpcAlt implements GraphSearch {
 //
             List<Triple> colliders = newColliders.get(graph);
             List<Triple> nonColliders = newNonColliders.get(graph);
-
 
 
             for (Triple triple : colliders) {
@@ -444,9 +425,6 @@ public final class VcpcAlt implements GraphSearch {
             }
 
         }
-
-
-
 
 
 //        Step V5* Instead of checking if Markov in every pattern, just find some pattern that is Markov.
@@ -571,15 +549,10 @@ public final class VcpcAlt implements GraphSearch {
 //        }
 
 
-
-
-
-
 //        Step V5. For each consistent disambiguation of the ambiguous triples
 //                we test whether the resulting pattern satisfies Markov. If
 //                every pattern does, then mark all the apparently non-adjacent
 //                pairs as definitely non-adjacent.
-
 
 
 //        NODES:
@@ -614,7 +587,6 @@ public final class VcpcAlt implements GraphSearch {
 //        }
 
 
-
         System.out.println("Definitely Nonadjacencies:");
 
         for (Edge edge : definitelyNonadjacencies) {
@@ -641,10 +613,6 @@ public final class VcpcAlt implements GraphSearch {
         TetradLogger.getInstance().log("definitelyNonadjacencies", "\n Definite Non-adjacencies" + definitelyNonadjacencies);
 
         TetradLogger.getInstance().log("patterns", "Disambiguated Patterns: " + patterns);
-
-
-
-
 
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
@@ -692,10 +660,6 @@ public final class VcpcAlt implements GraphSearch {
     //==========================PRIVATE METHODS===========================//
 
 // find cyclic loops to test chordal condition.
-
-
-
-
 
 
 //    Tests if a node x is markov by using an independence test to test if x is independent of variables
@@ -801,8 +765,7 @@ public final class VcpcAlt implements GraphSearch {
                 if (path.contains(c)) {
                     continue;
                 }
-            }
-            else {
+            } else {
                 Node a = path.get(size - 2);
                 Edge edge1 = graph.getEdge(a, b);
                 c = traverseFuturePath(b, edge1, edge2);
@@ -817,7 +780,6 @@ public final class VcpcAlt implements GraphSearch {
         }
         path.removeLast();
     }
-
 
 
     private void logTriples() {
@@ -1016,8 +978,6 @@ public final class VcpcAlt implements GraphSearch {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
-
 
 
 }

@@ -139,7 +139,7 @@ public class Ion {
         TetradLogger.getInstance().log("info", "Transfering local information.");
         long steps = System.currentTimeMillis();
 
-        /**
+        /*
          * Step 1 - Create the empty graph
          */
         List<Node> varNodes = new ArrayList<Node>();
@@ -148,7 +148,7 @@ public class Ion {
         }
         Graph graph = new EdgeListGraph(varNodes);
 
-        /**
+        /*
          * Step 2 - Transfer local information from the PAGs (adjacencies
          * and edge orientations)
          */
@@ -162,7 +162,7 @@ public class Ion {
         System.out.println("step2");
         System.out.println(graph);
 
-        /**
+        /*
          * Step 3
          *
          * Branch and prune step that blocks problematic undirectedPaths, possibly d-connecting undirectedPaths
@@ -399,7 +399,7 @@ public class Ion {
         }
         TetradLogger.getInstance().log("info", "Step 3: " + (System.currentTimeMillis() - steps) / 1000. + "s");
 
-        /**
+        /*
          * Step 4
          *
          * Finds redundant undirectedPaths and uses this information to expand the list
@@ -473,7 +473,7 @@ public class Ion {
 
         TetradLogger.getInstance().log("info", "Step 4: " + (System.currentTimeMillis() - steps) / 1000. + "s");
 
-        /**
+        /*
          * Step 5
          *
          * Generate the Markov equivalence classes for graphs and accept only
@@ -1493,8 +1493,8 @@ public class Ion {
      * A PowerSet constructed with a collection with elements of type E can construct an Iterator which enumerates all
      * possible subsets (of type Collection<E>) of the collection used to construct the PowerSet.
      *
-     * @author pingel
      * @param <E> The type of elements in the Collection passed to the constructor.
+     * @author pingel
      */
 
     private class PowerSet<E> implements Iterable<Set<E>> {
@@ -1506,7 +1506,7 @@ public class Ion {
 
         /**
          * @return an iterator over elements of type Collection<E> which enumerates the PowerSet of the collection used
-         *         in the constructor
+         * in the constructor
          */
 
         public Iterator<Set<E>> iterator() {
@@ -1586,7 +1586,7 @@ public class Ion {
     }
 
     /**
-     * @return the path of the first directed path found from node1 to node2, if any.
+     * Constucts the list of treks between node1 and node2.
      */
     private static void treks(Graph graph, Node node1, Node node2,
                               LinkedList<Node> path, List<List<Node>> paths) {

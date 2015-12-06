@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Joseph Ramsey
  */
 public interface DataBox extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @return the (fixed) number of rows of the dataset.
@@ -38,7 +38,7 @@ public interface DataBox extends TetradSerializable {
     int numRows();
 
     /**
-     * @returne the (fixed) number of columns of the dataset.
+     * @return the (fixed) number of columns of the dataset.
      */
     int numCols();
 
@@ -48,7 +48,7 @@ public interface DataBox extends TetradSerializable {
      * stored. A value of null is interpreted as a missing value.
      *
      * @throws IllegalArgumentException if the given value cannot be stored
-     * (because it's out of range or cannot be converted or whatever).
+     *                                  (because it's out of range or cannot be converted or whatever).
      */
     void set(int row, int col, Number value) throws IllegalArgumentException;
 
