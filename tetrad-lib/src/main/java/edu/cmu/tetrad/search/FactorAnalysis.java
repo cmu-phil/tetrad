@@ -71,30 +71,29 @@ public class FactorAnalysis {
      */
 
 
-    /*
-     * Unity method.
-     *
-     * Takes the residual correlation matrix and sets the diagonals to unity.
-     * This, in effect, estimates the communality as 1.
-     *
-     * This method is better when there are more variables, but should still be
-     * avoided in the cases where the off-diagonal correlations are quite small.
-     *
-     * One nice property of this method is that the total amount of variance
-     * accounted for is guaranteed to be less than or equal to the original
-     * variance.  This prevents resultant factor loading matrices from accounting
-     * for more variance than the original, which is strange.
-     */
+//    /**
+//     * Unity method.
+//     *
+//     * Takes the residual correlation matrix and sets the diagonals to unity.
+//     * This, in effect, estimates the communality as 1.
+//     *
+//     * This method is better when there are more variables, but should still be
+//     * avoided in the cases where the off-diagonal correlations are quite small.
+//     *
+//     * One nice property of this method is that the total amount of variance
+//     * accounted for is guaranteed to be less than or equal to the original
+//     * variance.  This prevents resultant factor loading matrices from accounting
+//     * for more variance than the original, which is strange.
+//     */
+//    public void unity(CorrelationMatrix r) {
+//        TetradMatrix residual = r.getMatrix();
+//
+//        for (int i = 0; i < residual.columns(); i++) {
+//            residual.set(i, i, 1);
+//        }
+//    }
 
-    public void unity(CorrelationMatrix r) {
-        TetradMatrix residual = r.getMatrix();
-
-        for (int i = 0; i < residual.columns(); i++) {
-            residual.set(i, i, 1);
-        }
-    }
-
-    /*
+    /**
      * Largest nondiagonal magnitude method.
      *
      * Estimates the communality (diagonal of the residual correlation
@@ -227,7 +226,7 @@ public class FactorAnalysis {
     }
     */
 
-    /*
+    /**
      * Successive method with residual matrix.
      *
      * This algorithm makes use of a helper algorithm.  Together they solve for an unrotated
@@ -382,7 +381,7 @@ public class FactorAnalysis {
 
     //================= MATRIX FUNCTIONS =================//
 
-    /*
+    /**
      * @return a vector that runs along the diagonal of the supplied 2D matrix.
      * If the matrix is not a square matrix, then it compiles what WOULD be the
      * diagonal if it were, starting from the upper-left corner.
@@ -413,7 +412,7 @@ public class FactorAnalysis {
         return diag(corMatrix.getMatrix());
     }
 
-    /*
+    /**
      * Subtracts b from a.
      */
 
@@ -429,7 +428,7 @@ public class FactorAnalysis {
         return result;
     }
 
-    /*
+    /**
      * Calculates (a * b)
      */
 

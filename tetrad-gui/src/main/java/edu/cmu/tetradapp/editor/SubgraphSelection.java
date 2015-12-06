@@ -108,7 +108,6 @@ class SubgraphSelection implements Transferable {
      * object.
      *
      * @param flavor the requested flavor for the data
-     * @return boolean indicating whether or not the data flavor is supported
      */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
@@ -119,8 +118,6 @@ class SubgraphSelection implements Transferable {
      * can be provided in.  The array should be ordered according to preference
      * for providing the data (from most richly descriptive to least
      * descriptive).
-     *
-     * @return an array of data flavors in which this data can be transferred
      */
     public DataFlavor[] getTransferDataFlavors() {
         return this.dataFlavors;

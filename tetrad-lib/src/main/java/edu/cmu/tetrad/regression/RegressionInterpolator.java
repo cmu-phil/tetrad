@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * @author Joseph Ramsey
- * @return a data set in which missing values in each column are filled using
+ * Creates a data set in which missing values in each column are filled using
  * the mean of that column.
  */
 public final class RegressionInterpolator implements DataFilter {
@@ -78,7 +78,7 @@ public final class RegressionInterpolator implements DataFilter {
                 if (m == j) continue;
 
                 ++k;
-//                regressors[k] = columns[m];
+//                `regressors[k] = columns[m];
                 regressorNames[k] = names[m];
 
                 _regressors.add(dataSet.getVariable(regressorNames[k]));

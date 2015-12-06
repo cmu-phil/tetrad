@@ -57,17 +57,12 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
 
     /**
      * Constructs an abstract expression descriptor.
-     *
      * @param name          - The name of the descriptor.
      * @param token         The token of the descriptor, also used for the signature.
      * @param position      The position that the expression can occur in.
-     * @param commutative   States whether the token can be commuative.
      * @param unlimited     States whether an unlimited number of arguments is allowed.
-     * @param display
-     * @param argumentTypes The argument types to use for the expression's signature.
      */
-    public AbstractExpressionDescriptor(String name, String token, Position position, boolean commutative,
-                                        boolean unlimited, boolean display, String... argumentTypes) {
+    public AbstractExpressionDescriptor(String name, String token, Position position, boolean unlimited) {
         if (name == null) {
             throw new NullPointerException("name was null.");
         }
@@ -78,11 +73,11 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
             throw new NullPointerException("position was null.");
         }
 
-        this.signature = new Signature(token, unlimited, commutative, argumentTypes);
+        this.signature = new Signature(token, unlimited, false, token, "expr");
         this.name = name;
         this.token = token;
         this.position = position;
-        this.display = display;
+        this.display = true;
     }
 
     public String getName() {

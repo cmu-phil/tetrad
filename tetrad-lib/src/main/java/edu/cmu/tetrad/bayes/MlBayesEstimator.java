@@ -117,10 +117,6 @@ public final class MlBayesEstimator {
 
         return estimatedIm;
     }
-
-    public DataSet getReorderedDataSet() {
-        return reorderedDataSetDiscrete;
-    }
 }
 
 

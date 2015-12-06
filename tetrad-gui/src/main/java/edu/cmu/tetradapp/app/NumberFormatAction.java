@@ -292,7 +292,6 @@ final class NumberFormatAction extends AbstractAction
     /**
      * @return the most recent format string, whether from the basic or from
      * the advanced tab.
-     * @return this string.
      * @throws RuntimeException if the stored format string cannot be
      * accepted by DecimalFormat.
      */

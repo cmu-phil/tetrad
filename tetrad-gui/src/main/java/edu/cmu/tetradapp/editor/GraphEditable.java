@@ -44,7 +44,6 @@ public interface GraphEditable {
     /**
      * @return the selected components (display nodes and display edges) in the
      * editor.
-     * @return the selected components.
      */
     List getSelectedModelComponents();
 
@@ -58,12 +57,10 @@ public interface GraphEditable {
 
     /**
      * @return the graph workbench.
-     * @return the workbench.
      */
     GraphWorkbench getWorkbench();
 
     /**
-     * @return the graph.
      * @return the graph.
      */
     Graph getGraph();

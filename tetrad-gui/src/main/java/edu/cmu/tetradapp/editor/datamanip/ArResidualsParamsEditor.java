@@ -89,11 +89,6 @@ public class ArResidualsParamsEditor extends JPanel implements ParameterEditor {
         add(b1, BorderLayout.CENTER);
     }
 
-    /**
-     * @return true.
-     *
-     * @return true
-     */
     public boolean mustBeShown() {
         return true;
     }

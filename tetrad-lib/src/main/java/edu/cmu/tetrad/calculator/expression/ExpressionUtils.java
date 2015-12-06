@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Sundry utility methods for expressions.
  */
-public class ExpressionUtils {
+class ExpressionUtils {
 
     public static String renderExpression(Expression expression, ExpressionDescriptor.Position position, String token) {
 

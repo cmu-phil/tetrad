@@ -43,8 +43,8 @@ public class DirectedGraphIterator {
 
 
     /**
-     * The given graphs must be a graphs. If it does not consist entirely of directed and undirected edges and if it is
-     * not acyclic, it is rejected.
+     * The given graphs must be a pattern. If it does not consist entirely of directed and
+     * undirected edges and if it is not acyclic, it is rejected.
      *
      * @throws IllegalArgumentException if the graphs is not a graphs.
      */

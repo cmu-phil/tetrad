@@ -40,10 +40,10 @@ public class TestCombinationIterator extends TestCase {
         Iterator i = new CombinationIterator(values);
         int[] combination = (int[]) i.next();
 
-        /** check first combination */
+        /* check first combination */
         assertTrue(Arrays.equals(combination, new int[]{0, 0, 0, 0}));
 
-        /** check expected count */
+        /* check expected count */
         while (i.hasNext()) {
             combination = (int[]) i.next();
 
@@ -63,8 +63,8 @@ public class TestCombinationIterator extends TestCase {
         System.out.println("actual count = " + counter);
         assertEquals(expectedCount, counter);
 
-        /** check last combination matches the value array */
-        int[] lastCombination = combination; /** should be {2, 1, 1} */
+        /* check last combination matches the value array */
+        int[] lastCombination = combination; /* should be {2, 1, 1} */
         for (int j = 0; j < values.length; j++) {
             lastCombination[j]++;
         }

@@ -38,7 +38,6 @@ import java.util.Map;
  * equation is X = Z + W, where Z and W are columns in the data set,
  *
  * @author Tyler Gibson
- * @return a column that is the sum of Z and W row-wise.
  */
 public class Transformation {
 
@@ -83,7 +82,7 @@ public class Transformation {
         Expression expression = equation.getExpression();
         Node variable = data.getVariable(equation.getVariable());
         if (variable == null) {
-            throw new IllegalStateException("Unknown variable " + variable);
+            throw new IllegalStateException("Unknown variable " + equation.getVariable());
         }
         int column = data.getColumn(variable);
         // build the context pairs.
@@ -114,7 +113,7 @@ public class Transformation {
      * @return the variables used in the expression.
      */
     private static List<String> getContextVariables(Expression exp) {
-        List<String> variables = new ArrayList<String>();
+        List<String> variables = new ArrayList<>();
 
         for (Expression sub : exp.getExpressions()) {
             if (sub instanceof VariableExpression) {
@@ -141,7 +140,7 @@ public class Transformation {
         /**
          * Var -> index mapping.
          */
-        private Map<String, Integer> indexes = new HashMap<String, Integer>();
+        private Map<String, Integer> indexes = new HashMap<>();
 
 
         /**

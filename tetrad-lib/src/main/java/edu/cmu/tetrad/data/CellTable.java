@@ -33,19 +33,6 @@ import edu.cmu.tetrad.util.MultiDimIntTable;
  */
 public final class CellTable {
 
-    /**
-     * For input data sets, indicates that the data are arranged in a colum
-     * major fashion--in other words, that data[i][] are the variables and
-     * data[][j] are the cases.
-     */
-    public static final int COLUMN_MAJOR = 0;
-
-    /**
-     * For input data sets, indicates that the data are arranged in a row major
-     * fashion--in other words, that data[][j] are the variables and data[i][]
-     * are the cases.
-     */
-    public static final int ROW_MAJOR = 1;
 
     /**
      * Stores a copy of coordinates for temporary use. (Reused.)
@@ -57,7 +44,7 @@ public final class CellTable {
      */
     private int missingValue = -99;
 
-    private MultiDimIntTable table;
+    private final MultiDimIntTable table;
 
     /**
      * Constructs a new cell table using the given array for dimensions,

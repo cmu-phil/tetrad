@@ -351,8 +351,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * @return the next string in the sequence.
-     *
      * @param base the string base of the name--for example, "Graph".
      * @return the next string in the sequence--for example, "Graph1".
      */

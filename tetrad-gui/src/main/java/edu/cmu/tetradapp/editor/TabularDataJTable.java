@@ -264,8 +264,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 
 	/**
 	 * @return the underlying DataSet model.
-	 * 
-	 * @return this model.
 	 */
 	public DataSet getDataSet() {
 		TabularDataTable tableModelTabularData = (TabularDataTable) getModel();

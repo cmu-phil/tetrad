@@ -44,11 +44,10 @@ public class DataUtility {
     }
 
     /**
-     * Counts the number of column of the first line in the file.
+     * @return the number of column of the first line in the file.
      *
      * @param file      dataset
      * @param delimiter a single character used to separate the data
-     * @return
      * @throws IOException
      */
     public static int countColumn(File file, char delimiter) throws IOException {
@@ -85,10 +84,9 @@ public class DataUtility {
     }
 
     /**
-     * Counts the number of lines that contain data.
+     * @return the number of lines that contain data.
      *
      * @param file dataset
-     * @return
      * @throws IOException
      */
     public static int countLine(File file) throws IOException {

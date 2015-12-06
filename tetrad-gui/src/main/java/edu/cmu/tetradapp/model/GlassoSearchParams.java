@@ -100,9 +100,6 @@ public final class GlassoSearchParams implements SearchParams {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    /**
-     * @serial Cannot be null. (?)
-     */
     public List<String> getVarNames() {
         return this.varNames;
     }
@@ -115,9 +112,6 @@ public final class GlassoSearchParams implements SearchParams {
         this.varNames = varNames;
     }
 
-    /**
-     * @serial May be null.
-     */
     public Graph getSourceGraph() {
         return this.sourceGraph;
     }

@@ -75,7 +75,7 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     /**
-     * @return the number of rows in the wrapper table model. Guarantees that
+     * Returns the number of rows in the wrapper table model. Guarantees that
      * this number will be at least 100.
      *
      * @return the row count of the wrapped model or 100, whichever is larger.
@@ -85,7 +85,7 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     /**
-     * @return the number of columns in the wrapper table model. Guarantees that
+     * Returns the number of columns in the wrapper table model. Guarantees that
      * this number will be at least 30.
      *
      * @return the column count of the wrapped model or 30, whichever is

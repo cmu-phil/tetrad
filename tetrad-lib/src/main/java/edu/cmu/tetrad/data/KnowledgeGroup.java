@@ -86,16 +86,14 @@ public final class KnowledgeGroup implements TetradSerializable {
         if (intersect(from, to)) {
             throw new IllegalArgumentException("The from and to sets must not intersect");
         }
-        this.fromGroup = new HashSet<String>(from);
-        this.toGroup = new HashSet<String>(to);
+        this.fromGroup = new HashSet<>(from);
+        this.toGroup = new HashSet<>(to);
         this.type = type;
     }
 
 
     /**
      * Constructs an empty instance of a knowledge group.
-     *
-     * @param type
      */
     public KnowledgeGroup(int type) {
         if (type != REQUIRED && type != FORBIDDEN) {
@@ -118,9 +116,6 @@ public final class KnowledgeGroup implements TetradSerializable {
     }
 
 
-    /**
-     * @return
-     */
     public int getType() {
         return this.type;
     }
@@ -129,25 +124,17 @@ public final class KnowledgeGroup implements TetradSerializable {
     /**
      * States whether this group is empty, that is there is no edges in it (Note there may be some
      * partial information though).
-     *
-     * @return
      */
     public boolean isEmpty() {
         return this.fromGroup.isEmpty() || this.toGroup.isEmpty();
     }
 
 
-    /**
-     * @return
-     */
     public Set<String> getFromVariables() {
         return Collections.unmodifiableSet(this.fromGroup);
     }
 
 
-    /**
-     * @return
-     */
     public Set<String> getToVariables() {
         return Collections.unmodifiableSet(this.toGroup);
     }
@@ -157,7 +144,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      * @return - edges.
      */
     public List<KnowledgeEdge> getEdges() {
-        List<KnowledgeEdge> edges = new ArrayList<KnowledgeEdge>(this.fromGroup.size() + this.toGroup.size());
+        List<KnowledgeEdge> edges = new ArrayList<>(this.fromGroup.size() + this.toGroup.size());
         for (String from : this.fromGroup) {
             for (String to : this.toGroup) {
                 edges.add(new KnowledgeEdge(from, to));
@@ -202,11 +189,7 @@ public final class KnowledgeGroup implements TetradSerializable {
 
     /**
      * Equals when they are the same type and have the same edges.
-     *
-     * @param o
-     * @return
      */
-    @SuppressWarnings({"SimplifiableIfStatement"})
     public boolean equals(Object o) {
         if (o == this) {
             return true;
@@ -218,15 +201,9 @@ public final class KnowledgeGroup implements TetradSerializable {
 
         KnowledgeGroup thatGroup = (KnowledgeGroup) o;
 
-        if (this.type != thatGroup.type) {
-            return false;
-        }
+        return this.type == thatGroup.type && this.fromGroup.equals(thatGroup.fromGroup)
+                && this.toGroup.equals(thatGroup.toGroup);
 
-        if (!this.fromGroup.equals(thatGroup.fromGroup)) {
-            return false;
-        }
-
-        return this.toGroup.equals(thatGroup.toGroup);
     }
 
     //=========================== Private Methods ==========================//

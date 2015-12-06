@@ -37,8 +37,6 @@ public class RemoveMissingValueCasesWrapper extends DataWrapper {
 
     /**
      * Constructs the missing value cases wrapper.
-     *
-     * @param data
      */
     public RemoveMissingValueCasesWrapper(DataWrapper data){
         if(data == null){

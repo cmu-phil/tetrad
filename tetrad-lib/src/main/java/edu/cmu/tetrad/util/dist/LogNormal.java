@@ -33,10 +33,6 @@ public class LogNormal implements Distribution {
 
     private double sd;
 
-    public LogNormal() {
-        this(1);
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -46,7 +42,7 @@ public class LogNormal implements Distribution {
         return new LogNormal(.5);
     }
 
-    private LogNormal(double sd) {
+    public LogNormal(double sd) {
         this.sd = sd;
     }
 

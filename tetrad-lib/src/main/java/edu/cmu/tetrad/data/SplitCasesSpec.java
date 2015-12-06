@@ -56,7 +56,7 @@ public final class SplitCasesSpec implements TetradSerializable {
     /**
      * Sample size.
      */
-    private int sampleSize;
+    private final int sampleSize;
 
     //============================CONSTRUCTORS==========================//
 

@@ -1,0 +1,13 @@
+/knowledge
+addtemporal
+1 Age DVT 
+2 Gender Race 
+
+forbiddirect
+Weight DVT
+CYP2C9 Race
+
+requiredirect
+Smoker Age
+Race Smoker
+VKORC1 AMI

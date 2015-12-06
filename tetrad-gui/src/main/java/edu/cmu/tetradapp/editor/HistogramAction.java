@@ -48,8 +48,6 @@ public class HistogramAction extends AbstractAction {
     /**
      * Constructs the <code>HistogramAction</code> given the <code>DataEditor</code>
      * that its attached to.
-     *
-     * @param editor
      */
     public HistogramAction(DataEditor editor) {
         super("Histograms...");

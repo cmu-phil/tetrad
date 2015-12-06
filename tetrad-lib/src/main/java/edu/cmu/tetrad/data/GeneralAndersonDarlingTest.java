@@ -149,33 +149,33 @@ public class GeneralAndersonDarlingTest {
         this.p = p;
     }
 
-    private double[] leaveOutNaN(double[] data) {
-        int numPresent = 0;
-
-        for (int i = 0; i < data.length; i++) {
-            if (!Double.isNaN(data[i])) {
-                numPresent++;
-            }
-        }
-
-        if (numPresent == data.length) {
-            double[] _data = new double[data.length];
-            System.arraycopy(data, 0, _data, 0, data.length);
-            return _data;
-        } else {
-            List<Double> _leaveOutMissing = new ArrayList<Double>();
-
-            for (int i = 0; i < data.length; i++) {
-                if (!Double.isNaN(data[i])) {
-                    _leaveOutMissing.add(data[i]);
-                }
-            }
-
-            double[] _data = new double[_leaveOutMissing.size()];
-            for (int i = 0; i < _leaveOutMissing.size(); i++) _data[i] = _leaveOutMissing.get(i);
-            return _data;
-        }
-    }
+//    private double[] leaveOutNaN(double[] data) {
+//        int numPresent = 0;
+//
+//        for (double aData1 : data) {
+//            if (!Double.isNaN(aData1)) {
+//                numPresent++;
+//            }
+//        }
+//
+//        if (numPresent == data.length) {
+//            double[] _data = new double[data.length];
+//            System.arraycopy(data, 0, _data, 0, data.length);
+//            return _data;
+//        } else {
+//            List<Double> _leaveOutMissing = new ArrayList<>();
+//
+//            for (double aData : data) {
+//                if (!Double.isNaN(aData)) {
+//                    _leaveOutMissing.add(aData);
+//                }
+//            }
+//
+//            double[] _data = new double[_leaveOutMissing.size()];
+//            for (int i = 0; i < _leaveOutMissing.size(); i++) _data[i] = _leaveOutMissing.get(i);
+//            return _data;
+//        }
+//    }
 }
 
 

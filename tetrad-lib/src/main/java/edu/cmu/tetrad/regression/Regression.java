@@ -48,7 +48,7 @@ public interface Regression {
     Graph getGraph();
 
     /**
-     * Retresses <code>target</code> on the <code>regressors</code>, yielding
+     * Regresses <code>target</code> on the <code>regressors</code>, yielding
      * a regression plane.
      *
      * @param target     the target variable, being regressed.
@@ -58,7 +58,7 @@ public interface Regression {
     RegressionResult regress(Node target, List<Node> regressors);
 
     /**
-     * Retresses <code>target</code> on the <code>regressors</code>, yielding
+     * Regresses <code>target</code> on the <code>regressors</code>, yielding
      * a regression plane.
      *
      * @param target     the target variable, being regressed.

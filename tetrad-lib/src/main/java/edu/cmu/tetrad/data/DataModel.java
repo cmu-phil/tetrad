@@ -36,7 +36,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  */
 public interface DataModel
         extends KnowledgeTransferable, VariableSource, TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @return the name of the data model (may be null).

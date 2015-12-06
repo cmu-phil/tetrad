@@ -105,8 +105,6 @@ public class TetradApplicationConfig {
 
     /**
      * @return an instance of the session configuration.
-     *
-     * @return - instance of the session config.
      */
     public static TetradApplicationConfig getInstance() {
         return instance;
@@ -118,7 +116,6 @@ public class TetradApplicationConfig {
      * or null if there isn't one defined for the given id.
      *
      * @param id - The id of the session config (e.g., "Graph" etc)
-     * @return - Node config.
      */
     public SessionNodeConfig getSessionNodeConfig(String id) {
         return this.configs.get(id);
@@ -128,9 +125,6 @@ public class TetradApplicationConfig {
     /**
      * @return the <code>SessionNodeConfig</code> that the given model is part
      * of.
-     *
-     * @param model
-     * @return - the config for the given model.
      */
     public SessionNodeConfig getSessionNodeConfig(Class model) {
         return this.classMap.get(model);

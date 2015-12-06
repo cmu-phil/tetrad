@@ -29,7 +29,7 @@ import java.util.*;
 /**
  * **************************************************************************************
  *
- * @author: Trevor Burns
+ * @author Trevor Burns
  * <p>
  * GraphChange is a data structure created mainly for use in the ION search algorithm. However, it models a general
  * concept: storage for a variety of seperate changes one could possibly apply to a PAG.

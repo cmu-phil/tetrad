@@ -458,8 +458,6 @@ public final class TetradDesktop extends JPanel
      * then a text area roughly 20% of the screen size will appear on the bottom
      * and will display any log output, otherwise just the standard tetrad
      * workbend is shown.
-     *
-     * @param displayLogging
      */
     public void setDisplayLogging(boolean displayLogging) {
         if (displayLogging) {

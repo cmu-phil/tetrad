@@ -35,9 +35,6 @@ public class ShortDataBox implements DataBox {
 
     /**
      * Constructs an 2D short array consisting entirely of missing values (-99).
-     *
-     * @param rows
-     * @param cols
      */
     public ShortDataBox(int rows, int cols) {
         this.data = new short[rows][cols];

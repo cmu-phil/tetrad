@@ -77,13 +77,6 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         super(runner, "Result PAG");
     }
 
-    public FciCcdSearchEditor(TFciRunner runner) {
-        super(runner, "Result PAG");
-    }
-    public FciCcdSearchEditor(TGFciRunner runner) {
-        super(runner, "Result PAG");
-    }
-
     /**
      * Opens up an editor to let the user view the given CcdRunner.
      */

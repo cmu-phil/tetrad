@@ -78,7 +78,7 @@ public class TestMimbuild3 extends TestCase {
                 partition = fofc.getClusters();
             } else if (algorithm.equals("BPC")) {
                 TestType testType = TestType.TETRAD_WISHART;
-                TestType purifyType = TestType.TETRAD_BASED2;
+                TestType purifyType = TestType.TETRAD_BASED;
 
                 BuildPureClusters bpc = new BuildPureClusters(
                         data, 0.001,
@@ -234,7 +234,7 @@ public class TestMimbuild3 extends TestCase {
                 partition = MimUtils.convertToClusters2(searchGraph);
             } else if (algorithm.equals("BPC")) {
                 TestType testType = TestType.TETRAD_WISHART;
-                TestType purifyType = TestType.TETRAD_BASED2;
+                TestType purifyType = TestType.TETRAD_BASED;
 
                 BuildPureClusters bpc = new BuildPureClusters(
                         data, 0.001,
@@ -515,7 +515,7 @@ public class TestMimbuild3 extends TestCase {
                 partition = MimUtils.convertToClusters2(searchGraph);
             } else if (algorithm.equals("BPC")) {
                 TestType testType = TestType.TETRAD_WISHART;
-                TestType purifyType = TestType.TETRAD_BASED2;
+                TestType purifyType = TestType.TETRAD_BASED;
 
                 BuildPureClusters bpc = new BuildPureClusters(
                         data, 0.001,

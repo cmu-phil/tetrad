@@ -24,12 +24,10 @@ package edu.cmu.tetrad.regression;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
 
-import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,17 +39,17 @@ import java.util.List;
  */
 public class RegressionCovariance implements Regression {
 
-    /**
-     * Decimal format for all numbers.
-     */
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+//    /**
+//     * Decimal format for all numbers.
+//     */
+//    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * The correlation matrix.
      */
     private CorrelationMatrix correlations;
 
-    /**
+    /**2
      * The standard deviations for the variable in <code>correlations</code>.
      */
     private TetradVector sd;
@@ -68,7 +66,7 @@ public class RegressionCovariance implements Regression {
     private double alpha = 0.05;
 
     /**
-     * @return the graph of significant regressors into the target
+     * The graph of significant regressors into the target
      */
     private Graph graph = null;
 
@@ -92,7 +90,7 @@ public class RegressionCovariance implements Regression {
      * @param means       A vector of means, for variables <V1,...,Vn>. May be
      *                    null.
      */
-    public RegressionCovariance(ICovarianceMatrix covariances, TetradVector means) {
+    private RegressionCovariance(ICovarianceMatrix covariances, TetradVector means) {
         this(new CorrelationMatrix(covariances), standardDeviations(covariances),
                 means);
     }
@@ -107,9 +105,9 @@ public class RegressionCovariance implements Regression {
      *                           Must not be null.
      * @param means              3 for variables <V1,...,Vn>. May be null.
      */
-    public RegressionCovariance(CorrelationMatrix correlations,
-                                TetradVector standardDeviations,
-                                TetradVector means) {
+    private RegressionCovariance(CorrelationMatrix correlations,
+                                 TetradVector standardDeviations,
+                                 TetradVector means) {
         if (correlations == null) {
             throw new NullPointerException();
         }
@@ -293,27 +291,27 @@ public class RegressionCovariance implements Regression {
         return graph;
     }
 
-    private String createSummary(int n, int k, double rss, double r2, int[] allIndices, List<Node> regressors, TetradVector b, TetradVector se, TetradVector t, TetradVector p) {
-        String summary = "\n REGRESSION RESULT";
-        summary += "\n n = " + n + ", k = " + k + ", alpha = " + alpha + "\n";
-
-        // add the SSE and R^2
-        String rssString = nf.format(rss);
-        summary += " SSE = " + rssString + "\n";
-        String r2String = nf.format(r2);
-        summary += " R^2 = " + r2String + "\n\n";
-        summary += " VAR\tCOEF\tSE\tT\tP\n";
-
-        for (int i = 0; i < allIndices.length; i++) {
-            String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
-
-            summary += " " + variableName + "\t" + nf.format(b.get(i)) +
-                    "\t" + nf.format(se.get(i)) + "\t" + nf.format(t.get(i)) +
-                    "\t" + nf.format(p.get(i)) + "\t" +
-                    ((p.get(i) < alpha) ? "significant " : "") + "\n";
-        }
-        return summary;
-    }
+//    private String createSummary(int n, int k, double rss, double r2, int[] allIndices, List<Node> regressors, TetradVector b, TetradVector se, TetradVector t, TetradVector p) {
+//        String summary = "\n REGRESSION RESULT";
+//        summary += "\n n = " + n + ", k = " + k + ", alpha = " + alpha + "\n";
+//
+//        // add the SSE and R^2
+//        String rssString = nf.format(rss);
+//        summary += " SSE = " + rssString + "\n";
+//        String r2String = nf.format(r2);
+//        summary += " R^2 = " + r2String + "\n\n";
+//        summary += " VAR\tCOEF\tSE\tT\tP\n";
+//
+//        for (int i = 0; i < allIndices.length; i++) {
+//            String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
+//
+//            summary += " " + variableName + "\t" + nf.format(b.get(i)) +
+//                    "\t" + nf.format(se.get(i)) + "\t" + nf.format(t.get(i)) +
+//                    "\t" + nf.format(p.get(i)) + "\t" +
+//                    ((p.get(i) < alpha) ? "significant " : "") + "\n";
+//        }
+//        return summary;
+//    }
 
     private static TetradVector zeroMeans(int numVars) {
         return new TetradVector(numVars);

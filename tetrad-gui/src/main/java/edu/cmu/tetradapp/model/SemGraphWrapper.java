@@ -171,7 +171,6 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	/**
 	 * Generates a simple exemplar of this class to test serialization.
 	 * 
-	 * @see edu.cmu.TestSerialization
 	 * @see TetradSerializableUtils
 	 */
 	public static SemGraphWrapper serializableInstance() {
@@ -243,7 +242,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 //				graph = DataGraphUtils
 //						.addCycles2(dag, minNumCycles, minCycleLength);
 //
-                graph = GraphUtils.cyclicGraph4(numMeasuredNodes + numLatents, newGraphNumEdges);
+                graph = GraphUtils.cyclicGraph2(numMeasuredNodes + numLatents, newGraphNumEdges);
 			} else {
 				graph = new EdgeListGraph(dag);
 			}

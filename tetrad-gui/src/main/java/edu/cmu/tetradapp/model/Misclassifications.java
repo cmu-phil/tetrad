@@ -339,7 +339,7 @@ public final class Misclassifications implements SessionModel {
 //            builder.append("\n\nEndpoint Misclassification:\n");
 //            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
             builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
+            builder.append(MisclassificationUtils.edgeMisclassifications(targetGraph, referenceGraph));
             return builder.toString();
         }
 
@@ -351,7 +351,7 @@ public final class Misclassifications implements SessionModel {
 //            builder.append("\n\nEndpoint Misclassification:\n");
 //            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
             builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
+            builder.append(MisclassificationUtils.edgeMisclassifications(targetGraph, referenceGraph));
             return builder.toString();
         }
         if (this.usePcOutputs) {
@@ -362,7 +362,7 @@ public final class Misclassifications implements SessionModel {
 //            builder.append("\n\nEndpoint Misclassification:\n");
 //            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
             builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
+            builder.append(MisclassificationUtils.edgeMisclassifications(targetGraph, referenceGraph));
             return builder.toString();
         }
 
@@ -374,7 +374,7 @@ public final class Misclassifications implements SessionModel {
 //            builder.append("\n\nEndpoint Misclassification:\n");
 //            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
             builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
+            builder.append(MisclassificationUtils.edgeMisclassifications(targetGraph, referenceGraph));
             return builder.toString();
         }
         if (this.useScpcOutputs) {
@@ -385,7 +385,7 @@ public final class Misclassifications implements SessionModel {
 //            builder.append("\n\nEndpoint Misclassification:\n");
 //            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
             builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
+            builder.append(MisclassificationUtils.edgeMisclassifications(targetGraph, referenceGraph));
             return builder.toString();
         }
 
@@ -397,7 +397,7 @@ public final class Misclassifications implements SessionModel {
 //            builder.append("\n\nEndpoint Misclassification:\n");
 //            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
             builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
+            builder.append(MisclassificationUtils.edgeMisclassifications(targetGraph, referenceGraph));
             return builder.toString();
         }
 
@@ -409,13 +409,13 @@ public final class Misclassifications implements SessionModel {
             builder.append("\n\nEndpoint Misclassification:\n");
 //            builder.append(endpointMisclassification(getNodes(), targetGraph, referenceGraph));
             builder.append("\nEdge Misclassifications:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
+            builder.append(MisclassificationUtils.edgeMisclassifications(targetGraph, referenceGraph));
             return builder.toString();
         } else {
             StringBuilder builder = new StringBuilder();
             builder.append("Comparing " + params.getTargetGraphName() + " to " + params.getReferenceGraphName());
             builder.append("\nEdge Misclassification:\n");
-            builder.append(MisclassificationUtils.edgeMisclassifications(dag, targetGraph, referenceGraph));
+            builder.append(MisclassificationUtils.edgeMisclassifications(targetGraph, referenceGraph));
             builder.append("\n\nEndpoint Misclassification:\n");
             builder.append(MisclassificationUtils.endpointMisclassification(targetGraph, referenceGraph));
             return builder.toString();

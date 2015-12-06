@@ -328,7 +328,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * @return the workbench mode. One of SELECT_MOVE, ADD_NODE, ADD_EDGE.
+     * Returns the workbench mode. One of SELECT_MOVE, ADD_NODE, ADD_EDGE.
      *
      * @return the workbench mode. One of SELECT_MOVE, ADD_NODE, ADD_EDGE.
      */
@@ -344,7 +344,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * @return the currently selected nodes as a list.
+     * Returns the currently selected nodes as a list.
      *
      * @return the currently selected nodes as a list.
      */
@@ -364,7 +364,7 @@ public abstract class AbstractWorkbench extends JComponent
 
 
     /**
-     * @return the current selected node, if exactly one is selected; otherwise,
+     * Returns the current selected node, if exactly one is selected; otherwise,
      * return null.
      *
      * @return the current selected node, if exactly one is selected; otherwise,
@@ -382,8 +382,6 @@ public abstract class AbstractWorkbench extends JComponent
 
     /**
      * @return the currently selected nodes as a vector.
-     *
-     * @return Ibid.
      */
     public final List<Component> getSelectedComponents() {
         List<Component> selectedComponents = new ArrayList<Component>();
@@ -416,7 +414,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * @return true iff nodes and edges may be added/removed by the user or
+     * Returns true iff nodes and edges may be added/removed by the user or
      * node/edge properties edited.
      *
      * @return Ibid.
@@ -426,7 +424,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * @return true iff nodes may be dragged to new locations by the user.
+     * Returns true iff nodes may be dragged to new locations by the user.
      *
      * @return Ibid.
      */
@@ -435,7 +433,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * @return true iff nodes and edges may be selected by the user.
+     * Returns true iff nodes and edges may be selected by the user.
      *
      * @return Ibid.
      */
@@ -444,7 +442,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * @return true iff edge reorientations are permitted.
+     * Returns true iff edge reorientations are permitted.
      *
      * @return Ibid.
      */
@@ -453,7 +451,7 @@ public abstract class AbstractWorkbench extends JComponent
     }
 
     /**
-     * @return true iff multiple nodes may be selected by the user using a
+     * Returns true iff multiple nodes may be selected by the user using a
      * rubberband.
      *
      * @return Ibid.

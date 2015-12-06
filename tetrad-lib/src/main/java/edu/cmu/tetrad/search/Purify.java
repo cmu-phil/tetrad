@@ -77,12 +77,8 @@ public class Purify {
      * INITIALIZATION                                                                                        o
      *********************************************************/
 
-    /**
+    /*
      * Constructor Purify
-     *
-     * @param correlationMatrix
-     * @param sig
-     * @param testType
      */
 
     public Purify(CorrelationMatrix correlationMatrix, double sig, TestType testType,
@@ -192,16 +188,7 @@ public class Purify {
             type = null;
 
             if (type == TestType.TETRAD_BASED) {
-                IPurify purifier = new PurifyTetradBased(tetradTest);
-                List<List<Node>> partition2 = purifier.purify(ClusterUtils.convertIntToList(getClusters(), getVariables()));
-                List<int[]> pureClusters = ClusterUtils.convertListToInt(partition2, getVariables());
-                return ClusterUtils.convertSearchGraph(pureClusters, tetradTest.getVarNames());
-//                return convertSearchGraph(pureClusters);
-//                List pureClusters = tetradBasedPurify(getClusters());
-//                return convertSearchGraph(pureClusters);
-            }
-            if (type == TestType.TETRAD_BASED2) {
-                IPurify purifier = new PurifyTetradBased3(tetradTest);
+                IPurify purifier = new PurifyTetradBased2(tetradTest);
                 List<List<Node>> partition2 = purifier.purify(ClusterUtils.convertIntToList(getClusters(), getVariables()));
                 List<int[]> pureClusters = ClusterUtils.convertListToInt(partition2, getVariables());
                 return ClusterUtils.convertSearchGraph(pureClusters, tetradTest.getVarNames());
@@ -215,16 +202,13 @@ public class Purify {
             } else if (type == TestType.GAUSSIAN_SCORE_ITERATE) {
                 SemGraph semGraphI = scoreBasedPurifyIterate(getClusters());
                 return convertSearchGraph(semGraphI);
-            } else if (type == TestType.GAUSSIAN_PVALUE) {
-                SemGraph semGraph2 = pvalueBasedPurify(getClusters());
-                return convertSearchGraph(semGraph2);
             } else if (type == TestType.NONE) {
                 SemGraph semGraph3 = dummyPurification(getClusters());
                 return convertSearchGraph(semGraph3);
             } else {
                 List pureClusters;
 //                if (constraintSearchVariation == 0) {
-                IPurify purifier = new PurifyTetradBased3(tetradTest);
+                IPurify purifier = new PurifyTetradBased2(tetradTest);
                 List<List<Node>> partition2 = purifier.purify(ClusterUtils.convertIntToList(getClusters(), tetradTest.getVariables()));
                 pureClusters = ClusterUtils.convertListToInt(partition2, tetradTest.getVariables());
 //                    pureClusters = tetradBasedPurify(getClusters());
@@ -468,9 +452,6 @@ public class Purify {
      * Marks for deletion nodes within a single cluster that are part of some tetrad constraint that does not hold
      * according to a statistical test. </p> False discovery rates will be used to adjust for multiple hypothesis
      * tests.
-     *
-     * @param cluster
-     * @param eliminated
      */
     private void intraConstructPhase(int cluster[], boolean eliminated[],
                                      String clusterName) {
@@ -733,9 +714,6 @@ public class Purify {
      * Marks for deletion nodes that are part of some tetrad constraint between two clusters that does not hold
      * according to a statistical test. </p> False discovery rates will be used to adjust for multiple hypothesis
      * tests.
-     *
-     * @param partition
-     * @param eliminated
      */
 
     private void crossConstructPhase(List<int[]> partition, boolean eliminated[]) {
@@ -1425,8 +1403,6 @@ public class Purify {
 
     /**
      * Second main method of this variation of Purify
-     *
-     * @param partition
      */
 
     private SemGraph scoreBasedPurifyIterate(List partition) {
@@ -3071,98 +3047,6 @@ public class Purify {
         }
         return -semIm.getTruncLL() - 0.5 * semIm.getNumFreeParams() *
                 Math.log(this.covarianceMatrix.getSampleSize());
-    }
-
-    private SemGraph pvalueBasedPurify(List partition) {
-        structuralEmInitialization(partition);
-        SemPm semPm0 = new SemPm(purePartitionGraph);
-        MimBuildEstimator estimator0 =
-                new MimBuildEstimator(this.covarianceMatrix, semPm0, 5, 5);
-        estimator0.estimate();
-        SemIm bestModel = estimator0.getEstimatedSem();
-        double bestPValue = bestModel.getPValue();
-        double bestScore = -bestModel.getChiSquare();
-        printlnMessage(
-                "* Greedy removal by p-value - Initial pvalue = " + bestPValue);
-        boolean noDelete = false;
-        int round = 1;
-        List currentMeasuredNodes = new ArrayList();
-        currentMeasuredNodes.addAll(measuredNodes);
-        while (bestPValue < 0.05 && !noDelete &&
-                currentMeasuredNodes.size() > 4) {
-            printlnMessage("*** Starting round" + round++);
-            noDelete = true;
-            SemIm bestInRound = bestModel;
-            Node nodeToDelete = null;
-            for (int i = 0; i < currentMeasuredNodes.size(); i++) {
-                SemGraph newGraph =
-                        new SemGraph(bestModel.getSemPm().getGraph());
-                Node next = bestModel.getSemPm().getGraph().getNode(
-                        currentMeasuredNodes.get(i).toString());
-                printMessage("Removing node " + next.toString());
-                Iterator pit = newGraph.getParents(next).iterator();
-                while (pit.hasNext()) {
-                    Node nextP = (Node) pit.next();
-                    if (nextP.getNodeType() == NodeType.LATENT &&
-                            newGraph.getChildren(nextP).size() == 1) {
-                        newGraph.removeNode(nextP);
-                        break;
-                    }
-                }
-                newGraph.removeNode(next);
-                SemPm semPm = new SemPm(newGraph);
-                SemIm nextModel = new SemIm(semPm);
-                nextModel.setCovMatrix(this.covarianceMatrix);
-                MimBuildEstimator estimator = new MimBuildEstimator(
-                        this.covarianceMatrix, semPm, 5, 5);
-                estimator.estimate();
-                nextModel = estimator.getEstimatedSem();
-                printlnMessage(" * pvalue = " + nextModel.getPValue() +
-                        " * chisq = " + nextModel.getChiSquare());
-                double newScore = -nextModel.getChiSquare();
-                if (newScore > bestScore) {
-                    noDelete = false;
-                    nodeToDelete = (Node) currentMeasuredNodes.get(i);
-                    bestScore = newScore;
-                    bestPValue = nextModel.getPValue();
-                    bestInRound = nextModel;
-                    printlnMessage(">> best so far");
-                }
-            }
-            bestModel = bestInRound;
-            if (nodeToDelete != null) {
-                currentMeasuredNodes.remove(nodeToDelete);
-                printlnMessage("Node removed: " + nodeToDelete.toString());
-            }
-        }
-        if (bestPValue < 0.05) {
-            return null;
-        }
-        List newPartition = new ArrayList();
-        Iterator it = bestModel.getSemPm().getGraph().getNodes().iterator();
-        while (it.hasNext()) {
-            Node next = (Node) it.next();
-            if (next.getNodeType() == NodeType.LATENT) {
-                Collection children = bestModel.getSemPm().getGraph()
-                        .getChildren(next);
-                List nextSet = new ArrayList();
-                Iterator cit = children.iterator();
-                while (cit.hasNext()) {
-                    Node nextC = (Node) cit.next();
-                    if (nextC.getNodeType() == NodeType.MEASURED) {
-                        nextSet.add(nextC);
-                    }
-                }
-                int nextArray[] = new int[nextSet.size()];
-                for (int i = 0; i < nextArray.length; i++) {
-                    nextArray[i] = ((Integer) observableNames.get(
-                            nextSet.get(i).toString()));
-                }
-                newPartition.add(nextArray);
-            }
-
-        }
-        return bestModel.getSemPm().getGraph();
     }
 
     /*private SemGraph2 greedyImpurityAddition()

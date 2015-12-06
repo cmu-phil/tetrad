@@ -36,8 +36,6 @@ public class InvertCovMatrixWrapper extends DataWrapper {
 
     /**
      * Splits the given data set by collinear columns.
-     *
-     * @param wrapper
      */
     public InvertCovMatrixWrapper(DataWrapper wrapper) {
         if (wrapper == null) {

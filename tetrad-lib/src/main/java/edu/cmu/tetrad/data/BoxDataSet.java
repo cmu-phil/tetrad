@@ -92,7 +92,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      *
      * @serial
      */
-    private List<Node> variables = new ArrayList<Node>();
+    private List<Node> variables = new ArrayList<>();
 
     /**
      * The container storing the data. Rows are cases; columns are variables.
@@ -108,7 +108,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      *
      * @serial
      */
-    private Set<Node> selection = new HashSet<Node>();
+    private Set<Node> selection = new HashSet<>();
 
     /**
      * Case ID's. These are strings associated with some or all of the cases of
@@ -116,7 +116,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      *
      * @serial
      */
-    private Map<Integer, String> caseIds = new HashMap<Integer, String>();
+    private final Map<Integer, String> caseIds = new HashMap<>();
 
     /**
      * A map from cases to case multipliers. If a case is not in the domain of
@@ -126,7 +126,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      *
      * @serial
      */
-    private Map<Integer, Integer> multipliers = new HashMap<Integer, Integer>();
+    private Map<Integer, Integer> multipliers = new HashMap<>();
 
     /**
      * The knowledge associated with this data.
@@ -134,15 +134,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @serial
      */
     private IKnowledge knowledge = new Knowledge2();
-
-    /**
-     * True iff the column should adjust the discrete variable to accomodate new
-     * categories added, false if new categories should be rejected.
-     *
-     * @serial
-     * @deprecated Replaced by corresponding field on DiscreteVariable.
-     */
-    private boolean newCategoriesAccomodated = true;
 
     /**
      * The number formatter used for printing out continuous values.
@@ -165,14 +156,13 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Makes of copy of the given data set. TODO Might consider making the
      * argument a RectangularDataSet instead.
      */
-    public BoxDataSet(BoxDataSet dataSet) {
+    private BoxDataSet(BoxDataSet dataSet) {
         name = dataSet.name;
-        variables = new LinkedList<Node>(dataSet.variables);
+        variables = new LinkedList<>(dataSet.variables);
         dataBox = dataSet.dataBox.copy();
-        selection = new HashSet<Node>(dataSet.selection);
-        multipliers = new HashMap<Integer, Integer>(dataSet.multipliers);
+        selection = new HashSet<>(dataSet.selection);
+        multipliers = new HashMap<>(dataSet.multipliers);
         knowledge = dataSet.knowledge.copy();
-        newCategoriesAccomodated = dataSet.newCategoriesAccomodated;
     }
 
 
@@ -317,10 +307,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     /**
      * @param row The index of the case.
      * @param col The index of the variable.
-     * @return the value at the given row and column as an Object. The type
-     * returned is deliberately vague, allowing for variables of any type.
-     * Primitives will be returned as corresponding wrapping objects (for
-     * example, doubles as Doubles).
      */
     public final void setObject(int row, int col, Object value) {
         Object variable = getVariable(col);
@@ -356,12 +342,12 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         return indices;
     }
 
-    /**
-     * @return the set of currently selected variables.
-     */
-    public final Set<Node> getSelectedVariables() {
-        return new HashSet<Node>(selection);
-    }
+//    /**
+//     * @return the set of currently selected variables.
+//     */
+//    public final Set<Node> getSelectedVariables() {
+//        return new HashSet<>(selection);
+//    }
 
     /**
      * Adds the given variable to the data set, increasing the number of
@@ -458,7 +444,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         int col = variables.indexOf(_from);
 
         List<String> oldCategories = _from.getCategories();
-        List newCategories = _to.getCategories();
+        List<String> newCategories = _to.getCategories();
 
         int[] indexArray = new int[oldCategories.size()];
 
@@ -507,7 +493,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * of their columns.
      */
     public final List<Node> getVariables() {
-        return new LinkedList<Node>(variables);
+        return new LinkedList<>(variables);
     }
 
 
@@ -536,7 +522,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      */
     public final List<String> getVariableNames() {
         List<Node> vars = getVariables();
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 
         for (Node variable : vars) {
             String name = variable.getName();
@@ -675,7 +661,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 //        }
 
         if (!(getVariables().containsAll(vars))) {
-            List<Node> missingVars = new ArrayList<Node>(vars);
+            List<Node> missingVars = new ArrayList<>(vars);
             missingVars.removeAll(getVariables());
 
             throw new IllegalArgumentException(
@@ -700,8 +686,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 
 //        _dataSet.name = name + "_copy";
         _dataSet.variables = vars;
-        _dataSet.selection = new HashSet<Node>();
-        _dataSet.multipliers = new HashMap<Integer, Integer>(multipliers);
+        _dataSet.selection = new HashSet<>();
+        _dataSet.multipliers = new HashMap<>(multipliers);
 
         // Might have to delete some knowledge.
         _dataSet.knowledge = knowledge.copy();
@@ -993,7 +979,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
                         if (category.indexOf((int) outputDelimiter) == -1) {
                             buf.append(category);
                         } else {
-                            buf.append("\"" + category + "\"");
+                            buf.append("\"").append(category).append("\"");
                         }
                     }
 
@@ -1053,7 +1039,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      */
     public final DataSet subsetColumns(int indices[]) {
         List<Node> variables = getVariables();
-        List<Node> _variables = new LinkedList<Node>();
+        List<Node> _variables = new LinkedList<>();
 
         for (int index : indices) {
             _variables.add(variables.get(index));
@@ -1071,8 +1057,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 //        _dataSet.name = name + "_copy";
         _dataSet.name = name;
         _dataSet.variables = _variables;
-        _dataSet.selection = new HashSet<Node>();
-        _dataSet.multipliers = new HashMap<Integer, Integer>(multipliers);
+        _dataSet.selection = new HashSet<>();
+        _dataSet.multipliers = new HashMap<>(multipliers);
 
         // Might have to delete some knowledge.
         _dataSet.knowledge = knowledge.copy();
@@ -1150,7 +1136,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             }
         }
 
-        List<Node> retainedVars = new LinkedList<Node>();
+        List<Node> retainedVars = new LinkedList<>();
 
         for (int retainedCol : retainedCols) {
             retainedVars.add(variables.get(retainedCol));
@@ -1158,8 +1144,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 
         dataBox = viewSelection(rows, cols);
         variables = retainedVars;
-        selection = new HashSet<Node>();
-        multipliers = new HashMap<Integer, Integer>(multipliers);
+        selection = new HashSet<>();
+        multipliers = new HashMap<>(multipliers);
         knowledge = knowledge.copy(); // Might have to delete some knowledge.
     }
 
@@ -1185,8 +1171,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         }
 
         dataBox = viewSelection(retainedRows, cols);
-        selection = new HashSet<Node>();
-        multipliers = new HashMap<Integer, Integer>(multipliers);
+        selection = new HashSet<>();
+        multipliers = new HashMap<>(multipliers);
         knowledge = knowledge.copy(); // Might have to delete some knowledge.
     }
 
@@ -1255,25 +1241,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         return new BoxDataSet(dataBox.like(dataBox.numRows(), dataBox.numCols()), variables);
     }
 
-    /**
-     * @return true iff this variable is set to accomodate new categories
-     * encountered.
-     * @deprecated This is set in DiscreteVariable now.
-     */
-    public boolean isNewCategoriesAccommodated() {
-        return this.newCategoriesAccomodated;
-    }
-
-    /**
-     * Sets whether this variable should accomodate new categories encountered.
-     *
-     * @deprecated This is set in DiscreteVariable now.
-     */
-    public final void setNewCategoriesAccommodated(
-            boolean newCategoriesAccomodated) {
-        this.newCategoriesAccomodated = newCategoriesAccomodated;
-    }
-
     public void setNumberFormat(NumberFormat nf) {
         if (nf == null) {
             throw new NullPointerException();
@@ -1296,7 +1263,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Randomly permutes the rows of the dataset.
      */
     public void permuteRows() {
-        List<Integer> permutation = new ArrayList<Integer>();
+        List<Integer> permutation = new ArrayList<>();
 
         for (int i = 0; i < getNumRows(); i++) {
             permutation.add(i);
@@ -1380,7 +1347,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      */
     private Set<Node> getSelection() {
         if (selection == null) {
-            selection = new HashSet<Node>();
+            selection = new HashSet<>();
         }
         return selection;
     }
@@ -1503,7 +1470,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         List<String> categories = variable.getCategories();
 
         if (!categories.contains(category)) {
-            List<String> newCategories = new LinkedList<String>(categories);
+            List<String> newCategories = new LinkedList<>(categories);
             newCategories.add(category);
             DiscreteVariable newVariable =
                     new DiscreteVariable(variable.getName(), newCategories);
@@ -1537,8 +1504,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     private void adjustCategories(DiscreteVariable variable,
                                   int numCategories) {
         List<String> categories =
-                new LinkedList<String>(variable.getCategories());
-        List<String> newCategories = new LinkedList<String>(categories);
+                new LinkedList<>(variable.getCategories());
+        List<String> newCategories = new LinkedList<>(categories);
 
         if (categories.size() > numCategories) {
             for (int i = variable.getCategories().size() - 1;

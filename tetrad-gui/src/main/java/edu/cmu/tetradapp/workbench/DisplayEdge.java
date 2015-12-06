@@ -289,7 +289,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @param node1           the 'from' component.
      * @param mouseTrackPoint the initial value of the mouse track point.
-     * @param type
      * @see #updateTrackPoint
      */
     public DisplayEdge(DisplayNode node1, Point mouseTrackPoint, int type) {
@@ -626,8 +625,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * non-overlapping rectangles.  (Should give back null for overlapping
      * rectangles but doesn't always...)
      *
-     * @param comp1
-     * @param comp2
      * @return a point pair which represents the connecting line segment through
      *         the center of each rectangle touching the edge of each.
      */

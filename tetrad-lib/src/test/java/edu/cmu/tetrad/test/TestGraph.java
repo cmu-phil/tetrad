@@ -93,7 +93,7 @@ public final class TestGraph extends TestCase {
         try {
             Graph _graph = GraphUtils.parseGraphXml(element, nodes);
 
-            assertEquals(graph, _graph);
+            assertEquals(graph, new Dag(_graph));
         } catch (ParsingException e) {
             e.printStackTrace();
         }

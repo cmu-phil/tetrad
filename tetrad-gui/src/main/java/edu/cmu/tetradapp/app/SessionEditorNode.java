@@ -397,8 +397,6 @@ public final class SessionEditorNode extends DisplayNode {
 
     /**
      * Adds a property change listener that listends for "changeNodeLabel" events.
-     *
-     * @param editor
      */
     private void addEditorListener(JPanel editor) {
         editor.addPropertyChangeListener(new PropertyChangeListener() {
@@ -959,7 +957,6 @@ public final class SessionEditorNode extends DisplayNode {
      * Creates a model in the wrapped SessionNode, given the SessionNode's
      * parent models.
      *
-     * @param simulation
      * @throws IllegalStateException if the model cannot be created. The reason
      *                               why the model cannot be created is in the
      *                               message of the exception.
@@ -1323,8 +1320,6 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * @return the substring of <code>name</code> up to but not including a
      * contiguous string of digits at the end. For example, given "Graph123"
-     * @return "Graph". If the name consists entirely of digits, "Node" is
-     * returned.
      */
     private static String extractBase(String name) {
         if (name == null) {

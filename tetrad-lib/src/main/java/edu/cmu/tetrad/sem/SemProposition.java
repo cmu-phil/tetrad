@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -75,27 +76,27 @@ public final class SemProposition implements TetradSerializable {
         return new SemProposition(semIm);
     }
 
-    /**
-     * Copies the info out of the old proposition into a new proposition for the
-     * new BayesIm.
-     */
-    public SemProposition(SemIm semIm, SemProposition proposition) {
-        this(semIm);
+//    /**
+//     * Copies the info out of the old proposition into a new proposition for the
+//     * new BayesIm.
+//     */
+//    public SemProposition(SemIm semIm, SemProposition proposition) {
+//        this(semIm);
+//
+//        if (proposition == null) {
+//            throw new NullPointerException();
+//        }
+//    }
 
-        if (proposition == null) {
-            throw new NullPointerException();
-        }
-    }
-
-    /**
-     * Copies the info out of the old proposition into a new proposition for the
-     * new BayesIm.
-     */
-    public SemProposition(SemProposition proposition) {
-        this.semIm = proposition.semIm;
-        this.values = new double[proposition.values.length];
-        System.arraycopy(proposition.values, 0, this.values, 0, values.length);
-    }
+//    /**
+//     * Copies the info out of the old proposition into a new proposition for the
+//     * new BayesIm.
+//     */
+//    public SemProposition(SemProposition proposition) {
+//        this.semIm = proposition.semIm;
+//        this.values = new double[proposition.values.length];
+//        System.arraycopy(proposition.values, 0, this.values, 0, values.length);
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -124,7 +125,7 @@ public final class SemProposition implements TetradSerializable {
      * @return the index of the variable with the given name, or -1 if such a
      * variable does not exist.
      */
-    public int getNodeIndex(String name) {
+    public int getNodeIndex() {
 
         return -1;
     }
@@ -134,6 +135,10 @@ public final class SemProposition implements TetradSerializable {
             return false;
         }
 
+        if (!(o instanceof SemProposition)) {
+            throw new IllegalArgumentException();
+        }
+
         SemProposition proposition = (SemProposition) o;
 
         if (!(semIm == proposition.semIm)) {
@@ -141,10 +146,10 @@ public final class SemProposition implements TetradSerializable {
         }
 
         for (int i = 0; i < values.length; i++) {
-            if (Double.isNaN(values[i]) && Double.isNaN(proposition.values[i])) {
-                continue;
-            } else if (values[i] != proposition.values[i]) {
-                return false;
+            if (!(Double.isNaN(values[i]) && Double.isNaN(proposition.values[i]))) {
+                if (values[i] != proposition.values[i]) {
+                    return false;
+                }
             }
         }
 
@@ -154,7 +159,7 @@ public final class SemProposition implements TetradSerializable {
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + semIm.hashCode();
-        hashCode = 19 * hashCode + values.hashCode();
+        hashCode = 19 * hashCode + Arrays.hashCode(values);
         return hashCode;
     }
 

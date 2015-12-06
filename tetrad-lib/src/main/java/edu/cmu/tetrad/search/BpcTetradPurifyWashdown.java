@@ -62,7 +62,7 @@ public class BpcTetradPurifyWashdown {
     }
 
     public Graph search() {
-        IPurify purify = new PurifyTetradBased3(test);
+        IPurify purify = new PurifyTetradBased2(test);
         List<Node> variables = new ArrayList<Node>(this.variables);
         List<List<Node>> clustering = new ArrayList<List<Node>>();
         List<Node> disgards;

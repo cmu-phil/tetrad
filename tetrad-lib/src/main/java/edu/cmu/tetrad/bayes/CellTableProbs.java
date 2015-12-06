@@ -79,7 +79,7 @@ public final class CellTableProbs implements DiscreteProbs {
      */
     public CellTableProbs(DataSet dataSet) {
         if (dataSet == null) {
-            this.dataSet = dataSet;
+            throw new NullPointerException("Data set not provided.");
         }
 
         this.dataSet = dataSet;
@@ -272,12 +272,12 @@ public final class CellTableProbs implements DiscreteProbs {
         return boundsEnforced;
     }
 
-    /**
-     * True iff bounds checking is performed on variable values indices.
-     */
-    public void setBoundsEnforced(boolean boundsEnforced) {
-        this.boundsEnforced = boundsEnforced;
-    }
+//    /**
+//     * True iff bounds checking is performed on variable values indices.
+//     */
+//    public void setBoundsEnforced(boolean boundsEnforced) {
+//        this.boundsEnforced = boundsEnforced;
+//    }
 
     //===========================PRIVATE METHODS===========================//
 

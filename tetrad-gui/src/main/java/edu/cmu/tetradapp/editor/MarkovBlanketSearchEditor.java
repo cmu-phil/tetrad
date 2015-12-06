@@ -130,7 +130,6 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     /**
      * Executes the algorithm. The execution takes place inside a thread, so one
      * cannot count on a result graph having been found when the method
-     * @return.
      */
     private void execute() {
         Window owner = (Window) getTopLevelAncestor();

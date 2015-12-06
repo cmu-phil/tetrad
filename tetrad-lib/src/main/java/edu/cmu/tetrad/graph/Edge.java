@@ -263,6 +263,7 @@ public class Edge implements TetradSerializable, Comparable {
      */
     public final boolean equals(Object o) {
         if (o == this) return true;
+        if (!(o instanceof Edge)) return false;
 
         Edge edge = (Edge) o;
 
@@ -285,12 +286,8 @@ public class Edge implements TetradSerializable, Comparable {
 
             if (node1 == node1b && node2 == node2b) {
                 equal = end1 == end1b && end2 == end2b;
-            } else if (node1 == node2b && node2 == node1b) {
-                equal = end1 == end2b && end2 == end1b;
-            } else {
-                equal = false;
-
-            }
+            } else
+                equal = node1 == node2b && node2 == node1b && end1 == end2b && end2 == end1b;
 
             return equal;
         } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
@@ -306,11 +303,8 @@ public class Edge implements TetradSerializable, Comparable {
 
             if (name1.equals(name1b) && name2.equals(name2b)) {
                 return end1 == end1b && end2 == end2b;
-            } else if (name1.equals(name2b) && name2.equals(name1b)) {
-                return end1 == end2b && end2 == end1b;
-            } else {
-                return false;
-            }
+            } else
+                return name1.equals(name2b) && name2.equals(name1b) && end1 == end2b && end2 == end1b;
         } else {
             throw new IllegalStateException();
         }
@@ -371,16 +365,6 @@ public class Edge implements TetradSerializable, Comparable {
 
     public boolean isNull() {
         return endpoint1 == Endpoint.NULL && endpoint2 == Endpoint.NULL;
-    }
-
-    public void setProximalEndpoint(Node y, Endpoint endpoint) {
-        if (y == node1) {
-            setEndpoint1(endpoint);
-        } else if (y == node2) {
-            setEndpoint2(endpoint);
-        } else {
-            throw new IllegalArgumentException("Node a node in this edge: " + y);
-        }
     }
 }
 

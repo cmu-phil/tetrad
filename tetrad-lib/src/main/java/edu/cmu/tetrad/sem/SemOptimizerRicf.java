@@ -64,11 +64,17 @@ public class SemOptimizerRicf implements SemOptimizer {
             throw new IllegalArgumentException("Number of restarts must be 1 for this method.");
         }
 
-        if (DataUtils.containsMissingValue(semIm.getSampleCovar())) {
+        TetradMatrix sampleCovar = semIm.getSampleCovar();
+
+        if (sampleCovar == null) {
+            throw new NullPointerException("Sample covar has not been set.");
+        }
+
+        if (DataUtils.containsMissingValue(sampleCovar)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
-        if (DataUtils.containsMissingValue(semIm.getSampleCovar())) {
+        if (DataUtils.containsMissingValue(sampleCovar)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
@@ -76,7 +82,7 @@ public class SemOptimizerRicf implements SemOptimizer {
 //        new SemOptimizerEm().optimize(semIm);
 
         CovarianceMatrix cov = new CovarianceMatrix(semIm.getMeasuredNodes(),
-                semIm.getSampleCovar(), semIm.getSampleSize());
+                sampleCovar, semIm.getSampleSize());
 
         SemGraph graph = semIm.getSemPm().getGraph();
         Ricf.RicfResult result = new Ricf().ricf(graph, cov, 0.001);
@@ -130,7 +136,6 @@ public class SemOptimizerRicf implements SemOptimizer {
         TetradMatrix bHat = new TetradMatrix(result.getBhat().toArray());
         TetradMatrix lHat = new TetradMatrix(result.getLhat().toArray());
         TetradMatrix oHat = new TetradMatrix(result.getOhat().toArray());
-        TetradMatrix sHat = new TetradMatrix(result.getShat().toArray());
 
         for (Parameter param : semIm.getFreeParameters()) {
             if (param.getType() == ParamType.COEF) {

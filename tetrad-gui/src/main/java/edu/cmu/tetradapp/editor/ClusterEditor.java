@@ -462,7 +462,7 @@ public final class ClusterEditor extends JPanel {
         }
 
         /**
-         * @return whether or not the specified data flavor is supported for
+         * Returns whether or not the specified data flavor is supported for
          * this object.
          *
          * @param flavor the requested flavor for the data
@@ -474,7 +474,7 @@ public final class ClusterEditor extends JPanel {
         }
 
         /**
-         * @return an array of DataFlavor objects indicating the flavors the
+         * Returns an array of DataFlavor objects indicating the flavors the
          * data can be provided in.  The array should be ordered according to
          * preference for providing the data (from most richly descriptive to
          * least descriptive).

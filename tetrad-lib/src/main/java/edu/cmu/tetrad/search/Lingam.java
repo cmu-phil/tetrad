@@ -45,11 +45,6 @@ import static java.lang.Math.min;
 public class Lingam {
     private double pruneFactor = 1.0;
 
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-//    private TetradLogger logger = TetradLogger.getInstance();
-
     //================================CONSTRUCTORS==========================//
 
     /**

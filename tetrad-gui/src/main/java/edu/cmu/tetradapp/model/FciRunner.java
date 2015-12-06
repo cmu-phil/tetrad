@@ -187,7 +187,6 @@ public class FciRunner extends AbstractAlgorithmRunner
     }
 
     /**
-     * @param node
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {

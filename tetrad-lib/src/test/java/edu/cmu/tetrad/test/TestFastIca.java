@@ -1,6 +1,3 @@
-/**
- * Created by jdramsey on 11/18/15.
- */
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //

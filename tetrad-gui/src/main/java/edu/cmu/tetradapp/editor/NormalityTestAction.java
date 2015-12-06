@@ -52,8 +52,6 @@ public class NormalityTestAction extends AbstractAction {
     /**
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
      * that its attached to.
-     *
-     * @param editor
      */
     public NormalityTestAction(DataEditor editor) {
         super("Normality Tests...");

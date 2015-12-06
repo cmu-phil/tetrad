@@ -97,8 +97,6 @@ class TetradLogArea extends JPanel {
 
     /**
      * @return the output stream that is being used to log messages to the log area.
-     *
-     * @return
      */
     public OutputStream getOutputStream() {
         return this.stream;
@@ -353,8 +351,6 @@ class TetradLogArea extends JPanel {
     /**
      * Writes whatever is in the log display to the given file. Will display error messages if
      * any exceptions are thrown.
-     *
-     * @param file
      */
     private void writeLogToFile(File file) {
         try {

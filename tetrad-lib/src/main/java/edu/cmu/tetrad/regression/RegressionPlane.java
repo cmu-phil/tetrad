@@ -28,7 +28,7 @@ package edu.cmu.tetrad.regression;
  *
  * @author Joseph Ramsey
  */
-public class RegressionPlane {
+class RegressionPlane {
 
     /**
      * Summary string.

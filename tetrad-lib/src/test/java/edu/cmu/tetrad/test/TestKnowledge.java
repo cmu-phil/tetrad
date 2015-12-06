@@ -23,7 +23,6 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.Knowledge3;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -59,7 +58,7 @@ public final class TestKnowledge extends TestCase {
             varNames.add(node.getName());
         }
 
-        IKnowledge knowledge = new Knowledge3(varNames);
+        IKnowledge knowledge = new Knowledge2(varNames);
 
         knowledge.addToTier(0, "X1.*1");
         knowledge.addToTier(0, "X2-1");

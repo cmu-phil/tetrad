@@ -43,17 +43,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by josephramsey on 12/17/14.
+ * @author Joseph Ramsey.
+ * Contains some tests for Dan Malinsky, that might be of interest to others.
  */
 public class PerformanceTestsDan {
-    PrintStream out = System.out;
-    private boolean writeToFile = true;
-
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    public void testIcaOutputForDan() {
+    private void testIcaOutputForDan() {
         int numRuns = 100;
 
         for (int run = 0; run < numRuns; run++) {
@@ -70,43 +64,41 @@ public class PerformanceTestsDan {
 
 //        writeToFile = false;
 
-            PrintStream out1 = System.out;
-            PrintStream out2 = System.out;
-            PrintStream out3 = System.out;
-            PrintStream out4 = System.out;
-            PrintStream out5 = System.out;
-            PrintStream out6 = System.out;
-            PrintStream out7 = System.out;
-            PrintStream out8 = System.out;
-            PrintStream out9 = System.out;
-            PrintStream out10 = System.out;
-            PrintStream out11 = System.out;
-            PrintStream out12 = System.out;
+            PrintStream out1;
+            PrintStream out2;
+            PrintStream out3;
+            PrintStream out4;
+            PrintStream out5;
+            PrintStream out6;
+            PrintStream out7;
+            PrintStream out8;
+            PrintStream out9;
+            PrintStream out10;
+            PrintStream out11;
+            PrintStream out12;
 
-            if (writeToFile) {
-                File dir0 = new File("fci..ges.output");
-                dir0.mkdirs();
+            File dir0 = new File("fci..ges.output");
+            dir0.mkdirs();
 
-                File dir = new File(dir0, "" + (run + 1));
-                dir.mkdir();
+            File dir = new File(dir0, "" + (run + 1));
+            dir.mkdir();
 
-                try {
-                    out1 = new PrintStream(new File(dir, "hyperparameters.txt"));
-                    out2 = new PrintStream(new File(dir, "variables.txt"));
-                    out3 = new PrintStream(new File(dir, "dag.long.txt"));
-                    out4 = new PrintStream(new File(dir, "dag.matrix.txt"));
-                    out5 = new PrintStream(new File(dir, "coef.matrix.txt"));
-                    out6 = new PrintStream(new File(dir, "pag.long.txt"));
-                    out7 = new PrintStream(new File(dir, "pag.matrix.txt"));
-                    out8 = new PrintStream(new File(dir, "pattern.long.txt"));
-                    out9 = new PrintStream(new File(dir, "pattern.matrix.txt"));
-                    out10 = new PrintStream(new File(dir, "data.txt"));
-                    out11 = new PrintStream(new File(dir, "true.pag.long.txt"));
-                    out12 = new PrintStream(new File(dir, "true.pag.matrix.txt"));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                    throw new RuntimeException(e);
-                }
+            try {
+                out1 = new PrintStream(new File(dir, "hyperparameters.txt"));
+                out2 = new PrintStream(new File(dir, "variables.txt"));
+                out3 = new PrintStream(new File(dir, "dag.long.txt"));
+                out4 = new PrintStream(new File(dir, "dag.matrix.txt"));
+                out5 = new PrintStream(new File(dir, "coef.matrix.txt"));
+                out6 = new PrintStream(new File(dir, "pag.long.txt"));
+                out7 = new PrintStream(new File(dir, "pag.matrix.txt"));
+                out8 = new PrintStream(new File(dir, "pattern.long.txt"));
+                out9 = new PrintStream(new File(dir, "pattern.matrix.txt"));
+                out10 = new PrintStream(new File(dir, "data.txt"));
+                out11 = new PrintStream(new File(dir, "true.pag.long.txt"));
+                out12 = new PrintStream(new File(dir, "true.pag.matrix.txt"));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
             }
 
             out1.println("Num _vars = " + numVars);
@@ -139,9 +131,9 @@ public class PerformanceTestsDan {
             NumberFormat nf = new DecimalFormat("0.0000");
 
             for (int i = 0; i < vars.size(); i++) {
-                for (int j = 0; j < vars.size(); j++) {
-                    if (im.existsEdgeCoef(vars.get(j), vars.get(i))) {
-                        double coef = im.getEdgeCoef(vars.get(j), vars.get(i));
+                for (Node var : vars) {
+                    if (im.existsEdgeCoef(var, vars.get(i))) {
+                        double coef = im.getEdgeCoef(var, vars.get(i));
                         out5.print(nf.format(coef) + "\t");
                     } else {
                         out5.print(nf.format(0) + "\t");
@@ -227,13 +219,13 @@ public class PerformanceTestsDan {
 
     private void printDanMatrix(List<Node> vars, Graph pattern, PrintStream out) {
         for (int i = 0; i < vars.size(); i++) {
-            for (int j = 0; j < vars.size(); j++) {
-                Edge edge = pattern.getEdge(vars.get(i), vars.get(j));
+            for (Node var : vars) {
+                Edge edge = pattern.getEdge(vars.get(i), var);
 
                 if (edge == null) {
                     out.print(0 + "\t");
                 } else {
-                    Endpoint ej = edge.getProximalEndpoint(vars.get(j));
+                    Endpoint ej = edge.getProximalEndpoint(var);
 
                     if (ej == Endpoint.TAIL) {
                         out.print(3 + "\t");
