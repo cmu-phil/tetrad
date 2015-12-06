@@ -21,17 +21,20 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TextTable;
 
-import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Some utilities for generating misclassification tables for graphs.
+ *
+ * @author Joseph Ramsey
+ */
 public class MisclassificationUtils {
-    private static int getIndex(Endpoint endpoint) {
+
+    public static int getIndex(Endpoint endpoint) {
         if (endpoint == Endpoint.CIRCLE) return 0;
         if (endpoint == Endpoint.ARROW) return 1;
         if (endpoint == Endpoint.TAIL) return 2;
@@ -40,7 +43,7 @@ public class MisclassificationUtils {
     }
 
     public static Set<Edge> convertNodes(Set<Edge> edges, List<Node> newVariables) {
-        Set<Edge> newEdges = new HashSet<>();
+        Set<Edge> newEdges = new HashSet<Edge>();
         Graph convertedGraph = new EdgeListGraph(newVariables);
 
         for (Edge edge : edges) {
@@ -123,81 +126,27 @@ public class MisclassificationUtils {
         return table2.toString();
     }
 
-    public static String edgeMisclassifications(Graph estGraph, Graph trueGraph) {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
+    public static String edgeMisclassifications(Graph refGraph, Graph estGraph) {
         StringBuilder builder = new StringBuilder();
 
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-
-        List<Edge> trueEdgeTypes = new ArrayList<>();
-
-        trueEdgeTypes.add(new Edge(a, b, Endpoint.TAIL, Endpoint.TAIL));
-        trueEdgeTypes.add(new Edge(a, b, Endpoint.CIRCLE, Endpoint.CIRCLE));
-        trueEdgeTypes.add(new Edge(a, b, Endpoint.CIRCLE, Endpoint.ARROW));
-        trueEdgeTypes.add(new Edge(a, b, Endpoint.ARROW, Endpoint.CIRCLE));
-        trueEdgeTypes.add(new Edge(a, b, Endpoint.TAIL, Endpoint.ARROW));
-        trueEdgeTypes.add(new Edge(a, b, Endpoint.ARROW, Endpoint.TAIL));
-        trueEdgeTypes.add(new Edge(a, b, Endpoint.ARROW, Endpoint.ARROW));
-        trueEdgeTypes.add(new Edge(a, b, Endpoint.NULL, Endpoint.NULL));
-
-        List<Edge> estEdgeTypes = new ArrayList<>();
-
-        estEdgeTypes.add(new Edge(a, b, Endpoint.TAIL, Endpoint.TAIL));
-        estEdgeTypes.add(new Edge(a, b, Endpoint.CIRCLE, Endpoint.CIRCLE));
-        estEdgeTypes.add(new Edge(a, b, Endpoint.CIRCLE, Endpoint.ARROW));
-        estEdgeTypes.add(new Edge(a, b, Endpoint.TAIL, Endpoint.ARROW));
-        estEdgeTypes.add(new Edge(a, b, Endpoint.ARROW, Endpoint.ARROW));
-        estEdgeTypes.add(new Edge(a, b, Endpoint.NULL, Endpoint.NULL));
-
         int[][] counts = new int[8][6];
-        Graph graph = new EdgeListGraph(trueGraph.getNodes());
-        graph.fullyConnect(Endpoint.TAIL);
 
-        for (int m = 0; m < 8; m++) {
-            for (int n = 0; n < 6; n++) {
-                for (Edge fullEdge : graph.getEdges()) {
-                    if (m == 3 || m == 5) {
-                        Node x = fullEdge.getNode1();
-                        Node y = fullEdge.getNode2();
+        for (Edge est1 : estGraph.getEdges()) {
+            Node x = est1.getNode1();
+            Node y = est1.getNode2();
 
-                        Edge true1 = trueGraph.getEdge(x, y);
-                        if (true1 == null) true1 = new Edge(x, y, Endpoint.NULL, Endpoint.NULL);
-                        true1 = true1.reverse();
+            Edge true1 = refGraph.getEdge(x, y);
 
-                        Edge est1 = estGraph.getEdge(x, y);
-                        if (est1 == null) est1 = new Edge(x, y, Endpoint.NULL, Endpoint.NULL);
-
-                        Edge trueEdgeType = trueEdgeTypes.get(m);
-                        Edge estEdgeType = estEdgeTypes.get(n);
-
-                        Edge trueConvert = new Edge(x, y, trueEdgeType.getEndpoint1(), trueEdgeType.getEndpoint2());
-                        Edge estConvert = new Edge(x, y, estEdgeType.getEndpoint1(), estEdgeType.getEndpoint2());
-
-                        boolean equals = true1.equals(trueConvert) && est1.equals(estConvert);// && true1.equals(est1);
-                        if (equals) counts[m][n]++;
-                    } else {
-                        Node x = fullEdge.getNode1();
-                        Node y = fullEdge.getNode2();
-
-                        Edge true1 = trueGraph.getEdge(x, y);
-                        if (true1 == null) true1 = new Edge(x, y, Endpoint.NULL, Endpoint.NULL);
-
-                        Edge est1 = estGraph.getEdge(x, y);
-                        if (est1 == null) est1 = new Edge(x, y, Endpoint.NULL, Endpoint.NULL);
-
-                        Edge trueEdgeType = trueEdgeTypes.get(m);
-                        Edge estEdgeType = estEdgeTypes.get(n);
-
-                        Edge trueConvert = new Edge(x, y, trueEdgeType.getEndpoint1(), trueEdgeType.getEndpoint2());
-                        Edge estConvert = new Edge(x, y, estEdgeType.getEndpoint1(), estEdgeType.getEndpoint2());
-
-                        boolean equals = true1.equals(trueConvert) && est1.equals(estConvert);// && true1.equals(est1);
-                        if (equals) counts[m][n]++;
-                    }
-                }
+            if (true1 == null) {
+                true1 = new Edge(x, y, Endpoint.NULL, Endpoint.NULL);
             }
+
+            Edge trueConvert = new Edge(x, y, true1.getProximalEndpoint(x), true1.getProximalEndpoint(y));
+
+            int m = getTypeLeft(trueConvert, est1);
+            int n = getTypeTop(est1);
+
+            counts[m][n]++;
         }
 
         TextTable table2 = new TextTable(9, 7);
@@ -217,28 +166,34 @@ public class MisclassificationUtils {
         table2.setToken(0, 5, "<->");
         table2.setToken(0, 6, "null");
 
-        // Need the sum of cells except the null-null cell.
-        int sum = 0;
+        for (Edge true1 : refGraph.getEdges()) {
+            Node x = true1.getNode1();
+            Node y = true1.getNode2();
 
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 6; j++) {
-                if (i == 7 && j == 5) continue;
-                sum += counts[i][j];
+            Edge est1 = estGraph.getEdge(x, y);
+
+            if (est1 == null) {
+                est1 = new Edge(x, y, Endpoint.NULL, Endpoint.NULL);
+            }
+
+            Edge estConvert = new Edge(x, y, est1.getProximalEndpoint(x), est1.getProximalEndpoint(y));
+
+            int m = getTypeLeft(true1, estConvert);
+            int n = getTypeTop(estConvert);
+
+            if (n == 5) {
+                counts[m][n]++;
             }
         }
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 6; j++) {
                 if (i == 7 && j == 5) table2.setToken(i + 1, j + 1, "*");
-                else table2.setToken(i + 1, j + 1, nf.format(counts[i][j] / (double) sum));
+                else table2.setToken(i + 1, j + 1, "" + counts[i][j]);
             }
         }
 
         builder.append("\n").append(table2.toString());
-
-        //        println("\n" + name);
-        //        println(table2.toString());
-        //        println("");
 
         TextTable table3 = new TextTable(3, 3);
 
@@ -250,58 +205,101 @@ public class MisclassificationUtils {
         for (int i = 0; i < 7; i++) {
             for (int j = 0; j < 5; j++) {
                 if (i == 6 && j == 4) table2.setToken(i + 1, j + 1, "*");
-                else table2.setToken(i + 1, j + 1, nf.format(counts[i][j] / (double) sum));
+                else table2.setToken(i + 1, j + 1, "" + counts[i][j]);
             }
         }
 
-
-        int[][] _counts = new int[2][2];
-        int _sum = 0;
-
-        for (int i = 0; i < 7; i++) {
-            _sum += counts[i][0];
-        }
-
-        _counts[1][0] = _sum;
-        _sum = 0;
-
-        for (int i = 0; i < 5; i++) {
-            _sum += counts[0][i];
-        }
-
-        _counts[0][1] = _sum;
-        _sum = 0;
-
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 4; j++) {
-                _sum += counts[i][j];
-            }
-        }
-
-        _counts[0][0] = _sum;
-
-        _counts[1][1] = counts[7][5];
-
-        // Now we need the sum of all cells.
-        sum = 0;
-
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 2; j++) {
-                sum += _counts[i][j];
-            }
-        }
-
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 2; j++) {
-                table3.setToken(i + 1, j + 1, nf.format(_counts[i][j] / (double) sum));
-            }
-        }
-
-        //        out.println("Null\n");
-        //
-        builder.append("\n").append(table3);
+        builder.append("\n").append(table3.toString());
 
         return builder.toString();
     }
+
+
+    private static int getTypeTop(Edge edgeTop) {
+        if (edgeTop == null) {
+            return 5;
+        }
+
+        Endpoint e1 = edgeTop.getEndpoint1();
+        Endpoint e2 = edgeTop.getEndpoint2();
+
+        if (e1 == Endpoint.TAIL && e2 == Endpoint.TAIL) {
+            return 0;
+        }
+
+        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.CIRCLE) {
+            return 1;
+        }
+
+        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.ARROW) {
+            return 2;
+        }
+
+        if (e1 == Endpoint.ARROW && e2 == Endpoint.CIRCLE) {
+            return 2;
+        }
+
+        if (e1 == Endpoint.TAIL && e2 == Endpoint.ARROW) {
+            return 3;
+        }
+
+        if (e1 == Endpoint.ARROW && e2 == Endpoint.TAIL) {
+            return 3;
+        }
+
+        if (e1 == Endpoint.ARROW && e2 == Endpoint.ARROW) {
+            return 4;
+        }
+
+        if (e1 == Endpoint.NULL && e2 == Endpoint.NULL) {
+            return 5;
+        }
+
+        throw new IllegalArgumentException("Unsupported edgeTop type : " + e1 + " " + e2);
+    }
+
+    private static int getTypeLeft(Edge edgeLeft, Edge edgeTop) {
+        if (edgeLeft == null) {
+            return 7;
+        }
+
+        Endpoint e1 = edgeLeft.getEndpoint1();
+        Endpoint e2 = edgeLeft.getEndpoint2();
+
+        if (e1 == Endpoint.TAIL && e2 == Endpoint.TAIL) {
+            return 0;
+        }
+
+        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.CIRCLE) {
+            return 1;
+        }
+
+        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.ARROW && edgeTop.equals(edgeLeft.reverse())) {
+            return 3;
+        }
+
+        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.ARROW) {
+            return 2;
+        }
+
+        if (e1 == Endpoint.TAIL && e2 == Endpoint.ARROW && edgeTop.equals(edgeLeft.reverse())) {
+            return 5;
+        }
+
+        if (e1 == Endpoint.TAIL && e2 == Endpoint.ARROW) {
+            return 4;
+        }
+
+        if (e1 == Endpoint.ARROW && e2 == Endpoint.ARROW) {
+            return 6;
+        }
+
+        if (e1 == Endpoint.NULL && e2 == Endpoint.NULL) {
+            return 7;
+        }
+
+        throw new IllegalArgumentException("Unsupported edge type : " + e1 + " " + e2);
+    }
+
 }
 
