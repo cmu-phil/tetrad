@@ -134,7 +134,6 @@ class OtherGroupsEditor extends JPanel {
      * Builds a group box using the given knowledge group (if null a default instance
      * is returned).
      *
-     * @param group
      * @return - A required/forbidden work area.
      */
     private Box buildGroupBox(final int index, final KnowledgeGroup group) {
@@ -198,8 +197,6 @@ class OtherGroupsEditor extends JPanel {
 
     /**
      * Sorts the elemenets of a default list model
-     *
-     * @param model
      */
     private static void sort(DefaultListModel model) {
         Object[] elements = model.toArray();

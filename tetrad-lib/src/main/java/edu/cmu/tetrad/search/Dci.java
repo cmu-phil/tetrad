@@ -227,13 +227,13 @@ public class Dci {
     public List<Graph> search() {
         elapsedTime = System.currentTimeMillis();
 
-        /**
+        /*
          * Step 1 - Create the complete graph
          */
         Graph graph = new EdgeListGraph(variables);
         graph.fullyConnect(Endpoint.CIRCLE);
 
-        /**
+        /*
          * Step 2 - Construct a new Fast Adjacency Search for each dataset
          *  to find definite nonadjacencies and sepsetMaps
          */
@@ -256,7 +256,7 @@ public class Dci {
         removeNonadjacencies(graph, sepsetMaps);
         System.out.println("Removed edges");
 
-        /**
+        /*
          * Step 3 - Orient definite colliders using the sepsetMap and propagate
          * these orientations using the rules in propagateInitialOrientations
          */
@@ -266,7 +266,7 @@ public class Dci {
         System.out.println("Propagated initial orientations");
         System.out.println(graph);
 
-        /**
+        /*
          * Step 4 - Finds every graph skeleton for which there is some orienation
          * of the edges such that every d-connection in an input PAG is preserved.
          */
@@ -350,8 +350,6 @@ public class Dci {
 
     /**
      * Removes edges between variables independent in some dataset
-     *
-     * @param graph
      */
     private void removeNonadjacencies(Graph graph, List<SepsetMapDci> sepsetMaps) {
         List<Node> nodes = graph.getNodes();
@@ -1437,7 +1435,6 @@ public class Dci {
                     newGraph.setEndpoint(triple.getX(), triple.getY(), Endpoint.ARROW);
                     newGraph.setEndpoint(triple.getZ(), triple.getY(), Endpoint.ARROW);
                 }
-                long start = System.currentTimeMillis();
                 doFinalOrientation(newGraph);
                 for (Graph graph : finalGraphs) {
                     if (!predictsFalseDependence(graph)) {
@@ -2060,9 +2057,6 @@ public class Dci {
 
     /**
      * Encodes every possible separation in a graph in the sepset
-     *
-     * @param sepset
-     * @param graph
      */
     private void doSepsetClosure(SepsetMapDci sepset, Graph graph) {
         List<Node> nodes = graph.getNodes();

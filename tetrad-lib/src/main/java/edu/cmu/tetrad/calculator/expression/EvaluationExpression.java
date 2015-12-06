@@ -62,7 +62,6 @@ public class EvaluationExpression implements Expression {
         return new EvaluationExpression(VariableExpression.serializableInstance(), "a");
     }
 
-    @Override
     public String toString() {
         return super.toString();
     }

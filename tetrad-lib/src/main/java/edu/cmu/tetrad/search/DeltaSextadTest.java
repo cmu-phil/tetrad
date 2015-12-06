@@ -50,8 +50,6 @@ public class DeltaSextadTest implements IDeltaSextadTest {
     private int df;
     private double chisq;
     private double[][][][] fourthMoment;
-    private int numVars;
-    private double[] means;
     private List<Node> variables;
     private Map<Node, Integer> variablesHash;
     private boolean cacheFourthMoments = true;
@@ -91,7 +89,7 @@ public class DeltaSextadTest implements IDeltaSextadTest {
         this.data = this.dataSet.getDoubleData().transpose().toArray();
         this.N = dataSet.getNumRows();
         this.variables = dataSet.getVariables();
-        this.numVars = dataSet.getNumColumns();
+//        this.numVars = dataSet.getNumColumns();
 
         this.variablesHash = new HashMap<Node, Integer>();
 
@@ -99,11 +97,11 @@ public class DeltaSextadTest implements IDeltaSextadTest {
             variablesHash.put(variables.get(i), i);
         }
 
-        this.means = new double[numVars];
-
-        for (int i = 0; i < numVars; i++) {
-            means[i] = mean(data[i], N);
-        }
+//        double[] means = new double[numVars];
+//
+//        for (int i = 0; i < numVars; i++) {
+//            means[i] = mean(data[i], N);
+//        }
     }
 
     /**
@@ -117,7 +115,7 @@ public class DeltaSextadTest implements IDeltaSextadTest {
 
         this.cov = cov;
         this.N = cov.getSampleSize();
-        this.numVars = cov.getVariables().size();
+//        this.numVars = cov.getVariables().size();
         this.variables = cov.getVariables();
 
         this.variablesHash = new HashMap<Node, Integer>();
@@ -404,8 +402,8 @@ public class DeltaSextadTest implements IDeltaSextadTest {
 
         String s = "";
 
-        for (int i = 0; i < storedSextads.length; i++) {
-            s += storedSextads[i] + " ";
+        for (Sextad storedSextad : storedSextads) {
+            s += storedSextad + " ";
         }
 
         s += "value = " + nf.format(storedValue) + " p = " + nf.format(p);
@@ -674,16 +672,16 @@ public class DeltaSextadTest implements IDeltaSextadTest {
         return (1.0 / N) * sum;
     }
 
-    private double mean(double array[], int N) {
-        int i;
-        double sum = 0;
-
-        for (i = 0; i < N; i++) {
-            sum += array[i];
-        }
-
-        return sum / N;
-    }
+//    private double mean(double array[], int N) {
+//        int i;
+//        double sum = 0;
+//
+//        for (i = 0; i < N; i++) {
+//            sum += array[i];
+//        }
+//
+//        return sum / N;
+//    }
 }
 
 

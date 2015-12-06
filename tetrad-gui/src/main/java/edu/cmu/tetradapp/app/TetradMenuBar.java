@@ -41,13 +41,6 @@ import java.awt.event.KeyEvent;
 final class TetradMenuBar extends JMenuBar {
 
     /**
-     * A reference to the help menu item to allow help to be launched
-     * programmatically from other classes.
-     */
-//    private final JMenuItem helpMI;
-
-
-    /**
      * A reference to the tetrad desktop.
      */
     private final TetradDesktop desktop;
@@ -55,8 +48,6 @@ final class TetradMenuBar extends JMenuBar {
 
     /**
      * Creates the main menubar for Tetrad.
-     *
-     * @param desktop
      */
     public  TetradMenuBar(TetradDesktop desktop) {
         this.desktop = desktop;

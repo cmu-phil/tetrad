@@ -23,12 +23,10 @@ package edu.cmu.tetrad.regression;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
 
-import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,10 +37,10 @@ import java.util.List;
  */
 public class RegressionDataset implements Regression {
 
-    /**
-     * The number formatter used for all numbers.
-     */
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+//    /**
+//     * The number formatter used for all numbers.
+//     */
+//    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * The data set.
@@ -252,30 +250,30 @@ public class RegressionDataset implements Regression {
         return graph;
     }
 
-    private String createResultString(int n, int k, double rss, double r2,
-                                      TetradMatrix x, List<Node> regressors,
-                                      TetradMatrix b, TetradVector se,
-                                      TetradVector t, TetradVector p) {
-        // Create result string.
-        String rssString = nf.format(rss);
-        String r2String = nf.format(r2);
-        String summary = "\n REGRESSION RESULT";
-        summary += "\n n = " + n + ", k = " + k + ", alpha = " + alpha + "\n";
-        summary += " SSE = " + rssString + "\n";
-        summary += " R^2 = " + r2String + "\n\n";
-        summary += " VAR\tCOEF\tSE\tT\tP\n";
-
-        for (int i = 0; i < x.columns(); i++) {
-            // Note: the first column contains the regression constants.
-            String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
-
-            summary += " " + variableName + "\t" + nf.format(b.get(i, 0)) +
-                    "\t" + nf.format(se.get(i)) + "\t" + nf.format(t.get(i)) +
-                    "\t" + nf.format(p.get(i)) + "\t" +
-                    ((p.get(i) < alpha) ? "significant " : "") + "\n";
-        }
-        return summary;
-    }
+//    private String createResultString(int n, int k, double rss, double r2,
+//                                      TetradMatrix x, List<Node> regressors,
+//                                      TetradMatrix b, TetradVector se,
+//                                      TetradVector t, TetradVector p) {
+//        // Create result string.
+//        String rssString = nf.format(rss);
+//        String r2String = nf.format(r2);
+//        String summary = "\n REGRESSION RESULT";
+//        summary += "\n n = " + n + ", k = " + k + ", alpha = " + alpha + "\n";
+//        summary += " SSE = " + rssString + "\n";
+//        summary += " R^2 = " + r2String + "\n\n";
+//        summary += " VAR\tCOEF\tSE\tT\tP\n";
+//
+//        for (int i = 0; i < x.columns(); i++) {
+//            // Note: the first column contains the regression constants.
+//            String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
+//
+//            summary += " " + variableName + "\t" + nf.format(b.get(i, 0)) +
+//                    "\t" + nf.format(se.get(i)) + "\t" + nf.format(t.get(i)) +
+//                    "\t" + nf.format(p.get(i)) + "\t" +
+//                    ((p.get(i) < alpha) ? "significant " : "") + "\n";
+//        }
+//        return summary;
+//    }
 
     /**
      * Calculates the residual sum of squares for parameter data x, actual
@@ -331,7 +329,7 @@ public class RegressionDataset implements Regression {
     /**
      * The rows in the data used for the regression.
      */
-    public int[] getRows() {
+    private int[] getRows() {
         return rows;
     }
 

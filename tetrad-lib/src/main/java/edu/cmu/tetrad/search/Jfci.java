@@ -34,6 +34,7 @@ import java.util.*;
  * Implements the JFCI algorithm.
  *
  * @author Joseph Ramsey (this version).
+ * @deprecated
  */
 public class Jfci implements GraphSearch {
 
@@ -165,8 +166,6 @@ public class Jfci implements GraphSearch {
 
     /**
      * Sets the maximum number of adjacencies.
-     *
-     * @param maxAdjacencies
      */
     public void setMaxAdjacencies(int maxAdjacencies) {
         if (maxAdjacencies < 1) {

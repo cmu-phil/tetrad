@@ -171,12 +171,6 @@ public final class IndTestMimBuild implements IndependenceTest {
         return outputList;
     }
 
-    /**
-     * Method setData
-     *
-     * @param dataSet
-     */
-
     public void setData(DataSet dataSet) {
         this.dataSet = dataSet;
         covMatrix = new CovarianceMatrix(dataSet);

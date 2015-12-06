@@ -41,7 +41,6 @@ public class KernelUtils {
      * @param kernels the kernels for each variable
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
-     * @return
      */
     public static TetradMatrix constructGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
         int m = dataset.getNumRows();
@@ -72,7 +71,6 @@ public class KernelUtils {
      * @param kernels the kernels for each variable
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
-     * @return
      */
     public static TetradMatrix constructCentralizedGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
         int m = dataset.getNumRows();
@@ -87,7 +85,6 @@ public class KernelUtils {
      * Constructs the projection matrix on 1/m
      *
      * @param m the sample size
-     * @return
      */
     public static TetradMatrix constructH(int m) {
         TetradMatrix H = new TetradMatrix(m, m);
@@ -111,7 +108,6 @@ public class KernelUtils {
      * @param kernels the kernels for each variable
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
-     * @return
      */
     public static TetradMatrix incompleteCholeskyGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes, double precision) {
         if (precision <= 0) {
@@ -202,15 +198,15 @@ public class KernelUtils {
         return keval;
     }
 
-    // computes the trace
-
-    private static double trace(TetradMatrix A, int m) {
-        double trace = 0.0;
-        for (int i = 0; i < m; i++) {
-            trace += A.get(i, i);
-        }
-        return trace;
-    }
+////     computes the trace
+//
+//    private static double trace(TetradMatrix A, int m) {
+//        double trace = 0.0;
+//        for (int i = 0; i < m; i++) {
+//            trace += A.get(i, i);
+//        }
+//        return trace;
+//    }
 
 
 }

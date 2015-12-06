@@ -90,7 +90,7 @@ public final class TestIndependenceFacts extends TestCase {
     }
 
     public void test2() {
-        File file = new File("resources/sample.independencies.txt");
+        File file = new File("src/test/resources/sample.independencies.txt");
 
         try {
             IndependenceFactsModel facts = IndependenceFactsModel.loadFacts(new FileReader(file));

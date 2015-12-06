@@ -316,7 +316,6 @@ public class PcPattern implements GraphSearch {
 
     /**
      * @param graph The graph in which a directed cycle is sought.
-     * @return the first directed cycle encountered in <code>graph</code>.
      */
     public void handleDirectableCycles(Graph graph) {
         TetradLogger.getInstance().log("info", "Starting Handling of Directable Cycles:");
@@ -332,15 +331,11 @@ public class PcPattern implements GraphSearch {
      * @param graph The graph in which a directed path is sought.
      * @param node1 The 'from' node.
      * @param node2 The 'to'node.
-     * @return A path from <code>node1</code> to <code>node2</code>, or null if there is no path.
      */
     public void directablePathFromTo(Graph graph, Node node1, Node node2) {
         directablePathVisit(graph, node1, node2, new LinkedList<Node>());
     }
 
-    /**
-     * @return the path of the first directed path found from node1 to node2, if any.
-     */
     private void directablePathVisit(Graph graph, Node node1, Node node2,
                                      LinkedList<Node> path) {
         path.addLast(node1);

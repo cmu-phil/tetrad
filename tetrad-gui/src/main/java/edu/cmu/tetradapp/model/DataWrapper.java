@@ -97,8 +97,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     /**
      * Copy constructor.
-     *
-     * @param wrapper
      */
     public DataWrapper(DataWrapper wrapper) {
         this.name = wrapper.name;

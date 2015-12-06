@@ -74,8 +74,6 @@ public final class BasicIndTestParams implements IndTestParams {
 
     /**
      * Sets the depth for search algorithms that require it.
-     *
-     * @param depth
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -87,8 +85,6 @@ public final class BasicIndTestParams implements IndTestParams {
 
     /**
      * @return the depth of the search.
-     *
-     * @return depth
      */
     public int getDepth() {
         return this.depth;

@@ -52,7 +52,7 @@ public class ExpressionLexer {
     /**
      * Mapping between tokens to their matchers.
      */
-    private Map<Token, Matcher> matchers = new HashMap<Token, Matcher>();
+    private Map<Token, Matcher> matchers = new HashMap<>();
 
 
     /**
@@ -187,7 +187,7 @@ public class ExpressionLexer {
      * given a map from tokens to regex Patterns (and the CharSequence).
      */
     private static Map<Token, Matcher> createMatchers(Map<Token, Pattern> patterns, CharSequence charSequence) {
-        Map<Token, Matcher> matchers = new HashMap<Token, Matcher>();
+        Map<Token, Matcher> matchers = new HashMap<>();
         for (Token token : patterns.keySet()) {
             Pattern pattern = patterns.get(token);
             Matcher matcher = pattern.matcher(charSequence);
@@ -198,8 +198,8 @@ public class ExpressionLexer {
 
 
     private static Map<Token, Pattern> createPatterns() {
-        Map<Token, Pattern> map = new HashMap<Token, Pattern>();
-        Map<Token, String> regex = new HashMap<Token, String>();
+        Map<Token, Pattern> map = new HashMap<>();
+        Map<Token, String> regex = new HashMap<>();
 
         regex.put(Token.WHITESPACE, "\\s+");
         regex.put(Token.LPAREN, "\\(");

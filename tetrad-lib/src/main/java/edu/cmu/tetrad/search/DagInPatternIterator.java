@@ -63,7 +63,6 @@ public class DagInPatternIterator {
      * is not acyclic, it is rejected.
      *
      * @param pattern                    The pattern for which DAGS are wanted.
-     * @param knowledge
      * @param allowArbitraryOrientations True if arbitrary orientations are allowable when reasonable ones cannot be
      *                                   made. May result in cyclic outputs.
      * @throws IllegalArgumentException if the pattern is not a pattern.
@@ -82,6 +81,8 @@ public class DagInPatternIterator {
 
         this.allowNewColliders = allowNewColliders;
 
+        assert knowledge != null;
+
         if (knowledge.isViolatedBy(pattern)) {
             throw new IllegalArgumentException("The pattern already violates that knowledge.");
         }
@@ -94,8 +95,6 @@ public class DagInPatternIterator {
             if (Edges.isBidirectedEdge(edge)) {
                 continue;
             }
-//            throw new IllegalArgumentException("A pattern consists only of " +
-//                    "directed and undirected edges: " + edge);
         }
 
         HashMap<Graph, Set<Edge>> changedEdges = new HashMap<Graph, Set<Edge>>();
@@ -176,12 +175,12 @@ public class DagInPatternIterator {
 //        this.knowledge = knowledge;
 //    }
 
-    private void fail(Graph graph, String label) {
-        if (knowledge.isViolatedBy(graph)) {
-//                System.out.println(this.graph);
-            throw new IllegalArgumentException("IKnowledge violated: " + label);
-        }
-    }
+//    private void fail(Graph graph, String label) {
+//        if (knowledge.isViolatedBy(graph)) {
+////                System.out.println(this.graph);
+//            throw new IllegalArgumentException("IKnowledge violated: " + label);
+//        }
+//    }
 
     //==============================CLASSES==============================//
 
@@ -226,9 +225,9 @@ public class DagInPatternIterator {
             return graph.toString();
         }
 
-        public void triedDirectLeft() {
-            triedLeft = true;
-        }
+//        public void triedDirectLeft() {
+//            triedLeft = true;
+//        }
 
         public boolean isOrientable() {
             if (edge == null) {
@@ -238,17 +237,11 @@ public class DagInPatternIterator {
             Node node1 = edge.getNode1();
             Node node2 = edge.getNode2();
 
-            if (!triedLeft && !graph.isAncestorOf(node1, node2) &&
-                    !getKnowledge().isForbidden(node2.getName(), node1.getName())) {
-                return true;
-            }
+            return (!triedLeft && !graph.isAncestorOf(node1, node2) &&
+                    !getKnowledge().isForbidden(node2.getName(), node1.getName())) ||
+                    (!triedRight && !graph.isAncestorOf(node2, node1) &&
+                            !getKnowledge().isForbidden(node1.getName(), node2.getName()));
 
-            if (!triedRight && !graph.isAncestorOf(node2, node1) &&
-                    !getKnowledge().isForbidden(node1.getName(), node2.getName())) {
-                return true;
-            }
-
-            return false;
         }
 
         public DecoratedGraph orient() {
@@ -313,46 +306,12 @@ public class DagInPatternIterator {
                 graph.removeEdge(edge.getNode1(), edge.getNode2());
                 graph.addDirectedEdge(edge.getNode1(), edge.getNode2());
 
-//                System.out.println("Explicitly orienting: " + graph.getEdge(edge.getNode1(), edge.getNode2()));
-//
-//                if (graph.existsDirectedCycle()) {
-//                    System.out.println("Cycle!");
-//                }
-
                 edges.add(graph.getEdge(edge.getNode1(), edge.getNode2()));
                 edges.addAll(new HashSet<Edge>(getChangedEdges().get(this.graph)));
 
                 MeekRules meek = new MeekRules();
                 meek.setKnowledge(getKnowledge());
-//                meek.setAggressivelyPreventCycles(true);
                 meek.orientImplied(graph);
-
-                // Keep track of changed edges for highlighting
-                Set<Edge> changedEdges = meek.getChangedEdges().keySet();
-
-//                System.out.println("Meek oriented: " + changedEdges);
-//
-//                if (graph.existsDirectedCycle()) {
-//                    System.out.println("Cycle!");
-//                }
-
-//                edges.addAll(new HashSet<Edge>(getChangedEdges().get(this.graph)));
-//
-//                Graph graph = new EdgeListGraph(this.graph);
-//                graph.removeEdge(edge.getNode1(), edge.getNode2());
-//                graph.addDirectedEdge(edge.getNode1(), edge.getNode2());
-//
-//                edges.add(graph.getEdge(edge.getNode1(), edge.getNode2()));
-//                edges.addAll(new HashSet<Edge>(getChangedEdges().get(this.graph)));
-//
-//                MeekRules meek = new MeekRules();
-//                meek.setKnowledge(knowledge);
-//                meek.orientImplied(graph);
-//
-//                // Keep track of changed edges for highlighting.
-//                Set<Edge> changedEdges = meek.getChangedEdges().keySet();
-//                edges.addAll(changedEdges);
-
 
                 this.getChangedEdges().put(graph, edges);
 
@@ -367,79 +326,11 @@ public class DagInPatternIterator {
                         isAllowArbitraryOrientation());
             }
 
-            // Pick an arbitrary orientation.
-
-//            if (isAllowArbitraryOrientation()) {
-//                boolean right = RandomUtil.getInstance().nextDouble() > 0.5;
-//
-//                if (right) {
-//                    Set<Edge> edges = new HashSet<Edge>();
-//                    edges.addAll(new HashSet<Edge>(getChangedEdges().get(this.graph)));
-//
-//                    Graph graph = new EdgeListGraph(this.graph);
-//                    graph.removeEdge(edge.getNode1(), edge.getNode2());
-//                    graph.addDirectedEdge(edge.getNode1(), edge.getNode2());
-//
-//                    edges.add(graph.getEdge(edge.getNode1(), edge.getNode2()));
-//                    edges.addAll(new HashSet<Edge>(getChangedEdges().get(this.graph)));
-//
-//                    MeekRules meek = new MeekRules();
-//                    meek.setKnowledge(knowledge);
-//                    meek.orientImplied(graph);
-//
-//                    // Keep track of changed edges for highlighting.
-//                    Set<Edge> changedEdges = meek.getChangedEdges().keySet();
-//                    edges.addAll(changedEdges);
-//                    this.getChangedEdges().put(graph, edges);
-//
-//                    for (Edge edge : edges) {
-//                        graph.setHighlighted(edge, true);
-//                    }
-//
-//                    triedLeft = true;
-//                    triedRight = true;
-//                    fail(graph, "C");
-//                    return new DecoratedGraph(graph, getKnowledge(), this.getChangedEdges(),
-//                            isAllowArbitraryOrientation());
-//                } else {
-//                    Set<Edge> edges = new HashSet<Edge>();
-//                    edges.addAll(new HashSet<Edge>(getChangedEdges().get(this.graph)));
-//
-//                    Graph graph = new EdgeListGraph(this.graph);
-//                    graph.removeEdge(edge.getNode1(), edge.getNode2());
-//                    graph.addDirectedEdge(edge.getNode2(), edge.getNode1());
-//
-//                    edges.add(graph.getEdge(edge.getNode1(), edge.getNode2()));
-//                    edges.addAll(new HashSet<Edge>(getChangedEdges().get(this.graph)));
-//
-//                    MeekRules meek = new MeekRules();
-//                    meek.setKnowledge(knowledge);
-//                    meek.orientImplied(graph);
-//
-//                    // Keep track of changed edges for highlighting.
-//                    Set<Edge> changedEdges = meek.getChangedEdges().keySet();
-//                    edges.addAll(changedEdges);
-//                    this.getChangedEdges().put(graph, edges);
-//
-//                    for (Edge edge : edges) {
-//                        graph.setHighlighted(edge, true);
-//                    }
-//
-//                    triedLeft = true;
-//                    triedRight = true;
-//                    fail(graph, "D");
-//                    return new DecoratedGraph(graph, getKnowledge(), this.getChangedEdges(),
-//                            isAllowArbitraryOrientation());
-//                }
-//            }
-
-
             return null;
         }
 
         private void fail(Graph graph, String label) {
             if (knowledge.isViolatedBy(graph)) {
-//                System.out.println(this.graph);
                 throw new IllegalArgumentException("IKnowledge violated: " + label);
             }
         }

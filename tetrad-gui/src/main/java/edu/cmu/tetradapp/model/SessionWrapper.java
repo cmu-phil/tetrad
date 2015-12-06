@@ -276,8 +276,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     /**
      * @return the substring of <code>name</code> up to but not including a
      * contiguous string of digits at the end. For example, given "Graph123"
-     * @return "Graph". If the name consists entirely of digits, "Node" is
-     * returned.
      */
     private String extractBase(String name) {
 
@@ -297,8 +295,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
     }
 
     /**
-     * @return the next string in the sequence.
-     *
      * @param base                the string base of the name--for example,
      *                            "Graph".
      * @param sessionNodeWrappers list of wrappers with names that cannot be the
@@ -440,7 +436,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
      * particular node.
      *
      * @param node the node in question
-     * @return the number of edges connected to that node.
      */
     public int getNumEdges(Node node) {
 
@@ -631,8 +626,6 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
 
     /**
      * @return a string representation of the workbench.
-     *
-     * @return a string representation of this object.
      */
     public String toString() {
         return "Wrapper for " + this.session.toString();
@@ -734,7 +727,7 @@ public class SessionWrapper implements Graph, SessionWrapperIndirectRef {
         throw new UnsupportedOperationException();
     }
 
-    /** ***************OTHER PUBLIC METHODS ******************** */
+    //** ***************OTHER PUBLIC METHODS ******************** */
 
     /**
      * @return a reference to the session being edited.

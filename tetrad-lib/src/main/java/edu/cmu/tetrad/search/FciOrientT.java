@@ -243,8 +243,6 @@ public final class FciOrientT {
      * Orients the graph according to rules in the graph (FCI step D).
      * <p>
      * Zhang's step F4, rules R1-R10.
-     *
-     * @param graph
      */
     public void doFinalOrientation(Graph graph) {
         if (completeRuleSetUsed) {

@@ -126,8 +126,6 @@ public class IntSpinner extends JSpinner {
 
     /**
      * Sets the max value for the spinner.
-     *
-     * @param max
      */
     public void setMax(Integer max) {
         if (this.max != max) {

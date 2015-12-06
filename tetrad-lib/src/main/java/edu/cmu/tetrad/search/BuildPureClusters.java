@@ -88,18 +88,13 @@ public final class BuildPureClusters {
     private TetradLogger logger = TetradLogger.getInstance();
     private double alpha;
 
-    /*********************************************************
-     * INITIALIZATION
-     *********************************************************/
+    //*********************************************************
+    // * INITIALIZATION
+    // *********************************************************/
 
     /**
      * Constructor BuildPureClusters
-     *
-     * @param covarianceMatrix
-     * @param alpha
-     * @param sigTestType
      */
-
     public BuildPureClusters(ICovarianceMatrix covarianceMatrix, double alpha,
                              TestType sigTestType, TestType purifyTestType) {
         if (covarianceMatrix == null) {
@@ -226,10 +221,10 @@ public final class BuildPureClusters {
 //    }
 
 
-    /**
-     * ****************************************************** SEARCH INTERFACE
-     * *******************************************************
-     */
+    //**
+    // * ****************************************************** SEARCH INTERFACE
+    // * *******************************************************
+    // */
 
     /**
      * @return the result search graph, or null if there is no mocel.
@@ -383,8 +378,6 @@ public final class BuildPureClusters {
 
     /**
      * As a side effect, this also stores pairs of impure nodes
-     *
-     * @param solutionGraph
      */
     private List convertGraphToList(Graph solutionGraph) {
         impurePairs.clear();
@@ -440,19 +433,9 @@ public final class BuildPureClusters {
         return arrayClusters;
     }
 
-    /*********************************************************
-     * POPULATION TESTS
-     *********************************************************/
-
-    /**
-     * Population scores: assumes Covariance Matrix is the population covariance matrix. Due to numerical
-     * rounding problems, we need a parameter epsilon to control it. Nothing here is implemented for discrete data
-     * (yet).
-     */
-
-//    private boolean uncorrelatedPopulation(int v1, int v2) {
-//        return Math.abs(getCovarianceMatrix().getValue(v1, v2)) < 0.0001;
-//    }
+    //*********************************************************
+    // * POPULATION TESTS
+    // *********************************************************/
 
 //    private boolean vanishingPartialCorrPopulation(int x, int y, int z) {
 //        double pc = getCovarianceMatrix().getValue(x, y)
@@ -907,9 +890,9 @@ public final class BuildPureClusters {
         }
     }
 
-    /*********************************************************
-     * GRAPH ALGORITHMICAL TOOLS
-     *********************************************************/
+    //*********************************************************
+    // * GRAPH ALGORITHMICAL TOOLS
+    // *********************************************************/
 
     /**
      * Find components of a graph. Note: naive implementation, but it works. After all, it will still run much faster
@@ -2483,11 +2466,7 @@ public final class BuildPureClusters {
 
     /**
      * Check if newClustering is contained in clusterings.
-     *
-     * @param clusterings
-     * @param newClustering
      */
-
     private boolean isNewClustering(List clusterings, List newClustering) {
         nextClustering:
         for (Iterator it = clusterings.iterator(); it.hasNext(); ) {
@@ -2679,9 +2658,9 @@ public final class BuildPureClusters {
 //        clustering.addAll(addList);
 //    }
 
-    /*********************************************************
-     * PROCEDURES FOR PURIFICATION
-     *********************************************************/
+    //*********************************************************
+    // * PROCEDURES FOR PURIFICATION
+    // *********************************************************/
 
     /**
      * This implementation uses the Purify class.

@@ -536,15 +536,15 @@ public class StandardizedSemIm implements TetradSerializable {
         return edgeCoef;
     }
 
-    /**
-     * @return Returns the error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b,
-     * with [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE
-     * CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
-     * elements cannot be calculated.
-     */
-    public TetradMatrix errCovar() {
-        return errCovar(errorVariances());
-    }
+//    /**
+//     * @return Returns the error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b,
+//     * with [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE
+//     * CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
+//     * elements cannot be calculated.
+//     */
+//    public TetradMatrix errCovar() {
+//        return errCovar(errorVariances());
+//    }
 
     /**
      * @return For compatibility only. Returns the variable means of the model. These are always

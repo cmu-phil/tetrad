@@ -165,8 +165,8 @@ public final class Ccd implements GraphSearch {
 
 
     private void stepB(Graph psi, SepsetProducer sepsets) {
-        addColliders(psi, sepsets, knowledge);
-        addNoncolliders(psi, sepsets, knowledge);
+        addColliders(psi, sepsets);
+        addNoncolliders(psi, sepsets);
 
 //        List<Node> nodes1 = test.getVariables();
 //
@@ -205,8 +205,8 @@ public final class Ccd implements GraphSearch {
 //        }
     }
 
-    private void addColliders(Graph graph, final SepsetProducer sepsetProducer, IKnowledge knowledge) {
-        final Map<Triple, Double> collidersPs = findCollidersUsingSepsets(sepsetProducer, graph, verbose, knowledge);
+    private void addColliders(Graph graph, final SepsetProducer sepsetProducer) {
+        final Map<Triple, Double> collidersPs = findCollidersUsingSepsets(sepsetProducer, graph, verbose);
 
         List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
 
@@ -236,8 +236,8 @@ public final class Ccd implements GraphSearch {
         }
     }
 
-    private void addNoncolliders(Graph graph, final SepsetProducer sepsetProducer, IKnowledge knowledge) {
-        List<Triple> nonColliders = findNoncollidersUsingSepsets(sepsetProducer, graph, verbose, knowledge);
+    private void addNoncolliders(Graph graph, final SepsetProducer sepsetProducer) {
+        List<Triple> nonColliders = findNoncollidersUsingSepsets(sepsetProducer, graph, verbose);
 
         for (Triple collider : nonColliders) {
             Node a = collider.getX();
@@ -252,7 +252,7 @@ public final class Ccd implements GraphSearch {
      * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-> y <-* z just in
      * case y is in Sepset({x, z}).
      */
-    public Map<Triple, Double> findCollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose, IKnowledge knowledge) {
+    public Map<Triple, Double> findCollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose) {
         TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
         Map<Triple, Double> colliders = new HashMap<>();
 
@@ -302,7 +302,7 @@ public final class Ccd implements GraphSearch {
         return colliders;
     }
 
-    public List<Triple> findNoncollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose, IKnowledge knowledge) {
+    public List<Triple> findNoncollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose) {
         TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
         List<Triple> noncolliders = new ArrayList<>();
 
@@ -416,7 +416,7 @@ public final class Ccd implements GraphSearch {
 
         //maxCountLocalMinusSep is the largest cardinality of all sets of the
         //form Loacl(psi,A)\(SepSet<A,C> union {B,C})
-        while (maxCountLocalMinusSep(psi, sepsets, fasSepsets, local) >= m) {
+        while (maxCountLocalMinusSep(psi, sepsets, local) >= m) {
             for (Node b : nodes) {
                 List<Node> adj = psi.getAdjacentNodes(b);
 
@@ -449,7 +449,7 @@ public final class Ccd implements GraphSearch {
 
                     //Compute the number of elements (count)
                     //in Local(psi,A)\(sepset<A,C> union {B,C})
-                    Set<Node> localMinusSep = countLocalMinusSep(sepsets, fasSepsets, local, a, b, c);
+                    Set<Node> localMinusSep = countLocalMinusSep(sepsets, local, a, b, c);
 
                     int count = localMinusSep.size();
 
@@ -508,7 +508,7 @@ public final class Ccd implements GraphSearch {
      * where B is a collider between A and C and where A and C are not adjacent.  A, B and C should not be a dotted
      * underline triple.
      */
-    private static int maxCountLocalMinusSep(Graph psi, SepsetProducer sep, SepsetMap fasSepsets,
+    private static int maxCountLocalMinusSep(Graph psi, SepsetProducer sep,
                                              Map<Node, List<Node>> loc) {
         List<Node> nodes = psi.getNodes();
         int maxCount = -1;
@@ -542,7 +542,7 @@ public final class Ccd implements GraphSearch {
                     continue;
                 }
 
-                Set<Node> localMinusSep = countLocalMinusSep(sep, fasSepsets, loc,
+                Set<Node> localMinusSep = countLocalMinusSep(sep, loc,
                         a, b, c);
                 int count = localMinusSep.size();
 
@@ -559,13 +559,12 @@ public final class Ccd implements GraphSearch {
      * For a given GaSearchGraph psi and for a given set of sepsets, each of which is associated with a pair of vertices
      * A and C, computes and returns the set Local(psi,A)\(SepSet<A,C> union {B,C}).
      */
-    private static Set<Node> countLocalMinusSep(SepsetProducer sepset, SepsetMap fasSepsets,
+    private static Set<Node> countLocalMinusSep(SepsetProducer sepset,
                                                 Map<Node, List<Node>> local, Node anode,
                                                 Node bnode, Node cnode) {
         Set<Node> localMinusSep = new HashSet<>();
         localMinusSep.addAll(local.get(anode));
         List<Node> sepset1 = sepset.getSepset(anode, cnode);
-//        if (sepset1 == null) sepset1 = fasSepsets.get(anode, cnode);
         localMinusSep.removeAll(sepset1);
         localMinusSep.remove(bnode);
         localMinusSep.remove(cnode);

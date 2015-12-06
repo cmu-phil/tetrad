@@ -239,7 +239,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     }
 
 
-    private static DataSet makeContinuousData(List<Node> variables, double[][] data) {
+    public static DataSet makeContinuousData(List<Node> variables, double[][] data) {
 
         if (variables.size() != data[0].length) {
             throw new IllegalArgumentException("# vars = " + variables.size() + " but # columns = " + data[0].length);
@@ -309,32 +309,32 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         return dataSet;
     }
 
-    public DataSet concatenateDataRowwise(ColtDataSet dataSet1, ColtDataSet dataSet2) {
-        if (!(dataSet1.variables.equals(dataSet2.variables))) {
-            throw new IllegalArgumentException();
-        }
-
-        int rows1 = dataSet1.getNumRows();
-        int rows2 = dataSet2.getNumRows();
-        int cols = dataSet1.getNumColumns();
-
-        ColtDataSet concat = new ColtDataSet(rows1 + rows2, dataSet1.variables);
-
-        TetradMatrix concatMatrix = concat.tetradMatrix;
-        TetradMatrix matrix1 = dataSet1.tetradMatrix;
-        TetradMatrix matrix2 = dataSet2.tetradMatrix;
-
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows1; j++) {
-                concatMatrix.set(j, i, matrix1.get(j, i));
-            }
-            for (int j = 0; j < rows2; j++) {
-                concatMatrix.set(j + rows1, i, matrix2.get(j, i));
-            }
-        }
-
-        return concat;
-    }
+//    public DataSet concatenateDataRowwise(ColtDataSet dataSet1, ColtDataSet dataSet2) {
+//        if (!(dataSet1.variables.equals(dataSet2.variables))) {
+//            throw new IllegalArgumentException();
+//        }
+//
+//        int rows1 = dataSet1.getNumRows();
+//        int rows2 = dataSet2.getNumRows();
+//        int cols = dataSet1.getNumColumns();
+//
+//        ColtDataSet concat = new ColtDataSet(rows1 + rows2, dataSet1.variables);
+//
+//        TetradMatrix concatMatrix = concat.tetradMatrix;
+//        TetradMatrix matrix1 = dataSet1.tetradMatrix;
+//        TetradMatrix matrix2 = dataSet2.tetradMatrix;
+//
+//        for (int i = 0; i < cols; i++) {
+//            for (int j = 0; j < rows1; j++) {
+//                concatMatrix.set(j, i, matrix1.get(j, i));
+//            }
+//            for (int j = 0; j < rows2; j++) {
+//                concatMatrix.set(j + rows1, i, matrix2.get(j, i));
+//            }
+//        }
+//
+//        return concat;
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -626,7 +626,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         int col = variables.indexOf(_from);
 
         List<String> oldCategories = _from.getCategories();
-        List newCategories = _to.getCategories();
+        List<String> newCategories = _to.getCategories();
 
         int[] indexArray = new int[oldCategories.size()];
 
@@ -1185,9 +1185,9 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
         }
     }
 
-    public final TetradMatrix getDoubleDataNoCopy() {
-        return tetradMatrix;
-    }
+//    public final TetradMatrix getDoubleDataNoCopy() {
+//        return tetradMatrix;
+//    }
 
     /**
      * @return a new tetradMatrix set in which the the column at indices[i] is placed at

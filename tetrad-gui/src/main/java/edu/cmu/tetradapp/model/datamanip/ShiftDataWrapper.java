@@ -44,8 +44,6 @@ public class ShiftDataWrapper extends DataWrapper {
 
     /**
      * Constructs the wrapper given some data and the params.
-     *
-     * @param data
      */
     public ShiftDataWrapper(DataWrapper data, ShiftDataParams params) {
         if (data == null) {

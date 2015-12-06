@@ -365,7 +365,7 @@ public class FasDci {
                 }
             }
 
-            List<Node> currentAdjNodes = new ArrayList();
+            List<Node> currentAdjNodes = new ArrayList<>();
             for (Node node : graph.getAdjacentNodes(x)) {
                 if (variables.contains(node)) {
                     currentAdjNodes.add(node);

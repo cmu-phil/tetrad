@@ -42,8 +42,6 @@ public class GraphComparisonEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
-     *
-     * @param comparison
      */
     public GraphComparisonEditor(GraphComparison comparison) {
         this.comparison = comparison;

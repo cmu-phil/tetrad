@@ -85,8 +85,6 @@ public class LagIndTestParams implements IndTestParams {
 
     /**
      * Sets the depth for search algorithms that require it.
-     *
-     * @param depth
      */
     public void setDepth(int depth) {
         if (depth < -1) {

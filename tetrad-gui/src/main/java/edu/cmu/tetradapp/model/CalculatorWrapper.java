@@ -43,9 +43,6 @@ public class CalculatorWrapper extends DataWrapper {
     /**
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
-     *
-     * @param data
-     * @param params
      */
     public CalculatorWrapper(DataWrapper data, CalculatorParams params) {
         if (data == null) {

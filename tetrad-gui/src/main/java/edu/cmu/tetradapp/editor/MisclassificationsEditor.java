@@ -42,8 +42,6 @@ public class MisclassificationsEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
-     *
-     * @param comparison
      */
     public MisclassificationsEditor(Misclassifications comparison) {
         this.comparison = comparison;

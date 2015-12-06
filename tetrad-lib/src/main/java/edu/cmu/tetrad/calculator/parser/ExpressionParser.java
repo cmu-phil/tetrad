@@ -42,8 +42,6 @@ public class ExpressionParser {
         MAY_ONLY_CONTAIN, MAY_NOT_CONTAIN, NONE
     }
 
-    ;
-
 
     /**
      * The getModel token.
@@ -74,11 +72,6 @@ public class ExpressionParser {
     private Set<String> restrictionParameters;
 
     /**
-     * Restricts parameter names to the ones provided.
-     */
-    private boolean restrictParameterNames = true;
-
-    /**
      * The type of restribution on parameters.
      */
     private RestrictionType restrictionType;
@@ -89,8 +82,7 @@ public class ExpressionParser {
      */
     public ExpressionParser() {
         this.restrictionParameters = Collections.emptySet();
-        this.parameters = new LinkedHashSet<String>();
-        this.restrictParameterNames = false;
+        this.parameters = new LinkedHashSet<>();
     }
 
 
@@ -107,12 +99,9 @@ public class ExpressionParser {
                     "contain the wildcard '$'.");
         }
 
-        this.restrictionParameters = new LinkedHashSet<String>(parameters);
+        this.restrictionParameters = new LinkedHashSet<>(parameters);
         this.restrictionParameters.add("$");
-
-        this.parameters = new LinkedHashSet<String>();
-        this.restrictParameterNames = true;
-
+        this.parameters = new LinkedHashSet<>();
         this.restrictionType = type;
     }
 
@@ -145,10 +134,6 @@ public class ExpressionParser {
         }
 
         return new Equation(variable, parseExpression(equation.substring(index + 1).trim()), equation);
-    }
-
-    public int getCurrentOffset() {
-        return lexer.getCurrentOffset();
     }
 
     public int getNextOffset() {
@@ -245,7 +230,7 @@ public class ExpressionParser {
 
     private Expression parseComparisonExpression() throws ParseException {
         Expression expression = parsePlusExpression();
-        Set<String> comparisonOperators = new HashSet();
+        Set<String> comparisonOperators = new HashSet<>();
         comparisonOperators.add("<");
         comparisonOperators.add("<=");
         comparisonOperators.add("=");
@@ -450,7 +435,7 @@ public class ExpressionParser {
      * Pareses a comma seperated list of expressions.
      */
     private List<Expression> parseExpressionList() throws ParseException {
-        List<Expression> expressions = new LinkedList<Expression>();
+        List<Expression> expressions = new LinkedList<>();
 
         expressions.add(parseExpression());
         while (token == Token.COMMA) {
@@ -465,7 +450,7 @@ public class ExpressionParser {
      * Pareses a comma seperated list of expressions.
      */
     private List<Expression> parseSingleExpression() throws ParseException {
-        List<Expression> expressions = new LinkedList<Expression>();
+        List<Expression> expressions = new LinkedList<>();
         expressions.add(parseExpression());
         return expressions;
     }
@@ -503,19 +488,15 @@ public class ExpressionParser {
     }
 
 
-    public RestrictionType getRestrictionType() {
+    private RestrictionType getRestrictionType() {
         return restrictionType;
     }
 
-    public void setRestrictParameterNames(boolean restrictParameterNames) {
-        this.restrictParameterNames = restrictParameterNames;
-    }
-
     public List<String> getParameters() {
-        return new LinkedList<String>(parameters);
+        return new LinkedList<>(parameters);
     }
 
-    public String getTokenString() {
+    private String getTokenString() {
         return this.lexer.getTokenString();
     }
 }

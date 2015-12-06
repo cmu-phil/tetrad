@@ -216,10 +216,10 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      */
     private boolean estimated = false;
 
-    /**
-     * Used for some linear algebra calculations.
-     */
-    private transient TetradAlgebra algebra;
+//    /**
+//     * Used for some linear algebra calculations.
+//     */
+//    private transient TetradAlgebra algebra;
 
     /**
      * True just in case the graph for the SEM is cyclic.
@@ -231,21 +231,21 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      */
     private boolean cyclicChecked = false;
 
-    /**
-     * Caches the log determinant of the sample covariance matrix.
-     */
-    private transient double logDetSample;
+//    /**
+//     * Caches the log determinant of the sample covariance matrix.
+//     */
+//    private transient double logDetSample;
 
     /**
      * Parameters to help guide how values are chosen for freeParameters.
      */
     private SemImInitializationParams initializationParams = new SemImInitializationParams();
 
-    /**
-     * True if positive definiteness should be checked when optimizing the
-     * FML function. (It's checked other places.)
-     */
-    private boolean checkPositiveDefinite;
+//    /**
+//     * True if positive definiteness should be checked when optimizing the
+//     * FML function. (It's checked other places.)
+//     */
+//    private boolean checkPositiveDefinite;
 
     /**
      * Stores a distribution for each variable. Initialized to N(0, 1) for each.
@@ -263,7 +263,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     private boolean simulatedPositiveDataOnly = false;
 
     private Map<Node, Integer> variablesHash;
-    private double fgls;
     private TetradMatrix sampleCovInv;
 
     // Types of scores that yield a chi square value when minimized.
@@ -1080,27 +1079,27 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         }
     }
 
-    private double getFml1() {
-        TetradMatrix sigma; // Do this once.
-
-        try {
-            sigma = implCovarMeas();
-        } catch (Exception e) {
-            return Double.NaN;
-        }
-
-        TetradMatrix s = this.sampleCovarC;
-
-        double logDetSigma = logDet(sigma);
-        double traceSSigmaInv = traceABInv(s, sigma);
-        double logDetSample = logDetSample();
-        int pPlusQ = getMeasuredNodes().size();
-
-        double h1 = logDetSigma + traceSSigmaInv;
-        double h0 = logDetSample + pPlusQ;
-
-        return h1 - h0;
-    }
+//    private double getFml1() {
+//        TetradMatrix sigma; // Do this once.
+//
+//        try {
+//            sigma = implCovarMeas();
+//        } catch (Exception e) {
+//            return Double.NaN;
+//        }
+//
+//        TetradMatrix s = this.sampleCovarC;
+//
+//        double logDetSigma = logDet(sigma);
+//        double traceSSigmaInv = traceABInv(s, sigma);
+//        double logDetSample = logDetSample();
+//        int pPlusQ = getMeasuredNodes().size();
+//
+//        double h1 = logDetSigma + traceSSigmaInv;
+//        double h0 = logDetSample + pPlusQ;
+//
+//        return h1 - h0;
+//    }
 
 
     private double getFml2() {
@@ -1145,26 +1144,26 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         return 0.5 * (diff.times(diff)).trace();
     }
 
-    private double getLogLikelihood() {
-        TetradMatrix SigmaTheta; // Do this once.
-
-        try {
-            SigmaTheta = implCovarMeas();
-        } catch (Exception e) {
-//            e.printStackTrace();
-            return Double.NaN;
-        }
-
-        TetradMatrix sStar = this.sampleCovarC;
-
-        double logDetSigmaTheta = logDet(SigmaTheta);
-        double traceSStarSigmaInv = traceABInv(sStar, SigmaTheta);
-        int pPlusQ = getMeasuredNodes().size();
-
-        return -(sampleSize / 2.) * pPlusQ * Math.log(2 * Math.PI)
-                - (sampleSize / 2.) * logDetSigmaTheta
-                - (sampleSize / 2.) * traceSStarSigmaInv;
-    }
+//    private double getLogLikelihood() {
+//        TetradMatrix SigmaTheta; // Do this once.
+//
+//        try {
+//            SigmaTheta = implCovarMeas();
+//        } catch (Exception e) {
+////            e.printStackTrace();
+//            return Double.NaN;
+//        }
+//
+//        TetradMatrix sStar = this.sampleCovarC;
+//
+//        double logDetSigmaTheta = logDet(SigmaTheta);
+//        double traceSStarSigmaInv = traceABInv(sStar, SigmaTheta);
+//        int pPlusQ = getMeasuredNodes().size();
+//
+//        return -(sampleSize / 2.) * pPlusQ * Math.log(2 * Math.PI)
+//                - (sampleSize / 2.) * logDetSigmaTheta
+//                - (sampleSize / 2.) * traceSStarSigmaInv;
+//    }
 
 
     /**
@@ -1202,36 +1201,36 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        return -ges.getScore(getEstIm().getGraph());
     }
 
-    public double getAicScore() {
-        int dof = getSemPm().getDof();
-        return getChiSquare() - 2 * dof;
+//    public double getAicScore() {
+//        int dof = getSemPm().getDof();
+//        return getChiSquare() - 2 * dof;
+////
+////        return getChiSquare() + dof * Math.log(sampleSize);
 //
-//        return getChiSquare() + dof * Math.log(sampleSize);
+////        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(getVariableNodes(), getImplCovar(), getSampleSize());
+////        Ges ges = new Ges(covarianceMatrix);
+////        return -ges.getScore(getEstIm().getGraph());
+//    }
 
-//        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(getVariableNodes(), getImplCovar(), getSampleSize());
-//        Ges ges = new Ges(covarianceMatrix);
-//        return -ges.getScore(getEstIm().getGraph());
-    }
+//    /**
+//     * @return the BIC score, without subtracting constant terms.
+//     */
+//    public double getFullBicScore() {
+////        int dof = getEstIm().getDof();
+//        int sampleSize = getSampleSize();
+//        double penalty = getNumFreeParams() * Math.log(sampleSize);
+////        double penalty = getEstIm().getDof() * Math.log(sampleSize);           i
+//        double L = getLogLikelihood();
+//        return -2 * L + penalty;
+//    }
 
-    /**
-     * @return the BIC score, without subtracting constant terms.
-     */
-    public double getFullBicScore() {
-//        int dof = getEstIm().getDof();
-        int sampleSize = getSampleSize();
-        double penalty = getNumFreeParams() * Math.log(sampleSize);
-//        double penalty = getEstIm().getDof() * Math.log(sampleSize);           i
-        double L = getLogLikelihood();
-        return -2 * L + penalty;
-    }
-
-    public double getKicScore() {
-        double fml = getScore();
-        int edgeCount = getSemPm().getGraph().getNumEdges();
-        int sampleSize = getSampleSize();
-
-        return -fml - (edgeCount * Math.log(sampleSize));
-    }
+//    public double getKicScore() {
+//        double fml = getScore();
+//        int edgeCount = getSemPm().getGraph().getNumEdges();
+//        int sampleSize = getSampleSize();
+//
+//        return -fml - (edgeCount * Math.log(sampleSize));
+//    }
 
     /**
      * @return the chi square value for the model.
@@ -1274,10 +1273,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             return simulateDataReducedForm(sampleSize, latentDataSaved);
 //            return simulateDataRecursive2(sampleSize, latentDataSaved);
         }
-    }
-
-    public ScoreType getScoreType() {
-        return scoreType;
     }
 
     public void setScoreType(ScoreType scoreType) {
@@ -1631,336 +1626,336 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         }
     }
 
-    private DataSet simulateDataRecursive2(int sampleSize, boolean latentDataSaved) {
-        List<Node> variableNodes = getVariableNodes();
-
-        List<Node> variables = new LinkedList<>();
-
-        // Make an empty data set.
-        for (Node node : variableNodes) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
-            var.setNodeType(node.getNodeType());
-            variables.add(var);
-        }
-
-//        System.out.println("Creating data set.");
-
-        DataSet dataSet = new ColtDataSet(sampleSize, variables);
-
-        // Create some index arrays to hopefully speed up the simulation.
-        SemGraph graph = semPm.getGraph();
-        graph.setShowErrorTerms(false);
-        List<Node> tierOrdering = graph.getCausalOrdering();
-
-        int[] tierIndices = new int[variableNodes.size()];
-
-        for (int i = 0; i < tierIndices.length; i++) {
-            tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
-        }
-
-        int[][] _parents = new int[variables.size()][];
-
-        for (int i = 0; i < variableNodes.size(); i++) {
-            Node node = variableNodes.get(i);
-            List parents = graph.getParents(node);
-
-            for (Iterator j = parents.iterator(); j.hasNext(); ) {
-                Node _node = (Node) j.next();
-
-                if (_node.getNodeType() == NodeType.ERROR) {
-                    j.remove();
-                }
-            }
-
-            _parents[i] = new int[parents.size()];
-
-            for (int j = 0; j < parents.size(); j++) {
-                Node _parent = (Node) parents.get(j);
-                _parents[i][j] = variableNodes.indexOf(_parent);
-            }
-        }
-
-//        System.out.println("Starting simulation.");
-
-        TetradMatrix _data = ((ColtDataSet) dataSet).getDoubleDataNoCopy();
-
-        // Do the simulation.
-        for (int row = 0; row < sampleSize; row++) {
-            if (row % 100 == 0) System.out.println("Row " + row);
-
-            for (int i = 0; i < tierOrdering.size(); i++) {
-                int col = tierIndices[i];
-                double value = RandomUtil.getInstance().nextNormal(0, 1) *
-                        errCovar.get(col, col);
-
-                for (int j = 0; j < _parents[col].length; j++) {
-                    int parent = _parents[col][j];
-//                    value += dataSet.getDouble(row, parent) *
+//    private DataSet simulateDataRecursive2(int sampleSize, boolean latentDataSaved) {
+//        List<Node> variableNodes = getVariableNodes();
+//
+//        List<Node> variables = new LinkedList<>();
+//
+//        // Make an empty data set.
+//        for (Node node : variableNodes) {
+//            ContinuousVariable var = new ContinuousVariable(node.getName());
+//            var.setNodeType(node.getNodeType());
+//            variables.add(var);
+//        }
+//
+////        System.out.println("Creating data set.");
+//
+//        DataSet dataSet = new ColtDataSet(sampleSize, variables);
+//
+//        // Create some index arrays to hopefully speed up the simulation.
+//        SemGraph graph = semPm.getGraph();
+//        graph.setShowErrorTerms(false);
+//        List<Node> tierOrdering = graph.getCausalOrdering();
+//
+//        int[] tierIndices = new int[variableNodes.size()];
+//
+//        for (int i = 0; i < tierIndices.length; i++) {
+//            tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
+//        }
+//
+//        int[][] _parents = new int[variables.size()][];
+//
+//        for (int i = 0; i < variableNodes.size(); i++) {
+//            Node node = variableNodes.get(i);
+//            List parents = graph.getParents(node);
+//
+//            for (Iterator j = parents.iterator(); j.hasNext(); ) {
+//                Node _node = (Node) j.next();
+//
+//                if (_node.getNodeType() == NodeType.ERROR) {
+//                    j.remove();
+//                }
+//            }
+//
+//            _parents[i] = new int[parents.size()];
+//
+//            for (int j = 0; j < parents.size(); j++) {
+//                Node _parent = (Node) parents.get(j);
+//                _parents[i][j] = variableNodes.indexOf(_parent);
+//            }
+//        }
+//
+////        System.out.println("Starting simulation.");
+//
+//        TetradMatrix _data = ((ColtDataSet) dataSet).getDoubleDataNoCopy();
+//
+//        // Do the simulation.
+//        for (int row = 0; row < sampleSize; row++) {
+//            if (row % 100 == 0) System.out.println("Row " + row);
+//
+//            for (int i = 0; i < tierOrdering.size(); i++) {
+//                int col = tierIndices[i];
+//                double value = RandomUtil.getInstance().nextNormal(0, 1) *
+//                        errCovar.get(col, col);
+//
+//                for (int j = 0; j < _parents[col].length; j++) {
+//                    int parent = _parents[col][j];
+////                    value += dataSet.getDouble(row, parent) *
+////                            edgeCoef.get(parent, col);
+//
+//                    value += _data.get(row, parent) *
 //                            edgeCoef.get(parent, col);
+//                }
+//
+//                value += variableMeans[col];
+////                dataSet.setDouble(row, col, value);
+//
+//                _data.set(row, col, value);
+//            }
+//        }
+//
+//        if (latentDataSaved) {
+//            return dataSet;
+//        } else {
+//            return DataUtils.restrictToMeasured(dataSet);
+//        }
+//    }
 
-                    value += _data.get(row, parent) *
-                            edgeCoef.get(parent, col);
-                }
+//    /**
+//     * This simulates data by picking random values for the exogenous terms and
+//     * percolating this information down through the SEM, assuming it is
+//     * acyclic. Fast for large simulations but hangs for cyclic models.
+//     *
+//     * @param sampleSize > 0.
+//     * @return the simulated data set.
+//     */
+//    public DataSet simulateDataRecursiveNonlinear(int sampleSize,
+//                                                  boolean latentDataSaved) {
+//        List<Node> variables = new LinkedList<>();
+//        List<Node> variableNodes = getVariableNodes();
+//
+//        for (Node node : variableNodes) {
+//            ContinuousVariable var = new ContinuousVariable(node.getName());
+//            var.setNodeType(node.getNodeType());
+//            variables.add(var);
+//        }
+//
+//        DataSet fullDataSet = new ColtDataSet(sampleSize, variables);
+//
+//        // Create some index arrays to hopefully speed up the simulation.
+//        SemGraph graph = getSemPm().getGraph();
+//        List<Node> tierOrdering = graph.getCausalOrdering();
+//
+//        int[] tierIndices = new int[variableNodes.size()];
+//
+//        for (int i = 0; i < tierIndices.length; i++) {
+//            tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
+//        }
+//
+//        int[][] _parents = new int[variableNodes.size()][];
+//
+//        for (int i = 0; i < variableNodes.size(); i++) {
+//            Node node = variableNodes.get(i);
+//            List<Node> parents = graph.getParents(node);
+//
+//            for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
+//                Node _node = j.next();
+//
+//                if (_node.getNodeType() == NodeType.ERROR) {
+//                    j.remove();
+//                }
+//            }
+//
+//            _parents[i] = new int[parents.size()];
+//
+//            for (int j = 0; j < parents.size(); j++) {
+//                Node _parent = parents.get(j);
+//                _parents[i][j] = variableNodes.indexOf(_parent);
+//            }
+//        }
+//
+//        // Do the simulation.
+//        ROW:
+//        for (int row = 0; row < sampleSize; row++) {
+//            for (int tier = 0; tier < tierOrdering.size(); tier++) {
+//                Node node = tierOrdering.get(tier);
+//                ConnectionFunction function = functions.get(node);
+//                int col = tierIndices[tier];
+//
+//                Distribution distribution = this.distributions.get(node);
+//                double value;
+//
+//                if (distribution == null) {
+//                    value = RandomUtil.getInstance().nextNormal(0,
+//                            Math.sqrt(getErrVar(node)));
+//                } else {
+//                    value = distribution.nextRandom();
+//                }
+//
+//                if (function != null) {
+//                    Node[] parents = function.getInputNodes();
+//                    double[] parentValues = new double[parents.length];
+//
+//                    for (int j = 0; j < parents.length; j++) {
+//                        Node parent = parents[j];
+//                        int index = variableNodes.indexOf(parent);
+//                        parentValues[j] = fullDataSet.getDouble(row, index);
+//                    }
+//
+//                    value += function.valueAt(parentValues);
+//
+//                    if (isSimulatedPositiveDataOnly() && value < 0) {
+//                        row--;
+//                        continue ROW;
+//                    }
+//
+//                    fullDataSet.setDouble(row, col, value);
+//                } else {
+//                    double val = value;
+//                    value = 0;
+//                    for (int j = 0; j < _parents[col].length; j++) {
+//                        int parent = _parents[col][j];
+//                        double parentValue = fullDataSet.getDouble(row, parent);
+//                        double parentCoef = edgeCoef.get(parent, col);
+//                        value += parentValue * parentCoef;
+//                    }
+//                    value += val;
+//
+//                    if (isSimulatedPositiveDataOnly() && value < 0) {
+//                        row--;
+//                        continue ROW;
+//                    }
+//
+//                    fullDataSet.setDouble(row, col, value);
+//                }
+//            }
+//        }
+//
+//        for (int i = 0; i < fullDataSet.getNumRows(); i++) {
+//            for (int j = 0; j < fullDataSet.getNumColumns(); j++) {
+//                fullDataSet.setDouble(i, j, fullDataSet.getDouble(i, j) + variableMeans[j]);
+//            }
+//        }
+//
+//        if (latentDataSaved) {
+//            return fullDataSet;
+//        } else {
+//            return DataUtils.restrictToMeasured(fullDataSet);
+//        }
+//    }
 
-                value += variableMeans[col];
-//                dataSet.setDouble(row, col, value);
-
-                _data.set(row, col, value);
-            }
-        }
-
-        if (latentDataSaved) {
-            return dataSet;
-        } else {
-            return DataUtils.restrictToMeasured(dataSet);
-        }
-    }
-
-    /**
-     * This simulates data by picking random values for the exogenous terms and
-     * percolating this information down through the SEM, assuming it is
-     * acyclic. Fast for large simulations but hangs for cyclic models.
-     *
-     * @param sampleSize > 0.
-     * @return the simulated data set.
-     */
-    public DataSet simulateDataRecursiveNonlinear(int sampleSize,
-                                                  boolean latentDataSaved) {
-        List<Node> variables = new LinkedList<>();
-        List<Node> variableNodes = getVariableNodes();
-
-        for (Node node : variableNodes) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
-            var.setNodeType(node.getNodeType());
-            variables.add(var);
-        }
-
-        DataSet fullDataSet = new ColtDataSet(sampleSize, variables);
-
-        // Create some index arrays to hopefully speed up the simulation.
-        SemGraph graph = getSemPm().getGraph();
-        List<Node> tierOrdering = graph.getCausalOrdering();
-
-        int[] tierIndices = new int[variableNodes.size()];
-
-        for (int i = 0; i < tierIndices.length; i++) {
-            tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
-        }
-
-        int[][] _parents = new int[variableNodes.size()][];
-
-        for (int i = 0; i < variableNodes.size(); i++) {
-            Node node = variableNodes.get(i);
-            List<Node> parents = graph.getParents(node);
-
-            for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
-                Node _node = j.next();
-
-                if (_node.getNodeType() == NodeType.ERROR) {
-                    j.remove();
-                }
-            }
-
-            _parents[i] = new int[parents.size()];
-
-            for (int j = 0; j < parents.size(); j++) {
-                Node _parent = parents.get(j);
-                _parents[i][j] = variableNodes.indexOf(_parent);
-            }
-        }
-
-        // Do the simulation.
-        ROW:
-        for (int row = 0; row < sampleSize; row++) {
-            for (int tier = 0; tier < tierOrdering.size(); tier++) {
-                Node node = tierOrdering.get(tier);
-                ConnectionFunction function = functions.get(node);
-                int col = tierIndices[tier];
-
-                Distribution distribution = this.distributions.get(node);
-                double value;
-
-                if (distribution == null) {
-                    value = RandomUtil.getInstance().nextNormal(0,
-                            Math.sqrt(getErrVar(node)));
-                } else {
-                    value = distribution.nextRandom();
-                }
-
-                if (function != null) {
-                    Node[] parents = function.getInputNodes();
-                    double[] parentValues = new double[parents.length];
-
-                    for (int j = 0; j < parents.length; j++) {
-                        Node parent = parents[j];
-                        int index = variableNodes.indexOf(parent);
-                        parentValues[j] = fullDataSet.getDouble(row, index);
-                    }
-
-                    value += function.valueAt(parentValues);
-
-                    if (isSimulatedPositiveDataOnly() && value < 0) {
-                        row--;
-                        continue ROW;
-                    }
-
-                    fullDataSet.setDouble(row, col, value);
-                } else {
-                    double val = value;
-                    value = 0;
-                    for (int j = 0; j < _parents[col].length; j++) {
-                        int parent = _parents[col][j];
-                        double parentValue = fullDataSet.getDouble(row, parent);
-                        double parentCoef = edgeCoef.get(parent, col);
-                        value += parentValue * parentCoef;
-                    }
-                    value += val;
-
-                    if (isSimulatedPositiveDataOnly() && value < 0) {
-                        row--;
-                        continue ROW;
-                    }
-
-                    fullDataSet.setDouble(row, col, value);
-                }
-            }
-        }
-
-        for (int i = 0; i < fullDataSet.getNumRows(); i++) {
-            for (int j = 0; j < fullDataSet.getNumColumns(); j++) {
-                fullDataSet.setDouble(i, j, fullDataSet.getDouble(i, j) + variableMeans[j]);
-            }
-        }
-
-        if (latentDataSaved) {
-            return fullDataSet;
-        } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
-        }
-    }
-
-    /**
-     * This simulates data by picking random values for the exogenous terms and
-     * percolating this information down through the SEM, assuming it is
-     * acyclic. Fast for large simulations but hangs for cyclic models.
-     *
-     * @param sampleSize > 0.
-     * @return the simulated data set.
-     */
-    public DataSet simulateDataRecursiveNonlinearCyclic(int sampleSize,
-                                                        boolean latentDataSaved) {
-        List<Node> variables = new LinkedList<>();
-        List<Node> variableNodes = getVariableNodes();
-
-        for (Node node : variableNodes) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
-            var.setNodeType(node.getNodeType());
-            variables.add(var);
-        }
-
-        DataSet fullDataSet = new ColtDataSet(sampleSize, variables);
-
-        // Create some index arrays to hopefully speed up the simulation.
-        SemGraph graph = getSemPm().getGraph();
-        List<Node> tierOrdering = graph.getCausalOrdering();
-
-        int[] tierIndices = new int[variableNodes.size()];
-
-        for (int i = 0; i < tierIndices.length; i++) {
-            tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
-        }
-
-        int[][] _parents = new int[variableNodes.size()][];
-
-        for (int i = 0; i < variableNodes.size(); i++) {
-            Node node = variableNodes.get(i);
-            List<Node> parents = graph.getParents(node);
-
-            for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
-                Node _node = j.next();
-
-                if (_node.getNodeType() == NodeType.ERROR) {
-                    j.remove();
-                }
-            }
-
-            _parents[i] = new int[parents.size()];
-
-            for (int j = 0; j < parents.size(); j++) {
-                Node _parent = parents.get(j);
-                _parents[i][j] = variableNodes.indexOf(_parent);
-            }
-        }
-
-        // Do the simulation.
-        ROW:
-        for (int row = 0; row < sampleSize; row++) {
-            for (int tier = 0; tier < tierOrdering.size(); tier++) {
-                Node node = tierOrdering.get(tier);
-                ConnectionFunction function = functions.get(node);
-                int col = tierIndices[tier];
-
-                Distribution distribution = this.distributions.get(node);
-                double value;
-
-                if (distribution == null) {
-                    value = RandomUtil.getInstance().nextNormal(0,
-                            Math.sqrt(getErrVar(node)));
-                } else {
-                    value = distribution.nextRandom();
-                }
-
-                if (function != null) {
-                    Node[] parents = function.getInputNodes();
-                    double[] parentValues = new double[parents.length];
-
-                    for (int j = 0; j < parents.length; j++) {
-                        Node parent = parents[j];
-                        int index = variableNodes.indexOf(parent);
-                        parentValues[j] = fullDataSet.getDouble(row, index);
-                    }
-
-                    value += function.valueAt(parentValues);
-
-                    if (isSimulatedPositiveDataOnly() && value < 0) {
-                        row--;
-                        continue ROW;
-                    }
-
-                    fullDataSet.setDouble(row, col, value);
-                } else {
-                    double val = value;
-                    value = 0;
-                    for (int j = 0; j < _parents[col].length; j++) {
-                        int parent = _parents[col][j];
-                        double parentValue = fullDataSet.getDouble(row, parent);
-                        double parentCoef = edgeCoef.get(parent, col);
-                        value += parentValue * parentCoef;
-                    }
-                    value += val;
-
-                    if (isSimulatedPositiveDataOnly() && value < 0) {
-                        row--;
-                        continue ROW;
-                    }
-
-                    fullDataSet.setDouble(row, col, value);
-                }
-            }
-        }
-
-        for (int i = 0; i < fullDataSet.getNumRows(); i++) {
-            for (int j = 0; j < fullDataSet.getNumColumns(); j++) {
-                fullDataSet.setDouble(i, j, fullDataSet.getDouble(i, j) + variableMeans[j]);
-            }
-        }
-
-        if (latentDataSaved) {
-            return fullDataSet;
-        } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
-        }
-    }
+//    /**
+//     * This simulates data by picking random values for the exogenous terms and
+//     * percolating this information down through the SEM, assuming it is
+//     * acyclic. Fast for large simulations but hangs for cyclic models.
+//     *
+//     * @param sampleSize > 0.
+//     * @return the simulated data set.
+//     */
+//    public DataSet simulateDataRecursiveNonlinearCyclic(int sampleSize,
+//                                                        boolean latentDataSaved) {
+//        List<Node> variables = new LinkedList<>();
+//        List<Node> variableNodes = getVariableNodes();
+//
+//        for (Node node : variableNodes) {
+//            ContinuousVariable var = new ContinuousVariable(node.getName());
+//            var.setNodeType(node.getNodeType());
+//            variables.add(var);
+//        }
+//
+//        DataSet fullDataSet = new ColtDataSet(sampleSize, variables);
+//
+//        // Create some index arrays to hopefully speed up the simulation.
+//        SemGraph graph = getSemPm().getGraph();
+//        List<Node> tierOrdering = graph.getCausalOrdering();
+//
+//        int[] tierIndices = new int[variableNodes.size()];
+//
+//        for (int i = 0; i < tierIndices.length; i++) {
+//            tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
+//        }
+//
+//        int[][] _parents = new int[variableNodes.size()][];
+//
+//        for (int i = 0; i < variableNodes.size(); i++) {
+//            Node node = variableNodes.get(i);
+//            List<Node> parents = graph.getParents(node);
+//
+//            for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
+//                Node _node = j.next();
+//
+//                if (_node.getNodeType() == NodeType.ERROR) {
+//                    j.remove();
+//                }
+//            }
+//
+//            _parents[i] = new int[parents.size()];
+//
+//            for (int j = 0; j < parents.size(); j++) {
+//                Node _parent = parents.get(j);
+//                _parents[i][j] = variableNodes.indexOf(_parent);
+//            }
+//        }
+//
+//        // Do the simulation.
+//        ROW:
+//        for (int row = 0; row < sampleSize; row++) {
+//            for (int tier = 0; tier < tierOrdering.size(); tier++) {
+//                Node node = tierOrdering.get(tier);
+//                ConnectionFunction function = functions.get(node);
+//                int col = tierIndices[tier];
+//
+//                Distribution distribution = this.distributions.get(node);
+//                double value;
+//
+//                if (distribution == null) {
+//                    value = RandomUtil.getInstance().nextNormal(0,
+//                            Math.sqrt(getErrVar(node)));
+//                } else {
+//                    value = distribution.nextRandom();
+//                }
+//
+//                if (function != null) {
+//                    Node[] parents = function.getInputNodes();
+//                    double[] parentValues = new double[parents.length];
+//
+//                    for (int j = 0; j < parents.length; j++) {
+//                        Node parent = parents[j];
+//                        int index = variableNodes.indexOf(parent);
+//                        parentValues[j] = fullDataSet.getDouble(row, index);
+//                    }
+//
+//                    value += function.valueAt(parentValues);
+//
+//                    if (isSimulatedPositiveDataOnly() && value < 0) {
+//                        row--;
+//                        continue ROW;
+//                    }
+//
+//                    fullDataSet.setDouble(row, col, value);
+//                } else {
+//                    double val = value;
+//                    value = 0;
+//                    for (int j = 0; j < _parents[col].length; j++) {
+//                        int parent = _parents[col][j];
+//                        double parentValue = fullDataSet.getDouble(row, parent);
+//                        double parentCoef = edgeCoef.get(parent, col);
+//                        value += parentValue * parentCoef;
+//                    }
+//                    value += val;
+//
+//                    if (isSimulatedPositiveDataOnly() && value < 0) {
+//                        row--;
+//                        continue ROW;
+//                    }
+//
+//                    fullDataSet.setDouble(row, col, value);
+//                }
+//            }
+//        }
+//
+//        for (int i = 0; i < fullDataSet.getNumRows(); i++) {
+//            for (int j = 0; j < fullDataSet.getNumColumns(); j++) {
+//                fullDataSet.setDouble(i, j, fullDataSet.getDouble(i, j) + variableMeans[j]);
+//            }
+//        }
+//
+//        if (latentDataSaved) {
+//            return fullDataSet;
+//        } else {
+//            return DataUtils.restrictToMeasured(fullDataSet);
+//        }
+//    }
 
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int numVars = getVariableNodes().size();
@@ -2060,7 +2055,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         TetradMatrix sampleCovar = getSampleCovar();
 
         if (sampleCovar == null) {
-            throw new NullPointerException("No sample covar has been set.");
+            return Double.NaN;
         }
 
         if (getFreeParameters().contains(parameter)) {
@@ -2180,13 +2175,13 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         return cyclic;
     }
 
-    public boolean isCheckPositiveDefinite() {
-        return checkPositiveDefinite;
-    }
-
-    public void setCheckPositiveDefinite(boolean checkPositiveDefinite) {
-        this.checkPositiveDefinite = checkPositiveDefinite;
-    }
+//    public boolean isCheckPositiveDefinite() {
+//        return checkPositiveDefinite;
+//    }
+//
+//    public void setCheckPositiveDefinite(boolean checkPositiveDefinite) {
+//        this.checkPositiveDefinite = checkPositiveDefinite;
+//    }
 
     /**
      * @return the variable by the given name, or null if none exists.
@@ -2340,14 +2335,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         }
     }
 
-    private double logDetSample() {
-        if (logDetSample == 0.0 && getSampleCovar() != null) {
-            double det = getSampleCovar().det();
-            logDetSample = Math.log(det);
-        }
-
-        return logDetSample;
-    }
+//    private double logDetSample() {
+//        if (logDetSample == 0.0 && getSampleCovar() != null) {
+//            double det = getSampleCovar().det();
+//            logDetSample = Math.log(det);
+//        }
+//
+//        return logDetSample;
+//    }
 
     private List<Node> unmeasuredLatents
             (SemPm
@@ -2591,27 +2586,27 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         return trace;
     }
 
-    private double traceABInv(TetradMatrix A, TetradMatrix B) {
-
-        // Note that at this point the sem and the sample covar MUST have the
-        // same variables in the same order.
-        TetradMatrix inverse;
-        try {
-            inverse = B.inverse();
-        } catch (Exception e) {
-            return Double.NaN;
-        }
-
-        TetradMatrix product = A.times(inverse);
-
-        double trace = product.trace();
-
-        if (trace < -1e-8) {
-            return 0;
-        }
-
-        return trace;
-    }
+//    private double traceABInv(TetradMatrix A, TetradMatrix B) {
+//
+//        // Note that at this point the sem and the sample covar MUST have the
+//        // same variables in the same order.
+//        TetradMatrix inverse;
+//        try {
+//            inverse = B.inverse();
+//        } catch (Exception e) {
+//            return Double.NaN;
+//        }
+//
+//        TetradMatrix product = A.times(inverse);
+//
+//        double trace = product.trace();
+//
+//        if (trace < -1e-8) {
+//            return 0;
+//        }
+//
+//        return trace;
+//    }
 
     private TetradMatrix edgeCoef() {
         return this.edgeCoef;
@@ -2698,13 +2693,13 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         }
     }
 
-    private TetradAlgebra getAlgebra() {
-        if (algebra == null) {
-            algebra = new TetradAlgebra();
-        }
-
-        return algebra;
-    }
+//    private TetradAlgebra getAlgebra() {
+//        if (algebra == null) {
+//            algebra = new TetradAlgebra();
+//        }
+//
+//        return algebra;
+//    }
 
     private double round(double value, int decimalPlace) {
         double power_of_ten = 1;
@@ -2724,36 +2719,36 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         this.initializationParams = initializationParams;
     }
 
-    public void setFunction(Node node, ConnectionFunction function) {
-        List<Node> parents = semPm.getGraph().getParents(node);
+//    public void setFunction(Node node, ConnectionFunction function) {
+//        List<Node> parents = semPm.getGraph().getParents(node);
+//
+//        for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
+//            Node _node = j.next();
+//
+//            if (_node.getNodeType() == NodeType.ERROR) {
+//                j.remove();
+//            }
+//        }
+//
+//        HashSet<Node> parentSet = new HashSet<>(parents);
+//        List<Node> inputList = Arrays.asList(function.getInputNodes());
+//        HashSet<Node> inputSet = new HashSet<>(inputList);
+//
+//        if (!parentSet.equals(inputSet)) {
+//            throw new IllegalArgumentException("The given function for " + node +
+//                    " may only use the parents of " + node + ": " + parents);
+//        }
+//
+//        functions.put(node, function);
+//    }
 
-        for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
-            Node _node = j.next();
-
-            if (_node.getNodeType() == NodeType.ERROR) {
-                j.remove();
-            }
-        }
-
-        HashSet<Node> parentSet = new HashSet<>(parents);
-        List<Node> inputList = Arrays.asList(function.getInputNodes());
-        HashSet<Node> inputSet = new HashSet<>(inputList);
-
-        if (!parentSet.equals(inputSet)) {
-            throw new IllegalArgumentException("The given function for " + node +
-                    " may only use the parents of " + node + ": " + parents);
-        }
-
-        functions.put(node, function);
-    }
-
-    public ConnectionFunction getConnectionFunction(Node node) {
-        return functions.get(node);
-    }
-
-    public double[] getVariableMeans() {
-        return variableMeans;
-    }
+//    public ConnectionFunction getConnectionFunction(Node node) {
+//        return functions.get(node);
+//    }
+//
+//    public double[] getVariableMeans() {
+//        return variableMeans;
+//    }
 
     public boolean isSimulatedPositiveDataOnly() {
         return simulatedPositiveDataOnly;

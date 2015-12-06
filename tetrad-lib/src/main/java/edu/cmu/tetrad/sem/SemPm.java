@@ -75,12 +75,6 @@ public final class SemPm implements PM, TetradSerializable {
     private List<Node> variableNodes;
 
     /**
-     * @serial Cannot be null.
-     * @deprecated
-     */
-    private List<Node> exogenousNodes;
-
-    /**
      * The set of parameter comparisons.
      *
      * @serial Cannot be null.
@@ -231,20 +225,20 @@ public final class SemPm implements PM, TetradSerializable {
         return this.variableNodes;
     }
 
-    /**
-     * @return the list of exogenous variableNodes.
-     */
-    public List<Node> getErrorNodes() {
-        List<Node> errorNodes = new ArrayList<>();
-
-        for (Node node1 : this.nodes) {
-            if (node1.getNodeType() == NodeType.ERROR) {
-                errorNodes.add(node1);
-            }
-        }
-
-        return errorNodes;
-    }
+//    /**
+//     * @return the list of exogenous variableNodes.
+//     */
+//    public List<Node> getErrorNodes() {
+//        List<Node> errorNodes = new ArrayList<>();
+//
+//        for (Node node1 : this.nodes) {
+//            if (node1.getNodeType() == NodeType.ERROR) {
+//                errorNodes.add(node1);
+//            }
+//        }
+//
+//        return errorNodes;
+//    }
 
     /**
      * @return the list of measured variableNodes.
@@ -625,117 +619,117 @@ public final class SemPm implements PM, TetradSerializable {
         this.parameters = Collections.unmodifiableList(parameters);
     }
 
-    // unfinished
-    private void initializeParamsTimeLagModel() {
-        if (!graph.isTimeLagModel()) {
-            throw new IllegalArgumentException();
-        }
-
-        SemGraph graph = this.graph;
-        TimeLagGraph timeLagGraph = graph.getTimeLagGraph();
-
-        List<Node> lag0Nodes = timeLagGraph.getLag0Nodes();
-
-        for (Node node : lag0Nodes) {
-            Parameter param = new Parameter(newTName(), ParamType.VAR, node, node);
-            param.setDistribution(new Uniform(1.0, 3.0));
-            parameters.add(param);
-
-        }
-
-        List<Parameter> parameters = new ArrayList<>();
-        List<Edge> edges = new ArrayList<>(graph.getEdges());
-
-        Collections.sort(edges, new Comparator<Edge>() {
-            public int compare(Edge o1, Edge o2) {
-                int compareFirst = o1.getNode1().getName().compareTo(o2.getNode1().toString());
-                int compareSecond = o1.getNode1().getName().compareTo(o2.getNode2().toString());
-
-                if (compareFirst != 0) {
-                    return compareFirst;
-                }
-
-                if (compareSecond != 0) {
-                    return compareSecond;
-                }
-
-                return 0;
-            }
-        });
-
-        // Add linear coefficient freeParameters for all directed edges that
-        // aren't error edges *and are into parameterizable node* (the last bit jdramsey 4/14/10).
-        for (Edge edge : edges) {
-            if (edge.getNode1() == edge.getNode2()) {
-                throw new IllegalStateException("There should not be any" +
-                        "edges from a node to itself in a SemGraph: " + edge);
-            }
-
-            if (!SemGraph.isErrorEdge(edge) &&
-                    edge.getEndpoint1() == Endpoint.TAIL &&
-                    edge.getEndpoint2() == Endpoint.ARROW) {
-                if (!graph.isParameterizable(edge.getNode2())) {
-                    continue;
-                }
-
-                Parameter param = new Parameter(newBName(), ParamType.COEF,
-                        edge.getNode1(), edge.getNode2());
-
-                param.setDistribution(new Split(0.5, 1.5));
-//                param.setDistribution(new SplitDistributionSpecial(0.5, 1.5));
-//                param.setDistribution(new UniformDistribution(-0.2, 0.2));
-//                param.setDistribution(coefDistribution);
-                parameters.add(param);
-            }
-        }
-
-        // Add error variance freeParameters for exogenous nodes of all *parameterizable* nodes.
-        for (Node node : getVariableNodes()) {
-            if (!graph.isParameterizable(node)) {
-                continue;
-            }
-
-            Parameter param = new Parameter(newTName(), ParamType.VAR, node, node);
-            param.setDistribution(new Uniform(1.0, 3.0));
-            parameters.add(param);
-        }
-
-        // Add error covariance freeParameters for all bidirected edges. (These
-        // connect exogenous nodes.)
-        for (Edge edge : edges) {
-            if (Edges.isBidirectedEdge(edge)) {
-                Node node1 = edge.getNode1();
-                Node node2 = edge.getNode2();
-
-                // no...
-                if (!graph.isParameterizable(node1) || !graph.isParameterizable(node2)) {
-                    continue;
-                }
-
-                node1 = getGraph().getVarNode(node1);
-                node2 = getGraph().getVarNode(node2);
-
-                Parameter param = new Parameter(newTName(), ParamType.COVAR,
-                        node1, node2);
-                param.setDistribution(new SingleValue(0.2));
-                parameters.add(param);
-            }
-        }
-
-        // Add mean freeParameters for all parameterizable nodes.
-        for (Node node : getVariableNodes()) {
-            if (!graph.isParameterizable(node)) {
-                continue;
-            }
-
-            Parameter mean = new Parameter(newMName(), ParamType.MEAN, node,
-                    node);
-            mean.setDistribution(new Normal(0.0, 1.0));
-            parameters.add(mean);
-        }
-
-        this.parameters = Collections.unmodifiableList(parameters);
-    }
+//    // unfinished
+//    private void initializeParamsTimeLagModel() {
+//        if (!graph.isTimeLagModel()) {
+//            throw new IllegalArgumentException();
+//        }
+//
+//        SemGraph graph = this.graph;
+//        TimeLagGraph timeLagGraph = graph.getTimeLagGraph();
+//
+//        List<Node> lag0Nodes = timeLagGraph.getLag0Nodes();
+//
+//        for (Node node : lag0Nodes) {
+//            Parameter param = new Parameter(newTName(), ParamType.VAR, node, node);
+//            param.setDistribution(new Uniform(1.0, 3.0));
+//            parameters.add(param);
+//
+//        }
+//
+//        List<Parameter> parameters = new ArrayList<>();
+//        List<Edge> edges = new ArrayList<>(graph.getEdges());
+//
+//        Collections.sort(edges, new Comparator<Edge>() {
+//            public int compare(Edge o1, Edge o2) {
+//                int compareFirst = o1.getNode1().getName().compareTo(o2.getNode1().toString());
+//                int compareSecond = o1.getNode1().getName().compareTo(o2.getNode2().toString());
+//
+//                if (compareFirst != 0) {
+//                    return compareFirst;
+//                }
+//
+//                if (compareSecond != 0) {
+//                    return compareSecond;
+//                }
+//
+//                return 0;
+//            }
+//        });
+//
+//        // Add linear coefficient freeParameters for all directed edges that
+//        // aren't error edges *and are into parameterizable node* (the last bit jdramsey 4/14/10).
+//        for (Edge edge : edges) {
+//            if (edge.getNode1() == edge.getNode2()) {
+//                throw new IllegalStateException("There should not be any" +
+//                        "edges from a node to itself in a SemGraph: " + edge);
+//            }
+//
+//            if (!SemGraph.isErrorEdge(edge) &&
+//                    edge.getEndpoint1() == Endpoint.TAIL &&
+//                    edge.getEndpoint2() == Endpoint.ARROW) {
+//                if (!graph.isParameterizable(edge.getNode2())) {
+//                    continue;
+//                }
+//
+//                Parameter param = new Parameter(newBName(), ParamType.COEF,
+//                        edge.getNode1(), edge.getNode2());
+//
+//                param.setDistribution(new Split(0.5, 1.5));
+////                param.setDistribution(new SplitDistributionSpecial(0.5, 1.5));
+////                param.setDistribution(new UniformDistribution(-0.2, 0.2));
+////                param.setDistribution(coefDistribution);
+//                parameters.add(param);
+//            }
+//        }
+//
+//        // Add error variance freeParameters for exogenous nodes of all *parameterizable* nodes.
+//        for (Node node : getVariableNodes()) {
+//            if (!graph.isParameterizable(node)) {
+//                continue;
+//            }
+//
+//            Parameter param = new Parameter(newTName(), ParamType.VAR, node, node);
+//            param.setDistribution(new Uniform(1.0, 3.0));
+//            parameters.add(param);
+//        }
+//
+//        // Add error covariance freeParameters for all bidirected edges. (These
+//        // connect exogenous nodes.)
+//        for (Edge edge : edges) {
+//            if (Edges.isBidirectedEdge(edge)) {
+//                Node node1 = edge.getNode1();
+//                Node node2 = edge.getNode2();
+//
+//                // no...
+//                if (!graph.isParameterizable(node1) || !graph.isParameterizable(node2)) {
+//                    continue;
+//                }
+//
+//                node1 = getGraph().getVarNode(node1);
+//                node2 = getGraph().getVarNode(node2);
+//
+//                Parameter param = new Parameter(newTName(), ParamType.COVAR,
+//                        node1, node2);
+//                param.setDistribution(new SingleValue(0.2));
+//                parameters.add(param);
+//            }
+//        }
+//
+//        // Add mean freeParameters for all parameterizable nodes.
+//        for (Node node : getVariableNodes()) {
+//            if (!graph.isParameterizable(node)) {
+//                continue;
+//            }
+//
+//            Parameter mean = new Parameter(newMName(), ParamType.MEAN, node,
+//                    node);
+//            mean.setDistribution(new Normal(0.0, 1.0));
+//            parameters.add(mean);
+//        }
+//
+//        this.parameters = Collections.unmodifiableList(parameters);
+//    }
 
     /**
      * @return a unique (for this PM) parameter name beginning with the Greek

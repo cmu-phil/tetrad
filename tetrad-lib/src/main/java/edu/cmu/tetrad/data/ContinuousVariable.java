@@ -192,6 +192,11 @@ public final class ContinuousVariable extends AbstractVariable
     // The identity of a node can't be changed by changing its name.
     public boolean equals(Object o) {
         if (o == null) return false;
+
+        // Worried this will slow things down.
+        if (!(o instanceof ContinuousVariable)) {
+            return false;
+        }
         if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             return o == this;
         } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {

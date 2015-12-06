@@ -37,7 +37,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public interface Expression extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Evaluates the expression using the given context

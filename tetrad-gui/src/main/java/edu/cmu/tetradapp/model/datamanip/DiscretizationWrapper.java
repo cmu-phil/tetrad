@@ -51,9 +51,6 @@ public class DiscretizationWrapper extends DataWrapper {
     /**
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
-     *
-     * @param data
-     * @param params
      */
     public DiscretizationWrapper(DataWrapper data, DiscretizationParams params) {
         if (data == null) {

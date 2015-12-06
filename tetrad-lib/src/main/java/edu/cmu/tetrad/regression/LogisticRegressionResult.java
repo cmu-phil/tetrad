@@ -116,9 +116,9 @@ public class LogisticRegressionResult implements TetradSerializable {
      * @param probs         the array of P-values for the regression
      *                      coefficients.
      */
-    public LogisticRegressionResult(String target, String[] variableNames, double[] xMeans, double[] xStdDevs,
-                                    int numRegressors, int ny0, int ny1, double[] coefs,
-                                    double[] stdErrs, double[] probs, double intercept, String result, double logLikelihood) {
+    private LogisticRegressionResult(String target, String[] variableNames, double[] xMeans, double[] xStdDevs,
+                                     int numRegressors, int ny0, int ny1, double[] coefs,
+                                     double[] stdErrs, double[] probs, double intercept, String result, double logLikelihood) {
 
 
         if (variableNames.length != numRegressors) {

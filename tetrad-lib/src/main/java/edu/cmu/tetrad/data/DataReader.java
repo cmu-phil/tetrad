@@ -408,9 +408,17 @@ public final class DataReader {
                 }
 
 //               True if variable names should be read uppercase.
+                /*
+      True if variable names should be read lowercase.
+     */
+                boolean readVariablesUppercase = false;
                 if (readVariablesLowercase) {
                     varNames.add(name.toLowerCase());
-                } else {
+                }
+                else if (readVariablesUppercase) {
+                    varNames.add(name.toUpperCase());
+                }
+                else {
                     varNames.add(name);
                 }
             }
@@ -981,11 +989,11 @@ public final class DataReader {
     }
 
     public void setReadVariablesLowercase(boolean readVariablesLowercase) {
-        this.readVariablesLowercase = true;
+        this.readVariablesLowercase = readVariablesLowercase;
     }
 
     public void setReadVariablesUppercase(boolean readVariablesUppercase) {
-        this.readVariablesLowercase = true;
+        this.readVariablesLowercase = readVariablesUppercase;
     }
 
     private static class DataSetDescription {
@@ -1250,20 +1258,20 @@ public final class DataReader {
         return true;
     }
 
-    /**
-     * Loads text from the given file in the form of a char[] array.
-     */
-    private static char[] loadChars(File file) throws IOException {
-        FileReader reader = new FileReader(file);
-        CharArrayWriter writer = new CharArrayWriter();
-        int c;
-
-        while ((c = reader.read()) != -1) {
-            writer.write(c);
-        }
-
-        return writer.toCharArray();
-    }
+//    /**
+//     * Loads text from the given file in the form of a char[] array.
+//     */
+//    private static char[] loadChars(File file) throws IOException {
+//        FileReader reader = new FileReader(file);
+//        CharArrayWriter writer = new CharArrayWriter();
+//        int c;
+//
+//        while ((c = reader.read()) != -1) {
+//            writer.write(c);
+//        }
+//
+//        return writer.toCharArray();
+//    }
 }
 
 

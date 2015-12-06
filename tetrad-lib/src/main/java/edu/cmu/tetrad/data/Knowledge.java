@@ -89,16 +89,6 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
      */
     private Set<KnowledgeEdge> allRequiredEdges = new HashSet<>();
 
-
-    /**
-     * This is the set of all edges forbidden, including edges explicitly
-     * forbidden, forbidden by groups as well as edges forbidden by temporal tiers.
-     *
-     * @serial
-     * @deprecated }
-     */
-    private Set<KnowledgeEdge> forbiddenEdges;
-
     /**
      * This is the set of edges explicitly forbidden by the user.
      *
@@ -832,11 +822,8 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
         if (!(this.requiredCommonCauses.equals(knowledge.requiredCommonCauses))) {
             return false;
         }
-        if (!(this.forbiddenCommonCauses.equals(
-                knowledge.forbiddenCommonCauses))) {
-            return false;
-        }
-        return this.tiersForbiddenWithin.equals(knowledge.tiersForbiddenWithin) && this.knowledgeGroups.equals(knowledge.knowledgeGroups) && this.defaultToKnowledgeLayout == knowledge.defaultToKnowledgeLayout;
+        return this.forbiddenCommonCauses.equals(
+                knowledge.forbiddenCommonCauses) && this.tiersForbiddenWithin.equals(knowledge.tiersForbiddenWithin) && this.knowledgeGroups.equals(knowledge.knowledgeGroups) && this.defaultToKnowledgeLayout == knowledge.defaultToKnowledgeLayout;
 
     }
 

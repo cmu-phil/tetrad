@@ -88,8 +88,6 @@ class ListTransferable implements Transferable {
      * this object.
      *
      * @param flavor the requested flavor for the data
-     * @return boolean indicating whether or not the data flavor is
-     *         supported
      */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(dataFlavors[0]);
@@ -100,9 +98,6 @@ class ListTransferable implements Transferable {
      * data can be provided in.  The array should be ordered according to
      * preference for providing the data (from most richly descriptive to
      * least descriptive).
-     *
-     * @return an array of data flavors in which this data can be
-     *         transferred
      */
     public DataFlavor[] getTransferDataFlavors() {
         return dataFlavors;

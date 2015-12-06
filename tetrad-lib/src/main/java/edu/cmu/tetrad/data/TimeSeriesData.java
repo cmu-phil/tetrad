@@ -114,7 +114,7 @@ public final class TimeSeriesData implements DataModel {
     }
 
     public final List<Node> getVariables() {
-        List varNames = getVariableNames();
+        List<String> varNames = getVariableNames();
         List<Node> vars = new LinkedList<>();
 
         for (Object varName : varNames) {

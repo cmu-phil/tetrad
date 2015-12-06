@@ -43,11 +43,6 @@ public final class MimAdjacencySearch {
 
     /**
      * Constructs a new MimAdjacencySearch. IT IS ASSUMED THAT THE INDEPENDENCE CHECKER IS OF CLASS IndTestMimBuild
-     *
-     * @param graph
-     * @param ind
-     * @param knowledge
-     * @param latents
      */
     public MimAdjacencySearch(Graph graph, IndependenceTest ind,
                               IKnowledge knowledge, List<Node> latents) {

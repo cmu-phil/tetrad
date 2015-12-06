@@ -342,12 +342,12 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         return indices;
     }
 
-    /**
-     * @return the set of currently selected variables.
-     */
-    public final Set<Node> getSelectedVariables() {
-        return new HashSet<>(selection);
-    }
+//    /**
+//     * @return the set of currently selected variables.
+//     */
+//    public final Set<Node> getSelectedVariables() {
+//        return new HashSet<>(selection);
+//    }
 
     /**
      * Adds the given variable to the data set, increasing the number of
@@ -444,7 +444,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         int col = variables.indexOf(_from);
 
         List<String> oldCategories = _from.getCategories();
-        List newCategories = _to.getCategories();
+        List<String> newCategories = _to.getCategories();
 
         int[] indexArray = new int[oldCategories.size()];
 

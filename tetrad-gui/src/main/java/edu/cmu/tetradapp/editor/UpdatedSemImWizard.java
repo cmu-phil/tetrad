@@ -173,10 +173,6 @@ public final class UpdatedSemImWizard extends JPanel {
     private void addListOfEvidence(Box verticalBox) {
         boolean foundACondition = false;
 
-        if (evidence.hasNoEvidence()) {
-            return;
-        }
-
         for (int i = 0; i < evidence.getNumNodes(); i++) {
             foundACondition = true;
 

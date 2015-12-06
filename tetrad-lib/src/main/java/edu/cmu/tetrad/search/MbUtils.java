@@ -252,9 +252,6 @@ public class MbUtils {
      * Generates the list of MB DAGs consistent with the MB Pattern returned by the previous search.
      *
      * @param orientBidirectedEdges True iff bidirected edges should be oriented as if they were undirected.
-     * @param test
-     * @param depth
-     * @param target
      * @return a list of Dag's.
      */
     public static List<Graph> generateMbDags(Graph mbPattern,

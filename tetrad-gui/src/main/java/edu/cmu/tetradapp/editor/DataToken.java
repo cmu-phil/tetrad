@@ -62,8 +62,6 @@ public enum DataToken implements Token {
 
     /**
      * Constructs the enum
-     *
-     * @param name
      */
     private DataToken(String name){
         if (name == null) {
@@ -76,8 +74,6 @@ public enum DataToken implements Token {
 
     /**
      * @return the name of the token
-     *
-     * @return - Name
      */
     public String getName(){
        return this.name;

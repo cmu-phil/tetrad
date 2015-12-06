@@ -327,7 +327,6 @@ public final class DiscreteVariable extends AbstractVariable
      * number of categories and the same categories.
      */
     public final boolean equals(Object o) {
-        NodeEqualityMode.Type equalityType = NodeEqualityMode.getEqualityType();
 
         //AJ
         if (!(o instanceof DiscreteVariable)) {
@@ -468,23 +467,23 @@ public final class DiscreteVariable extends AbstractVariable
         return variable;
     }
 
-    public final String toStringFull() {
-        StringBuilder buf = new StringBuilder();
-
-        buf.append(getName());
-        buf.append(" <");
-
-        for (int i = 0; i < getNumCategories(); i++) {
-            buf.append(getCategory(i));
-
-            if (i < getNumCategories() - 1) {
-                buf.append(", ");
-            }
-        }
-
-        buf.append(">");
-        return buf.toString();
-    }
+//    public final String toStringFull() {
+//        StringBuilder buf = new StringBuilder();
+//
+//        buf.append(getName());
+//        buf.append(" <");
+//
+//        for (int i = 0; i < getNumCategories(); i++) {
+//            buf.append(getCategory(i));
+//
+//            if (i < getNumCategories() - 1) {
+//                buf.append(", ");
+//            }
+//        }
+//
+//        buf.append(">");
+//        return buf.toString();
+//    }
 
     //==============================PRIVATE METHODS=======================//
 

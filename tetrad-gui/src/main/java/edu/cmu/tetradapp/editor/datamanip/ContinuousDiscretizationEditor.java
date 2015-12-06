@@ -204,8 +204,6 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
     /**
      * @return the number of categories.
-     *
-     * @return - number of categories.
      */
     public int getNumCategories() {
         return this.numberOfCategories;
@@ -213,9 +211,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
 
     /**
-     * @return the getModel discretization spec created by the user.
-     *
-     * @return <code>ContinuousDiscretizationSpec</code>.
+     * @return the discretization spec created by the user.
      */
     public ContinuousDiscretizationSpec getDiscretizationSpec() {
         ContinuousDiscretizationSpec spec = this.rangeEditor.getDiscretizationSpec();

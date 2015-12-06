@@ -119,8 +119,6 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
     /**
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
-     *
-     * @return the stored simulation parameters model.
      */
     protected synchronized DirichletEstimatorParams getParams() {
         return this.params;

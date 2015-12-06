@@ -165,8 +165,6 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
     /**
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
-     *
-     * @return the stored simulation parameters model.
      */
     private synchronized DirichletBayesImParams getParams() {
         return this.params;

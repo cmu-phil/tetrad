@@ -91,11 +91,6 @@ public final class Cfci implements GraphSearch {
     private int maxReachablePathLength = -1;
 
     /**
-     * The list of all unshielded triples.
-     */
-    private Set<Triple> allTriples;
-
-    /**
      * Set of unshielded colliders from the triple orientation step.
      */
     private Set<Triple> colliderTriples;
@@ -141,32 +136,32 @@ public final class Cfci implements GraphSearch {
         this.variables.addAll(independenceTest.getVariables());
     }
 
-    /**
-     * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
-     * search over.
-     */
-    public Cfci(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null || knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
-
-        Set<Node> remVars = new HashSet<Node>();
-        for (Node node1 : this.variables) {
-            boolean search = false;
-            for (Node node2 : searchVars) {
-                if (node1.getName().equals(node2.getName())) {
-                    search = true;
-                }
-            }
-            if (!search) {
-                remVars.add(node1);
-            }
-        }
-        this.variables.removeAll(remVars);
-    }
+//    /**
+//     * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
+//     * search over.
+//     */
+//    public Cfci(IndependenceTest independenceTest, List<Node> searchVars) {
+//        if (independenceTest == null || knowledge == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.independenceTest = independenceTest;
+//        this.variables.addAll(independenceTest.getVariables());
+//
+//        Set<Node> remVars = new HashSet<Node>();
+//        for (Node node1 : this.variables) {
+//            boolean search = false;
+//            for (Node node2 : searchVars) {
+//                if (node1.getName().equals(node2.getName())) {
+//                    search = true;
+//                }
+//            }
+//            if (!search) {
+//                remVars.add(node1);
+//            }
+//        }
+//        this.variables.removeAll(remVars);
+//    }
 
     //========================PUBLIC METHODS==========================//
 
@@ -338,7 +333,9 @@ public final class Cfci implements GraphSearch {
 
     private void ruleR0(IndependenceTest test, int depth) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
-        allTriples = new HashSet<Triple>();
+        /*
+      The list of all unshielded triples.
+     */
         colliderTriples = new HashSet<Triple>();
         noncolliderTriples = new HashSet<Triple>();
         ambiguousTriples = new HashSet<Triple>();
@@ -361,7 +358,6 @@ public final class Cfci implements GraphSearch {
                     continue;
                 }
 
-                allTriples.add(new Triple(x, y, z));
                 TripleType type = getTripleType(x, y, z, test, depth);
 
                 if (type == TripleType.COLLIDER) {
@@ -397,7 +393,6 @@ public final class Cfci implements GraphSearch {
         __nodes.remove(z);
 
         List<Node> _nodes = new LinkedList<Node>(__nodes);
-//        TetradLogger.getInstance().log("details", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         int _depth = depth;
         if (_depth == -1) {
@@ -426,7 +421,6 @@ public final class Cfci implements GraphSearch {
         __nodes.remove(x);
 
         _nodes = new LinkedList<Node>(__nodes);
-//        TetradLogger.getInstance().log("details", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         _depth = depth;
         if (_depth == -1) {
@@ -513,7 +507,6 @@ public final class Cfci implements GraphSearch {
                 changeFlag = false;
                 ruleR6R7();
             }
-            ;
 
             // Finally, we apply T3-Tanh as many times as possible.
             changeFlag = true;
@@ -522,7 +515,6 @@ public final class Cfci implements GraphSearch {
                 changeFlag = false;
                 rulesR8R9R10();
             }
-            ;
         }
     }
 
@@ -822,6 +814,7 @@ public final class Cfci implements GraphSearch {
                     System.out.println(GraphUtils.pathString(path, graph));
                 }
 
+                CIRCLE_PATHS:
                 for (List<Node> u : ucCirclePaths) {
                     if (u.size() < 3) continue;
 
@@ -850,7 +843,7 @@ public final class Cfci implements GraphSearch {
 
                     for (int i = 2; i < u2.size(); i++) {
                         if (!getNoncolliderTriples().contains(new Triple(u2.get(i - 2), u2.get(i - 1), u2.get(i)))) {
-                            continue;
+                            continue CIRCLE_PATHS;
                         }
                     }
 
@@ -977,9 +970,9 @@ public final class Cfci implements GraphSearch {
      * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
      */
     private List<List<Node>> getUcPdPaths(Node n1, Node n2) {
-        List<List<Node>> ucPdPaths = new LinkedList();
+        List<List<Node>> ucPdPaths = new LinkedList<>();
 
-        List<Node> soFar = new LinkedList();
+        List<Node> soFar = new LinkedList<>();
         soFar.add(n1);
 
         List<Node> adjacencies = graph.getAdjacentNodes(n1);
@@ -1291,16 +1284,7 @@ public final class Cfci implements GraphSearch {
             if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.CIRCLE) {
-            return true;
-        }
-
-        return false;
-
-//        return graph.getEndpoint(y, x) == Endpoint.ARROW;
-
-
-//        return !knowledge.isForbiddenByTiers(x.getName(), y.getName());
+        return graph.getEndpoint(y, x) == Endpoint.CIRCLE;
     }
 
 

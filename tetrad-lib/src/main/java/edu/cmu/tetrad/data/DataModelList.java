@@ -235,11 +235,7 @@ public final class DataModelList extends AbstractList<DataModel>
 
         DataModelList list = (DataModelList) o;
 
-        if (!(name.equals(list.name))) {
-            return false;
-        }
-
-        return modelList.equals(list.modelList) && knowledge.equals(list.knowledge) && selectedModel.equals(list.selectedModel);
+        return name.equals(list.name) && modelList.equals(list.modelList) && knowledge.equals(list.knowledge) && selectedModel.equals(list.selectedModel);
 
     }
 

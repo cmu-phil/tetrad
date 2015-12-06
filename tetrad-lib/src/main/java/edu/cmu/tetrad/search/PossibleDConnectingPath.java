@@ -172,7 +172,6 @@ public class PossibleDConnectingPath {
     /**
      * Find the closure of a conditioning set of nodes under the parent relation.
      *
-     * @param pag
      * @param node    the node in question
      * @param closure the closure of the conditioning set uner the parent relation (to be calculated recursively).
      */
