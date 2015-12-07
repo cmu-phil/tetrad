@@ -52,10 +52,10 @@ public class SimulateDataCliTest {
         String fileName = String.format("sim_data_%svars_%scases.txt", variables, cases);
         String[] args = {
             "-c", cases,
-            "-m", variables,
+            "-v", variables,
             "-o", dirOut,
             "-n", fileName,
-            "-l", "\t"
+            "-d", "\t"
         };
         SimulateDataCli.main(args);
     }

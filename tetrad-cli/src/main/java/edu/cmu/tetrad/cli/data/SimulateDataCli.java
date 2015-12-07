@@ -59,13 +59,14 @@ public class SimulateDataCli {
         requiredOption.setRequired(true);
         MAIN_OPTIONS.addOption(requiredOption);
 
-        requiredOption = new Option("m", "var", true, "Number of variables to generate.");
+        requiredOption = new Option("v", "var", true, "Number of variables to generate.");
         requiredOption.setRequired(true);
         MAIN_OPTIONS.addOption(requiredOption);
 
         MAIN_OPTIONS.addOption("e", "edge", true, "Number of edges per node. Default is 1.");
         MAIN_OPTIONS.addOption("n", "name", true, "Name of output file.");
-        MAIN_OPTIONS.addOption("l", "delimiter", true, "Data file delimiter.");
+        MAIN_OPTIONS.addOption("d", "delimiter", true, "Data file delimiter.");
+        MAIN_OPTIONS.addOption("f", "forward-edges", false, "Forward edges.");
         MAIN_OPTIONS.addOption("o", "dir-out", true, "Directory where results is written to. Default is the current working directory");
         MAIN_OPTIONS.addOption(helpOption);
     }
@@ -74,6 +75,7 @@ public class SimulateDataCli {
     private static int numOfVariables;
     private static int numOfEdges;
     private static char delimiter;
+    private static boolean forwardEdges;
     private static Path dirOut;
     private static String fileName;
 
@@ -92,9 +94,10 @@ public class SimulateDataCli {
 
             cmd = cmdParser.parse(MAIN_OPTIONS, args);
             numOfCases = Args.parseInteger(cmd.getOptionValue("c"));
-            numOfVariables = Args.parseInteger(cmd.getOptionValue("m"));
+            numOfVariables = Args.parseInteger(cmd.getOptionValue("v"));
             numOfEdges = Args.parseInteger(cmd.getOptionValue("e", "1"));
-            delimiter = Args.getCharacter(cmd.getOptionValue("l", "\t"));
+            delimiter = Args.getCharacter(cmd.getOptionValue("d", "\t"));
+            forwardEdges = cmd.hasOption("f");
             dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
             fileName = cmd.getOptionValue("n", String.format("sim_data_%dvars_%dcases_%d", numOfVariables, numOfCases, System.currentTimeMillis()));
         } catch (ParseException | FileNotFoundException exception) {
@@ -107,7 +110,9 @@ public class SimulateDataCli {
                 Files.createDirectory(dirOut);
             }
 
-            Graph graph = GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges);
+            Graph graph = forwardEdges
+                    ? GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges)
+                    : GraphFactory.createRandomDagQuick(numOfVariables, numOfEdges);
             DataSet dataSet = DataSetFactory.buildSemSimulateDataAcyclic(graph, numOfCases);
 
             GraphIO.write(graph, Paths.get(dirOut.toString(), fileName + ".graph"));
