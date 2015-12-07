@@ -37,7 +37,12 @@ public class FileIO {
     private FileIO() {
     }
 
-    public static void readFile(Path file) {
+    /**
+     * Print file contents to console.
+     *
+     * @param file
+     */
+    public static void printFile(Path file) {
         try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 System.out.println(line);
