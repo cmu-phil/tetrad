@@ -143,88 +143,88 @@ public class TestSemEstimator extends TestCase {
         }
     }
 
-    public void testSet9() {
-        Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X1");
-
-        System.out.println(graph);
-
-        SemPm pm = new SemPm(graph);
-
-        double[] sum1 = new double[pm.getFreeParameters().size()];
-        double[] sum2 = new double[pm.getFreeParameters().size()];
-        double chisqSum1 = 0.0;
-        double chisqSum2 = 0.0;
-        double pSum1 = 0.0;
-        double pSum2 = 0.0;
-
-        int runs = 1;
-
-        for (int i = 0; i < runs; i++) {
-            System.out.println("Round " + (i + 1));
-
-            SemIm im = new SemIm(pm);
-
-            double[] trueParamValues = im.getFreeParamValues();
-
-            DataSet data = im.simulateData(1000, false);
-
-            System.out.println("CDS");
-            SemIm est1 = new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
-            double[] imParamValues1 = est1.getFreeParamValues();
-
-//            System.out.println("Random");
-//            SemIm est2 = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
-//            double[] imParamValues2 = est2.getFreeParamValues();
-
-            for (int j = 0; j < sum1.length; j++) sum1[j] += 100 * Math.abs(trueParamValues[j] - imParamValues1[j]) / Math.abs(trueParamValues[j]);
-//            for (int j = 0; j < sum2.length; j++) sum2[j] += 100 * Math.abs(trueParamValues[j] - imParamValues2[j]) / Math.abs(trueParamValues[j]);
-
-            chisqSum1 += est1.getChiSquare();
-//            chisqSum2 += est2.getChiSquare();
-            pSum1 += est1.getPValue();
-//            pSum2 += est2.getPValue();
-        }
-
-        for (int i = 0; i < sum1.length; i++) sum1[i] /= runs;
-        for (int i = 0; i < sum2.length; i++) sum2[i] /= runs;
-
-        double chisqAvg1 = chisqSum1 / runs;
-        double chisqAvg2 = chisqSum2 / runs;
-        double pValuesSum1 = pSum1 / runs;
-        double pValueSum2 = pSum2 / runs;
-
-        NumberFormat nf2 = new DecimalFormat("0.0000");
-
-        System.out.println("\n=====POWELL=====");
-
-        System.out.println("avg chi square = " + nf2.format(chisqAvg1));
-        System.out.println("avg p = " + nf2.format(pValuesSum1));
-
-        System.out.println();
-        List<Parameter> parameters = pm.getParameters();
-        NumberFormat nf = new DecimalFormat("0.0");
-
-        System.out.println("Avg 100 * abs(p_est - p_true) / abs(p_true))");
-
-        for (int i = 0; i < sum1.length; i++) {
-            Parameter parameter = parameters.get(i);
-            System.out.println(nf.format(sum1[i])  + "% " + parameter.getName());
-        }
-
-        System.out.println("\n=====RANDOM=====");
-
-        System.out.println("avg chi square = " + nf2.format(chisqAvg2));
-        System.out.println("avg p = " + nf2.format(pValueSum2));
-
-        System.out.println();
-        System.out.println("Avg 100 * abs(p_est - p_true) / abs(p_true))");
-
-        for (int i = 0; i < sum1.length; i++) {
-            Parameter parameter = parameters.get(i);
-            System.out.println(nf.format(sum2[i])  + "% " + parameter.getName());
-        }
-
-    }
+//    public void testSet9() {
+//        Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X1");
+//
+//        System.out.println(graph);
+//
+//        SemPm pm = new SemPm(graph);
+//
+//        double[] sum1 = new double[pm.getFreeParameters().size()];
+//        double[] sum2 = new double[pm.getFreeParameters().size()];
+//        double chisqSum1 = 0.0;
+//        double chisqSum2 = 0.0;
+//        double pSum1 = 0.0;
+//        double pSum2 = 0.0;
+//
+//        int runs = 1;
+//
+//        for (int i = 0; i < runs; i++) {
+//            System.out.println("Round " + (i + 1));
+//
+//            SemIm im = new SemIm(pm);
+//
+//            double[] trueParamValues = im.getFreeParamValues();
+//
+//            DataSet data = im.simulateData(1000, false);
+//
+//            System.out.println("CDS");
+//            SemIm est1 = new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
+//            double[] imParamValues1 = est1.getFreeParamValues();
+//
+////            System.out.println("Random");
+////            SemIm est2 = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
+////            double[] imParamValues2 = est2.getFreeParamValues();
+//
+//            for (int j = 0; j < sum1.length; j++) sum1[j] += 100 * Math.abs(trueParamValues[j] - imParamValues1[j]) / Math.abs(trueParamValues[j]);
+////            for (int j = 0; j < sum2.length; j++) sum2[j] += 100 * Math.abs(trueParamValues[j] - imParamValues2[j]) / Math.abs(trueParamValues[j]);
+//
+//            chisqSum1 += est1.getChiSquare();
+////            chisqSum2 += est2.getChiSquare();
+//            pSum1 += est1.getPValue();
+////            pSum2 += est2.getPValue();
+//        }
+//
+//        for (int i = 0; i < sum1.length; i++) sum1[i] /= runs;
+//        for (int i = 0; i < sum2.length; i++) sum2[i] /= runs;
+//
+//        double chisqAvg1 = chisqSum1 / runs;
+//        double chisqAvg2 = chisqSum2 / runs;
+//        double pValuesSum1 = pSum1 / runs;
+//        double pValueSum2 = pSum2 / runs;
+//
+//        NumberFormat nf2 = new DecimalFormat("0.0000");
+//
+//        System.out.println("\n=====POWELL=====");
+//
+//        System.out.println("avg chi square = " + nf2.format(chisqAvg1));
+//        System.out.println("avg p = " + nf2.format(pValuesSum1));
+//
+//        System.out.println();
+//        List<Parameter> parameters = pm.getParameters();
+//        NumberFormat nf = new DecimalFormat("0.0");
+//
+//        System.out.println("Avg 100 * abs(p_est - p_true) / abs(p_true))");
+//
+//        for (int i = 0; i < sum1.length; i++) {
+//            Parameter parameter = parameters.get(i);
+//            System.out.println(nf.format(sum1[i])  + "% " + parameter.getName());
+//        }
+//
+//        System.out.println("\n=====RANDOM=====");
+//
+//        System.out.println("avg chi square = " + nf2.format(chisqAvg2));
+//        System.out.println("avg p = " + nf2.format(pValueSum2));
+//
+//        System.out.println();
+//        System.out.println("Avg 100 * abs(p_est - p_true) / abs(p_true))");
+//
+//        for (int i = 0; i < sum1.length; i++) {
+//            Parameter parameter = parameters.get(i);
+//            System.out.println(nf.format(sum2[i])  + "% " + parameter.getName());
+//        }
+//
+//    }
 
 //    public void test4() {
 //        Graph graph = DataGraphUtils.randomDag(10, 10, false);
