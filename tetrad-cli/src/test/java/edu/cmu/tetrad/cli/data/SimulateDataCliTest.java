@@ -47,9 +47,9 @@ public class SimulateDataCliTest {
         System.out.println("main");
 
         String dirOut = tempFolder.newFolder("simulate").toString();
-        String cases = "100";
-        String variables = "6";
-        String fileName = String.format("sim_data_%svars_%scases.txt", variables, cases);
+        String cases = "20";
+        String variables = "15";
+        String fileName = String.format("sim_data_%svars_%scases", variables, cases);
         String[] args = {
             "-c", cases,
             "-v", variables,
