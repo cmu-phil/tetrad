@@ -32,6 +32,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -49,14 +50,24 @@ public class TestDagInPatternIterator extends TestCase {
     }
 
     public void test1() {
-        Dag dag = new Dag(GraphUtils.randomGraph(10, 0, 10, 3,
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        RandomUtil.getInstance().setSeed(342233L);
+        Dag dag = new Dag(GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 10, 3,
                 3, 3, false));
 
-        System.out.println("DAG " + dag);
+//        Dag dag = new Dag(GraphUtils.randomGraph(10, 0, 10, 3,
+//                3, 3, false));
+//
+//        System.out.println("DAG " + dag);
 
         Graph pattern = SearchGraphUtils.patternFromDag(dag);
 
-        System.out.println("Pattern " + pattern);
+//        System.out.println("Pattern " + pattern);
 
         DagInPatternIterator iterator = new DagInPatternIterator(pattern);
 

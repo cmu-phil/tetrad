@@ -28,7 +28,6 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.CompletedPatternWrapper;
 import edu.cmu.tetradapp.model.DagInPatternWrapper;
@@ -296,12 +295,6 @@ public final class GraphEditor extends JPanel
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
-        graph.add(new GraphPropertiesAction(getWorkbench()));
-        graph.add(new PathsAction(getWorkbench()));
-//        graph.add(new DirectedPathsAction(getWorkbench()));
-//        graph.add(new TreksAction(getWorkbench()));
-//        graph.add(new AllPathsAction(getWorkbench()));
-//        graph.add(new NeighborhoodsAction(getWorkbench()));
         graph.addSeparator();
 
         JMenuItem correlateExogenous =
@@ -341,76 +334,19 @@ public final class GraphEditor extends JPanel
                         JOptionPane.PLAIN_MESSAGE);
 
                 if (ret == JOptionPane.OK_OPTION) {
-                    Graph graph = null;
-                    Graph dag = new Dag();
-                    int numTrials = 0;
+                    Graph graph = DataGraphUtils.makeRandomGraph(getGraph());
 
-                    while (graph == null && ++numTrials < 100) {
+                    boolean addCycles = editor.isAddCycles();
 
-                        if (editor.isRandomForward()) {
-                            dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(),
-                                    editor.getMaxEdges());
-                            GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
-                            HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
-                            GraphUtils.arrangeByLayout(dag, layout);
-                        } else if (editor.isUniformlySelected()) {
-                            if (getGraph().getNumNodes() == editor.getNumNodes()) {
-                                HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
-
-                                dag = GraphUtils.randomGraph(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
-                                GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
-
-                                GraphUtils.arrangeByLayout(dag, layout);
-                            } else {
-                                dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                        editor.getNumLatents(), editor.getMaxEdges(),
-                                        editor.getMaxDegree(), editor.getMaxIndegree(),
-                                        editor.getMaxOutdegree(), editor.isConnected());
-                            }
-                        } else if (editor.isChooseFixed()) {
-                            do {
-                                if (getGraph().getNumNodes() == editor.getNumNodes()) {
-                                    HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
-
-                                    dag = GraphUtils.randomGraph(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), 30, 15, 15, editor.isConnected());
-
-
-                                    GraphUtils.arrangeByLayout(dag, layout);
-                                } else {
-                                    dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                            editor.getNumLatents(), editor.getMaxEdges(),
-                                            30, 15, 15, editor.isConnected()
-                                    );
-                                }
-                            } while (dag.getNumEdges() < editor.getMaxEdges());
-                        }
-
-                        boolean addCycles = editor.isAddCycles();
-
-                        if (addCycles) {
-//                            int minNumCycles = editor.getMinNumCycles();
-//                            int minCycleLength = editor.getMinCycleLength();
-//
-//                            graph = DataGraphUtils.addCycles2(dag, minNumCycles, minCycleLength);
-
-                            graph = GraphUtils.cyclicGraph2(editor.getNumNodes(), editor.getMaxEdges());
-                        } else {
-                            graph = new EdgeListGraph(dag);
-                        }
-
-                        GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
-                    }
-
-                    if (graph == null) {
-                        JOptionPane.showMessageDialog(GraphEditor.this,
-                                "Could not find a graph that fits those constrains.");
-                        getWorkbench().setGraph(new EdgeListGraph(dag));
+                    if (addCycles) {
+                        graph = GraphUtils.cyclicGraph2(editor.getNumNodes(), editor.getMaxEdges());
                     } else {
-                        getWorkbench().setGraph(graph);
+                        graph = new EdgeListGraph(graph);
                     }
 
-//                    getWorkbench().setGraph(new EdgeListGraph(dag));
-//                    getWorkbench().setGraph(graph);
+                    GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
+
+                    getWorkbench().setGraph(graph);
                 }
             }
         });
@@ -419,85 +355,106 @@ public final class GraphEditor extends JPanel
                 new JMenuItem("Random Multiple Indicator Model");
         graph.add(randomIndicatorModel);
 
-        randomIndicatorModel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                RandomMimParamsEditor editor = new RandomMimParamsEditor();
+        randomIndicatorModel.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        RandomMimParamsEditor editor = new RandomMimParamsEditor();
 
-                int ret = JOptionPane.showConfirmDialog(
-                        JOptionUtils.centeringComp(), editor,
-                        "Edit Random MIM Parameters",
-                        JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.PLAIN_MESSAGE);
+                        int ret = JOptionPane.showConfirmDialog(
+                                JOptionUtils.centeringComp(), editor,
+                                "Edit Random MIM Parameters",
+                                JOptionPane.OK_CANCEL_OPTION,
+                                JOptionPane.PLAIN_MESSAGE);
 
-                if (ret == JOptionPane.OK_OPTION) {
-                    int numStructuralNodes = Preferences.userRoot().getInt(
-                            "numStructuralNodes", 3);
-                    int maxStructuralEdges = Preferences.userRoot().getInt(
-                            "numStructuralEdges", 3);
-                    int measurementModelDegree = Preferences.userRoot().getInt(
-                            "measurementModelDegree", 3);
-                    int numLatentMeasuredImpureParents = Preferences.userRoot()
-                            .getInt("latentMeasuredImpureParents", 0);
-                    int numMeasuredMeasuredImpureParents =
-                            Preferences.userRoot()
-                                    .getInt("measuredMeasuredImpureParents", 0);
-                    int numMeasuredMeasuredImpureAssociations =
-                            Preferences.userRoot()
-                                    .getInt("measuredMeasuredImpureAssociations",
-                                            0);
+                        if (ret == JOptionPane.OK_OPTION) {
+                            int numStructuralNodes = Preferences.userRoot().getInt(
+                                    "numStructuralNodes", 3);
+                            int maxStructuralEdges = Preferences.userRoot().getInt(
+                                    "numStructuralEdges", 3);
+                            int measurementModelDegree = Preferences.userRoot().getInt(
+                                    "measurementModelDegree", 3);
+                            int numLatentMeasuredImpureParents = Preferences.userRoot()
+                                    .getInt("latentMeasuredImpureParents", 0);
+                            int numMeasuredMeasuredImpureParents =
+                                    Preferences.userRoot()
+                                            .getInt("measuredMeasuredImpureParents", 0);
+                            int numMeasuredMeasuredImpureAssociations =
+                                    Preferences.userRoot()
+                                            .getInt("measuredMeasuredImpureAssociations",
+                                                    0);
 
-                    Graph graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                            maxStructuralEdges, measurementModelDegree,
-                            numLatentMeasuredImpureParents,
-                            numMeasuredMeasuredImpureParents,
-                            numMeasuredMeasuredImpureAssociations);
+                            Graph graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
+                                    maxStructuralEdges, measurementModelDegree,
+                                    numLatentMeasuredImpureParents,
+                                    numMeasuredMeasuredImpureParents,
+                                    numMeasuredMeasuredImpureAssociations);
 
-                    getWorkbench().setGraph(graph);
-                }
-            }
-        });
+                            getWorkbench().setGraph(graph);
+                        }
+                    }
+                });
 
         JMenuItem randomDagScaleFree =
                 new JMenuItem("Random Scale Free DAG");
         graph.add(randomDagScaleFree);
 
-        randomDagScaleFree.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                RandomDagScaleFreeEditor editor = new RandomDagScaleFreeEditor();
+        randomDagScaleFree.addActionListener(new
 
-                int ret = JOptionPane.showConfirmDialog(
-                        GraphEditor.this, editor,
-                        "Edit Random DAG Parameters",
-                        JOptionPane.PLAIN_MESSAGE);
+                                                     ActionListener() {
+                                                         public void actionPerformed(ActionEvent e) {
+                                                             RandomDagScaleFreeEditor editor = new RandomDagScaleFreeEditor();
 
-                if (ret == JOptionPane.OK_OPTION) {
-                    Graph graph = GraphUtils.scaleFreeGraph(editor.getNumNodes(), editor.getNumLatents(),
-                            editor.getScaleFreeAlpha(),
-                            editor.getScaleFreeBeta(),
-                            editor.getScaleFreeDeltaIn(),
-                            editor.getScaleFreeDeltaOut());
-                    getWorkbench().setGraph(graph);
-                }
-            }
-        });
+                                                             int ret = JOptionPane.showConfirmDialog(
+                                                                     GraphEditor.this, editor,
+                                                                     "Edit Random DAG Parameters",
+                                                                     JOptionPane.PLAIN_MESSAGE);
+
+                                                             if (ret == JOptionPane.OK_OPTION) {
+                                                                 Graph graph = GraphUtils.scaleFreeGraph(editor.getNumNodes(), editor.getNumLatents(),
+                                                                         editor.getScaleFreeAlpha(),
+                                                                         editor.getScaleFreeBeta(),
+                                                                         editor.getScaleFreeDeltaIn(),
+                                                                         editor.getScaleFreeDeltaOut());
+                                                                 getWorkbench().setGraph(graph);
+                                                             }
+                                                         }
+                                                     }
+
+        );
 
         graph.addSeparator();
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
         graph.add(meekOrient);
 
-        meekOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                MeekRules rules = new MeekRules();
-                rules.orientImplied(getGraph());
-                getWorkbench().setGraph(getGraph());
-                firePropertyChange("modelChanged", null, null);
-            }
-        });
+        meekOrient.addActionListener(new
+
+                                             ActionListener() {
+                                                 public void actionPerformed(ActionEvent e) {
+                                                     MeekRules rules = new MeekRules();
+                                                     rules.orientImplied(getGraph());
+                                                     getWorkbench().setGraph(getGraph());
+                                                     firePropertyChange("modelChanged", null, null);
+                                                 }
+                                             }
+
+        );
 
         graph.addSeparator();
-        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
-        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
-        graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
+        graph.add(new
+
+                JMenuItem(new SelectBidirectedAction(getWorkbench()
+
+        )));
+        graph.add(new
+
+                JMenuItem(new SelectUndirectedAction(getWorkbench()
+
+        )));
+        graph.add(new
+
+                JMenuItem(new SelectLatentsAction(getWorkbench()
+
+        )));
 
 //        graph.addSeparator();
 //        IndependenceFactsAction action = new IndependenceFactsAction(

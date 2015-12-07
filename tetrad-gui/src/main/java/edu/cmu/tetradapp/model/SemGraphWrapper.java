@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.SessionModel;
@@ -71,7 +72,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			semGraph.setShowErrorTerms(false);
 		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			createRandomDag();
+			this.semGraph = new SemGraph(DataGraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
 	}
@@ -80,7 +81,8 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.MANUAL) {
             try {
-                this.semGraph = new SemGraph(graphWrapper.getSemGraph());
+				this.semGraph = new SemGraph();
+//				this.semGraph = new SemGraph(graphWrapper.getSemGraph());
                 this.semGraph.setShowErrorTerms(false);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -89,7 +91,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
             }
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			createRandomDag();
+			this.semGraph = new SemGraph(DataGraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
 	}
@@ -97,11 +99,12 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	public SemGraphWrapper(DagWrapper graphWrapper, GraphParams params) {
 		if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.MANUAL) {
-			this.semGraph = new SemGraph(graphWrapper.getDag());
+//			this.semGraph = new SemGraph(graphWrapper.getDag());
+			this.semGraph = new SemGraph();
 			this.semGraph.setShowErrorTerms(false);
 		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			createRandomDag();
+			this.semGraph = new SemGraph(DataGraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
 	}
@@ -109,11 +112,12 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	public SemGraphWrapper(GraphWrapper graphWrapper, GraphParams params) {
 		if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.MANUAL) {
-			this.semGraph = new SemGraph(graphWrapper.getGraph());
+//			this.semGraph = new SemGraph(graphWrapper.getGraph());
+			this.semGraph = new SemGraph();
 			this.semGraph.setShowErrorTerms(false);
 		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			createRandomDag();
+			this.semGraph = new SemGraph(DataGraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
 	}
@@ -194,66 +198,6 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	private void log() {
         TetradLogger.getInstance().log("info", "Structural Equation Model (SEM) Graph");
         TetradLogger.getInstance().log("graph", "" + semGraph);
-	}
-
-	private void createRandomDag() {
-		Graph graph = null;
-
-		while (graph == null) {
-			Graph dag;
-
-			boolean uniformlySelected = Preferences.userRoot().getBoolean(
-					"graphUniformlySelected", true);
-			int numMeasuredNodes = Preferences.userRoot().getInt(
-					"newGraphNumMeasuredNodes", 5);
-			int numLatents = Preferences.userRoot().getInt(
-					"newGraphNumLatents", 0);
-			int newGraphNumEdges = Preferences.userRoot().getInt(
-					"newGraphNumEdges", 3);
-			boolean connected = Preferences.userRoot().getBoolean(
-					"randomGraphConnected", false);
-
-			if (uniformlySelected) {
-				int maxDegree = Preferences.userRoot().getInt(
-						"randomGraphMaxDegree", 6);
-				int maxIndegree = Preferences.userRoot().getInt(
-						"randomGraphMaxIndegree", 3);
-				int maxOutdegree = Preferences.userRoot().getInt(
-						"randomGraphMaxOutdegree", 3);
-
-				dag = GraphUtils.randomGraph(numMeasuredNodes + numLatents,
-						numLatents, newGraphNumEdges, maxDegree, maxIndegree,
-						maxOutdegree, connected);
-			} else {
-				do {
-					dag = GraphUtils.randomGraph(numMeasuredNodes + numLatents,
-							numLatents, newGraphNumEdges, 30, 15, 15,
-							connected);
-				} while (dag.getNumEdges() < newGraphNumEdges);
-			}
-
-			boolean addCycles = Preferences.userRoot().getBoolean(
-					"randomGraphAddCycles", false);
-
-			if (addCycles) {
-				int minCycleLength = Preferences.userRoot().getInt(
-						"randomGraphMinCycleLength", 2);
-
-//				graph = DataGraphUtils
-//						.addCycles2(dag, minNumCycles, minCycleLength);
-//
-                graph = GraphUtils.cyclicGraph2(numMeasuredNodes + numLatents, newGraphNumEdges);
-			} else {
-				graph = new EdgeListGraph(dag);
-			}
-
-            int minNumCycles = Preferences.userRoot().getInt(
-                    "randomGraphMinNumCycles", 0);
-            GraphUtils.addTwoCycles(graph, minNumCycles);
-        }
-
-		semGraph = new SemGraph(graph);
-		semGraph.setShowErrorTerms(false);
 	}
 
 	/**
