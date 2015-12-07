@@ -161,6 +161,8 @@ public class TestDagInPatternIterator extends TestCase {
     }
 
     public void test5() {
+        RandomUtil.getInstance().setSeed(34828384L);
+
         Dag dag1 = new Dag(GraphUtils.randomGraph(3, 0, 3, 30, 15, 15, false));
 
         System.out.println(dag1);
@@ -218,7 +220,7 @@ public class TestDagInPatternIterator extends TestCase {
 
         while (iterator3.hasNext()) {
             Graph dag = iterator3.next();
-            System.out.println(dag);
+//            System.out.println(dag);
             count++;
         }
 

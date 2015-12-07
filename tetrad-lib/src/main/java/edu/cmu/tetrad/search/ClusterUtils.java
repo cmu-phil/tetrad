@@ -46,29 +46,29 @@ public class ClusterUtils {
 //        return _indices;
 //    }
 
-//    public static List<List<Integer>> convertClusterIndicesToLists(List<Integer> clusterIndices) {
-//        int max = 0;
-//
-//        for (int i = 0; i < clusterIndices.size(); i++) {
-//            if (clusterIndices.get(i) > max) max = clusterIndices.get(i);
-//        }
-//
-//        List<List<Integer>> clusters = new ArrayList<List<Integer>>();
-//
-//        for (int i = 0; i <= max; i++) {
-//            clusters.add(new LinkedList<Integer>());
-//        }
-//
-//        for (int i = 0; i < clusterIndices.size(); i++) {
-//            Integer index = clusterIndices.get(i);
-//
-//            if (index == -1) continue;
-//
-//            clusters.get(index).add(i);
-//        }
-//
-//        return clusters;
-//    }
+    public static List<List<Integer>> convertClusterIndicesToLists(List<Integer> clusterIndices) {
+        int max = 0;
+
+        for (int i = 0; i < clusterIndices.size(); i++) {
+            if (clusterIndices.get(i) > max) max = clusterIndices.get(i);
+        }
+
+        List<List<Integer>> clusters = new ArrayList<List<Integer>>();
+
+        for (int i = 0; i <= max; i++) {
+            clusters.add(new LinkedList<Integer>());
+        }
+
+        for (int i = 0; i < clusterIndices.size(); i++) {
+            Integer index = clusterIndices.get(i);
+
+            if (index == -1) continue;
+
+            clusters.get(index).add(i);
+        }
+
+        return clusters;
+    }
 
 //    public static void printPcaTranslations(TetradMatrix selection, int k) {
 //        System.out.println("\nPCA:");

@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-interface ClusteringAlgorithm {
+public interface ClusteringAlgorithm {
 
     /**
      * Clusters the given data set.

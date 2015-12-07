@@ -2037,6 +2037,16 @@ public final class GraphUtils {
         return builder.toString();
     }
 
+    public static void graphToDot(Graph graph, File file) {
+        try {
+            Writer writer = new FileWriter(file);
+            writer.write(graphToDot(graph));
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * @return an XML element representing the given graph. (Well, only a
      * basic graph for now...)
@@ -2310,7 +2320,7 @@ public final class GraphUtils {
         return null;
     }
 
-    private static Element getRootElement(File file) throws ParsingException, IOException {
+    public static Element getRootElement(File file) throws ParsingException, IOException {
         Builder builder = new Builder();
         Document document = builder.build(file);
         return document.getRootElement();
@@ -3521,6 +3531,8 @@ public final class GraphUtils {
         return false;
     }
 
+
+
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
     public static List<Node> getSepset(Node x, Node y, Graph graph) {
         final int bound = -1;
@@ -3921,6 +3933,171 @@ public final class GraphUtils {
 
         return false;
     }
+
+    public static int getDegree(Graph graph) {
+        int max = 0;
+
+        for (Node node : graph.getNodes()) {
+            if (graph.getAdjacentNodes(node).size() > max) {
+                max = graph.getAdjacentNodes(node).size();
+            }
+        }
+
+        return max;
+    }
+
+    /**
+     * Number directed edges in both graph1 and graph2 divided by the number of directed edges in graph1.
+     */
+    public static double orientationPrecision(Graph graph1, Graph graph2) {
+        Graph _graph2 = replaceNodes(graph1, graph2.getNodes());
+
+        if (!new HashSet<Node>(graph2.getNodes()).equals(new HashSet<Node>(graph1.getNodes()))) {
+            throw new IllegalArgumentException("Variables in the two graphs must be the same.");
+        }
+
+        int intersection = 0;
+        int numGraph2 = 0;
+
+        for (Edge edge : graph2.getEdges()) {
+            edge = new Edge(edge);
+            if (Edges.isPartiallyOrientedEdge(edge)) edge.setEndpoint1(Endpoint.TAIL);
+
+            if (!edge.isDirected()) continue;
+
+//            Edge oppositeEdge = new Edge(edge.getNode1(), edge.getNode2(), edge.getEndpoint2(), edge.getEndpoint1());
+//
+//            Ignore cycles.
+//            if (graph1.containsEdge(oppositeEdge)) {
+//                continue;
+//            }
+
+            numGraph2++;
+
+            if (_graph2.containsEdge(edge)) {
+                intersection++;
+            }
+        }
+
+        return intersection / (double) numGraph2;
+    }
+
+    public static double adjacencyPrecision(Graph graph1, Graph graph2) {
+        List<Node> nodes = graph1.getNodes();
+        Graph _graph2 = replaceNodes(graph2, nodes);
+
+        if (!new HashSet(nodes).equals(new HashSet<Node>(graph2.getNodes()))) {
+            throw new IllegalArgumentException("Variables in the two graphs must be the same.");
+        }
+
+        int intersection = 0;
+        int numGraph1 = 0;
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node node1 = nodes.get(i);
+                Node node2 = nodes.get(j);
+
+                if (graph1.isAdjacentTo(node1, node2)) {
+                    numGraph1++;
+
+                    if (_graph2.isAdjacentTo(node1, node2)) {
+                        intersection++;
+                    }
+                }
+            }
+        }
+
+//        for (Edge edge : graph1.getEdges()) {
+//            numGraph1++;
+//
+//            if (_graph2.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                intersection++;
+//            }
+//        }
+
+        return intersection / (double) numGraph1;
+    }
+
+
+    public static int arrowEndpointComplement(Graph graph1, Graph graph2) {
+        int count = 0;
+
+        for (Edge edge1 : graph1.getEdges()) {
+            String name1 = edge1.getNode1().getName();
+            String name2 = edge1.getNode2().getName();
+
+            Node node21 = graph2.getNode(name1);
+            Node node22 = graph2.getNode(name2);
+
+            Edge edge2 = graph2.getEdge(node21, node22);
+//
+//            if (edge1.getEndpoint1() == Endpoint.ARROW) {
+//                if (edge2 == null) {
+//                    count++;
+//                } else if (edge2.getProximalEndpoint(node21) != Endpoint.ARROW) {
+//                    count++;
+//                }
+//            }
+//
+//            if (edge1.getEndpoint2() == Endpoint.ARROW) {
+//                if (edge2 == null) {
+//                    count++;
+//                } else if (edge2.getProximalEndpoint(node22) != Endpoint.ARROW) {
+//                    count++;
+//                }
+//            }
+
+
+            if (edge2 != null) {
+                if (edge1.getEndpoint1() == Endpoint.ARROW && edge2.getProximalEndpoint(node21) != Endpoint.ARROW) {
+                    count++;
+                }
+
+                if (edge1.getEndpoint2() == Endpoint.ARROW && edge2.getProximalEndpoint(node22) != Endpoint.ARROW) {
+                    count++;
+                }
+            } else {
+                if (Edges.isBidirectedEdge(edge1)) {
+                    count += 2;
+                } else if (Edges.isDirectedEdge(edge1)) {
+                    count++;
+                }
+            }
+        }
+
+
+        return count;
+    }
+
+    /**
+     * @return the edges that are in <code>graph1</code> but not in <code>graph2</code>.
+     *
+     * @param graph1 An arbitrary graph.
+     * @param graph2 Another arbitrary graph with the same number of nodes
+     *               and node names.
+     */
+    public static List<Edge> edgesComplement(Graph graph1, Graph graph2) {
+        List<Edge> edges = new ArrayList<Edge>();
+
+        for (Edge edge1 : graph1.getEdges()) {
+            String name1 = edge1.getNode1().getName();
+            String name2 = edge1.getNode2().getName();
+
+            Node node21 = graph2.getNode(name1);
+            Node node22 = graph2.getNode(name2);
+
+            Edge edge2 = graph2.getEdge(node21, node22);
+
+            if (edge2 == null || !edge1.equals(edge2)) {
+                edges.add(edge1);
+            }
+        }
+
+        return edges;
+    }
+
+
 }
 
 
