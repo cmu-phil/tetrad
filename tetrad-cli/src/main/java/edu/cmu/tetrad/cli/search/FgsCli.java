@@ -66,6 +66,7 @@ public class FgsCli {
         MAIN_OPTIONS.addOption("k", "knowledge", true, "Prior knowledge file.");
         MAIN_OPTIONS.addOption("l", "delimiter", true, "Data file delimiter.");
         MAIN_OPTIONS.addOption("m", "depth", true, "Search depth.");
+        MAIN_OPTIONS.addOption("f", "faithfulness", false, "Assume faithfulness.");
         MAIN_OPTIONS.addOption("v", "verbose", false, "Verbose message.");
         MAIN_OPTIONS.addOption("p", "penalty-discount", true, "Penalty discount.");
         MAIN_OPTIONS.addOption("n", "name", true, "Output file name.");
@@ -79,6 +80,7 @@ public class FgsCli {
     private static char delimiter;
     private static double penaltyDiscount;
     private static int depth;
+    private static boolean faithfulness;
     private static boolean verbose;
     private static String fileOut;
 
@@ -102,6 +104,7 @@ public class FgsCli {
             delimiter = Args.getCharacter(cmd.getOptionValue("l", "\t"));
             penaltyDiscount = Args.parseDouble(cmd.getOptionValue("p", "4.0"));
             depth = Args.parseInteger(cmd.getOptionValue("m", "3"), -1);
+            faithfulness = cmd.hasOption("f");
             verbose = cmd.hasOption("v");
             dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
             fileOut = cmd.getOptionValue("n", String.format("fgs_pd%1.2f_d%d_%d.txt", penaltyDiscount, depth, System.currentTimeMillis()));
@@ -143,9 +146,17 @@ public class FgsCli {
         stream.println(dataFile.getFileName().toString());
         stream.println();
 
+        stream.println("Knowledge:");
+        if (knowledgeFile != null) {
+            stream.println(String.format("knowledge = %s", knowledgeFile.toString()));
+        }
+        stream.println();
+
         stream.println("Graph Parameters:");
         stream.println(String.format("penalty discount = %f", penaltyDiscount));
         stream.println(String.format("depth = %s", depth));
+        stream.println(String.format("faithfulness = %s", faithfulness));
+
         stream.println();
     }
 

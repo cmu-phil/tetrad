@@ -62,6 +62,7 @@ public class FgsCliTest extends AbstractAlgorithmTest {
         // run without prior knowledge
         String[] args = {
             "-d", dataFile.toAbsolutePath().toString(),
+            "-f",
             "-o", outDir,
             "-n", fileName
         };
