@@ -77,9 +77,9 @@ public class FgsCli {
     private static Path knowledgeFile;
     private static Path dirOut;
     private static char delimiter;
-    private static Double penaltyDiscount;
-    private static Integer depth;
-    private static Boolean verbose;
+    private static double penaltyDiscount;
+    private static int depth;
+    private static boolean verbose;
     private static String fileOut;
 
     /**
