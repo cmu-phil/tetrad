@@ -22,10 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
@@ -59,8 +56,14 @@ public class TestRegression extends TestCase {
     }
 
     public void setUp() {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
         RandomUtil.getInstance().setSeed(342233L);
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 3,
+        Graph graph = new Dag(GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 5, 3,
                 3, 3, false));
 
         System.out.println(graph);

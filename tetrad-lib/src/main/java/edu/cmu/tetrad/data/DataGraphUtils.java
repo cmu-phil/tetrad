@@ -22,10 +22,13 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * Sundry graph utils that need to be located in the data package to
@@ -286,6 +289,128 @@ public class DataGraphUtils {
 //        }
 
         return mim;
+    }
+
+    public static Graph makeRandomGraph(Graph graph) {
+        final String type = Preferences.userRoot().get("randomGraphType", "Uniform");
+
+        if (type.equals("Uniform")) {
+            return makeRandomDag(graph);
+        } else if (type.equals("Mim")) {
+            return makeRandomMim();
+        } else if (type.equals("ScaleFree")) {
+            return makeRandomScaleFree();
+        }
+
+        throw new IllegalStateException("Unrecognized graph type: " + type);
+    }
+
+    public static Graph makeRandomDag(Graph _graph) {
+        Graph graph = null;
+
+        boolean connected = Preferences.userRoot().getBoolean("randomGraphConnected", false);
+        boolean addCycles = Preferences.userRoot().getBoolean("randomGraphAddCycles", false);
+        int numTrials = 0;
+
+        while (graph == null && ++numTrials < 100) {
+            Preferences.userRoot().getBoolean("graphRandomFoward", true);
+
+            int numNodes = Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5)
+                    + Preferences.userRoot().getInt("newGraphNumLatents", 0);
+
+            List<Node> nodes = new ArrayList<>();
+
+            for (int i = 0; i < numNodes; i++) {
+                nodes.add(new GraphNode("X" + (i + 1)));
+            }
+
+            if (Preferences.userRoot().getBoolean("graphRandomFoward", true)) {
+                graph = GraphUtils.randomGraphRandomForwardEdges(nodes, Preferences.userRoot().getInt("newGraphNumLatents", 0),
+                        Preferences.userRoot().getInt("newGraphNumEdges", 3));
+                GraphUtils.arrangeBySourceGraph(graph, _graph);
+                HashMap<String, PointXy> layout = GraphUtils.grabLayout(nodes);
+                GraphUtils.arrangeByLayout(graph, layout);
+            } else if (Preferences.userRoot().getBoolean("graphUniformlySelected", true)) {
+
+                graph = GraphUtils.randomGraphUniform(nodes,
+                        Preferences.userRoot().getInt("newGraphNumLatents", 0),
+                        Preferences.userRoot().getInt("newGraphNumEdges", 3),
+                        Preferences.userRoot().getInt("randomGraphMaxDegree", 6),
+                        Preferences.userRoot().getInt("randomGraphMaxIndegree", 3),
+                        Preferences.userRoot().getInt("randomGraphMaxOutdegree", 1),
+                        Preferences.userRoot().getBoolean("randomGraphConnected", connected));
+                GraphUtils.arrangeBySourceGraph(graph, _graph);
+                HashMap<String, PointXy> layout = GraphUtils.grabLayout(nodes);
+                GraphUtils.arrangeByLayout(graph, layout);
+            } else if (Preferences.userRoot().getBoolean("graphChooseFixed", false)) {
+                do {
+                    graph = GraphUtils.randomGraph(nodes,
+                            Preferences.userRoot().getInt("newGraphNumLatents", 0),
+                            Preferences.userRoot().getInt("newGraphNumEdges", 3),
+                            Preferences.userRoot().getInt("randomGraphMaxDegree", 6),
+                            Preferences.userRoot().getInt("randomGraphMaxIndegree", 3),
+                            Preferences.userRoot().getInt("randomGraphMaxOutdegree", 1),
+                            Preferences.userRoot().getBoolean("randomGraphConnected", connected));
+                    GraphUtils.arrangeBySourceGraph(graph, _graph);
+                    HashMap<String, PointXy> layout = GraphUtils.grabLayout(nodes);
+                    GraphUtils.arrangeByLayout(graph, layout);
+                } while (graph.getNumEdges() < Preferences.userRoot().getInt("newGraphNumEdges", 3));
+            }
+
+            if (addCycles) {
+                graph = GraphUtils.cyclicGraph2(numNodes, Preferences.userRoot().getInt("newGraphNumEdges", 3));
+            } else {
+                graph = new EdgeListGraph(graph);
+            }
+
+            GraphUtils.addTwoCycles(graph, Preferences.userRoot().getInt("randomGraphMinNumCycles", 0));
+        }
+
+        if (graph == null) {
+            throw new NullPointerException("Could not find a graph that meets those constraints.");
+        }
+
+        return graph;
+    }
+
+    public static Graph makeRandomMim() {
+        int numStructuralNodes = Preferences.userRoot().getInt(
+                "numStructuralNodes", 3);
+        int maxStructuralEdges = Preferences.userRoot().getInt(
+                "numStructuralEdges", 3);
+        int measurementModelDegree = Preferences.userRoot().getInt(
+                "measurementModelDegree", 3);
+        int numLatentMeasuredImpureParents = Preferences.userRoot()
+                .getInt("latentMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureParents =
+                Preferences.userRoot()
+                        .getInt("measuredMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureAssociations =
+                Preferences.userRoot()
+                        .getInt("measuredMeasuredImpureAssociations",
+                                0);
+
+        Graph graph = randomSingleFactorModel(numStructuralNodes,
+                maxStructuralEdges, measurementModelDegree,
+                numLatentMeasuredImpureParents,
+                numMeasuredMeasuredImpureParents,
+                numMeasuredMeasuredImpureAssociations);
+
+        return graph;
+    }
+
+    public static Graph makeRandomScaleFree() {
+        int numNodes = Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5);
+        int numLatents = Preferences.userRoot().getInt("newGraphNumLatents", 0);
+
+        double alpha = Preferences.userRoot().getDouble("scaleFreeAlpha", 0.2);
+        double beta = Preferences.userRoot().getDouble("scaleFreeBeta", 0.6);
+        double deltaIn = Preferences.userRoot().getDouble("scaleFreeDeltaIn", 0.2);
+        double deltaOut = Preferences.userRoot().getDouble("scaleFreeDeltaOut", 0.2);
+
+        Graph graph = GraphUtils.scaleFreeGraph(numNodes, numLatents,
+                alpha, beta, deltaIn, deltaOut);
+        return graph;
     }
 }
 

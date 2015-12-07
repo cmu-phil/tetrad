@@ -53,7 +53,7 @@ public final class TestGraphUtils extends TestCase {
     }
 
     public void testDirectedPaths() {
-        Graph graph = new Dag(GraphUtils.randomGraph(6, 0, 10, 3,
+        Graph graph = new Dag(GraphUtils.randomGraph(6, 0, 6, 3,
                 3, 3, false));
 
         System.out.println("Graph = " + graph);
