@@ -207,13 +207,6 @@ public final class Misclassifications implements SessionModel {
             setVcpcFastFields((VcpcFastRunner) model2);
         }
 
-        if ((model2 instanceof CpcRunner && model1 instanceof VcpcFastRunner)) {
-            this.useFcpcOutputs = true;
-            setVcpcFastFields((VcpcFastRunner) model2);
-            setVcpcFastFields((VcpcFastRunner) model1);
-
-        }
-
         // Need to be able to construct this object even if the models are
         // null. Otherwise the interface is annoying.
         if (model2 == null) {
