@@ -383,8 +383,7 @@ public final class SemGraphEditor extends JPanel
                     while (graph == null && ++numTrials < 100) {
 
                         if (editor.isRandomForward()) {
-                            dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(),
-                                    editor.getMaxEdges());
+                            dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), 30, 15, 15, false);
                             GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
                             HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
                             GraphUtils.arrangeByLayout(dag, layout);
@@ -398,10 +397,14 @@ public final class SemGraphEditor extends JPanel
 
                                 GraphUtils.arrangeByLayout(dag, layout);
                             } else {
-                                dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                        editor.getNumLatents(), editor.getMaxEdges(),
-                                        editor.getMaxDegree(), editor.getMaxIndegree(),
-                                        editor.getMaxOutdegree(), editor.isConnected());
+                                List<Node> nodes = new ArrayList<Node>();
+
+                                for (int i = 0; i < editor.getNumNodes(); i++) {
+                                    nodes.add(new ContinuousVariable("X" + (i + 1)));
+                                }
+
+                                dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
+                                        editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
                             }
                         } else if (editor.isChooseFixed()){
                             do {
@@ -413,10 +416,14 @@ public final class SemGraphEditor extends JPanel
 
                                     GraphUtils.arrangeByLayout(dag, layout);
                                 } else {
-                                    dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                            editor.getNumLatents(), editor.getMaxEdges(),
-                                            30, 15, 15, editor.isConnected()
-                                    );
+                                    List<Node> nodes = new ArrayList<Node>();
+
+                                    for (int i = 0; i < editor.getNumNodes(); i++) {
+                                        nodes.add(new ContinuousVariable("X" + (i + 1)));
+                                    }
+
+                                    dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
+                                            30, 15, 15, editor.isConnected());
                                 }
                             } while (dag.getNumEdges() < editor.getMaxEdges());
                         }

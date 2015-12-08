@@ -78,6 +78,8 @@ public class TestRegression extends TestCase {
      * At one point, this was the answer being returned.
      */
     public void testTabular() {
+        RandomUtil.getInstance().setSeed(3848283L);
+
         List<Node> nodes = data.getVariables();
 
         Node target = nodes.get(0);
@@ -93,17 +95,19 @@ public class TestRegression extends TestCase {
         System.out.println(result);
 
         double[] coeffs = result.getCoef();
-        assertEquals(-.01, coeffs[0], 0.01);
-        assertEquals(-.1, coeffs[1], 0.01);
-        assertEquals(-0.01, coeffs[2], 0.01);
-        assertEquals(0.17, coeffs[3], 0.01);
-        assertEquals(-.23, coeffs[4], 0.01);
+        assertEquals(.08, coeffs[0], 0.01);
+        assertEquals(-.05, coeffs[1], 0.01);
+        assertEquals(.035, coeffs[2], 0.01);
+        assertEquals(0.019, coeffs[3], 0.01);
+        assertEquals(-.003, coeffs[4], 0.01);
     }
 
     /**
      * Same problem, using the covariance matrix.
      */
     public void testCovariance() {
+        RandomUtil.getInstance().setSeed(3848283L);
+
         ICovarianceMatrix cov = new CovarianceMatrix(data);
         List<Node> nodes = cov.getVariables();
 
@@ -120,11 +124,11 @@ public class TestRegression extends TestCase {
         System.out.println(result);
 
         double[] coeffs = result.getCoef();
-        assertEquals(0.0, coeffs[0], 0.01);
-        assertEquals(-.16, coeffs[1], 0.01);
-        assertEquals(-0.02, coeffs[2], 0.01);
-        assertEquals(.41, coeffs[3], 0.01);
-        assertEquals(-.4, coeffs[4], 0.01);
+        assertEquals(0.00, coeffs[0], 0.01);
+        assertEquals(-.04, coeffs[1], 0.01);
+        assertEquals(0.036, coeffs[2], 0.01);
+        assertEquals(.019, coeffs[3], 0.01);
+        assertEquals(.007, coeffs[4], 0.01);
     }
 
     private char[] fileToCharArray(File file) {

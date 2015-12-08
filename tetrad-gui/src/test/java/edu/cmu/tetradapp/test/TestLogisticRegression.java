@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
@@ -32,6 +33,9 @@ import edu.cmu.tetrad.util.TetradLogger;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Runs a test of logistic regression based on an example (South African heart
@@ -58,8 +62,14 @@ public class TestLogisticRegression extends TestCase {
     }
 
     public void test1() {
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 3,
-                3, 3, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                3, 3, 3, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateDataRecursive(1000, false);

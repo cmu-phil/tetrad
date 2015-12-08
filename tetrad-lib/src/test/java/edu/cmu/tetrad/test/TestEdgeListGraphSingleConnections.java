@@ -22,11 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -137,7 +133,14 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
     }
 
     public void testSequence3() {
-        Graph graph = new Dag(GraphUtils.randomGraph(50, 0, 50, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 50; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 50,
+                30, 15, 15, false));
 
         Node node1 = graph.getNodes().get(0);
         Node node2 = graph.getNodes().get(1);
@@ -183,7 +186,7 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
         List<Node> nodes = new ArrayList<Node>();
         for (int i = 0; i < 50; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, nodes.size());
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, nodes.size(), 30, 15, 15, false);
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {

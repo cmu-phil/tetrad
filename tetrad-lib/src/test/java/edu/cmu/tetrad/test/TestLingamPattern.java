@@ -62,8 +62,14 @@ public class TestLingamPattern extends TestCase {
     public void test1() {
         int sampleSize = 1000;
 
-        Graph graph = new Dag(GraphUtils.randomGraph(6, 0, 6, 4,
-                4, 4, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 6; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
+                4, 4, 4, false));
 //        new EdgeListGraph();
 
 //        Node x = new GraphNode("X");

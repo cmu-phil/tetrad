@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
@@ -39,6 +36,7 @@ import junit.framework.TestSuite;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -106,8 +104,14 @@ public class TestCpc extends TestCase {
         boolean latentDataSaved = false;
         int increment = 1;
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 7,
-                5, 5, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < numVars; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
+                7, 5, 5, false));
 
         System.out.println("\nInput graph:");
         System.out.println(trueGraph);
@@ -171,8 +175,14 @@ public class TestCpc extends TestCase {
         int numVars = 6;
         int numEdges = 6;
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 7,
-                5, 5, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < numVars; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
+                7, 5, 5, false));
 
         System.out.println("\nInput graph:");
         System.out.println(trueGraph);
@@ -222,8 +232,14 @@ public class TestCpc extends TestCase {
         for (int i = 0; i < 100; i++) {
             TetradLogger.getInstance().log("info", "# " + (i + 1));
 
-            Graph graph = new Dag(GraphUtils.randomGraph(20, 0, 20, 4,
-                    4, 4, false));
+            List<Node> nodes1 = new ArrayList<Node>();
+
+            for (int i1 = 0; i1 < 20; i1++) {
+                nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
+            }
+
+            Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 20,
+                    4, 4, 4, false));
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             DataSet dataSet = im.simulateData(1000, false);

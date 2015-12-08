@@ -306,8 +306,14 @@ public class TestCcd extends TestCase {
 
         TetradLogger.getInstance().addOutputStream(System.out);
         TetradLogger.getInstance().setForceLog(true);
-        Dag dag = new Dag(GraphUtils.randomGraph(20, 0, 20, 3,
-                3, 4, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 20; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag dag = new Dag(GraphUtils.randomGraph(nodes, 0, 20,
+                3, 3, 4, false));
         Graph graph = GraphUtils.addCycles(dag, 7, 2);
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);

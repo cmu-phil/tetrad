@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Dag;
@@ -60,8 +61,14 @@ public class TestIndTestLogisticRegression extends TestCase {
         int numPassed = 0;
 
         for (int i = 0; i < 1; i++) {
-            Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 3,
-                    3, 3, false));
+            List<Node> nodes = new ArrayList<Node>();
+
+            for (int i1 = 0; i1 < 5; i1++) {
+                nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+            }
+
+            Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                    3, 3, 3, false));
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateDataRecursive(1000, false);

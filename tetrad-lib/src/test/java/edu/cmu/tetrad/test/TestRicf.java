@@ -34,6 +34,7 @@ import junit.framework.TestSuite;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -240,8 +241,14 @@ public class TestRicf extends TestCase {
     }
 
     public void testCliques2() {
-        Graph graph = new Dag(GraphUtils.randomGraph(8, 0, 20, 5,
-                5, 5, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 8; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 20,
+                5, 5, 5, false));
         List<List<Node>> cliques = new Ricf().cliques(graph);
         System.out.println(graph);
         System.out.println(cliques);
@@ -332,7 +339,14 @@ public class TestRicf extends TestCase {
 //    }
 
     public void test2() {
-        Graph graph = new Dag(GraphUtils.randomGraph(10, 0, 10, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 10,
+                30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
@@ -370,8 +384,22 @@ public class TestRicf extends TestCase {
     }
 
     public void test4() {
-        Graph g1 = GraphUtils.randomGraph(5, 0, 5, 0, 0, 0, false);
-        Graph g2 = GraphUtils.randomGraph(5, 0, 5, 0, 0, 0, false);
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 5; i1++) {
+            nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph g1 = GraphUtils.randomGraph(nodes1, 0, 5,
+                0, 0, 0, false);
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph g2 = GraphUtils.randomGraph(nodes, 0, 5,
+                0, 0, 0, false);
 
         SemPm pm = new SemPm(g1);
         SemIm im = new SemIm(pm);

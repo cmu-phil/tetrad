@@ -21,9 +21,11 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.Kpc;
 import edu.cmu.tetrad.search.Pc;
@@ -31,6 +33,9 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.TetradLogger;
 import junit.framework.TestCase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests Kpc class
@@ -65,8 +70,14 @@ public class TestKpc extends TestCase {
     // This takes too long for the test set--Joe
 
     public void rtestkPCSearch() {
-        Dag dag = new Dag(GraphUtils.randomGraph(4, 0, 4, 3,
-                3, 3, true));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 4; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag dag = new Dag(GraphUtils.randomGraph(nodes, 0, 4,
+                3, 3, 3, true));
         SemPm sem = new SemPm(dag);
         SemIm im = new SemIm(sem);
         DataSet data = im.simulateData(500, false);

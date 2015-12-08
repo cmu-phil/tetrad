@@ -2039,7 +2039,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * Iterates through all freeParameters, picking values for them from the
      * distributions that have been set for them.
      */
-    private void initializeValues() {
+    public void initializeValues() {
         for (Mapping fixedMapping : fixedMappings) {
             Parameter parameter = fixedMapping.getParameter();
             fixedMapping.setValue(initialValue(parameter));
@@ -2710,45 +2710,45 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 / power_of_ten;
     }
 
-    private SemImInitializationParams getInitializationParams() {
+    public SemImInitializationParams getInitializationParams() {
         return initializationParams;
     }
 
-    private void setInitializationParams(SemImInitializationParams
+    public void setInitializationParams(SemImInitializationParams
                                                  initializationParams) {
         this.initializationParams = initializationParams;
     }
 
-//    public void setFunction(Node node, ConnectionFunction function) {
-//        List<Node> parents = semPm.getGraph().getParents(node);
-//
-//        for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
-//            Node _node = j.next();
-//
-//            if (_node.getNodeType() == NodeType.ERROR) {
-//                j.remove();
-//            }
-//        }
-//
-//        HashSet<Node> parentSet = new HashSet<>(parents);
-//        List<Node> inputList = Arrays.asList(function.getInputNodes());
-//        HashSet<Node> inputSet = new HashSet<>(inputList);
-//
-//        if (!parentSet.equals(inputSet)) {
-//            throw new IllegalArgumentException("The given function for " + node +
-//                    " may only use the parents of " + node + ": " + parents);
-//        }
-//
-//        functions.put(node, function);
-//    }
+    public void setFunction(Node node, ConnectionFunction function) {
+        List<Node> parents = semPm.getGraph().getParents(node);
 
-//    public ConnectionFunction getConnectionFunction(Node node) {
-//        return functions.get(node);
-//    }
-//
-//    public double[] getVariableMeans() {
-//        return variableMeans;
-//    }
+        for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
+            Node _node = j.next();
+
+            if (_node.getNodeType() == NodeType.ERROR) {
+                j.remove();
+            }
+        }
+
+        HashSet<Node> parentSet = new HashSet<>(parents);
+        List<Node> inputList = Arrays.asList(function.getInputNodes());
+        HashSet<Node> inputSet = new HashSet<>(inputList);
+
+        if (!parentSet.equals(inputSet)) {
+            throw new IllegalArgumentException("The given function for " + node +
+                    " may only use the parents of " + node + ": " + parents);
+        }
+
+        functions.put(node, function);
+    }
+
+    public ConnectionFunction getConnectionFunction(Node node) {
+        return functions.get(node);
+    }
+
+    public double[] getVariableMeans() {
+        return variableMeans;
+    }
 
     public boolean isSimulatedPositiveDataOnly() {
         return simulatedPositiveDataOnly;

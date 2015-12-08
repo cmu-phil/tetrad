@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
@@ -69,7 +70,14 @@ public class TestJcpc extends TestCase {
         int numVars = 4;
         int sampleSize = 1000;
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numVars, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < numVars; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numVars,
+                30, 15, 15, false));
 
         System.out.println("\nInput graph:");
         System.out.println(trueGraph);
@@ -97,8 +105,14 @@ public class TestJcpc extends TestCase {
         int numEdges = 20;
         int sampleSize = 1000;
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 7,
-                5, 5, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < numVars; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
+                7, 5, 5, false));
 
         System.out.println("\nInput graph:");
         System.out.println(trueGraph);

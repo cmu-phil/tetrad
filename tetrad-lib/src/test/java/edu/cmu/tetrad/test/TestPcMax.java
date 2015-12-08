@@ -83,7 +83,7 @@ public class TestPcMax extends TestCase {
         Graph dag;
         int[] causalOrdering = new int[vars.size()];
 
-        dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
+        dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false);
 //        dag = DataGraphUtils.scaleFreeGraph(vars, 0, 0.05, 0.05, 5, 15);
         printDegreeDistribution(dag, System.out);
 
@@ -184,7 +184,7 @@ public class TestPcMax extends TestCase {
         System.out.println("Making dag");
         Graph dag;
 
-        dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
+        dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false);
 //        dag = DataGraphUtils.scaleFreeGraph(vars, 0, 0.05, 0.05, 5, 15);
         printDegreeDistribution(dag, System.out);
 

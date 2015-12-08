@@ -40,7 +40,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.text.NumberFormat;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -219,7 +219,14 @@ public class FactorAnalysisAction extends AbstractAction {
     }
 
     public static void main(String[] args) {
-        Graph graph = new Dag(GraphUtils.randomGraph(9, 0, 9, 30, 15, 15, false));
+        java.util.List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 9; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 9,
+                30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(500, false);

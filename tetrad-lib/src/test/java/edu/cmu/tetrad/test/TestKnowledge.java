@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
@@ -46,7 +47,14 @@ public final class TestKnowledge extends TestCase {
     }
 
     public final void test1() {
-        Graph g = GraphUtils.randomGraph(10, 0, 10, 3, 3, 3, false);
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 10; i1++) {
+            nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph g = GraphUtils.randomGraph(nodes1, 0, 10,
+                3, 3, 3, false);
         g.getNode("X1").setName("X1.1");
         g.getNode("X2").setName("X2-1");
 
@@ -120,7 +128,14 @@ public final class TestKnowledge extends TestCase {
     }
 
     public final void test2() {
-        Graph g = GraphUtils.randomGraph(100, 0, 100, 3, 3, 3, false);
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i = 0; i < 100; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph g = GraphUtils.randomGraph(nodes1, 0, 100,
+                3, 3, 3, false);
 
         List<Node> nodes = g.getNodes();
 

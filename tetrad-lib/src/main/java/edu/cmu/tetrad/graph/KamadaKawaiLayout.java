@@ -38,7 +38,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-final class KamadaKawaiLayout {
+public final class KamadaKawaiLayout {
 
     /**
      * The graph being laid out.

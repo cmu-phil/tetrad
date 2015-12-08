@@ -651,7 +651,9 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
         for (Node c : graph.getChildren(z)) {
             for (Node p : graph.getParents(c)) {
-                mb.add(p);
+                if (p != z) {
+                    mb.add(p);
+                }
             }
         }
 

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -32,7 +31,6 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 
 /**
@@ -122,6 +120,20 @@ public final class GraphUtils {
         return totalSize;
     }
 
+    public static Graph randomDag(int numNodes, int numLatentConfounders,
+                                  int maxNumEdges, int maxDegree,
+                                  int maxIndegree, int maxOutdegree,
+                                  boolean connected) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        return randomDag(nodes, numLatentConfounders, maxNumEdges, maxDegree,
+                maxIndegree, maxOutdegree, connected);
+    }
+
     public static Dag randomDag(List<Node> nodes, int numLatentConfounders,
                                 int maxNumEdges, int maxDegree,
                                 int maxIndegree, int maxOutdegree,
@@ -130,12 +142,46 @@ public final class GraphUtils {
                 connected));
     }
 
+    public static Graph randomGraph(int numNodes, int numLatentConfounders,
+                                    int maxNumEdges, int maxDegree,
+                                    int maxIndegree, int maxOutdegree,
+                                    boolean connected) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        return randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree,
+                maxIndegree, maxOutdegree, connected);
+    }
+
+
     public static Graph randomGraph(List<Node> nodes, int numLatentConfounders,
                                     int maxNumEdges, int maxDegree,
                                     int maxIndegree, int maxOutdegree,
                                     boolean connected) {
-        return randomGraphRandomForwardEdges2(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
+
+        // It is still unclear whether we should use the random forward edges method or the
+        // random uniform method to create random DAGs, hence this method.
+        // jdramsey 12/8/2015
+        return randomGraphRandomForwardEdges(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
 //        return randomGraphUniform(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
+    }
+
+    /**
+     * Implements the method in Melancon and Dutour, "Random Generation of
+     * Directed Graphs," with optional biases added.
+     */
+    public static Graph randomGraphUniform(int numNodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        return randomGraphUniform(nodes, numLatentConfounders, maxNumEdges, maxDegree,
+                maxIndegree, maxOutdegree, connected);
     }
 
     public static Graph randomGraphUniform(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
@@ -204,140 +250,23 @@ public final class GraphUtils {
         return commonCauses;
     }
 
-    public static Graph randomDagQuick(List<Node> nodes, int numLatentConfounders, int numEdges) {
-        if (nodes.size() <= 0) {
-            throw new IllegalArgumentException(
-                    "NumNodes most be > 0: " + nodes.size());
+    public static Graph randomGraphRandomForwardEdges(int numNodes, int numLatentConfounders,
+                                                      int numEdges, int maxDegree,
+                                                      int maxIndegree, int maxOutdegree, boolean connected) {
+
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
         }
 
-        // Believe it or not this is needed.
-        long size = (long) nodes.size();
-
-        if (numEdges < 0 || numEdges > size * (size - 1)) {
-            throw new IllegalArgumentException("NumEdges must be " +
-                    "greater than 0 and <= (#nodes)(#nodes - 1) / 2: " +
-                    numEdges);
-        }
-
-        if (numLatentConfounders < 0 || numLatentConfounders > nodes.size()) {
-            throw new IllegalArgumentException("MaxNumLatents must be " +
-                    "greater than 0 and less than the number of nodes: " +
-                    numLatentConfounders);
-        }
-
-        Graph dag = new EdgeListGraph(nodes);
-
-        List<Node> nodes2 = new ArrayList<>(nodes);
-        Collections.shuffle(nodes2);
-
-        for (int i = 0; i < numEdges; i++) {
-            int c1 = RandomUtil.getInstance().nextInt(nodes2.size());
-            int c2 = RandomUtil.getInstance().nextInt(nodes2.size());
-
-            if (c1 < c2) {
-                Node n1 = nodes2.get(c1);
-                Node n2 = nodes2.get(c2);
-
-                if (!dag.isAdjacentTo(n1, n2)) {
-                    dag.addDirectedEdge(n1, n2);
-                } else {
-                    i--;
-                }
-            } else {
-                i--;
-            }
-        }
-
-        fixLatents1(numLatentConfounders, dag);
-
-        GraphUtils.circleLayout(dag, 200, 200, 150);
-
-        return dag;
+        return randomGraph(nodes, numLatentConfounders, numEdges, maxDegree,
+                maxIndegree, maxOutdegree, connected);
     }
-
-    public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges) {
-        return randomGraphRandomForwardEdges2(nodes, numLatentConfounders, numEdges, 30, 15, 15, false);
-    }
-
 
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders,
-                                                       int numEdges, int maxDegree,
-                                                       int maxIndegree, int maxOutdegree, boolean connected) {
-        if (nodes.size() <= 0) {
-            throw new IllegalArgumentException(
-                    "NumNodes most be > 0: " + nodes.size());
-        }
-
-        // Believe it or not this is needed.
-        long size = (long) nodes.size();
-
-        if (numEdges < 0 || numEdges > size * (size - 1)) {
-            throw new IllegalArgumentException("NumEdges must be " +
-                    "greater than 0 and <= (#nodes)(#nodes - 1) / 2: " +
-                    numEdges);
-        }
-
-        if (numLatentConfounders < 0 || numLatentConfounders > nodes.size()) {
-            throw new IllegalArgumentException("MaxNumLatents must be " +
-                    "greater than 0 and less than the number of nodes: " +
-                    numLatentConfounders);
-        }
-
-        final Graph dag = new EdgeListGraphSingleConnections(nodes);
-
-        final List<Node> nodes2 = dag.getNodes(); // new ArrayList<Node>(nodes);
-//        Collections.shuffle(nodes2);
-
-        for (int i = 0; i < numEdges; i++) {
-            int c1 = RandomUtil.getInstance().nextInt(nodes2.size());
-            int c2 = RandomUtil.getInstance().nextInt(nodes2.size());
-
-            if (c1 < c2) {
-                Node n1 = nodes2.get(c1);
-                Node n2 = nodes2.get(c2);
-
-//                if (dag.getAdjacentNodes(n1).size() > 5) continue;
-//                if (dag.getAdjacentNodes(n2).size() > 5) continue;
-
-                if (!dag.isAdjacentTo(n1, n2)) {
-                    final int indegree = dag.getIndegree(n2);
-                    final int outdegree = dag.getOutdegree(n1);
-
-                    if (indegree >= maxIndegree) {
-                        continue;
-                    }
-
-                    if (outdegree >= maxOutdegree) {
-                        continue;
-                    }
-
-                    if (indegree + outdegree > maxDegree) {
-                        continue;
-                    }
-
-                    if (connected && indegree == 0 && outdegree == 0) {
-                        continue;
-                    }
-
-                    dag.addDirectedEdge(n1, n2);
-                } else {
-                    i--;
-                }
-            } else {
-                i--;
-            }
-        }
-
-        fixLatents4(numLatentConfounders, dag);
-
-        GraphUtils.circleLayout(dag, 200, 200, 150);
-
-        return dag;
-    }
-
-    private static Graph randomGraphRandomForwardEdges2(List<Node> nodes, int numLatentConfounders,
-                                                        int numEdges, int maxDegree,
-                                                        int maxIndegree, int maxOutdegree, boolean connected) {
+                                                      int numEdges, int maxDegree,
+                                                      int maxIndegree, int maxOutdegree, boolean connected) {
         if (nodes.size() <= 0) {
             throw new IllegalArgumentException(
                     "NumNodes most be > 0: " + nodes.size());
@@ -401,7 +330,12 @@ public final class GraphUtils {
                 continue;
             }
 
-            if (indegree + outdegree > maxDegree) {
+            if (dag.getIndegree(n1) + dag.getOutdegree(n1) + 1 > maxDegree) {
+                i--;
+                continue;
+            }
+
+            if (dag.getIndegree(n2) + dag.getOutdegree(n2) + 1 > maxDegree) {
                 i--;
                 continue;
             }
@@ -421,88 +355,6 @@ public final class GraphUtils {
         return dag;
     }
 
-
-    //JMO's method that calls fixLatents4
-    public static Graph randomGraphRandomForwardEdges1(List<Node> nodes, int numLatentConfounders, int numEdges) {
-        return randomGraphRandomForwardEdges1(nodes, numLatentConfounders, numEdges, 30, 15, 15, false);
-    }
-
-
-    private static Graph randomGraphRandomForwardEdges1(List<Node> nodes, int numLatentConfounders,
-                                                        int numEdges, int maxDegree,
-                                                        int maxIndegree, int maxOutdegree, boolean connected) {
-        if (nodes.size() <= 0) {
-            throw new IllegalArgumentException(
-                    "NumNodes most be > 0: " + nodes.size());
-        }
-
-        // Believe it or not this is needed.
-        long size = (long) nodes.size();
-
-        if (numEdges < 0 || numEdges > size * (size - 1)) {
-            throw new IllegalArgumentException("NumEdges must be " +
-                    "greater than 0 and <= (#nodes)(#nodes - 1) / 2: " +
-                    numEdges);
-        }
-
-        if (numLatentConfounders < 0 || numLatentConfounders > nodes.size()) {
-            throw new IllegalArgumentException("MaxNumLatents must be " +
-                    "greater than 0 and less than the number of nodes: " +
-                    numLatentConfounders);
-        }
-
-        final Graph dag = new EdgeListGraphSingleConnections(nodes);
-
-        final List<Node> nodes2 = dag.getNodes(); // new ArrayList<Node>(nodes);
-//        Collections.shuffle(nodes2);
-
-        for (int i = 0; i < numEdges; i++) {
-            int c1 = RandomUtil.getInstance().nextInt(nodes2.size());
-            int c2 = RandomUtil.getInstance().nextInt(nodes2.size());
-
-            if (c1 < c2) {
-                Node n1 = nodes2.get(c1);
-                Node n2 = nodes2.get(c2);
-
-//                if (dag.getAdjacentNodes(n1).size() > 5) continue;
-//                if (dag.getAdjacentNodes(n2).size() > 5) continue;
-
-                if (!dag.isAdjacentTo(n1, n2)) {
-                    final int indegree = dag.getIndegree(n2);
-                    final int outdegree = dag.getOutdegree(n1);
-
-                    if (indegree >= maxIndegree) {
-                        continue;
-                    }
-
-                    if (outdegree >= maxOutdegree) {
-                        continue;
-                    }
-
-                    if (indegree + outdegree > maxDegree) {
-                        continue;
-                    }
-
-                    if (connected && indegree == 0 && outdegree == 0) {
-                        continue;
-                    }
-
-                    dag.addDirectedEdge(n1, n2);
-                } else {
-                    i--;
-                }
-            } else {
-                i--;
-            }
-        }
-//
-        fixLatents4(numLatentConfounders, dag);
-
-        GraphUtils.circleLayout(dag, 200, 200, 150);
-
-        return dag;
-    }
-
     public static Graph scaleFreeGraph(int numNodes, int numLatentConfounders,
                                        double alpha, double beta,
                                        double delta_in, double delta_out) {
@@ -514,7 +366,6 @@ public final class GraphUtils {
 
         return scaleFreeGraph(nodes, numLatentConfounders, alpha, beta, delta_in, delta_out);
     }
-
 
     private static Graph scaleFreeGraph(List<Node> _nodes, int numLatentConfounders,
                                         double alpha, double beta,
@@ -740,43 +591,6 @@ public final class GraphUtils {
         return outdegrees;
     }
 
-    /**
-     * Implements the method in Melancon and Dutour, "Random Generation of
-     * Directed Graphs," with optional biases added.
-     */
-    public static Graph randomGraph(int numNodes, int numLatentConfounders,
-                                    int maxNumEdges, int maxDegree,
-                                    int maxIndegree, int maxOutdegree,
-                                    boolean connected) {
-        if (numNodes <= 0) {
-            throw new IllegalArgumentException(
-                    "NumNodes most be > 0: " + numNodes);
-        }
-
-        if (maxNumEdges < 0 || maxNumEdges > numNodes * (numNodes - 1)) {
-            throw new IllegalArgumentException("NumEdges must be " +
-                    "greater than 0 and <= (#nodes)(#nodes - 1) / 2: " +
-                    maxNumEdges);
-        }
-
-        if (numLatentConfounders < 0 || numLatentConfounders > numNodes) {
-            throw new IllegalArgumentException("MaxNumLatents must be " +
-                    "greater than 0 and less than the number of nodes: " +
-                    numLatentConfounders);
-        }
-
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < numNodes + numLatentConfounders; i++) {
-            nodes.add(new GraphNode("X" + (i + 1)));
-        }
-
-        return randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
-    }
-
-    public static Graph randomGraph(int numNodes, int numEdges, boolean connected) {
-        return GraphUtils.randomGraph(numNodes, 0, numEdges, 30, 15, 15, connected);
-    }
 
     public static void fixLatents1(int numLatentConfounders, Graph graph) {
         List<Node> commonCauses = getCommonCauses(graph);
@@ -2037,6 +1851,16 @@ public final class GraphUtils {
         return builder.toString();
     }
 
+    public static void graphToDot(Graph graph, File file) {
+        try {
+            Writer writer = new FileWriter(file);
+            writer.write(graphToDot(graph));
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * @return an XML element representing the given graph. (Well, only a
      * basic graph for now...)
@@ -2310,7 +2134,7 @@ public final class GraphUtils {
         return null;
     }
 
-    private static Element getRootElement(File file) throws ParsingException, IOException {
+    public static Element getRootElement(File file) throws ParsingException, IOException {
         Builder builder = new Builder();
         Document document = builder.build(file);
         return document.getRootElement();
@@ -3521,6 +3345,7 @@ public final class GraphUtils {
         return false;
     }
 
+
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
     public static List<Node> getSepset(Node x, Node y, Graph graph) {
         final int bound = -1;
@@ -3921,6 +3746,170 @@ public final class GraphUtils {
 
         return false;
     }
+
+    public static int getDegree(Graph graph) {
+        int max = 0;
+
+        for (Node node : graph.getNodes()) {
+            if (graph.getAdjacentNodes(node).size() > max) {
+                max = graph.getAdjacentNodes(node).size();
+            }
+        }
+
+        return max;
+    }
+
+    /**
+     * Number directed edges in both graph1 and graph2 divided by the number of directed edges in graph1.
+     */
+    public static double orientationPrecision(Graph graph1, Graph graph2) {
+        Graph _graph2 = replaceNodes(graph1, graph2.getNodes());
+
+        if (!new HashSet<Node>(graph2.getNodes()).equals(new HashSet<Node>(graph1.getNodes()))) {
+            throw new IllegalArgumentException("Variables in the two graphs must be the same.");
+        }
+
+        int intersection = 0;
+        int numGraph2 = 0;
+
+        for (Edge edge : graph2.getEdges()) {
+            edge = new Edge(edge);
+            if (Edges.isPartiallyOrientedEdge(edge)) edge.setEndpoint1(Endpoint.TAIL);
+
+            if (!edge.isDirected()) continue;
+
+//            Edge oppositeEdge = new Edge(edge.getNode1(), edge.getNode2(), edge.getEndpoint2(), edge.getEndpoint1());
+//
+//            Ignore cycles.
+//            if (graph1.containsEdge(oppositeEdge)) {
+//                continue;
+//            }
+
+            numGraph2++;
+
+            if (_graph2.containsEdge(edge)) {
+                intersection++;
+            }
+        }
+
+        return intersection / (double) numGraph2;
+    }
+
+    public static double adjacencyPrecision(Graph graph1, Graph graph2) {
+        List<Node> nodes = graph1.getNodes();
+        Graph _graph2 = replaceNodes(graph2, nodes);
+
+        if (!new HashSet(nodes).equals(new HashSet<Node>(graph2.getNodes()))) {
+            throw new IllegalArgumentException("Variables in the two graphs must be the same.");
+        }
+
+        int intersection = 0;
+        int numGraph1 = 0;
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node node1 = nodes.get(i);
+                Node node2 = nodes.get(j);
+
+                if (graph1.isAdjacentTo(node1, node2)) {
+                    numGraph1++;
+
+                    if (_graph2.isAdjacentTo(node1, node2)) {
+                        intersection++;
+                    }
+                }
+            }
+        }
+
+//        for (Edge edge : graph1.getEdges()) {
+//            numGraph1++;
+//
+//            if (_graph2.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                intersection++;
+//            }
+//        }
+
+        return intersection / (double) numGraph1;
+    }
+
+
+    public static int arrowEndpointComplement(Graph graph1, Graph graph2) {
+        int count = 0;
+
+        for (Edge edge1 : graph1.getEdges()) {
+            String name1 = edge1.getNode1().getName();
+            String name2 = edge1.getNode2().getName();
+
+            Node node21 = graph2.getNode(name1);
+            Node node22 = graph2.getNode(name2);
+
+            Edge edge2 = graph2.getEdge(node21, node22);
+//
+//            if (edge1.getEndpoint1() == Endpoint.ARROW) {
+//                if (edge2 == null) {
+//                    count++;
+//                } else if (edge2.getProximalEndpoint(node21) != Endpoint.ARROW) {
+//                    count++;
+//                }
+//            }
+//
+//            if (edge1.getEndpoint2() == Endpoint.ARROW) {
+//                if (edge2 == null) {
+//                    count++;
+//                } else if (edge2.getProximalEndpoint(node22) != Endpoint.ARROW) {
+//                    count++;
+//                }
+//            }
+
+
+            if (edge2 != null) {
+                if (edge1.getEndpoint1() == Endpoint.ARROW && edge2.getProximalEndpoint(node21) != Endpoint.ARROW) {
+                    count++;
+                }
+
+                if (edge1.getEndpoint2() == Endpoint.ARROW && edge2.getProximalEndpoint(node22) != Endpoint.ARROW) {
+                    count++;
+                }
+            } else {
+                if (Edges.isBidirectedEdge(edge1)) {
+                    count += 2;
+                } else if (Edges.isDirectedEdge(edge1)) {
+                    count++;
+                }
+            }
+        }
+
+
+        return count;
+    }
+
+    /**
+     * @param graph1 An arbitrary graph.
+     * @param graph2 Another arbitrary graph with the same number of nodes
+     *               and node names.
+     * @return the edges that are in <code>graph1</code> but not in <code>graph2</code>.
+     */
+    public static List<Edge> edgesComplement(Graph graph1, Graph graph2) {
+        List<Edge> edges = new ArrayList<Edge>();
+
+        for (Edge edge1 : graph1.getEdges()) {
+            String name1 = edge1.getNode1().getName();
+            String name2 = edge1.getNode2().getName();
+
+            Node node21 = graph2.getNode(name1);
+            Node node22 = graph2.getNode(name2);
+
+            Edge edge2 = graph2.getEdge(node21, node22);
+
+            if (edge2 == null || !edge1.equals(edge2)) {
+                edges.add(edge1);
+            }
+        }
+
+        return edges;
+    }
+
+
 }
 
 

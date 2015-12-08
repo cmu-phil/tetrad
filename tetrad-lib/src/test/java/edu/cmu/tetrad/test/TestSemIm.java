@@ -55,27 +55,6 @@ public class TestSemIm extends TestCase {
         super(name);
     }
 
-    /**
-     * Tests whether the the correlation matrix of a simulated sample is close
-     * to the implied covariance matrix.
-     */
-    public void rtestSampleVsImpliedCorrlelations() {
-        Graph randomGraph = GraphUtils.randomGraph(5, 8, false);
-        SemPm semPm1 = new SemPm(randomGraph);
-        SemIm semIm1 = new SemIm(semPm1);
-//        System.out.println("semIm1 = " + semIm1);
-
-        DataSet DataSet = semIm1.simulateDataReducedForm(1000, false);
-        SemEstimator semEstimator = new SemEstimator(DataSet, semPm1);
-        semEstimator.estimate();
-        ICovarianceMatrix covMatrix = new CovarianceMatrix(DataSet);
-        System.out.println("covMatrix = " + covMatrix);
-        TetradMatrix implCovarC =
-                semEstimator.getEstimatedSem().getImplCovar(true);
-        double[][] implCovar = implCovarC.toArray();
-        System.out.println("Implied covariance matrix:");
-        System.out.println(MatrixUtils.toString(implCovar));
-    }
 
     public void rtest2() {
         Graph graph = constructGraph1();
@@ -131,8 +110,13 @@ public class TestSemIm extends TestCase {
     }
 
     public void testCovariancesOfSimulated() {
+        List<Node> nodes = new ArrayList<Node>();
 
-        Graph randomGraph = new Dag(GraphUtils.randomGraph(5, 8, false));
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
         SemPm semPm1 = new SemPm(randomGraph);
         SemIm semIm1 = new SemIm(semPm1);
 
@@ -148,8 +132,13 @@ public class TestSemIm extends TestCase {
     }
 
     public void testIntercepts() {
+        List<Node> nodes = new ArrayList<>();
 
-        Graph randomGraph = new Dag(GraphUtils.randomGraph(5, 8, false));
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
         SemPm semPm = new SemPm(randomGraph);
         SemIm semIm = new SemIm(semPm);
 

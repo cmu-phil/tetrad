@@ -97,9 +97,11 @@ public class SimulateGraphCli {
                 Files.createDirectory(dirOut);
             }
 
-            Graph graph = forwardEdges
-                    ? GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges)
-                    : GraphFactory.createRandomDagQuick(numOfVariables, numOfEdges);
+            Graph graph = GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges);
+
+//            Graph graph = forwardEdges
+//                    ? GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges)
+//                    : GraphFactory.createRandomDagQuick(numOfVariables, numOfEdges);
             GraphIO.write(graph, Paths.get(dirOut.toString(), fileName + ".graph"));
         } catch (IOException exception) {
             exception.printStackTrace(System.err);

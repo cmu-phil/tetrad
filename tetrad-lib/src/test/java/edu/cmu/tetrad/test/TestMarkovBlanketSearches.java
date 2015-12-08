@@ -24,6 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -89,8 +90,14 @@ public class TestMarkovBlanketSearches extends TestCase {
     }
 
     public static void testRandom() {
-        Dag dag = new Dag(GraphUtils.randomGraph(10, 0, 10, 5,
-                5, 5, false));
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag dag = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
+                5, 5, 5, false));
         IndependenceTest test = new IndTestDSep(dag);
         Mbfs search = new Mbfs(test, -1);
 
@@ -285,8 +292,14 @@ public class TestMarkovBlanketSearches extends TestCase {
             System.gc();
 
             if (params.isRandomGraphEveryTime() || createRandomGraph) {
-                randomGraph = new Dag(GraphUtils.randomGraph(params.getNumVars(), 0, numEdges, 9,
-                        3, 9, false));
+                List<Node> nodes = new ArrayList<Node>();
+
+                for (int i = 0; i < params.getNumVars(); i++) {
+                    nodes.add(new ContinuousVariable("X" + (i + 1)));
+                }
+
+                randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
+                        9, 3, 9, false));
                 createRandomGraph = false;
 
                 if (params.isDiscrete()) {
@@ -789,8 +802,14 @@ public class TestMarkovBlanketSearches extends TestCase {
     }
 
     public static void findExample() {
-        Dag dag = new Dag(GraphUtils.randomGraph(10, 0, 10, 5,
-                5, 5, false));
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag dag = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
+                5, 5, 5, false));
         IndependenceTest test = new IndTestDSep(dag);
         Mbfs search = new Mbfs(test, -1);
 

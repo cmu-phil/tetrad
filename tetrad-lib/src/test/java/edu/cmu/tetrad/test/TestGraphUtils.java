@@ -21,12 +21,14 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,15 +48,27 @@ public final class TestGraphUtils extends TestCase {
 
     public void testCreateRandomDag() {
         //        while (true) {
-        Dag dag = new Dag(GraphUtils.randomGraph(50, 0, 50, 4,
-                3, 3, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 50; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag dag = new Dag(GraphUtils.randomGraph(nodes, 0, 50,
+                4, 3, 3, false));
         System.out.println(dag);
         //        }
     }
 
     public void testDirectedPaths() {
-        Graph graph = new Dag(GraphUtils.randomGraph(6, 0, 6, 3,
-                3, 3, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 6; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
+                3, 3, 3, false));
 
         System.out.println("Graph = " + graph);
 
@@ -75,8 +89,14 @@ public final class TestGraphUtils extends TestCase {
     }
 
     public void testTreks() {
-        Graph graph = new Dag(GraphUtils.randomGraph(10, 0, 15, 3,
-                3, 3, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 10; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 15,
+                3, 3, 3, false));
 
         System.out.println("Graph = " + graph);
 
@@ -121,7 +141,14 @@ public final class TestGraphUtils extends TestCase {
         long seed = 28583848283L;
         RandomUtil.getInstance().setSeed(seed);
 
-        Graph g = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph g = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, false));
 
         System.out.println(g);
 

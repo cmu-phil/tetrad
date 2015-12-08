@@ -21,9 +21,9 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.SessionModel;
@@ -69,7 +69,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
             dag = new Dag();
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            this.dag = new Dag(DataGraphUtils.makeRandomGraph(getGraph()));
+            this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
         }
         log();
     }
@@ -86,7 +86,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 //            }
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode",
                 GraphParams.MANUAL) == GraphParams.RANDOM) {
-            this.dag = new Dag(DataGraphUtils.makeRandomGraph(getGraph()));
+            this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
         }
         log();
     }
@@ -96,7 +96,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 //            this.dag = new Dag(graphWrapper.getSemGraph());
             this.dag = new Dag();
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            this.dag = new Dag(DataGraphUtils.makeRandomGraph(getGraph()));
+            this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
         }
         log();
     }
@@ -111,7 +111,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
                 this.dag = new Dag();      
             }
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            this.dag = new Dag(DataGraphUtils.makeRandomGraph(getGraph()));
+            this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
         }
         log();
     }

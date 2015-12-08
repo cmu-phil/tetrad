@@ -83,8 +83,9 @@ public class TestFci extends TestCase {
 
         System.out.println("Finishing list of vars");
 
+
 //        Graph dag = DataGraphUtils.randomDagUniform(vars, numLatents, numEdges, 4, 4, 4, false);
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges1(vars, numLatents, numEdges);
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, numLatents, numEdges, 30, 15, 15, false);
 //        Graph dag = DataGraphUtils.scaleFreeGraph(vars, numLatents, .05, .05, .05, 3);
 
         System.out.println("Graph done");

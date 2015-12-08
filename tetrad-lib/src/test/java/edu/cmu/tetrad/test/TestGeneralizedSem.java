@@ -363,7 +363,14 @@ public class TestGeneralizedSem extends TestCase {
     public void test5() {
         RandomUtil.getInstance().setSeed(29999483L);
 
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 5; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, false));
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
 
@@ -398,7 +405,7 @@ public class TestGeneralizedSem extends TestCase {
         List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < numVars; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars, 30, 15, 15, false);
 
         SemPm spm = new SemPm(graph);
 
@@ -430,7 +437,7 @@ public class TestGeneralizedSem extends TestCase {
 
         for (int i = 0; i < numVars; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars, 30, 15, 15, false);
 
         GeneralizedSemPm pm = new GeneralizedSemPm(graph);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);

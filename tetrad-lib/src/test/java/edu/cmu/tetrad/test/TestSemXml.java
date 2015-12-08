@@ -21,9 +21,11 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.SemXmlParser;
@@ -36,6 +38,8 @@ import nu.xom.Element;
 import nu.xom.Serializer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests the Bayes XML parsing/rendering.
@@ -125,7 +129,14 @@ public final class TestSemXml extends TestCase {
 //    }
 
     private static SemIm sampleSemIm1() {
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, true));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, true));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         return im;

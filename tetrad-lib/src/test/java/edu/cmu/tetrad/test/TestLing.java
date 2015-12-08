@@ -24,6 +24,7 @@ package edu.cmu.tetrad.test;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.EigenvalueDecomposition;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
@@ -41,7 +42,9 @@ import junit.framework.TestSuite;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class TestLing extends TestCase {
 
@@ -222,8 +225,14 @@ public class TestLing extends TestCase {
     // randomly generated cyclic graph
 
     public void rtest2() {
-        Dag dag = new Dag(GraphUtils.randomGraph(6, 0, 7, 3,
-                3, 4, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 6; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Dag dag = new Dag(GraphUtils.randomGraph(nodes, 0, 7,
+                3, 3, 4, false));
         Graph graph = GraphUtils.addCycles(dag, 3, 2);
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -252,8 +261,14 @@ public class TestLing extends TestCase {
     }
 
     public void rtest2_1() {
-        Dag dag = new Dag(GraphUtils.randomGraph(8, 0, 8, 3,
-                3, 4, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 8; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Dag dag = new Dag(GraphUtils.randomGraph(nodes, 0, 8,
+                3, 3, 4, false));
         Graph graph = GraphUtils.addCycles(dag, 1, 3);
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -403,8 +418,14 @@ public class TestLing extends TestCase {
 
         for (int i = 0; i < iterations; i++) {
 
-            Dag dag = new Dag(GraphUtils.randomGraph(5, 0, 5, 3,
-                    3, 4, false));
+            List<Node> nodes = new ArrayList<Node>();
+
+            for (int i1 = 0; i1 < 5; i1++) {
+                nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+            }
+
+            Dag dag = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                    3, 3, 4, false));
             Graph graph = GraphUtils.addCycles(dag, 1, 10);
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
