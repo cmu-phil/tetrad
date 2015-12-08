@@ -57,14 +57,12 @@ public class SimulateGraphCli {
 
         MAIN_OPTIONS.addOption("e", "edge", true, "Number of edges per node. Default is 1.");
         MAIN_OPTIONS.addOption("n", "name", true, "Name of output file.");
-        MAIN_OPTIONS.addOption("f", "forward-edges", false, "Forward edges.");
         MAIN_OPTIONS.addOption("o", "dir-out", true, "Directory where results is written to. Default is the current working directory");
         MAIN_OPTIONS.addOption(helpOption);
     }
 
     private static int numOfVariables;
     private static int numOfEdges;
-    private static boolean forwardEdges;
     private static Path dirOut;
     private static String fileName;
 
@@ -84,7 +82,6 @@ public class SimulateGraphCli {
             cmd = cmdParser.parse(MAIN_OPTIONS, args);
             numOfVariables = Args.parseInteger(cmd.getOptionValue("v"));
             numOfEdges = Args.parseInteger(cmd.getOptionValue("e", "1"));
-            forwardEdges = cmd.hasOption("f");
             dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
             fileName = cmd.getOptionValue("n", String.format("sim_graph_%dvars_%d", numOfVariables, System.currentTimeMillis()));
         } catch (ParseException | FileNotFoundException exception) {
@@ -98,10 +95,6 @@ public class SimulateGraphCli {
             }
 
             Graph graph = GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges);
-
-//            Graph graph = forwardEdges
-//                    ? GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges)
-//                    : GraphFactory.createRandomDagQuick(numOfVariables, numOfEdges);
             GraphIO.write(graph, Paths.get(dirOut.toString(), fileName + ".graph"));
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
