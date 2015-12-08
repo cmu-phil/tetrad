@@ -236,7 +236,7 @@ public final class Misclassifications implements SessionModel {
             this.targetGraph = ((GraphSource) model1).getGraph();
         } else {
             throw new IllegalArgumentException(
-                    "Neither of the supplied session " + "models is named '" +
+                    "Neither of the supplied session models is named '" +
                             referenceName + "'.");
         }
 
