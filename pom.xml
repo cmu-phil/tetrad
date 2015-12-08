@@ -12,6 +12,7 @@
     <name>Tetrad Project</name>
     <modules>
         <module>tetrad-gui</module>
+        <module>tetrad-cli</module>
         <module>tetrad-lib</module>
     </modules>
 
