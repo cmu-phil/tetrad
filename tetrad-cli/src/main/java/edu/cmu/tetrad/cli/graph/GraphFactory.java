@@ -36,14 +36,14 @@ public class GraphFactory {
     private GraphFactory() {
     }
 
-    public static Graph createRandomDagQuick(int numofVars, double edgesPerNode) {
-        List<Node> vars = new ArrayList<>();
-        for (int i = 0; i < numofVars; i++) {
-            vars.add(new ContinuousVariable("X" + i));
-        }
-
-        return GraphUtils.randomDagQuick(vars, 0, (int) (numofVars * edgesPerNode));
-    }
+//    public static Graph createRandomDagQuick(int numofVars, double edgesPerNode) {
+//        List<Node> vars = new ArrayList<>();
+//        for (int i = 0; i < numofVars; i++) {
+//            vars.add(new ContinuousVariable("X" + i));
+//        }
+//
+//        return GraphUtils.randomDagQuick(vars, 0, (int) (numofVars * edgesPerNode));
+//    }
 
     public static Graph createRandomForwardEdges(int numofVars, double edgesPerNode) {
         List<Node> vars = new ArrayList<>();
@@ -51,7 +51,8 @@ public class GraphFactory {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numofVars * edgesPerNode));
+        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numofVars * edgesPerNode),
+                30, 15, 15, false);
     }
 
 }

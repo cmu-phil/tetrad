@@ -110,9 +110,12 @@ public class SimulateDataCli {
                 Files.createDirectory(dirOut);
             }
 
-            Graph graph = forwardEdges
-                    ? GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges)
-                    : GraphFactory.createRandomDagQuick(numOfVariables, numOfEdges);
+            Graph graph = GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges);
+
+//            Graph graph = forwardEdges
+//                    ? GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges)
+//                    : GraphFactory.createRandomDagQuick(numOfVariables, numOfEdges);
+
             DataSet dataSet = DataSetFactory.buildSemSimulateDataAcyclic(graph, numOfCases);
 
             GraphIO.write(graph, Paths.get(dirOut.toString(), fileName + ".graph"));
