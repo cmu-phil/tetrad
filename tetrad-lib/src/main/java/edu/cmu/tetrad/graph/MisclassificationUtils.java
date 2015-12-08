@@ -126,7 +126,7 @@ public class MisclassificationUtils {
         return table2.toString();
     }
 
-    public static String edgeMisclassifications(Graph refGraph, Graph estGraph) {
+    public static String edgeMisclassifications(Graph estGraph, Graph refGraph) {
         StringBuilder builder = new StringBuilder();
 
         int[][] counts = new int[8][6];
