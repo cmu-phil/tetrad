@@ -134,7 +134,7 @@ public final class GraphUtils {
                                     int maxNumEdges, int maxDegree,
                                     int maxIndegree, int maxOutdegree,
                                     boolean connected) {
-        return randomGraphRandomForwardEdges2(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
+        return randomGraphRandomForwardEdges(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
 //        return randomGraphUniform(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
     }
 
@@ -255,89 +255,9 @@ public final class GraphUtils {
         return dag;
     }
 
-    public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges) {
-        return randomGraphRandomForwardEdges2(nodes, numLatentConfounders, numEdges, 30, 15, 15, false);
-    }
-
-
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders,
-                                                       int numEdges, int maxDegree,
-                                                       int maxIndegree, int maxOutdegree, boolean connected) {
-        if (nodes.size() <= 0) {
-            throw new IllegalArgumentException(
-                    "NumNodes most be > 0: " + nodes.size());
-        }
-
-        // Believe it or not this is needed.
-        long size = (long) nodes.size();
-
-        if (numEdges < 0 || numEdges > size * (size - 1)) {
-            throw new IllegalArgumentException("NumEdges must be " +
-                    "greater than 0 and <= (#nodes)(#nodes - 1) / 2: " +
-                    numEdges);
-        }
-
-        if (numLatentConfounders < 0 || numLatentConfounders > nodes.size()) {
-            throw new IllegalArgumentException("MaxNumLatents must be " +
-                    "greater than 0 and less than the number of nodes: " +
-                    numLatentConfounders);
-        }
-
-        final Graph dag = new EdgeListGraphSingleConnections(nodes);
-
-        final List<Node> nodes2 = dag.getNodes(); // new ArrayList<Node>(nodes);
-//        Collections.shuffle(nodes2);
-
-        for (int i = 0; i < numEdges; i++) {
-            int c1 = RandomUtil.getInstance().nextInt(nodes2.size());
-            int c2 = RandomUtil.getInstance().nextInt(nodes2.size());
-
-            if (c1 < c2) {
-                Node n1 = nodes2.get(c1);
-                Node n2 = nodes2.get(c2);
-
-//                if (dag.getAdjacentNodes(n1).size() > 5) continue;
-//                if (dag.getAdjacentNodes(n2).size() > 5) continue;
-
-                if (!dag.isAdjacentTo(n1, n2)) {
-                    final int indegree = dag.getIndegree(n2);
-                    final int outdegree = dag.getOutdegree(n1);
-
-                    if (indegree >= maxIndegree) {
-                        continue;
-                    }
-
-                    if (outdegree >= maxOutdegree) {
-                        continue;
-                    }
-
-                    if (indegree + outdegree > maxDegree) {
-                        continue;
-                    }
-
-                    if (connected && indegree == 0 && outdegree == 0) {
-                        continue;
-                    }
-
-                    dag.addDirectedEdge(n1, n2);
-                } else {
-                    i--;
-                }
-            } else {
-                i--;
-            }
-        }
-
-        fixLatents4(numLatentConfounders, dag);
-
-        GraphUtils.circleLayout(dag, 200, 200, 150);
-
-        return dag;
-    }
-
-    private static Graph randomGraphRandomForwardEdges2(List<Node> nodes, int numLatentConfounders,
-                                                        int numEdges, int maxDegree,
-                                                        int maxIndegree, int maxOutdegree, boolean connected) {
+                                                      int numEdges, int maxDegree,
+                                                      int maxIndegree, int maxOutdegree, boolean connected) {
         if (nodes.size() <= 0) {
             throw new IllegalArgumentException(
                     "NumNodes most be > 0: " + nodes.size());
@@ -401,7 +321,12 @@ public final class GraphUtils {
                 continue;
             }
 
-            if (indegree + outdegree > maxDegree) {
+            if (dag.getIndegree(n1) + dag.getOutdegree(n1) + 1 > maxDegree) {
+                i--;
+                continue;
+            }
+
+            if (dag.getIndegree(n2) + dag.getOutdegree(n2) + 1 > maxDegree) {
                 i--;
                 continue;
             }
@@ -483,7 +408,13 @@ public final class GraphUtils {
                         continue;
                     }
 
-                    if (connected && indegree == 0 && outdegree == 0) {
+                    if (dag.getIndegree(n1) + dag.getOutdegree(n1) + 1 > maxDegree) {
+                        i--;
+                        continue;
+                    }
+
+                    if (dag.getIndegree(n2) + dag.getOutdegree(n2) + 1 > maxDegree) {
+                        i--;
                         continue;
                     }
 
@@ -495,7 +426,7 @@ public final class GraphUtils {
                 i--;
             }
         }
-//
+
         fixLatents4(numLatentConfounders, dag);
 
         GraphUtils.circleLayout(dag, 200, 200, 150);
@@ -3532,7 +3463,6 @@ public final class GraphUtils {
     }
 
 
-
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
     public static List<Node> getSepset(Node x, Node y, Graph graph) {
         final int bound = -1;
@@ -4071,11 +4001,10 @@ public final class GraphUtils {
     }
 
     /**
-     * @return the edges that are in <code>graph1</code> but not in <code>graph2</code>.
-     *
      * @param graph1 An arbitrary graph.
      * @param graph2 Another arbitrary graph with the same number of nodes
      *               and node names.
+     * @return the edges that are in <code>graph1</code> but not in <code>graph2</code>.
      */
     public static List<Edge> edgesComplement(Graph graph1, Graph graph2) {
         List<Edge> edges = new ArrayList<Edge>();

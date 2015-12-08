@@ -75,7 +75,7 @@ public class TestFas extends TestCase {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode));
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode), 30, 15, 15, false);
 
         System.out.println("Graph done");
 
@@ -156,7 +156,7 @@ public class TestFas extends TestCase {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode));
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode), 30, 15, 15, false);
 
         IndependenceTest test = new IndTestDSep(graph);
 

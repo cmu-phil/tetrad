@@ -85,7 +85,7 @@ public class TestFgs extends TestCase {
         Graph dag;
         int[] causalOrdering = new int[vars.size()];
 
-        dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
+        dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false);
 //        dag = DataGraphUtils.scaleFreeGraph(vars, 0, 0.05, 0.05, 5, 15);
         printDegreeDistribution(dag, System.out);
 
@@ -188,7 +188,8 @@ public class TestFgs extends TestCase {
 
         System.out.println("Making dag");
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor));
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+                30, 15, 15, false);
 //        Graph dag = DataGraphUtils.randomDagPreferentialAttachment(vars, 0, (int) (numVars * edgeFactor), .01);
         printDegreeDistribution(dag, System.out);
 

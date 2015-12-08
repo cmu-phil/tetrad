@@ -318,8 +318,7 @@ public final class DagEditor extends JPanel
                     int numTrials = 0;
 
                     if (editor.isRandomForward()) {
-                        dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(),
-                                editor.getMaxEdges());
+                        dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), 30, 15, 15, false);
                         GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
                         HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
                         GraphUtils.arrangeByLayout(dag, layout);

@@ -68,7 +68,8 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode));
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+                30, 15, 15, false);
 
         System.out.println("Graph done");
 
@@ -236,7 +237,8 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode));
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+                30, 15, 15, false);
 
         System.out.println("Graph done");
 
@@ -409,7 +411,8 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode));
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+                30, 15, 15, false);
 
         System.out.println("Graph done");
 
@@ -1091,7 +1094,7 @@ public class PerformanceTests {
 
         Graph dag;
         if (false) {
-            dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
+            dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false);
         } else {
 //            dag = DataGraphUtils.randomDagRandomFowardEdges(vars, 0, numEdges);
             dag = GraphUtils.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
@@ -1155,7 +1158,8 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgesPerNode));
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgesPerNode),
+                30, 15, 15, false);
 
         System.out.println("DAG = " + dag);
 
@@ -1211,7 +1215,8 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgesPerNode));
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgesPerNode),
+                30, 15, 15, false);
 
         System.out.println("DAG = " + dag);
 
@@ -1517,7 +1522,8 @@ public class PerformanceTests {
         System.out.println("Making dag");
 
         //        printDegreeDistribution(dag, out);
-        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode));
+        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+                30, 15, 15, false);
     }
 
     private void printDegreeDistribution(Graph dag, PrintStream out) {

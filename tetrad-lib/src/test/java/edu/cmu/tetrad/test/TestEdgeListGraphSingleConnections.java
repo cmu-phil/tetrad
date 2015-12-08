@@ -22,11 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -183,7 +179,7 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
         List<Node> nodes = new ArrayList<Node>();
         for (int i = 0; i < 50; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, nodes.size());
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, nodes.size(), 30, 15, 15, false);
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {

@@ -51,7 +51,8 @@ public class DataGraphUtils {
 
         do {
 //            dag = DataGraphUtils.randomGraphUniform(numStructuralNodes, numStructuralNodes, numStructuralEdges, 4, 3, 3, false);
-            dag = edu.cmu.tetrad.graph.GraphUtils.randomGraphRandomForwardEdges(vars, 0, numStructuralEdges);
+            dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numStructuralEdges,
+                    30, 15, 15, false);
         } while (dag.getNumEdges() != numStructuralEdges);
 
         Graph graph = new EdgeListGraph(dag);
@@ -306,17 +307,10 @@ public class DataGraphUtils {
         boolean graphChooseFixed = Preferences.userRoot().getBoolean("graphChooseFixed", false);
         int numStructuralNodes = Preferences.userRoot().getInt("numStructuralNodes", 3);
         int maxStructuralEdges = Preferences.userRoot().getInt("numStructuralEdges", 3);
-        int measurementModelDegree = Preferences.userRoot().getInt(
-                "measurementModelDegree", 3);
-        int numLatentMeasuredImpureParents = Preferences.userRoot()
-                .getInt("latentMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureParents =
-                Preferences.userRoot()
-                        .getInt("measuredMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureAssociations =
-                Preferences.userRoot()
-                        .getInt("measuredMeasuredImpureAssociations", 0);
-
+        int measurementModelDegree = Preferences.userRoot().getInt("measurementModelDegree", 3);
+        int numLatentMeasuredImpureParents = Preferences.userRoot().getInt("latentMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureParents =Preferences.userRoot().getInt("measuredMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureAssociations =Preferences.userRoot().getInt("measuredMeasuredImpureAssociations", 0);
         double alpha = Preferences.userRoot().getDouble("scaleFreeAlpha", 0.2);
         double beta = Preferences.userRoot().getDouble("scaleFreeBeta", 0.6);
         double deltaIn = Preferences.userRoot().getDouble("scaleFreeDeltaIn", 0.2);
@@ -376,7 +370,8 @@ public class DataGraphUtils {
 
             if (graphRandomFoward) {
                 graph = GraphUtils.randomGraphRandomForwardEdges(nodes, newGraphNumLatents,
-                        newGraphNumEdges);
+                        newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
+                        false);
                 GraphUtils.arrangeBySourceGraph(graph, _graph);
                 HashMap<String, PointXy> layout = GraphUtils.grabLayout(nodes);
                 GraphUtils.arrangeByLayout(graph, layout);

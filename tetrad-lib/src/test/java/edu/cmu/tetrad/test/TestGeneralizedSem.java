@@ -398,7 +398,7 @@ public class TestGeneralizedSem extends TestCase {
         List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < numVars; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars, 30, 15, 15, false);
 
         SemPm spm = new SemPm(graph);
 
@@ -430,7 +430,7 @@ public class TestGeneralizedSem extends TestCase {
 
         for (int i = 0; i < numVars; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numVars, 30, 15, 15, false);
 
         GeneralizedSemPm pm = new GeneralizedSemPm(graph);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
