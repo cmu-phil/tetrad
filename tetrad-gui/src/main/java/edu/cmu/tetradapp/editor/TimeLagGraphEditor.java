@@ -472,10 +472,14 @@ public final class TimeLagGraphEditor extends JPanel
 
                                 GraphUtils.arrangeByLayout(dag, layout);
                             } else {
-                                dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                        editor.getNumLatents(), editor.getMaxEdges(),
-                                        editor.getMaxDegree(), editor.getMaxIndegree(),
-                                        editor.getMaxOutdegree(), editor.isConnected());
+                                List<Node> nodes = new ArrayList<Node>();
+
+                                for (int i = 0; i < editor.getNumNodes(); i++) {
+                                    nodes.add(new ContinuousVariable("X" + (i + 1)));
+                                }
+
+                                dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
+                                        editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
                             }
                         } else {
                             do {
@@ -490,10 +494,14 @@ public final class TimeLagGraphEditor extends JPanel
 
                                     GraphUtils.arrangeByLayout(dag, layout);
                                 } else {
-                                    dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                            editor.getNumLatents(), editor.getMaxEdges(),
-                                            30, 15, 15, editor.isConnected()
-                                    );
+                                    List<Node> nodes = new ArrayList<Node>();
+
+                                    for (int i = 0; i < editor.getNumNodes(); i++) {
+                                        nodes.add(new ContinuousVariable("X" + (i + 1)));
+                                    }
+
+                                    dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
+                                            30, 15, 15, editor.isConnected());
                                 }
                             } while (dag.getNumEdges() < editor.getMaxEdges());
                         }

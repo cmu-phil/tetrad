@@ -24,11 +24,13 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.StatUtils;
@@ -36,7 +38,9 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests the Knowledge class.
@@ -54,7 +58,14 @@ public final class TestHistogram extends TestCase {
     }
 
     public void testHistogram() {
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, false));
         int sampleSize = 1000;
 
         // Continuous

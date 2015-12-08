@@ -61,8 +61,14 @@ public class TestStatUtils extends TestCase {
         RandomUtil.getInstance().setSeed(30299533L);
 
         // Make sure the unconditional correlations and covariances are OK.
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 3,
-                3, 3, false));
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
+                3, 3, 3, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet dataSet = im.simulateData(1000, false);
@@ -1074,8 +1080,22 @@ public class TestStatUtils extends TestCase {
 //        g2.addDirectedEdge(x1, x2);
 //        g2.addDirectedEdge(x3, x2);
 
-        Graph gTrue = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
-        Graph g2 = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+        List<Node> nodes2 = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 5; i1++) {
+            nodes2.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph gTrue = new Dag(GraphUtils.randomGraph(nodes2, 0, 5,
+                30, 15, 15, false));
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph g2 = new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
+                30, 15, 15, false));
 
         g2 = GraphUtils.replaceNodes(g2, gTrue.getNodes());
 

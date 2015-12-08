@@ -855,7 +855,7 @@ public class PerformanceTests {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph graph = GraphUtils.randomDagQuick(vars, 0, numVars);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numVars, 30, 15, 15, false);
 
         try {
             File graphFile = new File(dir, "graph.txt");
@@ -880,7 +880,7 @@ public class PerformanceTests {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph graph = GraphUtils.randomDagQuick(vars, 0, numVars);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numVars, 30, 15, 15, false);;
 
         out.println("Graph generated.");
 //        Graph graph = new EndpointMatrixGraph(DataGraphUtils.randomDagQuick(vars, 0, numVars));

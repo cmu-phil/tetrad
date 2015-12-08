@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -531,10 +532,16 @@ public final class TetradCmd {
             throw new RuntimeException("numEdges must be an integer.");
         }
 
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < _numNodes; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
         Dag dag;
 
         do {
-            dag = new Dag(GraphUtils.randomGraph(_numNodes, 0, _numEdges, 30,
+            dag = new Dag(GraphUtils.randomGraph(nodes, 0, _numEdges, 30,
                     15, 15, false));
         } while (dag.getNumEdges() < _numEdges);
 

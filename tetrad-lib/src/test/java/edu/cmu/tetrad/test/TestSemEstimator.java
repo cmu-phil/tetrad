@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.MatrixUtils;
@@ -35,6 +32,7 @@ import junit.framework.TestSuite;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -377,7 +375,14 @@ public class TestSemEstimator extends TestCase {
     }
 
     public void testOptimizer2() {
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
@@ -394,7 +399,14 @@ public class TestSemEstimator extends TestCase {
     }
 
     public void testOptimizer3() {
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 

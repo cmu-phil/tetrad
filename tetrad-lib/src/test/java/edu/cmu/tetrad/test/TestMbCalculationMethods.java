@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
@@ -98,7 +99,13 @@ public class TestMbCalculationMethods extends TestCase {
         int i = 0;
 
         do {
-            Dag randomGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 40,
+            List<Node> nodes = new ArrayList<Node>();
+
+            for (int j = 0; j < numVars; j++) {
+                nodes.add(new ContinuousVariable("X" + (j + 1)));
+            }
+
+            Dag randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges, 40,
                     40, 40, false));
 
             Node t = randomGraph.getNodes().get(0);
@@ -156,7 +163,7 @@ public class TestMbCalculationMethods extends TestCase {
 //            System.out.println("Estimated 1: " + mbDag1);
 //            System.out.println("Estimated 2: " + mbDag2);
 
-            List<Node> nodes = mbDag1.getNodes();
+            List<Node> _nodes = mbDag1.getNodes();
             List<String> mbf = extractVarNames(nodes, t);
 
             // Calculate intersection(mbf, truth).
@@ -242,7 +249,13 @@ public class TestMbCalculationMethods extends TestCase {
         int i = 0;
 
         do {
-            Dag randomGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 40,
+            List<Node> nodes = new ArrayList<Node>();
+
+            for (int j = 0; j < numVars; j++) {
+                nodes.add(new ContinuousVariable("X" + (j + 1)));
+            }
+
+            Dag randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges, 40,
                     40, 40, false));
 
             Node t = randomGraph.getNodes().get(0);
@@ -260,7 +273,7 @@ public class TestMbCalculationMethods extends TestCase {
             Mbfs mbSearch = new Mbfs(test, depth);
             Graph mbDag1 = mbSearch.search(t.getName());
 
-            List<Node> nodes = mbDag1.getNodes();
+            List<Node> _nodes = mbDag1.getNodes();
             List<String> mbf = extractVarNames(nodes, t);
 
             // Calculate intersection(mbf, truth).
@@ -325,7 +338,13 @@ public class TestMbCalculationMethods extends TestCase {
         int i = 0;
 
         do {
-            Dag randomGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 40,
+            List<Node> nodes = new ArrayList<Node>();
+
+            for (int j = 0; j < numVars; j++) {
+                nodes.add(new ContinuousVariable("X" + (j + 1)));
+            }
+
+            Dag randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges, 40,
                     40, 40, false));
 
             Node target = randomGraph.getNodes().get(0);
@@ -388,7 +407,13 @@ public class TestMbCalculationMethods extends TestCase {
         int r1Sum = 0, r2Sum = 0, r5Sum = 0;
 
         System.out.println("... creating random DAG");
-        Dag randomGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 40,
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < numVars; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges, 40,
                 40, 40, false));
 
 //        System.out.println("... creating SEM PM");

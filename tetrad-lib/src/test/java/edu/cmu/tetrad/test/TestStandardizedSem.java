@@ -54,7 +54,14 @@ public class TestStandardizedSem extends TestCase {
 
     // Test the code that standardizes a data set.
     public void test1() {
-        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false)));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, false)));
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -172,7 +179,14 @@ public class TestStandardizedSem extends TestCase {
 
     // This tests what the user is going to try to do in the GUI.
     public void test4() {
-        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(10, 0, 10, 30, 15, 15, false)));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 10; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(nodes, 0, 10,
+                30, 15, 15, false)));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         StandardizedSemIm sem = new StandardizedSemIm(im);
@@ -311,7 +325,14 @@ public class TestStandardizedSem extends TestCase {
         RandomUtil random = RandomUtil.getInstance();
         random.setSeed(9394929393L);
 
-        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false)));
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 5; i1++) {
+            nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
+                30, 15, 15, false)));
 
         List<Node> nodes = graph.getNodes();
         int n1 = RandomUtil.getInstance().nextInt(nodes.size());

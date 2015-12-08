@@ -21,14 +21,19 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.*;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -47,7 +52,14 @@ public class TestDagScorer extends TestCase {
     }
 
     public void test1() {
-        Graph dag = new Dag(GraphUtils.randomGraph(10, 0, 10, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph dag = new Dag(GraphUtils.randomGraph(nodes, 0, 10,
+                30, 15, 15, false));
 
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);

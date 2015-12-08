@@ -334,7 +334,7 @@ public final class GraphEditor extends JPanel
                         JOptionPane.PLAIN_MESSAGE);
 
                 if (ret == JOptionPane.OK_OPTION) {
-                    Graph graph = DataGraphUtils.makeRandomGraph(getGraph());
+                    Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
 
                     boolean addCycles = editor.isAddCycles();
 

@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
@@ -108,8 +109,14 @@ public class TestPcDeterministic extends TestCase {
             TetradLogger.getInstance().log("info", "# " + (i + 1));
 
             try {
-                Graph graph = new Dag(GraphUtils.randomGraph(20, 0, 20, 4,
-                        4, 4, false));
+                List<Node> nodes = new ArrayList<Node>();
+
+                for (int i1 = 0; i1 < 20; i1++) {
+                    nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+                }
+
+                Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 20,
+                        4, 4, 4, false));
                 SemPm pm = new SemPm(graph);
                 SemIm im = new SemIm(pm);
                 DataSet dataSet = im.simulateData(1000, false);

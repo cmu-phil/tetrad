@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
@@ -330,10 +331,14 @@ public final class DagEditor extends JPanel
                             GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
                             GraphUtils.arrangeByLayout(dag, layout);
                         } else {
-                            dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                    editor.getNumLatents(), editor.getMaxEdges(),
-                                    editor.getMaxDegree(), editor.getMaxIndegree(),
-                                    editor.getMaxOutdegree(), editor.isConnected());
+                            List<Node> nodes = new ArrayList<Node>();
+
+                            for (int i = 0; i < editor.getNumNodes(); i++) {
+                                nodes.add(new ContinuousVariable("X" + (i + 1)));
+                            }
+
+                            dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
+                                    editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
                         }
                     } else if (editor.isChooseFixed()) {
                         do {
@@ -345,10 +350,14 @@ public final class DagEditor extends JPanel
 
                                 GraphUtils.arrangeByLayout(dag, layout);
                             } else {
-                                dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                        editor.getNumLatents(), editor.getMaxEdges(),
-                                        30, 15, 15, editor.isConnected()
-                                );
+                                List<Node> nodes = new ArrayList<Node>();
+
+                                for (int i = 0; i < editor.getNumNodes(); i++) {
+                                    nodes.add(new ContinuousVariable("X" + (i + 1)));
+                                }
+
+                                dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
+                                        30, 15, 15, editor.isConnected());
                             }
                         } while (dag.getNumEdges() < editor.getMaxEdges());
                     }

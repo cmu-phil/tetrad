@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import junit.framework.AssertionFailedError;
@@ -61,7 +62,14 @@ public final class TestGraph extends TestCase {
     }
 
     public void testXml() {
-        Graph graph = new Dag(GraphUtils.randomGraph(10, 0, 10, 30, 15, 15, false));
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
+                30, 15, 15, false));
 
         Set<Triple> ambiguousTriples = new HashSet<Triple>();
         ambiguousTriples.add(pickRandomTriple(graph));

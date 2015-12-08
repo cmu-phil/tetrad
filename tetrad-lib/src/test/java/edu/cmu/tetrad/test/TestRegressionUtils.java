@@ -21,15 +21,20 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests the new regression classes. There is a tabular linear regression
@@ -47,8 +52,14 @@ public class TestRegressionUtils extends TestCase {
 
     // Residuals for guys with no parents should be identical to the original data values.
     public void testRegresssionUtils() {
-        Dag graph = new Dag(new Dag(GraphUtils.randomGraph(5, 0, 3, 3,
-                3, 3, false)));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag graph = new Dag(new Dag(GraphUtils.randomGraph(nodes, 0, 3,
+                3, 3, 3, false)));
 
         System.out.println(graph);
 

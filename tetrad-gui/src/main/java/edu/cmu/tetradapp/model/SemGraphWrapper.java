@@ -21,9 +21,9 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -72,7 +72,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			semGraph.setShowErrorTerms(false);
 		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			this.semGraph = new SemGraph(DataGraphUtils.makeRandomGraph(getGraph()));
+			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
 	}
@@ -91,7 +91,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
             }
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			this.semGraph = new SemGraph(DataGraphUtils.makeRandomGraph(getGraph()));
+			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
 	}
@@ -104,7 +104,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			this.semGraph.setShowErrorTerms(false);
 		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			this.semGraph = new SemGraph(DataGraphUtils.makeRandomGraph(getGraph()));
+			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
 	}
@@ -117,7 +117,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			this.semGraph.setShowErrorTerms(false);
 		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
-			this.semGraph = new SemGraph(DataGraphUtils.makeRandomGraph(getGraph()));
+			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
 	}

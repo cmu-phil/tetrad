@@ -21,12 +21,14 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.TetradMatrix;
@@ -36,6 +38,8 @@ import junit.framework.TestSuite;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests the BooleanFunction class.
@@ -82,7 +86,14 @@ public class TestPValueImprover extends TestCase {
         for (int count = 0; count < numIterations; count++) {
             System.out.println("\n\n=======================COUNT = " + (count + 1));
 
-            Graph trueDag = new Dag(GraphUtils.randomGraph(numNodes, 0, numNodes, 30, 15, 15, false));
+            List<Node> nodes = new ArrayList<Node>();
+
+            for (int i = 0; i < numNodes; i++) {
+                nodes.add(new ContinuousVariable("X" + (i + 1)));
+            }
+
+            Graph trueDag = new Dag(GraphUtils.randomGraph(nodes, 0, numNodes,
+                    30, 15, 15, false));
             Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
 
             System.out.println("True model: " + trueDag);
@@ -299,7 +310,14 @@ public class TestPValueImprover extends TestCase {
         int count = 1;
         System.out.println("\n\n=======================COUNT = " + (count + 1));
 
-        Graph trueDag = new Dag(GraphUtils.randomGraph(15, 0, 15, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 15; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph trueDag = new Dag(GraphUtils.randomGraph(nodes, 0, 15,
+                30, 15, 15, false));
         Graph truePattern = SearchGraphUtils.patternForDag(trueDag);
 
         SemPm pm = new SemPm(trueDag);

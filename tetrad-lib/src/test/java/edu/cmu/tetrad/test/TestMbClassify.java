@@ -163,8 +163,14 @@ public class TestMbClassify extends TestCase {
 
     public void makeData(PrintStream _out) {
         try {
-            Dag randomGraph = new Dag(GraphUtils.randomGraph(1400, 0, 30, 9,
-                    3, 9, false));
+            List<Node> nodes = new ArrayList<Node>();
+
+            for (int i = 0; i < 1400; i++) {
+                nodes.add(new ContinuousVariable("X" + (i + 1)));
+            }
+
+            Dag randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 30,
+                    9, 3, 9, false));
             DataSet dataSet = simulateContinuous(randomGraph, 300, _out);
 
             Writer out = new FileWriter(new File("test_data/myout.dat"));
@@ -316,8 +322,14 @@ public class TestMbClassify extends TestCase {
         System.out.println();
 
         System.out.println("... creating random DAG");
-        Dag randomGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 40,
-                40, 40, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < numVars; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Dag randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
+                40, 40, 40, false));
 
         System.out.println("... creating Bayes PM");
         BayesPm bayesPm =
@@ -399,8 +411,14 @@ public class TestMbClassify extends TestCase {
         System.out.println();
 
         System.out.println("... creating random DAG");
-        Dag randomGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 40,
-                40, 40, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < numVars; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Dag randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
+                40, 40, 40, false));
 
         System.out.println("... creating SEM PM");
         BayesPm bayesPm =
@@ -466,8 +484,14 @@ public class TestMbClassify extends TestCase {
         System.out.println();
 
         System.out.println("... creating random DAG");
-        Dag randomGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 40,
-                40, 40, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < numVars; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Dag randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
+                40, 40, 40, false));
 
         System.out.println("... creating SEM PM");
         BayesPm bayesPm =

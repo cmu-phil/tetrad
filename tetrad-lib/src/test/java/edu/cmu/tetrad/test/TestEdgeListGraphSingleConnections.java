@@ -133,7 +133,14 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
     }
 
     public void testSequence3() {
-        Graph graph = new Dag(GraphUtils.randomGraph(50, 0, 50, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 50; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 50,
+                30, 15, 15, false));
 
         Node node1 = graph.getNodes().get(0);
         Node node2 = graph.getNodes().get(1);

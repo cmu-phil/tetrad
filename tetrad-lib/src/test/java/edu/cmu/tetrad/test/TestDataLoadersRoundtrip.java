@@ -23,13 +23,11 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataWriter;
-import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -38,6 +36,8 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests data loaders against sample files.
@@ -61,7 +61,14 @@ public class TestDataLoadersRoundtrip extends TestCase {
 
     public void testContinuousRoundtrip() {
         try {
-            Graph randomGraph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+            List<Node> nodes = new ArrayList<Node>();
+
+            for (int i = 0; i < 5; i++) {
+                nodes.add(new ContinuousVariable("X" + (i + 1)));
+            }
+
+            Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                    30, 15, 15, false));
             SemPm semPm1 = new SemPm(randomGraph);
             SemIm semIm1 = new SemIm(semPm1);
             DataSet dataSet = semIm1.simulateData(10, false);
@@ -92,8 +99,13 @@ public class TestDataLoadersRoundtrip extends TestCase {
     public void testDiscreteRoundtrip() {
         try {
             for (int i = 0; i < 1; i++) {
+                List<Node> nodes = new ArrayList<>();
 
-                Graph randomGraph = new Dag(GraphUtils.randomGraph(5, 8, false));
+                for (int j = 0; j < 5; j++) {
+                    nodes.add(new ContinuousVariable("X" + (j + 1)));
+                }
+
+                Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
                 Dag dag = new Dag(randomGraph);
                 BayesPm bayesPm1 = new BayesPm(dag);
                 MlBayesIm bayesIm1 = new MlBayesIm(bayesPm1, MlBayesIm.RANDOM);

@@ -109,8 +109,14 @@ public class TestPc extends TestCase {
         int numEdges = 20;
         int maxSample = 2000;
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 7,
-                5, 5, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < numVars; i1++) {
+            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
+                7, 5, 5, false));
 
         System.out.println("\nInput graph:");
         System.out.println(trueGraph);
@@ -211,7 +217,14 @@ public class TestPc extends TestCase {
     }
 
     public void test7() {
-        Graph graph = new Dag(GraphUtils.randomGraph(5, 0, 5, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 5; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+                30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
@@ -334,8 +347,14 @@ public class TestPc extends TestCase {
     }
 
     public void rtest5() {
-        Graph graph = new Dag(GraphUtils.randomGraph(20, 0, 20, 3,
-                2, 2, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 20; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 20,
+                3, 2, 2, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet dataSet = im.simulateData(1000, false);
@@ -418,7 +437,14 @@ public class TestPc extends TestCase {
 //    }
 
     public void testPcStable2() {
-        Graph graph = GraphUtils.randomGraph(10, 10, false);
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+
+        Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false);
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(200, false);

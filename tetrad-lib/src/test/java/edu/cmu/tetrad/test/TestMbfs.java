@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -32,7 +33,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.*;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -108,8 +109,14 @@ public class TestMbfs extends TestCase {
     public static void testRandom() {
         RandomUtil.getInstance().setSeed(8388428832L);
 
-        Dag dag = new Dag(GraphUtils.randomGraph(10, 0, 10, 5,
-                5, 5, false));
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag dag = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
+                5, 5, 5, false));
 
 //        SemPm semPm = new SemPm(dag);
 //        SemIm semIm = new SemIm(semPm);

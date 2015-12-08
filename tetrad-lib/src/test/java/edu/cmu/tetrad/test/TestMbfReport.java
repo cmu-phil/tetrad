@@ -24,6 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -209,8 +210,14 @@ public class TestMbfReport extends TestCase {
 
         System.out.println("Creating graph.");
 
-        Dag randomGraph = new Dag(GraphUtils.randomGraph(dimension, 0, dimension, 40,
-                40, 40, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < dimension; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, dimension,
+                40, 40, 40, false));
 
         System.out.println("Starting simulation.");
 
@@ -228,8 +235,14 @@ public class TestMbfReport extends TestCase {
         printLine("TARGET\tSIZE" + "\tFP\tFN" + "\tPFP\tPFN" +
                 "\tCFP\tCFN" + "\tPCFP\tPCFN" + "\tTIME");
 
-        Dag randomGraph = new Dag(GraphUtils.randomGraph(dimension, 0, dimension, 40,
-                40, 40, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < dimension; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, dimension,
+                40, 40, 40, false));
 
         BayesPm bayesPm = new BayesPm(randomGraph, 2, 2);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);

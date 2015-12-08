@@ -24,6 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -74,8 +75,14 @@ public class TestResolveSepsets extends TestCase {
     }
 
     public void discreteTest(int d) {
-        Dag graph = new Dag(GraphUtils.randomGraph(d, 0, d, 3,
-                2, 1, true));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < d; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag graph = new Dag(GraphUtils.randomGraph(nodes, 0, d,
+                3, 2, 1, true));
         BayesPm pm = new BayesPm(graph, 4, 4);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
         List<Set<Node>> subsetsNodes = subsetsFromDag(graph, 2);

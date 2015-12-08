@@ -67,7 +67,13 @@ public class TestGes extends TestCase {
         int numEdges = 10;
         int sampleSize = 1000;
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(numVars, 0, numEdges, 7,
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < numVars; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        };
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges, 7,
                 5, 5, false));
 
         System.out.println("\nInput graph:");
@@ -91,7 +97,13 @@ public class TestGes extends TestCase {
     }
 
     public void testSearch6() {
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(10, 0, 10, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false));
 
         int sampleSize = 1000;
 
@@ -108,9 +120,15 @@ public class TestGes extends TestCase {
     }
 
     public void testSearch7() {
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(50, 0, 50, 30, 15, 15, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 50; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 50, 30, 15, 15, false));
 
         int sampleSize = 1000;
+
 
         SemPm semPm = new SemPm(trueGraph);
         SemIm bayesIm = new SemIm(semPm);

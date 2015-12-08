@@ -236,8 +236,14 @@ public class TestFciSearch extends TestCase {
         int sampleSize = 1000;
         boolean latentDataSaved = false;
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(numVars, 10, numEdges, 7,
-                5, 5, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < numVars; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 10, numEdges,
+                7, 5, 5, false));
 
         System.out.println("\nInput graph:");
         System.out.println(trueGraph);
@@ -268,8 +274,14 @@ public class TestFciSearch extends TestCase {
         int sampleSize = 1000;
         boolean latentDataSaved = false;
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(numVars, 10, numEdges, 7,
-                5, 5, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < numVars; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 10, numEdges,
+                7, 5, 5, false));
 
         System.out.println("\nInput graph:");
         System.out.println(trueGraph);
@@ -312,8 +324,14 @@ public class TestFciSearch extends TestCase {
         boolean latentDataSaved = false;
         int numLatents = 40;
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(numVars, numLatents, numEdges, 7,
-                5, 5, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < numVars; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, numLatents, numEdges,
+                7, 5, 5, false));
 
         System.out.println("\nInput graph:");
         System.out.println(trueGraph);

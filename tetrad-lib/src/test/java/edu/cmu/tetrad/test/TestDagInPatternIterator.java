@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
@@ -163,7 +164,14 @@ public class TestDagInPatternIterator extends TestCase {
     public void test5() {
         RandomUtil.getInstance().setSeed(34828384L);
 
-        Dag dag1 = new Dag(GraphUtils.randomGraph(3, 0, 3, 30, 15, 15, false));
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i = 0; i < 3; i++) {
+            nodes1.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Dag dag1 = new Dag(GraphUtils.randomGraph(nodes1, 0, 3,
+                30, 15, 15, false));
 
         System.out.println(dag1);
 

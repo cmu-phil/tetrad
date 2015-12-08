@@ -23,9 +23,9 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.expression.VariableExpression;
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
@@ -33,7 +33,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.util.IonInput;
+import edu.cmu.tetradapp.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -86,7 +86,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
             this.graph = new EdgeListGraph();
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            this.graph = DataGraphUtils.makeRandomGraph(getGraph());
+            this.graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
         }
         log();
     }
@@ -96,7 +96,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             this.graph = new EdgeListGraph(getGraph());
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode",
                 GraphParams.MANUAL) == GraphParams.RANDOM) {
-            DataGraphUtils.makeRandomGraph(getGraph());
+            edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
         }
 
         Graph graph = graphSource.getGraph();
