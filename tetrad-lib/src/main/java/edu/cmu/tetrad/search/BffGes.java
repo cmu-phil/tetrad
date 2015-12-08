@@ -22,11 +22,12 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.sem.DagScorer;
+import edu.cmu.tetrad.sem.Scorer;
+import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.DecimalFormat;
@@ -42,14 +43,12 @@ import java.util.*;
  */
 
 public final class BffGes implements Bff {
-    private DataSet dataSet;
     private IKnowledge knowledge = new Knowledge2();
     private Graph graph;
     private double alpha = 0.05;
     private double highPValueAlpha = 0.05;
     private final NumberFormat nf = new DecimalFormat("0.0#########");
     private Set<GraphWithPValue> significantModels = new HashSet<GraphWithPValue>();
-    private Graph trueModel;
     private SemIm originalSemIm;
     private SemIm newSemIm;
     private Scorer scorer;
@@ -70,15 +69,8 @@ public final class BffGes implements Bff {
         }
 
         this.graph = graph;
-        this.dataSet = data;
-        this.dataSet = data;
-        this.scorer = new DagScorer(dataSet);
+        this.scorer = new DagScorer(data);
     }
-
-    public BffGes() {
-        super();
-    }
-
 
     private void saveModelIfSignificant(Graph graph) {
         double pValue = scoreGraph(graph).getPValue();
@@ -88,12 +80,12 @@ public final class BffGes implements Bff {
         }
     }
 
-    public Graph getNewDag() {
-        return newDag;
-    }
-
     public void setNewDag(Graph newDag) {
         this.newDag = newDag;
+    }
+
+    public Graph getNewDag() {
+        return newDag;
     }
 
     public static class GraphWithPValue {
@@ -119,6 +111,7 @@ public final class BffGes implements Bff {
 
         public boolean equals(Object o) {
             if (o == null) return false;
+            if (!(o instanceof GraphWithPValue)) return false;
             GraphWithPValue p = (GraphWithPValue) o;
             return (p.graph.equals(graph));
         }
@@ -131,16 +124,8 @@ public final class BffGes implements Bff {
             return Score.negativeInfinity();
         }
 
-//        SemPm semPm = new SemPm(dag);
-//        SemEstimator semEstimator = new SemEstimator(dataSet, semPm, new SemOptimizerEm());
-//        semEstimator.estimate();
-//        SemIm estimatedSem = semEstimator.getEstimatedSem();
-//        return new Score(estimatedSem);
-
         scorer.score(dag);
         return new Score(scorer);
-
-
     }
 
     public Graph getGraph() {
@@ -153,10 +138,6 @@ public final class BffGes implements Bff {
 
     public SemIm getNewSemIm() {
         return newSemIm;
-    }
-
-    public double getHighPValueAlpha() {
-        return highPValueAlpha;
     }
 
     public void setHighPValueAlpha(double highPValueAlpha) {
@@ -174,30 +155,30 @@ public final class BffGes implements Bff {
         return new Score(scorer);
     }
 
-    private void removeHighPValueEdges(Graph bestGraph) {
-        boolean changed = true;
-
-        while (changed) {
-            changed = false;
-            Score score = scoreGraph(bestGraph);
-            SemIm estSem = score.getEstimatedSem();
-
-            for (Parameter param : estSem.getSemPm().getParameters()) {
-                if (param.getType() != ParamType.COEF) {
-                    continue;
-                }
-
-                double p = estSem.getPValue(param, 10000);
-                Edge edge = bestGraph.getEdge(param.getNodeA(), param.getNodeB());
-
-                if (p > getHighPValueAlpha()) {
-                    System.out.println("Removing edge " + edge + " because it has p = " + p);
-                    bestGraph.removeEdge(edge);
-                    changed = true;
-                }
-            }
-        }
-    }
+//    private void removeHighPValueEdges(Graph bestGraph) {
+//        boolean changed = true;
+//
+//        while (changed) {
+//            changed = false;
+//            Score score = scoreGraph(bestGraph);
+//            SemIm estSem = score.getEstimatedSem();
+//
+//            for (Parameter param : estSem.getSemPm().getParameters()) {
+//                if (param.getType() != ParamType.COEF) {
+//                    continue;
+//                }
+//
+//                double p = estSem.getPValue(param, 10000);
+//                Edge edge = bestGraph.getEdge(param.getNodeA(), param.getNodeB());
+//
+//                if (p > getHighPValueAlpha()) {
+//                    System.out.println("Removing edge " + edge + " because it has p = " + p);
+//                    bestGraph.removeEdge(edge);
+//                    changed = true;
+//                }
+//            }
+//        }
+//    }
 
     public Graph search() {
         Score score1 = scoreGraph(getGraph());
@@ -268,7 +249,7 @@ public final class BffGes implements Bff {
 
                         Graph graph2 = new EdgeListGraph(graph);
 
-                        tryInsert(_x, _y, tSubset, graph2, score, true);
+                        tryInsert(_x, _y, tSubset, graph2, true);
 
                         if (graph2.existsDirectedCycle()) {
                             continue;
@@ -393,16 +374,7 @@ public final class BffGes implements Bff {
     * (Definition 12 from Chickering, 2002).
     **/
 
-    private void tryInsert(Node x, Node y, Set<Node> subset, Graph graph, double score, boolean log) {
-        Edge trueEdge = null;
-        Graph trueGraph = null;
-
-        if (trueGraph != null) {
-            Node _x = trueGraph.getNode(x.getName());
-            Node _y = trueGraph.getNode(y.getName());
-            trueEdge = trueGraph.getEdge(_x, _y);
-        }
-
+    private void tryInsert(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
         graph.addDirectedEdge(x, y);
 
         for (Node t : subset) {
@@ -454,27 +426,11 @@ public final class BffGes implements Bff {
     }
 
     private void insert(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
-        Edge trueEdge = null;
-        Graph trueGraph = null;
-
-        if (trueGraph != null) {
-            Node _x = trueGraph.getNode(x.getName());
-            Node _y = trueGraph.getNode(y.getName());
-            trueEdge = trueGraph.getEdge(_x, _y);
-        }
-
         if (graph.isAdjacentTo(x, y)) {
             return;
         }
 
         graph.addDirectedEdge(x, y);
-
-        if (log) {
-            String label = trueGraph != null && trueEdge != null ? "*" : "";
-            System.out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
-                    " " + subset +
-                    " (" + nf.format(scoreGraph(graph).getPValue()) + ") " + label);
-        }
 
         for (Node t : subset) {
             Edge oldEdge = graph.getEdge(t, y);
@@ -541,15 +497,8 @@ public final class BffGes implements Bff {
         List<Node> naYXT = new LinkedList<Node>(subset);
         naYXT.addAll(findNaYX(x, y, graph));
 
-        if (!isClique(naYXT, graph)) {
-            return false;
-        }
+        return isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<Node>());
 
-        if (!isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<Node>())) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -645,55 +594,55 @@ public final class BffGes implements Bff {
         return true;
     }
 
-    private double scoreGraphChange(Node y, Set<Node> parents1,
-                                    Set<Node> parents2, Graph graph) {
-        graph = SearchGraphUtils.dagFromPattern(graph);
-
-        List<Node> currentParents = graph.getParents(y);
-        List<Node> currentChildren = graph.getChildren(y);
-
-        for (Node node : currentParents) {
-            graph.removeEdge(node, y);
-        }
-
-        for (Node node : currentChildren) {
-            graph.removeEdge(y, node);
-        }
-
-        for (Node node : parents1) {
-            graph.addDirectedEdge(node, y);
-        }
-
-        double score1 = scoreGraph(graph).getScore();
-
-        saveModelIfSignificant(graph);
-
-        for (Node node : parents1) {
-            graph.removeEdge(node, y);
-        }
-
-        for (Node node : parents2) {
-            graph.addDirectedEdge(node, y);
-        }
-
-        double score2 = scoreGraph(graph).getScore();
-
-        saveModelIfSignificant(graph);
-
-        for (Node node : parents2) {
-            graph.removeEdge(node, y);
-        }
-
-        for (Node node : currentParents) {
-            graph.addDirectedEdge(node, y);
-        }
-
-        for (Node node : currentChildren) {
-            graph.addDirectedEdge(y, node);
-        }
-
-        return score1 - score2;
-    }
+//    private double scoreGraphChange(Node y, Set<Node> parents1,
+//                                    Set<Node> parents2, Graph graph) {
+//        graph = SearchGraphUtils.dagFromPattern(graph);
+//
+//        List<Node> currentParents = graph.getParents(y);
+//        List<Node> currentChildren = graph.getChildren(y);
+//
+//        for (Node node : currentParents) {
+//            graph.removeEdge(node, y);
+//        }
+//
+//        for (Node node : currentChildren) {
+//            graph.removeEdge(y, node);
+//        }
+//
+//        for (Node node : parents1) {
+//            graph.addDirectedEdge(node, y);
+//        }
+//
+//        double score1 = scoreGraph(graph).getScore();
+//
+//        saveModelIfSignificant(graph);
+//
+//        for (Node node : parents1) {
+//            graph.removeEdge(node, y);
+//        }
+//
+//        for (Node node : parents2) {
+//            graph.addDirectedEdge(node, y);
+//        }
+//
+//        double score2 = scoreGraph(graph).getScore();
+//
+//        saveModelIfSignificant(graph);
+//
+//        for (Node node : parents2) {
+//            graph.removeEdge(node, y);
+//        }
+//
+//        for (Node node : currentParents) {
+//            graph.addDirectedEdge(node, y);
+//        }
+//
+//        for (Node node : currentChildren) {
+//            graph.addDirectedEdge(y, node);
+//        }
+//
+//        return score1 - score2;
+//    }
 
     /**
      * @return true iif the given set forms a clique in the given graph.
@@ -805,14 +754,6 @@ public final class BffGes implements Bff {
         this.knowledge = knowledge;
     }
 
-    public Graph getTrueModel() {
-        return trueModel;
-    }
-
-    public void setTrueModel(Graph trueModel) {
-        this.trueModel = trueModel;
-    }
-
     public double getAlpha() {
         return alpha;
     }
@@ -834,85 +775,14 @@ public final class BffGes implements Bff {
         return significantModels;
     }
 
-//    public static class Score {
-//        private SemIm estimatedSem;
-//        private double pValue;
-//        private double fml;
-//        private double chisq;
-//
-//        public Score(SemIm estimatedSem) {
-//            this.estimatedSem = estimatedSem;
-//            this.pValue = estimatedSem.getPValue();
-//            this.fml = estimatedSem.getFml();
-//            this.chisq = estimatedSem.getChiSquare();
-//        }
-//
-//        private Score() {
-//            this.estimatedSem = null;
-//            this.pValue = 0.0;
-//            this.fml = Double.POSITIVE_INFINITY;
-//            this.chisq = 0.0;        }
-//
-//        public SemIm getEstimatedSem() {
-//            return estimatedSem;
-//        }
-//
-//        public double getPValue() {
-//            return pValue;
-//        }
-//
-//        public double getScore() {
-////            double fml = estimatedSem.getFml();
-////            int freeParams = estimatedSem.getNumFreeParams();
-////            int sampleSize = estimatedSem.getSampleSize();
-////            return -(sampleSize - 1) * fml - (freeParams * Math.log(sampleSize));
-////            return -getChisq();
-//
-////            if (getMaxEdgeP() > 0.05) {
-////                return Double.NEGATIVE_INFINITY;
-////            }
-//
-//            return -fml;
-//        }
-//
-//        public double getFml() {
-//            return fml;
-//        }
-//
-//        public double getChisq() {
-//            return chisq;
-//        }
-//
-//        public double getMaxEdgeP() {
-//            double maxP = Double.NEGATIVE_INFINITY;
-//
-//            for (Parameter param : estimatedSem.getSemPm().getParameters()) {
-//                if (param.getType() != ParamType.COEF) {
-//                    continue;
-//                }
-//                double p = this.estimatedSem.getPValue(param, 10000);
-//                if (p > maxP) maxP = p;
-//            }
-//
-//            return maxP;
-//        }
-//
-//        public static Score negativeInfinity() {
-//            return new Score();
-//        }
-//    }
-
     public static class Score {
         private Scorer scorer;
         private double pValue;
         private double fml;
         private double chisq;
         private double bic;
-        private double aic;
+//        private double aic;
         private int dof;
-        private ICovarianceMatrix cov;
-
-        private ICovarianceMatrix impliedMatrix;
 
         public Score(Scorer scorer) {
             this.scorer = scorer;
@@ -920,7 +790,7 @@ public final class BffGes implements Bff {
             this.fml = scorer.getFml();
             this.chisq = scorer.getChiSquare();
             this.bic = scorer.getBicScore();
-            this.aic = scorer.getAicScore();
+//            this.aic = scorer.getAicScore();
             this.dof = scorer.getDof();
         }
 
@@ -986,14 +856,6 @@ public final class BffGes implements Bff {
             return dof;
         }
 
-        public ICovarianceMatrix getCovarianceMatrix() {
-            return cov;
-        }
-
-        public ICovarianceMatrix getImpliedMatrix() {
-            return impliedMatrix;
-        }
-
         public double getChiSquare() {
             return chisq;
         }
@@ -1003,89 +865,89 @@ public final class BffGes implements Bff {
         }
     }
 
-    /**
-     * This method straightforwardly applies the standard definition of the numerical estimates of the second order
-     * partial derivatives.  See for example Section 5.7 of Numerical Recipes in C.
-     */
-    public double secondPartialDerivative(FittingFunction f, int i, int j,
-                                          double[] p, double delt) {
-        double[] arg = new double[p.length];
-        System.arraycopy(p, 0, arg, 0, p.length);
+//    /**
+//     * This method straightforwardly applies the standard definition of the numerical estimates of the second order
+//     * partial derivatives.  See for example Section 5.7 of Numerical Recipes in C.
+//     */
+//    public double secondPartialDerivative(FittingFunction f, int i, int j,
+//                                          double[] p, double delt) {
+//        double[] arg = new double[p.length];
+//        System.arraycopy(p, 0, arg, 0, p.length);
+//
+//        arg[i] += delt;
+//        arg[j] += delt;
+//        double ff1 = f.evaluate(arg);
+//
+//        arg[j] -= 2 * delt;
+//        double ff2 = f.evaluate(arg);
+//
+//        arg[i] -= 2 * delt;
+//        arg[j] += 2 * delt;
+//        double ff3 = f.evaluate(arg);
+//
+//        arg[j] -= 2 * delt;
+//        double ff4 = f.evaluate(arg);
+//
+//        double fsSum = ff1 - ff2 - ff3 + ff4;
+//
+//        return fsSum / (4.0 * delt * delt);
+//    }
 
-        arg[i] += delt;
-        arg[j] += delt;
-        double ff1 = f.evaluate(arg);
+//    /**
+//     * Evaluates a fitting function for an array of parameters.
+//     *
+//     * @author Joseph Ramsey
+//     */
+//    interface FittingFunction {
+//
+//        /**
+//         * @return the value of the function for the given array of parameter values.
+//         */
+//        double evaluate(double[] argument);
+//
+//        /**
+//         * @return the number of parameters.
+//         */
+//        int getNumParameters();
+//    }
 
-        arg[j] -= 2 * delt;
-        double ff2 = f.evaluate(arg);
-
-        arg[i] -= 2 * delt;
-        arg[j] += 2 * delt;
-        double ff3 = f.evaluate(arg);
-
-        arg[j] -= 2 * delt;
-        double ff4 = f.evaluate(arg);
-
-        double fsSum = ff1 - ff2 - ff3 + ff4;
-
-        return fsSum / (4.0 * delt * delt);
-    }
-
-    /**
-     * Evaluates a fitting function for an array of parameters.
-     *
-     * @author Joseph Ramsey
-     */
-    static interface FittingFunction {
-
-        /**
-         * @return the value of the function for the given array of parameter values.
-         */
-        double evaluate(double[] argument);
-
-        /**
-         * @return the number of parameters.
-         */
-        int getNumParameters();
-    }
-
-    /**
-     * Wraps a Sem for purposes of calculating its fitting function for given parameter values.
-     *
-     * @author Joseph Ramsey
-     */
-    static class SemFittingFunction implements FittingFunction {
-
-        /**
-         * The wrapped Sem.
-         */
-        private final SemIm sem;
-
-        /**
-         * Constructs a new CoefFittingFunction for the given Sem.
-         */
-        public SemFittingFunction(SemIm sem) {
-            this.sem = sem;
-        }
-
-        /**
-         * Computes the maximum likelihood function value for the given parameters values as given by the optimizer.
-         * These values are mapped to parameter values.
-         */
-        public double evaluate(double[] parameters) {
-            sem.setFreeParamValues(parameters);
-
-            // This needs to be FML-- see Bollen p. 109.
-            return sem.getScore();
-        }
-
-        /**
-         * @return the number of arguments. Required by the MultivariateFunction interface.
-         */
-        public int getNumParameters() {
-            return this.sem.getNumFreeParams();
-        }
-    }
+//    /**
+//     * Wraps a Sem for purposes of calculating its fitting function for given parameter values.
+//     *
+//     * @author Joseph Ramsey
+//     */
+//    static class SemFittingFunction implements FittingFunction {
+//
+//        /**
+//         * The wrapped Sem.
+//         */
+//        private final SemIm sem;
+//
+//        /**
+//         * Constructs a new CoefFittingFunction for the given Sem.
+//         */
+//        public SemFittingFunction(SemIm sem) {
+//            this.sem = sem;
+//        }
+//
+//        /**
+//         * Computes the maximum likelihood function value for the given parameters values as given by the optimizer.
+//         * These values are mapped to parameter values.
+//         */
+//        public double evaluate(double[] parameters) {
+//            sem.setFreeParamValues(parameters);
+//
+//            // This needs to be FML-- see Bollen p. 109.
+//            return sem.getScore();
+//        }
+//
+//        /**
+//         * @return the number of arguments. Required by the MultivariateFunction interface.
+//         */
+//        public int getNumParameters() {
+//            return this.sem.getNumFreeParams();
+//        }
+//    }
 }
 
 

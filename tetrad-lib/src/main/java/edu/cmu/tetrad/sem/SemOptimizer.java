@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Joseph Ramsey
  */
 public interface SemOptimizer extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Optimizes the fitting function of a Sem by adjusting its parameter

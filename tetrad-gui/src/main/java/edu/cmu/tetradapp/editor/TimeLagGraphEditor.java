@@ -143,8 +143,6 @@ public final class TimeLagGraphEditor extends JPanel
      * SessionNodes and SessionEdges selected in the workbench. Note that the
      * workbench, not the SessionEditorNodes themselves, keeps track of the
      * selection.
-     *
-     * @return the set of selected model nodes.
      */
     public List getSelectedModelComponents() {
         List<Component> selectedComponents =
@@ -509,7 +507,7 @@ public final class TimeLagGraphEditor extends JPanel
 
 //                            graph = DataGraphUtils.addCycles2(dag, minNumCycles, minCycleLength);
 
-                            graph = GraphUtils.cyclicGraph4(editor.getNumNodes(), editor.getMaxEdges());
+                            graph = GraphUtils.cyclicGraph2(editor.getNumNodes(), editor.getMaxEdges());
                             GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
                         } else {
                             graph = new EdgeListGraph(dag);

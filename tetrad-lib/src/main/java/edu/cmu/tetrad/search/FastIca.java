@@ -231,7 +231,6 @@ public class FastIca {
      * @param X             A 2D matrix, rows being cases, columns being
      *                      variables. It is assumed that there are no missing
      *                      values.
-     * @param numComponents
      */
     public FastIca(TetradMatrix X, int numComponents) {
         this.X = X;

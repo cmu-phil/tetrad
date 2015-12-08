@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
@@ -68,7 +69,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
             dag = new Dag();
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            createRandomDag();
+            this.dag = new Dag(DataGraphUtils.makeRandomGraph(getGraph()));
         }
         log();
     }
@@ -76,24 +77,26 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     public DagWrapper(DagWrapper graphWrapper, GraphParams params) {
         if (Preferences.userRoot().getInt("newGraphInitializationMode",
                 GraphParams.MANUAL) == GraphParams.MANUAL) {
-            try {
-                this.dag = new Dag(graphWrapper.getDag());
-            } catch (Exception e) {
-                e.printStackTrace();
-                this.dag = new Dag();
-            }
+            this.dag = new Dag();
+//            try {
+//                this.dag = new Dag(graphWrapper.getDag());
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                this.dag = new Dag();
+//            }
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode",
                 GraphParams.MANUAL) == GraphParams.RANDOM) {
-            createRandomDag();
+            this.dag = new Dag(DataGraphUtils.makeRandomGraph(getGraph()));
         }
         log();
     }
 
     public DagWrapper(SemGraphWrapper graphWrapper, GraphParams params) {
         if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
-            this.dag = new Dag(graphWrapper.getSemGraph());
+//            this.dag = new Dag(graphWrapper.getSemGraph());
+            this.dag = new Dag();
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            createRandomDag();
+            this.dag = new Dag(DataGraphUtils.makeRandomGraph(getGraph()));
         }
         log();
     }
@@ -101,13 +104,14 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     public DagWrapper(GraphWrapper graphWrapper, GraphParams params) {
         if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
             try {
-                this.dag = new Dag(graphWrapper.getGraph());
+//                this.dag = new Dag(graphWrapper.getGraph());
+                this.dag = new Dag();
             } catch (Exception e) {
                 e.printStackTrace();
                 this.dag = new Dag();      
             }
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            createRandomDag();
+            this.dag = new Dag(DataGraphUtils.makeRandomGraph(getGraph()));
         }
         log();
     }
@@ -189,7 +193,6 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static DagWrapper serializableInstance() {
@@ -213,33 +216,6 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     private void log() {
         TetradLogger.getInstance().log("info", "Directed Acyclic Graph (DAG)");
         TetradLogger.getInstance().log("graph",  dag + "");
-    }
-
-
-    private void createRandomDag() {
-        boolean uniformlySelected = Preferences.userRoot().getBoolean("graphUniformlySelected", true);
-        int numMeasuredNodes = Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5);
-        int numLatents = Preferences.userRoot().getInt("newGraphNumLatents", 0);
-        int newGraphNumEdges = Preferences.userRoot().getInt("newGraphNumEdges", 3);
-        boolean connected = Preferences.userRoot().getBoolean("randomGraphConnected", false);
-
-        if (uniformlySelected) {
-            int maxDegree = Preferences.userRoot().getInt("randomGraphMaxDegree", 6);
-            int maxIndegree = Preferences.userRoot().getInt("randomGraphMaxIndegree", 3);
-            int maxOutdegree = Preferences.userRoot().getInt("randomGraphMaxOutdegree", 3);
-
-            dag = new Dag(GraphUtils.randomGraph(numMeasuredNodes + numLatents,
-                    numLatents, newGraphNumEdges,
-                    maxDegree, maxIndegree,
-                    maxOutdegree, connected));
-        } else {
-            do {
-                dag = new Dag(GraphUtils.randomGraph(numMeasuredNodes + numLatents,
-                        numLatents, newGraphNumEdges,
-                        30, 15, 15, connected
-                ));
-            } while (dag.getNumEdges() < newGraphNumEdges);
-        }
     }
 
     /**

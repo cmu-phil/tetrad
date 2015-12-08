@@ -201,13 +201,6 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     /**
-     * Removes a property change listener.
-     */
-    public final void removePropertyChangeListener(PropertyChangeListener l) {
-        getPcs().removePropertyChangeListener(l);
-    }
-
-    /**
      * @return the name of the node as its string representation.
      */
     public String toString() {
@@ -235,8 +228,7 @@ public class GraphNode implements Node, TetradSerializable {
         if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             return o == this;
         } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            if (!(o instanceof GraphNode)) return false;
-            return getName().equals(((Node) o).getName());
+            return o instanceof GraphNode && getName().equals(((Node) o).getName());
         }
 
         throw new IllegalStateException();

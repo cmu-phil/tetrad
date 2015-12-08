@@ -96,8 +96,6 @@ public class QQPlotDisplayPanel extends JPanel {
 
     /**
      * Constructs the histogram dipslay panel given the initial histogram to display.
-     *
-     * @param qqPlot
      */
     public QQPlotDisplayPanel(QQPlot qqPlot) {
         this.qqPlot = qqPlot;
@@ -114,8 +112,6 @@ public class QQPlotDisplayPanel extends JPanel {
 
     /**
      * Updates the histogram that is dispalyed to the given one.
-     *
-     * @param qqPlot
      */
     public synchronized void updateQQPlot(QQPlot qqPlot) {
         if (qqPlot == null) {
@@ -135,8 +131,6 @@ public class QQPlotDisplayPanel extends JPanel {
 
     /**
      * Paints the histogram and related items.
-     *
-     * @param graphics
      */
     public void paintComponent(Graphics graphics) {
         // set up variables.

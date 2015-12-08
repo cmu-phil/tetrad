@@ -134,24 +134,6 @@ public class BayesImEditorObs extends JPanel {
     }
 
     /**
-     * Constructs a new Bayes IM Editor from a Bayes estimator wrapper.
-     */
-	/*
-    public BayesImEditorObs(BayesEstimatorWrapper bayesEstWrapper) {
-        this(null, bayesEstWrapper.getEstimatedBayesIm());
-    }
-	 */
-
-    /**
-     * Constructs a new Bayes IM Editor from a Dirichlet Prior.
-     */
-	/*
-    public BayesImEditorObs(DirichletEstimatorWrapper dirichletEstWrapper) {
-        this(null, dirichletEstWrapper.getEstimatedBayesIm());
-    }
-	 */
-
-    /**
      * Sets the name of this editor.
      */
     public void setName(String name) {

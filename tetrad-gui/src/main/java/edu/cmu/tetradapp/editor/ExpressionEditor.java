@@ -306,7 +306,6 @@ class ExpressionEditor extends JPanel {
      * Inserts the given symbol into the last focused field, of if there isn't one
      * the expression field.
      *
-     * @param symbol
      * @param append States whether it should append to the field's getModel value or not.
      */
     public void insertLastFocused(String symbol, boolean append) {

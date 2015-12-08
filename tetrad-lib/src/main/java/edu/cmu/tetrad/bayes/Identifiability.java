@@ -66,17 +66,6 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      */
     private BayesIm manipulatedBayesIm;
 
-    /**
-     * Calculates probabilities from the manipulated Bayes IM.
-     *
-     * @serial Can be null.
-     */
-    private BayesImProbs bayesImProbs;
-
-    /**
-     * The target proposition
-     */
-    // private Proposition targetProp;
 
     private final boolean debug = false;
 

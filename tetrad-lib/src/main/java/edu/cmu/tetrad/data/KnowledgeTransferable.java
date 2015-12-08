@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @see Knowledge
  */
 public interface KnowledgeTransferable extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @return a copy of the knowledge for this class.

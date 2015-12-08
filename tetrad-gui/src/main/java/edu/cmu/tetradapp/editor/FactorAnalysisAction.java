@@ -59,8 +59,6 @@ public class FactorAnalysisAction extends AbstractAction {
     /**
      * Constructs the <code>HistogramAction</code> given the <code>DataEditor</code>
      * that its attached to.
-     *
-     * @param editor
      */
     public FactorAnalysisAction(DataEditor editor) {
         super("Factor Analysis...");

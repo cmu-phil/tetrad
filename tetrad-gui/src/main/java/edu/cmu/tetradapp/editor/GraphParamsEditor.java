@@ -184,8 +184,6 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     /**
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
-     *
-     * @return the stored simulation parameters model.
      */
     private synchronized GraphParams getParams() {
         return this.params;

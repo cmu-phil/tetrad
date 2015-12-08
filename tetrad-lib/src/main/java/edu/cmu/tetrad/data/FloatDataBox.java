@@ -35,11 +35,8 @@ public class FloatDataBox implements DataBox {
 
     /**
      * Constructs an 2D float array consisting entirely of missing values (-99).
-     *
-     * @param rows
-     * @param cols
      */
-    public FloatDataBox(int rows, int cols) {
+    private FloatDataBox(int rows, int cols) {
         this.data = new float[rows][cols];
 
         for (int i = 0; i < rows; i++) {

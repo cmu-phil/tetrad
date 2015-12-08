@@ -51,14 +51,6 @@ abstract class AbstractExpression implements Expression {
      */
     private String token;
 
-
-    /**
-     * Constructs the abstract expression given the sub-expressions.
-     */
-    public AbstractExpression(Expression... expressions) {
-        this.expressions = Arrays.asList(expressions);
-    }
-
     public AbstractExpression(String token, ExpressionDescriptor.Position position, Expression... expressions) {
         this.position = position;
         this.token = token;

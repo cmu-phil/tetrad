@@ -28,16 +28,16 @@ package edu.cmu.tetrad.data;
  *
  * @author Mike Freenor
  */
-public interface TriangularMatrix {
-    public void create(int i);
+interface TriangularMatrix {
+    void create(int i);
 
-    public short getShort(int i, int j);
+    short getShort(int i, int j);
 
-    public double getDouble(int i, int j);
+    double getDouble(int i, int j);
 
-    public boolean set(int i, int j, short value);
+    boolean set(int i, int j, short value);
 
-    public boolean set(int i, int j, double value);
+    boolean set(int i, int j, double value);
 }
 
 

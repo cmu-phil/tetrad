@@ -96,9 +96,6 @@ public class RegressionParamsEditorPanel extends JPanel {
     /**
      * Constructs the editor given the <code>RegressionParams</code> and the <code>DataModel</code>
      * that should be used.
-     *
-     * @param params
-     * @param model
      */
     public RegressionParamsEditorPanel(StandardRegressionParams params, DataModel model) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));

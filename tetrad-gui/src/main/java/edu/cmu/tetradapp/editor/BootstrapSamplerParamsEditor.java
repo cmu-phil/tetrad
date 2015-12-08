@@ -79,11 +79,6 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
      * Constructs labels and text fields for editing each property and adds
      * appropriate listeners.
      */
-    /**
-     * Constructs the Gui used to edit properties; called from each constructor.
-     * Constructs labels and text fields for editing each property and adds
-     * appropriate listeners.
-     */
     private void buildGui() {
         setLayout(new BorderLayout());
 

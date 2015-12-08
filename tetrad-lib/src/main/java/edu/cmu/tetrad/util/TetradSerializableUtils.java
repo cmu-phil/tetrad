@@ -337,7 +337,7 @@ public class TetradSerializableUtils {
         }
 
         if (!directory.exists()) {
-            boolean success = directory.mkdirs();
+            directory.mkdirs();
         }
     }
 
@@ -352,12 +352,12 @@ public class TetradSerializableUtils {
 
             for (String aListing : listing) {
                 File file = new File(getArchiveDirectory(), aListing);
-                boolean deleted = file.delete();
+                file.delete();
             }
         }
 
         if (!directory.exists()) {
-            boolean success = directory.mkdirs();
+            directory.mkdirs();
         }
     }
 
@@ -746,6 +746,10 @@ public class TetradSerializableUtils {
 
         @SuppressWarnings("Convert2Diamond") List<Class> classes = new LinkedList<>();
         File[] files = path.listFiles();
+
+        if (files == null) {
+            throw new NullPointerException();
+        }
 
         for (File file : files) {
             if (file.isDirectory()) {

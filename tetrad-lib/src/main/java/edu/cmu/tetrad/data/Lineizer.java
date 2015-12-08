@@ -27,11 +27,11 @@ import java.io.Reader;
 
 /**
  * @author Joseph Ramsey
- * @return one line at a time, with a method to determine whether another
- * line is available. Blank lines and lines beginning with the given comment
- * marker are skipped.
+ *         Returns one line at a time, with a method to determine whether another
+ *         line is available. Blank lines and lines beginning with the given comment
+ *         marker are skipped.
  */
-public final class Lineizer {
+final class Lineizer {
 
     /**
      * The character sequence being tokenized.

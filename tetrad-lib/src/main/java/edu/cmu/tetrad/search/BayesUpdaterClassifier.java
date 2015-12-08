@@ -122,11 +122,6 @@ public final class BayesUpdaterClassifier
      */
     private int totalUsableCases;
 
-    /**
-     * @serial
-     */
-    private int targetCategory;
-
     //===========================CONSTRUCTORS==========================//
 
     /*
@@ -179,7 +174,6 @@ public final class BayesUpdaterClassifier
         }
 
         this.targetVariable = targetVariable;
-        this.targetCategory = targetCategory;
     }
 
     /**

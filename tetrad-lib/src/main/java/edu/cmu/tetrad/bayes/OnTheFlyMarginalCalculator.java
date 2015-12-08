@@ -203,15 +203,15 @@ public final class OnTheFlyMarginalCalculator
         return variableNames;
     }
 
-    /**
-     * @return this array of parent dimensions.
-     */
-    public int[] getParentDims(int nodeIndex) {
-        int[] dims = parentDims[nodeIndex];
-        int[] copy = new int[dims.length];
-        System.arraycopy(dims, 0, copy, 0, dims.length);
-        return copy;
-    }
+//    /**
+//     * @return this array of parent dimensions.
+//     */
+//    public int[] getParentDims(int nodeIndex) {
+//        int[] dims = parentDims[nodeIndex];
+//        int[] copy = new int[dims.length];
+//        System.arraycopy(dims, 0, copy, 0, dims.length);
+//        return copy;
+//    }
 
     /**
      * @return the updated marginal for the given category of the given variable
@@ -291,7 +291,6 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * @param nodeIndex
      * @return this node.
      */
     private Node getNode(int nodeIndex) {
@@ -299,7 +298,6 @@ public final class OnTheFlyMarginalCalculator
     }
 
     /**
-     * @param nodeIndex
      * @return this number.
      */
     private int getNumCategories(int nodeIndex) {
@@ -310,7 +308,6 @@ public final class OnTheFlyMarginalCalculator
     /**
      * @return (a defensive copy of) the array containing all of the parents of
      * a given node in the order in which they are stored internally.
-     * @see #getParentDims
      */
     private int[] getParents(int nodeIndex) {
         int[] nodeParents = parents[nodeIndex];

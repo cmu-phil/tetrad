@@ -258,7 +258,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
      * @return this node.
      */
     public Node getNode(int nodeIndex) {
@@ -318,7 +317,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
      * @return this number.
      * @see #getNumRows
      */
@@ -327,7 +325,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
      * @return this number.
      * @see #getRowIndex
      * @see #getNumColumns
@@ -424,8 +421,6 @@ public final class MlBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
-     * @param values
      * @return the row in the table for the given node and combination of parent
      * values.
      * @see #getParentValues
@@ -607,100 +602,100 @@ public final class MlBayesIm implements BayesIm {
         randomizeTable4(nodeIndex);
     }
 
-    private void randomizeTable2(int nodeIndex) {
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            if (isIncomplete(nodeIndex, rowIndex)) {
-                break;
-            }
-        }
+//    private void randomizeTable2(int nodeIndex) {
+//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
+//            if (isIncomplete(nodeIndex, rowIndex)) {
+//                break;
+//            }
+//        }
+//
+//        // Trying for some more power ..jdramsey 5/7/10
+//        List<Integer> rowIndices = new ArrayList<>();
+//
+//        for (int i = 0; i < getNumRows(nodeIndex); i++) {
+//            rowIndices.add(i);
+//        }
+//
+//        Collections.shuffle(rowIndices);
+//
+//        randomizeRow(nodeIndex, rowIndices.get(0));
+//        double[][] values = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
+//
+//        for (int row = 0; row < getNumRows(nodeIndex); row++) {
+//            double bestNorm = 0.0;
+//
+//            for (int trial = 0; trial < 100; trial++) {
+//                randomizeRow(nodeIndex, rowIndices.get(row));
+//                double totalNorm = 0.0;
+//
+//                for (int _row = row - 1; _row < row; _row++) {
+//                    double norm = norm(nodeIndex, rowIndices.get(row),
+//                            rowIndices.get(_row));
+//                    totalNorm += norm;
+//                }
+//
+//                if (totalNorm > bestNorm) {
+//                    bestNorm = totalNorm;
+//
+//                    for (int _row = 0; _row < getNumRows(nodeIndex); _row++) {
+//                        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//                            values[_row][col] = getProbability(nodeIndex, _row, col);
+//                        }
+//                    }
+//                }
+//            }
+//
+//            for (int _row = 0; _row < getNumRows(nodeIndex); _row++) {
+//                for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//                    setProbability(nodeIndex, _row, col, values[_row][col]);
+//                }
+//            }
+//        }
+//    }
 
-        // Trying for some more power ..jdramsey 5/7/10
-        List<Integer> rowIndices = new ArrayList<>();
-
-        for (int i = 0; i < getNumRows(nodeIndex); i++) {
-            rowIndices.add(i);
-        }
-
-        Collections.shuffle(rowIndices);
-
-        randomizeRow(nodeIndex, rowIndices.get(0));
-        double[][] values = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
-
-        for (int row = 0; row < getNumRows(nodeIndex); row++) {
-            double bestNorm = 0.0;
-
-            for (int trial = 0; trial < 100; trial++) {
-                randomizeRow(nodeIndex, rowIndices.get(row));
-                double totalNorm = 0.0;
-
-                for (int _row = row - 1; _row < row; _row++) {
-                    double norm = norm(nodeIndex, rowIndices.get(row),
-                            rowIndices.get(_row));
-                    totalNorm += norm;
-                }
-
-                if (totalNorm > bestNorm) {
-                    bestNorm = totalNorm;
-
-                    for (int _row = 0; _row < getNumRows(nodeIndex); _row++) {
-                        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-                            values[_row][col] = getProbability(nodeIndex, _row, col);
-                        }
-                    }
-                }
-            }
-
-            for (int _row = 0; _row < getNumRows(nodeIndex); _row++) {
-                for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-                    setProbability(nodeIndex, _row, col, values[_row][col]);
-                }
-            }
-        }
-    }
-
-    private void randomizeTable3(int nodeIndex) {
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            randomizeRow(nodeIndex, rowIndex);
-        }
-
-        double[][] saved = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
-
-        double[][] stored = probs[nodeIndex];
-
-        copy(stored, saved);
-
-        double maxSumSpread = 0.0;
-
-        for (int i = 0; i < 100; i++) {
-            for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-                randomizeRow(nodeIndex, rowIndex);
-            }
-
-            double sumSpread = 0.0;
-
-            for (int c = 0; c < getNumColumns(nodeIndex); c++) {
-                double min = 1.0, max = 0.0;
-
-                for (int r = 0; r < getNumRows(nodeIndex); r++) {
-                    double p = getProbability(nodeIndex, r, c);
-
-                    if (p <= min) min = p;
-                    if (p >= max) max = p;
-                }
-
-                sumSpread += abs(max - min);
-            }
-
-            if (sumSpread > maxSumSpread) {
-                copy(stored, saved);
-                maxSumSpread = sumSpread;
-            }
-        }
-
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            copy(saved, stored);
-        }
-    }
+//    private void randomizeTable3(int nodeIndex) {
+//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
+//            randomizeRow(nodeIndex, rowIndex);
+//        }
+//
+//        double[][] saved = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
+//
+//        double[][] stored = probs[nodeIndex];
+//
+//        copy(stored, saved);
+//
+//        double maxSumSpread = 0.0;
+//
+//        for (int i = 0; i < 100; i++) {
+//            for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
+//                randomizeRow(nodeIndex, rowIndex);
+//            }
+//
+//            double sumSpread = 0.0;
+//
+//            for (int c = 0; c < getNumColumns(nodeIndex); c++) {
+//                double min = 1.0, max = 0.0;
+//
+//                for (int r = 0; r < getNumRows(nodeIndex); r++) {
+//                    double p = getProbability(nodeIndex, r, c);
+//
+//                    if (p <= min) min = p;
+//                    if (p >= max) max = p;
+//                }
+//
+//                sumSpread += abs(max - min);
+//            }
+//
+//            if (sumSpread > maxSumSpread) {
+//                copy(stored, saved);
+//                maxSumSpread = sumSpread;
+//            }
+//        }
+//
+//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
+//            copy(saved, stored);
+//        }
+//    }
 
     private void randomizeTable4(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -737,7 +732,6 @@ public final class MlBayesIm implements BayesIm {
     private double score(int nodeIndex) {
         double[][] p = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
         copy(probs[nodeIndex], p);
-        double score = 0.0;
         int num = 0;
 
         int numRows = getNumRows(nodeIndex);
@@ -792,7 +786,6 @@ public final class MlBayesIm implements BayesIm {
             double prob = 1 - distribution.cumulativeProbability(chisq);
 
             num += prob < 0.0001 ? 1 : 0;
-            score += log(prob);
         }
 
 //        return num == parents.length ? -score : 0;
@@ -825,52 +818,52 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
-    private double totalNorm(int nodeIndex, int parent, int cat1, int cat2) {
-        double[] sumProbs1 = new double[getNumColumns(nodeIndex)];
-        double[] sumProbs2 = new double[getNumColumns(nodeIndex)];
+//    private double totalNorm(int nodeIndex, int parent, int cat1, int cat2) {
+//        double[] sumProbs1 = new double[getNumColumns(nodeIndex)];
+//        double[] sumProbs2 = new double[getNumColumns(nodeIndex)];
+//
+//        for (int row = 0; row < getNumRows(nodeIndex); row++) {
+//            for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//                if (getParentValues(nodeIndex, row)[parent] == cat1) {
+//                    sumProbs1[col] += getProbability(nodeIndex, row, col);
+//                }
+//            }
+//        }
+//
+//        for (int row = 0; row < getNumRows(nodeIndex); row++) {
+//            for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//                if (getParentValues(nodeIndex, row)[parent] == cat2) {
+//                    sumProbs2[col] += getProbability(nodeIndex, row, col);
+//                }
+//            }
+//        }
+//
+//        double norm = 0.0;
+//
+//        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//            double value1 = sumProbs1[col];
+//            double value2 = sumProbs2[col];
+//            double diff = value1 - value2;
+//            double absNorm = abs(diff);
+//            norm += absNorm;
+//        }
+//
+//        return norm;
+//    }
 
-        for (int row = 0; row < getNumRows(nodeIndex); row++) {
-            for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-                if (getParentValues(nodeIndex, row)[parent] == cat1) {
-                    sumProbs1[col] += getProbability(nodeIndex, row, col);
-                }
-            }
-        }
-
-        for (int row = 0; row < getNumRows(nodeIndex); row++) {
-            for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-                if (getParentValues(nodeIndex, row)[parent] == cat2) {
-                    sumProbs2[col] += getProbability(nodeIndex, row, col);
-                }
-            }
-        }
-
-        double norm = 0.0;
-
-        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-            double value1 = sumProbs1[col];
-            double value2 = sumProbs2[col];
-            double diff = value1 - value2;
-            double absNorm = abs(diff);
-            norm += absNorm;
-        }
-
-        return norm;
-    }
-
-    private double norm(int nodeIndex, int row1, int row2) {
-        double norm = 0.0;
-
-        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-            double value1 = getProbability(nodeIndex, row1, col);
-            double value2 = getProbability(nodeIndex, row2, col);
-            double diff = value1 - value2;
-            double absNorm = abs(diff);
-//            norm += diff * diff;
-            norm += absNorm;
-        }
-        return norm;
-    }
+//    private double norm(int nodeIndex, int row1, int row2) {
+//        double norm = 0.0;
+//
+//        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
+//            double value1 = getProbability(nodeIndex, row1, col);
+//            double value2 = getProbability(nodeIndex, row2, col);
+//            double diff = value1 - value2;
+//            double absNorm = abs(diff);
+////            norm += diff * diff;
+//            norm += absNorm;
+//        }
+//        return norm;
+//    }
 
     /**
      * Randomizes every row in the table for the given node index.
@@ -916,7 +909,6 @@ public final class MlBayesIm implements BayesIm {
      * Simulates a sample with the given sample size.
      *
      * @param sampleSize      the sample size.
-     * @param latentDataSaved
      * @return the simulated sample as a DataSet.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
@@ -1001,7 +993,6 @@ public final class MlBayesIm implements BayesIm {
      * @param seed            the random number generator seed allows you
      *                        recreate the simulated data by passing in the same
      *                        seed (so you don't have to store the sample data
-     * @param latentDataSaved
      * @return the simulated sample as a DataSet.
      */
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
@@ -1018,7 +1009,6 @@ public final class MlBayesIm implements BayesIm {
      * Simulates a sample with the given sample size.
      *
      * @param sampleSize      the sample size.
-     * @param latentDataSaved
      * @return the simulated sample as a DataSet.
      */
     private DataSet simulateDataHelper(int sampleSize, boolean latentDataSaved) {
@@ -1378,64 +1368,64 @@ public final class MlBayesIm implements BayesIm {
         return row;
     }
 
-    private static double[] getRandomWeights2(int size) {
-        assert size >= 0;
+//    private static double[] getRandomWeights2(int size) {
+//        assert size >= 0;
+//
+//        double[] row = new double[size];
+//        double sum = 0.0;
+//
+//        // Renders rows more deterministic.
+//        double bias = 2;
+//        int index = -1;
+//        double max = 0.0;
+//
+//        for (int i = 0; i < size; i++) {
+//            row[i] = RandomUtil.getInstance().nextDouble();
+//
+//            if (row[i] > max) {
+//                max = row[i];
+//                index = i;
+//            }
+//        }
+//
+//        row[index] += bias;
+//
+//        for (int i = 0; i < size; i++) {
+//            sum += row[i];
+//        }
+//
+//        for (int i = 0; i < size; i++) {
+//            row[i] /= sum;
+//        }
+//
+//        return row;
+//    }
 
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        // Renders rows more deterministic.
-        double bias = 2;
-        int index = -1;
-        double max = 0.0;
-
-        for (int i = 0; i < size; i++) {
-            row[i] = RandomUtil.getInstance().nextDouble();
-
-            if (row[i] > max) {
-                max = row[i];
-                index = i;
-            }
-        }
-
-        row[index] += bias;
-
-        for (int i = 0; i < size; i++) {
-            sum += row[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
-    }
-
-    private static double[] getRandomWeights3(int size) {
-        assert size >= 0;
-
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        // Renders rows more deterministic.
-        double bias = 0;
-
-        for (int i = 0; i < size; i++) {
-            row[i] = RandomUtil.getInstance().nextBeta(2, 5);
-
-            if (row[i] > 0.5) {
-                row[i] += bias;
-            }
-
-            sum += row[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
-    }
+//    private static double[] getRandomWeights3(int size) {
+//        assert size >= 0;
+//
+//        double[] row = new double[size];
+//        double sum = 0.0;
+//
+//        // Renders rows more deterministic.
+//        double bias = 0;
+//
+//        for (int i = 0; i < size; i++) {
+//            row[i] = RandomUtil.getInstance().nextBeta(2, 5);
+//
+//            if (row[i] > 0.5) {
+//                row[i] += bias;
+//            }
+//
+//            sum += row[i];
+//        }
+//
+//        for (int i = 0; i < size; i++) {
+//            row[i] /= sum;
+//        }
+//
+//        return row;
+//    }
 
     private void initializeRowAsUnknowns(int nodeIndex, int rowIndex) {
         final int size = getNumColumns(nodeIndex);

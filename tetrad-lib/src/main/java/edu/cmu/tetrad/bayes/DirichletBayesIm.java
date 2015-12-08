@@ -247,10 +247,10 @@ public final class DirichletBayesIm implements BayesIm {
         return new DirichletBayesIm(bayesPm);
     }
 
-    public static DirichletBayesIm symmetricDirichletIm(BayesPm bayesPm,
-                                                        DirichletBayesIm oldBayesIm, double symmetricAlpha) {
-        return new DirichletBayesIm(bayesPm, oldBayesIm, symmetricAlpha);
-    }
+//    public static DirichletBayesIm symmetricDirichletIm(BayesPm bayesPm,
+//                                                        DirichletBayesIm oldBayesIm, double symmetricAlpha) {
+//        return new DirichletBayesIm(bayesPm, oldBayesIm, symmetricAlpha);
+//    }
 
     public static DirichletBayesIm symmetricDirichletIm(BayesPm bayesPm,
                                                         double symmetricAlpha) {
@@ -299,7 +299,6 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
      * @return this node.
      */
     public Node getNode(int nodeIndex) {
@@ -330,7 +329,6 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
      * @return this number.
      * @see #getNumRows
      */
@@ -354,7 +352,6 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
      * @return this number.
      * @see #getRowIndex
      * @see #getNumColumns
@@ -455,8 +452,6 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     /**
-     * @param nodeIndex
-     * @param values
      * @return the row in the table for the given node and combination of parent
      * values.
      * @see #getParentValues
@@ -868,53 +863,53 @@ public final class DirichletBayesIm implements BayesIm {
         return dataSet;
     }
 
-    /**
-     * Constructs a random sample using the given already allocated data set, to
-     * avoid allocating more memory.
-     */
-    private DataSet simulateDataHelper(DataSet dataSet,
-                                       RandomUtil randomUtil,
-                                       boolean latentDataSaved) {
-        if (dataSet.getNumColumns() != nodes.length) {
-            throw new IllegalArgumentException("When rewriting the old data set, " +
-                    "number of variables in data set must equal number of variables " +
-                    "in Bayes net.");
-        }
-
-        int sampleSize = dataSet.getNumRows();
-
-        int numMeasured = 0;
-        int[] map = new int[nodes.length];
-        List<Node> variables = new LinkedList<>();
-
-        for (int j = 0; j < nodes.length; j++) {
-            if (!latentDataSaved && nodes[j].getNodeType() != NodeType.MEASURED) {
-                continue;
-            }
-
-            int numCategories = bayesPm.getNumCategories(nodes[j]);
-            List<String> categories = new LinkedList<>();
-
-            for (int k = 0; k < numCategories; k++) {
-                categories.add(bayesPm.getCategory(nodes[j], k));
-            }
-
-            DiscreteVariable var =
-                    new DiscreteVariable(nodes[j].getName(), categories);
-            variables.add(var);
-            int index = ++numMeasured - 1;
-            map[index] = j;
-        }
-
-        for (int i = 0; i < variables.size(); i++) {
-            Node node = dataSet.getVariable(i);
-            Node _node = variables.get(i);
-            dataSet.changeVariable(node, _node);
-        }
-
-        constructSample(sampleSize, randomUtil, numMeasured, dataSet, map);
-        return dataSet;
-    }
+//    /**
+//     * Constructs a random sample using the given already allocated data set, to
+//     * avoid allocating more memory.
+//     */
+//    private DataSet simulateDataHelper(DataSet dataSet,
+//                                       RandomUtil randomUtil,
+//                                       boolean latentDataSaved) {
+//        if (dataSet.getNumColumns() != nodes.length) {
+//            throw new IllegalArgumentException("When rewriting the old data set, " +
+//                    "number of variables in data set must equal number of variables " +
+//                    "in Bayes net.");
+//        }
+//
+//        int sampleSize = dataSet.getNumRows();
+//
+//        int numMeasured = 0;
+//        int[] map = new int[nodes.length];
+//        List<Node> variables = new LinkedList<>();
+//
+//        for (int j = 0; j < nodes.length; j++) {
+//            if (!latentDataSaved && nodes[j].getNodeType() != NodeType.MEASURED) {
+//                continue;
+//            }
+//
+//            int numCategories = bayesPm.getNumCategories(nodes[j]);
+//            List<String> categories = new LinkedList<>();
+//
+//            for (int k = 0; k < numCategories; k++) {
+//                categories.add(bayesPm.getCategory(nodes[j], k));
+//            }
+//
+//            DiscreteVariable var =
+//                    new DiscreteVariable(nodes[j].getName(), categories);
+//            variables.add(var);
+//            int index = ++numMeasured - 1;
+//            map[index] = j;
+//        }
+//
+//        for (int i = 0; i < variables.size(); i++) {
+//            Node node = dataSet.getVariable(i);
+//            Node _node = variables.get(i);
+//            dataSet.changeVariable(node, _node);
+//        }
+//
+//        constructSample(sampleSize, randomUtil, numMeasured, dataSet, map);
+//        return dataSet;
+//    }
 
     private void constructSample(int sampleSize, RandomUtil randomUtil,
                                  int numMeasured, DataSet dataSet,

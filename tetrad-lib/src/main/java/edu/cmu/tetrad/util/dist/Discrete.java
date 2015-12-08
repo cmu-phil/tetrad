@@ -39,7 +39,7 @@ public class Discrete implements Distribution {
     private final double[] p;
 
     /**
-     * @return 0 with probably 1 - p and 1 with probability p. Each of the
+     * A discrete distribution with 0 with probability 1 - p and 1 with probability p. Each of the
      * supplied values must be in (0, 1), and each must be less than its
      * successor (if it has one).
      */

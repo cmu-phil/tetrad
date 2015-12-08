@@ -47,7 +47,7 @@ public class TimeLagGraph implements Graph {
     private EdgeListGraph graph = new EdgeListGraph();
     private int maxLag = 1;
     private int numInitialLags = 1;
-    private List<Node> lag0Nodes = new ArrayList<Node>();
+    private List<Node> lag0Nodes = new ArrayList<>();
 
     public TimeLagGraph() {
     }
@@ -130,11 +130,7 @@ public class TimeLagGraph implements Graph {
 
         getPcs().firePropertyChange("editingFinished", null, null);
 
-        if (getGraph().containsNode(node)) {
-            return getGraph().removeNode(node);
-        } else {
-            return false;
-        }
+        return getGraph().containsNode(node) && getGraph().removeNode(node);
     }
 
     public boolean addEdge(Edge edge) {
@@ -265,7 +261,7 @@ public class TimeLagGraph implements Graph {
         for (Node node : lag0Nodes) {
             List<Edge> edges = getGraph().getEdges(node);
 
-            for (Edge edge : new ArrayList<Edge>(edges)) {
+            for (Edge edge : new ArrayList<>(edges)) {
                 Node tail = Edges.getDirectedEdgeTail(edge);
 
                 if (getNodeId(tail).getLag() > maxLag) {
@@ -362,7 +358,7 @@ public class TimeLagGraph implements Graph {
         return new ArrayList<>(lag0Nodes);
     }
 
-    public EdgeListGraph getGraph() {
+    private EdgeListGraph getGraph() {
         return graph;
     }
 
@@ -710,7 +706,7 @@ public class TimeLagGraph implements Graph {
     }
 
     public boolean equals(Object o) {
-        return getGraph().equals(o);
+        return (o instanceof TimeLagGraph) && getGraph().equals(o);
     }
 
     public void fullyConnect(Endpoint endpoint) {

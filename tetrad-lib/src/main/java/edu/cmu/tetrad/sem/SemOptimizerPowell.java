@@ -100,6 +100,10 @@ public class SemOptimizerPowell implements SemOptimizer {
             }
         }
 
+        if (point == null) {
+            throw new NullPointerException("Point could not be found.");
+        }
+
         System.arraycopy(point, 0, semIm.getFreeParamValues(), 0, point.length);
     }
 
@@ -154,8 +158,8 @@ public class SemOptimizerPowell implements SemOptimizer {
 
         @Override
         public double value(double[] parameters) {
-            for (int i = 0; i < parameters.length; i++) {
-                if (Double.isNaN(parameters[i]) || Double.isInfinite(parameters[i])) {
+            for (double parameter : parameters) {
+                if (Double.isNaN(parameter) || Double.isInfinite(parameter)) {
                     return 100000;
                 }
             }

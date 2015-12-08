@@ -49,14 +49,9 @@ public abstract class AbstractVariable implements Variable {
     private String name = "??";
 
     /**
-     * A unique ID for this node, like a hashcode but unique.
-     */
-    private int uniqueId = LAST_ID++;
-
-    /**
      * Builds a variable having the specified name.
      */
-    public AbstractVariable(String name) {
+    AbstractVariable(String name) {
         if (name == null) {
             throw new NullPointerException();
         }

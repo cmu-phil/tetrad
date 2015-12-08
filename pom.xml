@@ -11,9 +11,9 @@
 
     <name>Tetrad Project</name>
     <modules>
-        <module>tetrad-lib</module>
         <module>tetrad-gui</module>
         <module>tetrad-cli</module>
+        <module>tetrad-lib</module>
     </modules>
 
     <licenses>
@@ -69,6 +69,14 @@
                         </reports>
                     </reportSet>
                 </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+                <configuration>
+                    <aggregate>true</aggregate>
+                </configuration>
             </plugin>
         </plugins>
     </reporting>

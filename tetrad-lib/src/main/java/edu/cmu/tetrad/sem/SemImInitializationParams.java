@@ -267,7 +267,7 @@ public class SemImInitializationParams implements Params, TetradSerializable {
     }
 
     /**
-     * @return true iff values from the old SEM IM (if available) are retained (where
+     * True iff values from the old SEM IM (if available) are retained (where
      * possible).
      */
     public void setRetainPreviousValues(boolean retainPreviousValues) {

@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Joseph Ramsey
  */
 public interface GraphConstraint extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Checks to make sure that adding the specified edge will comply with the

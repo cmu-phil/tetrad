@@ -23,9 +23,9 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.expression.VariableExpression;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataGraphUtils;
+import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
@@ -77,36 +77,28 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
+
         this.graph = graph;
-//        log(graph);
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
     public GraphWrapper(GraphParams params) {
         if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
-            try {
-                this.graph = new EdgeListGraph(graph);
-            } catch (Exception e) {
-                e.printStackTrace();
-                this.graph = new EdgeListGraph();
-            }
+            this.graph = new EdgeListGraph();
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            makeRandomGraph();
+            this.graph = DataGraphUtils.makeRandomGraph(getGraph());
         }
         log();
     }
 
     public GraphWrapper(GraphSource graphSource) {
-//        this.parentGraph = new EdgeListGraph(graphWrapper.getGraph());
+        if (getGraph() != null) {
+            this.graph = new EdgeListGraph(getGraph());
+        } else if (Preferences.userRoot().getInt("newGraphInitializationMode",
+                GraphParams.MANUAL) == GraphParams.RANDOM) {
+            DataGraphUtils.makeRandomGraph(getGraph());
+        }
 
-//        Graph graph = graphWrapper.getGraph();
-//
-//        if (graph == this.graph || graph != null) {
-//            this.graph = new EdgeListGraph(graphWrapper.getGraph());
-//        }
-//        else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-//            makeRandomGraph();
-//        }
         Graph graph = graphSource.getGraph();
         if (graph != null) {
             try {
@@ -116,9 +108,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
                 this.graph = new EdgeListGraph();
             }
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
-            this.graph = new EdgeListGraph(graph);
-        } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            makeRandomGraph();
+            this.graph = new EdgeListGraph();
         }
 
         log();
@@ -207,8 +197,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             }
         }
 
-        for (int i = 0; i < expressions.size(); i++) {
-            Expression _expression = expressions.get(i);
+        for (Expression _expression : expressions) {
             String param = findParameter(_expression, name);
 
             if (param != null) {
@@ -222,7 +211,6 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static GraphWrapper serializableInstance() {
@@ -247,114 +235,6 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         TetradLogger.getInstance().log("graph", "" + getGraph());
     }
 
-    private void makeRandomGraph() {
-        final String type = Preferences.userRoot().get("randomGraphType", "Uniform");
-
-        if (type.equals("Uniform")) {
-            makeRandomDag();
-        } else if (type.equals("Mim")) {
-            makeRandomMim();
-        } else if (type.equals("ScaleFree")) {
-            makeRandomScaleFree();
-        } else {
-            throw new IllegalStateException("Unrecognized graph type: " + type);
-        }
-    }
-
-    private void makeRandomDag() {
-        this.graph = null;
-
-            Graph dag;
-
-            boolean uniformlySelected = Preferences.userRoot().getBoolean("graphUniformlySelected", true);
-            int numMeasuredNodes = Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5);
-            int numLatents = Preferences.userRoot().getInt("newGraphNumLatents", 0);
-            int newGraphNumEdges = Preferences.userRoot().getInt("newGraphNumEdges", 3);
-            boolean connected = Preferences.userRoot().getBoolean("randomGraphConnected", false);
-
-            if (uniformlySelected) {
-                int maxDegree = Preferences.userRoot().getInt("randomGraphMaxDegree", 6);
-                int maxIndegree = Preferences.userRoot().getInt("randomGraphMaxIndegree", 3);
-                int maxOutdegree = Preferences.userRoot().getInt("randomGraphMaxOutdegree", 3);
-
-                dag = GraphUtils.randomGraph(numMeasuredNodes + numLatents,
-                        numLatents, newGraphNumEdges,
-                        maxDegree, maxIndegree,
-                        maxOutdegree, connected);
-            } else {
-                do {
-                    dag = GraphUtils.randomGraph(numMeasuredNodes + numLatents,
-                            numLatents, newGraphNumEdges,
-                            30, 15, 15, connected
-                    );
-                } while (dag.getNumEdges() < newGraphNumEdges);
-            }
-
-            boolean addCycles = Preferences.userRoot().getBoolean("randomGraphAddCycles", false);
-
-            if (addCycles) {
-//                int minCycleLength = Preferences.userRoot().getInt("randomGraphMinCycleLength", 2);
-//                int minNumCycles = Preferences.userRoot().getInt("randomGraphMinNumCycles", 0);
-//
-//                graph = DataGraphUtils.addCycles2(dag, minNumCycles, minCycleLength);
-
-                graph = GraphUtils.cyclicGraph4(numMeasuredNodes + numLatents, newGraphNumEdges);
-            } else {
-                graph = new EdgeListGraph(dag);
-            }
-
-            int minNumCycles = Preferences.userRoot().getInt("randomGraphMinNumCycles", 0);
-            GraphUtils.addTwoCycles(graph, minNumCycles);
-//            graph = new EdgeListGraph(dag);
-//
-//            for (Edge edge : graph.getEdges()) {
-//                graph.addDirectedEdge(edge.getNode2(), edge.getNode1());
-//            }
-    }
-
-    private void makeRandomMim() {
-        {
-            int numStructuralNodes = Preferences.userRoot().getInt(
-                    "numStructuralNodes", 3);
-            int maxStructuralEdges = Preferences.userRoot().getInt(
-                    "numStructuralEdges", 3);
-            int measurementModelDegree = Preferences.userRoot().getInt(
-                    "measurementModelDegree", 3);
-            int numLatentMeasuredImpureParents = Preferences.userRoot()
-                    .getInt("latentMeasuredImpureParents", 0);
-            int numMeasuredMeasuredImpureParents =
-                    Preferences.userRoot()
-                            .getInt("measuredMeasuredImpureParents", 0);
-            int numMeasuredMeasuredImpureAssociations =
-                    Preferences.userRoot()
-                            .getInt("measuredMeasuredImpureAssociations",
-                                    0);
-
-            Graph graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                    maxStructuralEdges, measurementModelDegree,
-                    numLatentMeasuredImpureParents,
-                    numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations);
-
-
-            this.graph = graph;
-        }
-    }
-
-    private void makeRandomScaleFree() {
-        int numNodes = Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5);
-        int numLatents = Preferences.userRoot().getInt("newGraphNumLatents", 0);
-
-        double alpha = Preferences.userRoot().getDouble("scaleFreeAlpha", 0.2);
-        double beta = Preferences.userRoot().getDouble("scaleFreeBeta", 0.6);
-        double deltaIn = Preferences.userRoot().getDouble("scaleFreeDeltaIn", 0.2);
-        double deltaOut = Preferences.userRoot().getDouble("scaleFreeDeltaOut", 0.2);
-
-        Graph graph = GraphUtils.scaleFreeGraph(numNodes, numLatents,
-                alpha, beta, deltaIn, deltaOut);
-        this.graph = graph;
-    }
-
     /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
@@ -371,10 +251,6 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-//        if (graph == null) {
-//            graph = new EdgeListGraph();
-//        }
     }
 
     @Override

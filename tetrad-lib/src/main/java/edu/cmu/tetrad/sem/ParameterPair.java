@@ -52,7 +52,7 @@ public class ParameterPair implements TetradSerializable {
     /**
      * Constructs a new (blank) ordered pair where a = null and b = null.
      */
-    public ParameterPair() {
+    private ParameterPair() {
         a = null;
         b = null;
     }
@@ -129,15 +129,10 @@ public class ParameterPair implements TetradSerializable {
      *
      * @param a the new first element.
      * @param b the new seconde element.
-     * @return the revised pair (a, b), just in case anyone wants an in-line
-     * reference to it.  (This method just sets a and b to the new
-     * values and returns a reference to itself.)
      */
-    public ParameterPair setPair(Parameter a, Parameter b) {
+    private void setPair(Parameter a, Parameter b) {
         this.a = a;
         this.b = b;
-
-        return this;
     }
 }
 

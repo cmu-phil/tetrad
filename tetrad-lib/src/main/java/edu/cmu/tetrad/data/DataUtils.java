@@ -129,7 +129,7 @@ public final class DataUtils {
         DataSet outData;
 
         try {
-            outData = (DataSet) new MarshalledObject(inData).get();
+            outData = new MarshalledObject<>(inData).get();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -165,7 +165,7 @@ public final class DataUtils {
         DataSet outData;
 
         try {
-            outData = (DataSet) new MarshalledObject(inData).get();
+            outData = new MarshalledObject<>(inData).get();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -174,7 +174,7 @@ public final class DataUtils {
             Node variable = outData.getVariable(j);
 
             if (variable instanceof DiscreteVariable) {
-                List<Integer> values = new ArrayList<Integer>();
+                List<Integer> values = new ArrayList<>();
 
                 for (int i = 0; i < outData.getNumRows(); i++) {
                     int value = outData.getInt(i, j);
@@ -215,7 +215,7 @@ public final class DataUtils {
      * instances.
      */
     public static DataSet continuousSerializableInstance() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         variables.add(new ContinuousVariable("X"));
         DataSet dataSet = new ColtDataSet(10, variables);
 
@@ -232,7 +232,7 @@ public final class DataUtils {
      * A discrete data set used to construct some other serializable instances.
      */
     public static DataSet discreteSerializableInstance() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         variables.add(new DiscreteVariable("X", 2));
         DataSet dataSet = new ColtDataSet(2, variables);
         dataSet.setInt(0, 0, 0);
@@ -375,7 +375,7 @@ public final class DataUtils {
     }
 
     public static List<DataSet> standardizeData(List<DataSet> dataSets) {
-        List<DataSet> outList = new ArrayList<DataSet>();
+        List<DataSet> outList = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             if (!(dataSet.isContinuous())) {
@@ -441,13 +441,13 @@ public final class DataUtils {
 //    }
 
     public static List<DataSet> center(List<DataSet> dataList) {
-        List<DataSet> dataSets = new ArrayList<DataSet>();
+        List<DataSet> dataSets = new ArrayList<>();
 
         for (DataSet dataSet : dataList) {
             dataSets.add(dataSet);
         }
 
-        List<DataSet> outList = new ArrayList<DataSet>();
+        List<DataSet> outList = new ArrayList<>();
 
         for (DataModel model : dataSets) {
             if (!(model instanceof DataSet)) {
@@ -462,7 +462,7 @@ public final class DataUtils {
 
             TetradMatrix data2 = DataUtils.centerData(dataSet.getDoubleData());
             List<Node> list = dataSet.getVariables();
-            List<Node> list2 = new ArrayList<Node>();
+            List<Node> list2 = new ArrayList<>();
 
             for (Node node : list) {
                 list2.add(node);
@@ -490,7 +490,7 @@ public final class DataUtils {
     }
 
     public static List<Node> createContinuousVariables(String[] varNames) {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (String varName : varNames) {
             variables.add(new ContinuousVariable(varName));
@@ -609,8 +609,6 @@ public final class DataUtils {
             }
         }
 
-        TetradMatrix _covMatrix = m;
-
         // Create index array for the given variables.
         int[] indices = new int[2 + z.size()];
 
@@ -622,14 +620,7 @@ public final class DataUtils {
         }
 
         // Extract submatrix of correlation matrix using this index array.
-        TetradMatrix submatrix = _covMatrix.getSelection(indices, indices);
-
-//        if (containsMissingValue(submatrix)) {
-//            throw new IllegalArgumentException(
-//                    "Please remove or impute missing values first.");
-//        }
-
-        return submatrix;
+        return m.getSelection(indices, indices);
     }
 
     /**
@@ -665,9 +656,8 @@ public final class DataUtils {
         }
 
         // Extract submatrix of correlation matrix using this index array.
-        TetradMatrix submatrix = m.getSelection(indices, indices);
 
-        return submatrix;
+        return m.getSelection(indices, indices);
     }
 
     /**
@@ -679,7 +669,7 @@ public final class DataUtils {
 
         numVariables = dataSet.getNumColumns();
 
-        List<Integer> indicesList = new ArrayList<Integer>();
+        List<Integer> indicesList = new ArrayList<>();
         for (int i = 0; i < numVariables; i++) indicesList.add(i);
         Collections.shuffle(indicesList);
 
@@ -694,7 +684,7 @@ public final class DataUtils {
 
     public static DataSet convertNumericalDiscreteToContinuous(
             DataSet dataSet) throws NumberFormatException {
-        List<Node> variables = new ArrayList<Node>();
+        List<Node> variables = new ArrayList<>();
 
         for (Node variable : dataSet.getVariables()) {
             if (variable instanceof ContinuousVariable) {
@@ -739,7 +729,7 @@ public final class DataUtils {
     public static DataSet concatenateData(DataSet dataSet1, DataSet dataSet2) {
         List<Node> vars1 = dataSet1.getVariables();
         List<Node> vars2 = dataSet2.getVariables();
-        Map<String, Integer> varMap2 = new HashMap<String, Integer>();
+        Map<String, Integer> varMap2 = new HashMap<>();
         for (int i = 0; i < vars2.size(); i++) {
             varMap2.put(vars2.get(i).getName(), i);
         }
@@ -785,11 +775,9 @@ public final class DataUtils {
 
 
     public static DataSet concatenateData(DataSet... dataSets) {
-        List<DataSet> _dataSets = new ArrayList<DataSet>();
+        List<DataSet> _dataSets = new ArrayList<>();
 
-        for (DataSet dataSet : dataSets) {
-            _dataSets.add(dataSet);
-        }
+        Collections.addAll(_dataSets, dataSets);
 
         return concatenateData(_dataSets);
     }
@@ -804,7 +792,7 @@ public final class DataUtils {
         int numColumns = dataSets[0].columns();
         TetradMatrix allData = new TetradMatrix(totalSampleSize, numColumns);
         int q = 0;
-        int r = 0;
+        int r;
 
         for (TetradMatrix dataSet : dataSets) {
             r = dataSet.rows();
@@ -832,7 +820,7 @@ public final class DataUtils {
         int numColumns = dataSets.get(0).getNumColumns();
         TetradMatrix allData = new TetradMatrix(totalSampleSize, numColumns);
         int q = 0;
-        int r = 0;
+        int r;
 
         for (DataSet dataSet : dataSets) {
             TetradMatrix _data = dataSet.getDoubleData();
@@ -860,7 +848,7 @@ public final class DataUtils {
         int numColumns = dataSets.get(0).columns();
         TetradMatrix allData = new TetradMatrix(totalSampleSize, numColumns);
         int q = 0;
-        int r = 0;
+        int r;
 
         for (TetradMatrix _data : dataSets) {
             r = _data.rows();
@@ -887,10 +875,9 @@ public final class DataUtils {
         int numRows = dataSets.get(0).getNumRows();
         TetradMatrix allData = new TetradMatrix(numRows, totalNumColumns);
         int q = 0;
-        int cc = 0;
+        int cc;
 
-        for (int i = 0; i < dataSets.size(); i++) {
-            DataSet dataSet = dataSets.get(i);
+        for (DataSet dataSet : dataSets) {
             TetradMatrix _data = dataSet.getDoubleData();
             cc = _data.columns();
 
@@ -903,10 +890,9 @@ public final class DataUtils {
             q += cc;
         }
 
-        List<Node> variables = new ArrayList<Node>();
+        List<Node> variables = new ArrayList<>();
 
-        for (int i = 0; i < dataSets.size(); i++) {
-            DataSet dataSet = dataSets.get(i);
+        for (DataSet dataSet : dataSets) {
             variables.addAll(dataSet.getVariables());
         }
 
@@ -999,7 +985,7 @@ public final class DataUtils {
     }
 
     public static DataSet restrictToMeasured(DataSet fullDataSet) {
-        List<Node> measuredVars = new ArrayList<Node>();
+        List<Node> measuredVars = new ArrayList<>();
 
         for (Node node : fullDataSet.getVariables()) {
             if (node.getNodeType() == NodeType.MEASURED) {
@@ -1168,7 +1154,6 @@ public final class DataUtils {
         final RealMatrix out = new BlockRealMatrix(rowDimension, columnDimension);
 
         final int NTHREADS = Runtime.getRuntime().availableProcessors();
-        final int all = rowDimension;
 
         ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
@@ -1178,8 +1163,8 @@ public final class DataUtils {
             Runnable worker = new Runnable() {
                 @Override
                 public void run() {
-                    int chunk = all / NTHREADS + 1;
-                    for (int row = _t * chunk; row < Math.min((_t + 1) * chunk, all); row++) {
+                    int chunk = rowDimension / NTHREADS + 1;
+                    for (int row = _t * chunk; row < Math.min((_t + 1) * chunk, rowDimension); row++) {
                         if ((row + 1) % 100 == 0) System.out.println(row + 1);
 
                         for (int col = 0; col < columnDimension; ++col) {
@@ -1204,27 +1189,11 @@ public final class DataUtils {
         while (!pool.isQuiescent()) {
         }
 
-//        for (int row = 0; row < rowDimension; ++row) {
-//            if ((row + 1) % 100 == 0) System.out.println(row + 1);
-//
-//            for (int col = 0; col < columnDimension; ++col) {
-//                double sum = 0.0D;
-//
-//                int commonDimension = m.getColumnDimension();
-//
-//                for (int i = 0; i < commonDimension; ++i) {
-//                    sum += m.getEntry(row, i) * n.getEntry(i, col);
-//                }
-//
-//                out.setEntry(row, col, sum);
-//            }
-//        }
-
         return out;
     }
 
     // for online learning.
-    public static TetradMatrix covErich(TetradMatrix data) {
+    public static TetradMatrix onlineCov(TetradMatrix data) {
         int N = data.rows();
         int M = data.columns();
 
@@ -1352,11 +1321,9 @@ public final class DataUtils {
                 point[i] = sum;
             }
 
-            double rowData[] = point;
-
             for (int col = 0; col < variables.size(); col++) {
                 int index = variables.indexOf(variables.get(col));
-                double value = rowData[index];
+                double value = point[index];
 
                 if (Double.isNaN(value) || Double.isInfinite(value)) {
                     System.out.println("Value out of range: " + value);
@@ -1415,7 +1382,7 @@ public final class DataUtils {
      */
     public static DataSet getBootstrapSample2(DataSet data, int sampleAttempts) {
         int actualSampleSize = data.getNumRows();
-        List<Integer> samples = new ArrayList<Integer>();
+        List<Integer> samples = new ArrayList<>();
 
         for (int i = 0; i < sampleAttempts; i++) {
             int sample = RandomUtil.getInstance().nextInt(actualSampleSize);
@@ -1476,7 +1443,7 @@ public final class DataUtils {
 
         TetradMatrix reduced = new TetradMatrix(vars.length, vars.length);
 
-        List<Integer> rows = new ArrayList<Integer>();
+        List<Integer> rows = new ArrayList<>();
 
         I:
         for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -1521,7 +1488,6 @@ public final class DataUtils {
                 Edge edge = resultGraph.getEdge(nodes.get(i), nodes.get(j));
 
                 if (edge == null) {
-                    continue;
                 } else if (edge.isDirected()) {
                     Node node1 = edge.getNode1();
                     Node node2 = edge.getNode2();
@@ -1540,7 +1506,7 @@ public final class DataUtils {
     }
 
     public static DataSet reorderColumns(DataSet dataModel) {
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         List<Node> variables = dataModel.getVariables();
         Collections.shuffle(variables);
@@ -1557,7 +1523,7 @@ public final class DataUtils {
     }
 
     public static List<DataSet> reorderColumns(List<DataSet> dataSets) {
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         List<Node> variables = dataSets.get(0).getVariables();
         Collections.shuffle(variables);
@@ -1570,7 +1536,7 @@ public final class DataUtils {
             }
         }
 
-        List<DataSet> ret = new ArrayList<DataSet>();
+        List<DataSet> ret = new ArrayList<>();
 
         for (DataSet m : dataSets) {
             ret.add(m.subsetColumns(vars));
@@ -1580,9 +1546,9 @@ public final class DataUtils {
     }
 
     public static ICovarianceMatrix reorderColumns(ICovarianceMatrix cov) {
-        List<String> vars = new ArrayList<String>();
+        List<String> vars = new ArrayList<>();
 
-        List<Node> variables = new ArrayList<Node>(cov.getVariables());
+        List<Node> variables = new ArrayList<>(cov.getVariables());
         Collections.shuffle(variables);
 
         for (Node node : variables) {
@@ -1786,8 +1752,7 @@ public final class DataUtils {
         int[] newCols = new int[keepCols.size()];
         for (int j = 0; j < keepCols.size(); j++) newCols[j] = keepCols.get(j);
 
-        DataSet newDataSet = dataSet.subsetColumns(newCols);
-        return newDataSet;
+        return dataSet.subsetColumns(newCols);
     }
 }
 

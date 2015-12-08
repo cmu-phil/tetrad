@@ -60,8 +60,6 @@ public class TimeSeriesDataDisplayJTable extends JTable
 
     /**
      * @return the underlying DataSet model.
-     *
-     * @return this model.
      */
     private TimeSeriesData getDataSet() {
         TimeSeriesDataDisplayTable dataDisplayTableModelDataSet =
@@ -112,7 +110,6 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      * @return the name of the column at position 'col'.
      *
      * @param col the position of the column whose name is requested.
-     * @return the name of this column.
      */
     public String getColumnName(int col) {
 
@@ -132,7 +129,6 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      * @return the number of rows in the wrapper table model. Guarantees that
      * this number will be at least 100.
      *
-     * @return the row count of the wrapped model or 100, whichever is larger.
      */
     public int getRowCount() {
         return (maxRowCount < 100) ? 100 : maxRowCount;
@@ -141,9 +137,6 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     /**
      * @return the number of columns in the wrapper table model. Guarantees that
      * this number will be at least 30.
-     *
-     * @return the column count of the wrapped model or 30, whichever is
-     *         larger.
      */
     public int getColumnCount() {
         return (colCount < 30) ? 30 : colCount + 1;

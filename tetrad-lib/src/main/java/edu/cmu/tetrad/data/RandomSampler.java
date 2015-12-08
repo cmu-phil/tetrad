@@ -53,7 +53,7 @@ public final class RandomSampler {
                     "generate " + newSampleSize + " samples without replacement.");
         }
 
-        List<Integer> indices = new ArrayList<Integer>(dataSet.getNumRows());
+        List<Integer> indices = new ArrayList<>(dataSet.getNumRows());
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             indices.add(i);

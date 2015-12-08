@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * **************************************************************************
  *
- * @author: Trevor Burns
+ * @author Trevor Burns
  * <p>
  * Provides a static method which implements a correct version of Reiter's hitting set algorithm as described by
  * Greiner, Smith, and Wilkerson in "A Correction to the Algorithm in Reiter's Theory of Diagnosis" Artificial

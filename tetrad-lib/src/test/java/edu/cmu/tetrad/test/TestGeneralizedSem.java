@@ -1190,7 +1190,7 @@ public class TestGeneralizedSem extends TestCase {
             String group0 = Pattern.quote(m.group(0));
             String group1 = m.group(1);
 
-            String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
 //            System.out.println(formula);

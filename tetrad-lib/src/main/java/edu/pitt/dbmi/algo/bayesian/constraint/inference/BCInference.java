@@ -270,11 +270,6 @@ public class BCInference {
      * to return an informative prior. The code that calls priorIndependent()
      * currently assumes that it returns a value in (0, 1), and thus, does not
      * return 0 or 1.
-     *
-     * @param x
-     * @param y
-     * @param z
-     * @return
      */
     private double priorIndependent(int x, int y, int[] z) {
         return 0.5;  // currently assumes uniform priors
@@ -357,13 +352,9 @@ public class BCInference {
     }
 
     /**
-     *
-     * @param node
-     * @param instancePtr
      * @param q is the number of possible joint instantiation of the parents of
      * the parents of the node.
      * @param pess is the prior equivalent sample size
-     * @return
      */
     private double scoringFn1(int node, int instancePtr, double q, double pess) {
         int Nij = 0;
@@ -424,10 +415,6 @@ public class BCInference {
 
     /**
      * Computes the K2 score.
-     *
-     * @param node
-     * @param instancePtr
-     * @return
      */
     private double scoringFn2(int node, int instancePtr) {
         int hits = 0;

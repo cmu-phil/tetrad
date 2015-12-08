@@ -1130,8 +1130,6 @@ public final class SearchGraphUtils {
 
     /**
      * Get a graph and direct only the unshielded colliders.
-     *
-     * @return the child nodes of unshielded colliders.
      */
     public static void basicPattern(Graph graph, boolean orientInPlace) {
         Set<Edge> undirectedEdges = new HashSet<Edge>();
@@ -1511,7 +1509,6 @@ public final class SearchGraphUtils {
      * @param d             a set of vertices (intuitively to be used in tests of legality, for example, the set of
      *                      ancestors of c).
      * @param graph         the graph with respect to which reachability is
-     * @param maxPathLength
      * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
      * criteria in the given legal pairs object.
      * <p>
@@ -2963,7 +2960,7 @@ public final class SearchGraphUtils {
         out.println("Arrow Orientations:");
         out.println("TP " + arrowptTp + " FP = " + arrowptFp + " FN = " + arrowptFn);
 
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern, out);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern);
         out.println(GraphUtils.edgeMisclassifications(counts));
 
         double adjRecall = adjTp / (double) (adjTp + adjFn);

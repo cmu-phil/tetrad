@@ -287,22 +287,22 @@ public final class Proposition implements TetradSerializable {
         }
     }
 
-    /**
-     * Restricts this proposition to the categories for the given variable that
-     * are true in the given proposition.
-     */
-    public void restrictToProposition(Proposition proposition, int variable) {
-        if (proposition.getVariableSource() != this.variableSource) {
-            throw new IllegalArgumentException("Can only restrict to " +
-                    "propositions for the same variable source.");
-        }
-
-        for (int j = 0; j < allowedCategories[variable].length; j++) {
-            if (!proposition.isAllowed(variable, j)) {
-                removeCategory(variable, j);
-            }
-        }
-    }
+//    /**
+//     * Restricts this proposition to the categories for the given variable that
+//     * are true in the given proposition.
+//     */
+//    public void restrictToProposition(Proposition proposition, int variable) {
+//        if (proposition.getVariableSource() != this.variableSource) {
+//            throw new IllegalArgumentException("Can only restrict to " +
+//                    "propositions for the same variable source.");
+//        }
+//
+//        for (int j = 0; j < allowedCategories[variable].length; j++) {
+//            if (!proposition.isAllowed(variable, j)) {
+//                removeCategory(variable, j);
+//            }
+//        }
+//    }
 
     /**
      * @return the index of the variable with the given name, or -1 if such a

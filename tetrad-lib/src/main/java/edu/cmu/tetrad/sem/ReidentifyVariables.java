@@ -38,8 +38,8 @@ public class ReidentifyVariables {
     // This reidentifies a variable if all of its members belong to one of the clusters
     // in the original graph.
     public static List<String> reidentifyVariables1(List<List<Node>> partition, Graph trueGraph) {
-        List<String> names = new ArrayList<String>();
-        Node latent = null;
+        List<String> names = new ArrayList<>();
+        Node latent;
 
         for (List<Node> _partition : partition) {
             boolean added = false;
@@ -47,7 +47,7 @@ public class ReidentifyVariables {
             for (Node _latent : trueGraph.getNodes()) {
                 List<Node> trueChildren = trueGraph.getChildren(_latent);
 
-                for (Node node2 : new ArrayList<Node>(trueChildren)) {
+                for (Node node2 : new ArrayList<>(trueChildren)) {
                     if (node2.getNodeType() == NodeType.LATENT) {
                         trueChildren.remove(node2);
                     }
@@ -117,8 +117,8 @@ public class ReidentifyVariables {
     // any other input latent.
     public static List<String> reidentifyVariables2(List<List<Node>> clusters, Graph trueGraph, DataSet data) {
         trueGraph = GraphUtils.replaceNodes(trueGraph, data.getVariables());
-        Map<Node, SemIm> ims = new HashMap<Node, SemIm>();
-        List<String> latentNames = new ArrayList<String>();
+        Map<Node, SemIm> ims = new HashMap<>();
+        List<String> latentNames = new ArrayList<>();
 
         for (Node node : trueGraph.getNodes()) {
             if (node.getNodeType() != NodeType.LATENT) continue;
@@ -126,7 +126,7 @@ public class ReidentifyVariables {
             List<Node> children = trueGraph.getChildren(node);
             children.removeAll(getLatents(trueGraph));
 
-            List<Node> all = new ArrayList<Node>();
+            List<Node> all = new ArrayList<>();
             all.add(node);
             all.addAll(children);
 
@@ -143,7 +143,7 @@ public class ReidentifyVariables {
             ims.put(node, im);
         }
 
-        Map<List<Node>, String> clustersToNames = new HashMap<List<Node>, String>();
+        Map<List<Node>, String> clustersToNames = new HashMap<>();
 
 
 //        Graph reidentifiedGraph = new EdgeListGraph();
@@ -165,13 +165,17 @@ public class ReidentifyVariables {
                 }
             }
 
+            if (maxLatent == null) {
+                throw new NullPointerException("No such latent");
+            }
+
             String name = maxLatent.getName();
             latentNames.add(name);
             clustersToNames.put(cluster, name);
         }
 
 
-        Set<String> values = new HashSet<String>(clustersToNames.values());
+        Set<String> values = new HashSet<>(clustersToNames.values());
 
         for (String key : values) {
             double maxSum = Double.NEGATIVE_INFINITY;
@@ -222,7 +226,7 @@ public class ReidentifyVariables {
     }
 
     public static List<Node> getLatents(Graph graph) {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
         for (Node node : graph.getNodes()) if (node.getNodeType() == NodeType.LATENT) latents.add(node);
         return latents;
     }

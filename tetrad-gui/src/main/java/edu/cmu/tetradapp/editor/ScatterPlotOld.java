@@ -51,8 +51,6 @@ public class ScatterPlotOld {
 
     /**
      * Constructs the scatter plot given the dataset to wrap and the node that should be viewed.
-     *
-     * @param dataSet
      */
     public ScatterPlotOld(DataSet dataSet, ContinuousVariable yVariable, ContinuousVariable xVariable) {
 
@@ -131,8 +129,6 @@ public class ScatterPlotOld {
 
      /**
      * @return the max sample value between the y and x variables.
-     *
-     * @return - max Value amongst the y and x variables.
      */
     public double getMaxSample() {
         if(xMax > yMax) return xMax;
@@ -142,8 +138,6 @@ public class ScatterPlotOld {
 
     /**
      * @return the min sample value.
-     *
-     * @return - min value in sample.
      */
     public double getMinSample() {
         if(xMin < yMin) return xMin;

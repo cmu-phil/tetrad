@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * @author Joseph Ramsey
- * @return a data set in variables for columns with missing values are augmented
+ * Returns a data set in variables for columns with missing values are augmented
  * with an extra category that represents the missing values, with missing
  * values being reported as belong this category.
  */

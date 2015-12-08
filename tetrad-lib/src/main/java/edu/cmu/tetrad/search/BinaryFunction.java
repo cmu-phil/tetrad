@@ -126,22 +126,22 @@ public class BinaryFunction {
         return functionIndex;
     }
 
-    public long switchColsBinary(int col1, int col2) {
-        int[] functionColumn = new int[getNumRows()];
-
-        for (int i = 0; i < getNumRows(); i++) {
-            boolean[] row = getRow(i);
-
-            boolean temp = row[col1];
-            row[col1] = row[col2];
-            row[col2] = temp;
-
-            boolean b = getValue(row);
-            functionColumn[i] = b ? 1 : 0;
-        }
-
-        return getIndex(functionColumn);
-    }
+//    public long switchColsBinary(int col1, int col2) {
+//        int[] functionColumn = new int[getNumRows()];
+//
+//        for (int i = 0; i < getNumRows(); i++) {
+//            boolean[] row = getRow(i);
+//
+//            boolean temp = row[col1];
+//            row[col1] = row[col2];
+//            row[col2] = temp;
+//
+//            boolean b = getValue(row);
+//            functionColumn[i] = b ? 1 : 0;
+//        }
+//
+//        return getIndex(functionColumn);
+//    }
 
     public long switchColsFull(int[] permutation) {
         int[] functionColumn = new int[getNumRows()];
@@ -210,11 +210,7 @@ public class BinaryFunction {
     }
 
     public boolean equals(Object o) {
-        if (!(o instanceof BinaryFunction)) {
-            return false;
-        }
-
-        return functionIndex == ((BinaryFunction) o).getFunctionIndex();
+        return o instanceof BinaryFunction && functionIndex == ((BinaryFunction) o).getFunctionIndex();
     }
 
     public int getNumRows() {

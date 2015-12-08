@@ -68,7 +68,7 @@ public class IonDisplay extends JPanel implements GraphEditable {
                         indices.size(), 1);
         model.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                int index = ((Integer) model.getValue()).intValue();
+                int index = (Integer) model.getValue();
                 workbench.setGraph(storedGraphs.get(indices.get(index - 1)));
                 firePropertyChange("modelChanged", null, null);
                 runner.setResultGraph(workbench.getGraph());

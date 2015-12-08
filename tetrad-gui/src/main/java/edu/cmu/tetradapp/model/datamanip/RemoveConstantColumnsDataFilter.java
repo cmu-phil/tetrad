@@ -39,8 +39,6 @@ public class RemoveConstantColumnsDataFilter implements DataFilter {
 
     /**
      * Removes any constant columns from the given dataset.
-     *
-     * @param dataSet
      * @return - new dataset with constant columns removed.
      */
     public DataSet filter(DataSet dataSet) {

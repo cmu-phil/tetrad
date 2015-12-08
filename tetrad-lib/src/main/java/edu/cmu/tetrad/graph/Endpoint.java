@@ -37,7 +37,7 @@ public final class Endpoint implements TetradSerializable {
     public static final Endpoint TAIL = new Endpoint("Tail");
     public static final Endpoint ARROW = new Endpoint("Arrow");
     public static final Endpoint CIRCLE = new Endpoint("Circle");
-    public static final Endpoint STAR = new Endpoint("Star");
+    private static final Endpoint STAR = new Endpoint("Star");
     public static final Endpoint NULL = new Endpoint("Null");
 
     /**
@@ -59,23 +59,6 @@ public final class Endpoint implements TetradSerializable {
     public static Endpoint serializableInstance() {
         return Endpoint.TAIL;
     }
-
-//    public int hashCode() {
-//        if (this == TAIL) return 2;
-//        else if (this == ARROW) return 3;
-//        else if (this == CIRCLE) return 4;
-//        else if (this == STAR) return 5;
-//        else if (this == NULL) return 6;
-//        else throw new IllegalStateException();
-////        return name.hashCode();
-//    }
-//
-//    public boolean equals(Object o) {
-//        return o == this;
-////        if (o == this) return true;
-////        Endpoint e = (Endpoint) o;
-////        return e.name.equals(name);
-//    }
 
     /**
      * Prints out the name of the type.

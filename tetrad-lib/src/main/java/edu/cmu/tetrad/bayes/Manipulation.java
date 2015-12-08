@@ -37,13 +37,6 @@ import java.util.Arrays;
 public final class Manipulation implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    /**
-     * Bayes IM that this is evidence for.
-     *
-     * @serial Cannot be null.
-     * @deprecated
-     */
-    private BayesIm bayesIm;
     private VariableSource variableSource;
 
     /**

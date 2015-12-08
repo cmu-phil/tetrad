@@ -48,17 +48,12 @@ import java.util.List;
 public final class DagToPag {
 
     private final Graph dag;
-    private final IndTestDSep dsep;
+//    private final IndTestDSep dsep;
 
     /*
      * The background knowledge.
      */
     private IKnowledge knowledge = new Knowledge2();
-
-    /**
-     * The variables to search over (optional)
-     */
-    private List<Node> variables = new ArrayList<Node>();
 
     /**
      * Glag for complete rule set, true if should use complete rule set, false otherwise.
@@ -84,9 +79,6 @@ public final class DagToPag {
      */
     public DagToPag(Graph dag) {
         this.dag = dag;
-        this.variables.addAll(dag.getNodes());
-
-        this.dsep = new IndTestDSep(dag);
     }
 
     //========================PUBLIC METHODS==========================//

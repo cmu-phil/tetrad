@@ -86,7 +86,7 @@ public final class DiscreteVariable extends AbstractVariable
      *
      * @serial
      */
-    private List<String> categoriesCopy = new ArrayList<String>();
+    private List<String> categoriesCopy = new ArrayList<>();
 
     /**
      * The discreteVariableType of discrete variable this is.
@@ -168,7 +168,7 @@ public final class DiscreteVariable extends AbstractVariable
      */
     public DiscreteVariable(String name, List<String> categories) {
         super(name);
-        setCategories(categories.toArray(new String[0]));
+        setCategories(categories.toArray(new String[categories.size()]));
         setCategoryNamesDisplayed(true);
     }
 
@@ -327,7 +327,6 @@ public final class DiscreteVariable extends AbstractVariable
      * number of categories and the same categories.
      */
     public final boolean equals(Object o) {
-        NodeEqualityMode.Type equalityType = NodeEqualityMode.getEqualityType();
 
         //AJ
         if (!(o instanceof DiscreteVariable)) {
@@ -468,23 +467,23 @@ public final class DiscreteVariable extends AbstractVariable
         return variable;
     }
 
-    public final String toStringFull() {
-        StringBuilder buf = new StringBuilder();
-
-        buf.append(getName());
-        buf.append(" <");
-
-        for (int i = 0; i < getNumCategories(); i++) {
-            buf.append(getCategory(i));
-
-            if (i < getNumCategories() - 1) {
-                buf.append(", ");
-            }
-        }
-
-        buf.append(">");
-        return buf.toString();
-    }
+//    public final String toStringFull() {
+//        StringBuilder buf = new StringBuilder();
+//
+//        buf.append(getName());
+//        buf.append(" <");
+//
+//        for (int i = 0; i < getNumCategories(); i++) {
+//            buf.append(getCategory(i));
+//
+//            if (i < getNumCategories() - 1) {
+//                buf.append(", ");
+//            }
+//        }
+//
+//        buf.append(">");
+//        return buf.toString();
+//    }
 
     //==============================PRIVATE METHODS=======================//
 
@@ -507,7 +506,7 @@ public final class DiscreteVariable extends AbstractVariable
 
         List<String> categoryList = Arrays.asList(categories);
 
-        if (new HashSet<String>(categoryList).size() != categoryList.size()) {
+        if (new HashSet<>(categoryList).size() != categoryList.size()) {
             throw new IllegalArgumentException("Duplicate category.");
         }
 
@@ -541,19 +540,19 @@ public final class DiscreteVariable extends AbstractVariable
             throw new NullPointerException();
         }
 
-        Set<String> categorySet = new HashSet<String>(categoryList);
+        Set<String> categorySet = new HashSet<>(categoryList);
 
         if (STORED_CATEGORY_LISTS == null) {
-            STORED_CATEGORY_LISTS = new ArrayList<LinkedList<String>>();
+            STORED_CATEGORY_LISTS = new ArrayList<>();
         }
 
         for (LinkedList<String> list : STORED_CATEGORY_LISTS) {
-            if (categorySet.equals(new HashSet<String>(list))) {
+            if (categorySet.equals(new HashSet<>(list))) {
                 return list;
             }
         }
 
-        LinkedList<String> newList = new LinkedList<String>(categoryList);
+        LinkedList<String> newList = new LinkedList<>(categoryList);
         STORED_CATEGORY_LISTS.add(newList);
         return newList;
     }

@@ -136,15 +136,6 @@ public final class Edges {
                 (edge.getEndpoint2() == Endpoint.TAIL));
     }
 
-    public static boolean isAdjacentEdge(Edge edge) {
-        if (edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint1() == Endpoint.ARROW || edge.getEndpoint1() == Endpoint.TAIL) {
-            if (edge.getEndpoint2() == Endpoint.ARROW || edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint1() == Endpoint.TAIL) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
      * @return the node opposite the given node along the given edge.
      */

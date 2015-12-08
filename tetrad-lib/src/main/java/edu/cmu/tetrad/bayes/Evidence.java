@@ -41,14 +41,6 @@ public final class Evidence implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
-     * Unused field. Keep to avoid breaking serialization.
-     *
-     * @serial
-     * @deprecated
-     */
-    private BayesIm bayesIm;
-
-    /**
      * A proposition stating what we know for each variable.
      *
      * @serial Cannot be null.

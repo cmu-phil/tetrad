@@ -76,8 +76,8 @@ public class Histogram {
         }
 
         this.target = _target;
-        this.continuousIntervals = new HashMap<Node, double[]>();
-        this.discreteValues = new HashMap<Node, Integer>();
+        this.continuousIntervals = new HashMap<>();
+        this.discreteValues = new HashMap<>();
         numBins = (int) ceil(log(dataSet.getNumRows()) / log(2) + 1);
     }
 
@@ -129,8 +129,8 @@ public class Histogram {
     }
 
     public void removeConditioningVariables() {
-        this.continuousIntervals = new HashMap<Node, double[]>();
-        this.discreteValues = new HashMap<Node, Integer>();
+        this.continuousIntervals = new HashMap<>();
+        this.discreteValues = new HashMap<>();
     }
 
     /**
@@ -228,7 +228,7 @@ public class Histogram {
      */
     public double[] getContinuousData(String variable) {
         int index = dataSet.getColumn(dataSet.getVariable(variable));
-        List<Double> _data = new ArrayList<Double>();
+        List<Double> _data = new ArrayList<>();
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             _data.add(dataSet.getDouble(i, index));
@@ -290,7 +290,7 @@ public class Histogram {
     private List<Double> getUnconditionedDataContinuous() {
         int index = dataSet.getColumn(target);
 
-        List<Double> _data = new ArrayList<Double>();
+        List<Double> _data = new ArrayList<>();
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             _data.add(dataSet.getDouble(i, index));
@@ -304,7 +304,7 @@ public class Histogram {
 
         int index = dataSet.getColumn(target);
 
-        List<Double> _data = new ArrayList<Double>();
+        List<Double> _data = new ArrayList<>();
 
         for (Integer row : rows) {
             _data.add(dataSet.getDouble(row, index));
@@ -318,7 +318,7 @@ public class Histogram {
 
         int index = dataSet.getColumn(target);
 
-        List<Integer> _data = new ArrayList<Integer>();
+        List<Integer> _data = new ArrayList<>();
 
         for (Integer row : rows) {
             _data.add(dataSet.getInt(row, index));
@@ -329,7 +329,7 @@ public class Histogram {
 
     // Returns the rows in the data that satisfy the conditioning constraints.
     private List<Integer> getConditionedRows() {
-        List<Integer> rows = new ArrayList<Integer>();
+        List<Integer> rows = new ArrayList<>();
 
         I:
         for (int i = 0; i < dataSet.getNumRows(); i++) {

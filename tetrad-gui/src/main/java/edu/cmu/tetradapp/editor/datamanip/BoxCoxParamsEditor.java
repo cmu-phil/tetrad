@@ -94,8 +94,6 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * @return true.
-     *
-     * @return true
      */
     public boolean mustBeShown() {
         return true;

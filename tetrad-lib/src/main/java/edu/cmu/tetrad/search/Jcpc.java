@@ -410,32 +410,32 @@ public class Jcpc implements GraphSearch {
         return null;
     }
 
-    private List<Node> pathBlockingSet2(IndependenceTest test, Graph graph, Node x, Node y) {
-        Set<Node> boundary = markovBoundaryWithoutXY(graph, x, y);
-
-        ArrayList<Node> _boundary = new ArrayList<Node>(boundary);
-
-        if (!_boundary.contains(y)) {
-            if (test.isIndependent(x, y, _boundary)) {
-                return _boundary;
-            }
-        } else {
-            _boundary.remove(y);
-
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(_boundary.size(), 2);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                List<Node> cond = GraphUtils.asList(choice, _boundary);
-
-                if (test.isIndependent(x, y, cond)) {
-                    return cond;
-                }
-            }
-        }
-
-        return null;
-    }
+//    private List<Node> pathBlockingSet2(IndependenceTest test, Graph graph, Node x, Node y) {
+//        Set<Node> boundary = markovBoundaryWithoutXY(graph, x, y);
+//
+//        ArrayList<Node> _boundary = new ArrayList<Node>(boundary);
+//
+//        if (!_boundary.contains(y)) {
+//            if (test.isIndependent(x, y, _boundary)) {
+//                return _boundary;
+//            }
+//        } else {
+//            _boundary.remove(y);
+//
+//            DepthChoiceGenerator gen = new DepthChoiceGenerator(_boundary.size(), 2);
+//            int[] choice;
+//
+//            while ((choice = gen.next()) != null) {
+//                List<Node> cond = GraphUtils.asList(choice, _boundary);
+//
+//                if (test.isIndependent(x, y, cond)) {
+//                    return cond;
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
 
     private List<Node> pathBlockingSetSmall(IndependenceTest test, Graph graph, Node x, Node y) {
         List<Node> adjX = graph.getAdjacentNodes(x);
@@ -496,25 +496,25 @@ public class Jcpc implements GraphSearch {
         return condSet;
     }
 
-    private Set<Node> markovBoundaryWithoutXY(Graph graph, Node x, Node y) {
-        Set<Node> condSet = new HashSet<Node>();
-
-        for (Node b : graph.getAdjacentNodes(x)) {
-            if (b != y) {
-                condSet.add(b);
-
-                if (!graph.isParentOf(b, x)) {
-                    for (Node c : graph.getAdjacentNodes(b)) {
-                        condSet.add(c);
-                    }
-                }
-            }
-        }
-
-        condSet.remove(x);
-
-        return condSet;
-    }
+//    private Set<Node> markovBoundaryWithoutXY(Graph graph, Node x, Node y) {
+//        Set<Node> condSet = new HashSet<Node>();
+//
+//        for (Node b : graph.getAdjacentNodes(x)) {
+//            if (b != y) {
+//                condSet.add(b);
+//
+//                if (!graph.isParentOf(b, x)) {
+//                    for (Node c : graph.getAdjacentNodes(b)) {
+//                        condSet.add(c);
+//                    }
+//                }
+//            }
+//        }
+//
+//        condSet.remove(x);
+//
+//        return condSet;
+//    }
 
 
     private void orientCpc(Graph graph, IKnowledge knowledge, int depth, IndependenceTest test) {

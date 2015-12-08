@@ -144,8 +144,6 @@ public final class CcdParams implements SearchParams {
 
     /**
      * Sets the depth of the associated PC search.
-     *
-     * @param depth
      */
     public void setDepth(int depth) {
         if (depth < -1) {

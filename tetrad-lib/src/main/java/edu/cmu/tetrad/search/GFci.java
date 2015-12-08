@@ -263,12 +263,12 @@ public final class GFci {
 //        } else {
 
         // Look in triangles
-        for (Edge edge : graph.getEdges()) {
+        for (Edge edge : gesGraph.getEdges()) {
             Node i = edge.getNode1();
             Node k = edge.getNode2();
 
-            List<Node> j = graph.getAdjacentNodes(i);
-            j.retainAll(graph.getAdjacentNodes(k));
+            List<Node> j = gesGraph.getAdjacentNodes(i);
+            j.retainAll(gesGraph.getAdjacentNodes(k));
 
             if (!j.isEmpty()) {
                 sepsets.getSepset(i, k);

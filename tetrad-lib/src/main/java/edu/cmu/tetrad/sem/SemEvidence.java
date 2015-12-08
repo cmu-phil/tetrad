@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stores information for a BayesIm about evidence we have for each variable as
+ * Stores information for a SemIm about evidence we have for each variable as
  * well as whether each variable has been manipulated.
  *
  * @author Joseph Ramsey
@@ -75,45 +75,45 @@ public final class SemEvidence implements TetradSerializable {
         this.manipulation = new SemManipulation(semIm);
     }
 
-    /**
-     * Copy constructor.
-     */
-    public SemEvidence(SemEvidence evidence) {
-        if (evidence == null) {
-            throw new NullPointerException();
-        }
+//    /**
+//     * Copy constructor.
+//     */
+//    public SemEvidence(SemEvidence evidence) {
+//        if (evidence == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.semIm = evidence.getSemIm();
+//        this.proposition = new SemProposition(semIm, evidence.getProposition());
+//        this.manipulation = new SemManipulation(evidence.manipulation);
+//    }
 
-        this.semIm = evidence.getSemIm();
-        this.proposition = new SemProposition(semIm, evidence.getProposition());
-        this.manipulation = new SemManipulation(evidence.manipulation);
-    }
+//    /**
+//     * Wraps the proposition. The Bayes IM and manipulation will be null.
+//     */
+//    public SemEvidence(SemProposition proposition) {
+//        if (proposition == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.semIm = proposition.getSemIm();
+//        this.proposition = new SemProposition(proposition);
+//        this.manipulation = new SemManipulation(semIm);
+//    }
 
-    /**
-     * Wraps the proposition. The Bayes IM and manipulation will be null.
-     */
-    public SemEvidence(SemProposition proposition) {
-        if (proposition == null) {
-            throw new NullPointerException();
-        }
-
-        this.semIm = proposition.getSemIm();
-        this.proposition = new SemProposition(proposition);
-        this.manipulation = new SemManipulation(semIm);
-    }
-
-    public SemEvidence(SemEvidence evidence, SemIm semIm) {
-        if (semIm == null) {
-            throw new NullPointerException();
-        }
-
-        if (evidence == null) {
-            throw new NullPointerException();
-        }
-
-        this.semIm = semIm;
-        this.proposition = new SemProposition(semIm, evidence.getProposition());
-        this.manipulation = new SemManipulation(evidence.manipulation);
-    }
+//    public SemEvidence(SemEvidence evidence, SemIm semIm) {
+//        if (semIm == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (evidence == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.semIm = semIm;
+//        this.proposition = new SemProposition(semIm, evidence.getProposition());
+//        this.manipulation = new SemManipulation(evidence.manipulation);
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -202,7 +202,7 @@ public final class SemEvidence implements TetradSerializable {
      */
     public List<Node> getNodesInEvidence() {
         List<Node> nodes = semIm.getVariableNodes();
-        List<Node> nodesInEvidence = new ArrayList<Node>();
+        List<Node> nodesInEvidence = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             if (!Double.isNaN(proposition.getValue(i))) {
@@ -218,17 +218,14 @@ public final class SemEvidence implements TetradSerializable {
             return false;
         }
 
+        if (!(o instanceof SemEvidence)) {
+            throw new IllegalArgumentException();
+        }
+
         SemEvidence evidence = (SemEvidence) o;
 
-        if (!(semIm == evidence.semIm)) {
-            return false;
-        }
+        return semIm == evidence.semIm && proposition.equals(evidence.proposition) && manipulation.equals(evidence.manipulation);
 
-        if (!(proposition.equals(evidence.proposition))) {
-            return false;
-        }
-
-        return manipulation.equals(evidence.manipulation);
     }
 
     public int hashCode() {
@@ -259,10 +256,6 @@ public final class SemEvidence implements TetradSerializable {
         if (proposition == null) {
             throw new NullPointerException();
         }
-    }
-
-    public boolean hasNoEvidence(int variable) {
-        return false;
     }
 }
 

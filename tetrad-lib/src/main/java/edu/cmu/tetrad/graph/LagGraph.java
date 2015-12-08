@@ -35,9 +35,9 @@ public class LagGraph implements Graph {
     static final long serialVersionUID = 23L;
 
     private Dag graph = new Dag();
-    private List<String> variables = new ArrayList<String>();
+    private List<String> variables = new ArrayList<>();
     private int numLags = 0;
-    private Map<String, List<Node>> laggedVariables = new HashMap<String, List<Node>>();
+    private Map<String, List<Node>> laggedVariables = new HashMap<>();
 
     // New methods.
     public boolean addVariable(String variable) {
@@ -71,26 +71,6 @@ public class LagGraph implements Graph {
     public static LagGraph serializableInstance() {
         return new LagGraph();
     }
-
-    public boolean removeVariable(Node node) {
-        return false;
-    }
-
-    public int addLag() {
-
-        // Creates a new numbered lag variable for each variable (of same latent type as variable)
-        // and adds it to the graph... where??
-        return 0;
-    }
-
-    public int removeLag() {
-        return 0;
-    }
-
-    public int getNumLags() {
-        return 0;
-    }
-
 
     // Modified methods from graph.
     public boolean addDirectedEdge(Node node1, Node node2) {
@@ -164,7 +144,7 @@ public class LagGraph implements Graph {
     }
 
     public boolean existsTrek(Node node1, Node node2) {
-        return existsTrek(node1, node2);
+        return getGraph().existsTrek(node1, node2);
     }
 
     public void fullyConnect(Endpoint endpoint) {
@@ -481,7 +461,7 @@ public class LagGraph implements Graph {
         throw new UnsupportedOperationException();
     }
 
-    public Dag getGraph() {
+    private Dag getGraph() {
         return graph;
     }
 

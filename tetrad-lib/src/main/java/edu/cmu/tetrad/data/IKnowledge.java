@@ -32,7 +32,7 @@ import java.util.List;
  * in different ways. See implementations.
  */
 public interface IKnowledge extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     void addToTier(int tier, String var);
 
@@ -112,7 +112,7 @@ public interface IKnowledge extends TetradSerializable {
 
     String toString();
 
-    public IKnowledge copy();
+    IKnowledge copy();
 }
 
 

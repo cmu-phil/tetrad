@@ -57,18 +57,18 @@ public class ParamConstraint implements TetradSerializable {
         this.number = number;
     }
 
-    /**
-     * The second constructor specifies two freeParameters and the type of relation
-     * between their values.
-     */
-    public ParamConstraint(SemIm semIm, Parameter param1, Parameter param2,
-                           ParamConstraintType type) {
-        this.semIm = semIm;
-        this.param1 = param1;
-        this.param2 = param2;
-        this.type = type;
-        this.number = 0.0;
-    }
+//    /**
+//     * The second constructor specifies two freeParameters and the type of relation
+//     * between their values.
+//     */
+//    public ParamConstraint(SemIm semIm, Parameter param1, Parameter param2,
+//                           ParamConstraintType type) {
+//        this.semIm = semIm;
+//        this.param1 = param1;
+//        this.param2 = param2;
+//        this.type = type;
+//        this.number = 0.0;
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -100,45 +100,41 @@ public class ParamConstraint implements TetradSerializable {
         return param2;
     }
 
-    public void setParam2(Parameter param2) {
-        this.param2 = param2;
-    }
-
-    public boolean isSatisfied() {
-        if (type == ParamConstraintType.NONE) {
-            return true;
-        }
-
-        if (param2 == null) {
-            if (type == ParamConstraintType.EQ &&
-                    semIm.getParamValue(param1) == number) {
-                return true;
-            }
-            if (type == ParamConstraintType.GT &&
-                    semIm.getParamValue(param1) > number) {
-                return true;
-            }
-            if (type == ParamConstraintType.LT &&
-                    semIm.getParamValue(param1) < number) {
-                return true;
-            } else {
-                if (type == ParamConstraintType.EQ && semIm.getParamValue(
-                        param1) == semIm.getParamValue(param2)) {
-                    return true;
-                }
-                if (type == ParamConstraintType.LT && semIm.getParamValue(
-                        param1) < semIm.getParamValue(param2)) {
-                    return true;
-                }
-                if (type == ParamConstraintType.GT && semIm.getParamValue(
-                        param1) > semIm.getParamValue(param2)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
+//    public boolean isSatisfied() {
+//        if (type == ParamConstraintType.NONE) {
+//            return true;
+//        }
+//
+//        if (param2 == null) {
+//            if (type == ParamConstraintType.EQ &&
+//                    semIm.getParamValue(param1) == number) {
+//                return true;
+//            }
+//            if (type == ParamConstraintType.GT &&
+//                    semIm.getParamValue(param1) > number) {
+//                return true;
+//            }
+//            if (type == ParamConstraintType.LT &&
+//                    semIm.getParamValue(param1) < number) {
+//                return true;
+//            } else {
+//                if (type == ParamConstraintType.EQ && semIm.getParamValue(
+//                        param1) == semIm.getParamValue(param2)) {
+//                    return true;
+//                }
+//                if (type == ParamConstraintType.LT && semIm.getParamValue(
+//                        param1) < semIm.getParamValue(param2)) {
+//                    return true;
+//                }
+//                if (type == ParamConstraintType.GT && semIm.getParamValue(
+//                        param1) > semIm.getParamValue(param2)) {
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
 
     /**
      * This method is for testing whether a value that might be assigned to a
@@ -147,25 +143,19 @@ public class ParamConstraint implements TetradSerializable {
      * optimal with respect to some measure of fit of the parameterized SEM to
      * some dataset.
      *
-     * @param testValue
      * @return true if the value would satisfy the constraint.
      */
     public boolean wouldBeSatisfied(double testValue) {
-        if (type == ParamConstraintType.NONE) {
-            return true;
-        }
+        return type == ParamConstraintType.NONE || param2 == null && (type == ParamConstraintType.EQ && testValue == number || type == ParamConstraintType.GT && testValue > number || type == ParamConstraintType.LT && testValue < number);
 
-        if (param2 == null) {
-            if (type == ParamConstraintType.EQ && testValue == number) {
-                return true;
-            }
-            if (type == ParamConstraintType.GT && testValue > number) {
-                return true;
-            }
-            return type == ParamConstraintType.LT && testValue < number;
-        }
+    }
 
-        return false;
+    public Parameter getParam1() {
+        return param1;
+    }
+
+    public SemIm getSemIm() {
+        return semIm;
     }
 }
 

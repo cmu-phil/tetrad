@@ -51,8 +51,6 @@ public class QQPlotAction extends AbstractAction {
     /**
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
      * that its attached to.
-     *
-     * @param editor
      */
     public QQPlotAction(DataEditor editor) {
         super("Q-Q Plots...");

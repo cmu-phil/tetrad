@@ -39,9 +39,6 @@ public class SplitCasesWrapper extends DataWrapper {
 
     /**
      * Constructs the wrapper given some data and the params.
-     *
-     * @param data
-     * @param params
      */
     public SplitCasesWrapper(DataWrapper data, SplitCasesParams params) {
         if (data == null) {

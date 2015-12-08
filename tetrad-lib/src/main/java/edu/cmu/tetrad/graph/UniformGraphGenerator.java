@@ -120,7 +120,7 @@ public final class UniformGraphGenerator {
     /**
      * The random source.
      */
-    final RandomUtil randomUtil = RandomUtil.getInstance();
+    private final RandomUtil randomUtil = RandomUtil.getInstance();
 //    RandomUtil randomUtil = new SeededRandomUtil(23333342L);
 
     //===============================CONSTRUCTORS==========================//
@@ -154,7 +154,7 @@ public final class UniformGraphGenerator {
 
     //===============================PUBLIC METHODS========================//
 
-    public int getNumNodes() {
+    private int getNumNodes() {
         return numNodes;
     }
 
@@ -184,7 +184,7 @@ public final class UniformGraphGenerator {
         this.childMatrix = null;
     }
 
-    public int getMaxDegree() {
+    private int getMaxDegree() {
         return maxDegree;
     }
 
@@ -201,7 +201,7 @@ public final class UniformGraphGenerator {
         this.maxDegree = maxDegree;
     }
 
-    public int getMaxInDegree() {
+    private int getMaxInDegree() {
         return maxInDegree;
     }
 
@@ -219,7 +219,7 @@ public final class UniformGraphGenerator {
         this.maxInDegree = maxInDegree;
     }
 
-    public int getMaxOutDegree() {
+    private int getMaxOutDegree() {
         return maxOutDegree;
     }
 
@@ -243,7 +243,7 @@ public final class UniformGraphGenerator {
         return maxEdges;
     }
 
-    public int getMaxPossibleEdges() {
+    private int getMaxPossibleEdges() {
         return getNumNodes() * getMaxDegree() / 2;
     }
 
@@ -263,7 +263,7 @@ public final class UniformGraphGenerator {
         this.maxEdges = maxEdges;
     }
 
-    public int getNumIterations() {
+    private int getNumIterations() {
         return numIterations;
     }
 
@@ -271,7 +271,7 @@ public final class UniformGraphGenerator {
         this.numIterations = numIterations;
     }
 
-    public int getStructure() {
+    private int getStructure() {
         return structure;
     }
 
@@ -288,7 +288,7 @@ public final class UniformGraphGenerator {
     public Graph getDag() {
         //System.out.println("Converting to DAG");
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(0);
 
@@ -344,22 +344,20 @@ public final class UniformGraphGenerator {
     }
 
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        String buf = "\nStructural information for generated graph:" +
+                "\n\tNumber of nodes:" + getNumNodes() +
+                "\n\tMax degree for each node:" + getMaxDegree() +
+                "\n\tMaximum number of incoming edges for each node:" +
+                getMaxInDegree() +
+                "\n\tMaximum number of outgoing edges for each node:" +
+                getMaxOutDegree() +
+                "\n\tMaximum total number of edges:" + getMaxEdges() +
+                " of " + getNumNodes() * getMaxDegree() / 2 +
+                " possibles" +
+                "\n\tNumber of transitions between samples:" +
+                getNumIterations();
 
-        buf.append("\nStructural information for generated graph:");
-        buf.append("\n\tNumber of nodes:").append(getNumNodes());
-        buf.append("\n\tMax degree for each node:").append(getMaxDegree());
-        buf.append("\n\tMaximum number of incoming edges for each node:")
-                .append(getMaxInDegree());
-        buf.append("\n\tMaximum number of outgoing edges for each node:")
-                .append(getMaxOutDegree());
-        buf.append("\n\tMaximum total number of edges:").append(getMaxEdges())
-                .append(" of ").append(getNumNodes() * getMaxDegree() / 2)
-                .append(" possibles");
-        buf.append("\n\tNumber of transitions between samples:")
-                .append(getNumIterations());
-
-        return buf.toString();
+        return buf;
     }
 
     //================================PRIVATE METHODS======================//

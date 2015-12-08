@@ -60,9 +60,6 @@ public class ScatterPlotEditorPanel extends JPanel {
 
     /**
      * Constructs the editor panel given the initial scatter plot and the dataset.
-     *
-     * @param scatterPlot
-     * @param dataSet
      */
     public ScatterPlotEditorPanel(ScatterPlotOld scatterPlot, DataSet dataSet) {
         //   construct components

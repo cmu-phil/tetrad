@@ -62,8 +62,6 @@ public class DescriptiveStatsEditorPanel extends JPanel {
 
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
-     *
-     * @param dataSet
      */
     public DescriptiveStatsEditorPanel(Node selected, DataSet dataSet) {
         //   construct components

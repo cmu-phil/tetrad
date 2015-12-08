@@ -61,20 +61,16 @@ final class BayesUtils {
             List<String> pmCategories = pmVar.getCategories();
             List<String> dataCategories = from.getCategories();
 
-            if (pmCategories.equals(dataCategories)) {
-                // continue.
-            } else if (pmCategories.containsAll(dataCategories)) {
-                DiscreteVariable to = new DiscreteVariable(pmVar);
-                dataSet.changeVariable(from, to);
-            } else {
-//                throw new IllegalArgumentException("The variable named " +
-//                        name + " has more categories in the data than in " +
-//                        "the model.");
-
-                throw new IllegalArgumentException("Variable '" + name + "' " +
-                        "has more categories in the data than in the model." +
-                        "\n\tIn the model, the categories are: " + pmCategories + "." +
-                        "\n\tIn the data, the categories are: " + dataCategories + ".");
+            if (!pmCategories.equals(dataCategories)) {
+                if (pmCategories.containsAll(dataCategories)) {
+                    DiscreteVariable to = new DiscreteVariable(pmVar);
+                    dataSet.changeVariable(from, to);
+                } else {
+                    throw new IllegalArgumentException("Variable '" + name + "' " +
+                            "has more categories in the data than in the model." +
+                            "\n\tIn the model, the categories are: " + pmCategories + "." +
+                            "\n\tIn the data, the categories are: " + dataCategories + ".");
+                }
             }
         }
     }
