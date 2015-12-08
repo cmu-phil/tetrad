@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -33,7 +31,6 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 
 /**
@@ -123,12 +120,40 @@ public final class GraphUtils {
         return totalSize;
     }
 
+    public static Graph randomDag(int numNodes, int numLatentConfounders,
+                                  int maxNumEdges, int maxDegree,
+                                  int maxIndegree, int maxOutdegree,
+                                  boolean connected) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        return randomDag(nodes, numLatentConfounders, maxNumEdges, maxDegree,
+                maxIndegree, maxOutdegree, connected);
+    }
+
     public static Dag randomDag(List<Node> nodes, int numLatentConfounders,
                                 int maxNumEdges, int maxDegree,
                                 int maxIndegree, int maxOutdegree,
                                 boolean connected) {
         return new Dag(randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree,
                 connected));
+    }
+
+    public static Graph randomGraph(int numNodes, int numLatentConfounders,
+                                    int maxNumEdges, int maxDegree,
+                                    int maxIndegree, int maxOutdegree,
+                                    boolean connected) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        return randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree,
+                maxIndegree, maxOutdegree, connected);
     }
 
 
@@ -142,6 +167,21 @@ public final class GraphUtils {
         // jdramsey 12/8/2015
         return randomGraphRandomForwardEdges(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
 //        return randomGraphUniform(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
+    }
+
+    /**
+     * Implements the method in Melancon and Dutour, "Random Generation of
+     * Directed Graphs," with optional biases added.
+     */
+    public static Graph randomGraphUniform(int numNodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        return randomGraphUniform(nodes, numLatentConfounders, maxNumEdges, maxDegree,
+                maxIndegree, maxOutdegree, connected);
     }
 
     public static Graph randomGraphUniform(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
@@ -208,6 +248,20 @@ public final class GraphUtils {
         }
 
         return commonCauses;
+    }
+
+    public static Graph randomGraphRandomForwardEdges(int numNodes, int numLatentConfounders,
+                                                      int numEdges, int maxDegree,
+                                                      int maxIndegree, int maxOutdegree, boolean connected) {
+
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        return randomGraph(nodes, numLatentConfounders, numEdges, maxDegree,
+                maxIndegree, maxOutdegree, connected);
     }
 
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders,
@@ -537,39 +591,6 @@ public final class GraphUtils {
         return outdegrees;
     }
 
-    /**
-     * Implements the method in Melancon and Dutour, "Random Generation of
-     * Directed Graphs," with optional biases added.
-     */
-    public static Graph randomGraphUniform(int numNodes, int numLatentConfounders,
-                                    int maxNumEdges, int maxDegree,
-                                    int maxIndegree, int maxOutdegree,
-                                    boolean connected) {
-        if (numNodes <= 0) {
-            throw new IllegalArgumentException(
-                    "NumNodes most be > 0: " + numNodes);
-        }
-
-        if (maxNumEdges < 0 || maxNumEdges > numNodes * (numNodes - 1)) {
-            throw new IllegalArgumentException("NumEdges must be " +
-                    "greater than 0 and <= (#nodes)(#nodes - 1) / 2: " +
-                    maxNumEdges);
-        }
-
-        if (numLatentConfounders < 0 || numLatentConfounders > numNodes) {
-            throw new IllegalArgumentException("MaxNumLatents must be " +
-                    "greater than 0 and less than the number of nodes: " +
-                    numLatentConfounders);
-        }
-
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < numNodes + numLatentConfounders; i++) {
-            nodes.add(new GraphNode("X" + (i + 1)));
-        }
-
-        return randomGraphUniform(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
-    }
 
     public static void fixLatents1(int numLatentConfounders, Graph graph) {
         List<Node> commonCauses = getCommonCauses(graph);
