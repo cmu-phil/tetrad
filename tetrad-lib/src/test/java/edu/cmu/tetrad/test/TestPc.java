@@ -27,47 +27,26 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.*;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the PC search.
  *
  * @author Joseph Ramsey
  */
-public class TestPc extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestPc(String name) {
-        super(name);
-    }
-
-
-    public void setUp() throws Exception {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-        RandomUtil.getInstance().setSeed(-1857293L);
-
-    }
-
-
-    public void tearDown() {
-        TetradLogger.getInstance().setForceLog(false);
-        TetradLogger.getInstance().removeOutputStream(System.out);
-    }
+public class TestPc {
 
     /**
      * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
      * X2 --> X4, X3 --> X4.
      */
+    @Test
     public void testSearch1() {
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
@@ -77,6 +56,7 @@ public class TestPc extends TestCase {
      * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
      * X2 --> X4, X3 --> X4.
      */
+    @Test
     public void testSearch2() {
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
@@ -85,6 +65,7 @@ public class TestPc extends TestCase {
     /**
      * This will fail if the orientation loop doesn't continue after the first orientation.
      */
+    @Test
     public void testSearch3() {
         checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
                 "A-->D,A---B,B-->D,C-->D,D-->E");
@@ -93,6 +74,7 @@ public class TestPc extends TestCase {
     /**
      * This will fail if the orientation loop doesn't continue after the first orientation.
      */
+    @Test
     public void testSearch4() {
         IKnowledge knowledge = new Knowledge2();
         knowledge.setForbidden("B", "D");
@@ -103,6 +85,7 @@ public class TestPc extends TestCase {
                 knowledge);
     }
 
+    @Test
     public void testShowInefficiency() {
 
         int numVars = 20;
@@ -118,8 +101,8 @@ public class TestPc extends TestCase {
         Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
                 7, 5, 5, false));
 
-        System.out.println("\nInput graph:");
-        System.out.println(trueGraph);
+//        System.out.println("\nInput graph:");
+//        System.out.println(trueGraph);
 
         SemPm semPm = new SemPm(trueGraph);
         SemIm semIm = new SemIm(semPm);
@@ -158,21 +141,22 @@ public class TestPc extends TestCase {
             }
 
             if (!addedEdges.isEmpty() && !removedEdges.isEmpty()) {
-                System.out.println("\nn = " + maxSample + ":");
+//                System.out.println("\nn = " + maxSample + ":");
 
                 if (!addedEdges.isEmpty()) {
-                    System.out.println("Added: " + addedEdges);
+//                    System.out.println("Added: " + addedEdges);
                 }
 
                 if (!removedEdges.isEmpty()) {
-                    System.out.println("Removed: " + removedEdges);
+//                    System.out.println("Removed: " + removedEdges);
                 }
             }
         }
 
-        System.out.println("Final graph = " + previousResult);
+//        System.out.println("Final graph = " + previousResult);
     }
 
+    @Test
     public void testCites() {
         String citesString = "164\n" +
                 "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
@@ -188,7 +172,7 @@ public class TestPc extends TestCase {
         char[] citesChars = citesString.toCharArray();
         DataReader reader = new DataReader();
         ICovarianceMatrix dataSet = reader.parseCovariance(citesChars);
-        System.out.println(dataSet);
+//        System.out.println(dataSet);
 
 
         IKnowledge knowledge = new Knowledge2();
@@ -204,7 +188,7 @@ public class TestPc extends TestCase {
         Iterator iterator = knowledge.forbiddenEdgesIterator();
 
         while (iterator.hasNext()) {
-            System.out.println(iterator.next());
+//            System.out.println(iterator.next());
         }
 
 
@@ -213,9 +197,10 @@ public class TestPc extends TestCase {
 
         Graph pattern = pc.search();
 
-        System.out.println("Pattern = " + pattern);
+//        System.out.println("Pattern = " + pattern);
     }
 
+    @Test
     public void test7() {
         List<Node> nodes = new ArrayList<Node>();
 
@@ -230,7 +215,7 @@ public class TestPc extends TestCase {
         DataSet data = im.simulateData(1000, false);
         Pc pc = new Pc(new IndTestFisherZ(data, 0.05));
         Graph pattern = pc.search();
-        System.out.println(pattern);
+//        System.out.println(pattern);
     }
 
     /**
@@ -254,12 +239,12 @@ public class TestPc extends TestCase {
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // PrintUtil out problem and graphs.
-        System.out.println("\nInput graph:");
-        System.out.println(graph);
-        System.out.println("\nResult graph:");
-        System.out.println(resultGraph);
-        System.out.println("\nTrue graph:");
-        System.out.println(trueGraph);
+//        System.out.println("\nInput graph:");
+//        System.out.println(graph);
+//        System.out.println("\nResult graph:");
+//        System.out.println(resultGraph);
+//        System.out.println("\nTrue graph:");
+//        System.out.println(trueGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -295,12 +280,12 @@ public class TestPc extends TestCase {
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // PrintUtil out problem and graphs.
-        System.out.println("\nInput graph:");
-        System.out.println(graph);
-        System.out.println("\nResult graph:");
-        System.out.println(resultGraph);
-        System.out.println("\nTrue graph:");
-        System.out.println(trueGraph);
+//        System.out.println("\nInput graph:");
+//        System.out.println(graph);
+//        System.out.println("\nResult graph:");
+//        System.out.println(resultGraph);
+//        System.out.println("\nTrue graph:");
+//        System.out.println(trueGraph);
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));
@@ -334,11 +319,11 @@ public class TestPc extends TestCase {
 
         // PrintUtil out problem and graphs.
 //        System.out.println("\nKnowledge:");
-        System.out.println(knowledge);
-        System.out.println("\nInput graph:");
-        System.out.println(graph);
-        System.out.println("\nResult graph:");
-        System.out.println(resultGraph);
+//        System.out.println(knowledge);
+//        System.out.println("\nInput graph:");
+//        System.out.println(graph);
+//        System.out.println("\nResult graph:");
+//        System.out.println(resultGraph);
 //        System.out.println("\nTrue graph:");
 //        System.out.println(trueGraph);
 
@@ -346,7 +331,8 @@ public class TestPc extends TestCase {
 //        assertTrue(resultGraph.equals(trueGraph));
     }
 
-    public void rtest5() {
+    @Ignore
+    public void test5() {
         List<Node> nodes = new ArrayList<Node>();
 
         for (int i = 0; i < 20; i++) {
@@ -393,49 +379,14 @@ public class TestPc extends TestCase {
 
                         pValues.add(test.getPValue());
 
-                        System.out.println("FDR cutoff = " + StatUtils.fdrCutoff(test.getAlpha(), pValues, false));
+//                        System.out.println("FDR cutoff = " + StatUtils.fdrCutoff(test.getAlpha(), pValues, false));
                     }
                 }
             }
         }
     }
 
-//    public void testPcStable() {
-//        try {
-//            String dir = "/Users/josephramsey/Documents/LAB_NOTEBOOK.2012.04.20/2014.02.20/erich";
-//            String filename = "data1.txt";
-//
-//            File file = new File(dir, filename);
-//
-//            DataReader reader = new DataReader();
-//            reader.setVariablesSupplied(true);
-//            reader.setDelimiter(DelimiterType.WHITESPACE);
-//
-//            DataSet data = reader.parseTabular(file);
-//            double alpha = 0.001;
-//
-//            IndependenceTest test = new IndTestFisherZ(data, alpha);
-//
-//            IKnowledge knowledge = new Knowledge2();
-//            knowledge.setForbidden("X1", "X2");
-//            knowledge.setRequired("X3", "X4");
-//
-//            knowledge.addToTier(1, "X5");
-//            knowledge.addToTier(1, "X8");
-//            knowledge.addToTier(2, "X6");
-//            knowledge.addToTier(2, "X7");
-//
-//            PcStable pc = new PcStable(test);
-//            pc.setKnowledge(knowledge);
-//            Graph graph = pc.search();
-//
-//            System.out.println(graph);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
-
+    @Test
     public void testPcStable2() {
         List<Node> nodes = new ArrayList<>();
 
@@ -464,17 +415,6 @@ public class TestPc extends TestCase {
             Graph pattern2 = pc2.search();
             assertTrue(pattern.equals(pattern2));
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestPc.class);
     }
 }
 

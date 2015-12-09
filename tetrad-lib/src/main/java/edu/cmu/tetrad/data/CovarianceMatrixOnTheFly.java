@@ -208,7 +208,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(new VarianceTask(chunk, 0, variables.size()));
 
-        System.out.println("Done with variances.");
+//        System.out.println("Done with variances.");
 
 
     }
