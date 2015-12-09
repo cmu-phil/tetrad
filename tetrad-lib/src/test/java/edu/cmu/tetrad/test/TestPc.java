@@ -86,77 +86,6 @@ public class TestPc {
     }
 
     @Test
-    public void testShowInefficiency() {
-
-        int numVars = 20;
-        int numEdges = 20;
-        int maxSample = 2000;
-
-        List<Node> nodes = new ArrayList<Node>();
-
-        for (int i1 = 0; i1 < numVars; i1++) {
-            nodes.add(new ContinuousVariable("X" + (i1 + 1)));
-        }
-
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
-                7, 5, 5, false));
-
-//        System.out.println("\nInput graph:");
-//        System.out.println(trueGraph);
-
-        SemPm semPm = new SemPm(trueGraph);
-        SemIm semIm = new SemIm(semPm);
-        DataSet _dataSet = semIm.simulateData(maxSample, false);
-        Graph previousResult = null;
-
-        int[] rows = new int[maxSample];
-        for (int i = 0; i < rows.length; i++) {
-            rows[i] = i;
-        }
-
-        DataSet dataSet = _dataSet.subsetRows(rows);
-        IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
-
-        Pc search = new Pc(test);
-        Graph resultGraph = search.search();
-
-        if (previousResult != null) {
-            Set<Edge> resultEdges = resultGraph.getEdges();
-            Set<Edge> previousEdges = previousResult.getEdges();
-
-            List<Edge> addedEdges = new LinkedList<Edge>();
-
-            for (Edge edge : resultEdges) {
-                if (!previousEdges.contains(edge)) {
-                    addedEdges.add(edge);
-                }
-            }
-
-            List<Edge> removedEdges = new LinkedList<Edge>();
-
-            for (Edge edge : previousEdges) {
-                if (!resultEdges.contains(edge)) {
-                    removedEdges.add(edge);
-                }
-            }
-
-            if (!addedEdges.isEmpty() && !removedEdges.isEmpty()) {
-//                System.out.println("\nn = " + maxSample + ":");
-
-                if (!addedEdges.isEmpty()) {
-//                    System.out.println("Added: " + addedEdges);
-                }
-
-                if (!removedEdges.isEmpty()) {
-//                    System.out.println("Removed: " + removedEdges);
-                }
-            }
-        }
-
-//        System.out.println("Final graph = " + previousResult);
-    }
-
-    @Test
     public void testCites() {
         String citesString = "164\n" +
                 "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
@@ -175,6 +104,14 @@ public class TestPc {
 //        System.out.println(dataSet);
 
 
+//        List<String> nodes = new ArrayList<>();
+//        nodes.add("ABILITY");
+//        nodes.add("GPQ");
+//        nodes.add("QFJ");
+//        nodes.add("PREPROD");
+//        nodes.add("SEX");
+//        nodes.add("PUBS");
+//        nodes.add("CITES");
         IKnowledge knowledge = new Knowledge2();
 
         knowledge.addToTier(1, "ABILITY");
@@ -185,11 +122,11 @@ public class TestPc {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        Iterator iterator = knowledge.forbiddenEdgesIterator();
-
-        while (iterator.hasNext()) {
+//        Iterator iterator = knowledge.forbiddenEdgesIterator();
+//
+//        while (iterator.hasNext()) {
 //            System.out.println(iterator.next());
-        }
+//        }
 
 
         Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
@@ -197,7 +134,7 @@ public class TestPc {
 
         Graph pattern = pc.search();
 
-//        System.out.println("Pattern = " + pattern);
+        System.out.println("Pattern = " + pattern);
     }
 
     @Test

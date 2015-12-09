@@ -161,6 +161,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      * is a non-negative integer.
      */
     public final void addToTier(int tier, String spec) {
+        addVariable(spec);
+
         if (tier < 0) {
             throw new IllegalArgumentException();
         }
