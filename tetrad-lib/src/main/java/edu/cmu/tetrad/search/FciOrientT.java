@@ -168,8 +168,6 @@ public final class FciOrientT {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
-        System.out.println("R0 start");
-
         addColliders(graph, sepsets, knowledge);
     }
 

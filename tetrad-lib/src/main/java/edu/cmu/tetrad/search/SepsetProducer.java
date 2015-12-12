@@ -40,5 +40,7 @@ public interface SepsetProducer {
     double getPValue();
 
     List<Node> getVariables();
+
+    void setVerbose(boolean verbose);
 }
 

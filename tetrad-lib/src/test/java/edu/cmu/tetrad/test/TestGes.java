@@ -26,41 +26,70 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.ProbUtils;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests GES.
  *
  * @author Joseph Ramsey
  */
-public class TestGes extends TestCase {
+public class TestGes {
 
     /**
-     * Standard constructor for JUnit test cases.
+     * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
+     * X2 --> X4, X3 --> X4.
      */
-    public TestGes(String name) {
-        super(name);
-    }
+    @Test
+    public void testSearch1() {
+        RandomUtil.getInstance().setSeed(1449864244802L);
 
-    public void testBlank() {
-        // Blank to keep the automatic JUnit runner happy.
+        checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
+                "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
 
     /**
      * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
      * X2 --> X4, X3 --> X4.
      */
-    public void rtestSearch1() {
+    @org.junit.Test
+    public void testSearch2() {
+        RandomUtil.getInstance().setSeed(1449865587879L);
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
+
+    /**
+     * This will fail if the orientation loop doesn't continue after the first orientation.
+     */
+    @org.junit.Test
+    public void testSearch3() {
+        RandomUtil.getInstance().setSeed(1449865619738L);
+        checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
+                "A-->D,A---B,B-->D,C-->D,D-->E");
+    }
+
+    /**
+     * This will fail if the orientation loop doesn't continue after the first orientation.
+     */
+    @org.junit.Test
+    public void testSearch4() {
+        IKnowledge knowledge = new Knowledge2();
+        knowledge.setForbidden("B", "D");
+        knowledge.setForbidden("D", "B");
+        knowledge.setForbidden("C", "B");
+
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,A-->D,C-->D",
+                knowledge);
+    }
+
 
     public void testSearch5() {
         int numVars = 10;
@@ -71,7 +100,7 @@ public class TestGes extends TestCase {
 
         for (int i = 0; i < numVars; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
-        };
+        }
 
         Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges, 7,
                 5, 5, false));
@@ -233,14 +262,16 @@ public class TestGes extends TestCase {
      */
     private void checkSearch(String inputGraph, String outputGraph) {
 
+
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert(inputGraph);
         SemPm semPm = new SemPm(graph);
         SemIm semIM = new SemIm(semPm);
-        DataSet dataSet = semIM.simulateData(500, false);
+        DataSet dataSet = semIM.simulateData(5000, false);
 
         // Set up search.
-        Ges ges = new Ges(dataSet);
+//        Ges ges = new Ges(dataSet);
+        Fgs ges = new Fgs(dataSet);
         ges.setTrueGraph(graph);
 
         // Run search
@@ -255,8 +286,10 @@ public class TestGes extends TestCase {
         System.out.println("\nResult graph:");
         System.out.println(resultGraph);
 
+        System.out.println("Seed = " + RandomUtil.getInstance().getSeed());
+
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertTrue(resultGraph.equals(SearchGraphUtils.patternForDag(trueGraph)));
     }
 
     /**
@@ -268,12 +301,14 @@ public class TestGes extends TestCase {
 
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert(inputGraph);
+        Graph trueGraph = GraphConverter.convert(outputGraph);
+
         SemPm semPm = new SemPm(graph);
         SemIm semIM = new SemIm(semPm);
-        DataSet dataSet = semIM.simulateData(1000, false);
+        DataSet dataSet = semIM.simulateData(5000, false);
 
         // Set up search.
-        Ges ges = new Ges(dataSet);
+        Fgs ges = new Fgs(dataSet);
         ges.setKnowledge(knowledge);
 
         // Run search
@@ -281,13 +316,12 @@ public class TestGes extends TestCase {
 
         // PrintUtil out problem and graphs.
         System.out.println(knowledge);
-        System.out.println("Input graph:");
-        System.out.println(graph);
+        System.out.println("True Graph:");
+        System.out.println(trueGraph);
         System.out.println("Result graph:");
         System.out.println(resultGraph);
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));
@@ -321,18 +355,6 @@ public class TestGes extends TestCase {
         }
 
         return subsets;
-    }
-
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestGes.class);
     }
 }
 

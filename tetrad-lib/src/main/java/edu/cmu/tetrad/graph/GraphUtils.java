@@ -292,6 +292,7 @@ public final class GraphUtils {
         final List<Node> nodes2 = dag.getNodes(); // new ArrayList<Node>(nodes);
 
         int trials = 0;
+        boolean added = false;
 
         for (int i = 0; i < numEdges; i++) {
             int c1 = RandomUtil.getInstance().nextInt(nodes2.size());
@@ -340,12 +341,13 @@ public final class GraphUtils {
                 continue;
             }
 
-            if (connected && indegree == 0 && outdegree == 0) {
+            if (added && connected && indegree == 0 && outdegree == 0) {
                 i--;
                 continue;
             }
 
             dag.addDirectedEdge(n1, n2);
+            added = true;
         }
 
         fixLatents4(numLatentConfounders, dag);

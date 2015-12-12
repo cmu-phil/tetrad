@@ -27,9 +27,8 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.TetradLogger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,23 +39,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.Assert.fail;
+
 /**
  * Tests the Ccd algorithm.
  *
  * @author Frank Wimberly
  */
-public class TestCcd extends TestCase {
+public class TestCcd {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestCcd(String name) {
-        super(name);
-    }
+//    @Test
+//    public void testCcd() {
+//
+//    }
 
     /**
      * From "CcdTester".
      */
+    @Test
     public void testCcd() {  // TODO
         Node a = new ContinuousVariable("A");
         Node b = new ContinuousVariable("B");
@@ -169,6 +169,7 @@ public class TestCcd extends TestCase {
     /**
      * From CcdTesterC.
      */
+    @Ignore
     public void testCcdC() {
 
         Node a = new ContinuousVariable("A");
@@ -327,6 +328,7 @@ public class TestCcd extends TestCase {
     }
 
     //
+    @Ignore
     public void rtestLoop() {
         NumberFormat nf = new DecimalFormat("0.0000");
 
@@ -536,6 +538,7 @@ public class TestCcd extends TestCase {
 
     }
 
+    @Ignore
     public List<DataSet> loadSmithSim(int simIndex) {
         try {
             DataReader reader = new DataReader();
@@ -593,17 +596,6 @@ public class TestCcd extends TestCase {
         }
 
         return graph;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestCcd.class);
     }
 }
 

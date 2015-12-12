@@ -31,6 +31,7 @@ import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
+import org.junit.Test;
 
 import javax.swing.*;
 import java.io.*;
@@ -135,6 +136,54 @@ public class PerformanceTests {
         SearchGraphUtils.graphComparison(outGraph, SearchGraphUtils.patternForDag(graph), out);
 
         out.close();
+    }
+
+    public void printStuffForKlea() {
+
+        try {
+            File _data = new File("data.txt");
+            File _graph = new File("graph.txt");
+
+            PrintStream out1 = new PrintStream(new FileOutputStream(_data));
+            PrintStream out2 = new PrintStream(new FileOutputStream(_graph));
+
+
+            int numVars = 50000;
+
+            List<Node> vars = new ArrayList<>();
+
+            for (int i = 0; i < numVars; i++) {
+                vars.add(new ContinuousVariable("X" + (i + 1)));
+            }
+
+            double edgesPerNode = 1.0;
+            int numCases = 1000;
+
+            Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+                    30, 15, 15, false);
+
+            out2.println(graph);
+
+            System.out.println("Graph done");
+
+            out.println("Graph done");
+
+            System.out.println("Starting simulation");
+            LargeSemSimulator simulator = new LargeSemSimulator(graph);
+            simulator.setOut(out);
+
+            DataSet data = simulator.simulateDataAcyclic(numCases);
+
+            out1.println(data);
+
+            out1.close();
+            out2.close();
+        }
+        catch (Exception e) {
+
+        }
+
+
     }
 
     public void testPcStable(int numVars, double edgesPerNode, int numCases, double alpha) {
@@ -2042,7 +2091,8 @@ public class PerformanceTests {
                 throw new IllegalArgumentException("Not a configuration!");
             }
         } else {
-            throw new IllegalArgumentException("Not a configuration!");
+            new PerformanceTests().printStuffForKlea();
+//            throw new IllegalArgumentException("Not a configuration!");
         }
 
         System.out.println("Finish");

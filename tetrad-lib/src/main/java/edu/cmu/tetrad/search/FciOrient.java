@@ -165,8 +165,6 @@ public final class FciOrient {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
-        System.out.println("R0 start");
-
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {

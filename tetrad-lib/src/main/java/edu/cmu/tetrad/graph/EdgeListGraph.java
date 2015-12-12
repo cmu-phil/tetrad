@@ -573,11 +573,30 @@ public class EdgeListGraph implements Graph {
         return false;
     }
 
+//    /**
+//     * Determines whether one node is an ancestor of another.
+//     */
+//    public boolean isAncestorOf(Node node1, Node node2) {
+//        return (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
+//    }
+
+    private Map<Node, Set<Node>> ancestors = null;
+
     /**
      * Determines whether one node is an ancestor of another.
      */
     public boolean isAncestorOf(Node node1, Node node2) {
-        return (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
+        if (ancestors != null) {
+            return ancestors.get(node2).contains(node1);
+        } else {
+            ancestors = new HashMap<>();
+
+            for (Node node : nodes) {
+                ancestors.put(node, new HashSet<>(getAncestors(Collections.singletonList(node))));
+            }
+
+            return ancestors.get(node2).contains(node1);
+        }
     }
 
     public boolean possibleAncestor(Node node1, Node node2) {
@@ -1791,13 +1810,14 @@ public class EdgeListGraph implements Graph {
 
 
     private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
+        if (ancestors.contains(node)) return;
+
         ancestors.add(node);
         List<Node> parents = getParents(node);
 
         if (!parents.isEmpty()) {
-            for (Object parent1 : parents) {
-                Node parent = (Node) parent1;
-                doParentClosureVisit(parent, ancestors);
+            for (Node parent : parents) {
+                collectAncestorsVisit(parent, ancestors);
             }
         }
     }
