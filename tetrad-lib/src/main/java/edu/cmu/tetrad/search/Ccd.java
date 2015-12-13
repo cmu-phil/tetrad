@@ -753,9 +753,9 @@ public final class Ccd implements GraphSearch {
 
             List<Node> adj1 = graph.getAdjacentNodes(b);
             List<Node> adj2 = graph.getAdjacentNodes(c);
-            adj1.removeAll(adj2);
+//            adj1.removeAll(adj2);
 
-            if (!adj1.isEmpty()) return false;
+            if (!adj1.equals(adj2)) return false;
 
             graph.removeEdge(b, c);
             graph.addDirectedEdge(b, c);

@@ -85,10 +85,6 @@ public final class TestDag extends TestCase {
 
         assertTrue(graph.isDConnectedTo(x1, x3, Collections.EMPTY_LIST));
 
-        //graph.removeNode(x2);
-        //
-        //System.out.println("Without x2: " + graph);
-
 
         assertTrue(graph.existsDirectedPathFromTo(x1, x4));
         assertTrue(!graph.existsDirectedPathFromTo(x1, x5));

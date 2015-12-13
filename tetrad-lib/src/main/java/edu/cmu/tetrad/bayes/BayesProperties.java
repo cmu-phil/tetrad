@@ -129,9 +129,6 @@ public final class BayesProperties {
         double l1 = scorer1.logProbDataGivenStructure();
         double l0 = scorer0.logProbDataGivenStructure();
 
-        System.out.println("l1 = " + l1);
-        System.out.println("l0 = " + l0);
-
         double chisq = 2.0 * (l0 - l1);
         int n1 = scorer1.numNonredundantParams();
         int n0 = scorer0.numNonredundantParams();

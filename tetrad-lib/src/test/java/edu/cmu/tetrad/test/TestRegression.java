@@ -30,9 +30,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.io.CharArrayWriter;
 import java.io.File;
@@ -41,6 +39,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Tests the new regression classes. There is a tabular linear regression
  * model as well as a correlation linear regression model. (Space for more
@@ -48,12 +48,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class TestRegression extends TestCase {
+public class TestRegression {
     DataSet data;
-
-    public TestRegression(String name) {
-        super(name);
-    }
 
     public void setUp() {
         List<Node> nodes = new ArrayList<>();
@@ -77,7 +73,10 @@ public class TestRegression extends TestCase {
      * This tests whether the answer to a rather arbitrary problem changes.
      * At one point, this was the answer being returned.
      */
+    @Test
     public void testTabular() {
+        setUp();
+
         RandomUtil.getInstance().setSeed(3848283L);
 
         List<Node> nodes = data.getVariables();
@@ -105,7 +104,10 @@ public class TestRegression extends TestCase {
     /**
      * Same problem, using the covariance matrix.
      */
+    @Test
     public void testCovariance() {
+        setUp();
+
         RandomUtil.getInstance().setSeed(3848283L);
 
         ICovarianceMatrix cov = new CovarianceMatrix(data);
@@ -129,48 +131,6 @@ public class TestRegression extends TestCase {
         assertEquals(0.036, coeffs[2], 0.01);
         assertEquals(.019, coeffs[3], 0.01);
         assertEquals(.007, coeffs[4], 0.01);
-    }
-
-    private char[] fileToCharArray(File file) {
-        try {
-            FileReader reader = new FileReader(file);
-            CharArrayWriter writer = new CharArrayWriter();
-            int c;
-
-            while ((c = reader.read()) != -1) {
-                writer.write(c);
-            }
-
-            return writer.toCharArray();
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private DataSet loadCarsFile() {
-        File file = new File("test_data/cars.dat");
-        char[] chars = fileToCharArray(file);
-
-        DataReader reader = new DataReader();
-        reader.setDelimiter(DelimiterType.WHITESPACE);
-
-        return reader.parseTabular(chars);
-    }
-
-    private DataSet loadRegressionDataFile() {
-        File file = new File("test_data/regressiondata.dat");
-        char[] chars = fileToCharArray(file);
-
-        DataReader reader = new DataReader();
-        reader.setDelimiter(DelimiterType.WHITESPACE);
-
-        DataSet data = reader.parseTabular(chars);
-        return data;
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestRegression.class);
     }
 }
 

@@ -1110,8 +1110,6 @@ public final class MlBayesIm implements BayesIm {
             tiers[i] = getNodeIndex(tierOrdering.get(i));
         }
 
-        long t1 = System.currentTimeMillis();
-
         // Construct the sample.
         for (int i = 0; i < sampleSize; i++) {
             for (int t : tiers) {
@@ -1137,10 +1135,6 @@ public final class MlBayesIm implements BayesIm {
                 }
             }
         }
-
-        long t2 = System.currentTimeMillis();
-        System.out.println("Elapsed Sim = " + (t2 - t1) + "ms");
-
     }
 
     public boolean equals(Object o) {

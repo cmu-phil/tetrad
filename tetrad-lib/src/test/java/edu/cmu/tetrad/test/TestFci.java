@@ -182,31 +182,6 @@ public class TestFci {
                 "X1o-oX2,X3o->X4,X2-->X4", knowledge);
     }
 
-//    @Ignore
-//    public void testMarginal() {
-////        System.out.println("Marginal Test");
-//        Node A = new ContinuousVariable("X1");
-//        Node B = new ContinuousVariable("X2");
-//        Node C = new ContinuousVariable("X3");
-//        Node D = new ContinuousVariable("X4");
-//
-//        Graph G1 = new EdgeListGraph(Arrays.asList(A, B, C, D));
-//        G1.addEdge(new Edge(A, B, Endpoint.TAIL, Endpoint.ARROW));
-//        G1.addEdge(new Edge(D, B, Endpoint.TAIL, Endpoint.ARROW));
-//        G1.addEdge(new Edge(A, C, Endpoint.TAIL, Endpoint.ARROW));
-//        G1.addEdge(new Edge(C, D, Endpoint.TAIL, Endpoint.ARROW));
-//        Fci fci1 = new Fci(new IndTestDSep(G1));
-//        System.out.println(fci1.search());
-//        Fci fci2 = new Fci(new IndTestDSep(G1), Arrays.asList(A, B, C));
-//        System.out.println(fci2.search());
-//        Fci fci3 = new Fci(new IndTestDSep(G1), Arrays.asList(A, B, D));
-//        System.out.println(fci3.search());
-//        Fci fci4 = new Fci(new IndTestDSep(G1), Arrays.asList(A, D, C));
-//        System.out.println(fci4.search());
-//        Fci fci5 = new Fci(new IndTestDSep(G1), Arrays.asList(B, D, C));
-//        System.out.println(fci5.search());
-//    }
-
     @Test
     public void testSearch13() {
         int numVars = 10;

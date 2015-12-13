@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphConverter;
+import edu.cmu.tetrad.util.RandomUtil;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -48,6 +49,8 @@ public final class TestBayesBicScorer extends TestCase {
     }
 
     public static void testPValue() {
+        RandomUtil.getInstance().setSeed(492834924L);
+
         Graph graph1 = GraphConverter.convert("X1,X2-->X3,X4,X5-->X6,X7,X8");
         Graph graph2 = GraphConverter.convert("X1,X2-->X3,X4,X5,X6,X7-->X8");
 
@@ -59,7 +62,8 @@ public final class TestBayesBicScorer extends TestCase {
         DataSet dataSet2Discrete = bayesIm2.simulateData(n, false);
 
         BayesProperties scorer = new BayesProperties(dataSet2Discrete, graph1);
-        System.out.println("P-value = " + scorer.getLikelihoodRatioP());
+        double likelihoodRatioP = scorer.getLikelihoodRatioP();
+        assertEquals(1.0, likelihoodRatioP, 0.001);
     }
 
     /**

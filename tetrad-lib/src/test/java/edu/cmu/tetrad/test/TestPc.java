@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.junit.Test;
 
@@ -172,35 +173,23 @@ public class TestPc {
      */
     private void checkWithKnowledge(String inputGraph, String outputGraph,
                                     IKnowledge knowledge) {
-
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert(inputGraph);
-        SemPm semPm = new SemPm(graph);
-        SemIm semIM = new SemIm(semPm);
-        DataSet dataSet = semIM.simulateData(1000, false);
+
+        // Set up search.
+        IndependenceTest independence = new IndTestDSep(graph);
+        Pc pc = new Pc(independence);
 
         // Set up search.
 //        IndependenceTest independence = new IndTestGraph(graph);
-        IndependenceTest independence = new IndTestFisherZ(dataSet, 0.001);
-        Pc pcSearch = new Pc(independence);
-        pcSearch.setVerbose(true);
-        pcSearch.setKnowledge(knowledge);
+        pc.setVerbose(true);
+        pc.setKnowledge(knowledge);
 
         // Run search
-        Graph resultGraph = pcSearch.search();
+        Graph resultGraph = pc.search();
 
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);
-
-        // PrintUtil out problem and graphs.
-//        System.out.println("\nKnowledge:");
-//        System.out.println(knowledge);
-//        System.out.println("\nInput graph:");
-//        System.out.println(graph);
-//        System.out.println("\nResult graph:");
-//        System.out.println(resultGraph);
-//        System.out.println("\nTrue graph:");
-//        System.out.println(trueGraph);
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));
@@ -208,6 +197,7 @@ public class TestPc {
 
     @Test
     public void testPcStable2() {
+        RandomUtil.getInstance().setSeed(1450030184196L);
         List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
