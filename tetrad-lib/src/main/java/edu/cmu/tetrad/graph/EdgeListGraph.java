@@ -963,6 +963,7 @@ public class EdgeListGraph implements Graph {
             }
         }
 
+        ancestors = null;
 //        System.out.println("TANSFER AFTER " + getEdges());
     }
 
@@ -1045,6 +1046,7 @@ public class EdgeListGraph implements Graph {
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
             throws IllegalArgumentException {
         List<Edge> edges = getEdges(from, to);
+        ancestors = null;
 
         if (endPoint == null) {
             throw new NullPointerException();
@@ -1186,6 +1188,7 @@ public class EdgeListGraph implements Graph {
             }
         }
 
+        ancestors = null;
         getPcs().firePropertyChange("edgeAdded", null, edge);
         return true;
     }
@@ -1459,6 +1462,7 @@ public class EdgeListGraph implements Graph {
         highlightedEdges.remove(edge);
         stuffRemovedSinceLastTripleAccess = true;
 
+        ancestors = null;
         getPcs().firePropertyChange("edgeRemoved", edge, null);
         return true;
     }
