@@ -26,12 +26,11 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -207,40 +206,6 @@ public class TestPc {
         assertTrue(resultGraph.equals(trueGraph));
     }
 
-    private void allAtDepth(IndependenceTest test, int depth) {
-//        System.out.println("depth = " + depth);
-        List<Double> pValues = new ArrayList<Double>();
-
-        List<Node> nodes = new LinkedList<Node>(test.getVariables());
-
-        for (int d = 0; d <= depth; d++) {
-            for (Node x : nodes) {
-
-//            System.out.println("Adjacent nodes for " + x + " = " + b);
-//            System.out.println("Depth = " + depth);
-
-                for (Node y : nodes) {
-                    if (x == y) continue;
-
-                    ChoiceGenerator cg = new ChoiceGenerator(nodes.size(), d);
-                    int[] choice;
-
-                    while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, nodes);
-
-                        if (condSet.contains(x) || condSet.contains(y)) continue;
-
-                        test.isIndependent(x, y, condSet);
-
-                        pValues.add(test.getPValue());
-
-//                        System.out.println("FDR cutoff = " + StatUtils.fdrCutoff(test.getAlpha(), pValues, false));
-                    }
-                }
-            }
-        }
-    }
-
     @Test
     public void testPcStable2() {
         List<Node> nodes = new ArrayList<>();
@@ -248,7 +213,6 @@ public class TestPc {
         for (int i = 0; i < 10; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
-
 
         Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false);
         SemPm pm = new SemPm(graph);
