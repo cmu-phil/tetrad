@@ -571,33 +571,33 @@ public class EdgeListGraphSingleConnections implements Graph {
     /**
      * Determines whether one node is an ancestor of another.
      */
-    public boolean isAncestorOf(Node node1, Node node2) {
-        return (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
-    }
-
-//    private Map<Node, Set<Node>> ancestors = null;
-//
-//    /**
-//     * Determines whether one node is an ancestor of another.
-//     */
 //    public boolean isAncestorOf(Node node1, Node node2) {
-//        if (ancestors != null) {
-//            return ancestors.get(node2).contains(node1);
-//        }
-//        else {
-//            ancestors = new HashMap<>();
-//
-//            for (Node node : nodes) {
-//                ancestors.put(node, new HashSet<>(getAncestors(Collections.singletonList(node))));
-//            }
-//
-//            return ancestors.get(node2).contains(node1);
-//        }
-//
-////        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node1, node2, this);
-////        return DataGraphUtils.existsDirectedPathFromTo(node1, node2, this);
-////        return (node1 == node2) || isProperAncestorOf(node1, node2);
+//        return (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
 //    }
+
+    private Map<Node, Set<Node>> ancestors = null;
+
+    /**
+     * Determines whether one node is an ancestor of another.
+     */
+    public boolean isAncestorOf(Node node1, Node node2) {
+        if (ancestors != null) {
+            return ancestors.get(node2).contains(node1);
+        }
+        else {
+            ancestors = new HashMap<>();
+
+            for (Node node : nodes) {
+                ancestors.put(node, new HashSet<>(getAncestors(Collections.singletonList(node))));
+            }
+
+            return ancestors.get(node2).contains(node1);
+        }
+
+//        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node1, node2, this);
+//        return DataGraphUtils.existsDirectedPathFromTo(node1, node2, this);
+//        return (node1 == node2) || isProperAncestorOf(node1, node2);
+    }
 
     public boolean possibleAncestor(Node node1, Node node2) {
         return existsSemiDirectedPathFromTo(node1,

@@ -106,8 +106,6 @@ public final class Ccd implements GraphSearch {
         Graph psi = search.search();
         SepsetMap sepsetsFromFas = search.getSepsets();
 
-        System.out.println("After FAS " + psi);
-
         SepsetProducer sepsets = new SepsetsMaxPValue(psi, test, null, depth);
 
         psi.reorientAllWith(Endpoint.CIRCLE);
@@ -226,12 +224,12 @@ public final class Ccd implements GraphSearch {
             }
 
             if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
-//                graph.removeEdge(a, b);
-//                graph.removeEdge(c, b);
-//                graph.addDirectedEdge(a, b);
-//                graph.addDirectedEdge(c, b);
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
+                graph.removeEdge(a, b);
+                graph.removeEdge(c, b);
+                graph.addDirectedEdge(a, b);
+                graph.addDirectedEdge(c, b);
+//                graph.setEndpoint(a, b, Endpoint.ARROW);
+//                graph.setEndpoint(c, b, Endpoint.ARROW);
             }
         }
     }
@@ -281,24 +279,19 @@ public final class Ccd implements GraphSearch {
 
                 if (sepset == null) continue;
 
-//                if (sepsetProducer.getPValue() < test.getAlpha()) continue;
-
                 if (!sepset.contains(b)) {
-                    if (verbose) {
-                        System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
-                    }
-
                     colliders.put(new Triple(a, b, c), sepsetProducer.getPValue());
 
-                    TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
+                    if (verbose) {
+                        TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
+                    }
                 }
             }
         }
 
-        TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
-
-        System.out.println("Done finding colliders");
-
+        if (verbose) {
+            TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
+        }
         return colliders;
     }
 
@@ -347,8 +340,6 @@ public final class Ccd implements GraphSearch {
 
         TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
 
-        System.out.println("Done finding noncolliders");
-
         return noncolliders;
     }
 
@@ -396,7 +387,6 @@ public final class Ccd implements GraphSearch {
             }
 
             if (count >= 3) {
-                System.out.println("C. Orienting " + psi.getEdge(x, y) + " as " + y + " --> " + x);
                 psi.setEndpoint(y, x, Endpoint.ARROW);
                 psi.setEndpoint(x, y, Endpoint.TAIL);
             }
@@ -760,6 +750,12 @@ public final class Ccd implements GraphSearch {
             if (!graph.isUnderlineTriple(a, b, c)) {
                 return false;
             }
+
+            List<Node> adj1 = graph.getAdjacentNodes(b);
+            List<Node> adj2 = graph.getAdjacentNodes(c);
+            adj1.removeAll(adj2);
+
+            if (!adj1.isEmpty()) return false;
 
             graph.removeEdge(b, c);
             graph.addDirectedEdge(b, c);

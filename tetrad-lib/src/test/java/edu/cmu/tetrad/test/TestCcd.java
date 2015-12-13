@@ -48,128 +48,66 @@ import static org.junit.Assert.fail;
  */
 public class TestCcd {
 
-//    @Test
-//    public void testCcd() {
-//
-//    }
-
     /**
      * From "CcdTester".
      */
     @Test
-    public void testCcd() {  // TODO
+    public void testCcd() {
         Node a = new ContinuousVariable("A");
         Node b = new ContinuousVariable("B");
         Node x = new ContinuousVariable("X");
         Node y = new ContinuousVariable("Y");
 
         Graph graph = new EdgeListGraph();
-
-        try {
-            graph.addNode(a);
-            graph.addNode(b);
-            graph.addNode(x);
-            graph.addNode(y);
-        } catch (Exception e) {
-            fail("Cant add nodes");
-        }
-
-        try {
-            graph.addDirectedEdge(a, x);
-        } catch (Exception e) {
-            fail("Cant add edge A to X");
-        }
-
-        try {
-            graph.addDirectedEdge(b, y);
-        } catch (Exception e) {
-            fail("Cant add edge B to Y");
-        }
-
-        try {
-            graph.addDirectedEdge(x, y);
-        } catch (Exception e) {
-            fail("Cant add edge X to Y");
-        }
-
-        try {
-            graph.addDirectedEdge(y, x);
-        } catch (Exception e) {
-            fail("Cant add edge Y to X");
-        }
+        graph.addNode(a);
+        graph.addNode(b);
+        graph.addNode(x);
+        graph.addNode(y);
+        graph.addDirectedEdge(a, x);
+        graph.addDirectedEdge(b, y);
+        graph.addDirectedEdge(x, y);
+        graph.addDirectedEdge(y, x);
 
         IndTestDSep test = new IndTestDSep(graph);
-        List<Node> listOfVars = test.getVariables();
-
-        System.out.println("FIRST CASE");
-        System.out.println("List of vars:  ");
-
-        for (Node listOfVar : listOfVars) {
-            System.out.println(listOfVar.getName());
-        }
 
         Ccd ccd = new Ccd(test);
         Graph outPag = ccd.search();
 
-        //Pag outPag = new Pag(out);
-        //outPag.setUnderLineTriples(ccd.getUnderLineTriples());
-        //outPag.setDottedUnderLineTriples(ccd.getDottedUnderLineTriples());
-
-        System.out.println("Output PAG for 1st case:  ");
-        System.out.println(outPag);
-        System.out.println("\n\n");
-
-        //Dag dag = new Dag(graph);
-
         boolean b0 = PagUtils.graphInPagStep0(outPag, graph);
         if (!b0) {
             fail();
-        } else {
-            System.out.println("Step 0 OK");
         }
 
         boolean b1 = PagUtils.graphInPagStep1(outPag, graph);
         if (!b1) {
             fail();
-        } else {
-            System.out.println("Step 1 OK");
         }
 
         boolean b2 = PagUtils.graphInPagStep2(outPag, graph);
         if (!b2) {
             fail();
-        } else {
-            System.out.println("Step 2 OK");
         }
 
         boolean b3 = PagUtils.graphInPagStep3(outPag, graph);
         if (!b3) {
             fail();
-        } else {
-            System.out.println("Step 3 OK");
         }
 
         boolean b4 = PagUtils.graphInPagStep4(outPag, graph);
         if (!b4) {
             fail();
-        } else {
-            System.out.println("Step 4 OK");
         }
 
         boolean b5 = PagUtils.graphInPagStep5(outPag, graph);
         if (!b5) {
             fail();
-        } else {
-            System.out.println("Step 5 OK");
         }
-
-        System.out.println("\n\n");
     }
 
     /**
      * From CcdTesterC.
      */
-    @Ignore
+    @Test
     public void testCcdC() {
 
         Node a = new ContinuousVariable("A");
@@ -186,119 +124,53 @@ public class TestCcd {
 
         Graph graph = new EdgeListGraph();
 
-        try {
-            graph.addNode(a);
-            graph.addNode(b);
-            graph.addNode(c);
-            graph.addNode(d);
-            graph.addNode(e);
-        } catch (Exception ex) {
-            fail("Cant add nodes");
-        }
+        graph.addNode(a);
+        graph.addNode(b);
+        graph.addNode(c);
+        graph.addNode(d);
+        graph.addNode(e);
 
-        try {
-            graph.addDirectedEdge(a, b);
-        } catch (Exception ex) {
-            fail("Cant add edge A to B");
-        }
-
-        try {
-            graph.addDirectedEdge(b, c);
-        } catch (Exception ex) {
-            fail("Cant add edge B to C");
-        }
-
-        try {
-            graph.addDirectedEdge(c, b);
-        } catch (Exception ex) {
-            fail("Cant add edge C to B");
-        }
-
-        try {
-            graph.addDirectedEdge(c, d);
-        } catch (Exception ex) {
-            fail("Cant add edge C to D");
-        }
-
-        try {
-            graph.addDirectedEdge(d, c);
-        } catch (Exception ex) {
-            fail("Cant add edge D to C");
-        }
-
-        try {
-            graph.addDirectedEdge(e, d);
-        } catch (Exception ex) {
-            fail("Cant add edge E to D");
-        }
+        graph.addDirectedEdge(a, b);
+        graph.addDirectedEdge(b, c);
+        graph.addDirectedEdge(c, b);
+        graph.addDirectedEdge(c, d);
+        graph.addDirectedEdge(d, c);
+        graph.addDirectedEdge(e, d);
 
         IndTestDSep test = new IndTestDSep(graph);
 
-        List<Node> listOfVars = test.getVariables();
-
-        System.out.println("SECOND CASE");
-        System.out.println("List of vars:  ");
-
-        for (Node var : listOfVars) {
-            System.out.println(var.getName());
-        }
-
         Ccd ccd = new Ccd(test);
-
         Graph outPag = ccd.search();
-
-        //Pag outPag = new Pag(out);
-        //outPag.setUnderLineTriples(ccd.getUnderLineTriples());
-        //outPag.setDottedUnderLineTriples(ccd.getDottedUnderLineTriples());
-
-        System.out.println("Output PAG for 2nd case:  ");
-        System.out.println(outPag);
-        System.out.println("\n\n");
 
         boolean b1 = PagUtils.graphInPagStep0(outPag, graph);
         if (!b1) {
             fail();
-        } else {
-            System.out.println("Step 1 OK");
         }
 
         boolean b2 = PagUtils.graphInPagStep1(outPag, graph);
         if (!b2) {
             fail();
-        } else {
-            System.out.println("Step 2 OK");
         }
 
         boolean b3 = PagUtils.graphInPagStep2(outPag, graph);
         if (!b3) {
             fail();
-        } else {
-            System.out.println("Step 3 OK");
         }
 
         boolean b4 = PagUtils.graphInPagStep3(outPag, graph);
         if (!b4) {
             fail();
-        } else {
-            System.out.println("Step 4 OK");
         }
 
         boolean b5 = PagUtils.graphInPagStep4(outPag, graph);
         if (!b5) {
             fail();
-        } else {
-            System.out.println("Step 5 OK");
         }
 
         boolean b6 = PagUtils.graphInPagStep5(outPag, graph);
         if (!b6) {
             fail();
-        } else {
-            System.out.println("Step 6 OK");
         }
-
-        System.out.println("\n\n");
-
     }
 
 
@@ -509,7 +381,7 @@ public class TestCcd {
                                     counts[6]++;
                                 }
                                 if (arrowPtCorrect == 0) {
-                                    sums[7] ++;
+                                    sums[7]++;
                                 }
                                 if (!Double.isNaN(shd)) {
                                     sums[8] += shd;
@@ -524,7 +396,7 @@ public class TestCcd {
                             }
 
                             out.println(i + "\t" + nf.format(sums[3]) + "\t" + nf.format(sums[4]) + "\t" + nf.format(sums[5]) + "\t" + nf.format(sums[6])
-                                    + "\t" + nf.format(sums[7])+ "\t" + nf.format(sums[8]));
+                                    + "\t" + nf.format(sums[7]) + "\t" + nf.format(sums[8]));
 
 
                         }

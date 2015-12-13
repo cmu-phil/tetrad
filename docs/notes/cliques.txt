@@ -58,7 +58,7 @@ The effect of this is to iterate through all possible initial segments for L1.
 
 Thus, addNodesToRight will consider a sequence beginning with <x1, x2>, since
 if if x2 was not the second node in the first L1 constructed by addNodesToRight,
-moveLastBack will at some point have moved all of the subsequent nodes back to
+moveLastBack will at some node have moved all of the subsequent nodes back to
 L1 and then (perhaps after some iterations) have placed x2 in the second
 position. Similarly for each node to the right of x2. So c will have been
 constructed as a candidate completely connected set for testing by isMaximal.

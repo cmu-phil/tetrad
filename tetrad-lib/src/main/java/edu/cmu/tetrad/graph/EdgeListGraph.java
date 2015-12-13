@@ -395,6 +395,9 @@ public class EdgeListGraph implements Graph {
     }
 
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
+//        List<Node> nodes2 = getNodesInTo(node2, Endpoint.ARROW);
+//        return nodes2.contains(node1) && nodes2.contains(node3);
+
         Edge edge1 = getEdge(node1, node2);
         Edge edge2 = getEdge(node2, node3);
 
@@ -573,11 +576,15 @@ public class EdgeListGraph implements Graph {
         return false;
     }
 
-//    /**
-//     * Determines whether one node is an ancestor of another.
-//     */
+    /**
+     * Determines whether one node is an ancestor of another.
+     */
 //    public boolean isAncestorOf(Node node1, Node node2) {
-//        return (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
+//        boolean b = (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
+//
+//        System.out.println(node1 + " ancestor of " + node2 + " = " + b);
+//
+//        return b;
 //    }
 
     private Map<Node, Set<Node>> ancestors = null;
