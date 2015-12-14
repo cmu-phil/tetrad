@@ -130,9 +130,6 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
     }
 
     public void setEvidence(Evidence evidence) {
-        System.out.println("*** " + evidence);
-
-
         if (evidence == null) {
             throw new NullPointerException();
         }

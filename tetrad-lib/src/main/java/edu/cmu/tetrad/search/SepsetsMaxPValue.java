@@ -40,6 +40,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
     private int depth = 3;
     private double p = Double.NaN;
 //    private IndependenceTest dsep = null;
+    private boolean verbose = false;
 
     public SepsetsMaxPValue(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -170,6 +171,15 @@ public class SepsetsMaxPValue implements SepsetProducer {
 
     private IndependenceTest getIndependenceTest() {
         return independenceTest;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
 //    public IndependenceTest getDsep() {

@@ -395,6 +395,9 @@ public class EdgeListGraph implements Graph {
     }
 
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
+//        List<Node> nodes2 = getNodesInTo(node2, Endpoint.ARROW);
+//        return nodes2.contains(node1) && nodes2.contains(node3);
+
         Edge edge1 = getEdge(node1, node2);
         Edge edge2 = getEdge(node2, node3);
 
@@ -576,8 +579,31 @@ public class EdgeListGraph implements Graph {
     /**
      * Determines whether one node is an ancestor of another.
      */
+//    public boolean isAncestorOf(Node node1, Node node2) {
+//        boolean b = (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
+//
+//        System.out.println(node1 + " ancestor of " + node2 + " = " + b);
+//
+//        return b;
+//    }
+
+    private Map<Node, Set<Node>> ancestors = null;
+
+    /**
+     * Determines whether one node is an ancestor of another.
+     */
     public boolean isAncestorOf(Node node1, Node node2) {
-        return (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
+        if (ancestors != null) {
+            return ancestors.get(node2).contains(node1);
+        } else {
+            ancestors = new HashMap<>();
+
+            for (Node node : nodes) {
+                ancestors.put(node, new HashSet<>(getAncestors(Collections.singletonList(node))));
+            }
+
+            return ancestors.get(node2).contains(node1);
+        }
     }
 
     public boolean possibleAncestor(Node node1, Node node2) {
@@ -937,6 +963,7 @@ public class EdgeListGraph implements Graph {
             }
         }
 
+        ancestors = null;
 //        System.out.println("TANSFER AFTER " + getEdges());
     }
 
@@ -1019,6 +1046,7 @@ public class EdgeListGraph implements Graph {
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
             throws IllegalArgumentException {
         List<Edge> edges = getEdges(from, to);
+        ancestors = null;
 
         if (endPoint == null) {
             throw new NullPointerException();
@@ -1160,6 +1188,7 @@ public class EdgeListGraph implements Graph {
             }
         }
 
+        ancestors = null;
         getPcs().firePropertyChange("edgeAdded", null, edge);
         return true;
     }
@@ -1433,6 +1462,7 @@ public class EdgeListGraph implements Graph {
         highlightedEdges.remove(edge);
         stuffRemovedSinceLastTripleAccess = true;
 
+        ancestors = null;
         getPcs().firePropertyChange("edgeRemoved", edge, null);
         return true;
     }
@@ -1791,13 +1821,14 @@ public class EdgeListGraph implements Graph {
 
 
     private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
+        if (ancestors.contains(node)) return;
+
         ancestors.add(node);
         List<Node> parents = getParents(node);
 
         if (!parents.isEmpty()) {
-            for (Object parent1 : parents) {
-                Node parent = (Node) parent1;
-                doParentClosureVisit(parent, ancestors);
+            for (Node parent : parents) {
+                collectAncestorsVisit(parent, ancestors);
             }
         }
     }

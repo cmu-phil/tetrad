@@ -21,69 +21,98 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.TetradLogger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.Ges;
+import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.RandomUtil;
+import org.junit.Test;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests GES.
  *
  * @author Joseph Ramsey
  */
-public class TestGes extends TestCase {
+public class TestGes {
 
     /**
-     * Standard constructor for JUnit test cases.
+     * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
+     * X2 --> X4, X3 --> X4.
      */
-    public TestGes(String name) {
-        super(name);
-    }
+    @Test
+    public void testSearch1() {
+        RandomUtil.getInstance().setSeed(1449864244802L);
 
-    public void testBlank() {
-        // Blank to keep the automatic JUnit runner happy.
+        checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
+                "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
 
     /**
      * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
      * X2 --> X4, X3 --> X4.
      */
-    public void rtestSearch1() {
+    @org.junit.Test
+    public void testSearch2() {
+        RandomUtil.getInstance().setSeed(new Date().getTime());
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
 
+    /**
+     * This will fail if the orientation loop doesn't continue after the first orientation.
+     */
+    @org.junit.Test
+    public void testSearch3() {
+        RandomUtil.getInstance().setSeed(1450031582986L);
+        checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
+                "A-->D,A---B,B-->D,C-->D,D-->E");
+    }
+
+    /**
+     * This will fail if the orientation loop doesn't continue after the first orientation.
+     */
+    @org.junit.Test
+    public void testSearch4() {
+        IKnowledge knowledge = new Knowledge2();
+        knowledge.setForbidden("B", "D");
+        knowledge.setForbidden("D", "B");
+        knowledge.setForbidden("C", "B");
+
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,A-->D,C-->D",
+                knowledge);
+    }
+
+    @Test
     public void testSearch5() {
         int numVars = 10;
         int numEdges = 10;
         int sampleSize = 1000;
 
+        RandomUtil.getInstance().setSeed(1450028448632L);
+
         List<Node> nodes = new ArrayList<Node>();
 
         for (int i = 0; i < numVars; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
-        };
+        }
 
         Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges, 7,
                 5, 5, false));
 
-        System.out.println("\nInput graph:");
-        System.out.println(trueGraph);
-
-        System.out.println("********** SAMPLE SIZE = " + sampleSize);
-
         SemPm semPm = new SemPm(trueGraph);
-        SemIm bayesIm = new SemIm(semPm);
-        DataSet dataSet = bayesIm.simulateData(sampleSize, false);
+        SemIm im = new SemIm(semPm);
+        DataSet dataSet = im.simulateData(sampleSize, false);
 
         Ges ges = new Ges(dataSet);
         ges.setTrueGraph(trueGraph);
@@ -91,140 +120,7 @@ public class TestGes extends TestCase {
         // Run search
         Graph resultGraph = ges.search();
 
-        // PrintUtil out problem and graphs.
-        System.out.println("\nResult graph:");
-        System.out.println(resultGraph);
-    }
-
-    public void testSearch6() {
-        List<Node> nodes = new ArrayList<Node>();
-
-        for (int i = 0; i < 10; i++) {
-            nodes.add(new ContinuousVariable("X" + (i + 1)));
-        }
-
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false));
-
-        int sampleSize = 1000;
-
-        SemPm semPm = new SemPm(trueGraph);
-        SemIm bayesIm = new SemIm(semPm);
-        DataSet dataSet = bayesIm.simulateData(sampleSize, false);
-
-        Ges ges = new Ges(dataSet);
-
-        Graph pattern = ges.search();
-
-        System.out.println("True graph = " + SearchGraphUtils.patternForDag(trueGraph));
-        System.out.println("Pattern = " + pattern);
-    }
-
-    public void testSearch7() {
-        List<Node> nodes = new ArrayList<Node>();
-
-        for (int i = 0; i < 50; i++) {
-            nodes.add(new ContinuousVariable("X" + (i + 1)));
-        }
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 50, 30, 15, 15, false));
-
-        int sampleSize = 1000;
-
-
-        SemPm semPm = new SemPm(trueGraph);
-        SemIm bayesIm = new SemIm(semPm);
-        DataSet dataSet = bayesIm.simulateData(sampleSize, false);
-
-        Ges ges = new Ges(dataSet);
-
-        long start = System.currentTimeMillis();
-
-        Graph pattern = ges.search();
-
-        long stop = System.currentTimeMillis();
-
-        Graph truePattern = SearchGraphUtils.patternForDag(trueGraph);
-
-        System.out.println(SearchGraphUtils.graphComparisonString("GES pattern ", pattern, "True pattern", truePattern, false));
-
-
-        System.out.println("Elapsed time = " + (start - stop) / 1000 + " seconds ");
-
-    }
-
-    public void testSearch9() {
-        TetradLogger.getInstance().setForceLog(false);
-
-        Graph trueGraph = new EdgeListGraph();
-
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
-
-        trueGraph.addNode(x1);
-        trueGraph.addNode(x2);
-        trueGraph.addNode(x3);
-        trueGraph.addNode(x4);
-        trueGraph.addNode(x5);
-
-        trueGraph.addDirectedEdge(x1, x3);
-        trueGraph.addDirectedEdge(x2, x3);
-        trueGraph.addDirectedEdge(x3, x4);
-        trueGraph.addDirectedEdge(x4, x5);
-        trueGraph.addDirectedEdge(x1, x5);
-        trueGraph.addDirectedEdge(x2, x5);
-
-        System.out.println("True graph = " + trueGraph);
-
-        int sampleSize = 1000;
-
-        System.out.println("Large sem simulator");
-        SemPm pm = new SemPm(trueGraph);
-        SemImInitializationParams params = new SemImInitializationParams();
-        SemIm im = new SemIm(pm, params);
-
-        System.out.println("... simulating data");
-        DataSet dataSet = im.simulateData(sampleSize, false);
-
-        Ges ges = new Ges(dataSet);
-        ges.setNumPatternsToStore(0);
-
-        ges.setTrueGraph(trueGraph);
-
-        long start = System.currentTimeMillis();
-
-        Graph pattern = ges.search();
-
-        long stop = System.currentTimeMillis();
-
-        Graph truePattern = SearchGraphUtils.patternForDag(trueGraph);
-
-        System.out.println(SearchGraphUtils.graphComparisonString("GES pattern ", pattern, "True pattern", truePattern, false));
-
-        System.out.println("Elapsed time = " + (stop - start) / 1000 + " seconds ");
-
-        System.out.println(pattern);
-    }
-
-    public void test10() {
-        NumberFormat nf = new DecimalFormat("0.0000000");
-
-        for (int n = 25; n <= 10000; n += 25) {
-            double _p = .01;
-
-            // Find the value for v that will yield p = _p
-
-            for (double v = 0.0; ; v += 1) {
-                double f = Math.exp((v - Math.log(n)) / (n / 2.0));
-                double p = 1 - ProbUtils.fCdf(f, n, n);
-
-                if (p <= _p) {
-                    System.out.println(n + " " + nf.format(p) + " " + nf.format(v));
-                    break;
-                }
-            }
-        }
+        assertEquals(resultGraph, SearchGraphUtils.patternForDag(trueGraph));
     }
 
     /**
@@ -232,16 +128,22 @@ public class TestGes extends TestCase {
      * graph.
      */
     private void checkSearch(String inputGraph, String outputGraph) {
+//        testGes(inputGraph, outputGraph);
+        testFgs(inputGraph, outputGraph);
+    }
 
+    private void testGes(String inputGraph, String outputGraph) {
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert(inputGraph);
         SemPm semPm = new SemPm(graph);
         SemIm semIM = new SemIm(semPm);
-        DataSet dataSet = semIM.simulateData(500, false);
+        DataSet dataSet = semIM.simulateData(1000, false);
 
         // Set up search.
         Ges ges = new Ges(dataSet);
-        ges.setTrueGraph(graph);
+//        Fgs ges = new Fgs(dataSet);
+        ges.setPenaltyDiscount(1);
+//        ges.setTrueGraph(graph);
 
         // Run search
         Graph resultGraph = ges.search();
@@ -250,14 +152,52 @@ public class TestGes extends TestCase {
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // PrintUtil out problem and graphs.
-        System.out.println("\nInput graph:");
-        System.out.println(graph);
-        System.out.println("\nResult graph:");
-        System.out.println(resultGraph);
+//        System.out.println("\nInput graph:");
+//        System.out.println(graph);
+//        System.out.println("\nResult graph:");
+//        System.out.println(resultGraph);
+//
+//        System.out.println("Seed = " + RandomUtil.getInstance().getSeed());
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        Graph p = SearchGraphUtils.patternForDag(trueGraph);
+
+//        System.out.println(p);
+
+        assertTrue(resultGraph.equals(p));
     }
+
+    private void testFgs(String inputGraph, String outputGraph) {
+        // Set up graph and node objects.
+        Graph graph = GraphConverter.convert(inputGraph);
+        SemPm semPm = new SemPm(graph);
+        SemIm semIM = new SemIm(semPm);
+        DataSet dataSet = semIM.simulateData(1000, false);
+
+        // Set up search.
+//        Ges ges = new Ges(dataSet);
+        Fgs ges = new Fgs(dataSet);
+        ges.setPenaltyDiscount(1.0);
+//        ges.setTrueGraph(graph);
+
+        // Run search
+        Graph resultGraph = ges.search();
+
+        // Build comparison graph.
+        Graph trueGraph = GraphConverter.convert(outputGraph);
+
+        // PrintUtil out problem and graphs.
+//        System.out.println("\nInput graph:");
+//        System.out.println(graph);
+//        System.out.println("\nResult graph:");
+//        System.out.println(resultGraph);
+//
+//        System.out.println("Seed = " + RandomUtil.getInstance().getSeed());
+
+        // Do test.
+        assertTrue(resultGraph.equals(SearchGraphUtils.patternForDag(trueGraph)));
+    }
+
 
     /**
      * Presents the input graph to Fci and checks to make sure the output of Fci is equivalent to the given output
@@ -268,12 +208,14 @@ public class TestGes extends TestCase {
 
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert(inputGraph);
+        Graph trueGraph = GraphConverter.convert(outputGraph);
+
         SemPm semPm = new SemPm(graph);
         SemIm semIM = new SemIm(semPm);
-        DataSet dataSet = semIM.simulateData(1000, false);
+        DataSet dataSet = semIM.simulateData(5000, false);
 
         // Set up search.
-        Ges ges = new Ges(dataSet);
+        Fgs ges = new Fgs(dataSet);
         ges.setKnowledge(knowledge);
 
         // Run search
@@ -281,13 +223,12 @@ public class TestGes extends TestCase {
 
         // PrintUtil out problem and graphs.
         System.out.println(knowledge);
-        System.out.println("Input graph:");
-        System.out.println(graph);
+        System.out.println("True Graph:");
+        System.out.println(trueGraph);
         System.out.println("Result graph:");
         System.out.println(resultGraph);
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));
@@ -321,18 +262,6 @@ public class TestGes extends TestCase {
         }
 
         return subsets;
-    }
-
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestGes.class);
     }
 }
 

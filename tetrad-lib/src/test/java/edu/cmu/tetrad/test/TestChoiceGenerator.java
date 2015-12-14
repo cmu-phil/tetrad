@@ -25,9 +25,10 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.SelectionGenerator;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Implements basic tests of the choice generator. The choice generator should visit every
@@ -35,53 +36,63 @@ import junit.framework.TestSuite;
  *
  * @author Joseph Ramsey
  */
-@SuppressWarnings({"UnusedDeclaration"})
-public class TestChoiceGenerator extends TestCase {
-    public TestChoiceGenerator(String name) {
-        super(name);
-    }
+public class TestChoiceGenerator {
 
     /**
      * Prints all of the choices for the given a and b.
      */
+    @Test
     public void testPrintChoiceGenerator() {
         int a = 10;
         int b = 3;
 
-        ChoiceGenerator.testPrint(a, b);
-
         int numCombinations = ChoiceGenerator.getNumCombinations(a, b);
 
-
-
-        System.out.println(numCombinations);
+        assertEquals(120, numCombinations);
     }
 
+    @Test
     public void testPrintDepthChoiceGenerator() {
-        int a = 4; int b = 2;
+        int a = 4;
+        int b = 2;
 
-        DepthChoiceGenerator.testPrint(a, b);
+        int numCombinations = DepthChoiceGenerator.getNumCombinations(a, b);
 
-        System.out.println(DepthChoiceGenerator.getNumCombinations(a, b));
+        assertEquals(11, numCombinations);
     }
 
-    public void rtestPrintPermutationGenerator() {
-        PermutationGenerator.testPrint(4);
+    @Test
+    public void testPrintPermutationGenerator() {
+        PermutationGenerator gen = new PermutationGenerator(4);
+        int count = 0;
+
+        while (gen.next() != null) {
+            count++;
+        }
+
+        assertEquals(24, count);
     }
 
+    @Test
     public void testPrintSelectionGenerator() {
-        SelectionGenerator.testPrint(4);
+        SelectionGenerator gen = new SelectionGenerator(4);
+        int count = 0;
+
+        while (gen.next() != null) {
+            count++;
+        }
+
+        assertEquals(256, count);
     }
 
     /**
      * Tests to make sure the ChoiceGenerator is output the correct number of choices
      * for various values of and b.
      */
+    @Test
     public void testChoiceGeneratorCounts() {
         for (int a = 0; a <= 20; a++) {
             for (int b = 0; b <= a; b++) {
-                System.out.println("a = " + a + " b = " + b);
-
                 ChoiceGenerator generator = new ChoiceGenerator(a, b);
 
                 int n = 0;
@@ -107,9 +118,7 @@ public class TestChoiceGenerator extends TestCase {
         }
     }
 
-    public static Test suite() {
-        return new TestSuite(TestChoiceGenerator.class);
-    }
+
 }
 
 

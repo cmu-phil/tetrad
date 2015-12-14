@@ -21,13 +21,11 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.graph.*;
+import org.junit.Test;
+
+import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -35,19 +33,14 @@ import junit.framework.TestSuite;
  *
  * @author Erin Korber
  */
-public final class TestCollisions extends TestCase {
+public final class TestCollisions {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestCollisions(String name) {
-        super(name);
-    }
-
+    @Test
     public void testMatrixGraph() {
-        checkGraph(new EdgeListGraph());
+        checkGraph(new EndpointMatrixGraph());
     }
 
+    @Test
     public void testListGraph() {
         checkGraph(new EdgeListGraph());
     }
@@ -93,17 +86,6 @@ public final class TestCollisions extends TestCase {
         assertFalse(graph.isDefNoncollider(x1, x2, x3));
         assertFalse(graph.isDefCollider(x1, x2, x3));
 
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestCollisions.class);
     }
 }
 

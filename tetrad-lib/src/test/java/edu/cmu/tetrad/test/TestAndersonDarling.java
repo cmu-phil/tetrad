@@ -21,25 +21,26 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
  *
  * @author Joseph Ramsey
  */
-public final class TestAndersonDarling extends TestCase {
-    public TestAndersonDarling(String name) {
-        super(name);
-    }
+public final class TestAndersonDarling {
 
+    @Test
     public void test1() {
+        RandomUtil.getInstance().setSeed(384829384L);
+
         double[] x = rand1(100);
         double[] y = rand2(100);
 
@@ -54,176 +55,18 @@ public final class TestAndersonDarling extends TestCase {
         z = sort(z);
         z = standardize(z);
 
-        System.out.println("x " + getS(x));
-        System.out.println("y " + getS(y));
-        System.out.println("z " + getS(z));
-
-        double avg = (getS(x) + getS(y)) / 2.0;
-
-        System.out.println("Avg S(x) and S(y) = " + avg);
-
-
-//        Arrays.sort(x);
-//        System.out.println("x sorted " + getS(x));
-//
-//        Arrays.sort(y);
-//        System.out.println("y sorted " + getS(y));
-//
-//        Arrays.sort(z);
-//        System.out.println("z sorted " + getS(z));
-//
-        z = standardize(z);
-        z = sort(z);
-        System.out.println("z sorted standardized " + getS(z));
-
-
+        assertEquals(-100, getS(z), 1.0);
     }
 
+    @Test
     public void test2() {
-        double[] x = standardize(rand1(100));
-        double[] y = standardize(rand1(100));
+        RandomUtil.getInstance().setSeed(4838582394L);
 
-        double[] z = new double[x.length];
-        for (int i = 0; i < x.length; i++) z[i] = (x[i] + y[i]) / 2;
+        double[] x = rand1(100);
 
-        printDiff(x, y, z);
-//
-//        x = sortAs(x, z);
-//        y = sortAs(y, z);
-//        z = sort(z);
-//
-//        System.out.println("x " + getS(x));
-//        System.out.println("y " + getS(y));
-//        System.out.println("z " + getS(z));
-//
-//        double avg = (getS(x) + getS(y)) / 2.0;
-//
-//        System.out.println("Avg S(x) and S(y) = " + avg);
-//
-//        System.out.println("sort(x) " + getS(sort(x)));
-//        System.out.println("sort(y) " + getS(sort(y)));
-//        System.out.println("std(sort(z))) " + getS(standardize(sort(z))));
-//
-//        System.out.println("ad x = " + ad(sort(x)));
-//        System.out.println("ad y = " + ad(sort(y)));
-//        System.out.println("ad z = " + ad(standardize(sort(z))));
-//
-//        System.out.println("\nSorting by x");
-//
-//        y = sortAs(y, x);
-//        z = sortAs(z, x);
-//        x = sort(x);
-//
-//        System.out.println("x " + getS(x));
-//        System.out.println("y " + getS(y));
-//        System.out.println("z " + getS(z));
-//
-//        avg = (getS(x) + getS(y)) / 2.0;
-//
-//        System.out.println("Avg S(x) and S(y) = " + avg);
-//
-//        System.out.println("sort(x) " + getS(sort(x)));
-//        System.out.println("sort(y) " + getS(sort(y)));
-//        System.out.println("std(sort(z))) " + getS(standardize(sort(z))));
-//
-//        System.out.println("\nSorting by y");
-//
-//        x = sortAs(x, y);
-//        z = sortAs(z, y);
-//        y = sort(y);
-//
-//        System.out.println("x " + getS(x));
-//        System.out.println("y " + getS(y));
-//        System.out.println("z " + getS(z));
-//
-//        avg = (getS(x) + getS(y)) / 2.0;
-//
-//        System.out.println("Avg S(x) and S(y) = " + avg);
-//
-//        System.out.println("sort(x) " + getS(sort(x)));
-//        System.out.println("sort(y) " + getS(sort(y)));
-//        System.out.println("std(z) " + getS(standardize(z)));
-//        System.out.println("std(sort(z))) " + getS(standardize(sort(z))));
-//
+        double aa = new AndersonDarlingTest(x).getASquared();
 
-
-    }
-
-    private void printDiff(double[] x, double[] y, double[] z) {
-//        for (int i = 0; i < z.length; i++) {
-//            double a = RandomUtil.getInstance().normalCdf(0, 1, z[i]);
-//            double b = RandomUtil.getInstance().normalCdf(0, 1, x[i]);
-//            double c = RandomUtil.getInstance().normalCdf(0, 1, y[i]);
-//            System.out.println(a - 0.5 * (b + c));
-//        }
-//
-        List<Double> n = new ArrayList<Double>();
-
-        int size = z.length;
-
-        for (int k = 1; k <= size; k++) {
-            n.add((2 * k - 1) / (double) size);
-        }
-
-        List<Double> m = new ArrayList<Double>(n);
-        Collections.shuffle(m);
-
-        double sum = 0.0;
-
-        for (int k = 0; k < size; k++) {
-            double _z = Math.log(RandomUtil.getInstance().normalCdf(0, 1, z[k]));
-            double _x = Math.log(RandomUtil.getInstance().normalCdf(0, 1, x[k]));
-            double _y = Math.log(RandomUtil.getInstance().normalCdf(0, 1, y[k]));
-
-            double _z2 = Math.log(RandomUtil.getInstance().normalCdf(0, 1, -z[k]));
-            double _x2 = Math.log(RandomUtil.getInstance().normalCdf(0, 1, -x[k]));
-            double _y2 = Math.log(RandomUtil.getInstance().normalCdf(0, 1, -y[k]));
-
-            sum += (n.get(k) * _z - m.get(k) * (.5*(_x + _y)));
-            sum += (n.get(size - k - 1) * _z2 - m.get(size - k - 1) * (.5*(_x2 + _y2)));
-        }
-
-        System.out.println("sum = " + sum);
-
-        double sum2 = 0.0;
-
-        for (int k = 0; k < size; k++) {
-            double _z = Math.log(RandomUtil.getInstance().normalCdf(0, 1, Math.sqrt(2) * z[k]));
-            double _x = Math.log(RandomUtil.getInstance().normalCdf(0, 1, x[k]));
-            double _y = Math.log(RandomUtil.getInstance().normalCdf(0, 1, y[k]));
-
-            double _z2 = Math.log(RandomUtil.getInstance().normalCdf(0, 1, -Math.sqrt(2) * z[k]));
-            double _x2 = Math.log(RandomUtil.getInstance().normalCdf(0, 1, -x[k]));
-            double _y2 = Math.log(RandomUtil.getInstance().normalCdf(0, 1, -y[k]));
-
-            sum2 += (n.get(k) * _z - m.get(k) * (.5*(_x + _y)));
-            sum2 += (n.get(size - k - 1) * _z2 - m.get(size - k - 1) * (.5*(_x2 + _y2)));
-        }
-
-        System.out.println("sum2 = " + sum2);
-    }
-
-    private double ad(double[] x) {
-        return -x.length - getS(x);
-    }
-
-    private double[] sortAs(double[] x, double[] z) {
-        x = Arrays.copyOf(x, x.length);
-        z = Arrays.copyOf(z, z.length);
-
-        Map<Double, Double> m = new HashMap<Double, Double>();
-
-        for (int i = 0; i < x.length; i++) {
-            m.put(z[i], x[i]);
-        }
-
-        Arrays.sort(z);
-
-        for (int i = 0; i < x.length; i++) {
-            x[i] = m.get(z[i]);
-        }
-
-        return x;
+        assertEquals(1.93, aa, 0.1);
     }
 
     private double[] sort(double[] z) {
@@ -283,17 +126,6 @@ public final class TestAndersonDarling extends TestCase {
         }
 
         return x;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestAndersonDarling.class);
     }
 }
 

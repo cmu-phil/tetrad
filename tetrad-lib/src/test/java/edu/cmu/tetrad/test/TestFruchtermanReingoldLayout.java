@@ -25,25 +25,18 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.FruchtermanReingoldLayout;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.GraphUtils;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the
- * Graph interface.
+ * Tests to make sure the Fruchterman Reingold layout will run.
  *
  * @author Joseph Ramsey
  */
-public final class TestFruchtermanReingoldLayout extends TestCase {
+public final class TestFruchtermanReingoldLayout {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestFruchtermanReingoldLayout(String name) {
-        super(name);
-    }
-
+    @Test
     public void testLayout() {
         //        Dag dag = DataGraphUtils.createRandomDag(40, 0, 80, 6, 6, 6, true);
 
@@ -69,15 +62,18 @@ public final class TestFruchtermanReingoldLayout extends TestCase {
         dag.addDirectedEdge(x2, x3);
         dag.addDirectedEdge(x4, x5);
         dag.addDirectedEdge(x5, x6);
-        //        dag.addDirectedEdge(x6, x7);
+
+        Dag dag2 = new Dag(dag);
 
         GraphUtils.circleLayout(dag, 200, 200, 150);
 
-        System.out.println(dag);
         FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(dag);
         layout.doLayout();
+
+        assertEquals(dag, dag2);
     }
 
+    @Test
     public void testLayout2() {
         Dag dag = new Dag();
 
@@ -92,20 +88,12 @@ public final class TestFruchtermanReingoldLayout extends TestCase {
 
         dag.addDirectedEdge(x1, x2);
 
-        System.out.println(dag);
+        Dag dag2 = new Dag(dag);
+
         FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(dag);
         layout.doLayout();
-    }
 
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestFruchtermanReingoldLayout.class);
+        assertEquals(dag, dag2);
     }
 }
 

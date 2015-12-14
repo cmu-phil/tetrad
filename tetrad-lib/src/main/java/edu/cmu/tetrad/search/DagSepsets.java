@@ -34,7 +34,8 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class DagSepsets implements SepsetProducer {
-    EdgeListGraphSingleConnections dag;
+    private EdgeListGraphSingleConnections dag;
+    private boolean verbose = false;
 
     public DagSepsets(Graph dag) {
         this.dag = new EdgeListGraphSingleConnections(dag);
@@ -71,6 +72,15 @@ public class DagSepsets implements SepsetProducer {
     @Override
     public List<Node> getVariables() {
         return dag.getNodes();
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

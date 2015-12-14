@@ -24,12 +24,17 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import junit.framework.Assert;
+import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the
@@ -37,15 +42,9 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class TestGraphUtils extends TestCase {
+public final class TestGraphUtils {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestGraphUtils(String name) {
-        super(name);
-    }
-
+    @Test
     public void testCreateRandomDag() {
         //        while (true) {
         List<Node> nodes = new ArrayList<Node>();
@@ -60,6 +59,7 @@ public final class TestGraphUtils extends TestCase {
         //        }
     }
 
+    @Test
     public void testDirectedPaths() {
         List<Node> nodes = new ArrayList<Node>();
 
@@ -88,6 +88,7 @@ public final class TestGraphUtils extends TestCase {
         }
     }
 
+    @Test
     public void testTreks() {
         List<Node> nodes = new ArrayList<Node>();
 
@@ -137,6 +138,7 @@ public final class TestGraphUtils extends TestCase {
         }
     }
 
+    @Test
     public void testGraphToDot() {
         long seed = 28583848283L;
         RandomUtil.getInstance().setSeed(seed);
@@ -156,6 +158,7 @@ public final class TestGraphUtils extends TestCase {
 
     }
 
+    @Test
     public void testTwoCycleErrors() {
         Node x1 = new GraphNode("X1");
         Node x2 = new GraphNode("X2");
@@ -281,16 +284,81 @@ public final class TestGraphUtils extends TestCase {
         System.out.println(graph);
     }
 
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
+    @Test
+    public void testDsep() {
+        Node a = new ContinuousVariable("A");
+        Node b = new ContinuousVariable("B");
+        Node x = new ContinuousVariable("X");
+        Node y = new ContinuousVariable("Y");
 
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestGraphUtils.class);
+        Graph graph = new EdgeListGraph();
+
+        graph.addNode(a);
+        graph.addNode(b);
+        graph.addNode(x);
+        graph.addNode(y);
+
+        graph.addDirectedEdge(a, x);
+        graph.addDirectedEdge(b, y);
+        graph.addDirectedEdge(x, y);
+        graph.addDirectedEdge(y, x);
+
+        assertTrue(graph.isAncestorOf(a, a));
+        assertTrue(graph.isAncestorOf(b, b));
+        assertTrue(graph.isAncestorOf(x, x));
+        assertTrue(graph.isAncestorOf(y, y));
+
+        assertTrue(graph.isAncestorOf(a, x));
+        assertTrue(!graph.isAncestorOf(x, a));
+        assertTrue(graph.isAncestorOf(a, y));
+        assertTrue(!graph.isAncestorOf(y, a));
+
+        assertTrue(graph.isAncestorOf(a, y));
+        assertTrue(graph.isAncestorOf(b, x));
+
+        assertTrue(!graph.isAncestorOf(a, b));
+        assertTrue(!graph.isAncestorOf(y, a));
+        assertTrue(!graph.isAncestorOf(x, b));
+
+        assertTrue(graph.isDConnectedTo(a, y, new ArrayList<Node>()));
+        assertTrue(graph.isDConnectedTo(b, x, new ArrayList<Node>()));
+
+        assertTrue(graph.isDConnectedTo(a, y, Collections.singletonList(x)));
+        assertTrue(graph.isDConnectedTo(b, x, Collections.singletonList(y)));
+
+        assertTrue(graph.isDConnectedTo(a, y, Collections.singletonList(b)));
+        assertTrue(graph.isDConnectedTo(b, x, Collections.singletonList(a)));
+
+        assertTrue(graph.isDConnectedTo(y, a, Collections.singletonList(b)));
+        assertTrue(graph.isDConnectedTo(x, b, Collections.singletonList(a)));
     }
+
+    @Test
+    public void testDsep2() {
+        Node a = new ContinuousVariable("A");
+        Node b = new ContinuousVariable("B");
+        Node c = new ContinuousVariable("C");
+
+        Graph graph = new EdgeListGraph();
+
+        graph.addNode(a);
+        graph.addNode(b);
+        graph.addNode(c);
+
+        graph.addDirectedEdge(a, b);
+        graph.addDirectedEdge(b, c);
+        graph.addDirectedEdge(c, b);
+
+        assertTrue(graph.isAncestorOf(a, b));
+        assertTrue(graph.isAncestorOf(a, c));
+
+        assertTrue(graph.isDConnectedTo(a, b, Collections.EMPTY_LIST));
+        assertTrue(graph.isDConnectedTo(a, c, Collections.EMPTY_LIST));
+
+        assertTrue(graph.isDConnectedTo(a, c, Collections.singletonList(b)));
+        assertTrue(graph.isDConnectedTo(c, a, Collections.singletonList(b)));
+    }
+
 }
 
 

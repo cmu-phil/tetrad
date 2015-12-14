@@ -205,6 +205,7 @@ public final class Fci implements GraphSearch {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         SepsetProducer sp = new SepsetsPossibleDsep(graph, independenceTest, knowledge, depth, maxPathLength);
+        sp.setVerbose(verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
@@ -221,7 +222,10 @@ public final class Fci implements GraphSearch {
                 if (sepset != null) {
                     graph.removeEdge(x, y);
                     sepsets.set(x, y, sepset);
-                    System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
+
+                    if (verbose) {
+                        System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
+                    }
                 }
             }
 

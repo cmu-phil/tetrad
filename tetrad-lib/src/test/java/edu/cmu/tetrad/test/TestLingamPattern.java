@@ -220,7 +220,7 @@ public class TestLingamPattern extends TestCase {
 
         // Edit the name of the class in the parens to match the name
         // of this class.
-        return new TestSuite(TestPc.class);
+        return new TestSuite(TestLingamPattern.class);
     }
 }
 

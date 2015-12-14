@@ -375,7 +375,7 @@ public class Fas implements IFas {
 
             EDGE:
             for (Node y : adjx) {
-                List<Node> _adjx = new ArrayList<Node>(adjacencies.get(x));
+                List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
                 _adjx.remove(y);
                 List<Node> ppx = possibleParents(x, _adjx, knowledge);
 

@@ -175,7 +175,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
                         }
 
                         double v = d;
-                        v /= sampleSize;
+                        v /= (sampleSize - 1);
 
                         variances[i] = v;
 
@@ -345,7 +345,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         }
 
         double v = d;
-        v /= sampleSize;
+        v /= (sampleSize - 1);
         return v;
     }
 

@@ -26,13 +26,14 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -81,7 +82,7 @@ public class TestPc {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A-->B,C-->B,A-->D,C-->D",
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D", /*"A---B,B-->C,A-->D,C-->D", */
                 knowledge);
     }
 
@@ -97,21 +98,10 @@ public class TestPc {
                 ".29\t.25\t.34\t.37\t.13\t1.0\n" +
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
-        int length = citesString.length();
         char[] citesChars = citesString.toCharArray();
         DataReader reader = new DataReader();
         ICovarianceMatrix dataSet = reader.parseCovariance(citesChars);
-//        System.out.println(dataSet);
 
-
-//        List<String> nodes = new ArrayList<>();
-//        nodes.add("ABILITY");
-//        nodes.add("GPQ");
-//        nodes.add("QFJ");
-//        nodes.add("PREPROD");
-//        nodes.add("SEX");
-//        nodes.add("PUBS");
-//        nodes.add("CITES");
         IKnowledge knowledge = new Knowledge2();
 
         knowledge.addToTier(1, "ABILITY");
@@ -122,37 +112,25 @@ public class TestPc {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-//        Iterator iterator = knowledge.forbiddenEdgesIterator();
-//
-//        while (iterator.hasNext()) {
-//            System.out.println(iterator.next());
-//        }
-
-
         Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
         pc.setKnowledge(knowledge);
 
         Graph pattern = pc.search();
 
-        System.out.println("Pattern = " + pattern);
-    }
+        Graph _true = new EdgeListGraph(pattern.getNodes());
 
-    @Test
-    public void test7() {
-        List<Node> nodes = new ArrayList<Node>();
+        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("CITES"));
+        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("GPQ"));
+        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("PREPROD"));
+        _true.addDirectedEdge(pattern.getNode("GPQ"), pattern.getNode("QFJ"));
+        _true.addDirectedEdge(pattern.getNode("PREPROD"), pattern.getNode("CITES"));
+        _true.addDirectedEdge(pattern.getNode("PREPROD"), pattern.getNode("PUBS"));
+        _true.addDirectedEdge(pattern.getNode("PUBS"), pattern.getNode("CITES"));
+        _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("CITES"));
+        _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("PUBS"));
+        _true.addDirectedEdge(pattern.getNode("SEX"), pattern.getNode("PUBS"));
 
-        for (int i = 0; i < 5; i++) {
-            nodes.add(new ContinuousVariable("X" + (i + 1)));
-        }
-
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
-                30, 15, 15, false));
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
-        Pc pc = new Pc(new IndTestFisherZ(data, 0.05));
-        Graph pattern = pc.search();
-//        System.out.println(pattern);
+        assertEquals(pattern, _true);
     }
 
     /**
@@ -193,144 +171,38 @@ public class TestPc {
      * Presents the input graph to Fci and checks to make sure the output of Fci is equivalent to the given output
      * graph.
      */
-    private void checkSearch2(String inputGraph, String outputGraph) {
-
+    private void checkWithKnowledge(String inputGraph, String outputGraph,
+                                    IKnowledge knowledge) {
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert(inputGraph);
 
-        SemPm semPm = new SemPm(graph);
-        SemIm semIM = new SemIm(semPm);
-        DataSet dataSet = semIM.simulateData(1000, false);
+        // Set up search.
+        IndependenceTest independence = new IndTestDSep(graph);
+        Pc pc = new Pc(independence);
 
         // Set up search.
-//        IndependenceTest independence = new IndTestDSep(graph);
-        IndependenceTest independence = new IndTestFisherZ(dataSet, 0.05);
-//        IndependenceTest independence = new IndTestFisherZBootstrap(dataSet, 0.001, 15, 1000);
-
-        GraphSearch pcSearch = new Pc(independence);
-//        GraphSearch pcSearch = new Npc(independence, knowledge);
+//        IndependenceTest independence = new IndTestGraph(graph);
+        pc.setVerbose(true);
+        pc.setKnowledge(knowledge);
 
         // Run search
-        Graph resultGraph = pcSearch.search();
+        Graph resultGraph = pc.search();
 
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);
-
-        // PrintUtil out problem and graphs.
-//        System.out.println("\nInput graph:");
-//        System.out.println(graph);
-//        System.out.println("\nResult graph:");
-//        System.out.println(resultGraph);
-//        System.out.println("\nTrue graph:");
-//        System.out.println(trueGraph);
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));
     }
 
-    /**
-     * Presents the input graph to Fci and checks to make sure the output of Fci is equivalent to the given output
-     * graph.
-     */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
-
-        // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
-        SemPm semPm = new SemPm(graph);
-        SemIm semIM = new SemIm(semPm);
-        DataSet dataSet = semIM.simulateData(1000, false);
-
-        // Set up search.
-//        IndependenceTest independence = new IndTestGraph(graph);
-        IndependenceTest independence = new IndTestFisherZ(dataSet, 0.001);
-        Pc pcSearch = new Pc(independence);
-        pcSearch.setKnowledge(knowledge);
-
-        // Run search
-        Graph resultGraph = pcSearch.search();
-
-        // Build comparison graph.
-//        Graph trueGraph = GraphConverter.convert(outputGraph);
-        GraphConverter.convert(outputGraph);
-
-        // PrintUtil out problem and graphs.
-//        System.out.println("\nKnowledge:");
-//        System.out.println(knowledge);
-//        System.out.println("\nInput graph:");
-//        System.out.println(graph);
-//        System.out.println("\nResult graph:");
-//        System.out.println(resultGraph);
-//        System.out.println("\nTrue graph:");
-//        System.out.println(trueGraph);
-
-        // Do test.
-//        assertTrue(resultGraph.equals(trueGraph));
-    }
-
-    @Ignore
-    public void test5() {
-        List<Node> nodes = new ArrayList<Node>();
-
-        for (int i = 0; i < 20; i++) {
-            nodes.add(new ContinuousVariable("X" + (i + 1)));
-        }
-
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 20,
-                3, 2, 2, false));
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(1000, false);
-        IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
-
-//        Pc pc = new Pc(test);
-//        pc.search();
-
-        allAtDepth(test, 3);
-    }
-
-    private void allAtDepth(IndependenceTest test, int depth) {
-//        System.out.println("depth = " + depth);
-        List<Double> pValues = new ArrayList<Double>();
-
-        List<Node> nodes = new LinkedList<Node>(test.getVariables());
-
-        for (int d = 0; d <= depth; d++) {
-            for (Node x : nodes) {
-
-//            System.out.println("Adjacent nodes for " + x + " = " + b);
-//            System.out.println("Depth = " + depth);
-
-                for (Node y : nodes) {
-                    if (x == y) continue;
-
-                    ChoiceGenerator cg = new ChoiceGenerator(nodes.size(), d);
-                    int[] choice;
-
-                    while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, nodes);
-
-                        if (condSet.contains(x) || condSet.contains(y)) continue;
-
-                        test.isIndependent(x, y, condSet);
-
-                        pValues.add(test.getPValue());
-
-//                        System.out.println("FDR cutoff = " + StatUtils.fdrCutoff(test.getAlpha(), pValues, false));
-                    }
-                }
-            }
-        }
-    }
-
     @Test
     public void testPcStable2() {
+        RandomUtil.getInstance().setSeed(1450030184196L);
         List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
-
 
         Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false);
         SemPm pm = new SemPm(graph);

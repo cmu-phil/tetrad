@@ -37,7 +37,7 @@ public class DoubleDataBox implements DataBox {
      * Constructs an 2D double array consisting entirely of missing values
      * (Double.NaN).
      */
-    private DoubleDataBox(int rows, int cols) {
+    public DoubleDataBox(int rows, int cols) {
         this.data = new double[rows][cols];
 
         for (int i = 0; i < rows; i++) {

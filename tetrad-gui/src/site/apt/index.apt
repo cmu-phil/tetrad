@@ -6,7 +6,7 @@ Programmer's site for Tetrad.
 
     As of 10/27/2015, this is a new GitHub project, although the code for it has been under development for some 15 years in the Department of Philosophy at Carnegie Mellon University. As a result, there is some old code. We will try to bring the old code up to date as time allows, although if others want to help with this, we would be grateful.
 
-    The point of this project is several-fold
+    The node of this project is several-fold
 
  (a) It makes available causal search algorithms that have been under development since the 1990's, with some more recent contributions.
 

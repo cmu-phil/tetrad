@@ -37,6 +37,7 @@ public class SepsetsAdjacents implements SepsetProducer {
     private final SepsetMap extraSepsets;
     private int depth = 3;
     private double p = Double.NaN;
+    private boolean verbose = false;
 
     public SepsetsAdjacents(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -141,6 +142,15 @@ public class SepsetsAdjacents implements SepsetProducer {
 
     private IndependenceTest getIndependenceTest() {
         return independenceTest;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 
