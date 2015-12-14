@@ -24,14 +24,14 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.calculator.expression.Context;
 import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
-import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -39,15 +39,9 @@ import java.util.regex.Matcher;
  *
  * @author Joseph Ramsey
  */
-public class TestExpressionParser extends TestCase {
+public class TestExpressionParser {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestExpressionParser(String name) {
-        super(name);
-    }
-
+    @Test
     public void test1() {
         final Map<String, Double> values = new HashMap<String, Double>();
 
@@ -157,13 +151,13 @@ public class TestExpressionParser extends TestCase {
         try {
             for (String formula : formulasToEvaluations.keySet()) {
                 Expression expression = parser.parseExpression(formula);
-                System.out.println(expression);
+//                System.out.println(expression);
 
                 double value = expression.evaluate(context);
 
                 assertEquals(formulasToEvaluations.get(formula), value, 0.01);
 
-                System.out.println(value);
+//                System.out.println(value);
 
             }
         } catch (ParseException e) {
@@ -223,7 +217,7 @@ public class TestExpressionParser extends TestCase {
 
         try {
             for (String formula : formulas) {
-                System.out.println(formula);
+//                System.out.println(formula);
 
                 Expression expression = parser.parseExpression(formula);
                 System.out.println(expression);
@@ -232,7 +226,7 @@ public class TestExpressionParser extends TestCase {
 
 //                assertEquals(formulas.get(formula), value, 0.01);
 
-                System.out.println(value);
+//                System.out.println(value);
 
             }
         } catch (ParseException e) {
@@ -240,6 +234,7 @@ public class TestExpressionParser extends TestCase {
         }
     }
 
+    @Test
     public void test3() {
 
         // Need a regex that will match all numbers (and only numbers).
@@ -342,6 +337,7 @@ public class TestExpressionParser extends TestCase {
     }
 
     // Formulas that should and should not fail.
+    @Test
     public void test4() {
         Map<String, Integer> formulasToOffsets = new LinkedHashMap<String, Integer>();
 
@@ -387,6 +383,7 @@ public class TestExpressionParser extends TestCase {
     }
 
     // Test distribution means.
+    @Test
     public void test5() {
         final Map<String, Double> values = new HashMap<String, Double>();
 
@@ -430,24 +427,6 @@ public class TestExpressionParser extends TestCase {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-    }
-
-    public void test6() {
-        try {
-            System.out.println(RandomUtil.getInstance().nextNormal(5, -1));
-        } catch (IllegalArgumentException e) {
-        }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestExpressionParser.class);
     }
 }
 

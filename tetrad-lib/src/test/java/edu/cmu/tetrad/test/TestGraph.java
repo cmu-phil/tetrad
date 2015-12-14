@@ -52,10 +52,6 @@ public final class TestGraph extends TestCase {
         checkGraph(new EdgeListGraph());
     }
 
-    public void testEdgeListGraph() {
-        checkGraph(new EdgeListGraph());
-    }
-
     private void checkGraph(Graph graph) {
         checkAddRemoveNodes(graph);
         checkCopy(graph);
