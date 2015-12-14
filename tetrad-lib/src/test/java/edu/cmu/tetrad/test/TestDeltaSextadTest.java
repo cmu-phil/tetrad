@@ -24,14 +24,14 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.DeltaSextadTest;
+import edu.cmu.tetrad.search.IDeltaSextadTest;
+import edu.cmu.tetrad.search.Sextad;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,22 +39,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Tests the BooleanFunction class.
  *
  * @author Joseph Ramsey
  */
-public class TestDeltaSextadTest extends TestCase {
+public class TestDeltaSextadTest {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestDeltaSextadTest(String name) {
-        super(name);
-    }
 
 //    Bollen and Ting, Confirmatory Tetrad Analysis, p. 164 Sympathy and Anger.
 
+    @Test
     public void testBollenExample1() {
         SemIm sem = getSem1();
         DataSet data = sem.simulateData(3000, false);
@@ -95,7 +92,7 @@ public class TestDeltaSextadTest extends TestCase {
 
         IDeltaSextadTest test = new DeltaSextadTest(data);
 
-        int numSextads = 8;
+        int numSextads = 3;
         double alpha = 0.001;
 
         ChoiceGenerator gen = new ChoiceGenerator(sextads.size(), numSextads);
@@ -110,26 +107,24 @@ public class TestDeltaSextadTest extends TestCase {
 
             double p = test.getPValue(_sextads);
 
-//            if (p > alpha) {
-//                for (int i = 0; i < numSextads; i++) {
-//                    System.out.print((choice[i] + 1 + " "));
-//                }
-//                System.out.println(" " + p);
-//            }
+
+
+            if (p > alpha) {
+                for (int i = 0; i < numSextads; i++) {
+                    System.out.print((choice[i] + 1 + " "));
+                }
+                System.out.println(" " + p);
+            }
         }
 
     }
 
+    @Test
     public void testBollenExampleb() {
-        SemIm sem = getSem2();
-        DataSet data = null; // = sem.simulateData(3000, false);
+        DataSet data = null;
 
         try {
             String name = "src/test/resources/dataLG.txt";
-
-//            PrintWriter out = new PrintWriter(new File(dir, name));
-//            DataWriter.writeRectangularData(data, out, '\t');
-
             DataReader reader = new DataReader();
             data = reader.parseTabular(new File(name));
         } catch (IOException e) {
@@ -156,38 +151,21 @@ public class TestDeltaSextadTest extends TestCase {
         Sextad t9 = new Sextad(m1, m4, m6, m2, m3, m5);
         Sextad t10 = new Sextad(m1, m5, m6, m2, m3, m4);
 
-//        List<Sextad> sextads = new ArrayList<Sextad>();
-//
-//        sextads.add(t1a);
-//        sextads.add(t2);
-//        sextads.add(t3);
-//        sextads.add(t4);
-//        sextads.add(t5);
-//        sextads.add(t6);
-//        sextads.add(t7);
-//        sextads.add(t8);
-//        sextads.add(t9);
-//        sextads.add(t10);
-//
         IDeltaSextadTest test = new DeltaSextadTest(data);
-//
-//        int numSextads = 10;
-//
-//        Sextad[] _sextads = new Sextad[numSextads];
-//
-//        for (int i = 0; i < numSextads; i++) {
-//            _sextads[i] = sextads.get(i);
-//        }
 
-//        Sextad[] _sextads = {t2, t5, t10, t3, t6};
-        Sextad[] _sextads = {t1, t2, t3, t4, t5, t6, t7, t8, t9, t10};
-//        Sextad[] _sextads = {t10};
-
+        Sextad[] _sextads = {t2, t5, t10, t3, t6};
         double p = test.getPValue(_sextads);
+        assertEquals(0.80, p, 0.01);
 
-//        System.out.println(" " + p);
+        _sextads = new Sextad[] {t10};
+        p = test.getPValue(_sextads);
+        assertEquals(0.90, p, 0.01);
+
+        // This should throw an exception but doesn't.
+//        Sextad[] _sextads = {t1, t2, t3, t4, t5, t6, t7, t8, t9, t10};
     }
 
+    @Test
     public void test2() {
 
         int c = 2;
@@ -244,11 +222,8 @@ public class TestDeltaSextadTest extends TestCase {
             }
         }
 
-//        System.out.println(g);
-
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm);
-//        RandomUtil.getInstance().setSeed(4737572747L);
         DataSet data = im.simulateData(1000, false);
 
         List<Integer> indices = new ArrayList<Integer>();
@@ -274,25 +249,7 @@ public class TestDeltaSextadTest extends TestCase {
         double a = test.getPValue(new Sextad(x1, x2, x3, x4, x5, x6));
         double b = test.getPValue(new Sextad(x2, x3, x1, x5, x4, x6));
 
-//        System.out.println(a);
-//        System.out.println(b);
-
         assertEquals(a, b, 1e-7);
-
-        FindTwoFactorClusters ftfc = new FindTwoFactorClusters(data, TestType.TETRAD_DELTA, 0.01);
-        Graph graph = ftfc.search();
-//        System.out.println(graph);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDeltaSextadTest.class);
     }
 
     private SemIm getSem1() {
@@ -318,40 +275,6 @@ public class TestDeltaSextadTest extends TestCase {
             graph.addNode(measures.get(i));
             graph.addDirectedEdge(l1, measures.get(i));
             graph.addDirectedEdge(l2, measures.get(i));
-        }
-
-        SemPm pm = new SemPm(graph);
-
-        SemImInitializationParams params = new SemImInitializationParams();
-//        params.setCoefRange(0.3, 0.8);
-
-        SemIm im = new SemIm(pm, params);
-        return im;
-    }
-
-    private SemIm getSem2() {
-        Graph graph = new EdgeListGraph();
-
-        Node l1 = new GraphNode("l1");
-//        Node l2 = new GraphNode("l2");
-
-        l1.setNodeType(NodeType.LATENT);
-//        l2.setNodeType(NodeType.LATENT);
-
-        List<Node> measures = new ArrayList<Node>();
-        int numMeasures = 6;
-
-        for (int i = 0; i < numMeasures; i++) {
-            measures.add(new GraphNode("X" + (i + 1)));
-        }
-
-        graph.addNode(l1);
-//        graph.addNode(l2);
-
-        for (int i = 0; i < numMeasures; i++) {
-            graph.addNode(measures.get(i));
-            graph.addDirectedEdge(l1, measures.get(i));
-//            graph.addDirectedEdge(l2, measures.get(i));
         }
 
         SemPm pm = new SemPm(graph);
