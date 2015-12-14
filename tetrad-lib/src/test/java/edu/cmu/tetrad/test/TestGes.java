@@ -64,7 +64,7 @@ public class TestGes {
      */
     @org.junit.Test
     public void testSearch2() {
-        RandomUtil.getInstance().setSeed(new Date().getTime());
+        RandomUtil.getInstance().setSeed(4294832L);
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
