@@ -268,7 +268,7 @@ public final class TestNumberObjectDataSet extends TestCase {
 
         // Edit the name of the class in the parens to match the name
         // of this class.
-        return new TestSuite(TestColtDataSet.class);
+        return new TestSuite(TestNumberObjectDataSet.class);
     }
 }
 

@@ -27,14 +27,14 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public final class TestCellTable extends TestCase {
+import static org.junit.Assert.assertEquals;
+
+public final class TestCellTable {
     private CellTable table;
     private final int[] dims = new int[]{2, 2, 2, 2};
 
@@ -290,20 +290,11 @@ public final class TestCellTable extends TestCase {
             {0, 0, 1, 0}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0, 1, 0, 1},
             {0, 1, 0, 1}, {0, 0, 0, 1}};
 
-    /**
-     * Change the name of this constructor to match the name of the test class.
-     */
-    public TestCellTable(String name) {
-        super(name);
-    }
-
     public final void setUp() {
 
         this.table = new CellTable(dims);
 
 //        // Add data to table.
-//        this.table.addToTable(data, CellTable.ROW_MAJOR);
-
         List<Node> variables = new LinkedList<Node>();
         variables.add(new DiscreteVariable("X1", 2));
         variables.add(new DiscreteVariable("X2", 2));
@@ -323,7 +314,9 @@ public final class TestCellTable extends TestCase {
         this.table.addToTable(dataSet, indices);
     }
 
+    @Test
     public final void testCount() {
+        setUp();
 
         // Pick 8 random cells, count those cells, test the counts in
         // the cell count.
@@ -352,7 +345,9 @@ public final class TestCellTable extends TestCase {
         }
     }
 
+    @Test
     public final void testMargins() {
+        setUp();
 
         // Test 15 margin calculations.
         for (int m = 0; m < 15; m++) {
@@ -422,17 +417,6 @@ public final class TestCellTable extends TestCase {
         }
 
         return cell;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestCellTable.class);
     }
 }
 

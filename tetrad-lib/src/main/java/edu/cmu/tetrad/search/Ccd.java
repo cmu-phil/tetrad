@@ -208,11 +208,11 @@ public final class Ccd implements GraphSearch {
 
         List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
 
-        Collections.sort(colliders, new Comparator<Triple>() {
-            public int compare(Triple o1, Triple o2) {
-                return -Double.compare(collidersPs.get(o1), collidersPs.get(o2));
-            }
-        });
+//        Collections.sort(colliders, new Comparator<Triple>() {
+//            public int compare(Triple o1, Triple o2) {
+//                return -Double.compare(collidersPs.get(o1), collidersPs.get(o2));
+//            }
+//        });
 
         for (Triple collider : colliders) {
             Node a = collider.getX();
@@ -755,7 +755,7 @@ public final class Ccd implements GraphSearch {
             List<Node> adj2 = graph.getAdjacentNodes(c);
 //            adj1.removeAll(adj2);
 
-            if (!adj1.equals(adj2)) return false;
+            if (!adj1.isEmpty() && !adj1.equals(adj2)) return false;
 
             graph.removeEdge(b, c);
             graph.addDirectedEdge(b, c);

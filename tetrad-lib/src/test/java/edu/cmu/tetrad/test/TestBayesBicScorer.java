@@ -30,25 +30,17 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphConverter;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the BayesIm.
- *
  * @author Joseph Ramsey
  */
-public final class TestBayesBicScorer extends TestCase {
+public final class TestBayesBicScorer  {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestBayesBicScorer(String name) {
-        super(name);
-    }
-
-    public static void testPValue() {
+    @Test
+    public void testPValue() {
         RandomUtil.getInstance().setSeed(492834924L);
 
         Graph graph1 = GraphConverter.convert("X1,X2-->X3,X4,X5-->X6,X7,X8");
@@ -64,17 +56,6 @@ public final class TestBayesBicScorer extends TestCase {
         BayesProperties scorer = new BayesProperties(dataSet2Discrete, graph1);
         double likelihoodRatioP = scorer.getLikelihoodRatioP();
         assertEquals(1.0, likelihoodRatioP, 0.001);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestBayesBicScorer.class);
     }
 }
 

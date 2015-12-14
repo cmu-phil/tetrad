@@ -29,29 +29,19 @@ import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 /**
- * Tests the BooleanFunction class.
- *
  * @author Joseph Ramsey
  */
-public class TestBpc extends TestCase {
+public class TestBpc {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestBpc(String name) {
-        super(name);
-    }
-
+    @Test
     public void test1() {
         RandomUtil.getInstance().setSeed(385992L);
         Graph graph = DataGraphUtils.randomSingleFactorModel(3, 3, 4, 0, 0, 0);
 
-        System.out.println(graph);
+//        System.out.println(graph);
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -59,22 +49,12 @@ public class TestBpc extends TestCase {
 
         BuildPureClusters bpc = new BuildPureClusters(data, 0.05, TestType.TETRAD_WISHART,
                 TestType.TETRAD_BASED);
+        bpc.setVerbose(false);
 
         Graph latentStructure = bpc.search();
 
-        System.out.println(latentStructure);
+//        System.out.println(latentStructure);
 
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestBpc.class);
     }
 }
 

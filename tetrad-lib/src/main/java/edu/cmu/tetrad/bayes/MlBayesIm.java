@@ -73,7 +73,7 @@ import static java.lang.Math.*;
  */
 public final class MlBayesIm implements BayesIm {
     static final long serialVersionUID = 23L;
-    private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
+    private static final double ALLOWABLE_DIFFERENCE = 1.0e-4;
 
     /**
      * Inidicates that new rows in this BayesIm should be initialized as

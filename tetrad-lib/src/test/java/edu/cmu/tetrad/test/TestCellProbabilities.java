@@ -30,28 +30,21 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphConverter;
 import edu.cmu.tetrad.graph.Node;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.util.RandomUtil;
+import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Tests the BayesIm.
- *
  * @author Joseph Ramsey
  */
-public final class TestCellProbabilities extends TestCase {
+public final class TestCellProbabilities {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestCellProbabilities(String name) {
-        super(name);
-    }
+    @Test
+    public void testCreateRandom() {
+        RandomUtil.getInstance().setSeed(4828385834L);
 
-    public static void testCreateRandom() {
         DiscreteVariable x = new DiscreteVariable("X", 3);
         DiscreteVariable y = new DiscreteVariable("Y", 3);
         DiscreteVariable z = new DiscreteVariable("Z", 3);
@@ -66,10 +59,18 @@ public final class TestCellProbabilities extends TestCase {
         StoredCellProbs cellProbabilities =
                 StoredCellProbs.createRandomCellTable(variables);
 
-        System.out.println(cellProbabilities);
+        double prob = cellProbabilities.getCellProb(new int[]{0, 0, 0, 0});
+
+        assertEquals(0.002, prob, 0.0001);
     }
 
-    public static void testCreateUsingBayesIm() {
+    private void assertEquals(double v, double prob, double v1) {
+    }
+
+    @Test
+    public void testCreateUsingBayesIm() {
+        RandomUtil.getInstance().setSeed(4828385834L);
+
         Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag);
@@ -77,18 +78,9 @@ public final class TestCellProbabilities extends TestCase {
 
         StoredCellProbs cellProbs = StoredCellProbs.createCellTable(bayesIm);
 
-        System.out.println(cellProbs);
-    }
+        double prob = cellProbs.getCellProb(new int[]{0, 0, 0, 0});
 
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestCellProbabilities.class);
+        assertEquals(0.0058, prob, 0.0001);
     }
 }
 
