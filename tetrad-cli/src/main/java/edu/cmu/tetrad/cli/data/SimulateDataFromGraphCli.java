@@ -103,8 +103,7 @@ public class SimulateDataFromGraphCli {
                 Files.createDirectory(dirOut);
             }
 
-            Graph graph = GraphFactory.loadGraph(graphFile);
-
+            Graph graph = GraphFactory.loadGraphAsContinuousVariables(graphFile);
             DataSet dataSet = DataSetFactory.buildSemSimulateDataAcyclic(graph, numOfCases);
             DataSetIO.write(dataSet, delimiter, Paths.get(dirOut.toString(), fileName + ".txt"));
         } catch (IOException exception) {
