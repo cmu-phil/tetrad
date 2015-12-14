@@ -22,6 +22,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,10 @@ public class GraphFactory {
         }
 
         return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numofVars * edgesPerNode), 30, 15, 15, false);
+    }
+
+    public static Graph loadGraph(Path graphFile) {
+        return GraphUtils.loadGraphTxt(graphFile.toFile());
     }
 
 }
