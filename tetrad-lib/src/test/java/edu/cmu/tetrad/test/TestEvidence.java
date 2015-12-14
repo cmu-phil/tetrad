@@ -67,9 +67,6 @@ public final class TestEvidence extends TestCase {
 
         Evidence evidence2 = new Evidence(evidence, bayesIm);
 
-        System.out.println("Copied evidence:");
-        System.out.println(evidence2);
-
         assertEquals(evidence2, evidence);
 
         assertEquals(evidence, new Evidence(evidence));

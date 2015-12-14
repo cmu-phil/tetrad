@@ -156,7 +156,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Makes of copy of the given data set. TODO Might consider making the
      * argument a RectangularDataSet instead.
      */
-    private BoxDataSet(BoxDataSet dataSet) {
+    public BoxDataSet(BoxDataSet dataSet) {
         name = dataSet.name;
         variables = new LinkedList<>(dataSet.variables);
         dataBox = dataSet.dataBox.copy();

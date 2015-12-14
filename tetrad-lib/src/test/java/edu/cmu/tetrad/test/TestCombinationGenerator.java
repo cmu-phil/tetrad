@@ -22,29 +22,46 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.CombinationGenerator;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-public class TestCombinationGenerator extends TestCase {
-    public TestCombinationGenerator(String name) {
-        super(name);
-    }
+import static org.junit.Assert.assertEquals;
 
+public class TestCombinationGenerator {
+
+    @Test
     public void test1() {
-        CombinationGenerator.testPrint(new int[]{5, 3});
+        CombinationGenerator gen = new CombinationGenerator(new int[]{5, 3});
+        int count = 0;
+
+        while (gen.next() != null) {
+            count++;
+        }
+
+        assertEquals(15, count);
     }
 
+    @Test
     public void test2() {
-        CombinationGenerator.testPrint(new int[]{2, 1});
+        CombinationGenerator gen = new CombinationGenerator(new int[]{2, 1});
+        int count = 0;
+
+        while (gen.next() != null) {
+            count++;
+        }
+
+        assertEquals(2, count);
     }
 
+    @Test
     public void test3() {
-        CombinationGenerator.testPrint(new int[]{2, 3, 4});
-    }
+        CombinationGenerator gen = new CombinationGenerator(new int[]{2, 3, 4});
+        int count = 0;
 
-    public static Test suite() {
-        return new TestSuite(TestCombinationGenerator.class);
+        while (gen.next() != null) {
+            count++;
+        }
+
+        assertEquals(24, count);
     }
 }
 

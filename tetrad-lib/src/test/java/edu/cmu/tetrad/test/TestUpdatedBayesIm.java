@@ -74,8 +74,6 @@ public final class TestUpdatedBayesIm extends TestCase {
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
-                System.out.println("*** i = " + i + ", j = " + j);
-
                 Evidence evidence1 = updatedIm1.getEvidence();
                 evidence1.getProposition().disallowComplement(i, 0);
                 UpdatedBayesIm updatedIm2 =
