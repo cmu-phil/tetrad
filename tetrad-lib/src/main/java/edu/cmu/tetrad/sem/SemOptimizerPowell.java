@@ -66,7 +66,7 @@ public class SemOptimizerPowell implements SemOptimizer {
         double[] point = null;
 
         for (int count = 0; count < numRestarts + 1; count++) {
-            System.out.println("Trial " + (count + 1));
+//            System.out.println("Trial " + (count + 1));
             SemIm _sem2 = new SemIm(semIm);
 
             List<Parameter> freeParameters = _sem2.getFreeParameters();
@@ -92,7 +92,7 @@ public class SemOptimizerPowell implements SemOptimizer {
             );
 
             double chisq = _sem2.getChiSquare();
-            System.out.println("chisq = " + chisq);
+//            System.out.println("chisq = " + chisq);
 
             if (chisq < min) {
                 min = chisq;

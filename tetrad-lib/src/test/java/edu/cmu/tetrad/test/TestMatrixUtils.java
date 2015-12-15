@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.test;
 
-import cern.colt.list.DoubleArrayList;
-import cern.jet.stat.Descriptive;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
@@ -149,7 +147,7 @@ public class TestMatrixUtils {
 
     @Test
     public void testImpiedCovar() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -164,26 +162,11 @@ public class TestMatrixUtils {
 
         TetradMatrix implied = MatrixUtils.impliedCovar(coef, err);
 
-//        for (int i = 0; i < implied.rows(); i++) {
-//            for (int j = 0; j < implied.columns(); j++) {
-//                if (abs(implied.get(i,j)) < 1e-10) implied.set(i, j, 0);
-//            }
-//        }
-
-        System.out.println(MatrixUtils.toString(implied.toArray()));
-
-        // Why the heck is this not positive definite?
-        System.out.println("Positive definite implied: " + MatrixUtils.isPositiveDefinite(implied));
+        assertTrue(MatrixUtils.isPositiveDefinite(implied));
 
         TetradMatrix corr = MatrixUtils.convertCovToCorr(new TetradMatrix(implied));
 
-        System.out.println(MatrixUtils.toString(corr.toArray()));
-
-        System.out.println("Positive definite data corr: " + MatrixUtils.isPositiveDefinite(corr));
-//
-//        System.out.println(MatrixUtils.toString(err.toArray()));
-//
-//        System.out.println("Positive definite err: " + MatrixUtils.isPositiveDefinite(err));
+        assertTrue(MatrixUtils.isPositiveDefinite(corr));
     }
 }
 

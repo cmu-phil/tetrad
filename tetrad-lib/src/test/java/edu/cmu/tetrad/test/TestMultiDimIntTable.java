@@ -22,20 +22,13 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.MultiDimIntTable;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-public class TestMultiDimIntTable extends TestCase {
+import static org.junit.Assert.assertEquals;
+
+public class TestMultiDimIntTable {
 
     private MultiDimIntTable table;
-
-    /**
-     * Change the name of this constructor to match the name of the test class.
-     */
-    public TestMultiDimIntTable(String name) {
-        super(name);
-    }
 
     public void setUp() {
 
@@ -44,59 +37,51 @@ public class TestMultiDimIntTable extends TestCase {
         table = new MultiDimIntTable(dims);
     }
 
-    public void tearDown() {
-
-        // Do takedown for tests here.
-    }
-
+    @Test
     public void testSize() {
+        setUp();
         assertEquals(table.getNumCells(), 2 * 3 * 4 * 5);
     }
 
+    @Test
     public void testIndexCalculation1() {
-
+        setUp();
         int[] coords = new int[]{0, 0, 1, 0};
         int index = table.getCellIndex(coords);
 
         assertEquals(5, index);
     }
 
+    @Test
     public void testIndexCalculation2() {
-
+        setUp();
         int[] coords = new int[]{0, 1, 2, 0};
         int index = table.getCellIndex(coords);
 
         assertEquals(30, index);
     }
 
+    @Test
     public void testCoordinateCalculation() {
-
+        setUp();
         int[] coords = table.getCoordinates(30);
 
         assertEquals(1, coords[1]);
     }
 
+    @Test
     public void testCellIncrement() {
-
+        setUp();
         int[] coords = table.getCoordinates(30);
 
         table.increment(coords, 1);
         assertEquals(1, table.getValue(coords));
     }
 
+    @Test
     public void testNumDimensions() {
+        setUp();
         assertEquals(4, table.getNumDimensions());
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestMultiDimIntTable.class);
     }
 }
 
