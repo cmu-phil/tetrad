@@ -416,7 +416,7 @@ public final class MatrixUtils {
         }
 
         // I - B
-        TetradMatrix m1 = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
+        TetradMatrix m1 = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
 
         // (I - B) ^ -1
         TetradMatrix m3 = m1.inverse();

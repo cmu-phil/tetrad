@@ -36,21 +36,6 @@ public class TestPersistentRandomUtil extends TestCase {
         super(name);
     }
 
-    public void testIntegralSumToOne() {
-        int numBoxes = 100;
-        int[] boxes = new int[numBoxes];
-
-        for (int i = 0; i < 100000000; i++) {
-            int randomint = RandomUtil.getInstance().nextInt(numBoxes);
-            boxes[randomint]++;
-        }
-
-        for (int i = 0; i < numBoxes; i++) {
-            System.out.println("Count for box " + i + " = " + boxes[i]);
-        }
-    }
-
-
     public void testGaussian() {
         int numBoxes = 40;
         double low = -4;
