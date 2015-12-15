@@ -25,19 +25,19 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestTimeSeries;
 import edu.cmu.tetrad.util.TetradMatrix;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the IndTestTimeSeries class.
  *
  * @author Joseph Ramsey
  */
-public class TestIndTestTimeSeries extends TestCase {
+public class TestIndTestTimeSeries {
 
     String[] varNames = {"y1", "y2", "y3", "y4", "y5", "y6"};
 
@@ -1044,12 +1044,8 @@ public class TestIndTestTimeSeries extends TestCase {
 
     private IndTestTimeSeries test;
 
-    public TestIndTestTimeSeries(String name) {
-        super(name);
-    }
-
-    public void setUp() {
-        List<Node> vars = new ArrayList<Node>();
+    private void setUp() {
+        List<Node> vars = new ArrayList<>();
 
         for (String varName : varNames) {
             vars.add(new ContinuousVariable(varName));
@@ -1066,15 +1062,13 @@ public class TestIndTestTimeSeries extends TestCase {
         test = new IndTestTimeSeries(_data, vars);
     }
 
+    @Test
     public void testChiSquareCutoff() {
+        setUp();
         test.setAlpha(0.05);
         assertEquals(3.84, test.chiSquareCutoff(), 0.01);
         test.setAlpha(0.01);
         assertEquals(6.63, test.chiSquareCutoff(), 0.01);
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestIndTestTimeSeries.class);
     }
 }
 

@@ -24,21 +24,22 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Discretizer;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestDSep;
-import edu.cmu.tetrad.search.IndTestLogisticRegression;
 import edu.cmu.tetrad.search.IndTestTimeSeries;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -46,32 +47,26 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class TestIndTestLogisticRegression extends TestCase {
-    private final String[] discreteFiles = new String[]{
-            "src/test/resources/embayes_l1x1x2x3MD.dat",
-            "src/test/resources/determinationtest.dat"};
+public class TestIndTestWaldLR {
 
-    private IndTestTimeSeries test;
-
-    public TestIndTestLogisticRegression(String name) {
-        super(name);
-    }
-
+    @Test
     public void testIsIndependent() {
+        RandomUtil.getInstance().setSeed(1450196687239L);
+
         int numPassed = 0;
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 10; i++) {
             List<Node> nodes = new ArrayList<Node>();
 
-            for (int i1 = 0; i1 < 5; i1++) {
+            for (int i1 = 0; i1 < 10; i1++) {
                 nodes.add(new ContinuousVariable("X" + (i1 + 1)));
             }
 
-            Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
-                    3, 3, 3, false));
+            Graph graph = GraphUtils.randomGraph(nodes, 0, 10,
+                    3, 3, 3, false);
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateDataRecursive(1000, false);
+            DataSet data = im.simulateData(1000, false);
 
             Discretizer discretizer = new Discretizer(data);
             discretizer.setVariablesCopied(true);
@@ -99,7 +94,8 @@ public class TestIndTestLogisticRegression extends TestCase {
                 condGraph.add(graph.getNode(node.getName()));
             }
 
-            IndTestLogisticRegression test = new IndTestLogisticRegression(data, 0.05);
+            // Using the Wald LR test since it's most up to date.
+            IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(data, 0.05, false);
             IndTestDSep dsep = new IndTestDSep(graph);
 
             boolean correct = test.isIndependent(x2, x1, cond) == dsep.isIndependent(x2Graph, x1Graph, condGraph);
@@ -111,17 +107,8 @@ public class TestIndTestLogisticRegression extends TestCase {
             System.out.println(correct);
         }
 
-        System.out.println(numPassed);
-
-        assertTrue(numPassed > 80);
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestIndTestGSquare.class);
-    }
-
-    public void setTest(IndTestTimeSeries test) {
-        this.test = test;
+        // Do not always get all 10.
+        assertEquals(10, numPassed);
     }
 }
 

@@ -25,60 +25,43 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import junit.framework.AssertionFailedError;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Implements some tests of the FDR (False Discovery Rate) test.
  *
  * @author Joseph Ramsey
  */
-@SuppressWarnings({"UnusedDeclaration"})
-public class TestIndependenceFact extends TestCase {
-    public TestIndependenceFact(String name) {
-        super(name);
-    }
+public class TestIndependenceFact {
 
+    @Test
     public void testSimpleCase() {
 
         Node x = new GraphNode("X");
         Node y = new GraphNode("Y");
-
-        Node z = new GraphNode("Z");
         Node w = new GraphNode("W");
-        Node r = new GraphNode("R");
 
         IndependenceFact fact1 = new IndependenceFact(x, y);
         IndependenceFact fact2 = new IndependenceFact(y, x);
-
-        System.out.println(fact1);
-        System.out.println(fact2);
 
         assertEquals(fact1, fact2);
 
         IndependenceFact fact3 = new IndependenceFact(x, w);
 
-        try {
-            assertEquals(fact1, fact3);
-        }
-        catch (AssertionFailedError e) {
-            // fail.
-        }
+        assertNotEquals(fact1, fact3);
 
         List<IndependenceFact> facts = new ArrayList<IndependenceFact>();
 
         facts.add(fact1);
 
         assertTrue(facts.contains(fact2));
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestIndependenceFact.class);
     }
 }
 

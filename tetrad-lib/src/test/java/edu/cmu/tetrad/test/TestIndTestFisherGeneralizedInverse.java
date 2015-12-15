@@ -21,22 +21,34 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.search.IndTestFisherZGeneralizedInverse;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradMatrix;
 import org.junit.Test;
+
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-
 /**
+ * Tests the IndTestTimeSeries class.
+ *
  * @author Joseph Ramsey
  */
-public class TestIndTestFisherZ {
+public class TestIndTestFisherGeneralizedInverse {
 
     @Test
     public void testDirections() {
@@ -75,8 +87,8 @@ public class TestIndTestFisherZ {
         DataSet data1 = im1.simulateData(500, false);
         DataSet data2 = im2.simulateData(500, false);
 
-        IndependenceTest test1 = new IndTestFisherZ(data1, 0.05);
-        IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
+        IndependenceTest test1 = new IndTestFisherZGeneralizedInverse(data1, 0.05);
+        IndependenceTest test2 = new IndTestFisherZGeneralizedInverse(data2, 0.05);
 
         test1.isIndependent(data1.getVariable(x.getName()), data1.getVariable(y.getName()));
         double p1 = test1.getPValue();
@@ -91,7 +103,9 @@ public class TestIndTestFisherZ {
         assertEquals(0, p1, 0.01);
         assertEquals(0, p2, 0.01);
         assertEquals(0.38, p3, 0.01);
-    }
-}
+    }}
+
+
+
 
 
