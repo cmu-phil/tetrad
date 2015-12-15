@@ -47,7 +47,7 @@ public class ExpressionManager {
      */
     private List<ExpressionDescriptor> descriptors;
 
-    private static RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+//    private static RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
 
 
     /**
@@ -976,14 +976,16 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     final ChiSquaredDistribution distribution = new ChiSquaredDistribution(randomGenerator, e1);
                     return distribution.sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
-                    return new ChiSquaredDistribution(e1);
+                    return new ChiSquaredDistribution(randomGenerator, e1);
                 }
             };
         }
@@ -1007,6 +1009,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     final GammaDistribution distribution = new GammaDistribution(randomGenerator, e1, e2);
@@ -1014,6 +1017,7 @@ public class ExpressionManager {
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new GammaDistribution(randomGenerator, e1, e2);
@@ -1040,12 +1044,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new BetaDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new BetaDistribution(randomGenerator, e1, e2);
@@ -1072,12 +1078,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new CauchyDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new CauchyDistribution(randomGenerator, e1, e2);
@@ -1105,12 +1113,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new FDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new FDistribution(randomGenerator, e1, e2);
@@ -1137,12 +1147,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new GumbelDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new GumbelDistribution(randomGenerator, e1, e2);
@@ -1169,12 +1181,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new LaplaceDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new LaplaceDistribution(randomGenerator, e1, e2);
@@ -1201,12 +1215,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new LevyDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new LevyDistribution(randomGenerator, e1, e2);
@@ -1233,12 +1249,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new NakagamiDistribution(randomGenerator, e1, e2, 1.0E-9D).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new NakagamiDistribution(randomGenerator, e1, e2, 1.0E-9D);
@@ -1265,12 +1283,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new ParetoDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new ParetoDistribution(randomGenerator, e1, e2);
@@ -1297,6 +1317,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     double e3 = getExpressions().get(2).evaluate(context);
@@ -1304,6 +1325,7 @@ public class ExpressionManager {
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     double e3 = getExpressions().get(2).evaluate(context);
@@ -1331,12 +1353,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2);
@@ -1363,12 +1387,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2);
@@ -1395,12 +1421,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new WeibullDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new WeibullDistribution(randomGenerator, e1, e2);
@@ -1427,6 +1455,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     double e1 = exp1.evaluate(context);
                     return new PoissonDistribution(randomGenerator, e1, 1.0E-12D, 10000000).sample();
@@ -1437,6 +1466,7 @@ public class ExpressionManager {
                 }
 
                 public IntegerDistribution getIntegerDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     double e1 = exp1.evaluate(context);
                     return new PoissonDistribution(randomGenerator, e1, 1.0E-12D, 10000000);
@@ -1517,6 +1547,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
 
                     double e1 = exp1.evaluate(context);
@@ -1526,6 +1557,7 @@ public class ExpressionManager {
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
 
                     double e1 = exp1.evaluate(context);
@@ -1558,6 +1590,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     Expression exp2 = getExpressions().get(1);
 
@@ -1573,6 +1606,7 @@ public class ExpressionManager {
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     Expression exp2 = getExpressions().get(1);
 
@@ -1610,12 +1644,14 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new NormalDistribution(randomGenerator, e1, e2).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     return new NormalDistribution(randomGenerator, e1, e2);
@@ -1683,6 +1719,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
                     final NormalDistribution distribution = new NormalDistribution(randomGenerator, e1, e2);
@@ -1692,9 +1729,10 @@ public class ExpressionManager {
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
-                    return new NormalDistribution(e1, e2);
+                    return new NormalDistribution(randomGenerator, e1, e2);
                 }
             };
         }
@@ -1835,15 +1873,17 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     double e1 = exp1.evaluate(context);
-                    return new TDistribution(e1).sample();
+                    return new TDistribution(randomGenerator, e1).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     Expression exp1 = getExpressions().get(0);
                     double e1 = exp1.evaluate(context);
-                    return new TDistribution(e1);
+                    return new TDistribution(randomGenerator, e1);
                 }
             };
         }

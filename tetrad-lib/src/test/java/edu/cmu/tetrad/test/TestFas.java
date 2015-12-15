@@ -34,8 +34,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the PC search.
- *
  * @author Joseph Ramsey
  */
 public class TestFas {

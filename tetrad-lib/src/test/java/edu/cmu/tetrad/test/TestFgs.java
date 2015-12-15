@@ -43,8 +43,6 @@ import java.util.*;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the PC search.
- *
  * @author Joseph Ramsey
  */
 public class TestFgs {

@@ -42,8 +42,6 @@ import static org.junit.Assert.assertTrue;
 
 
 /**
- * Tests the FciSearch class.
- *
  * @author Joseph Ramsey
  */
 public class TestFci {
