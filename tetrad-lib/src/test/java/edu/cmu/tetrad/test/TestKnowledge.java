@@ -28,24 +28,23 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
  *
  * @author Joseph Ramsey
  */
-public final class TestKnowledge extends TestCase {
-    public TestKnowledge(String name) {
-        super(name);
-    }
+public final class TestKnowledge {
 
+    @Test
     public final void test1() {
         List<Node> nodes1 = new ArrayList<Node>();
 
@@ -127,6 +126,7 @@ public final class TestKnowledge extends TestCase {
         assertFalse(knowledge.isForbidden("X1.1", "X1.1"));
     }
 
+    @Test
     public final void test2() {
         List<Node> nodes1 = new ArrayList<Node>();
 
@@ -156,6 +156,7 @@ public final class TestKnowledge extends TestCase {
         System.out.println(knowledge);
     }
 
+    @Test
     public final void test3() {
         List<String> vars = new ArrayList<String>();
 
@@ -186,21 +187,6 @@ public final class TestKnowledge extends TestCase {
         long stop = System.currentTimeMillis();
 
         System.out.println((stop - start) + " ms");
-
-
-
-    }
-
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestKnowledge.class);
     }
 }
 

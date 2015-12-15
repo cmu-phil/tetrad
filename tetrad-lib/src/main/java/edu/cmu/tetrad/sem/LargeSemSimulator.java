@@ -134,7 +134,6 @@ public final class LargeSemSimulator {
     }
 
     private void setupModel(int size) {
-        System.out.println("Setup model start");
         this.parents = new int[size][];
         this.coefs = new double[size][];
         this.errorVars = new double[size];
@@ -175,8 +174,6 @@ public final class LargeSemSimulator {
             this.errorVars[i] = errorCovarDist.nextRandom();
             this.means[i] = meanDist.nextRandom();
         }
-
-        System.out.println("Setup model done");
     }
 
     // Tier ordering is the order of the variables.
@@ -184,15 +181,11 @@ public final class LargeSemSimulator {
         int numVars = variableNodes.size();
         setupModel(numVars);
 
-        System.out.println("Tier ordering");
-
         final int[][] _parents = parents;
         final double[][] _coefs = coefs;
 
 //        final double[][] _data = new double[sampleSize][numVars];
         final double[][] _data = new double[numVars][sampleSize];
-
-        System.out.println("Starting simulation task");
 
         // This random number generator is not thread safe, so we make a new one each time.
         RandomGenerator apacheGen = new Well19937a(new Date().getTime());
@@ -217,8 +210,6 @@ public final class LargeSemSimulator {
 
                 if (to - from <= chunk) {
                     for (int row = from; row < to; row++) {
-                        if (row % 100 == 0) out.println("Row " + row);
-
                         for (int col : tierIndices) {
                             double value = generatorLocal.nextGaussian(0, sqrt(errorVars[col]));
 

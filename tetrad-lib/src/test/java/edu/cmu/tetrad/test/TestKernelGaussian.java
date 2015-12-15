@@ -28,38 +28,23 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.kernel.KernelGaussian;
 import edu.cmu.tetrad.util.TetradLogger;
 import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.Arrays;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the KernelGaussian class.
  *
  * @author Robert Tillman
  */
-public class TestKernelGaussian extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestKernelGaussian(String name) {
-        super(name);
-    }
-
-    public void setUp() throws Exception {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-        TetradLogger.getInstance().setLogging(true);
-    }
-
-
-    public void tearDown() {
-        TetradLogger.getInstance().setForceLog(false);
-        TetradLogger.getInstance().removeOutputStream(System.out);
-    }
+public class TestKernelGaussian {
 
     /**
      * Tests the bandwidth setting to the median distance between points in the sample
      */
+    @Test
     public void testMedianBandwidth() {
         Node X = new ContinuousVariable("X");
         DataSet dataset = new ColtDataSet(5, Arrays.asList(X));
@@ -71,11 +56,6 @@ public class TestKernelGaussian extends TestCase {
         KernelGaussian kernel = new KernelGaussian(dataset, X);
         assertTrue(kernel.getBandwidth() == 2);
 
-    }
-
-    public void testEval() {
-        KernelGaussian kernel = new KernelGaussian(2.6851);
-        System.out.println(kernel.eval(10.2381, 11.3825));
     }
 }
 
