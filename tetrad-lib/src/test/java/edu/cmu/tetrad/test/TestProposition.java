@@ -28,28 +28,21 @@ import edu.cmu.tetrad.bayes.Proposition;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the BayesUpdqater
- *
  * @author William Taysom
  */
-public final class TestProposition extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestProposition(String name) {
-        super(name);
-    }
+public final class TestProposition {
 
     /**
      * Richard's 2-variable example worked by hand.
      */
-    public static void testUpdate1() {
+    @Test
+    public void testUpdate1() {
         BayesIm bayesIm = sampleBayesIm2();
 
         Proposition prop1 = Proposition.tautology(bayesIm);
@@ -78,7 +71,7 @@ public final class TestProposition extends TestCase {
         assertTrue(!prop3.equals(prop1));
     }
 
-    private static BayesIm sampleBayesIm2() {
+    private BayesIm sampleBayesIm2() {
         Node a = new GraphNode("a");
         Node b = new GraphNode("b");
         Node c = new GraphNode("c");
@@ -128,17 +121,6 @@ public final class TestProposition extends TestCase {
         bayesIm1.setProbability(2, 5, 0, .7);
         bayesIm1.setProbability(2, 5, 1, .3);
         return bayesIm1;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestProposition.class);
     }
 }
 
