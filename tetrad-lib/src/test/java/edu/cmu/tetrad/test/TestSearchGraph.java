@@ -40,8 +40,6 @@ import static org.junit.Assert.fail;
 
 
 /**
- * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the Graph interface.
- *
  * @author Joseph Ramsey
  */
 public final class TestSearchGraph {
