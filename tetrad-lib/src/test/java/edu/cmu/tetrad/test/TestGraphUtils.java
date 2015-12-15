@@ -37,16 +37,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the
- * Graph interface.
- *
  * @author Joseph Ramsey
  */
 public final class TestGraphUtils {
 
     @Test
     public void testCreateRandomDag() {
-        //        while (true) {
         List<Node> nodes = new ArrayList<Node>();
 
         for (int i = 0; i < 50; i++) {
@@ -55,8 +51,9 @@ public final class TestGraphUtils {
 
         Dag dag = new Dag(GraphUtils.randomGraph(nodes, 0, 50,
                 4, 3, 3, false));
-        System.out.println(dag);
-        //        }
+
+        assertEquals(50, dag.getNumNodes());
+        assertEquals(50, dag.getNumEdges());
     }
 
     @Test
@@ -70,19 +67,15 @@ public final class TestGraphUtils {
         Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
                 3, 3, 3, false));
 
-        System.out.println("Graph = " + graph);
-
         for (int i = 0; i < graph.getNodes().size(); i++) {
             for (int j = 0; j < graph.getNodes().size(); j++) {
                 Node node1 = graph.getNodes().get(i);
                 Node node2 = graph.getNodes().get(j);
 
-                System.out.println("Node1 = " + node1 + " Node2 = " + node2);
-
                 List<List<Node>> directedPaths = GraphUtils.directedPathsFromTo(graph, node1, node2, -1);
 
-                for (int k = 0; k < directedPaths.size(); k++) {
-                    System.out.println("Path " + k + ": " + directedPaths.get(k));
+                for (List<Node> path : directedPaths) {
+                    assertTrue(graph.isAncestorOf(path.get(0), path.get(path.size() - 1)));
                 }
             }
         }
@@ -99,40 +92,29 @@ public final class TestGraphUtils {
         Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 15,
                 3, 3, 3, false));
 
-        System.out.println("Graph = " + graph);
-
         for (int i = 0; i < graph.getNodes().size(); i++) {
             for (int j = 0; j < graph.getNodes().size(); j++) {
                 Node node1 = graph.getNodes().get(i);
                 Node node2 = graph.getNodes().get(j);
 
-                System.out.println("Node1 = " + node1 + " Node2 = " + node2);
-
                 List<List<Node>> treks = GraphUtils.treks(graph, node1, node2, -1);
 
+                TREKS:
                 for (int k = 0; k < treks.size(); k++) {
-                    System.out.print("Trek " + k + ": ");
                     List<Node> trek = treks.get(k);
 
-                    System.out.print(trek.get(0));
+                    Node m0 = trek.get(0);
+                    Node m1 = trek.get(trek.size() - 1);
 
-                    for (int m = 1; m < trek.size(); m++) {
-                        Node n0 = trek.get(m - 1);
-                        Node n1 = trek.get(m);
+                    for (Node n : trek) {
 
-                        Edge edge = graph.getEdge(n0, n1);
-
-                        Endpoint endpoint0 = edge.getProximalEndpoint(n0);
-                        Endpoint endpoint1 = edge.getProximalEndpoint(n1);
-
-                        System.out.print(endpoint0 == Endpoint.ARROW ? "<" : "-");
-                        System.out.print("-");
-                        System.out.print(endpoint1 == Endpoint.ARROW ? ">" : "-");
-
-                        System.out.print(n1);
+                        // Not quite it but good enough for a test.
+                        if (graph.isAncestorOf(n, m0) && graph.isAncestorOf(n, m1)) {
+                            continue TREKS;
+                        }
                     }
 
-                    System.out.println();
+                    fail("Some trek failed.");
                 }
             }
         }
@@ -152,9 +134,10 @@ public final class TestGraphUtils {
         Graph g = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
                 30, 15, 15, false));
 
-        System.out.println(g);
-
-        System.out.println(GraphUtils.graphToDot(g));
+        String x = GraphUtils.graphToDot(g);
+        String[] tokens = x.split("\n");
+        int length = tokens.length;
+        assertEquals(7, length);
 
     }
 
@@ -191,97 +174,9 @@ public final class TestGraphUtils {
 
         GraphUtils.TwoCycleErrors errors = GraphUtils.getTwoCycleErrors(trueGraph, estGraph);
 
-        System.out.println("Correct = " + errors.twoCycCor);
-        System.out.println("FP = " + errors.twoCycFp);
-        System.out.println("FN = " + errors.twoCycFn);
-
         assertEquals(1, errors.twoCycCor);
         assertEquals(2, errors.twoCycFp);
         assertEquals(1, errors.twoCycFn);
-    }
-
-    //    public void rtestMaxPathLength() {
-    //        int numTests = 10;
-    //        int n = 40;
-    //        int k = 80;
-    //
-    //        System.out.println("numTests = " + numTests);
-    //        System.out.println("n = " + n);
-    //        System.out.println("k = " + k);
-    //
-    //        int sum = 0;
-    //        int min = Integer.MAX_VALUE;
-    //        int max = 0;
-    //
-    //        for (int i = 0; i < numTests; i++) {
-    //            Dag dag = DataGraphUtils.createRandomDagC(n, 0, k);
-    //            List tiers = dag.getTiers();
-    //            sum += tiers.size();
-    //            if (tiers.size() < min) {
-    //                min = tiers.size();
-    //            }
-    //            if (tiers.size() > max) {
-    //                max = tiers.size();
-    //            }
-    //        }
-    //
-    //        double ave = sum / (double) numTests;
-    //
-    //        System.out.println("OLD: Min = " + min + ", Max = " + max +
-    //                ", average = " + ave);
-    //
-    //        sum = max = 0;
-    //        min = Integer.MAX_VALUE;
-    //
-    //        for (int i = 0; i < numTests; i++) {
-    //            Dag dag = DataGraphUtils.createRandomDagB(n, 0, k, 0.0, 0.0, 0.0);
-    //            List tiers = dag.getTiers();
-    //            sum += tiers.size();
-    //            if (tiers.size() < min) {
-    //                min = tiers.size();
-    //            }
-    //            if (tiers.size() > max) {
-    //                max = tiers.size();
-    //            }
-    //        }
-    //
-    //        ave = sum / (double) numTests;
-    //
-    //        System.out.println("1: Min = " + min + ", Max = " + max +
-    //                ", average = " + ave);
-    //
-    //        sum = max = 0;
-    //        min = Integer.MAX_VALUE;
-    //        int totK = 0;
-    //
-    //        for (int i = 0; i < numTests; i++) {
-    ////            System.out.print(".");
-    //            Dag dag = DataGraphUtils.createRandomDagC(n, 0, k, 0.0, 0.0, 0.0);
-    //            System.out.println("test " + (i + 1) + ": num edges = " + dag.getNumEdges());
-    //            System.out.flush();
-    //
-    //            List tiers = dag.getTiers();
-    //            sum += tiers.size();
-    //            if (tiers.size() < min) {
-    //                min = tiers.size();
-    //            }
-    //            if (tiers.size() > max) {
-    //                max = tiers.size();
-    //            }
-    //
-    //            totK += dag.getNumEdges();
-    //        }
-    //
-    //        ave = sum / (double) numTests;
-    //
-    //        System.out.println("\n2: Min = " + min + ", Max = " + max +
-    //                ", average = " + ave + ", avenumedges = " + totK / (double) numTests);
-    //    }
-
-    public void testScaleFree() {
-        Graph graph = GraphUtils.scaleFreeGraph(1000, 0, 0.2, 0.4, 3, 3);
-
-        System.out.println(graph);
     }
 
     @Test

@@ -62,7 +62,7 @@ public class TestGes {
      * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
      * X2 --> X4, X3 --> X4.
      */
-    @org.junit.Test
+    @Test
     public void testSearch2() {
         RandomUtil.getInstance().setSeed(4294832L);
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
@@ -72,7 +72,7 @@ public class TestGes {
     /**
      * This will fail if the orientation loop doesn't continue after the first orientation.
      */
-    @org.junit.Test
+    @Test
     public void testSearch3() {
         RandomUtil.getInstance().setSeed(1450031582986L);
         checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
@@ -82,7 +82,7 @@ public class TestGes {
     /**
      * This will fail if the orientation loop doesn't continue after the first orientation.
      */
-    @org.junit.Test
+    @Test
     public void testSearch4() {
         IKnowledge knowledge = new Knowledge2();
         knowledge.setForbidden("B", "D");
@@ -232,16 +232,6 @@ public class TestGes {
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));
-    }
-
-    public void testPowerSet() {
-        List<Node> nodes = new ArrayList<Node>();
-
-        nodes.add(new GraphNode("X"));
-        nodes.add(new GraphNode("Y"));
-        nodes.add(new GraphNode("Z"));
-
-        System.out.println(powerSet(nodes));
     }
 
     private static List<Set<Node>> powerSet(List<Node> nodes) {
