@@ -25,25 +25,19 @@ import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the BayesUpdqater
  *
  * @author William Taysom
  */
-public final class TestUpdatedBayesIm extends TestCase {
+public final class TestUpdatedBayesIm {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestUpdatedBayesIm(String name) {
-        super(name);
-    }
-
-    public static void testCompound() {
+    @Test
+    public void testCompound() {
         Node x0Node = new GraphNode("X0");
         Node x1Node = new GraphNode("X1");
         Node x2Node = new GraphNode("X2");
@@ -63,8 +57,6 @@ public final class TestUpdatedBayesIm extends TestCase {
         graph.addDirectedEdge(x2Node, x3Node);
         graph.addDirectedEdge(x4Node, x0Node);
         graph.addDirectedEdge(x4Node, x2Node);
-
-        System.out.println(graph);
 
         BayesPm bayesPm = new BayesPm(graph);
         MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
@@ -101,17 +93,6 @@ public final class TestUpdatedBayesIm extends TestCase {
                 assertEquals(marginal1, marginal2, 1.0e-2);
             }
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestUpdatedBayesIm.class);
     }
 }
 
