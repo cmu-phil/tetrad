@@ -48,6 +48,8 @@ public class TestSemUpdater extends TestCase {
     }
 
     public void testUpdate() {
+        // TODO
+
         Graph graph = constructGraph1();
 
         SemPm semPm = new SemPm(graph);

@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionCovariance;
@@ -32,10 +34,6 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
-import java.io.CharArrayWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 

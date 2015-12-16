@@ -30,29 +30,23 @@ import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 
 /**
- * Tests Sem.
- *
  * @author Joseph Ramsey
  */
-public class TestStandardizedSem extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestStandardizedSem(String name) {
-        super(name);
-    }
+public class TestStandardizedSem {
 
     // Test the code that standardizes a data set.
+    @Test
     public void test1() {
         List<Node> nodes = new ArrayList<Node>();
 
@@ -93,6 +87,7 @@ public class TestStandardizedSem extends TestCase {
         assertTrue(isStandardized(sem));
     }
 
+    @Test
     public void test2() {
         RandomUtil.getInstance().setSeed(5729384723L);
 
@@ -133,6 +128,7 @@ public class TestStandardizedSem extends TestCase {
         assertTrue(isStandardized(sem));
     }
 
+    @Test
     public void test3() {
         RandomUtil.getInstance().setSeed(582374923L);
         SemGraph graph = new SemGraph();
@@ -178,6 +174,7 @@ public class TestStandardizedSem extends TestCase {
     }
 
     // This tests what the user is going to try to do in the GUI.
+    @Test
     public void test4() {
         List<Node> nodes = new ArrayList<Node>();
 
@@ -215,6 +212,7 @@ public class TestStandardizedSem extends TestCase {
         }
     }
 
+    @Test
     public void test5() {
         RandomUtil.getInstance().setSeed(582374923L);
         SemGraph graph = new SemGraph();
@@ -261,6 +259,7 @@ public class TestStandardizedSem extends TestCase {
         assertTrue(isStandardized(sem));
     }
 
+    @Test
     public void test6() {
 //        RandomUtil.getInstance().setSeed(582374923L);
         SemGraph graph = new SemGraph();
@@ -321,6 +320,7 @@ public class TestStandardizedSem extends TestCase {
     }
 
     // This tests what the user is going to try to do in the GUI.
+    @Test
     public void test7() {
         RandomUtil random = RandomUtil.getInstance();
         random.setSeed(9394929393L);
@@ -365,7 +365,7 @@ public class TestStandardizedSem extends TestCase {
                 if (Edges.isDirectedEdge(edge)) {
                     double initial = sem.getEdgeCoefficient(a, b);
                     StandardizedSemIm.ParameterRange range = sem.getCoefficientRange(a, b);
-                    assertEquals(initial, sem.getEdgeCoefficient(a, b));
+                    assertEquals(initial, sem.getEdgeCoefficient(a, b), 0.1);
 
                     double low = range.getLow();
                     double high = range.getHigh();
@@ -419,6 +419,7 @@ public class TestStandardizedSem extends TestCase {
         }
     }
 
+    @Test
     public void rtest8() {
 //        RandomUtil.getInstance().setSeed(2958442283L);
         SemGraph graph = new SemGraph();
@@ -493,7 +494,7 @@ public class TestStandardizedSem extends TestCase {
 //        assertTrue(sem.setErrorCovariance(x, y, 1));
         System.out.println(new CovarianceMatrix(data3));
 
-        assert (isStandardized(sem));
+        assertTrue(isStandardized(sem));
     }
 
     private boolean isStandardized(StandardizedSemIm sem) {
@@ -525,6 +526,7 @@ public class TestStandardizedSem extends TestCase {
     }
 
 
+    @Test
     public void testSliderValues() {
         int n = 100;
 
@@ -591,17 +593,6 @@ public class TestStandardizedSem extends TestCase {
         if (slider > 100) slider = 100;
         if (slider < 0) slider = 0;
         return slider;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestStandardizedSem.class);
     }
 }
 

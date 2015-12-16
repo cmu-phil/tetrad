@@ -31,26 +31,20 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests Sem.
  *
  * @author Joseph Ramsey
  */
-public class TestSem extends TestCase {
+public class TestSem {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSem(String name) {
-        super(name);
-    }
-
+    @Test
     public void testSet1() {
         Graph graph = constructGraph1();
         SemPm semPm = new SemPm(graph);
@@ -63,6 +57,7 @@ public class TestSem extends TestCase {
         System.out.println(sem);
     }
 
+    @Test
     public void testSet2() {
         Graph graph = constructGraph2();
         SemPm semPm = new SemPm(graph);
@@ -75,6 +70,7 @@ public class TestSem extends TestCase {
     /**
      * Tests storing and retrieving param comparisons.
      */
+    @Test
     public void testSet3() {
         Graph graph = constructGraph2();
         SemPm semPm = new SemPm(graph);
@@ -95,6 +91,7 @@ public class TestSem extends TestCase {
      * The point of this test is to try to detect if the function of the
      * estimation ever changes for perhaps extraneous reasons.
      */
+    @Test
     public void testEstimation() {
         Graph graph = constructGraph1();
         SemPm semPm = new SemPm(graph);
@@ -221,18 +218,7 @@ public class TestSem extends TestCase {
         double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
         TetradMatrix m2 = new TetradMatrix(m);
 
-        return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), m2, 100);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSem.class);
+        return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), m2, sampleSize);
     }
 }
 

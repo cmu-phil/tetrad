@@ -57,23 +57,16 @@ public final class TestSemGraph extends TestCase {
         graph.addDirectedEdge(c, d);
         graph.addBidirectedEdge(a, c);
         graph.addBidirectedEdge(b, d);
-        System.out.println(graph);
 
         graph.removeEdge(a, b);
-        System.out.println(graph);
 
         graph.addDirectedEdge(e, a);
-        System.out.println(graph);
 
         graph.addBidirectedEdge(c, d);
-        System.out.println(graph);
 
         SemGraph graph2 = new SemGraph(graph);
-        System.out.println(graph2);
 
-        SemGraph copy = new SemGraph(graph2);
-        Graph stripErrors = new EdgeListGraph(copy);
-        System.out.println(stripErrors);
+        assertEquals(graph, graph2);
     }
 
     /**

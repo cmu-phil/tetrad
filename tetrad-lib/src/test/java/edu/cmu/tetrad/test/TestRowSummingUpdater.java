@@ -25,39 +25,22 @@ import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradLogger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the BayesUpdqater
  *
  * @author Joseph Ramsey
  */
-public final class TestRowSummingUpdater extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestRowSummingUpdater(String name) {
-        super(name);
-    }
-
-    public void setUp() throws Exception {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-    }
-
-
-    public void tearDown(){
-        TetradLogger.getInstance().setForceLog(false);
-        TetradLogger.getInstance().removeOutputStream(System.out);
-    }
+public final class TestRowSummingUpdater {
 
     /**
      * Richard's 2-variable example worked by hand.
      */
+    @Test
     public void testUpdate0() {
         BayesIm bayesIm = sampleBayesIm0();
 
@@ -89,6 +72,7 @@ public final class TestRowSummingUpdater extends TestCase {
     /**
      * Richard's 2-variable example worked by hand.
      */
+    @Test
     public void testUpdate1() {
         BayesIm bayesIm = sampleBayesIm1();
         ManipulatingBayesUpdater updater = new RowSummingExactUpdater(bayesIm);
@@ -132,7 +116,8 @@ public final class TestRowSummingUpdater extends TestCase {
     /**
      * Bill's 3-variable example, with c=value2.
      */
-    public static void testUpdate2() {
+    @Test
+    public void testUpdate2() {
         BayesIm bayesIm = sampleBayesIm2();
         ManipulatingBayesUpdater updater = new RowSummingExactUpdater(bayesIm);
 
@@ -179,7 +164,8 @@ public final class TestRowSummingUpdater extends TestCase {
     /**
      * Bill's 3-variable example, with b=value1.
      */
-    public static void testUpdate3() {
+    @Test
+    public void testUpdate3() {
         BayesIm bayesIm = sampleBayesIm2();
         ManipulatingBayesUpdater updater = new RowSummingExactUpdater(bayesIm);
 
@@ -225,7 +211,7 @@ public final class TestRowSummingUpdater extends TestCase {
         assertTrue(Double.isNaN(updatedIm.getProbability(2, 5, 1)));
     }
 
-    public static void testUpdate4() {
+    public void testUpdate4() {
         Node x0Node = new GraphNode("X0");
         Node x1Node = new GraphNode("X1");
         Node x2Node = new GraphNode("X2");
@@ -274,7 +260,8 @@ public final class TestRowSummingUpdater extends TestCase {
         assertEquals(marginal1, marginal2, 0.000001);
     }
 
-    public static void testUpdate5() {
+    @Test
+    public void testUpdate5() {
         Node x0Node = new GraphNode("X0");
         Node x1Node = new GraphNode("X1");
         Node x2Node = new GraphNode("X2");
@@ -329,7 +316,7 @@ public final class TestRowSummingUpdater extends TestCase {
         assertEquals(marginal1, marginal2, 0.000001);
     }
 
-    private static BayesIm sampleBayesIm0() {
+    private BayesIm sampleBayesIm0() {
         Node z = new GraphNode("z");
 
         Dag graph = new Dag();
@@ -375,7 +362,7 @@ public final class TestRowSummingUpdater extends TestCase {
         return bayesIm1;
     }
 
-    private static BayesIm sampleBayesIm2() {
+    private BayesIm sampleBayesIm2() {
         Node a = new GraphNode("a");
         Node b = new GraphNode("b");
         Node c = new GraphNode("c");
@@ -427,17 +414,6 @@ public final class TestRowSummingUpdater extends TestCase {
         bayesIm1.setProbability(2, 5, 0, .7);
         bayesIm1.setProbability(2, 5, 1, .3);
         return bayesIm1;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestRowSummingUpdater.class);
     }
 }
 

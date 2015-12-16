@@ -22,18 +22,20 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.session.*;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.rmi.MarshalledObject;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the basic functionality of the Session.
  *
  * @author Joseph Ramsey
  */
-public class TestSession extends TestCase {
+public class TestSession {
 
     /**
      * The session being tested.
@@ -45,13 +47,6 @@ public class TestSession extends TestCase {
      */
     private String eventId;
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSession(String name) {
-        super(name);
-    }
-
     public void setUp() {
         this.session = new Session("Test");
     }
@@ -60,7 +55,9 @@ public class TestSession extends TestCase {
      * Tests whether session nodes can be added and removed from the session
      * correctly.
      */
+    @Test
     public void testAddRemoveSessionNodes() {
+        setUp();
 
         // Test adding/removing independent nodes.
         this.session.clearNodes();
@@ -88,7 +85,9 @@ public class TestSession extends TestCase {
     /**
      * Tests to make sure events are sent and received properly.
      */
-    public void testEvents() {  // TODO I broke this just now jdramsey 12/4/2015
+    @Test
+    public void testEvents() {
+        setUp();
         boolean simulation = true;
 
         SessionListener listener = new SessionListener() {
@@ -219,7 +218,9 @@ public class TestSession extends TestCase {
      * specific models. (For the test, we just make up a few classes and try
      * serializing those.)
      */
-    public void rtestSerialization() { // TODO
+    @Test
+    public void rtestSerialization() {
+        setUp();
         boolean simulation = true;
 
         this.session.clearNodes();
@@ -250,17 +251,6 @@ public class TestSession extends TestCase {
         catch (Exception e) {
             fail("Serialization failed.");
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSession.class);
     }
 }
 

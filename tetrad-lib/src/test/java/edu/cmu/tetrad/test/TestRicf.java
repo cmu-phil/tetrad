@@ -26,42 +26,22 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.Ricf;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 /**
- * Tests the BooleanFunction class.
- *
  * @author Joseph Ramsey
  */
-public class TestRicf extends TestCase {
+public class TestRicf {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestRicf(String name) {
-        super(name);
-    }
-
-
-    public void setUp() throws Exception {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-    }
-
-
-    public void tearDown() {
-        TetradLogger.getInstance().setForceLog(false);
-        TetradLogger.getInstance().removeOutputStream(System.out);
-    }
+    // TODO add some more testing.
 
     /**
      * <pre>
@@ -121,6 +101,7 @@ public class TestRicf extends TestCase {
      *
      * </pre>
      */
+    @Test
     public void testRicf1() {
         String[] varNames = new String[]{"y", "x", "z", "u"};
         int numVars = varNames.length;
@@ -206,6 +187,7 @@ public class TestRicf extends TestCase {
         return m;
     }
 
+    @Test
     public void testCliques() {
         Graph graph = new EdgeListGraph();
 
@@ -240,6 +222,7 @@ public class TestRicf extends TestCase {
         System.out.println(cliques);
     }
 
+    @Test
     public void testCliques2() {
         List<Node> nodes = new ArrayList<Node>();
 
@@ -289,55 +272,7 @@ public class TestRicf extends TestCase {
         System.out.println(cliques);
     }
 
-//    public void testFitConGraph() {
-//        DataSet data = null;
-//
-//        try {
-//            DataReader reader = new DataReader();
-//            reader.setIdsSupplied(true);
-//            data = reader.parseTabular(new File("test_data/marks.txt"));
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-////        System.out.println(data);
-//
-//        CovarianceMatrix s = new CovarianceMatrix(data);
-//
-////        System.out.println(s);
-//
-//        Graph graph = new EdgeListGraph();
-//        Node mechanics = new ContinuousVariable("mechanics");
-//        Node vectors = new ContinuousVariable("vectors");
-//        Node algebra = new ContinuousVariable("algebra");
-//        Node analysis = new ContinuousVariable("analysis");
-//        Node statistics = new ContinuousVariable("statistics");
-//        graph.addIndex(mechanics);
-//        graph.addIndex(vectors);
-//        graph.addIndex(algebra);
-//        graph.addIndex(analysis);
-//        graph.addIndex(statistics);
-//
-//        graph.addUndirectedEdge(mechanics, algebra);
-//        graph.addUndirectedEdge(mechanics, vectors);
-//        graph.addUndirectedEdge(algebra, vectors);
-//        graph.addUndirectedEdge(algebra, analysis);
-//        graph.addUndirectedEdge(algebra, statistics);
-//        graph.addUndirectedEdge(analysis, statistics);
-//
-////        System.out.println(graph);
-//
-//        int n = 88;
-//        double tol = 1e-06;
-//
-//        Ricf ricf = new Ricf();
-////        Ricf.IcfMagResult icfMagResult = ricf.icfmag(graph, s, n, tol);
-//        Ricf.FitConGraphResult result = ricf.fitConGraph(graph, s, n, tol);
-//
-//        System.out.println(result);
-//    }
-
+    @Test
     public void test2() {
         List<Node> nodes = new ArrayList<Node>();
 
@@ -362,6 +297,7 @@ public class TestRicf extends TestCase {
 
     }
 
+    @Test
     public void test3() {
         try {
             DataReader reader = new DataReader();
@@ -383,6 +319,7 @@ public class TestRicf extends TestCase {
         }
     }
 
+    @Test
     public void test4() {
         List<Node> nodes1 = new ArrayList<Node>();
 
@@ -413,17 +350,6 @@ public class TestRicf extends TestCase {
 
         System.out.println(result1);
         System.out.println(result2);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestRicf.class);
     }
 }
 

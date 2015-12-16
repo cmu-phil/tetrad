@@ -55,7 +55,7 @@ public final class TestSemXml extends TestCase {
         super(name);
     }
 
-    public static void testRoundtrip() {
+    public static void testRosemIm2undtrip() {
         SemIm semIm = sampleSemIm1();
         Element element = SemXmlRenderer.getElement(semIm);
 

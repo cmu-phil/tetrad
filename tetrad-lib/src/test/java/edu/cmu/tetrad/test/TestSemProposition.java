@@ -28,11 +28,12 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.SemProposition;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the MeasurementSimulator class using diagnostics devised by Richard
@@ -40,15 +41,9 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class TestSemProposition extends TestCase {
+public class TestSemProposition {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSemProposition(String name) {
-        super(name);
-    }
-
+    @Test
     public void testEvidence() {
         Graph graph = constructGraph1();
         SemPm semPm = new SemPm(graph);
@@ -57,31 +52,16 @@ public class TestSemProposition extends TestCase {
 
         SemProposition proposition = SemProposition.tautology(semIm);
 
-        System.out.println(proposition);
-
         for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
             assertTrue(Double.isNaN(proposition.getValue(i)));
         }
 
         proposition.setValue(1, 0.5);
         assertEquals(0.5, proposition.getValue(1), 0.0);
-        System.out.println(proposition);
 
         Node node4 = (Node) nodes.get(3);
         proposition.setValue(node4, 0.7);
         assertEquals(0.7, proposition.getValue(node4), 0.0);
-        System.out.println(proposition);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSemProposition.class);
     }
 
     private Graph constructGraph1() {

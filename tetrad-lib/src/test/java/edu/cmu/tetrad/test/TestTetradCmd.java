@@ -25,7 +25,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-
+// This just has to run, no checking. jdramsey 12/16/2015
 public class TestTetradCmd extends TestCase {
     public TestTetradCmd(String name) {
         super(name);

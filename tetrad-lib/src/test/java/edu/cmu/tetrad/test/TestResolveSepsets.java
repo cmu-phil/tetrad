@@ -29,7 +29,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -39,9 +39,11 @@ import java.util.*;
 /**
  * Tests the ResolveSepsets utilities.
  *
- * @author Robert Tillmab
+ * @author Robert Tillman
  */
-public class TestResolveSepsets extends TestCase {
+public class TestResolveSepsets {
+
+    // I will just allow this one to run without testing for now. jdramsey 12/15/2015 TODO
 
     private String dir = "/home/rtillman/Desktop/temp/";
     private File correctFile = new File(dir + "correct.dat");
@@ -58,21 +60,6 @@ public class TestResolveSepsets extends TestCase {
             ResolveSepsets.Method.random};
 
     private int[] nsizes = {50, 100, 500, 1000, 2500};
-
-    public TestResolveSepsets(String name) {
-        super(name);
-    }
-
-    public void testSimulation() {
-/*        int[] d = {10,25,100};
-        for (int di : d) {
-            for (int k=0; k<100; k++) {
-                discreteTest(di);
-                System.out.println(di + ", " + (k+1));
-            }
-        }
-*/
-    }
 
     public void discreteTest(int d) {
         List<Node> nodes = new ArrayList<Node>();
@@ -243,7 +230,6 @@ public class TestResolveSepsets extends TestCase {
         }
         return datasetSet;
     }
-
 
     public void tryMethods(Graph graph, List<IndependenceTest> independenceTests,
                            Map<ResolveSepsets.Method, Integer> correct, Map<ResolveSepsets.Method, Integer> incorrect,

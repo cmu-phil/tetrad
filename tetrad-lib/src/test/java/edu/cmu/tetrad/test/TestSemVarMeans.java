@@ -31,11 +31,11 @@ import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the use of variable means in the SEM classes.  Instantiates a SemPm and
@@ -46,15 +46,9 @@ import java.util.List;
  *
  * @author Frank Wimberly
  */
-public class TestSemVarMeans extends TestCase {
+public class TestSemVarMeans {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSemVarMeans(String name) {
-        super(name);
-    }
-
+    @Test
     public void testMeansRecursive() {
         Graph graph = constructGraph1();
         SemPm semPm1 = new SemPm(graph);
@@ -89,6 +83,7 @@ public class TestSemVarMeans extends TestCase {
         }
     }
 
+    @Test
     public void testMeansReducedForm() {
         Graph graph = constructGraph1();
         SemPm semPm1 = new SemPm(graph);
@@ -123,6 +118,7 @@ public class TestSemVarMeans extends TestCase {
         }
     }
 
+    @Test
     public void testMeansCholesky() {
         Graph graph = constructGraph1();
         SemPm semPm1 = new SemPm(graph);
@@ -182,17 +178,6 @@ public class TestSemVarMeans extends TestCase {
         graph.addDirectedEdge(x4, x5);
 
         return graph;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSemVarMeans.class);
     }
 }
 

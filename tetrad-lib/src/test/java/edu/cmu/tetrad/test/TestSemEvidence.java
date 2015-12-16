@@ -28,9 +28,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemEvidence;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the MeasurementSimulator class using diagnostics devised by Richard
@@ -38,15 +38,9 @@ import junit.framework.TestSuite;
  *
  * @author Joseph Ramsey
  */
-public class TestSemEvidence extends TestCase {
+public class TestSemEvidence {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSemEvidence(String name) {
-        super(name);
-    }
-
+    @Test
     public void testSemEvidence() {
         Graph graph = constructGraph1();
         SemPm semPm = new SemPm(graph);
@@ -55,18 +49,6 @@ public class TestSemEvidence extends TestCase {
 
         evidence.setManipulated(1, true);
         assertTrue(evidence.isManipulated(1));
-        System.out.println(evidence);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSemEvidence.class);
     }
 
     private Graph constructGraph1() {
