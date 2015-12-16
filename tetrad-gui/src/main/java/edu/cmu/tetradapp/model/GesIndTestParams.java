@@ -30,7 +30,8 @@ import java.io.ObjectInputStream;
 /**
  * @author Ricardo Silva
  */
-public class GesIndTestParams implements IndTestParams {
+public class
+GesIndTestParams implements IndTestParams {
     static final long serialVersionUID = 23L;
 
     /**
@@ -120,7 +121,6 @@ public class GesIndTestParams implements IndTestParams {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static GesIndTestParams serializableInstance() {

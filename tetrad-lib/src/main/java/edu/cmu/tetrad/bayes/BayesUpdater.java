@@ -41,7 +41,7 @@ public interface BayesUpdater extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
-     * @return P(variable=value | evidence), where evidence is
+     * @return P&lpar;variable &equals; value &vert; evidence&rpar;, where evidence is
      * getEvidence().
      */
     double getMarginal(int variable, int category);
@@ -52,7 +52,7 @@ public interface BayesUpdater extends TetradSerializable {
     boolean isJointMarginalSupported();
 
     /**
-     * @return P(variables[i] == values[i] | evidence), where evidence is
+     * @return P&lpar;variables[i] &equals; values[i] &vert; evidence&rpar;, where evidence is
      * getEvidence().
      */
     double getJointMarginal(int[] variables, int[] values);

@@ -196,7 +196,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * @return P(variable==value | evidence) where evience is getEvidence().
+     * @return P&lpar;variable&equals;value &vbar; evidence&rpar; where evidence is getEvidence().
      */
     public double getMarginal(int variable, int value) {
         Proposition assertion = Proposition.tautology(manipulatedBayesIm);

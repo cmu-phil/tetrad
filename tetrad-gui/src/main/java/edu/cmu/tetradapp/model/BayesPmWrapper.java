@@ -417,7 +417,6 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static BayesPmWrapper serializableInstance() {

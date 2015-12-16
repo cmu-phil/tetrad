@@ -166,7 +166,6 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static BayesImWrapper serializableInstance() {

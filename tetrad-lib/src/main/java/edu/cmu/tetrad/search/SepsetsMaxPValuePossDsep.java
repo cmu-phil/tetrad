@@ -46,7 +46,6 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
         this.maxPathLength = maxPathLength;
     }
 
-    @Override
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */

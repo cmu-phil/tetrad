@@ -68,7 +68,6 @@ public final class PcIndTestParams implements IndTestParams {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static PcIndTestParams serializableInstance() {

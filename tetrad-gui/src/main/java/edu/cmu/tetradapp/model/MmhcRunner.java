@@ -53,7 +53,6 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static MmhcRunner serializableInstance() {

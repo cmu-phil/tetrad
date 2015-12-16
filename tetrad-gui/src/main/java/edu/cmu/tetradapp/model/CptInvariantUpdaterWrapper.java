@@ -91,7 +91,6 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static CptInvariantUpdaterWrapper serializableInstance() {

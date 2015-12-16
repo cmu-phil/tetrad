@@ -50,7 +50,6 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         this.depth = depth;
     }
 
-    @Override
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */

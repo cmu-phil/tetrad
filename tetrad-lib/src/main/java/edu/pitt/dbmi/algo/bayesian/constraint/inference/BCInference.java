@@ -146,20 +146,20 @@ public class BCInference {
      * given Z) = P(X dependent Y given Z) = 0.5.
      * <p/>
      * Z[0] is the length of the set represented by array Z. For an example,
-     * Z[0] = 1 represents the set Z of size 1. Z[0] = 0 represents an empty
+     * Z[0] = 1 represents the set Z of size 1. Z&lsqb;0&rsqb; = 0 represents an empty
      * set.
      * <p/>
-     * Set Z with two elements: Z = {3, 2} Z[0] = 2 // set Z has two elements
+     * Set Z with two elements: Z = &lcub;3, 2&rcub; Z&lsqb;0&rsqb; = 2 // set Z has two elements
      * (length of 2) Z[1] = 3 // first element Z[2] = 2 // second element.
      * <p/>
-     * Empty set: Z = {} Z[0] = 0
+     * Empty set: Z = &lcub;&rcub; Z&lsqb;0&rsqb; = 0
      *
      * @param constraint has the value OP.independent or OP.dependent
      * @param x node x
      * @param y node y
      * @param z set of nodes
-     * @return P(x dependent y given z | data) or P(x independent y given z |
-     * data)
+     * @return P&lpar; x dependent y given z &vert; data &rpar; or P&lpar;x independent y given z &vert;
+     * data&rpar;
      */
     public double probConstraint(OP constraint, int x, int y, int[] z) {
 //        if (true) return 0.5;

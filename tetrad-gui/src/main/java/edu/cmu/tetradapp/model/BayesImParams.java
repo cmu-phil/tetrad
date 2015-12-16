@@ -70,7 +70,6 @@ public class BayesImParams implements Params, TetradSerializable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static BayesImParams serializableInstance() {
