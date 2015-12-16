@@ -78,6 +78,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     private PrintStream pValueLogger;
     private Map<Node, Integer> indexMap;
     private Map<String, Node> nameMap;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -250,16 +251,18 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
         boolean independent = pValue > alpha;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            if (pValueLogger != null) {
-                pValueLogger.println(getPValue());
-            }
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                if (pValueLogger != null) {
+                    pValueLogger.println(getPValue());
+                }
 
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
@@ -446,6 +449,14 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

@@ -77,6 +77,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      */
     private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private DataSet dataSet;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -198,7 +199,9 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         }
 
         if (Double.isNaN(r)) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+            if (verbose) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+            }
             return true;
         }
 
@@ -225,10 +228,12 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             indFisher = false;  //Two sided
         }
 
-        if (indFisher) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+        if (verbose) {
+            if (indFisher) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+            }
         }
 
         return indFisher;
@@ -463,6 +468,14 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

@@ -52,6 +52,7 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
     private DataSet dataSet;
     private int numBootstrapSamples;
     private IndependenceTest[] tests;
+    private boolean verbose = false;
 
     public IndTestFisherZBootstrap(DataSet dataSet, double alpha, int numBootstrapSamples, int bootstrapSampleSize) {
         if (!(dataSet.isContinuous())) {
@@ -93,12 +94,14 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
         for (int i = 0; i < numBootstrapSamples; i++) sum += independentGuys[i];
         boolean independent = sum > numBootstrapSamples / 2;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
@@ -195,6 +198,14 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

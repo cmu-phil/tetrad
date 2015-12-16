@@ -52,6 +52,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     private double percent = .75;
     private boolean fdr = true;
     private final ArrayList<RecursivePartialCorrelation> recursivePartialCorrelation;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -135,13 +136,15 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
         boolean independent = this.pValue > _cutoff;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
 //            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
@@ -282,6 +285,14 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
     public void setFdr(boolean fdr) {
         this.fdr = fdr;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

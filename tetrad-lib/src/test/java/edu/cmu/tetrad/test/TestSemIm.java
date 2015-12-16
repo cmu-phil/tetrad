@@ -52,7 +52,6 @@ public class TestSemIm {
         Graph graph = constructGraph1();
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
-        System.out.println(semIm);
 
         Node x1 = graph.getNode("X1");
         Node x2 = graph.getNode("X2");
@@ -69,42 +68,32 @@ public class TestSemIm {
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
 
-        System.out.println("Original SemIm: " + semIm);
-
         DataSet dataSetContColumnContinuous =
                 semIm.simulateData(500, false);
         ICovarianceMatrix covMatrix =
                 new CovarianceMatrix(dataSetContColumnContinuous);
         SemEstimator estimator2 = new SemEstimator(covMatrix, semPm);
         estimator2.estimate();
-        SemIm semIm2 = estimator2.getEstimatedSem();
-
-        System.out.println("\nEstimated Sem #1: " + semIm2);
+        estimator2.getEstimatedSem();
 
         SemEstimator estimator3 = new SemEstimator(covMatrix, semPm);
         estimator3.estimate();
-        SemIm semIm3 = estimator3.getEstimatedSem();
-
-        System.out.println("\nEstimated Sem #2: " + semIm3);
+        estimator3.getEstimatedSem();
 
         SemPm semPm4 = new SemPm(graph);
         SemEstimator estimator4 = new SemEstimator(covMatrix, semPm4);
         estimator4.estimate();
-        SemIm semIm4 = estimator4.getEstimatedSem();
-
-        System.out.println("\nEstimated Sem #3: " + semIm4);
+        estimator4.getEstimatedSem();
 
         SemPm semPm5 = new SemPm(graph);
         SemEstimator estimator5 = new SemEstimator(covMatrix, semPm5);
         estimator5.estimate();
-        SemIm semIm5 = estimator5.getEstimatedSem();
-
-        System.out.println("\nEstimated Sem #4: " + semIm5);
+        estimator5.getEstimatedSem();
     }
 
     @Test
     public void testCovariancesOfSimulated() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -115,14 +104,10 @@ public class TestSemIm {
         SemIm semIm1 = new SemIm(semPm1);
 
         TetradMatrix implCovarC = semIm1.getImplCovar(true);
-        double[][] impliedCovar = implCovarC.toArray();
-        System.out.println("Implied covar of semIm = " +
-                MatrixUtils.toString(impliedCovar));
+        implCovarC.toArray();
 
         DataSet dataSet = semIm1.simulateDataRecursive(1000, false);
-        ICovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
-        System.out.println(
-                "Covariance matrix of simulated data = " + covMatrix);
+        new CovarianceMatrix(dataSet);
     }
 
     @Test
@@ -137,31 +122,16 @@ public class TestSemIm {
         SemPm semPm = new SemPm(randomGraph);
         SemIm semIm = new SemIm(semPm);
 
-        printIntercepts(semIm);
         semIm.setIntercept(semIm.getVariableNodes().get(0), 1.0);
-        printIntercepts(semIm);
         semIm.setIntercept(semIm.getVariableNodes().get(1), 3.0);
-        printIntercepts(semIm);
         semIm.setIntercept(semIm.getVariableNodes().get(2), -1.0);
-        printIntercepts(semIm);
         semIm.setIntercept(semIm.getVariableNodes().get(3), 6.0);
-        printIntercepts(semIm);
 
         assertEquals(1.0, semIm.getIntercept(semIm.getVariableNodes().get(0)), 0.1);
         assertEquals(3.0, semIm.getIntercept(semIm.getVariableNodes().get(1)), 0.1);
         assertEquals(-1.0, semIm.getIntercept(semIm.getVariableNodes().get(2)), 0.1);
         assertEquals(6.0, semIm.getIntercept(semIm.getVariableNodes().get(3)), 0.1);
         assertEquals(0.0, semIm.getIntercept(semIm.getVariableNodes().get(4)), 0.1);
-
-        System.out.println(semIm);
-    }
-
-    private void printIntercepts(SemIm semIm) {
-        System.out.println();
-        for (int i = 0; i < 5; i++) {
-            Node node = semIm.getVariableNodes().get(i);
-            System.out.println("Intercept of " + node + " = " + semIm.getIntercept(node));
-        }
     }
 
     /**
@@ -175,14 +145,9 @@ public class TestSemIm {
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
 
-        System.out.println("Original SemIm: " + semIm);
-
         DataSet dataSet = semIm.simulateData(500, false);
 
         TetradMatrix data = dataSet.getDoubleData();
-
-        System.out.println("Data = ");
-        System.out.println(data);
 
         double[][] a = new double[data.columns()][data.columns()];
 
@@ -196,20 +161,10 @@ public class TestSemIm {
             }
         }
 
-        System.out.println("A = ");
         System.out.println(MatrixUtils.toString(a));
-
-        System.out.println("L = ");
         double[][] l = MatrixUtils.cholesky(a);
-        System.out.println(MatrixUtils.toString(l));
-
-        System.out.println("L' = ");
         double[][] lT = MatrixUtils.transpose(l);
-        System.out.println(MatrixUtils.toString(lT));
-
-        System.out.println("L L' = ");
         double[][] product = MatrixUtils.product(l, lT);
-        System.out.println(MatrixUtils.toString(product));
 
         assertTrue(MatrixUtils.equals(a, product, 1.e-10));
     }
@@ -251,14 +206,12 @@ public class TestSemIm {
         DataSet data = im.simulateDataReducedForm(1000, true);
 //        DataSet data = im.simulateDataRecursive(1000, true);
 
-        TetradMatrix cov = data.getCovarianceMatrix();
+        data.getCovarianceMatrix();
 
-        TetradMatrix impliedCov = im.getImplCovar(true);
-
-        System.out.println("cov = " + cov);
-        System.out.println("implied cov = " + impliedCov);
+        im.getImplCovar(true);
     }
 
+    @Test
     public void test6() {
 
         // X1 = e1
@@ -270,40 +223,18 @@ public class TestSemIm {
         B.set(1, 0, 5);
         B.set(1, 1, 0);
 
-        System.out.println("B = " + B);
-
         TetradMatrix I = TetradAlgebra.identity(2);
-
-        System.out.println("I = " + I);
-
-//        TetradMatrix iMinusB = I.copy().assign(B, PlusMult.plusMult(-1));
-
         TetradMatrix iMinusB = TetradAlgebra.identity(2).minus(B);
-
-        System.out.println("iMinusB = " + iMinusB);
-
         TetradMatrix reduced = iMinusB.inverse();
-
-        System.out.println("reduced form = " + reduced);
-
-
         TetradVector e = new TetradVector(2);
 
         e.set(0, 0.5);
         e.set(1, -2);
 
-        System.out.println("e = " + e);
-
         TetradVector x = reduced.times(e);
-
-        System.out.println(x);
-
         TetradVector d1 = B.times(x);
 //        d1.assign(e, PlusMult.plusMult(1));
         d1 = d1.plus(e);
-
-        System.out.println("check x = " + x);
-
     }
 
     private Graph constructGraph1() {
@@ -391,9 +322,7 @@ public class TestSemIm {
 
         SemIm estSem = est.estimate();
 
-        double bic = estSem.getBicScore();
-
-        System.out.println(bic);
+        estSem.getBicScore();
     }
 
     @Test
@@ -420,14 +349,14 @@ public class TestSemIm {
 
         SemIm modified = modifySemImStandardizedInterventionOnTargetParents(semIm, x4);
 
-        DataSet data = modified.simulateData(1000, false);
+        modified.simulateData(1000, false);
 
     }
 
     @Test
     public void test10() {
         int numNodes = 1000;
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < numNodes; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
@@ -463,9 +392,6 @@ public class TestSemIm {
         ArrayList<Node> targetParents = new
                 ArrayList<>(removedDoubleArrowEdges.getParents(removedDoubleArrowEdges.getNode(target.getName())));
 
-        System.out.println("ORIGINAL GRAPH");
-        System.out.println(graph);
-
         SemEvidence semEvidence = new SemEvidence(modifiedSemIm);
         for(Node n : targetParents) {
             semEvidence.setManipulated(semEvidence.getNodeIndex(n.getName()),
@@ -495,7 +421,6 @@ public class TestSemIm {
                         modifiedAndUpdatedSemIm.getVariableNode(target.getName())));
                 if(edgesConnectingParentAndTarget.size() > 1) {
                     for(Edge e : edgesConnectingParentAndTarget) {
-                        System.out.println("Check Edge: " + e);
                         if((e.getEndpoint1().equals(Endpoint.ARROW)) &&
                                 (e.getEndpoint2().equals(Endpoint.ARROW))) {
                             Edge directedEdge1 = new
@@ -521,10 +446,7 @@ public class TestSemIm {
                             modifiedAndUpdatedSemIm.setErrCovar(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
                                     modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
                                     0.0);
-                            System.out.println("REMOVING EDGE: " + e);
-                            modifiedAndUpdatedSemIm.getSemPm().getGraph().removeEdge(e);
                         }
-                        else { System.out.println("DO NOTHING"); }
                     }
                 }
             }
@@ -534,8 +456,6 @@ public class TestSemIm {
         modifiedAndUpdatedSemIm.setErrVar(modifiedAndUpdatedSemIm.getVariableNode(target.getName()),
                 (oldTargetVariance + varianceToAddToTargetAfterEdgeRemoval));
 
-        System.out.println("MODIFIED GRAPH");
-        System.out.println(modifiedAndUpdatedSemIm.getSemPm().getGraph());
         return modifiedAndUpdatedSemIm;
     }
 }

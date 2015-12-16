@@ -46,28 +46,12 @@ public final class TestProposition {
         BayesIm bayesIm = sampleBayesIm2();
 
         Proposition prop1 = Proposition.tautology(bayesIm);
-
-        System.out.println(prop1);
-
         prop1.removeCategory(0, 1);
-
-        System.out.println(prop1);
-
         prop1.setVariable(1, false);
-
-        System.out.println(prop1);
-
         Proposition prop2 = new Proposition(bayesIm, prop1);
-
-        System.out.println("Copied prop:");
-        System.out.println(prop2);
-
         assertEquals(prop1, prop2);
-
         BayesIm bayesIm2 = new MlBayesIm(bayesIm);
-
         Proposition prop3 = new Proposition(bayesIm2, prop1);
-
         assertTrue(!prop3.equals(prop1));
     }
 

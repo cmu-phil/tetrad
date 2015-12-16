@@ -74,6 +74,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * Map from nodes to the indices.
      */
     private Map<Node, Integer> indices;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -125,12 +126,14 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         for (Node node : z) _z.add(node.getName());
         boolean independent = cci.isIndependent(_x, _y, _z);
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
@@ -147,12 +150,14 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         for (Node node : z) _z.add(node.getName());
         boolean independent = cci.isIndependent(_x, _y, _z);
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return !independent;
@@ -260,6 +265,14 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     public String toString() {
         return "Conditional Correlation, alpha = " + nf.format(getAlpha());
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     //==================================PRIVATE METHODS================================

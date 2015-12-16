@@ -76,6 +76,7 @@ public final class IndTestFisherZOnTheFly implements IndependenceTest {
      */
     private double pValue = Double.NaN;
     private Map<Node, Integer> indices;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -246,12 +247,14 @@ public final class IndTestFisherZOnTheFly implements IndependenceTest {
 
         boolean independent = getPValue() > alpha;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
@@ -473,6 +476,14 @@ public final class IndTestFisherZOnTheFly implements IndependenceTest {
 
     private int sampleSize() {
         return _dataSet.rows();
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

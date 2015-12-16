@@ -92,14 +92,6 @@ public class TestPcd {
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
-        // PrintUtil out problem and graphs.
-        System.out.println("\nInput graph:");
-        System.out.println(graph);
-        System.out.println("\nResult graph:");
-        System.out.println(resultGraph);
-        System.out.println("\nTrue graph:");
-        System.out.println(trueGraph);
-
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         // Do test.
@@ -126,16 +118,6 @@ public class TestPcd {
 
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);
-
-        // PrintUtil out problem and graphs.
-        System.out.println("\nKnowldge:");
-        System.out.println(knowledge);
-        System.out.println("\nInput graph:");
-        System.out.println(graph);
-        System.out.println("\nResult graph:");
-        System.out.println(resultGraph);
-        System.out.println("\nTrue graph:");
-        System.out.println(trueGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 

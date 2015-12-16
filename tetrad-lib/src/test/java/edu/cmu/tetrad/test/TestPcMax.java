@@ -153,14 +153,6 @@ public class TestPcMax {
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
-        // PrintUtil out problem and graphs.
-//        System.out.println("\nInput graph:");
-//        System.out.println(graph);
-//        System.out.println("\nResult graph:");
-//        System.out.println(resultGraph);
-//        System.out.println("\nTrue graph:");
-//        System.out.println(trueGraph);
-
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         // Do test.
@@ -178,11 +170,9 @@ public class TestPcMax {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
-        Pc pc = new Pc(independence);
+        PcMax pc = new PcMax(independence);
 
         // Set up search.
-//        IndependenceTest independence = new IndTestGraph(graph);
-        pc.setVerbose(true);
         pc.setKnowledge(knowledge);
 
         // Run search

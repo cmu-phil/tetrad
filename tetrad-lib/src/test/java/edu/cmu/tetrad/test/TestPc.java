@@ -181,8 +181,6 @@ public class TestPc {
         Pc pc = new Pc(independence);
 
         // Set up search.
-//        IndependenceTest independence = new IndTestGraph(graph);
-        pc.setVerbose(true);
         pc.setKnowledge(knowledge);
 
         // Run search

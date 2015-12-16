@@ -41,6 +41,7 @@ import java.util.List;
 public final class IndTestIndependenceFacts implements IndependenceTest {
 
     private IndependenceFacts facts;
+    private boolean verbose = false;
 
     public IndTestIndependenceFacts(IndependenceFacts facts) {
         this.facts = facts;
@@ -63,14 +64,16 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
 
         boolean independent = facts.isIndependent(x, y, _z);
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, Double.NaN));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, Double.NaN));
 //            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, Double.NaN));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, Double.NaN));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, Double.NaN));
 //            System.out.println(SearchLogUtils.dependenceFactMsg(x, y, z, Double.NaN));
+            }
         }
 
         return independent;
@@ -156,6 +159,13 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         return null;
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 }
 
 

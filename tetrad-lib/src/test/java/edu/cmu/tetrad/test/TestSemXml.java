@@ -59,74 +59,25 @@ public final class TestSemXml extends TestCase {
         SemIm semIm = sampleSemIm1();
         Element element = SemXmlRenderer.getElement(semIm);
 
-        System.out.println("Started with this semIm: " + semIm);
-        System.out.println("\nGot this XML for it:");
-        printElement(element);
-
         SemXmlParser parser = new SemXmlParser();
         SemIm semIm2 = parser.getSemIm(element);
-
-        System.out.println(semIm2.getSemPm().getGraph());
-        System.out.println(semIm2);
     }
 
     public void testRoundtrip2() {
         SemIm semIm = sampleSemIm1();
         Element element = SemXmlRenderer.getElement(semIm);
 
-        System.out.println("Started with this semIm: " + semIm);
-        System.out.println("\nGot this XML for it:");
-        printElement(element);
-
         SemXmlParser parser = new SemXmlParser();
         SemIm semIm2 = parser.getSemIm(element);
-
-        System.out.println(semIm2.getSemPm().getGraph());
-        System.out.println(semIm2);
     }
 
     public void testRoundtrip3() {
         SemIm semIm = sampleSemIm1();
         Element element = SemXmlRenderer.getElement(semIm);
 
-        System.out.println("Started with this semIm: " + semIm);
-        System.out.println("\nGot this XML for it:");
-        printElement(element);
-
         SemXmlParser parser = new SemXmlParser();
         SemIm semIm2 = parser.getSemIm(element);
-
-        System.out.println(semIm2.getSemPm().getGraph());
-        System.out.println(semIm2);
     }
-
-    /**
-     * Tests to make sure that a particular file produced by the renderer on 6/26/04 remains parsable. VERY IMPORTANT
-     * THIS DOES NOT BREAK!!!
-     */
-//    public void testLoadFromFile() {
-//        try {
-//            Builder builder = new Builder();
-//            Document document =
-//                    builder.build(new File("sample_data/parsableSemNet.xml"));
-//            printDocument(document);
-//
-//            SemXmlParser parser = new SemXmlParser();
-//            SemIm bayesIm = parser.getEstIm(document.getRootElement());
-//            System.out.println(bayesIm);
-//        }
-//        catch (ParsingException e) {
-//            e.printStackTrace();
-//            fail("The file referred to cannot be parsed as a SEM IM." +
-//                    " The file referred to MUST LOAD!! PLEASE FIX IMMEDIATELY!!!" +
-//                    " (Ask Joe Ramsey jdramsey@andrew.cmu.edu for details.");
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//            fail("The file referred to cannot be opened (or doesn't exist). " +
-//                    "Maybe the working directory is not set correctly.");
-//        }
-//    }
 
     private static SemIm sampleSemIm1() {
         List<Node> nodes = new ArrayList<Node>();
@@ -138,8 +89,7 @@ public final class TestSemXml extends TestCase {
         Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
                 30, 15, 15, true));
         SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        return im;
+        return new SemIm(pm);
     }
 
     /**

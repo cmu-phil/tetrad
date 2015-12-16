@@ -98,6 +98,7 @@ public final class IndTestHsic implements IndependenceTest {
      * Use incomplete Choleksy decomposition to calculate Gram matrices
      */
     private double useIncompleteCholesky = 1e-18;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -320,8 +321,10 @@ public final class IndTestHsic implements IndependenceTest {
                     .dependenceFactMsg(x, y, z, getPValue()));
             return false;
         }
-        TetradLogger.getInstance().log("independencies", SearchLogUtils
-                .independenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            TetradLogger.getInstance().log("independencies", SearchLogUtils
+                    .independenceFactMsg(x, y, z, getPValue()));
+        }
         return true;
     }
 
@@ -846,6 +849,13 @@ public final class IndTestHsic implements IndependenceTest {
         return trace;
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 }
 
 

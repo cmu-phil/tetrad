@@ -127,7 +127,6 @@ public final class PagUtils {
                 Node Bd = dag.getNode(B.getName());
 
                 if (dag.isAncestorOf(Bd, Ad)) {
-                    System.out.println(Bd + " ancestor of " + Ad);
                     return false;
                 }
             }

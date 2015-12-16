@@ -57,6 +57,7 @@ public class IndTestSepset implements IndependenceTest {
      * The list of observed variables (i.e. variables for observed nodes).
      */
     private List<Node> observedVars;
+    private boolean verbose = false;
 
     /**
      * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
@@ -137,7 +138,10 @@ public class IndTestSepset implements IndependenceTest {
             for (List<Node> condSet : condSets) {
                 if (condSet.size() == z.size() && condSet.containsAll(z)) {
                     double pValue = 1.0;
-                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+                    }
                     independent = true;
                     break;
 //                    return true;
@@ -145,10 +149,12 @@ public class IndTestSepset implements IndependenceTest {
             }
         }
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
@@ -261,6 +267,14 @@ public class IndTestSepset implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

@@ -44,25 +44,16 @@ public final class TestRowSummingUpdater {
     public void testUpdate0() {
         BayesIm bayesIm = sampleBayesIm0();
 
-        System.out.println(bayesIm);
-
         Evidence evidence = Evidence.tautology(bayesIm);
         int zIndex = evidence.getNodeIndex("z");
 //        int valueIndex = evidence.getCategoryIndex("z", "0");
 
         evidence.getProposition().setCategory(zIndex, 1);
 
-        System.out.println(evidence);
-
         ManipulatingBayesUpdater updater = new RowSummingExactUpdater(bayesIm);
 
         updater.setEvidence(evidence);
         BayesIm updatedIm = updater.getUpdatedBayesIm();
-
-        // Print before and after
-        System.out.println(bayesIm.getBayesPm());
-        System.out.println(bayesIm);
-        System.out.println(updatedIm);
 
         // Check results.
         assertEquals(0, updatedIm.getProbability(0, 0, 0), 0.001);
@@ -84,15 +75,8 @@ public final class TestRowSummingUpdater {
 
         evidence.getProposition().setCategory(zIndex, valueIndex);
 
-        System.out.println(evidence);
-
         updater.setEvidence(evidence);
         BayesIm updatedIm = updater.getUpdatedBayesIm();
-
-        // Print before and after
-        System.out.println(bayesIm.getBayesPm());
-        System.out.println(bayesIm);
-        System.out.println(updatedIm);
 
         // Check results.
         assertEquals(0.1250, updatedIm.getProbability(0, 0, 0), 0.001);
@@ -104,13 +88,9 @@ public final class TestRowSummingUpdater {
         assertEquals(0.0000, updatedIm.getProbability(1, 1, 0), 0.001);
         assertEquals(1.0000, updatedIm.getProbability(1, 1, 1), 0.001);
 
-        System.out.println(updater.getMarginal(xIndex, 0));
-
         ManipulatingBayesUpdater updater2 = new CptInvariantUpdater(bayesIm);
         Evidence evidence2 = new Evidence(evidence, bayesIm);
         updater2.setEvidence(evidence2);
-
-        System.out.println(updater2.getMarginal(xIndex, 0));
     }
 
     /**
@@ -129,11 +109,6 @@ public final class TestRowSummingUpdater {
 
         updater.setEvidence(evidence);
         BayesIm updatedIm = updater.getUpdatedBayesIm();
-
-        // Print before and after
-        System.out.println(bayesIm.getBayesPm());
-        System.out.println(bayesIm);
-        System.out.println(updatedIm);
 
         // Check results.
         assertEquals(0.2750, updatedIm.getProbability(0, 0, 0), 0.001);
@@ -175,15 +150,8 @@ public final class TestRowSummingUpdater {
 
         evidence.getProposition().setCategory(nodeIndex, valueIndex);
 
-        System.out.println(evidence);
-
         updater.setEvidence(evidence);
         BayesIm updatedIm = updater.getUpdatedBayesIm();
-
-        // Print before and after
-        System.out.println(bayesIm.getBayesPm());
-        System.out.println(bayesIm);
-        System.out.println(updatedIm);
 
         // Check results.
         assertEquals(0.1765, updatedIm.getProbability(0, 0, 0), 0.001);
@@ -228,8 +196,6 @@ public final class TestRowSummingUpdater {
         graph.addDirectedEdge(x1Node, x3Node);
         graph.addDirectedEdge(x2Node, x3Node);
 
-        System.out.println(graph);
-
         BayesPm bayesPm = new BayesPm(graph);
         MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
@@ -238,12 +204,8 @@ public final class TestRowSummingUpdater {
         int x2 = bayesIm.getNodeIndex(x2Node);
         int x3 = bayesIm.getNodeIndex(x3Node);
 
-        System.out.println(bayesIm);
-
         Evidence evidence = Evidence.tautology(bayesIm);
         evidence.getProposition().setCategory(x2, 0);
-
-        System.out.println(evidence);
 
         BayesUpdater updater1 = new CptInvariantUpdater(bayesIm);
         updater1.setEvidence(evidence);
@@ -253,9 +215,6 @@ public final class TestRowSummingUpdater {
 
         double marginal1 = updater1.getMarginal(x3, 0);
         double marginal2 = updater2.getMarginal(x3, 0);
-
-        System.out.println("Marginal from CPT Inv = " + marginal1);
-        System.out.println("Marginal from Row Summer = " + marginal2);
 
         assertEquals(marginal1, marginal2, 0.000001);
     }
@@ -282,8 +241,6 @@ public final class TestRowSummingUpdater {
         graph.addDirectedEdge(x4Node, x0Node);
         graph.addDirectedEdge(x4Node, x2Node);
 
-        System.out.println(graph);
-
         BayesPm bayesPm = new BayesPm(graph);
         MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
@@ -291,15 +248,11 @@ public final class TestRowSummingUpdater {
         int x2 = bayesIm.getNodeIndex(x2Node);
         int x3 = bayesIm.getNodeIndex(x3Node);
 
-        System.out.println(bayesIm);
-
         Evidence evidence = Evidence.tautology(bayesIm);
         evidence.getProposition().setCategory(x1, 1);
         evidence.getProposition().setCategory(x2, 0);
 
         evidence.getNodeIndex("X1");
-
-        System.out.println(evidence);
 
         BayesUpdater updater1 = new CptInvariantUpdater(bayesIm);
         updater1.setEvidence(evidence);
@@ -310,9 +263,6 @@ public final class TestRowSummingUpdater {
         double marginal1 = updater1.getMarginal(x3, 0);
         double marginal2 = updater2.getMarginal(x3, 0);
 
-        System.out.println("Marginal from CPT Inv = " + marginal1);
-        System.out.println("Marginal from Row Summer = " + marginal2);
-
         assertEquals(marginal1, marginal2, 0.000001);
     }
 
@@ -322,8 +272,6 @@ public final class TestRowSummingUpdater {
         Dag graph = new Dag();
 
         graph.addNode(z);
-
-        System.out.println(graph);
 
         BayesPm bayesPm = new BayesPm(graph);
 
@@ -344,8 +292,6 @@ public final class TestRowSummingUpdater {
         graph.addNode(z);
 
         graph.addDirectedEdge(x, z);
-
-        System.out.println(graph);
 
         BayesPm bayesPm = new BayesPm(graph);
 
@@ -378,8 +324,6 @@ public final class TestRowSummingUpdater {
         graph.addDirectedEdge(a, b);
         graph.addDirectedEdge(a, c);
         graph.addDirectedEdge(b, c);
-
-        System.out.println(graph);
 
         BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);

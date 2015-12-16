@@ -616,7 +616,6 @@ public class TestStatUtils {
         double[] x = new double[]{1, 2, 3, 4, 5};
 
         double maxEnt = StatUtils.maxEntApprox(x);
-        System.out.println(maxEnt);
         assertEquals(1.75, maxEnt, 0.01);
     }
 

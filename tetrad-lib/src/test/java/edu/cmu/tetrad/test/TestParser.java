@@ -174,8 +174,7 @@ public final class TestParser {
             Expression e = parser.parseExpression(exp);
             fail("Should not have parsed, " + exp + ", but got " + e);
         } catch (ParseException ex) {
-            System.out.println("Succussfully raised exception with message: ");
-            System.out.println(ex.getMessage());
+            // Succeeded
         }
     }
 

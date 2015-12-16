@@ -47,8 +47,6 @@ public final class TestBayesXml {
         BayesIm bayesIm = sampleBayesIm1();
         Element element = BayesXmlRenderer.getElement(bayesIm);
 
-//        printElement(element);
-
         BayesXmlParser parser = new BayesXmlParser();
         BayesIm bayesIm2 = parser.getBayesIm(element);
 
@@ -59,8 +57,6 @@ public final class TestBayesXml {
     public void testRoundtrip2() {
         BayesIm bayesIm = sampleBayesIm2();
         Element element = BayesXmlRenderer.getElement(bayesIm);
-
-//        printElement(element);
 
         BayesXmlParser parser = new BayesXmlParser();
         BayesIm bayesIm2 = parser.getBayesIm(element);
@@ -73,15 +69,8 @@ public final class TestBayesXml {
         BayesIm bayesIm = sampleBayesIm3();
         Element element = BayesXmlRenderer.getElement(bayesIm);
 
-//        System.out.println("Started with this bayesIm: " + bayesIm);
-//        System.out.println("\nGot this XML for it:");
-//        printElement(element);
-
         BayesXmlParser parser = new BayesXmlParser();
         BayesIm bayesIm2 = parser.getBayesIm(element);
-
-//        System.out.println(bayesIm2.getDag());
-//        System.out.println(bayesIm2);
 
         assertEquals(bayesIm, bayesIm2);
     }
@@ -96,11 +85,9 @@ public final class TestBayesXml {
             Builder builder = new Builder();
             Document document =
                     builder.build(new File("src/test/resources/parsableBayesNet.xml"));
-            printDocument(document);
 
             BayesXmlParser parser = new BayesXmlParser();
-            BayesIm bayesIm = parser.getBayesIm(document.getRootElement());
-//            System.out.println(bayesIm);
+            parser.getBayesIm(document.getRootElement());
         }
         catch (ParsingException e) {
             e.printStackTrace();

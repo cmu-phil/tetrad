@@ -104,17 +104,8 @@ public final class TestBayesPm {
         dag.addNode(x2);
         dag.addNode(x3);
         dag.addNode(x4);
-
         dag.addDirectedEdge(x1, x2);
-
-        System.out.println(dag);
-
-
-        BayesPm bayesPm = new BayesPm(dag, 3, 3);
-
-        System.out.println(bayesPm);
-
-        System.out.println(bayesPm.getMeasuredNodes());
+        new BayesPm(dag, 3, 3);
     }
 }
 

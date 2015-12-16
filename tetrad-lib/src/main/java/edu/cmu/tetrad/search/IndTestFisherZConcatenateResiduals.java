@@ -63,6 +63,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 //    private double fisherZ;
 
     private double pValue = Double.NaN;
+    private boolean verbose = false;
 
 //    private DataSet concatenatedData;
 
@@ -165,13 +166,15 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         this.pValue = pvalue;
         boolean independent = pvalue > alpha;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies",
-                    SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-        } else {
-            TetradLogger.getInstance().log("dependencies",
-                    SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies",
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+                System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            } else {
+                TetradLogger.getInstance().log("dependencies",
+                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
         return independent;
@@ -348,6 +351,14 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      */
     public String toString() {
         return "Fisher Z, Concatenating Residuals";
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

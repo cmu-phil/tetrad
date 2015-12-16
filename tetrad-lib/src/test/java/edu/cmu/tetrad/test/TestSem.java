@@ -49,12 +49,7 @@ public class TestSem {
         Graph graph = constructGraph1();
         SemPm semPm = new SemPm(graph);
         ICovarianceMatrix covMatrix = constructCovMatrix1();
-        SemIm sem = new SemIm(semPm, covMatrix);
-
-        //        System.out.println(graph);
-        //        System.out.println(semPm);
-        //        System.out.println(covMatrix);
-        System.out.println(sem);
+        new SemIm(semPm, covMatrix);
     }
 
     @Test
@@ -63,8 +58,6 @@ public class TestSem {
         SemPm semPm = new SemPm(graph);
         ICovarianceMatrix covMatrix = constructCovMatrix2();
         SemIm sem = new SemIm(semPm, covMatrix);
-
-        System.out.println(sem);
     }
 
     /**
@@ -100,8 +93,6 @@ public class TestSem {
         SemEstimator estimator = new SemEstimator(covMatrix, semPm);
         estimator.estimate();
         SemIm semIm2 = estimator.getEstimatedSem();
-
-        System.out.println(semIm2);
 
         double[][] edgeCoef = semIm2.getEdgeCoef().toArray();
 
@@ -165,8 +156,6 @@ public class TestSem {
 
         double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
         TetradMatrix m2 = new TetradMatrix(m);
-
-        System.out.println(MatrixUtils.toString(m));
         return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), m2, 1000);
     }
 

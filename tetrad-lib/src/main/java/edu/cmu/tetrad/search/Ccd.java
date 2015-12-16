@@ -53,7 +53,7 @@ public final class Ccd implements GraphSearch {
     /**
      * Whether verbose output about independencies is output.
      */
-    private boolean verbose = true;
+    private boolean verbose = false;
     private Graph initialGraph;
 
     /**
@@ -101,7 +101,7 @@ public final class Ccd implements GraphSearch {
         IFas search = new Fas(test);
         search.setDepth(depth);
         search.setKnowledge(getKnowledge());
-        search.setVerbose(true);
+        search.setVerbose(verbose);
         search.setInitialGraph(initialGraph);
         Graph psi = search.search();
         SepsetMap sepsetsFromFas = search.getSepsets();

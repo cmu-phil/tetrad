@@ -57,7 +57,6 @@ public final class TestSearchGraph {
 
         EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(new Dag(GraphUtils.randomGraph(nodes1, 0, 7,
                 30, 15, 15, true)));
-        System.out.println(graph);
 
         List<Node> nodes = graph.getNodes();
 

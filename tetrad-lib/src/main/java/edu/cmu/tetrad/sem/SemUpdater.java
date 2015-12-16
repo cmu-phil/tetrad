@@ -195,8 +195,6 @@ public class SemUpdater implements TetradSerializable {
 //            }
 //        }
 
-        System.out.println("Restricted sigma: " + sigma2);
-
         return manipulatedSemIm.updatedIm(new TetradMatrix(sigma2.toArray()), new TetradVector(muBar.toArray()));
     }
 

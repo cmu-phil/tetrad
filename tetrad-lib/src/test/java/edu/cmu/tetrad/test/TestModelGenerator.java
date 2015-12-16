@@ -63,12 +63,7 @@ public final class TestModelGenerator {
 
         List<Graph> variants1 = ModelGenerator.generate(graph);
 
-        System.out.println("Size of list = " + variants1.size());
         assertEquals(17, variants1.size());
-
-        for (Graph aVariants1 : variants1) {
-            System.out.println(aVariants1);
-        }
     }
 }
 

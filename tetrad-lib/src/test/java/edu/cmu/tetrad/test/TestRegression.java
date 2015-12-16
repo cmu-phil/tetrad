@@ -60,8 +60,6 @@ public class TestRegression {
         Graph graph = new Dag(GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 5, 3,
                 3, 3, false));
 
-        System.out.println(graph);
-
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         data = im.simulateDataReducedForm(1000, false);
@@ -88,8 +86,6 @@ public class TestRegression {
 
         Regression regression = new RegressionDataset(data);
         RegressionResult result = regression.regress(target, regressors);
-
-        System.out.println(result);
 
         double[] coeffs = result.getCoef();
         assertEquals(.08, coeffs[0], 0.01);
@@ -120,8 +116,6 @@ public class TestRegression {
 
         Regression regression = new RegressionCovariance(cov);
         RegressionResult result = regression.regress(target, regressors);
-
-        System.out.println(result);
 
         double[] coeffs = result.getCoef();
         assertEquals(0.00, coeffs[0], 0.01);

@@ -115,8 +115,6 @@ public final class TestUniformGraphGenerator {
         generator.setMaxEdges(10);
         generator.generate();
 
-        generator.printEdges();
-
         assertEquals(10, generator.getDag().getNumEdges());
     }
 
