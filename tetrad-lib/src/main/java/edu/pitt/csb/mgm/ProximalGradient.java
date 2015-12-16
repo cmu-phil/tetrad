@@ -49,17 +49,41 @@ public class ProximalGradient {
     private double backtrackTol = 1e-10;
 
 
+    /**
+     * Constructor, set parameters for a proximal gradient run
+     *
+     * @param beta (0,1) factor to increase L when Lipshitz violated, L = L_old/beta
+     * @param alpha (0,1) factor to decrease L otherwise, L = L_old*alpha
+     * @param edgeConverge
+     */
     public ProximalGradient(double beta, double alpha, boolean edgeConverge){
+        if(beta <= 0 || beta >=1)
+            throw new IllegalArgumentException("beta must be (0,1): " + beta);
+
+        if(alpha <= 0 || alpha >=1)
+            throw new IllegalArgumentException("alpha must be (0,1): " + alpha);
+
         this.beta = beta;
         this.alpha = alpha;
         this.edgeConverge = edgeConverge;
     }
 
+    /**
+     * Constructor using defaults from Becker et al 2011. beta = .5, alpha = .9
+     */
     public ProximalGradient(){
-        //defaults from Becker et al 2011
         beta = .5;
         alpha = .9;
         edgeConverge = false;
+    }
+
+    /**
+     *  Positive edge change tolerance is the number of iterations with 0 edge changes needed to converge.
+     *  Negative edge change tolerance means convergence happens when number of difference edges <= |edge change tol|.
+     *  Default is 3.
+     */
+    public void setEdgeChangeTol(int t){
+        noEdgeChangeTol = t;
     }
 
 
@@ -170,12 +194,18 @@ public class ProximalGradient {
             //sometimes there are more edge changes after initial 0, so may want to do two zeros in a row...
             if (diffEdges == 0 && edgeConverge) {
                 noEdgeChangeCount++;
-                if(noEdgeChangeCount > noEdgeChangeTol) {
+                if(noEdgeChangeCount >= noEdgeChangeTol) {
                     System.out.println("Edges converged at iter: " + iterCount + " with |dx|/|x|: " + dx);
                     System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
                             Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
                     break;
                 }
+                // negative noEdgeChangeTol stops when diffEdges <= |noEdgeChangeTol|
+            } else if (noEdgeChangeTol < 0 && diffEdges <= Math.abs(noEdgeChangeTol)) {
+                System.out.println("Edges converged at iter: " + iterCount + " with |dx|/|x|: " + dx);
+                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
+                        Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
+                break;
             } else {
                 noEdgeChangeCount = 0;
             }

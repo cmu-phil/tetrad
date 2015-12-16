@@ -27,18 +27,19 @@ import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
+import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.StatUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 //import cern.colt.Arrays;
@@ -326,7 +327,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
     }
 
     // avoid underflow in log(sum(exp(x))) calculation
-    public double logsumexp(DoubleMatrix1D x){
+    private double logsumexp(DoubleMatrix1D x){
         DoubleMatrix1D myX = x.copy();
         double maxX = StatUtils.max(myX.toArray());
         return Math.log(myX.assign(Functions.minus(maxX)).assign(Functions.exp).zSum()) + maxX;
@@ -348,6 +349,9 @@ public class MGM extends ConvexProximal implements GraphSearch{
         }
     }
 
+    /**
+     * Convert discrete data (in yDat) to a matrix of dummy variables (stored in dDat)
+     */
     private void makeDummy(){
         dDat = factory2D.make(n, lsum);
         for(int i = 0; i < q; i++){
@@ -357,6 +361,9 @@ public class MGM extends ConvexProximal implements GraphSearch{
         }
     }
 
+    /**
+     * checks if yDat is zero indexed and converts to 1 index. zscores x
+     */
     private void fixData(){
         //TODO ydat needs to be converted to levels reliably for now, just check if its 0 index and convert to 1
         if(StatUtils.min(flatten(yDat).toArray())==0){
@@ -370,8 +377,12 @@ public class MGM extends ConvexProximal implements GraphSearch{
         }
     }
 
-    // non-penalized -log(likelihood) this is the smooth function g(x) in prox gradient
-    //public double smoothValue(MGMParams parIn){
+    /**
+     * non-penalized -log(likelihood) this is the smooth function g(x) in prox gradient
+     *
+     * @param parIn
+     * @return
+     */
     public double smoothValue(DoubleMatrix1D parIn){
         //work with copy
         MGMParams par = new MGMParams(parIn, p, lsum);
@@ -449,10 +460,16 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return (sqloss + catloss)/((double) n);
     }
 
-    // non-penalized -log(likelihood) this is the smooth function g(x) in prox gradient
-    // this overloaded version calculates both nll and the smooth gradient at the same time
-    // any value in gradOut will be replaces by the new calculations
-    //public double smooth(MGMParams parIn, MGMParams gradOut){
+    /**
+     * non-penalized -log(likelihood) this is the smooth function g(x) in prox gradient
+     * this overloaded version calculates both nll and the smooth gradient at the same time
+     * any value in gradOut will be replaced by the new calculations
+     *
+     *
+     * @param parIn
+     * @param gradOutVec
+     * @return
+     */
     public double smooth(DoubleMatrix1D parIn, DoubleMatrix1D gradOutVec){
         //work with copy
         MGMParams par = new MGMParams(parIn, p, lsum);
@@ -607,7 +624,12 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return (sqloss + catloss)/((double) n);
     }
 
-    //public double nonSmoothValue(MGMParams par){
+    /**
+     * Calculates penalty term
+     *
+     * @param parIn
+     * @return
+     */
     public double nonSmoothValue(DoubleMatrix1D parIn){
         //DoubleMatrix1D tlam = lambda.copy().assign(Functions.mult(t));
         //TODO check dim of X...
@@ -671,7 +693,12 @@ public class MGM extends ConvexProximal implements GraphSearch{
     }
 
 
-    //public MGMParams smoothGradient(MGMParams parIn){
+    /**
+     * Gradient of the pseudolikelihood
+     *
+     * @param parIn
+     * @return
+     */
     public DoubleMatrix1D smoothGradient(DoubleMatrix1D parIn){
         int n = xDat.rows();
         MGMParams grad = new MGMParams();
@@ -796,8 +823,12 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return grad.toMatrix1D();
     }
 
-
-
+    /**
+     *
+     * @param t
+     * @param X
+     * @return
+     */
     public DoubleMatrix1D proximalOperator(double t, DoubleMatrix1D X) {
             //System.out.println("PROX with t = " + t);
 
@@ -999,19 +1030,47 @@ public class MGM extends ConvexProximal implements GraphSearch{
     }*/
 
 
-    //
+    /**
+     *  Learn MGM traditional way with objective function tolerance. Recommended for inference applications that need
+     *  accurate pseudolikelihood
+     *
+     * @param epsilon tolerance in change of objective function
+     * @param iterLimit iteration limit
+     */
     public void learn(double epsilon, int iterLimit){
         ProximalGradient pg = new ProximalGradient();
         setParams(new MGMParams(pg.learnBackTrack(this, params.toMatrix1D(), epsilon, iterLimit), p, lsum));
     }
 
-
+    /**
+     *  Learn MGM using edge convergence using default 3 iterations of no edge changes. Recommended when we only care about
+     *  edge existence.
+     *
+     * @param iterLimit
+     */
     public void learnEdges(int iterLimit){
         ProximalGradient pg = new ProximalGradient(.5, .9, true);
         setParams(new MGMParams(pg.learnBackTrack(this, params.toMatrix1D(), 0.0, iterLimit), p, lsum));
     }
 
+    /**
+     *  Learn MGM using edge convergence using edgeChangeTol (see ProximalGradient for documentation). Recommended when we only care about
+     *  edge existence.
+     *
+     * @param iterLimit
+     * @param edgeChangeTol
+     */
+    public void learnEdges(int iterLimit, int edgeChangeTol){
+        ProximalGradient pg = new ProximalGradient(.5, .9, true);
+        pg.setEdgeChangeTol(edgeChangeTol);
+        setParams(new MGMParams(pg.learnBackTrack(this, params.toMatrix1D(), 0.0, iterLimit), p, lsum));
+    }
 
+    /**
+     * Converts MGM object to Graph object with edges if edge parameters are non-zero. Loses all edge param information
+     *
+     * @return
+     */
     public Graph graphFromMGM(){
 
         //List<Node> variables = getVariables();
@@ -1057,7 +1116,12 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return g;
     }
 
-    //This converts edge parameters to a single value
+    /**
+     * Converts MGM to matrix of doubles. uses 2-norm to combine c-d edge parameters into single value and f-norm for
+     * d-d edge parameters.
+     *
+     * @return
+     */
     public DoubleMatrix2D adjMatFromMGM(){
         //List<Node> variables = getVariables();
         DoubleMatrix2D outMat = DoubleFactory2D.dense.make(p+q,p+q);
@@ -1092,6 +1156,11 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return outMat;
     }
 
+    /**
+     * Simple search command for GraphSearch implementation. Uses default edge convergence, 1000 iter limit.
+     *
+     * @return
+     */
     public Graph search(){
         long startTime = System.currentTimeMillis();
         learnEdges(1000); //unlikely to hit this limit
@@ -1099,13 +1168,21 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return graphFromMGM();
     }
 
+    /**
+     * Return time of execution for learning.
+     * @return
+     */
     public long getElapsedTime(){
         return elapsedTime;
     }
 
+
+    /*
+     * PRIVATE UTILS
+     */
     //Utils
     //sum rows together if marg == 1 and cols together if marg == 2
-    public static DoubleMatrix1D margSum(DoubleMatrix2D mat, int marg){
+    private static DoubleMatrix1D margSum(DoubleMatrix2D mat, int marg){
         int n = 0;
         DoubleMatrix1D vec = null;
         DoubleFactory1D fac = DoubleFactory1D.dense;
@@ -1138,7 +1215,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
     }
 
     //zeros out everthing above di-th diagonal
-    public static DoubleMatrix2D lowerTri(DoubleMatrix2D mat, int di){
+    private static DoubleMatrix2D lowerTri(DoubleMatrix2D mat, int di){
         for(int i = 0; i < mat.rows() - Math.max(di + 1, 0); i++){
             for(int j = Math.max(i + di + 1, 0); j <  mat.rows(); j++){
                 mat.set(i,j,0);
@@ -1148,8 +1225,8 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return mat;
     }
 
-    //
-    public static double norm2(DoubleMatrix2D mat){
+    // should move somewhere else...
+    private static double norm2(DoubleMatrix2D mat){
         //return Math.sqrt(mat.copy().assign(Functions.pow(2)).zSum());
         Algebra al = new Algebra();
 
@@ -1160,12 +1237,12 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return al.norm2(mat);
     }
 
-    public static double norm2(DoubleMatrix1D vec){
+    private static double norm2(DoubleMatrix1D vec){
         //return Math.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
         return Math.sqrt(new Algebra().norm2(vec));
     }
 
-    public static void main(String[] args){
+    private static void runTests1(String[] args){
         try {
             //DoubleMatrix2D xIn = DoubleFactory2D.dense.make(loadDataSelect("/Users/ajsedgewick/tetrad/test_data", "med_test_C.txt"));
             //DoubleMatrix2D yIn = DoubleFactory2D.dense.make(loadDataSelect("/Users/ajsedgewick/tetrad/test_data", "med_test_D.txt"));
@@ -1187,21 +1264,6 @@ public class MGM extends ConvexProximal implements GraphSearch{
 
             System.out.println("Weights: " + Arrays.toString(model.weights.toArray()));
 
-            /*DoubleMatrix2D test = model.alg.transpose(xIn.copy());
-            long t = System.currentTimeMillis();
-            for(int i=0; i<100; i++) {
-                model.alg.mult(test, xIn);
-            }
-            System.out.println("colt mult Time: " + (System.currentTimeMillis() - t));
-
-            TetradMatrix tx = new TetradMatrix(xIn.toArray());
-            TetradMatrix ttx = tx.transpose();
-
-            t = System.currentTimeMillis();
-            for(int i=0; i<100; i++) {
-                tx.times(ttx);
-            }
-            System.out.println("tetrad mult Time: " + (System.currentTimeMillis() - t));*/
             DoubleMatrix2D test = xIn.copy();
             DoubleMatrix2D test2 = xIn.copy();
             long t = System.currentTimeMillis();
@@ -1221,55 +1283,8 @@ public class MGM extends ConvexProximal implements GraphSearch{
             System.out.println("equals Time: " + (System.currentTimeMillis() - t));
 
 
-            System.out.println("Inf Test: " + 1.0/Double.POSITIVE_INFINITY);
-
             System.out.println("Init nll: " + model.smoothValue(model.params.toMatrix1D()));
             System.out.println("Init reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
-            /*System.out.println("Weights: " + Arrays.toString(model.weights.toArray()));
-            //System.out.println("Init Params: " + model.params);
-            //System.out.println("max(0,nan)" + Math.max(0,Double.NaN));
-            //System.out.println("dDat: " + model.dDat.toString());
-
-            //model.learn(1e-7, 700);
-            //Matrix X = new DenseMatrix(model.params.toVector());
-            //System.out.println("X params:\n" + new MGMParams(DoubleFactory1D.dense.make(X.getData()[0]), 5, 10));
-
-            //Matrix G = new DenseMatrix(model.gradient().toVector());
-            //System.out.println("G norm test: " + Matlab.norm(G));
-            //model.setParams(model.gradient());
-            MGMParams grad = model.gradient(model.params);
-            System.out.println("grad nll: " + model.negLogLikelihood(grad));
-            System.out.println("grad reg term: " + model.regTerm(grad));
-            //System.out.println("grad params:\n" + grad);
-
-            DoubleMatrix1D X = DoubleFactory1D.dense.make(model.params.toVector()[0]);
-            DoubleMatrix1D G = DoubleFactory1D.dense.make(grad.toVector()[0]);
-
-            ProxMGM pm = model.new ProxMGM();
-            MGMParams X2 = new MGMParams(pm.computeColt(1, X.copy().assign(G.copy(), Functions.minus)), 24, 48);
-            System.out.println("X2 nll: " + model.negLogLikelihood(X2));
-            System.out.println("X2 reg term: " + model.regTerm(X2));*/
-            //System.out.println("X2 params:\n" + X2);
-
-
-
-            //System.out.println("triu: " + upperTri(model.gradient().beta.copy(),-1));
-            //System.out.println("tril: " + lowerTri(model.gradient().beta.copy(), -1));
-
-            //System.out.println("X+.1G params:\n" + new MGMParams(DoubleFactory1D.dense.make(X.plus(G.times(.1)).getData()[0]), 5, 10));
-
-            //ProxMGM testProx = model.new ProxMGM();
-            //Matrix newP = testProx.compute(1, G);
-            //Matrix newP = testProx.compute(.9, X);
-            //System.out.println("prox G t=1:\n" + new MGMParams(DoubleFactory1D.dense.make(newP.getData()[0]), 5, 10));
-            //Matrix newP = new DenseMatrix(1, X.getColumnDimension());;
-            //testProx.compute(newP, .9, X.minus(G.times(.9)));
-            //System.out.println("newP is null? " + (newP==null));
-
-            //model.setParams(new MGMParams(DoubleFactory1D.dense.make(newP.getData()[0]), 5, 10));
-            //System.out.println("params:\n" + model.params);
-            //System.out.println("prox .9 nll: " + model.negLogLikelihood());
-            //System.out.println("prox .9 reg term: " + model.regTerm());
 
             t = System.currentTimeMillis();
             model.learnEdges(700);
@@ -1282,27 +1297,54 @@ public class MGM extends ConvexProximal implements GraphSearch{
             System.out.println("params:\n" + model.params);
             System.out.println("adjMat:\n" + model.adjMatFromMGM());
 
-            //System.out.println("Init nll: " + model2.negLogLikelihood(model2.params));
-            //System.out.println("Init reg term: " + model2.regTerm(model2.params));
-
-            /*t = System.currentTimeMillis();
-            model2.learnBackTrack2(1e-7, 700);
-            System.out.println("New Time: " + (System.currentTimeMillis()-t));
-
-            System.out.println("nll: " + model2.negLogLikelihood(model2.params));
-            System.out.println("reg term: " + model2.regTerm(model2.params));*/
-
-            //System.out.println("params:\n" + model.params);
-            //System.out.println("new params: " + Arrays.toString(newP.getData()[0]));
-            //System.out.println("params: " + Arrays.toString(model.params.toVector()[0]));
-            //System.out.println("grad: " + Arrays.toString(model.gradient().toVector()[0]));
 
         } catch (IOException ex){
             ex.printStackTrace();
         }
+    }
 
+    /**
+     * test non penalty use cases
+     */
+    private static void runTests2(){
+        Graph g = GraphConverter.convert("X1-->X2,X3-->X2,X2-->X4");
+        //simple graph pm im gen example
 
+        HashMap<String, Integer> nd = new HashMap<>();
+        nd.put("X1", 0);
+        nd.put("X2", 0);
+        nd.put("X3", 4);
+        nd.put("X4", 4);
 
+        g = MixedUtils.makeMixedGraph(g, nd);
+
+        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(g, "Split(-1.5,-.5,.5,1.5)");
+        System.out.println(pm);
+
+        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
+        System.out.println(im);
+
+        int samps = 15;
+        DataSet ds = im.simulateDataAvoidInfinity(samps, false);
+        ds = MixedUtils.makeMixedData(ds, nd);
+        System.out.println(ds);
+
+        MGM model = new MGM(ds, new double[]{0.01,0.01,0.01});
+
+        System.out.println("Init nll: " + model.smoothValue(model.params.toMatrix1D()));
+        System.out.println("Init reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
+
+        model.learn(1e-8,1000);
+
+        System.out.println("Learned nll: " + model.smoothValue(model.params.toMatrix1D()));
+        System.out.println("Learned reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
+
+        System.out.println("params:\n" + model.params);
+        System.out.println("adjMat:\n" + model.adjMatFromMGM());
+    }
+
+    public static void main(String[] args){
+        runTests2();
     }
 
         /*
