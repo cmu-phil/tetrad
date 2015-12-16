@@ -31,7 +31,6 @@ import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
-import org.junit.Test;
 
 import javax.swing.*;
 import java.io.*;
@@ -686,7 +685,6 @@ public class PerformanceTests {
 
         Fgs fgs = new Fgs(cov);
         fgs.setVerbose(false);
-        fgs.setLog(false);
         fgs.setNumPatternsToStore(0);
         fgs.setPenaltyDiscount(penaltyDiscount);
         fgs.setOut(System.out);
@@ -780,7 +778,6 @@ public class PerformanceTests {
 
         Fgs fgs = new Fgs(score);
         fgs.setVerbose(false);
-        fgs.setLog(false);
         fgs.setNumPatternsToStore(0);
         fgs.setOut(out);
         fgs.setFaithfulnessAssumed(true);
@@ -864,7 +861,6 @@ public class PerformanceTests {
 
             Fgs fgs = new Fgs(dataSet);
             fgs.setVerbose(false);
-            fgs.setLog(false);
             fgs.setNumPatternsToStore(0);
             fgs.setPenaltyDiscount(4);
             fgs.setOut(out);
@@ -1170,7 +1166,7 @@ public class PerformanceTests {
         System.out.println("FCI DAG with dsep = " + left);
         System.out.println("DAG to PAG = " + top);
 
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
         Set<Edge> leftEdges = left.getEdges();
@@ -1229,7 +1225,7 @@ public class PerformanceTests {
 
         top = GraphUtils.replaceNodes(top, left.getNodes());
 //
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
 //        int[][] counts = edgeMisclassificationCounts(top, top);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
@@ -1284,7 +1280,7 @@ public class PerformanceTests {
 
         top = GraphUtils.replaceNodes(top, left.getNodes());
 //
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
 //        int[][] counts = edgeMisclassificationCounts(top, top);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
@@ -1332,7 +1328,7 @@ public class PerformanceTests {
 //        top = DataGraphUtils.replaceNodes(top, left.getNodes());
 
 //        int[][] counts = edgeMisclassificationCounts(left, top);
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(top, top);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(top, top, true);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
 //        System.out.println("Elapsed fci = " + (time1b - time1a) + " ms");

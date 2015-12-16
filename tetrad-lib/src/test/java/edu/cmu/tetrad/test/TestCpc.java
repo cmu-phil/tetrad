@@ -91,9 +91,6 @@ public class TestCpc {
         Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
                 7, 5, 5, false));
 
-        System.out.println("\nInput graph:");
-        System.out.println(trueGraph);
-
         SemPm semPm = new SemPm(trueGraph);
         SemIm semIm = new SemIm(semPm);
         DataSet _dataSet = semIm.simulateData(1000, false);
@@ -124,17 +121,6 @@ public class TestCpc {
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
-        // PrintUtil out problem and graphs.
-        System.out.println("\nInput graph:");
-        System.out.println(graph);
-        System.out.println("\nResult graph:");
-        System.out.println(resultGraph);
-        System.out.println("\nTrue graph:");
-        System.out.println(trueGraph);
-
-        System.out.println("Result graph = " + resultGraph);
-        System.out.println("True graph = " + trueGraph);
-
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         // Do test.
@@ -158,7 +144,6 @@ public class TestCpc {
 
         // Set up search.
 //        IndependenceTest independence = new IndTestGraph(graph);
-        cpc.setVerbose(true);
         cpc.setKnowledge(knowledge);
 
         // Run search

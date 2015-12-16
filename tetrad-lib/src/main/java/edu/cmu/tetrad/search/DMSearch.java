@@ -42,6 +42,7 @@ public class DMSearch {
     //If not subseting, should be set to the entire input set.
     private int[] trueInputs;
     private DataSet data;
+    private boolean verbose = false;
 
     public void setMinDiscount(int minDiscount) {
         this.minDiscount = minDiscount;
@@ -169,7 +170,11 @@ public class DMSearch {
 //            Pc pc = new Pc(new IndTestFisherZ(cov, this.alphaPC));
 //            pc.setKnowledge(knowledge);
 //            pc.setDepth(0);
-            System.out.println("Running PC Search");
+            if (verbose) {
+                if (verbose) {
+                    System.out.println("Running PC Search");
+                }
+            }
 //            pattern = pc.search();
             double penalty = 2;
 
@@ -198,7 +203,9 @@ public class DMSearch {
                 }
             }
 
-            System.out.println("Running DM search");
+            if (verbose) {
+                System.out.println("Running DM search");
+            }
             applyDmSearch(pattern, inputString, penalty);
         }
 
@@ -228,7 +235,9 @@ public class DMSearch {
             }
         });
 
-        System.out.println("Sorted patternNodes");
+        if (verbose) {
+            System.out.println("Sorted patternNodes");
+        }
         //constructing treeSet of output nodes.
         SortedSet<Node> outputNodes = new TreeSet<Node>();
         for (int i : getOutputs()) {
@@ -241,7 +250,9 @@ public class DMSearch {
             outputNodes.add(patternNodes.get(i));
         }
 
-        System.out.println("Got output nodes");
+        if (verbose) {
+            System.out.println("Got output nodes");
+        }
 
 //        System.out.println(outputNodes);
 
@@ -250,7 +261,9 @@ public class DMSearch {
             outputParentsList.add(new TreeSet<Node>(getInputParents(node, inputString, pattern)));
         }
 
-        System.out.println("Created list of output node parents");
+        if (verbose) {
+            System.out.println("Created list of output node parents");
+        }
         int sublistStart = 1;
         int nLatents = 0;
 
@@ -326,17 +339,23 @@ public class DMSearch {
                     }
                 }
             }
-            System.out.println("Completed starting point: " + sublistStart + " out of #" + outputParentsList.size() + " sets, and is " + set1.size() + " units large.");
+            if (verbose) {
+                System.out.println("Completed starting point: " + sublistStart + " out of #" + outputParentsList.size() + " sets, and is " + set1.size() + " units large.");
+            }
             sublistStart++;
         }
-        System.out.println("created initial sets");
+        if (verbose) {
+            System.out.println("created initial sets");
+        }
 
         //Need to order latents by entryset value size (smallest to largest)
         //as Map only allows sorting by keyset size.
         TreeMap<TreeSet<Node>, Node> latentsSortedByInputSetSize = sortMapByValue(structure.inputs, structure.latents, structure);
 
 
-        System.out.println("Finding initial latent-latent effects");
+        if (verbose) {
+            System.out.println("Finding initial latent-latent effects");
+        }
 
 
 //        System.out.println(latentsSortedByInputSetSize);
@@ -499,10 +518,14 @@ public class DMSearch {
             }
         }
 
-        System.out.println("Structure prior to Sober's step:");
+        if (verbose) {
+            System.out.println("Structure prior to Sober's step:");
+        }
 //        System.out.println(structure);
 
-        System.out.println("Applying Sober's step ");
+        if (verbose) {
+            System.out.println("Applying Sober's step ");
+        }
 
         //Sober's step.
         for (Node latent : structure.getLatents()) {
@@ -525,7 +548,9 @@ public class DMSearch {
             PrintStream outStream = new PrintStream(out);
             outStream.println(structure.latentStructToEdgeListGraph(structure));
         } catch (java.io.FileNotFoundException e) {
-            System.out.println("Can't write to file.");
+            if (verbose) {
+                System.out.println("Can't write to file.");
+            }
 
         }
 
@@ -632,7 +657,9 @@ public class DMSearch {
             PrintStream outStream = new PrintStream(out);
             outStream.println(pattern);
         } catch (java.io.FileNotFoundException e) {
-            System.out.println("Can't write to file.");
+            if (verbose) {
+                System.out.println("Can't write to file.");
+            }
 
         }
 
@@ -664,13 +691,15 @@ public class DMSearch {
         try {
             testResult = test.isIndependent(outputsLatent.first(), outputsLatentEffect.first(), latentList);
         } catch (SingularMatrixException error) {
-            System.out.println(error);
-            System.out.println("SingularMatrixException Error!!!!!! Evaluated as:");
-            System.out.println(testResult);
-            System.out.println("outputsLatent.first()");
-            System.out.println(outputsLatent.first());
-            System.out.println("outputsLatentEffect.first()");
-            System.out.println(outputsLatentEffect.first());
+            if (verbose) {
+                System.out.println(error);
+                System.out.println("SingularMatrixException Error!!!!!! Evaluated as:");
+                System.out.println(testResult);
+                System.out.println("outputsLatent.first()");
+                System.out.println(outputsLatent.first());
+                System.out.println("outputsLatentEffect.first()");
+                System.out.println(outputsLatentEffect.first());
+            }
         }
         if (testResult == true) {
             structure.latentEffects.get(latent).remove(latentEffect);
@@ -778,6 +807,14 @@ public class DMSearch {
             }
         }
         return (actualInputs);
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     public class LatentStructure {

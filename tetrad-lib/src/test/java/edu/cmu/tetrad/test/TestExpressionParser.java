@@ -151,14 +151,10 @@ public class TestExpressionParser {
         try {
             for (String formula : formulasToEvaluations.keySet()) {
                 Expression expression = parser.parseExpression(formula);
-//                System.out.println(expression);
 
                 double value = expression.evaluate(context);
 
                 assertEquals(formulasToEvaluations.get(formula), value, 0.01);
-
-//                System.out.println(value);
-
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -217,17 +213,8 @@ public class TestExpressionParser {
 
         try {
             for (String formula : formulas) {
-//                System.out.println(formula);
-
                 Expression expression = parser.parseExpression(formula);
-                System.out.println(expression);
-
                 double value = expression.evaluate(context);
-
-//                assertEquals(formulas.get(formula), value, 0.01);
-
-//                System.out.println(value);
-
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -257,81 +244,45 @@ public class TestExpressionParser {
         Matcher matcher = pattern.matcher("0.5");
         boolean matches = matcher.matches();
 
-        if (matches) {
-            System.out.println(matcher.group());
-        }
-
         assertTrue(matches);
 
         matcher = pattern.matcher(".5");
         matches = matcher.matches();
-
-        if (matches) {
-            System.out.println(matcher.group());
-        }
 
         assertTrue(matches);
 
         matcher = pattern.matcher("5.");
         matches = matcher.matches();
 
-        if (matches) {
-            System.out.println(matcher.group());
-        }
-
         assertTrue(matches);
 
         matcher = pattern.matcher("5");
         matches = matcher.matches();
-
-        if (matches) {
-            System.out.println(matcher.group());
-        }
 
         assertTrue(matches);
 
         matcher = pattern.matcher(".");
         matches = matcher.matches();
 
-        if (matches) {
-            System.out.println(matcher.group());
-        }
-
         assertTrue(!matches);
 
         matcher = pattern.matcher("-.5");
         matches = matcher.matches();
-
-        if (matches) {
-            System.out.println(matcher.group());
-        }
 
         assertTrue(matches);
 
         matcher = pattern.matcher("-5.");
         matches = matcher.matches();
 
-        if (matches) {
-            System.out.println(matcher.group());
-        }
-
         assertTrue(matches);
 
         matcher = pattern.matcher("-5");
         matches = matcher.matches();
 
-        if (matches) {
-            System.out.println(matcher.group());
-        }
-
         assertTrue(matches);
 
         matcher = pattern.matcher("-.");
         matches = matcher.matches();
-
-        if (matches) {
-            System.out.println(matcher.group());
-        }
 
         assertTrue(!matches);
     }
@@ -361,22 +312,10 @@ public class TestExpressionParser {
 
         for (String formula : formulasToOffsets.keySet()) {
             try {
-                System.out.println(formula);
                 parser.parseExpression(formula);
                 assertEquals(formulasToOffsets.get(formula).intValue(), -1);
             } catch (ParseException e) {
                 int offset = e.getErrorOffset();
-
-                for (int i = 0; i < offset; i++) {
-                    System.out.print(" ");
-                }
-
-                System.out.println("^");
-                System.out.println("offset = " + offset);
-                System.out.println();
-
-//                e.printStackTrace();
-
                 assertEquals(formulasToOffsets.get(formula).intValue(), offset);
             }
         }
@@ -409,7 +348,6 @@ public class TestExpressionParser {
 
         try {
             for (String formula : formulas.keySet()) {
-                System.out.println(formula);
                 Expression expression = parser.parseExpression(formula);
 
                 double sum = 0.0;

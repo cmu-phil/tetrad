@@ -151,18 +151,8 @@ public class TestGes {
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
-        // PrintUtil out problem and graphs.
-//        System.out.println("\nInput graph:");
-//        System.out.println(graph);
-//        System.out.println("\nResult graph:");
-//        System.out.println(resultGraph);
-//
-//        System.out.println("Seed = " + RandomUtil.getInstance().getSeed());
-
         // Do test.
         Graph p = SearchGraphUtils.patternForDag(trueGraph);
-
-//        System.out.println(p);
 
         assertTrue(resultGraph.equals(p));
     }
@@ -185,14 +175,6 @@ public class TestGes {
 
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);
-
-        // PrintUtil out problem and graphs.
-//        System.out.println("\nInput graph:");
-//        System.out.println(graph);
-//        System.out.println("\nResult graph:");
-//        System.out.println(resultGraph);
-//
-//        System.out.println("Seed = " + RandomUtil.getInstance().getSeed());
 
         // Do test.
         assertTrue(resultGraph.equals(SearchGraphUtils.patternForDag(trueGraph)));
@@ -220,15 +202,6 @@ public class TestGes {
 
         // Run search
         Graph resultGraph = ges.search();
-
-        // PrintUtil out problem and graphs.
-        System.out.println(knowledge);
-        System.out.println("True Graph:");
-        System.out.println(trueGraph);
-        System.out.println("Result graph:");
-        System.out.println(resultGraph);
-
-        // Build comparison graph.
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));

@@ -69,8 +69,6 @@ public final class TestDag {
         graph.addDirectedEdge(x3, x4);
         graph.addDirectedEdge(x5, x4);
 
-        System.out.println(graph);
-
         List<Node> children = graph.getChildren(x1);
         List<Node> parents = graph.getParents(x4);
 

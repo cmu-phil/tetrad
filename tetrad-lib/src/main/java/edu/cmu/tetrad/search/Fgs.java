@@ -122,11 +122,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private int numPatternsToStore = 0;
 
     /**
-     * True if logs should be output.
-     */
-    private boolean log = true;
-
-    /**
      * True if verbose output should be printed.
      */
     private boolean verbose = false;
@@ -170,7 +165,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * The data set must either be all continuous or all discrete.
      */
     public Fgs(DataSet dataSet) {
-        out.println("GES constructor");
+        if (verbose) {
+            out.println("GES constructor");
+        }
 
         if (dataSet.isDiscrete()) {
             setGesScore(new BDeuScore(dataSet));
@@ -178,18 +175,24 @@ public final class Fgs implements GraphSearch, GraphScorer {
             setGesScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
         }
 
-        out.println("GES constructor done");
+        if (verbose) {
+            out.println("GES constructor done");
+        }
     }
 
     /**
      * Continuous case--where a covariance matrix is already available.
      */
     public Fgs(ICovarianceMatrix covMatrix) {
-        out.println("GES constructor");
+        if (verbose) {
+            out.println("GES constructor");
+        }
 
         setGesScore(new SemBicScore(covMatrix));
 
-        out.println("GES constructor done");
+        if (verbose) {
+            out.println("GES constructor done");
+        }
     }
 
     public Fgs(GesScore gesScore) {
@@ -358,20 +361,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
     }
 
     /**
-     * True iff log output should be produced.
-     */
-    public boolean isLog() {
-        return log;
-    }
-
-    /**
-     * Sets whether log output should be produced. Set to false a faster search.
-     */
-    public void setLog(boolean log) {
-        this.log = log;
-    }
-
-    /**
      * @return the initial graph for the search. The search is initialized to this graph and
      * proceeds from there.
      */
@@ -386,8 +375,10 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (initialGraph != null) {
             initialGraph = GraphUtils.replaceNodes(initialGraph, variables);
 
-            out.println("Initial graph variables: " + initialGraph.getNodes());
-            out.println("Data set variables: " + variables);
+            if (verbose) {
+                out.println("Initial graph variables: " + initialGraph.getNodes());
+                out.println("Data set variables: " + variables);
+            }
 
             if (!new HashSet<>(initialGraph.getNodes()).equals(new HashSet<>(variables))) {
                 throw new IllegalArgumentException("Variables aren't the same.");
@@ -537,8 +528,11 @@ public final class Fgs implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        synchronized (count) {
-                            if (((count[0]++) + 1) % 1000 == 0) out.println("Initializing effect edges: " + count[0]);
+                        if (verbose) {
+                            synchronized (count) {
+                                if (((count[0]++) + 1) % 1000 == 0)
+                                    out.println("Initializing effect edges: " + count[0]);
+                            }
                         }
 
                         Node y = nodes.get(i);
@@ -608,7 +602,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
         long stop = System.currentTimeMillis();
 
-        out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
+        if (verbose) {
+            out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
+        }
 
         return effectEdgesGraph;
     }
@@ -1175,14 +1171,17 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) return false;
         graph.addDirectedEdge(x, y);
 
-        if (log) {
+        if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";
             TetradLogger.getInstance().log("insertedEdges", graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
                     " " + t + " " + bump + " " + label);
         }
 
         int numEdges = graph.getNumEdges();
-        if (numEdges % 1000 == 0) out.println("Num edges added: " + numEdges);
+
+        if (verbose) {
+            if (numEdges % 1000 == 0) out.println("Num edges added: " + numEdges);
+        }
 
         if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";
@@ -1199,7 +1198,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
             if (boundGraph != null && !boundGraph.isAdjacentTo(_t, y)) continue;
             graph.addDirectedEdge(_t, y);
 
-            if (log && verbose) {
+            if (verbose) {
                 TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
                         graph.getEdge(_t, y));
                 out.println("--- Directing " + oldEdge + " to " +
@@ -1228,9 +1227,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (verbose) {
             int numEdges = graph.getNumEdges();
             if (numEdges % 1000 == 0) out.println("Num edges (backwards) = " + numEdges);
-        }
 
-        if (log) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";
             TetradLogger.getInstance().log("deletedEdges", (graph.getNumEdges() - 1) + ". DELETE " + oldxy +
                     " " + subset + " (" + bump + ") " + label);
@@ -1249,7 +1246,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                 Edge edge = graph.getEdge(y, h);
 
-                if (log && verbose) {
+                if (verbose) {
                     TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldyh + " to " +
                             edge);
                     out.println("--- Directing " + oldyh + " to " + edge);
@@ -1266,7 +1263,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                 Edge edge = graph.getEdge(x, h);
 
-                if (log && verbose) {
+                if (verbose) {
                     TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldxh + " to " +
                             edge);
                     out.println("--- Directing " + oldxh + " to " + edge);

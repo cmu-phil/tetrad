@@ -2947,7 +2947,10 @@ public final class SearchGraphUtils {
     public static int[][] graphComparison(Graph estPattern, Graph truePattern, PrintStream out) {
         GraphUtils.GraphComparison comparison = getGraphComparison(estPattern, truePattern);
 
-        out.println("Adjacencies:");
+        if (out != null) {
+            out.println("Adjacencies:");
+        }
+
         int adjTp = comparison.getAdjCorrect();
         int adjFp = comparison.getAdjFp();
         int adjFn = comparison.getAdjFn();
@@ -2956,12 +2959,17 @@ public final class SearchGraphUtils {
         int arrowptFp = comparison.getArrowptFp();
         int arrowptFn = comparison.getArrowptFn();
 
-        out.println("TP " + adjTp + " FP = " + adjFp + " FN = " + adjFn);
-        out.println("Arrow Orientations:");
-        out.println("TP " + arrowptTp + " FP = " + arrowptFp + " FN = " + arrowptFn);
+        if (out != null) {
+            out.println("TP " + adjTp + " FP = " + adjFp + " FN = " + adjFn);
+            out.println("Arrow Orientations:");
+            out.println("TP " + arrowptTp + " FP = " + arrowptFp + " FN = " + arrowptFn);
+        }
 
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern);
-        out.println(GraphUtils.edgeMisclassifications(counts));
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern, false);
+
+        if (out != null) {
+            out.println(GraphUtils.edgeMisclassifications(counts));
+        }
 
         double adjRecall = adjTp / (double) (adjTp + adjFn);
 
@@ -2972,11 +2980,13 @@ public final class SearchGraphUtils {
 
         NumberFormat nf = new DecimalFormat("0.0");
 
-        out.println();
-        out.println("AREC\tAPRE\tOREC\tOPRE");
-        out.println(nf.format(adjRecall * 100) + "%\t" + nf.format(adjPrecision * 100)
-                + "%\t" + nf.format(arrowRecall * 100) + "%\t" + nf.format(arrowPrecision * 100) + "%");
-        out.println();
+        if (out != null) {
+            out.println();
+            out.println("AREC\tAPRE\tOREC\tOPRE");
+            out.println(nf.format(adjRecall * 100) + "%\t" + nf.format(adjPrecision * 100)
+                    + "%\t" + nf.format(arrowRecall * 100) + "%\t" + nf.format(arrowPrecision * 100) + "%");
+            out.println();
+        }
 
         return counts;
     }

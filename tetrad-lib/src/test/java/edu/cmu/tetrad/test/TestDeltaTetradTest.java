@@ -134,9 +134,6 @@ public class TestDeltaTetradTest {
         double chiSq = test.calcChiSquare(t1, t2, t3, t4, t5, t6, t7, t8);
         double pValue = test.getPValue();
 
-        System.out.println("Chi Square = " + chiSq);
-        System.out.println("P value = " + pValue);
-
         // They get chi square = 6.71 p = .57 8 df but using the raw data which they don't provide here.
         // Just using the covariance matrix provided, I get chi square = 8.46, p = 0.39, df = 8.
 
@@ -164,9 +161,6 @@ public class TestDeltaTetradTest {
         double chiSq = test.calcChiSquare(t1);
         double pValue = test.getPValue();
 
-        System.out.println("Chi Square = " + chiSq);
-        System.out.println("P value = " + pValue);
-
         assertEquals(.43, chiSq, 0.01);
         assertEquals(0.51, pValue, 0.01);
 
@@ -178,8 +172,6 @@ public class TestDeltaTetradTest {
     @Test
     public void testBollenSimulationExample() {
         CovarianceMatrix cov = getBollenSimulationExampleData();
-
-        System.out.println(cov);
 
         List<Node> variables = cov.getVariables();
 
@@ -212,33 +204,20 @@ public class TestDeltaTetradTest {
         double chiSq = test.calcChiSquare(tetrads[0]);
         double pValue = test.getPValue();
 
-        System.out.println("Chi Square = " + chiSq);
-        System.out.println("P value = " + pValue);
-
         assertEquals(44.6, chiSq, 0.1);
         assertEquals(2.4E-11, pValue, .1E-11);
-
-        System.out.println();
 
         Tetrad[] independentTetrads = new Tetrad[]{t1, t2, t4, t6, t10};
 
         chiSq = test.calcChiSquare(independentTetrads[0]);
         pValue = test.getPValue();
 
-        System.out.println("Chi Square = " + chiSq);
-        System.out.println("P value = " + pValue);
-
         assertEquals(44.6, chiSq, 0.1);
         assertEquals(2.44E-11, pValue, 0.1E-11);
-
-        System.out.println();
 
         {
             chiSq = test.calcChiSquare(independentTetrads);
             pValue = test.getPValue();
-
-            System.out.println("Chi Square = " + chiSq);
-            System.out.println("P value = " + pValue);
 
             assertEquals(95.4, chiSq, 0.01);
             assertEquals(0.0, pValue, 0.01);
@@ -253,8 +232,6 @@ public class TestDeltaTetradTest {
         DataSet data = new SemIm(pm).simulateData(1000, false);
 
         CovarianceMatrix cov = new CovarianceMatrix(data);
-
-        System.out.println(cov);
 
         List<Node> variables = data.getVariables();
         Node x1 = variables.get(0);
@@ -272,18 +249,10 @@ public class TestDeltaTetradTest {
 
         double chiSq1 = test1.calcChiSquare(t1234, t1342);
 
-        System.out.println("Chi Square = " + chiSq1);
-        System.out.println("P value = " + test1.getPValue());
-
-        System.out.println();
-
         DeltaTetradTest test2 = new DeltaTetradTest(cov);
 //        DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(cov));
 
         double chiSq2 = test2.calcChiSquare(t1234, t1342);
-
-        System.out.println("Chi Square = " + chiSq2);
-        System.out.println("P value = " + test2.getPValue());
     }
 
     private SemPm makePm() {

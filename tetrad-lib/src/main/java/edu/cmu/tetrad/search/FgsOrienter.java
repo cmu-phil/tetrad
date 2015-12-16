@@ -636,7 +636,9 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
 
         long stop = System.currentTimeMillis();
 
-        out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
+        if (verbose) {
+            out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
+        }
 
         return effectEdgesGraph;
     }

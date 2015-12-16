@@ -89,9 +89,6 @@ public class TestDagInPatternIterator {
 
     @Test
     public void test3() {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-
         Graph pattern = new EdgeListGraph();
 
         Node x1 = new GraphNode("X1");
@@ -128,9 +125,6 @@ public class TestDagInPatternIterator {
 
     @Test
     public void test4() {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-
         Graph pattern = new EdgeListGraph();
 
         Node x1 = new GraphNode("X1");
@@ -178,10 +172,7 @@ public class TestDagInPatternIterator {
         Dag dag1 = new Dag(GraphUtils.randomGraph(nodes1, 0, 3,
                 30, 15, 15, false));
 
-        System.out.println(dag1);
-
         Graph pattern = SearchGraphUtils.patternForDag(dag1);
-        System.out.println(pattern);
         List<Node> nodes = pattern.getNodes();
 
         // Make random knowedge.
@@ -193,8 +184,6 @@ public class TestDagInPatternIterator {
             if (tier < 2) continue;
             knowledge.addToTier(tier, node.getName());
         }
-
-        System.out.println(knowledge);
 
         if (!knowledge.isViolatedBy(pattern)) {
             DagInPatternIterator iterator1 = new DagInPatternIterator(pattern);
@@ -220,7 +209,6 @@ public class TestDagInPatternIterator {
                 Graph dag = iterator2.next();
 
                 if (knowledge.isViolatedBy(dag)) {
-                    System.out.println(dag);
                     throw new IllegalArgumentException("Knowledge violated");
                 }
             }

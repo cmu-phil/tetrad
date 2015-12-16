@@ -77,15 +77,11 @@ public final class TestGraph {
         dottedUnderlineTriples.add(pickRandomTriple(graph));
         graph.setDottedUnderLineTriples(dottedUnderlineTriples);
 
-        System.out.println(graph);
-
         Map<String, Node> nodes = new HashMap<>();
 
         for (Node node : graph.getNodes()) {
             nodes.put(node.getName(), node);
         }
-
-        System.out.println(GraphUtils.graphToXml(graph));
 
         Element element = GraphUtils.convertToXml(graph);
 
@@ -121,10 +117,6 @@ public final class TestGraph {
 
         graph.addUnderlineTriple(y, z, w);
         graph.addUnderlineTriple(y, z, x);
-
-        System.out.println("Ambiguous " + graph.getAmbiguousTriples());
-        System.out.println("Underline " + graph.getUnderLines());
-        System.out.println("Dotted underline " + graph.getDottedUnderlines());
 
         assertTrue(graph.getAmbiguousTriples().size() == 1);
         assertTrue(graph.getUnderLines().size() == 3);
@@ -180,12 +172,7 @@ public final class TestGraph {
         triples.add(new Triple(x, z, w));
         triples.add(new Triple(x, y, z));
 
-        try {
-            graph.setAmbiguousTriples(triples);
-            fail();
-        } catch (Exception e) {
-            // pass
-        }
+        graph.setAmbiguousTriples(triples);
 
         triples.remove(new Triple(x, y, z));
 
@@ -270,20 +257,14 @@ public final class TestGraph {
         graph.addDirectedEdge(x2, x3);
         graph.addDirectedEdge(x3, x4);
 
-        System.out.println(graph);
-
         List<Node> children = graph.getChildren(x1);
         List<Node> parents = graph.getParents(x4);
-
-        System.out.println("Children of x1 = " + children);
-        System.out.println("Parents of x4 = " + parents);
 
         assertTrue(graph.isDConnectedTo(x1, x3, new LinkedList<Node>()));
 
 
         graph.removeNode(x2);
 
-        System.out.println("Without x2: " + graph);
     }
 
 

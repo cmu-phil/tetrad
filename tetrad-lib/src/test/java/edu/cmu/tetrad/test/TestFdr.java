@@ -52,16 +52,6 @@ public class TestFdr {
 
         double cutoff = StatUtils.fdrCutoff(alpha, pValues, negativelyCorrelated);
 
-        System.out.println("Cutoff = " + cutoff);
-
-        Collections.sort(pValues);
-
-        for (int i = 0; i < pValues.size(); i++) {
-            if (pValues.get(i) <= cutoff) {
-                System.out.println(i + ": " + pValues.get(i));
-            }
-        }
-
         assertEquals(.01, cutoff, .0001);
 
         negativelyCorrelated = true;

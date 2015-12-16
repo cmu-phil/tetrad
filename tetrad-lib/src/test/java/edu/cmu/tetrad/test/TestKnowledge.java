@@ -82,25 +82,11 @@ public final class TestKnowledge {
 
         assertTrue(knowledge.isRequired("X6", "X7"));
 
-        for (Iterator<KnowledgeEdge> i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
-            System.out.println("Forbidden: " + i.next());
-        }
-
         IKnowledge copy = knowledge.copy();
 
         assertTrue(copy.isForbidden("X4", "X5"));
         assertFalse(copy.isForbidden("X1", "X2-1"));
         assertTrue(copy.isForbidden("X3", "X2-1"));
-
-        for (Iterator<KnowledgeEdge> i = copy.forbiddenEdgesIterator(); i.hasNext(); ) {
-            System.out.println("Forbidden: " + i.next());
-        }
-
-        for (Iterator<KnowledgeEdge> i = knowledge.requiredEdgesIterator(); i.hasNext(); ) {
-            System.out.println("Required: " + i.next());
-        }
-
-        System.out.println(knowledge);
 
         knowledge.setTierForbiddenWithin(0, true);
 
@@ -152,8 +138,6 @@ public final class TestKnowledge {
 
         assertTrue(knowledge.isForbidden("X20", "X10"));
         assertTrue(knowledge.isRequired("X6","X5"));
-
-        System.out.println(knowledge);
     }
 
     @Test
@@ -176,8 +160,6 @@ public final class TestKnowledge {
         knowledge.addToTier(1, "X8*");
         knowledge.addToTier(2, "X9*");
 
-//        System.out.println(knowledge);
-
         long start = System.currentTimeMillis();
 
         for (int i = 0; i < numVars; i++) {
@@ -185,8 +167,6 @@ public final class TestKnowledge {
         }
 
         long stop = System.currentTimeMillis();
-
-        System.out.println((stop - start) + " ms");
     }
 }
 

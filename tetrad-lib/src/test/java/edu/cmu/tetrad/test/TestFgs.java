@@ -47,7 +47,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestFgs {
 
+
     private PrintStream out = System.out;
+//    private OutputStream out =
 
     @Test
     public void explore1() {
@@ -67,7 +69,7 @@ public class TestFgs {
         }
 
         Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false);
-        printDegreeDistribution(dag, System.out);
+//        printDegreeDistribution(dag, System.out);
 
         int[] causalOrdering = new int[vars.size()];
 
@@ -84,21 +86,20 @@ public class TestFgs {
 
         Fgs fgs = new Fgs(cov);
         fgs.setVerbose(false);
-        fgs.setLog(false);
         fgs.setNumPatternsToStore(0);
         fgs.setPenaltyDiscount(penaltyDiscount);
-        fgs.setOut(System.out);
+        fgs.setOut(out);
         fgs.setFaithfulnessAssumed(true);
         fgs.setDepth(1);
         fgs.setCycleBound(5);
 
         Graph estPattern = fgs.search();
 
-        printDegreeDistribution(estPattern, System.out);
+//        printDegreeDistribution(estPattern, out);
 
         final Graph truePattern = SearchGraphUtils.patternForDag(dag);
 
-        int[][] counts = SearchGraphUtils.graphComparison(estPattern, truePattern, System.out);
+        int[][] counts = SearchGraphUtils.graphComparison(estPattern, truePattern, null);
 
         int[][] expectedCounts = {
                 {2, 0, 0, 0, 0, 0},
@@ -134,19 +135,17 @@ public class TestFgs {
 
         Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false);
-        printDegreeDistribution(dag, System.out);
+//        printDegreeDistribution(dag, out);
 
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
         DataSet data = im.simulateData(numCases, false);
 
-        System.out.println("Finishing simulation");
+//        out.println("Finishing simulation");
 
         Fgs ges = new Fgs(data);
-        ges.setVerbose(true);
-        ges.setLog(false);
+        ges.setVerbose(false);
         ges.setNumPatternsToStore(0);
-        ges.setOut(out);
         ges.setFaithfulnessAssumed(false);
         ges.setDepth(3);
 
@@ -157,9 +156,9 @@ public class TestFgs {
 
         final Graph truePattern = SearchGraphUtils.patternForDag(dag);
 
-        printDegreeDistribution(estPattern, System.out);
+//        printDegreeDistribution(estPattern, out);
 
-        int[][] counts = SearchGraphUtils.graphComparison(estPattern, truePattern, System.out);
+        int[][] counts = SearchGraphUtils.graphComparison(estPattern, truePattern, null);
 
         int[][] expectedCounts = {
                 {4, 0, 0, 0, 0, 0},

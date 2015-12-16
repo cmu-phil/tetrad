@@ -1696,16 +1696,6 @@ public class EdgeListGraph implements Graph {
     }
 
     public void addAmbiguousTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
-
-        if (!triple.alongPathIn(this)) {
-            for (Edge e : getEdges(y)) {
-                System.out.println(e);
-            }
-
-            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
-        }
-
         ambiguousTriples.add(new Triple(x, y, z));
     }
 

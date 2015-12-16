@@ -115,10 +115,7 @@ public final class TestEdgeListGraphSingleConnections {
         graph.addDirectedEdge(x3, x5);
         graph.addDirectedEdge(x5, x2);
 
-        System.out.println("@1 " + graph);
-
         graph.setEndpoint(x4, x3, Endpoint.ARROW);
-        System.out.println("@2 " + graph);
         graph.setEndpoint(x3, x4, Endpoint.ARROW);
 
 
@@ -126,8 +123,6 @@ public final class TestEdgeListGraphSingleConnections {
 
         graph.removeEdge(x1, x3);
         graph.removeEdge(graph.getEdge(x5, x2));
-
-        System.out.println(graph);
     }
 
     @Test
@@ -149,8 +144,6 @@ public final class TestEdgeListGraphSingleConnections {
         }
 
         boolean dsep = graph.isDSeparatedFrom(node1, node2, cond);
-
-        System.out.println(dsep);
     }
 
     @Test
@@ -166,8 +159,6 @@ public final class TestEdgeListGraphSingleConnections {
 
         List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
 
-        System.out.println(edges);
-
         Edge e1 = edges.get(0);
 
         Edge e2 = new Edge(x2, x1, Endpoint.TAIL, Endpoint.TAIL);
@@ -179,8 +170,6 @@ public final class TestEdgeListGraphSingleConnections {
         graph.removeEdge(e2);
 
         edges = new ArrayList<Edge>(graph.getEdges());
-
-        System.out.println(edges);
     }
 
     @Test

@@ -161,7 +161,6 @@ public class TestSemIm {
             }
         }
 
-        System.out.println(MatrixUtils.toString(a));
         double[][] l = MatrixUtils.cholesky(a);
         double[][] lT = MatrixUtils.transpose(l);
         double[][] product = MatrixUtils.product(l, lT);

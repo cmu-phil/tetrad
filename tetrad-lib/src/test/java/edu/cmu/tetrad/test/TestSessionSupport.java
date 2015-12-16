@@ -246,7 +246,6 @@ public class TestSessionSupport {
              * This method is called when a node is added.
              */
             public void nodeAdded(SessionEvent event) {
-                System.out.println("HERE");
                 setEvent1Received(true);
             }
         };

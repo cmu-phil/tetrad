@@ -82,8 +82,6 @@ public class TestStatUtils {
         ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
         TetradMatrix _cov = cov.getMatrix();
 
-//        System.out.println(cov);
-
         double r2 = StatUtils.partialCorrelation(_cov, 0, 1);
         double s2 = StatUtils.partialCovariance(_cov, 0, 1);
         double v2 = StatUtils.partialVariance(_cov, 0);
@@ -143,7 +141,6 @@ public class TestStatUtils {
             }
         }
 
-        System.out.println();
         assertEquals(0.17, StatUtils.mean(_x), 0.01);
         assertEquals(0.17, StatUtils.mean(_y), 0.01);
         assertEquals(0.09, StatUtils.mean(_z), 0.01);
@@ -340,8 +337,6 @@ public class TestStatUtils {
             double s = new AndersonDarlingTest(sum).getASquared();
 
             if (!(s < max(a1, a2))) {
-                System.out.println("d1 = " + f(d1) + " d2 = " + f(d2) + " a1 = " + f(a1) + " a2 = " + f(a2)
-                        + " avg = " + f((a1 + a2) / 2) + " s = " + f(s));
                 positive++;
             }
 

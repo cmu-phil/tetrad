@@ -750,7 +750,9 @@ public final class FastImages implements GraphSearch, GraphScorer, IImages {
 
         long stop = System.currentTimeMillis();
 
-        out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
+        if (verbose) {
+            out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
+        }
 
         return effectEdgesGraph;
     }

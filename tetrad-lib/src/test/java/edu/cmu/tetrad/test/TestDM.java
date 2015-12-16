@@ -675,7 +675,11 @@ public class TestDM {
         search.search();
 
         print("Test Case 10");
-        System.out.println(search.getDmStructure());
+
+        // Trying to quiet the output for unit tests.
+        if (false) {
+            System.out.println(search.getDmStructure());
+        }
 
 
         assertTrue(true);

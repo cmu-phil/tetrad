@@ -70,21 +70,15 @@ public class TestGFci {
         boolean completeRuleSetUsed = false;
         boolean faithfulnessAssumed = true;
 
-        System.out.println("Making list of vars");
-
         List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
             vars.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        System.out.println("Finishing list of vars");
-
         Graph dag = GraphUtils.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false);
 //        Graph dag = GraphUtils.randomGraphRandomForwardEdges1(vars, numLatents, numEdges);
 //        Graph dag = DataGraphUtils.scaleFreeGraph(vars, numLatents, .05, .05, .05, 3);
-
-        System.out.println("Graph done");
 
         DataSet data;
 
@@ -98,7 +92,6 @@ public class TestGFci {
 
         IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
 
-        System.out.println("True PAG done");
         independenceTest.setAlpha(alpha);
 
         GFci gFci = new GFci(independenceTest);
@@ -118,7 +111,7 @@ public class TestGFci {
 
         outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
-        int[][] counts = SearchGraphUtils.graphComparison(outGraph, truePag, System.out);
+        int[][] counts = SearchGraphUtils.graphComparison(outGraph, truePag, null);
 
         int[][] expectedCounts = {
                 {0, 0, 0, 0, 0, 0},

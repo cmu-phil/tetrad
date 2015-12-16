@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the IndTestTimeSeries class.
@@ -56,7 +57,7 @@ public class TestIndTestGSquare {
             Node y = v.get(1);
             ArrayList<Node> z = new ArrayList<>();
             z.add(v.get(2));
-            System.out.println(test.isIndependent(x, y, z));
+            assertTrue(test.isIndependent(x, y, z));
 
             test.setDeterminationP(0.99);
             assertFalse(test.determines(z, x));

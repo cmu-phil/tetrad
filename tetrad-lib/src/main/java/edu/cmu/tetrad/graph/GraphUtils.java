@@ -2970,7 +2970,7 @@ public final class GraphUtils {
         return builder.toString();
     }
 
-    public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph) {
+    public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
         topGraph = replaceNodes(topGraph, leftGraph.getNodes());
 
         int[][] counts = new int[8][6];
@@ -2989,8 +2989,10 @@ public final class GraphUtils {
             counts[m][n]++;
         }
 
-        System.out.println("# edges in true graph = " + leftGraph.getNumEdges());
-        System.out.println("# edges in est graph = " + topGraph.getNumEdges());
+        if (print) {
+            System.out.println("# edges in true graph = " + leftGraph.getNumEdges());
+            System.out.println("# edges in est graph = " + topGraph.getNumEdges());
+        }
 
         for (Edge edgeLeft : leftGraph.getEdges()) {
             final Edge edgeTop = topGraph.getEdge(edgeLeft.getNode1(), edgeLeft.getNode2());

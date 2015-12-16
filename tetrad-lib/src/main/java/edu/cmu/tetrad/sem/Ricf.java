@@ -397,7 +397,7 @@ public class Ricf {
             a32.assign(KOld, PlusMult.plusMult(-1));
             double diff = algebra.norm1(a32);
 
-            System.out.println(diff);
+//            System.out.println(diff);
 
             if (diff < tol) break;
         }

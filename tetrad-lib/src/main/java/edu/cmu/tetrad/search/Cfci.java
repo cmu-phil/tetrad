@@ -184,8 +184,10 @@ public final class Cfci implements GraphSearch {
 
     public Graph search() {
         long beginTime = System.currentTimeMillis();
-        logger.log("info", "Starting FCI algorithm.");
-        logger.log("info", "Independence test = " + independenceTest + ".");
+        if (verbose) {
+            logger.log("info", "Starting FCI algorithm.");
+            logger.log("info", "Independence test = " + independenceTest + ".");
+        }
 
         setMaxReachablePathLength(maxReachablePathLength);
 
@@ -244,7 +246,10 @@ public final class Cfci implements GraphSearch {
             ruleR0(independenceTest, depth);
 
             long time2 = System.currentTimeMillis();
-            logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
+
+            if (verbose) {
+                logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
+            }
 
             // Step FCI D.
             long time3 = System.currentTimeMillis();
@@ -255,7 +260,10 @@ public final class Cfci implements GraphSearch {
             possibleDSep.setMaxPathLength(getMaxReachablePathLength());
             sepsets.addAll(possibleDSep.search());
             long time4 = System.currentTimeMillis();
-            logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
+
+            if (verbose) {
+                logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
+            }
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -268,7 +276,10 @@ public final class Cfci implements GraphSearch {
         ruleR0(independenceTest, depth);
 
         long time6 = System.currentTimeMillis();
-        logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
+
+        if (verbose) {
+            logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
+        }
 
         // Step CI D. (Zhang's step F4.)
         doFinalOrientation();
@@ -277,7 +288,10 @@ public final class Cfci implements GraphSearch {
         this.elapsedTime = endTime - beginTime;
 
 //        graph.closeInducingPaths();   //to make sure it's a legal PAG
-        logger.log("graph", "Returning graph: " + graph);
+
+        if (verbose) {
+            logger.log("graph", "Returning graph: " + graph);
+        }
         return graph;
     }
 
@@ -332,7 +346,9 @@ public final class Cfci implements GraphSearch {
     }
 
     private void ruleR0(IndependenceTest test, int depth) {
-        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
+        if (verbose) {
+            TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
+        }
         /*
       The list of all unshielded triples.
      */
@@ -365,23 +381,32 @@ public final class Cfci implements GraphSearch {
                             isArrowpointAllowed(z, y)) {
                         getGraph().setEndpoint(x, y, Endpoint.ARROW);
                         getGraph().setEndpoint(z, y, Endpoint.ARROW);
-                        TetradLogger.getInstance().log("tripleClassifications", "Collider: " + Triple.pathString(graph, x, y, z));
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("tripleClassifications", "Collider: " + Triple.pathString(graph, x, y, z));
+                        }
                     }
 
                     colliderTriples.add(new Triple(x, y, z));
                 } else if (type == TripleType.NONCOLLIDER) {
                     noncolliderTriples.add(new Triple(x, y, z));
-                    TetradLogger.getInstance().log("tripleClassifications", "Noncollider: " + Triple.pathString(graph, x, y, z));
+                    if (verbose) {
+                        TetradLogger.getInstance().log("tripleClassifications", "Noncollider: " + Triple.pathString(graph, x, y, z));
+                    }
                 } else {
                     Triple triple = new Triple(x, y, z);
                     ambiguousTriples.add(triple);
                     getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-                    TetradLogger.getInstance().log("tripleClassifications", "AmbiguousTriples: " + Triple.pathString(graph, x, y, z));
+                    if (verbose) {
+                        TetradLogger.getInstance().log("tripleClassifications", "AmbiguousTriples: " + Triple.pathString(graph, x, y, z));
+                    }
                 }
             }
         }
 
-        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+        if (verbose) {
+            TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+        }
     }
 
     private TripleType getTripleType(Node x, Node y, Node z,
@@ -568,7 +593,10 @@ public final class Cfci implements GraphSearch {
             graph.setEndpoint(c, b, Endpoint.TAIL);
             graph.setEndpoint(b, c, Endpoint.ARROW);
             changeFlag = true;
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
+
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
+            }
         }
     }
 
@@ -592,7 +620,10 @@ public final class Cfci implements GraphSearch {
 
             graph.setEndpoint(a, c, Endpoint.ARROW);
             changeFlag = true;
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from ancestor (a)", graph.getEdge(a, c)));
+
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from ancestor (a)", graph.getEdge(a, c)));
+            }
         } else if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.TAIL
                 && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE
                 ) {
@@ -602,7 +633,10 @@ public final class Cfci implements GraphSearch {
 
             graph.setEndpoint(a, c, Endpoint.ARROW);
             changeFlag = true;
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from ancestor (b)", graph.getEdge(a, c)));
+
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from ancestor (b)", graph.getEdge(a, c)));
+            }
         }
     }
 
@@ -658,7 +692,11 @@ public final class Cfci implements GraphSearch {
                     }
 
                     graph.setEndpoint(d, b, Endpoint.ARROW);
-                    logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(d, b)));
+
+                    if (verbose) {
+                        logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(d, b)));
+                    }
+
                     changeFlag = true;
                 }
             }
@@ -768,13 +806,22 @@ public final class Cfci implements GraphSearch {
         }
 
         TripleType dbc = getTripleType(d, b, c, independenceTest, depth);
-        System.out.println("Triple<" + d + ", " + b + ", " + c + "> = " + dbc);
+
+        if (verbose) {
+            System.out.println("Triple<" + d + ", " + b + ", " + c + "> = " + dbc);
+        }
 
         if (dbc == TripleType.NONCOLLIDER) {
-            System.out.println("DDP orientation: " + c + " *-- " + b);
+            if (verbose) {
+                System.out.println("DDP orientation: " + c + " *-- " + b);
+            }
 
             graph.setEndpoint(c, b, Endpoint.TAIL);
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+            }
+
             changeFlag = true;
         } else if (dbc == TripleType.COLLIDER) {
             if (!isArrowpointAllowed(a, b)) {
@@ -787,7 +834,11 @@ public final class Cfci implements GraphSearch {
 
             graph.setEndpoint(a, b, Endpoint.ARROW);
             graph.setEndpoint(c, b, Endpoint.ARROW);
-            logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
+
+            if (verbose) {
+                logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
+            }
+
             changeFlag = true;
         }
     }
@@ -808,10 +859,14 @@ public final class Cfci implements GraphSearch {
 
                 List<List<Node>> ucCirclePaths = getUcCirclePaths(a, b);
 
-                System.out.println("Circle undirectedPaths:");
+                if (verbose) {
+                    System.out.println("Circle undirectedPaths:");
+                }
 
                 for (List<Node> path : ucCirclePaths) {
-                    System.out.println(GraphUtils.pathString(path, graph));
+                    if (verbose) {
+                        System.out.println(GraphUtils.pathString(path, graph));
+                    }
                 }
 
                 CIRCLE_PATHS:
@@ -821,7 +876,9 @@ public final class Cfci implements GraphSearch {
                     Node c = u.get(1);
                     Node d = u.get(u.size() - 2);
 
-                    System.out.println("a = " + a + " c = " + c + " d = " + d + " b = " + b);
+                    if (verbose) {
+                        System.out.println("a = " + a + " c = " + c + " d = " + d + " b = " + b);
+                    }
 
                     if (graph.isAdjacentTo(a, d)) continue;
                     if (graph.isAdjacentTo(b, c)) continue;
@@ -847,7 +904,9 @@ public final class Cfci implements GraphSearch {
                         }
                     }
 
-                    logger.log("colliderOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b)));
+                    if (verbose) {
+                        logger.log("colliderOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b)));
+                    }
 
                     graph.setEndpoint(a, b, Endpoint.TAIL);
                     graph.setEndpoint(b, a, Endpoint.TAIL);
@@ -886,12 +945,16 @@ public final class Cfci implements GraphSearch {
                 // We know A--*Bo-*C.
 
                 if (graph.getEndpoint(a, b) == Endpoint.TAIL) {
-                    System.out.println("Single tails (tail) " + c + " *-> " + b);
+                    if (verbose) {
+                        System.out.println("Single tails (tail) " + c + " *-> " + b);
+                    }
 
                     // We know A---Bo-*C: T1 applies!
                     graph.setEndpoint(c, b, Endpoint.TAIL);
 
-                    logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
+                    if (verbose) {
+                        logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
+                    }
 
                     changeFlag = true;
                 }
@@ -901,7 +964,9 @@ public final class Cfci implements GraphSearch {
 
                     if (!getNoncolliderTriples().contains(new Triple(a, b, c))) continue;
 
-                    logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
+                    if (verbose) {
+                        logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
+                    }
 
                     // We know A--oBo-*C and A,C nonadjacent: T2 applies!
                     graph.setEndpoint(c, b, Endpoint.TAIL);
@@ -950,13 +1015,17 @@ public final class Cfci implements GraphSearch {
             Node n1 = path.get(i);
             Node n2 = path.get(i + 1);
 
-            System.out.println("Tail path " + n1 + "---" + n2);
+            if (verbose) {
+                System.out.println("Tail path " + n1 + "---" + n2);
+            }
 
             graph.setEndpoint(n1, n2, Endpoint.TAIL);
             graph.setEndpoint(n2, n1, Endpoint.TAIL);
             changeFlag = true;
 
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle undirectedPaths", graph.getEdge(n1, n2)));
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle undirectedPaths", graph.getEdge(n1, n2)));
+            }
         }
     }
 
@@ -1087,7 +1156,9 @@ public final class Cfci implements GraphSearch {
             if (graph.getEndpoint(a, b) == Endpoint.TAIL) continue;
             // We have A-->B-->C or A--oB-->C: T3 applies!
 
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("T3", graph.getEdge(c, a)));
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("T3", graph.getEdge(c, a)));
+            }
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
             changeFlag = true;
@@ -1118,7 +1189,9 @@ public final class Cfci implements GraphSearch {
             if (b == c) continue;
             // We know u is as required: R6 applies!
 
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R6", graph.getEdge(c, a)));
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R6", graph.getEdge(c, a)));
+            }
 
             for (int i = 2; i < u.size(); i++) {
                 if (!getNoncolliderTriples().contains(new Triple(u.get(i - 2), u.get(i - 1), u.get(i)))) {
@@ -1187,7 +1260,9 @@ public final class Cfci implements GraphSearch {
                         if (graph.isAdjacentTo(m, n)) continue;
                         // We know B,D,u1,u2 as required: Tanh applies!
 
-                        logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Tanh", graph.getEdge(c, a)));
+                        if (verbose) {
+                            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Tanh", graph.getEdge(c, a)));
+                        }
 
                         graph.setEndpoint(c, a, Endpoint.TAIL);
                         changeFlag = true;
@@ -1204,7 +1279,9 @@ public final class Cfci implements GraphSearch {
      * Orients according to background knowledge
      */
     private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
-        logger.log("info", "Starting BK Orientation.");
+        if (verbose) {
+            logger.log("info", "Starting BK Orientation.");
+        }
 
         for (Iterator<KnowledgeEdge> it =
              bk.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -1225,7 +1302,10 @@ public final class Cfci implements GraphSearch {
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             changeFlag = true;
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+
+            if (verbose) {
+                logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            }
         }
 
         for (Iterator<KnowledgeEdge> it =
@@ -1247,15 +1327,22 @@ public final class Cfci implements GraphSearch {
             // Orient from*->to (?)
             // Orient from-->to
 
-            System.out.println("Rule T3: Orienting " + from + "-->" + to);
+            if (verbose) {
+                System.out.println("Rule T3: Orienting " + from + "-->" + to);
+            }
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
             changeFlag = true;
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+
+            if (verbose) {
+                logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            }
         }
 
-        logger.log("info", "Finishing BK Orientation.");
+        if (verbose) {
+            logger.log("info", "Finishing BK Orientation.");
+        }
     }
 
 

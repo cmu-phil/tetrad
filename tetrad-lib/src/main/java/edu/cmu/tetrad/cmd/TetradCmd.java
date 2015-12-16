@@ -70,6 +70,7 @@ public final class TetradCmd {
     private boolean rfciUsed = false;
     private boolean nodsep = false;
     private boolean useCovariance = true;
+    private boolean silent = false;
 
     public TetradCmd(String[] argv) {
         readArguments(new StringArrayTokenizer(argv));
@@ -360,7 +361,9 @@ public final class TetradCmd {
             } else if ("-rfci".equalsIgnoreCase(token)) {
                 this.rfciUsed = true;
             } else if ("-nodsep".equalsIgnoreCase(token)) {
-                this.nodsep = true;
+                this.nodsep = true;            } 
+            else if ("-silent".equalsIgnoreCase(token)) {
+                this.silent = true;
             } else {
                 throw new IllegalArgumentException(
                         "Unexpected argument: " + token);
@@ -379,12 +382,12 @@ public final class TetradCmd {
                     "No data type (continuous/discrete) " + "was specified.");
         }
 
-        out.println("Loading data from " + dataFileName + ".");
+        outPrint("Loading data from " + dataFileName + ".");
 
 //        if ("continuous".equalsIgnoreCase(dataTypeName)) {
-//            out.println("Data type = continuous.");
+//            outPrint("Data type = continuous.");
 //        } else if ("discrete".equalsIgnoreCase(dataTypeName)) {
-//            out.println("Data type = discrete.");
+//            outPrint("Data type = discrete.");
 //        } else {
 //            throw new IllegalStateException(
 //                    "Data type was expected to be either " +
@@ -415,12 +418,12 @@ public final class TetradCmd {
                     this.covarianceMatrix = cov;
                 } else {
                     DataSet data = reader.parseTabular(file);
-                    out.println("# variables = " + data.getNumColumns() +
+                    outPrint("# variables = " + data.getNumColumns() +
                             ", # cases = " + data.getNumRows());
                     this.data = data;
                 }
 
-//                System.out.println(data);
+//                systemPrint(data);
 
                 if (initialGraphTxtFilename != null) {
                     initialGraph = GraphUtils.loadGraphTxt(new File(initialGraphTxtFilename));
@@ -454,11 +457,24 @@ public final class TetradCmd {
             DataReader reader = new DataReader();
             char[] chars = writer.toCharArray();
 
-            System.out.println(new String(chars));
+            String x = new String(chars);
+            systemPrint(x);
 
             this.knowledge = reader.parseKnowledge(chars);
         } catch (Exception e) {
             throw new RuntimeException("Couldn't read knowledge.");
+        }
+    }
+
+    private void systemPrint(String x) {
+        if (!silent) {
+            System.out.println(x);
+        }
+    }
+
+    private void outPrint(String x) {
+        if (!silent) {
+            out.println(x);
         }
     }
 
@@ -546,7 +562,7 @@ public final class TetradCmd {
         } while (dag.getNumEdges() < _numEdges);
 
         String xml = GraphUtils.graphToXml(dag);
-        System.out.println(xml);
+        systemPrint(xml);
     }
 
     private void runPc() {
@@ -555,9 +571,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("PC");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("PC");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -577,8 +593,8 @@ public final class TetradCmd {
         Graph resultGraph = pc.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -589,9 +605,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("PC-Stable");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("PC-Stable");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -611,8 +627,8 @@ public final class TetradCmd {
         Graph resultGraph = pc.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -623,9 +639,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("GES");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("GES");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -658,8 +674,8 @@ public final class TetradCmd {
         Graph resultGraph = ges.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -670,9 +686,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("CPC");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("CPC");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -692,8 +708,8 @@ public final class TetradCmd {
         Graph resultGraph = pc.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -704,9 +720,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("FCI");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("FCI");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -727,8 +743,8 @@ public final class TetradCmd {
             Graph resultGraph = fci.search();
 
             // PrintUtil outputStreamPath problem and graphs.
-            out.println("\nResult graph:");
-            out.println(resultGraph);
+            outPrint("\nResult graph:");
+            outPrint(resultGraph.toString());
 
             writeGraph(resultGraph);
         } else {
@@ -742,8 +758,8 @@ public final class TetradCmd {
             Graph resultGraph = fci.search();
 
             // PrintUtil outputStreamPath problem and graphs.
-            out.println("\nResult graph:");
-            out.println(resultGraph);
+            outPrint("\nResult graph:");
+            outPrint(resultGraph.toString());
 
             writeGraph(resultGraph);
 
@@ -756,9 +772,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("CFCI");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("CFCI");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -779,8 +795,8 @@ public final class TetradCmd {
         Graph resultGraph = fci.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -791,9 +807,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("CCD");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("CCD");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -812,8 +828,8 @@ public final class TetradCmd {
         Graph resultGraph = ccd.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -828,7 +844,7 @@ public final class TetradCmd {
         }
 
         if (!this.data.isDiscrete()) {
-            out.println("Please supply discrete data.");
+            outPrint("Please supply discrete data.");
         }
 
         IndependenceTest independence = new IndTestChiSquare(data, significance);
@@ -837,18 +853,18 @@ public final class TetradCmd {
         cpc.setVerbose(verbose);
         Graph pattern = cpc.search();
 
-        out.println("Found this pattern: " + pattern);
+        outPrint("Found this pattern: " + pattern);
 
         Dag dag = new Dag(SearchGraphUtils.dagFromPattern(pattern));
 
-        out.println("Chose this DAG: " + dag);
+        outPrint("Chose this DAG: " + dag);
 
         BayesPm pm = new BayesPm(dag);
 
         MlBayesEstimator est = new MlBayesEstimator();
         BayesIm im = est.estimate(pm, data);
 
-        out.println("Estimated IM: " + im);
+        outPrint("Estimated IM: " + im);
 
     }
 
@@ -859,7 +875,7 @@ public final class TetradCmd {
             fofc = new FindOneFactorClusters(this.data,
                     this.testType, significance);
             if (!this.data.isContinuous()) {
-                out.println("Please supply continuous data.");
+                outPrint("Please supply continuous data.");
             }
         } else if (this.covarianceMatrix != null) {
             fofc = new FindOneFactorClusters(this.covarianceMatrix,
@@ -871,10 +887,10 @@ public final class TetradCmd {
         fofc.search();
         List<List<Node>> clusters = fofc.getClusters();
 
-        System.out.println("Clusters:");
+        systemPrint("Clusters:");
 
         for (int i = 0; i < clusters.size(); i++) {
-            System.out.println((i + 1) + ": " + clusters.get(i));
+            systemPrint((i + 1) + ": " + clusters.get(i));
         }
     }
 

@@ -106,15 +106,6 @@ public class TestDeltaSextadTest {
             }
 
             double p = test.getPValue(_sextads);
-
-
-
-            if (p > alpha) {
-                for (int i = 0; i < numSextads; i++) {
-                    System.out.print((choice[i] + 1 + " "));
-                }
-                System.out.println(" " + p);
-            }
         }
 
     }

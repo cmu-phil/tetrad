@@ -103,8 +103,6 @@ public class TestIndTestWaldLR {
             if (correct) {
                 numPassed++;
             }
-
-            System.out.println(correct);
         }
 
         // Do not always get all 10.
