@@ -83,14 +83,14 @@ public class TestDataWrapper extends TestCase {
         modelList.add(first);
         modelList.add(second);
 
-        System.out.println(modelList.contains(first));
-        System.out.println(modelList.contains(second));
+        assertTrue(modelList.contains(first));
+        assertTrue(modelList.contains(second));
 
         modelList.setSelectedModel(second);
 
         try {
             DataModelList modelList2 = (DataModelList) new MarshalledObject(modelList).get();
-            System.out.println(modelList2.getSelectedModel().getName());
+            assertEquals("second", modelList2.getSelectedModel().getName());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {

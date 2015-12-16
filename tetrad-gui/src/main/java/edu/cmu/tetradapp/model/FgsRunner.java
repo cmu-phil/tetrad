@@ -172,7 +172,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
 //                BDeScore score = new BDeScore(dataSet);
                 ges = new Fgs(score);
                 ges.setVerbose(true);
-                ges.setLog(true);
                 ges.setKnowledge(getParams().getKnowledge());
                 ges.setDepth(2);
                 ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());

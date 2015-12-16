@@ -248,10 +248,6 @@ public final class TabularComparison implements SessionModel {
             alteredRefGraph = removeLatent(this.referenceGraph);
         }
 
-        System.out.println("Doing graph comparison");
-//        System.out.println("graph = " + targetGraph);
-//        System.out.println("trueGraph = " + alteredRefGraph);
-
         GraphUtils.GraphComparison comparison = SearchGraphUtils.
                 getGraphComparison2(targetGraph, alteredRefGraph);
 

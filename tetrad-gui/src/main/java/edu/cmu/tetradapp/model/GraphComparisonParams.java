@@ -177,7 +177,6 @@ public class GraphComparisonParams extends SessionAdapter
         	columnToTooltip.put("AHD_COR", "Arrowpoints in the reference graph that are in the true graph.");
         	columnToTooltip.put("AHD_FN", "Arrowpoints in the true graph that are not in the reference graph.");
         	columnToTooltip.put("AHD_FP", "Arrowpoints in the reference graph that are not in the true graph.");
-        	System.out.println("columnToTooltip " + columnToTooltip);
         	dataSet.setColumnToTooltip(columnToTooltip);
         }
     }

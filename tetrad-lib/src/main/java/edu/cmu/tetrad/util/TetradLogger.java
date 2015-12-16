@@ -199,9 +199,9 @@ public class TetradLogger {
      */
     public void setConfigForClass(Class model) {
         TetradLoggerConfig config = this.classConfigMap.get(model);
-        if (config == null) {
-            System.out.println("There is no pre-defined logger config for the model " + model);
-        }
+//        if (config == null) {
+//            System.out.println("There is no pre-defined logger config for the model " + model);
+//        }
         setTetradLoggerConfig(config);
     }
 

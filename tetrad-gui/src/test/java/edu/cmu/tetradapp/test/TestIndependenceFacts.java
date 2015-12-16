@@ -68,15 +68,9 @@ public final class TestIndependenceFacts extends TestCase {
         facts.add(new IndependenceFact(x2, x4, x3));
         facts.add(new IndependenceFact(x2, x4, x3, x6));
 
-        System.out.println(facts);
-
         facts.remove(new IndependenceFact(x1, x2, x3));
 
-//        System.out.println(facts);
-
         IndependenceFacts _facts = new IndependenceFacts(facts.getFacts());
-
-        System.out.println(_facts.toString());
 
         assertTrue(_facts.isIndependent(x4, x2, x1, x2));
         assertTrue(_facts.isIndependent(x4, x2, x5, x3, x1));
@@ -94,8 +88,6 @@ public final class TestIndependenceFacts extends TestCase {
 
         try {
             IndependenceFactsModel facts = IndependenceFactsModel.loadFacts(new FileReader(file));
-
-            System.out.println(facts);
         } catch (IOException e) {
             e.printStackTrace();
         }

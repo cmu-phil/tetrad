@@ -58,7 +58,7 @@ public class Whitener extends DataWrapper {
 
             Algebra alg = new Algebra();
 
-            boolean verbose = true;
+            boolean verbose = false;
 
             DoubleMatrix2D wInit = null;
 
