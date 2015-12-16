@@ -27,31 +27,27 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.DataWrapper;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests the basic functionality of the DataWrapper.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class TestDataWrapper extends TestCase {
+public class TestDataWrapper {
 
     DataWrapper dataWrapper;
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestDataWrapper(String name) {
-        super(name);
-    }
-
+    @Test
     public void testConstruction() {
 
         this.dataWrapper = new DataWrapper();
@@ -59,6 +55,7 @@ public class TestDataWrapper extends TestCase {
         assertNotNull(dataWrapper);
     }
 
+    @Test
     public void testDataModelList() {
         DataModelList modelList = new DataModelList();
 
@@ -96,17 +93,6 @@ public class TestDataWrapper extends TestCase {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDataWrapper.class);
     }
 }
 

@@ -30,9 +30,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.TetradLogger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,24 +42,12 @@ import java.util.List;
  *
  * @author Frank Wimberly
  */
-public class TestLogisticRegression extends TestCase {
+public class TestLogisticRegression {
 
-    public TestLogisticRegression(String name) {
-        super(name);
-    }
-
-    public void setUp() throws Exception {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-    }
-
-
-    public void tearDown(){
-        TetradLogger.getInstance().setForceLog(false);
-        TetradLogger.getInstance().removeOutputStream(System.out);
-    }
-
+    @Test
     public void test1() {
+
+
         List<Node> nodes = new ArrayList<Node>();
 
         for (int i = 0; i < 5; i++) {
@@ -82,70 +68,6 @@ public class TestLogisticRegression extends TestCase {
       
     }
 
-//    public static void testLogRegRunner() {
-//
-//        //Test with discrete data.
-//
-//        String filenameD1 = "test_data/SAHDMod.dat";
-//        File fileD1 = new File(filenameD1);
-//
-//        //        FileReader frD1 = null;
-//
-//        double alpha = 0.05;
-//
-//        DataSet dds2;
-//
-//        try {
-//            DataReader reader = new DataReader();
-//            reader.setDelimiter(DelimiterType.TAB);
-//            reader.setMaxIntegralDiscrete(0);
-//            dds2 = reader.parseTabular(fileD1);
-//        }
-//        catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        DataWrapper dds2Wrapper = new DataWrapper(dds2);
-//
-//        LogisticRegressionParams params = new LogisticRegressionParams();
-//        params.setAlpha(alpha);
-//        params.setTargetName("chd");
-//        String[] regressorNames = {"sbp", "tobacco", "ldl", "famhist",
-//                "obesity", "alcohol", "age"};
-//        params.setRegressorNames(regressorNames);
-//
-//        LogisticRegressionRunner runner =
-//                new LogisticRegressionRunner(dds2Wrapper, params);
-//
-//        runner.execute();
-//        double[] coefficients = runner.getCoefficients();
-//
-//        for (int i = 0; i < coefficients.length; i++) {
-//
-//            System.out.println("Logistic Regression Coefficients Coefficients");
-//            System.out.println(i + " " + coefficients[i]);
-//        }
-//
-//        //See the South African heart disease example in Hastie, Tibshirani and Friedman,
-//        //"Elements of Statistical Learning".
-//        double[] correctCoefs =
-//                {-4.13, 0.006, 0.080, 0.185, 0.939, -0.035, 0.001, 0.043};
-//
-//        for (int i = 0; i < coefficients.length; i++) {
-//            assertEquals(correctCoefs[i], coefficients[i], 0.001);
-//        }
-//    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestLogisticRegression.class);
-    }
 }
 
 

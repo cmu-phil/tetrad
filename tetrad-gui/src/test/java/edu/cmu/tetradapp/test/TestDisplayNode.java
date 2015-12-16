@@ -23,15 +23,11 @@ package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphNodeMeasured;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-public class TestDisplayNode extends TestCase {
-    public TestDisplayNode(String name) {
-        super(name);
-    }
+public class TestDisplayNode {
 
+    @Test
     public void testSetLocation() {
 
         // When constructing a display node without a model node, must check
@@ -39,10 +35,6 @@ public class TestDisplayNode extends TestCase {
         // null pointer exception.
         DisplayNode displayNode = new GraphNodeMeasured("X");
         displayNode.setLocation(10, 10);
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestDisplayNode.class);
     }
 }
 

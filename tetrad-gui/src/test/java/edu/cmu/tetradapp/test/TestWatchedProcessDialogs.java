@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetradapp.util.WatchedProcess;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -35,13 +35,10 @@ import java.lang.reflect.Modifier;
  * set to false.
  *
  * @author Joseph Ramsey
-// * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
-public class TestWatchedProcessDialogs extends TestCase {
-    public TestWatchedProcessDialogs(String name) {
-        super(name);
-    }
+public class TestWatchedProcessDialogs {
 
+    @Test
     public void testWatchedProcessDialogs() {
         try {
             Field field = WatchedProcess.class.getDeclaredField("SHOW_DIALOG");

@@ -26,9 +26,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.IndependenceFactsModel;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileReader;
@@ -36,21 +34,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests the Knowledge class.
  *
  * @author Joseph Ramsey
  */
-public final class TestIndependenceFacts extends TestCase {
+public final class TestIndependenceFacts {
     private IndependenceFactsModel facts;
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestIndependenceFacts(String name) {
-        super(name);
-    }
-
+    @Test
     public void test1() {
         IndependenceFactsModel facts = new IndependenceFactsModel();
 
@@ -83,6 +77,7 @@ public final class TestIndependenceFacts extends TestCase {
 
     }
 
+    @Test
     public void test2() {
         File file = new File("src/test/resources/sample.independencies.txt");
 
@@ -91,17 +86,6 @@ public final class TestIndependenceFacts extends TestCase {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestIndependenceFacts.class);
     }
 }
 
