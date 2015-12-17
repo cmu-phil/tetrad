@@ -34,9 +34,9 @@ import java.util.*;
 
 
 /**
- * Wraps a COLT 2D matrix in such a way that mixed data sets can be stored. The
- * type of each column must be specified by a Variable object, which must be
- * either a <code>ContinuousVariable</code> or a <code>DiscreteVariable</code>.
+ * Wraps a 2D array of Number objects in such a way that mixed data sets can be
+ * stored. The type of each column must be specified by a Variable object, which
+ * must be either a <code>ContinuousVariable</code> or a <code>DiscreteVariable</code>.
  * This class violates object orientation in that the underlying data matrix is
  * retrievable using the getDoubleData() method. This is allowed so that
  * external calculations may be performed on large datasets without having to

@@ -26,14 +26,9 @@ import nu.xom.Element;
 import nu.xom.Elements;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mattheweasterday
- * Date: May 30, 2004
- * Time: 11:35:47 AM
- * To change this template use File | Settings | File Templates.
- * <p>
  * This class takes an xml element representing a SEM im and converts it to
  * a SemIM
+ * @author Matt Easterday
  */
 public class SemXmlParser {
 

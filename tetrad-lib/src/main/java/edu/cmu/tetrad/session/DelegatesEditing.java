@@ -25,7 +25,7 @@ import javax.swing.*;
 
 
 /**
- * An interface for editors that degate their editing responsibilities.
+ * An interface for editors that delegate their editing responsibilities.
  *
  * @author William Taysom -- Jun 14, 2003
  */

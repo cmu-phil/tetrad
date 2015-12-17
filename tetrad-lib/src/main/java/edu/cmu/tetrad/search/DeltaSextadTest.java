@@ -35,7 +35,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implements a test for simultaneously zero tetrads in Bollen, K. (1990).  Sociological Methods and Research 19, 80-92 and Bollen and Ting, Confirmatory Tetrad
+ * Implements a test for simultaneously zero sextads in the style of Bollen, K. (1990).
+ * Sociological Methods and Research 19, 80-92 and Bollen and Ting, Confirmatory Tetrad
  * Analysis.
  *
  * @author Joseph Ramsey

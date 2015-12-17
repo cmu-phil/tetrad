@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.data;
 
 /**
- * Stores a 2D array of short data. Note that the missing value marker for this
+ * Stores a 2D array of integer data. Note that the missing value marker for this
  * box is -99.
  */
 public class IntDataBox implements DataBox {

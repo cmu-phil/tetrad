@@ -22,11 +22,8 @@
 package edu.cmu.tetrad.data;
 
 /**
- * Created by IntelliJ IDEA.
- * User: josephramsey
- * Date: Jul 10, 2010
- * Time: 4:28:50 PM
- * To change this template use File | Settings | File Templates.
+ * A continuous or discrete discretization spec (see).
+ * @author Joseph Ramsey
  */
 public interface DiscretizationSpec {
 }

@@ -22,8 +22,9 @@
 package edu.cmu.tetrad.data;
 
 /**
- * Stores a 2D array of double data. Note that the missing value marker for this
- * box is -99.
+ * Stores a 2D array of double data.
+ *
+ * @author Joseph Ramsey
  */
 public class VerticalDoubleDataBox implements DataBox {
     static final long serialVersionUID = 23L;

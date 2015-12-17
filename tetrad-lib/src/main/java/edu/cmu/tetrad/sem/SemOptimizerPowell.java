@@ -34,7 +34,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import java.util.List;
 
 /**
- * Optimizes a SEM using the ConjugateDirectionSearch class in the PAL library.
+ * Optimizes a SEM using Powell's method from the Apache library.
  *
  * @author Ricardo Silva
  * @author Joseph Ramsey

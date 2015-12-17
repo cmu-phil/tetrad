@@ -38,7 +38,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Runs PC and FCI from the moves line.
+ * Runs several algorithms from the moves line. Documentation is available
+ * in the wiki of the Tetrad project on GitHub. This will be replaced by
+ * the package tetrad-cli.
  *
  * @author Joseph Ramsey
  */
