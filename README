@@ -26,6 +26,7 @@ https://github.com/cmu-phil/tetrad/issues
 This is a Maven port of an existing Ant-based project
 that's been under development for many years in the
 Department of Philosophy at Carnegie Mellon University.
+The port was made on 10/27/2015.
 
 For instructions on how to set this project up in 
 IntelliJ IDEA, see the Wiki. Alternatively, you can 
