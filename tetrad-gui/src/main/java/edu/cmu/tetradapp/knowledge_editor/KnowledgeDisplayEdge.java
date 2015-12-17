@@ -879,9 +879,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * the bounds of these two components relative to this new union.
      */
     protected void resetBounds() {
-        // TODO: This should be final since it's called from the constructor
-        // but it's already been overridden. Abstracting an interface
-        // may be the thing to do. jdramsey 5/6/02
         Rectangle node1RelativeBounds, node2RelativeBounds;
 
         switch (this.mode) {

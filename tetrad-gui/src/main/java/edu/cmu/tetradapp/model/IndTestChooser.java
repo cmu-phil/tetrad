@@ -163,8 +163,7 @@ public final class IndTestChooser {
             return new IndTestConditionalCorrelation(dataSet, indTestParams.getAlpha());
         }
         if (IndTestType.FISHER_Z == testType) {
-            return new IndTestFisherZ(dataSet, indTestParams.getAlpha());  /// todo revert
-//            return new IndTestFisherZ3(dataSet, indTestParams.getAlpha());
+            return new IndTestFisherZ(dataSet, indTestParams.getAlpha());
         }
         if (IndTestType.FISHER_ZD == testType) {
             return new IndTestFisherZGeneralizedInverse(dataSet, indTestParams.getAlpha());

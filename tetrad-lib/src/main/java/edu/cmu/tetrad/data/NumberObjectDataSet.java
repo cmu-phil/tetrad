@@ -190,8 +190,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Makes of copy of the given data set. TODO Might consider making the
-     * argument a RectangularDataSet instead.
+     * Makes of copy of the given data set.
      */
     private NumberObjectDataSet(NumberObjectDataSet dataSet) {
         name = dataSet.name;
@@ -1154,7 +1153,6 @@ public final class NumberObjectDataSet
      */
     public final void removeCols(int[] cols) {
 
-        // TODO Check sanity of values in cols.
         int[] rows = new int[data.length];
 
         for (int i = 0; i < data.length; i++) {
@@ -1188,7 +1186,6 @@ public final class NumberObjectDataSet
      */
     public final void removeRows(int[] selectedRows) {
 
-        // TODO Check sanity of values in cols.
         int[] cols = new int[data[0].length];
 
         for (int i = 0; i < data[0].length; i++) {

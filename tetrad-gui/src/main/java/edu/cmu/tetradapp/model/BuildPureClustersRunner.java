@@ -200,7 +200,6 @@ public class BuildPureClustersRunner extends AbstractMimRunner
         if (semIm != null) {
             List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
 
-            // cov?? todo
             List<String> variableNames = ReidentifyVariables.reidentifyVariables2(partition, trueGraph, (DataSet) getData());
             rename(searchGraph, partition, variableNames);
 //            searchGraph = reidentifyVariables2(searchGraph, semIm);

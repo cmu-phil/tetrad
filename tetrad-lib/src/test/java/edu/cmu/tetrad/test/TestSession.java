@@ -66,8 +66,6 @@ public class TestSession {
         SessionNode node2 = new SessionNode(Type7.class);
         SessionNode node3 = new SessionNode(Type8.class);
 
-        // These are new nodes, so no reset action is taken. TODO:
-        // should test the reset action at some point.
         this.session.addNode(node1);
         this.session.addNode(node2);
         this.session.addNode(node3);

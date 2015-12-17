@@ -88,7 +88,6 @@ public final class ModeInterpolator implements DataFilter {
 
                 double mode = Double.NaN;
 
-                //TODO
                 if (k >= 0) {
                     mode = (data[(k + 1) / 2] + data[k / 2]) / 2.d;
                 }

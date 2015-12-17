@@ -218,7 +218,6 @@ public class TestFci {
 
         IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
 
-        // TODO Check this output.
         Cfci search = new Cfci(test);
 
         // Run search

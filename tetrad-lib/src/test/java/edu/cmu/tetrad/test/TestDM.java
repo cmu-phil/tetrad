@@ -967,10 +967,6 @@ public class TestDM {
 
     @Ignore
     public int internaltest17(double initialDiscount) {
-
-
-        //TODO: to fix input files, need to run following sed: sed -i  's/[[:space:]]\+/ /g'
-
         RandomUtil.getInstance().setSeed(29483818483L);
 
 

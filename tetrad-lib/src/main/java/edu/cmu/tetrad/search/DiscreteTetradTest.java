@@ -128,8 +128,6 @@ public final class DiscreteTetradTest implements TetradTest {
             0.0114140658374343833765845047287,
             0.0601796466589122671716641792812, 0.192120324066997756129082460739,
             0.381669073613502098270416641564, 0.479023703120177648419744153424};
-    //Caching test constraints
-    //TODO: a space-efficient caching system
 
     /**
      * @serial

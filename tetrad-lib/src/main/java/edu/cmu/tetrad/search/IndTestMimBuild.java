@@ -26,8 +26,10 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MatrixUtils;
+import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.*;
@@ -40,8 +42,8 @@ import java.util.*;
  * covariance matrix of latents.
  *
  * @author Ricardo Silva
+ * @deprecated
  */
-
 public final class IndTestMimBuild implements IndependenceTest {
     public static final int MIMBUILD_MLE = 0;
     public static final int MIMBUILD_2SLS = 1;
@@ -341,8 +343,8 @@ public final class IndTestMimBuild implements IndependenceTest {
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         throw new UnsupportedOperationException(); // Need to remove dependendence on PAL.
-//        //TODO: remove this
-//        /*int indices0[] = {0, 5, 6, 7, 10, 11};
+    }
+//        int indices0[] = {0, 5, 6, 7, 10, 11};
 //        int indices1[] = {1, 2, 4};
 //        int indices2[] = {3, 9};
 //        double corr = 0;
@@ -375,7 +377,7 @@ public final class IndTestMimBuild implements IndependenceTest {
 //            for (int q = 0; q < indices2.length; q++)
 //                corr += covMatrix.getValue(indices2[p], indices2[q]);
 //        System.out.println(corr / (indices2.length * indices2.length));
-//        System.exit(0);*/
+//        System.exit(0);
 
         // precondition:  this.varNames, this.latents properly set up.
         //                also, all these variables belong to latents.
@@ -402,7 +404,7 @@ public final class IndTestMimBuild implements IndependenceTest {
 //        }
 //        System.out.println();
 //        System.out.println("************************************************");
-
+//
 //        if (testType == MIMBUILD_BOOTSTRAP) {
 //            return isIndependentBootstrap(x, y, z);
 //        }
@@ -486,42 +488,42 @@ public final class IndTestMimBuild implements IndependenceTest {
 //        ICovarianceMatrix newCov = covMatrix.getSubmatrix(variables);
 //
 //        if (testType == MIMBUILD_MLE) {
-//            SemPm pm = new SemPm(new SemGraph(graph));
-//            MimBuildEstimator estimator =
-//                    MimBuildEstimator.newInstance(newCov, pm);
-////            System.out.println("\nEvaluating model without edge, MLE...");
-//            estimator.estimate();
-//            SemIm sem = estimator.getEstimatedSem();
-//            double prob_wo_edge = sem.getPValue();
-////            System.out.println("Prob significance = " + prob_wo_edge);
-//
-//            graph.addDirectedEdge(node_x, node_y);
-//            //            pm = new SemPm(new SemGraph(graph));
-//            pm = new SemPm(graph);
-//            estimator = MimBuildEstimator.newInstance(newCov, pm);
-////            System.out.println("Evaluating model with edge, MLE...");
-//            estimator.estimate();
-//            SemIm sem2 = estimator.getEstimatedSem();
-//            double prob_w_edge = sem2.getPValue();
-////            System.out.println("Prob significance = " + prob_w_edge);
-//
-//            /*if (prob_wo_edge > sig) {
-//                System.out.println("Independent!");
-//            }
-//            else {
-//                System.out.println("NOT independent!");
-//            }
-//            return (prob_wo_edge > sig);*/
-//            double pValue = 1. - ProbUtils.chisqCdf(
-//                    sem.getChiSquare() - sem2.getChiSquare(), 1);
-//            if (pValue > sig) {
-//                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+////            SemPm pm = new SemPm(new SemGraph(graph));
+////            MimBuildEstimator estimator =
+////                    MimBuildEstimator.newInstance(newCov, pm);
+//////            System.out.println("\nEvaluating model without edge, MLE...");
+////            estimator.estimate();
+////            SemIm sem = estimator.getEstimatedSem();
+////            double prob_wo_edge = sem.getPValue();
+//////            System.out.println("Prob significance = " + prob_wo_edge);
+////
+////            graph.addDirectedEdge(node_x, node_y);
+////            //            pm = new SemPm(new SemGraph(graph));
+////            pm = new SemPm(graph);
+////            estimator = MimBuildEstimator.newInstance(newCov, pm);
+//////            System.out.println("Evaluating model with edge, MLE...");
+////            estimator.estimate();
+////            SemIm sem2 = estimator.getEstimatedSem();
+////            double prob_w_edge = sem2.getPValue();
+//////            System.out.println("Prob significance = " + prob_w_edge);
+////
+////            /*if (prob_wo_edge > sig) {
 ////                System.out.println("Independent!");
-//            } else {
-//                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+////            }
+////            else {
 ////                System.out.println("NOT independent!");
-//            }
-//            return (pValue > sig);
+////            }
+////            return (prob_wo_edge > sig);*/
+////            double pValue = 1. - ProbUtils.chisqCdf(
+////                    sem.getChiSquare() - sem2.getChiSquare(), 1);
+////            if (pValue > sig) {
+////                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+//////                System.out.println("Independent!");
+////            } else {
+////                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+//////                System.out.println("NOT independent!");
+////            }
+////            return (pValue > sig);
 //        } else if (testType == MIMBUILD_2SLS) {
 //            /*graph.addDirectedEdge(node_x, node_y);
 //            SemPm pm = new SemPm(new SemGraph(graph));
@@ -541,8 +543,8 @@ public final class IndTestMimBuild implements IndependenceTest {
 //        }
 //
 //        return true;
-    }
-
+//    }
+//
     public boolean isIndependent(Node x, Node y, Node... z) {
         List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
@@ -612,7 +614,6 @@ public final class IndTestMimBuild implements IndependenceTest {
     }
 
     boolean isZeroBootstrap(double mean, double variance, double sig) {
-        //FIXME: adjust for the sig parameter
         return Math.abs(mean / variance) < 1.96;
     }
 

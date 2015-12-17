@@ -84,13 +84,6 @@ class Tsls {
     public SemIm estimate() {
         semIm = new SemIm(spm);
         semIm = estimateCoeffs(semIm);
-        //semIm = estimateCovars(semIm);
-        // TODO: *NOT IMPLEMENTED YET*. 2SLS is not being used as an estimator
-        // for the whole model, just for the edges. Currently, it just
-        // returns the random values for variances assigned in the
-        // SemIm constructor.
-        //
-        //            Ricardo Silva, 05/01/2003
         return semIm;
     }
 

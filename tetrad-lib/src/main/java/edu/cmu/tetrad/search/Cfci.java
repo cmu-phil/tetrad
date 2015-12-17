@@ -912,9 +912,6 @@ public final class Cfci implements GraphSearch {
                     graph.setEndpoint(b, a, Endpoint.TAIL);
                     orientTailPath(u);
                     changeFlag = true;
-
-                    // TODO we should break here if one doesn't need to undirect
-                    // TODO every such uncovered circle path, ask Jiji?
                 }
             }
         }
@@ -1184,7 +1181,7 @@ public final class Cfci implements GraphSearch {
 
         LISTS:
         for (List<Node> u : ucPdPsToC) {
-            Node b = u.get(1); // TODO do we need to check if b is c?
+            Node b = u.get(1);
             if (graph.isAdjacentTo(b, c)) continue;
             if (b == c) continue;
             // We know u is as required: R6 applies!
@@ -1233,7 +1230,6 @@ public final class Cfci implements GraphSearch {
 
                 if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) continue;
                 // We know Ao->C and B-->C<--D.
-                // TODO do we need to check if d is b?  I think so--jdramsey--added code.
 
                 List<List<Node>> ucPdPsToB = getUcPdPaths(a, b);
                 List<List<Node>> ucPdPsToD = getUcPdPaths(a, d);
@@ -1256,7 +1252,7 @@ public final class Cfci implements GraphSearch {
                             }
                         }
 
-                        if (m.equals(n)) continue; // TODO use ==?
+                        if (m.equals(n)) continue;
                         if (graph.isAdjacentTo(m, n)) continue;
                         // We know B,D,u1,u2 as required: Tanh applies!
 

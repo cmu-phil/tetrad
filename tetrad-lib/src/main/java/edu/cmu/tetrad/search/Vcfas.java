@@ -350,7 +350,7 @@ public class Vcfas {
 
     // Returns true just in case there are no defined values in the column.
     private boolean missingCol(DataModel data, Node x) {
-        return false; // TODO revert.
+        return false;
 
 //        if (data instanceof DataSet) {
 //            DataSet dataSet = (DataSet) data;

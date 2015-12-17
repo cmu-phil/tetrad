@@ -298,7 +298,7 @@ public final class Misclassifications implements SessionModel {
      *
      * @see TetradSerializableUtils
      */
-    public static Node serializableInstance() { // TODO
+    public static Node serializableInstance() {
         return new GraphNode("X");
     }
 

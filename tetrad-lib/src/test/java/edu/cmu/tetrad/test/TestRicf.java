@@ -42,8 +42,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestRicf {
 
-    // TODO add some more testing.
-
     /**
      * <pre>
      * > ## A covariance matrix
@@ -162,7 +160,7 @@ public class TestRicf {
         TetradMatrix shat = matrix(shatValues, rows, cols);
         TetradMatrix diff = shat.copy();
 //        diff.assign(ricfResult.getShat(), PlusMult.plusMult(-1));
-        diff = diff.minus(new TetradMatrix(ricfResult.getShat().toArray()));  // todo right???
+        diff = diff.minus(new TetradMatrix(ricfResult.getShat().toArray()));
         return diff.norm1();
     }
 

@@ -548,7 +548,6 @@ public class ImagesSearchEditor extends AbstractSearchEditor
         return display;
     }
 
-    // TODO Fix this.
     private List<ScoredGraph> arrangeGraphs() {
         IGesRunner runner = (IGesRunner) getAlgorithmRunner();
 

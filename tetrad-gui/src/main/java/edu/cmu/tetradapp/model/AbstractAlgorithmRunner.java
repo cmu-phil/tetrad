@@ -104,7 +104,7 @@ public abstract class AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      *
-     * @param knowledgeBoxModel TODO
+     * @param knowledgeBoxModel
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
                                    SearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -142,7 +142,7 @@ public abstract class AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      *
-     * @param knowledgeBoxModel TODO
+     * @param knowledgeBoxModel
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
                                    SearchParams params, KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {

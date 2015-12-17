@@ -126,7 +126,7 @@ public class DMSearch {
 
         DataSet data = getData();
 
-        //TODO: Break stuff below here into seperate fuct/classes.
+        //2DO: Break stuff below here into seperate fuct/classes.
         this.cov = new CovarianceMatrixOnTheFly(data);
 
 
@@ -179,7 +179,7 @@ public class DMSearch {
             double penalty = 2;
 
 
-//           TODO: Alternative to using built in PC. Needs a fix so that all nodes added to pattern are looked at in applyDmSearch
+//           2DO: Alternative to using built in PC. Needs a fix so that all nodes added to pattern are looked at in applyDmSearch
 //            ExecutorService executorService = Executors.newFixedThreadPool(4); // number of threads
 
             IndTestFisherZ ind = new IndTestFisherZ(cov, this.alphaPC);
@@ -218,10 +218,10 @@ public class DMSearch {
         List<Set<Node>> outputParentsList = new ArrayList<Set<Node>>();
         final List<Node> patternNodes = pattern.getNodes();
 
-//        TODO: add testcase to see how sort compares 10, 11, 1, etc.
+//        2DO: add testcase to see how sort compares 10, 11, 1, etc.
         java.util.Collections.sort(patternNodes, new Comparator<Node>() {
             public int compare(Node node1, Node node2) {
-//TODO: string length error here. Fix.
+//2DO: string length error here. Fix.
 
                 if (node1.getName().length() > node2.getName().length()) {
                     return (1);
@@ -319,7 +319,6 @@ public class DMSearch {
                     continue;
                 }
 
-                // TODO: Spin off into own function, which adds the output nodes
                 //Adding Outputs to their Map.
                 for (Node node : outputNodes) {
 
@@ -396,7 +395,7 @@ public class DMSearch {
         //Finding initial latent-latent Effects.
         for (int i = 0; i <= latentsSortedByInputSetSize.keySet().size(); i++) {
 
-//          TODO: Need to only perform this test if haven't already looked at latent. (for latent 1).
+//          2DO: Need to only perform this test if haven't already looked at latent. (for latent 1).
 
 
             TreeSet<TreeSet<Node>> sortedInputs = new TreeSet<TreeSet<Node>>(new Comparator<TreeSet<Node>>() {

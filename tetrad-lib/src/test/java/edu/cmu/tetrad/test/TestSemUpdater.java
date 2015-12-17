@@ -40,7 +40,6 @@ public class TestSemUpdater {
 
     @Test
     public void testUpdate() {
-        // TODO
 
         Graph graph = constructGraph1();
 

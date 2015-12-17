@@ -2473,7 +2473,6 @@ public final class SearchGraphUtils {
 //                Node _x = graph.getNode(x.getName());
 //                Node _y = graph.getNode(y.getName());
 
-                // TODO adjust for two cycles.
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = graph.getEdge(x, y);
 
@@ -2594,7 +2593,6 @@ public final class SearchGraphUtils {
 //                Node _x = graph.getNode(x.getName());
 //                Node _y = graph.getNode(y.getName());
 
-                // TODO adjust for two cycles.
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = graph.getEdge(x, y);
 
@@ -2715,7 +2713,6 @@ public final class SearchGraphUtils {
 //                Node _x = graph.getNode(x.getName());
 //                Node _y = graph.getNode(y.getName());
 
-                // TODO adjust for two cycles.
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = graph.getEdge(x, y);
 

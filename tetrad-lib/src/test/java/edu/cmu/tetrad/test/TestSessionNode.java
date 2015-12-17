@@ -345,9 +345,6 @@ public class TestSessionNode {
             fail("Model not created.");
         }
 
-        // TODO: When models are destroyed, models downstream should
-        // be destroyed. This has to come from nodes listening to each
-        // other. jdramsey 12/25/01
         node1.destroyModel();
         assertNull(node1.getModel());
     }

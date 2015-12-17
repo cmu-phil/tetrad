@@ -221,7 +221,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         Node x = new ContinuousVariable("X");
         variables.add(x);
         TetradMatrix matrix = TetradAlgebra.identity(1);
-        return new CovarianceMatrix(variables, matrix, 100); // TODO make one that works for CovarianceMatrixOnTheFly
+        return new CovarianceMatrix(variables, matrix, 100); //
     }
 
     //============================PUBLIC METHODS=========================//

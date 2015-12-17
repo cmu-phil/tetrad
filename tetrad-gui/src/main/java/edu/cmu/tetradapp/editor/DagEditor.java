@@ -258,7 +258,6 @@ public final class DagEditor extends JPanel
      */
     private JMenu createEditMenu() {
 
-        // TODO Add Cut and Delete.
         JMenu edit = new JMenu("Edit");
 
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));

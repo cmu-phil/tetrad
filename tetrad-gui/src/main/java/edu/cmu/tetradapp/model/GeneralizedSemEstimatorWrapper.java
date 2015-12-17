@@ -82,7 +82,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
         this.report = estimator.getReport();
     }
 
-    public static Node serializableInstance() {return new GraphNode("X");} //TODO
+    public static Node serializableInstance() {return new GraphNode("X");}
 
 
     //============================PUBLIC METHODS=========================//

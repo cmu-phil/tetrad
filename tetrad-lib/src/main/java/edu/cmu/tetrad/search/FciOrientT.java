@@ -788,9 +788,6 @@ public final class FciOrientT {
                     graph.setEndpoint(b, a, Endpoint.TAIL);
                     orientTailPath(u, graph);
                     changeFlag = true;
-
-                    // TODO we should break here if one doesn't need to undirect
-                    // TODO every such uncovered circle path, ask Jiji?
                 }
             }
         }
@@ -1044,7 +1041,7 @@ public final class FciOrientT {
         List<List<Node>> ucPdPsToC = getUcPdPaths(a, c, graph);
 
         for (List<Node> u : ucPdPsToC) {
-            Node b = u.get(1); // TODO do we need to check if b is c?
+            Node b = u.get(1);
             if (graph.isAdjacentTo(b, c)) continue;
             if (b == c) continue;
             // We know u is as required: R9 applies!
@@ -1085,7 +1082,6 @@ public final class FciOrientT {
 
                 if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) continue;
                 // We know Ao->C and B-->C<--D.
-                // TODO do we need to check if d is b?  I think so--jdramsey--added code.
 
                 List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
                 List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
@@ -1094,7 +1090,7 @@ public final class FciOrientT {
                     for (List<Node> u2 : ucPdPsToD) {
                         Node n = u2.get(1);
 
-                        if (m.equals(n)) continue; // TODO use ==?
+                        if (m.equals(n)) continue;
                         if (graph.isAdjacentTo(m, n)) continue;
                         // We know B,D,u1,u2 as required: R10 applies!
 

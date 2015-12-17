@@ -896,39 +896,6 @@ final class SemImGraphicalEditor extends JPanel {
 
     private void finishEdit() {
         if (lastEditedObject() != null) {
-            Object o = lastEditedObject();
-            String s;
-
-            // No longer necessarily a jlabel... could be a box of jlables...
-            // need an interface to avoid classcastexceptions... jdramsey 7/24/2005
-            // todo:
-//            JPanel panel = (JPanel) workbench().getLabel(o);
-//
-//            DoubleTextField textField = null;
-//
-//            for (int i = 0; i < panel.getComponentCount(); i++) {
-//                if (panel.getComponent(i) instanceof DoubleTextField) {
-//                    textField = (DoubleTextField) panel.getComponent(i);
-//                    break;
-//                }
-//            }
-//
-//            if (textField == null) {
-//                throw new NullPointerException();
-//            }
-//
-//            s = textField.getText();
-//
-//            if (o instanceof Edge) {
-//                Edge edge = (Edge) o;
-//                setEdgeValue(edge, s);
-//                resetLabels();
-//            } else {
-//                Node node = (Node) o;
-//                setNodeValue(node, s);
-//                resetLabels();
-//            }
-
             resetLabels();
         }
     }

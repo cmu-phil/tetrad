@@ -229,8 +229,6 @@ public class TestSessionSupport {
         setEvent1Received(false);
         this.sessionSupport.fireNodeAdded(node1);
         assertTrue(!isEvent1Received());
-
-        // TODO: The modelUnclear method is not tested yet.
     }
 
     /**
