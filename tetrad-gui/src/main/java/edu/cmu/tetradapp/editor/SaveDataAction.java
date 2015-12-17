@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataWriter;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.EditorUtils;
@@ -75,16 +72,13 @@ public final class SaveDataAction extends AbstractAction {
     }
 
 
-    public SaveDataAction(MarkovBlanketSearchEditor editor){
+    public SaveDataAction(MarkovBlanketSearchEditor editor) {
         super("Save Data...");
-        if(editor == null){
+        if (editor == null) {
             throw new NullPointerException("Editor must not be null");
         }
         this.searchEditor = editor;
     }
-
-
-
 
 
     /**
@@ -93,8 +87,7 @@ public final class SaveDataAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         try {
             saveData();
-        }
-        catch (IOException e1) {
+        } catch (IOException e1) {
             e1.printStackTrace();
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Error in saving: " + e1.getMessage());
@@ -105,32 +98,11 @@ public final class SaveDataAction extends AbstractAction {
      * Saves data in the selected data set to a file.
      */
     private void saveData() throws IOException {
-        File file =
-                EditorUtils.getSaveFile("data", "txt", getDataEditor(), false, "Save Data...");
 
-        if (file == null) {
-            return;
-        }
-
-        char delimiter = '\t';
-
-        if (file.getName().endsWith(".csv")) {
-            delimiter = ',';
-        }
-
-        PrintWriter out;
-
-        try {
-            out = new PrintWriter(new FileOutputStream(file));
-        }
-        catch (IOException e) {
-            throw new IllegalArgumentException(
-                    "Output file could not be opened: " + file);
-        }
 
         DataModel dataModel;
-        if(this.dataEditor != null){
-            dataModel = getDataEditor().getSelectedDataModel();
+        if (this.dataEditor != null) {
+            dataModel = getDataEditor().getDataModelList();
         } else {
             dataModel = searchEditor.getDataModel();
         }
@@ -140,27 +112,113 @@ public final class SaveDataAction extends AbstractAction {
         }
 
         if (dataModel instanceof DataSet) {
+            File file = EditorUtils.getSaveFile("data", "txt", getDataEditor(), false, "Save Data...");
+
+            if (file == null) {
+                return;
+            }
+
+            char delimiter = '\t';
+
+            if (file.getName().endsWith(".csv")) {
+                delimiter = ',';
+            }
+
+            PrintWriter out;
+
+            try {
+                out = new PrintWriter(new FileOutputStream(file));
+            } catch (IOException e) {
+                throw new IllegalArgumentException(
+                        "Output file could not be opened: " + file);
+            }
+
             DataSet dataSet = (DataSet) dataModel;
 
             if (dataSet.isContinuous()) {
                 DataWriter.writeRectangularData(dataSet, out, delimiter);
-            }
-            else if (dataSet.isDiscrete()) {
+            } else if (dataSet.isDiscrete()) {
+                DataWriter.writeRectangularData(dataSet, out, delimiter);
+            } else {
                 DataWriter.writeRectangularData(dataSet, out, delimiter);
             }
-            else {
-                DataWriter.writeRectangularData(dataSet, out, delimiter);
+
+            out.close();
+        } else if (dataModel instanceof ICovarianceMatrix) {
+            File file = EditorUtils.getSaveFile("data", "txt", getDataEditor(), false, "Save Data...");
+
+            if (file == null) {
+                return;
             }
-        }
-        else if (dataModel instanceof ICovarianceMatrix) {
+
+            PrintWriter out;
+
+            try {
+                out = new PrintWriter(new FileOutputStream(file));
+            } catch (IOException e) {
+                throw new IllegalArgumentException(
+                        "Output file could not be opened: " + file);
+            }
+
             DataWriter.writeCovMatrix((ICovarianceMatrix) dataModel, out, nf);
-        }
-        else {
+
+            out.close();
+        } else if (dataModel instanceof DataModelList) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Pick the name of the first file, e.g. data.txt." +
+                    " A series of files will be generated based on this name, e.g. data1.txt, data2.txt, etc.");
+
+            File file = EditorUtils.getSaveFile("data", "txt", getDataEditor(), false, "Save Data...");
+
+            if (file == null) {
+                return;
+            }
+
+            char delimiter = '\t';
+
+            if (file.getName().endsWith(".csv")) {
+                delimiter = ',';
+            }
+
+            DataModelList list = (DataModelList) dataModel;
+
+            String[] tokens = file.getName().split(".txt");
+            String base = tokens[0];
+
+            for (int i = 0; i < list.size(); i++) {
+
+                DataModel _dataModel = list.get(i);
+
+                if (_dataModel == null) throw new NullPointerException("Null data model.");
+
+                if (_dataModel instanceof DataSet) {
+                    PrintWriter out;
+
+                    try {
+                        File file1 = new File(file.getParent() + "/" + base + "." + (i + 1) + ".txt");
+                        System.out.println(file1);
+                        out = new PrintWriter(new FileOutputStream(file1));
+                    } catch (IOException e) {
+                        throw new IllegalArgumentException(
+                                "Output file could not be opened: " + file);
+                    }
+
+                    DataSet dataSet = (DataSet) ((DataModelList) dataModel).get(i);
+
+                    if (dataSet.isContinuous()) {
+                        DataWriter.writeRectangularData(dataSet, out, delimiter);
+                    } else if (dataSet.isDiscrete()) {
+                        DataWriter.writeRectangularData(dataSet, out, delimiter);
+                    } else {
+                        DataWriter.writeRectangularData(dataSet, out, delimiter);
+                    }
+
+                    out.close();
+                }
+            }
+        } else {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Sorry, don't know how to save that.");
         }
-
-        out.close();
     }
 
     private DataEditor getDataEditor() {
