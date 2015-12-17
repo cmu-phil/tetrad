@@ -528,22 +528,7 @@ public class FasFdr implements IFas {
 
     // Returns true just in case there are no defined values in the column.
     private boolean missingCol(DataModel data, Node x) {
-        return false; // TODO revert.
-
-//        if (data instanceof DataSet) {
-//            DataSet dataSet = (DataSet) data;
-//            int j = dataSet.getColumn(dataSet.getVariable(x.getName()));
-//
-//            for (int i = 0; i < dataSet.getNumRows(); i++) {
-//                if (!Double.isNaN(dataSet.getDouble(i, j))) {
-//                    return false;
-//                }
-//            }
-//
-//            return true;
-//        }
-//
-//        return false;
+        return false;
     }
 
     private int freeDegree(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {

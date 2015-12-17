@@ -81,6 +81,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * Formats as 0.0000.
      */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -246,10 +247,12 @@ public final class IndTestCramerT implements IndependenceTest {
         boolean independent = isZero(this.storedR, size, getAlpha());
         double pValue = getPValue();
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+            } else {
+                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+            }
         }
 
         return independent;
@@ -432,6 +435,14 @@ public final class IndTestCramerT implements IndependenceTest {
 
     private PartialCorrelationPdf pdf() {
         return pdf;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

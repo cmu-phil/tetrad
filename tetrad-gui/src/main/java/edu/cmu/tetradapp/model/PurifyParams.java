@@ -87,7 +87,6 @@ public final class PurifyParams implements MimParams {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static PurifyParams serializableInstance() {

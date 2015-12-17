@@ -393,7 +393,6 @@ public final class SemEstimator implements TetradSerializable {
                 double[] column = dataSet.getDoubleData().getColumn(j).toArray();
                 DoubleArrayList list = new DoubleArrayList(column);
                 double mean = Descriptive.mean(list);
-                System.out.println("Mean " + j + " = " + mean);
 
                 Node node = dataSet.getVariable(j);
                 Node variableNode = semIm.getVariableNode(node.getName());

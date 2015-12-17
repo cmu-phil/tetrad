@@ -25,40 +25,23 @@ import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradLogger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the BayesUpdqater
  *
  * @author Joseph Ramsey
  */
-public final class TestCptInvariantUpdater extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestCptInvariantUpdater(String name) {
-        super(name);
-    }
-
-    public void setUp() throws Exception {
-        TetradLogger.getInstance().addOutputStream(System.out);
-        TetradLogger.getInstance().setForceLog(true);
-    }
-
-
-    public void tearDown(){
-        TetradLogger.getInstance().setForceLog(false);
-        TetradLogger.getInstance().removeOutputStream(System.out);
-    }
+public final class TestCptInvariantUpdater {
 
     /**
      * Richard's 2-variable example worked by hand.
      */
-    public static void testUpdate1() {
+    @Test
+    public void testUpdate1() {
         BayesIm bayesIm = sampleBayesIm1();
         ManipulatingBayesUpdater updater = new CptInvariantUpdater(bayesIm);
 
@@ -72,11 +55,6 @@ public final class TestCptInvariantUpdater extends TestCase {
         updater.setEvidence(evidence);
         BayesIm updatedIm = updater.getUpdatedBayesIm();
 
-        // Print before and after
-        System.out.println(bayesIm.getBayesPm());
-        System.out.println(bayesIm);
-        System.out.println(updatedIm);
-
         // Check results.
         assertEquals(0.1250, updatedIm.getProbability(0, 0, 0), 0.001);
         assertEquals(0.8750, updatedIm.getProbability(0, 0, 1), 0.001);
@@ -87,19 +65,16 @@ public final class TestCptInvariantUpdater extends TestCase {
         assertEquals(0.0000, updatedIm.getProbability(1, 1, 0), 0.001);
         assertEquals(1.0000, updatedIm.getProbability(1, 1, 1), 0.001);
 
-        System.out.println(updater.getMarginal(xIndex, 0));
-
         ManipulatingBayesUpdater updater2 = new CptInvariantUpdater(bayesIm);
         Evidence evidence2 = new Evidence(evidence, bayesIm);
         updater2.setEvidence(evidence2);
-
-        System.out.println(updater2.getMarginal(xIndex, 0));
     }
 
     /**
      * Bill's 3-variable example, with c=value2.
      */
-    public static void testUpdate2() {
+    @Test
+    public void testUpdate2() {
         BayesIm bayesIm = sampleBayesIm2();
         ManipulatingBayesUpdater updater = new CptInvariantUpdater(bayesIm);
 
@@ -111,11 +86,6 @@ public final class TestCptInvariantUpdater extends TestCase {
 
         updater.setEvidence(evidence);
         BayesIm updatedIm = updater.getUpdatedBayesIm();
-
-        // Print before and after
-        System.out.println(bayesIm.getBayesPm());
-        System.out.println(bayesIm);
-        System.out.println(updatedIm);
 
         // Check results.
         assertEquals(0.2750, updatedIm.getProbability(0, 0, 0), 0.001);
@@ -146,7 +116,8 @@ public final class TestCptInvariantUpdater extends TestCase {
     /**
      * Bill's 3-variable example, with b=value1.
      */
-    public static void testUpdate3() {
+    @Test
+    public void testUpdate3() {
         BayesIm bayesIm = sampleBayesIm2();
         ManipulatingBayesUpdater updater = new CptInvariantUpdater(bayesIm);
 
@@ -156,15 +127,8 @@ public final class TestCptInvariantUpdater extends TestCase {
 
         evidence.getProposition().setCategory(nodeIndex, valueIndex);
 
-        System.out.println(evidence);
-
         updater.setEvidence(evidence);
         BayesIm updatedIm = updater.getUpdatedBayesIm();
-
-        // Print before and after
-        System.out.println(bayesIm.getBayesPm());
-        System.out.println(bayesIm);
-        System.out.println(updatedIm);
 
         // Check results.
         assertEquals(0.1765, updatedIm.getProbability(0, 0, 0), 0.001);
@@ -192,7 +156,8 @@ public final class TestCptInvariantUpdater extends TestCase {
         assertTrue(Double.isNaN(updatedIm.getProbability(2, 5, 1)));
     }
 
-    public static void testUpdate4() {
+    @Test
+    public void testUpdate4() {
         Node x0Node = new GraphNode("X0");
         Node x1Node = new GraphNode("X1");
         Node x2Node = new GraphNode("X2");
@@ -209,8 +174,6 @@ public final class TestCptInvariantUpdater extends TestCase {
         graph.addDirectedEdge(x1Node, x3Node);
         graph.addDirectedEdge(x2Node, x3Node);
 
-        System.out.println(graph);
-
         BayesPm bayesPm = new BayesPm(graph);
         MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
@@ -219,12 +182,8 @@ public final class TestCptInvariantUpdater extends TestCase {
         int x2 = bayesIm.getNodeIndex(x2Node);
         int x3 = bayesIm.getNodeIndex(x3Node);
 
-        System.out.println(bayesIm);
-
         Evidence evidence = Evidence.tautology(bayesIm);
         evidence.getProposition().setCategory(x2, 0);
-
-        System.out.println(evidence);
 
         BayesUpdater updater1 = new CptInvariantUpdater(bayesIm);
         updater1.setEvidence(evidence);
@@ -235,13 +194,11 @@ public final class TestCptInvariantUpdater extends TestCase {
         double marginal1 = updater1.getMarginal(x3, 0);
         double marginal2 = updater2.getMarginal(x3, 0);
 
-        System.out.println("Marginal from CPT Inv = " + marginal1);
-        System.out.println("Marginal from Row Summer = " + marginal2);
-
         assertEquals(marginal1, marginal2, 0.000001);
     }
 
-    public static void testUpdate5() {
+    @Test
+    public void testUpdate5() {
         Node x0Node = new GraphNode("X0");
         Node x1Node = new GraphNode("X1");
         Node x2Node = new GraphNode("X2");
@@ -262,8 +219,6 @@ public final class TestCptInvariantUpdater extends TestCase {
         graph.addDirectedEdge(x4Node, x0Node);
         graph.addDirectedEdge(x4Node, x2Node);
 
-        System.out.println(graph);
-
         BayesPm bayesPm = new BayesPm(graph);
         MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
@@ -271,15 +226,11 @@ public final class TestCptInvariantUpdater extends TestCase {
         int x2 = bayesIm.getNodeIndex(x2Node);
         int x3 = bayesIm.getNodeIndex(x3Node);
 
-        System.out.println(bayesIm);
-
         Evidence evidence = Evidence.tautology(bayesIm);
         evidence.getProposition().setCategory(x1, 1);
         evidence.getProposition().setCategory(x2, 0);
 
         evidence.getNodeIndex("X1");
-
-        System.out.println(evidence);
 
         BayesUpdater updater1 = new CptInvariantUpdater(bayesIm);
         updater1.setEvidence(evidence);
@@ -290,13 +241,10 @@ public final class TestCptInvariantUpdater extends TestCase {
         double marginal1 = updater1.getMarginal(x3, 0);
         double marginal2 = updater2.getMarginal(x3, 0);
 
-        System.out.println("Marginal from CPT Inv = " + marginal1);
-        System.out.println("Marginal from Row Summer = " + marginal2);
-
         assertEquals(marginal1, marginal2, 0.000001);
     }
 
-    private static BayesIm sampleBayesIm1() {
+    private BayesIm sampleBayesIm1() {
         Node x = new GraphNode("x");
         Node z = new GraphNode("z");
 
@@ -306,8 +254,6 @@ public final class TestCptInvariantUpdater extends TestCase {
         graph.addNode(z);
 
         graph.addDirectedEdge(x, z);
-
-        System.out.println(graph);
 
         BayesPm bayesPm = new BayesPm(graph);
 
@@ -324,7 +270,7 @@ public final class TestCptInvariantUpdater extends TestCase {
         return bayesIm1;
     }
 
-    private static BayesIm sampleBayesIm2() {
+    private BayesIm sampleBayesIm2() {
         Node a = new GraphNode("a");
         Node b = new GraphNode("b");
         Node c = new GraphNode("c");
@@ -340,8 +286,6 @@ public final class TestCptInvariantUpdater extends TestCase {
         graph.addDirectedEdge(a, b);
         graph.addDirectedEdge(a, c);
         graph.addDirectedEdge(b, c);
-
-        System.out.println(graph);
 
         BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
@@ -376,17 +320,6 @@ public final class TestCptInvariantUpdater extends TestCase {
         bayesIm1.setProbability(2, 5, 0, .7);
         bayesIm1.setProbability(2, 5, 1, .3);
         return bayesIm1;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestCptInvariantUpdater.class);
     }
 }
 

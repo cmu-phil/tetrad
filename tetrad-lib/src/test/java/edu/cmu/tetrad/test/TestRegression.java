@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionCovariance;
@@ -30,16 +32,12 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-import java.io.CharArrayWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the new regression classes. There is a tabular linear regression
@@ -48,12 +46,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class TestRegression extends TestCase {
+public class TestRegression {
     DataSet data;
-
-    public TestRegression(String name) {
-        super(name);
-    }
 
     public void setUp() {
         List<Node> nodes = new ArrayList<>();
@@ -66,8 +60,6 @@ public class TestRegression extends TestCase {
         Graph graph = new Dag(GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 5, 3,
                 3, 3, false));
 
-        System.out.println(graph);
-
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         data = im.simulateDataReducedForm(1000, false);
@@ -77,7 +69,10 @@ public class TestRegression extends TestCase {
      * This tests whether the answer to a rather arbitrary problem changes.
      * At one point, this was the answer being returned.
      */
+    @Test
     public void testTabular() {
+        setUp();
+
         RandomUtil.getInstance().setSeed(3848283L);
 
         List<Node> nodes = data.getVariables();
@@ -92,8 +87,6 @@ public class TestRegression extends TestCase {
         Regression regression = new RegressionDataset(data);
         RegressionResult result = regression.regress(target, regressors);
 
-        System.out.println(result);
-
         double[] coeffs = result.getCoef();
         assertEquals(.08, coeffs[0], 0.01);
         assertEquals(-.05, coeffs[1], 0.01);
@@ -105,7 +98,10 @@ public class TestRegression extends TestCase {
     /**
      * Same problem, using the covariance matrix.
      */
+    @Test
     public void testCovariance() {
+        setUp();
+
         RandomUtil.getInstance().setSeed(3848283L);
 
         ICovarianceMatrix cov = new CovarianceMatrix(data);
@@ -121,56 +117,12 @@ public class TestRegression extends TestCase {
         Regression regression = new RegressionCovariance(cov);
         RegressionResult result = regression.regress(target, regressors);
 
-        System.out.println(result);
-
         double[] coeffs = result.getCoef();
         assertEquals(0.00, coeffs[0], 0.01);
-        assertEquals(-.04, coeffs[1], 0.01);
+        assertEquals(-.053, coeffs[1], 0.01);
         assertEquals(0.036, coeffs[2], 0.01);
         assertEquals(.019, coeffs[3], 0.01);
         assertEquals(.007, coeffs[4], 0.01);
-    }
-
-    private char[] fileToCharArray(File file) {
-        try {
-            FileReader reader = new FileReader(file);
-            CharArrayWriter writer = new CharArrayWriter();
-            int c;
-
-            while ((c = reader.read()) != -1) {
-                writer.write(c);
-            }
-
-            return writer.toCharArray();
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private DataSet loadCarsFile() {
-        File file = new File("test_data/cars.dat");
-        char[] chars = fileToCharArray(file);
-
-        DataReader reader = new DataReader();
-        reader.setDelimiter(DelimiterType.WHITESPACE);
-
-        return reader.parseTabular(chars);
-    }
-
-    private DataSet loadRegressionDataFile() {
-        File file = new File("test_data/regressiondata.dat");
-        char[] chars = fileToCharArray(file);
-
-        DataReader reader = new DataReader();
-        reader.setDelimiter(DelimiterType.WHITESPACE);
-
-        DataSet data = reader.parseTabular(chars);
-        return data;
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestRegression.class);
     }
 }
 

@@ -51,6 +51,7 @@ import static java.lang.Math.log;
 public class GeneralizedSemEstimator {
 
     private String report = "";
+    private double aSquaredStar = Double.NaN;
 
     /**
      * Maximizes likelihood equation by equation. Assumes the equations are recursive and that
@@ -113,8 +114,12 @@ public class GeneralizedSemEstimator {
 
         MultiGeneralAndersonDarlingTest test = new MultiGeneralAndersonDarlingTest(allResiduals, allDistributions);
 
+        double aSquaredStar = test.getASquaredStar();
+
+        this.aSquaredStar = aSquaredStar;
+
         String builder2 = "Report:\n" +
-                "\nModel A^2* (Anderson Darling) = " + test.getASquaredStar() + "\n" +
+                "\nModel A^2* (Anderson Darling) = " + aSquaredStar + "\n" +
                 builder;
 
         this.report = builder2;
@@ -170,6 +175,10 @@ public class GeneralizedSemEstimator {
 
     public String getReport() {
         return report;
+    }
+
+    public double getaSquaredStar() {
+        return aSquaredStar;
     }
 
 

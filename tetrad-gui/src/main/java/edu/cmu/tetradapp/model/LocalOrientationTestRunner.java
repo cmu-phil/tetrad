@@ -82,7 +82,6 @@ public class LocalOrientationTestRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static LocalOrientationTestRunner serializableInstance() {

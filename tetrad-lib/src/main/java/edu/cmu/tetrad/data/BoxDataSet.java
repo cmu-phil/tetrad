@@ -153,10 +153,9 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     }
 
     /**
-     * Makes of copy of the given data set. TODO Might consider making the
-     * argument a RectangularDataSet instead.
+     * Makes of copy of the given data set.
      */
-    private BoxDataSet(BoxDataSet dataSet) {
+    public BoxDataSet(BoxDataSet dataSet) {
         name = dataSet.name;
         variables = new LinkedList<>(dataSet.variables);
         dataBox = dataSet.dataBox.copy();
@@ -1120,7 +1119,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      */
     public final void removeCols(int[] cols) {
 
-        // TODO Check sanity of values in cols.
         int[] rows = new int[dataBox.numRows()];
 
         for (int i = 0; i < dataBox.numRows(); i++) {
@@ -1154,7 +1152,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      */
     public final void removeRows(int[] selectedRows) {
 
-        // TODO Check sanity of values in cols.
         int[] cols = new int[dataBox.numCols()];
 
         for (int i = 0; i < dataBox.numCols(); i++) {

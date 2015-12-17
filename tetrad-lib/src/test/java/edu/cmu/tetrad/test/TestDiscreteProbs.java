@@ -63,8 +63,6 @@ public final class TestDiscreteProbs extends TestCase {
 
         StoredCellProbs cellProbabilities =
                 StoredCellProbs.createRandomCellTable(variables);
-
-        System.out.println(cellProbabilities);
     }
 
     public void testCreateUsingBayesIm() {
@@ -75,8 +73,6 @@ public final class TestDiscreteProbs extends TestCase {
 
         StoredCellProbs cellProbs = StoredCellProbs.createCellTable(bayesIm);
 
-        System.out.println(cellProbs);
-
         Proposition assertion = Proposition.tautology(bayesIm);
         assertion.setCategory(0, 1);
         assertion.removeCategory(2, 0);
@@ -85,9 +81,6 @@ public final class TestDiscreteProbs extends TestCase {
         condition.setCategory(0, 1);
 
         cellProbs.getConditionalProb(assertion, condition);
-
-        System.out.println("\n\nprob = " +
-                NumberFormatUtil.getInstance().getNumberFormat().format(cellProbs.getConditionalProb(assertion, condition)));
     }
 
     /**

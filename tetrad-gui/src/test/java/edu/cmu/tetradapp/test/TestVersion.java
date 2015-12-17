@@ -22,9 +22,10 @@
 package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetrad.util.Version;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the Version class, to make sure it can load versions from string
@@ -32,15 +33,9 @@ import junit.framework.TestSuite;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public final class TestVersion extends TestCase {
+public final class TestVersion {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestVersion(final String name) {
-        super(name);
-    }
-
+    @Test
     public void testRoundtrip() {
         Version version = new Version("4.3.1-5");
         String versionString = version.toString();
@@ -48,6 +43,7 @@ public final class TestVersion extends TestCase {
         assertTrue(version.equals(version2));
     }
 
+    @Test
     public void testNextVersion() {
         Version version = new Version("4.3.1-5");
 
@@ -62,17 +58,6 @@ public final class TestVersion extends TestCase {
 
         Version version5 = version.nextIncrementalRelease();
         assertEquals(version5, new Version("4.3.1-6"));
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestVersion.class);
     }
 }
 

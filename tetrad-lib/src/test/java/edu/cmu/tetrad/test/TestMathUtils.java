@@ -22,9 +22,10 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.MathUtils;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -32,55 +33,21 @@ import junit.framework.TestSuite;
  *
  * @author Joseph Ramsey
  */
-public class TestMathUtils extends TestCase {
+public class TestMathUtils {
 
-    public TestMathUtils(String name) {
-        super(name);
-    }
-
+    @Test
     public void testLogistic() {
-//        for (double d = -10.; d < 10.; d+= 0.5) {
-//            System.out.println(MathUtils.logistic(d));
-//        }
-
         assertTrue(MathUtils.logistic(0.) == 0.5);
         assertTrue(MathUtils.logistic(-10.) < 1.e-4);
         assertTrue(MathUtils.logistic(+10.) > 1. - 1.e-4);
     }
 
-//    public void testTemp() {
-//        TetradMatrix iMinusB = TetradMatrix.instance(3, 3);
-//        iMinusB.set(0, 0, 1);
-//        iMinusB.set(0, 1, 0);
-//        iMinusB.set(0, 2, 0);
-//        iMinusB.set(1, 0, -1);
-//        iMinusB.set(1, 1, 1);
-//        iMinusB.set(1, 2, 0);
-//        iMinusB.set(2, 0, -1);
-//        iMinusB.set(2, 1, -1);
-//        iMinusB.set(2, 2, 1);
-//
-//        System.out.println(TetradAlgebra.inverse(iMinusB));
-//    }
-
-//    public void testBigExp() {
-//        double d = 20000;
-//
-//        System.out.println(d);
-//        System.out.println(Math.exp(d));
-//        System.out.println(MathUtils.bigExp(d));
-//        System.out.println(Math.log(MathUtils.bigExp(d)));
-//    }
-
+    @Test
     public void testExpSums() {
         double d = 100.0;
 
-        System.out.println(Math.exp(d + d));
-        System.out.println(Math.exp(d) * Math.exp(d));
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestMathUtils.class);
+        assertEquals(7.22E86, Math.exp(d + d), 1E86);
+        assertEquals(7.22E86, Math.exp(d) * Math.exp(d), 1E86);
     }
 }
 

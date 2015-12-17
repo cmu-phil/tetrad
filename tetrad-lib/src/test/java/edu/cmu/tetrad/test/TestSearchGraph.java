@@ -29,33 +29,25 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.*;
 
 import static java.lang.Math.log;
 import static java.lang.Math.pow;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
- * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the Graph interface.
- *
  * @author Joseph Ramsey
  */
-public final class TestSearchGraph extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSearchGraph(String name) {
-        super(name);
-    }
+public final class TestSearchGraph {
 
     /**
      * Tests to see if d separation facts are symmetric.
      */
+    @Test
     public void testDSeparation() {
         List<Node> nodes1 = new ArrayList<Node>();
 
@@ -65,7 +57,6 @@ public final class TestSearchGraph extends TestCase {
 
         EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(new Dag(GraphUtils.randomGraph(nodes1, 0, 7,
                 30, 15, 15, true)));
-        System.out.println(graph);
 
         List<Node> nodes = graph.getNodes();
 
@@ -103,6 +94,7 @@ public final class TestSearchGraph extends TestCase {
     /**
      * Tests to see if d separation facts are symmetric.
      */
+    @Test
     public void testDSeparation2() {
         List<Node> nodes1 = new ArrayList<Node>();
 
@@ -441,17 +433,6 @@ public final class TestSearchGraph extends TestCase {
         }
 
         return total / (double) count;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestEdgeListGraph.class);
     }
 }
 

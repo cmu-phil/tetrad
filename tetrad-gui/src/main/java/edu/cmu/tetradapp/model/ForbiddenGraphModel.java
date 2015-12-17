@@ -209,14 +209,11 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
                 }
             }
         }
-
-        System.out.println(knowledge);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static ForbiddenGraphModel serializableInstance() {

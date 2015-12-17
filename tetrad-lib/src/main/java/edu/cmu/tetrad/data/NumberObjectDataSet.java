@@ -34,9 +34,9 @@ import java.util.*;
 
 
 /**
- * Wraps a COLT 2D matrix in such a way that mixed data sets can be stored. The
- * type of each column must be specified by a Variable object, which must be
- * either a <code>ContinuousVariable</code> or a <code>DiscreteVariable</code>.
+ * Wraps a 2D array of Number objects in such a way that mixed data sets can be
+ * stored. The type of each column must be specified by a Variable object, which
+ * must be either a <code>ContinuousVariable</code> or a <code>DiscreteVariable</code>.
  * This class violates object orientation in that the underlying data matrix is
  * retrievable using the getDoubleData() method. This is allowed so that
  * external calculations may be performed on large datasets without having to
@@ -190,8 +190,7 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Makes of copy of the given data set. TODO Might consider making the
-     * argument a RectangularDataSet instead.
+     * Makes of copy of the given data set.
      */
     private NumberObjectDataSet(NumberObjectDataSet dataSet) {
         name = dataSet.name;
@@ -1154,7 +1153,6 @@ public final class NumberObjectDataSet
      */
     public final void removeCols(int[] cols) {
 
-        // TODO Check sanity of values in cols.
         int[] rows = new int[data.length];
 
         for (int i = 0; i < data.length; i++) {
@@ -1188,7 +1186,6 @@ public final class NumberObjectDataSet
      */
     public final void removeRows(int[] selectedRows) {
 
-        // TODO Check sanity of values in cols.
         int[] cols = new int[data[0].length];
 
         for (int i = 0; i < data[0].length; i++) {

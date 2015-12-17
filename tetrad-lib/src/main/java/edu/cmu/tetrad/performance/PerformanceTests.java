@@ -137,6 +137,54 @@ public class PerformanceTests {
         out.close();
     }
 
+    public void printStuffForKlea() {
+
+        try {
+            File _data = new File("data.txt");
+            File _graph = new File("graph.txt");
+
+            PrintStream out1 = new PrintStream(new FileOutputStream(_data));
+            PrintStream out2 = new PrintStream(new FileOutputStream(_graph));
+
+
+            int numVars = 50000;
+
+            List<Node> vars = new ArrayList<>();
+
+            for (int i = 0; i < numVars; i++) {
+                vars.add(new ContinuousVariable("X" + (i + 1)));
+            }
+
+            double edgesPerNode = 1.0;
+            int numCases = 1000;
+
+            Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+                    30, 15, 15, false);
+
+            out2.println(graph);
+
+            System.out.println("Graph done");
+
+            out.println("Graph done");
+
+            System.out.println("Starting simulation");
+            LargeSemSimulator simulator = new LargeSemSimulator(graph);
+            simulator.setOut(out);
+
+            DataSet data = simulator.simulateDataAcyclic(numCases);
+
+            out1.println(data);
+
+            out1.close();
+            out2.close();
+        }
+        catch (Exception e) {
+
+        }
+
+
+    }
+
     public void testPcStable(int numVars, double edgesPerNode, int numCases, double alpha) {
         int depth = -1;
 
@@ -637,7 +685,6 @@ public class PerformanceTests {
 
         Fgs fgs = new Fgs(cov);
         fgs.setVerbose(false);
-        fgs.setLog(false);
         fgs.setNumPatternsToStore(0);
         fgs.setPenaltyDiscount(penaltyDiscount);
         fgs.setOut(System.out);
@@ -731,7 +778,6 @@ public class PerformanceTests {
 
         Fgs fgs = new Fgs(score);
         fgs.setVerbose(false);
-        fgs.setLog(false);
         fgs.setNumPatternsToStore(0);
         fgs.setOut(out);
         fgs.setFaithfulnessAssumed(true);
@@ -815,7 +861,6 @@ public class PerformanceTests {
 
             Fgs fgs = new Fgs(dataSet);
             fgs.setVerbose(false);
-            fgs.setLog(false);
             fgs.setNumPatternsToStore(0);
             fgs.setPenaltyDiscount(4);
             fgs.setOut(out);
@@ -1121,7 +1166,7 @@ public class PerformanceTests {
         System.out.println("FCI DAG with dsep = " + left);
         System.out.println("DAG to PAG = " + top);
 
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
         Set<Edge> leftEdges = left.getEdges();
@@ -1180,7 +1225,7 @@ public class PerformanceTests {
 
         top = GraphUtils.replaceNodes(top, left.getNodes());
 //
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
 //        int[][] counts = edgeMisclassificationCounts(top, top);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
@@ -1235,7 +1280,7 @@ public class PerformanceTests {
 
         top = GraphUtils.replaceNodes(top, left.getNodes());
 //
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
 //        int[][] counts = edgeMisclassificationCounts(top, top);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
@@ -1283,7 +1328,7 @@ public class PerformanceTests {
 //        top = DataGraphUtils.replaceNodes(top, left.getNodes());
 
 //        int[][] counts = edgeMisclassificationCounts(left, top);
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(top, top);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(top, top, true);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
 //        System.out.println("Elapsed fci = " + (time1b - time1a) + " ms");
@@ -2042,7 +2087,8 @@ public class PerformanceTests {
                 throw new IllegalArgumentException("Not a configuration!");
             }
         } else {
-            throw new IllegalArgumentException("Not a configuration!");
+            new PerformanceTests().printStuffForKlea();
+//            throw new IllegalArgumentException("Not a configuration!");
         }
 
         System.out.println("Finish");

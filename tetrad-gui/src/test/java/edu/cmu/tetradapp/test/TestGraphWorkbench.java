@@ -23,45 +23,29 @@ package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the GraphWorkbench class.
  *
  * @author Joseph Ramsey
  */
-public class TestGraphWorkbench extends TestCase {
+public class TestGraphWorkbench {
 
     private GraphWorkbench graphWorkbench;
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestGraphWorkbench(String name) {
-        super(name);
-    }
 
     public void setUp() {
         this.graphWorkbench = new GraphWorkbench(new EdgeListGraph());
     }
 
+    @Test
     public void testNextVariableName() {
-        // TODO: Not an independent test yet--some other test may
+        setUp();
+
         // change the workbench.
         assertTrue("X1".equals(this.graphWorkbench.nextVariableName("X")));
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parents to match the name
-        // of this class.
-        return new TestSuite(TestGraphWorkbench.class);
     }
 }
 

@@ -27,13 +27,17 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.util.TetradVector;
+import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the various functions of a rectangular data set. The tests must make
@@ -44,11 +48,9 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class TestColtDataSet extends TestCase {
-    public TestColtDataSet(String name) {
-        super(name);
-    }
+public final class TestColtDataSet {
 
+    @Test
     public final void testContinuous() {
         int rows = 10;
         int cols = 5;
@@ -67,8 +69,6 @@ public final class TestColtDataSet extends TestCase {
             }
         }
 
-        System.out.println(dataSet);
-
         List<Node> variables = dataSet.getVariables();
         List<Node> newVars = new LinkedList<Node>();
         newVars.add(variables.get(2));
@@ -76,19 +76,19 @@ public final class TestColtDataSet extends TestCase {
 
         DataSet _dataSet = dataSet.subsetColumns(newVars);
 
-        System.out.println(_dataSet);
-
-        assertTrue(dataSet.equals(dataSet));
+        assertEquals(dataSet.getDoubleData().getColumn(2).get(0), _dataSet.getDoubleData().getColumn(0).get(0), .001);
+        assertEquals(dataSet.getDoubleData().getColumn(4).get(0), _dataSet.getDoubleData().getColumn(1).get(0), .001);
     }
 
-    public static void testDiscrete() {
+    @Test
+    public void testDiscrete() {
         int rows = 10;
         int cols = 5;
 
         List<Node> variables = new LinkedList<Node>();
 
         for (int i = 0; i < cols; i++) {
-            DiscreteVariable variable = new DiscreteVariable("X" + i, 10);
+            DiscreteVariable variable = new DiscreteVariable("X" + (i + 1), 3);
             variables.add(variable);
         }
 
@@ -97,27 +97,17 @@ public final class TestColtDataSet extends TestCase {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                dataSet.setInt(i, j, randomUtil.nextInt(10));
+                dataSet.setInt(i, j, randomUtil.nextInt(3));
             }
         }
 
-        System.out.println(dataSet);
+        ColtDataSet _dataSet = new ColtDataSet((ColtDataSet) dataSet);
+
+        assertEquals(dataSet, _dataSet);
     }
 
-    public static void testInitialization() {
-        List<Node> variables = new LinkedList<Node>();
-
-        for (int i = 0; i < 5; i++) {
-            DiscreteVariable variable = new DiscreteVariable("X" + i, 10);
-            variables.add(variable);
-        }
-
-        DataSet dataSet = new ColtDataSet(5, variables);
-
-        System.out.println(dataSet);
-    }
-
-    public static void testDiscreteFromScratch() {
+    @Test
+    public void testDiscreteFromScratch() {
         DataSet dataSet = new ColtDataSet(0, Collections.EMPTY_LIST);
 
         DiscreteVariable x1 = new DiscreteVariable("X1");
@@ -132,11 +122,15 @@ public final class TestColtDataSet extends TestCase {
         dataSet.setInt(1, 1, 2);
         dataSet.setInt(2, 1, 1);
 
-        System.out.println(dataSet);
+        ColtDataSet _dataSet = new ColtDataSet((ColtDataSet) dataSet);
+
+        assertEquals(dataSet, _dataSet);
+
+        assertEquals(dataSet.getInt(1, 1), 2);
     }
 
-
-    public static void testMixed() {
+    @Test
+    public void testMixed() {
         List<Node> variables = new LinkedList<Node>();
 
         DiscreteVariable x1 = new DiscreteVariable("X1");
@@ -147,10 +141,14 @@ public final class TestColtDataSet extends TestCase {
 
         DataSet dataSet = new ColtDataSet(5, variables);
 
-        System.out.println(dataSet);
+        assertTrue(dataSet.getVariables().get(0) instanceof DiscreteVariable);
+        assertTrue(dataSet.getVariables().get(1) instanceof ContinuousVariable);
+        assertTrue(dataSet.getInt(0, 0) == -99);
+        assertTrue(Double.isNaN(dataSet.getDouble(1, 0)));
     }
 
-    public static void testRemoveColumn() {
+    @Test
+    public void testRemoveColumn() {
         int rows = 10;
         int cols = 5;
 
@@ -168,8 +166,6 @@ public final class TestColtDataSet extends TestCase {
                 dataSet.setDouble(i, j, randomUtil.nextDouble());
             }
         }
-
-        System.out.println(dataSet);
 
         int[] _cols = new int[2];
         _cols[0] = 1;
@@ -177,11 +173,15 @@ public final class TestColtDataSet extends TestCase {
 
         dataSet.removeCols(_cols);
 
-        System.out.println(dataSet);
+        List<Node> _variables = new LinkedList<>(variables);
+        _variables.remove(2);
+        _variables.remove(1);
+
+        assertEquals(dataSet.getVariables(), _variables);
     }
 
-
-    public static void testRemoveRows() {
+    @Test
+    public void testRemoveRows() {
         int rows = 10;
         int cols = 5;
 
@@ -200,7 +200,8 @@ public final class TestColtDataSet extends TestCase {
             }
         }
 
-        System.out.println(dataSet);
+        int numRows = dataSet.getNumRows();
+        double d = dataSet.getDouble(3, 0);
 
         int[] _rows = new int[2];
         _rows[0] = 1;
@@ -208,10 +209,12 @@ public final class TestColtDataSet extends TestCase {
 
         dataSet.removeRows(_rows);
 
-        System.out.println(dataSet);
+        assertEquals(numRows - 2, dataSet.getNumRows());
+        assertEquals(d, dataSet.getDouble(1, 0), 0.001);
     }
 
-    public static void testRowSubset() {
+    @Test
+    public void testRowSubset() {
         int rows = 10;
         int cols = 5;
 
@@ -230,69 +233,50 @@ public final class TestColtDataSet extends TestCase {
             }
         }
 
-        System.out.println(dataSet);
+        double d = dataSet.getDouble(2, 0);
 
-        DataSet _dataSet = dataSet.subsetRows(new int[]{0, 1, 2});
+        DataSet _dataSet = dataSet.subsetRows(new int[]{2, 3, 4});
 
-        System.out.println(_dataSet);
+        assertEquals(3, _dataSet.getNumRows());
+        assertEquals(d, _dataSet.getDouble(0, 0), 0.001);
     }
 
-    public static void testPermuteRows() {
-        DataSet dataSet = new ColtDataSet(0, Collections.EMPTY_LIST);
+    @Test
+    public void testPermuteRows() {
+        ContinuousVariable x1 = new ContinuousVariable("X1");
+        ContinuousVariable x2 = new ContinuousVariable("X2");
 
-        DiscreteVariable x1 = new DiscreteVariable("X1");
-        dataSet.addVariable(x1);
-        dataSet.setInt(0, 0, 0);
-        dataSet.setInt(1, 0, 2);
-        dataSet.setInt(2, 0, 1);
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(x1);
+        nodes.add(x2);
 
-        DiscreteVariable x2 = new DiscreteVariable("X2");
-        dataSet.addVariable(x2);
-        dataSet.setInt(0, 1, 0);
-        dataSet.setInt(1, 1, 2);
-        dataSet.setInt(2, 1, 1);
+        DataSet dataSet = new ColtDataSet(3, nodes);
+        RandomUtil randomUtil = RandomUtil.getInstance();
 
-        System.out.println(dataSet);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 2; j++) {
+                dataSet.setDouble(i, j, randomUtil.nextDouble());
+            }
+        }
+
+        ColtDataSet _dataSet = new ColtDataSet((ColtDataSet) dataSet);
 
         dataSet.permuteRows();
 
-        System.out.println(dataSet);
-    }
+        I:
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            TetradVector v = _dataSet.getDoubleData().getRow(i);
 
-    // package cycle.
-//    public void testCovAboutEquals() {
-//        int M = 3;
-//        int N = 100;
-//
-//        Graph g = DataGraphUtils.randomGraph(M, 0, M, M, M, M, false);
-//        LargeSemSimulator sim = new LargeSemSimulator(g);
-//        DataSet d = sim.simulateDataAcyclic(N);
-//        TetradMatrix data = d.getDoubleData();
-//
-//        System.out.println("cov = ");
-//        TetradMatrix cov = DataUtils.cov(data);
-//        System.out.println(cov);
-//
-//        System.out.println("\nerich = ");
-//        TetradMatrix covErich = DataUtils.covErich(data);
-//        System.out.println(covErich);
-//
-//        for (int i = 0; i < M; i++) {
-//            for (int j = 0; j < M; j++) {
-//                assertEquals(cov.get(i, j), covErich.get(i, j), .5);
-//            }
-//        }
-//    }
+            for (int j = 0; j < dataSet.getNumRows(); j++) {
+                TetradVector w = dataSet.getDoubleData().getRow(j);
 
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
+                if (v.equals(w)) {
+                    continue I;
+                }
+            }
 
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestColtDataSet.class);
+            fail("Missing row in permutation.");
+        }
     }
 }
 

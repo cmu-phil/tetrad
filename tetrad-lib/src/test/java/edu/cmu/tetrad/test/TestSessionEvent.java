@@ -22,9 +22,10 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.session.*;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the basic function of the SessionEvent class--that is, whether events
@@ -33,27 +34,17 @@ import junit.framework.TestSuite;
  *
  * @author Joseph Ramsey
  */
-public class TestSessionEvent extends TestCase {
+public class TestSessionEvent {
 
     /**
      * The session for the events being tested.
      */
-    private Session session;
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSessionEvent(String name) {
-        super(name);
-    }
-
-    public void setUp() {
-        this.session = new Session("Test");
-    }
+    private Session session = new Session("Test");
 
     /**
      * Tests whether an ADD_NODE event can be constructed properly.
      */
+    @Test
     public void testAddNodeEvent() {
 
         SessionNode node = new SessionNode(Type1.class);
@@ -67,6 +58,7 @@ public class TestSessionEvent extends TestCase {
     /**
      * Tests whether an NODE_REMOVED event can be constructed properly.
      */
+    @Test
     public void testRemoveNodeEvent() {
 
         SessionNode node = new SessionNode(Type1.class);
@@ -80,6 +72,7 @@ public class TestSessionEvent extends TestCase {
     /**
      * Tests whether an MODEL_CREATED event can be constructed properly.
      */
+    @Test
     public void testModelCreatedEvent() {
 
         SessionNode node = new SessionNode(Type1.class);
@@ -93,6 +86,7 @@ public class TestSessionEvent extends TestCase {
     /**
      * Tests whether an MODEL_DESTROYED event can be constructed properly.
      */
+    @Test
     public void testModelDestroyedEvent() {
         SessionNode node = new SessionNode(Type1.class);
         SessionEvent event =
@@ -105,6 +99,7 @@ public class TestSessionEvent extends TestCase {
     /**
      * Tests whether an MODEL_UNCLEAR event can be constructed properly.
      */
+    @Test
     public void testModelUnclearEvent() {
         SessionNode node = new SessionNode(Type1.class);
         SessionEvent event =
@@ -117,6 +112,7 @@ public class TestSessionEvent extends TestCase {
     /**
      * Tests whether a PARENT_ADDED event can be constructed properly.
      */
+    @Test
     public void testParentAddedEvent() {
         SessionNode child = new SessionNode(Type1.class);
         SessionNode parent = new SessionNode(Type2.class);
@@ -131,6 +127,7 @@ public class TestSessionEvent extends TestCase {
     /**
      * Tests whether a PARENT_REMOVED event can be constructed properly.
      */
+    @Test
     public void testParentRemovedEvent() {
         SessionNode child = new SessionNode(Type1.class);
         SessionNode parent = new SessionNode(Type2.class);
@@ -140,17 +137,6 @@ public class TestSessionEvent extends TestCase {
         assertTrue(child == event.getChild());
         assertTrue(parent == event.getParent());
         assertEquals(SessionEvent.PARENT_REMOVED, event.getType());
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSessionEvent.class);
     }
 }
 

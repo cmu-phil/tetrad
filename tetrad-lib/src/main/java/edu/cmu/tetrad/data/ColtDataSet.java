@@ -212,8 +212,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
     }
 
     /**
-     * Makes of copy of the given tetradMatrix set. TODO Might consider making the
-     * argument a RectangularDataSet instead.
+     * Makes of copy of the given tetradMatrix set.
      */
     public ColtDataSet(ColtDataSet dataSet) {
         name = dataSet.name;
@@ -1273,7 +1272,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      */
     public final void removeCols(int[] cols) {
 
-        // TODO Check sanity of values in cols.
         int[] rows = new int[tetradMatrix.rows()];
 
         for (int i = 0; i < tetradMatrix.rows(); i++) {
@@ -1307,7 +1305,6 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
      */
     public final void removeRows(int[] selectedRows) {
 
-        // TODO Check sanity of values in cols.
         int[] cols = new int[tetradMatrix.columns()];
 
         for (int i = 0; i < tetradMatrix.columns(); i++) {

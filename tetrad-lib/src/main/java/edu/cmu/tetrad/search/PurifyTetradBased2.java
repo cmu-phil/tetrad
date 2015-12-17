@@ -76,8 +76,6 @@ public class PurifyTetradBased2 implements IPurify {
             convertedResult.add(converted);
         }
 
-        System.out.println(convertedResult);
-
         return convertedResult;
     }
 
@@ -94,7 +92,6 @@ public class PurifyTetradBased2 implements IPurify {
         int count = 0;
 
         for (List<Node> cluster : clustering) {
-            System.out.println("Within cluster: " + ++count);
             Set<Tetrad> impurities = listTetrads(cluster, eliminated, cutoff);
 
             if (impurities != null) {
@@ -149,8 +146,6 @@ public class PurifyTetradBased2 implements IPurify {
 
             impuritiesPerNode.remove(maxNode);
             eliminated.add(maxNode);
-            System.out.println("Eliminated " + maxNode + " impurities = " + max +
-                    "q = " + nf.format(minP) + " maxP = " + nf.format(maxP));
         }
 
         return buildSolution(clustering, eliminated);

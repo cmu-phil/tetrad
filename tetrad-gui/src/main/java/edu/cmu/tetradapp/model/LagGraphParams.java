@@ -101,7 +101,6 @@ public class LagGraphParams implements Params {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static LagGraphParams serializableInstance() {
@@ -121,9 +120,6 @@ public class LagGraphParams implements Params {
      * Sets the number of variables per individual.
      */
     public void setVarsPerInd(int varsPerInd) {
-        // TODO Make this throw an exception! (Need to adjust calling code
-        // first so as not to break things.) jdramsey 2/22/2005
-
         if (varsPerInd > 0) {
             this.varsPerInd = varsPerInd;
         }
@@ -140,9 +136,6 @@ public class LagGraphParams implements Params {
      * Sets the maximum lag.
      */
     public void setMlag(int mlag) {
-        // TODO Make this throw an exception! (Need to adjust calling code
-        // first so as not to break things.) jdramsey 2/22/2005
-
         if (mlag > 0) {
             this.mlag = mlag;
         }
@@ -159,9 +152,6 @@ public class LagGraphParams implements Params {
      * Sets the indegree. Must be at least 2.
      */
     public void setIndegree(int indegree) {
-        // TODO Make this throw an exception! (Need to adjust calling code
-        // first so as not to break things.) jdramsey 2/22/2005
-
         if (indegree > 1) {
             this.indegree = indegree;
         }

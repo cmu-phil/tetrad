@@ -26,14 +26,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -42,273 +37,43 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class TestSemEstimator extends TestCase {
+public class TestSemEstimator {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSemEstimator(String name) {
-        super(name);
-    }
-
+    @Test
     public void testSet1() {
-        System.out.println("\n\nTest Set 1.");
         Graph graph = constructGraph1();
         SemPm semPm = new SemPm(graph);
         ICovarianceMatrix covMatrix = constructCovMatrix1();
         SemEstimator estimator = new SemEstimator(covMatrix, semPm);
-        System.out.println();
-        System.out.println("... Before:");
-        System.out.println(estimator);
         estimator.estimate();
-        System.out.println();
-        System.out.println("... After:");
-        System.out.println(estimator);
     }
 
+    @Test
     public void testSet2() {
-        System.out.println("\n\nTest Set 2.");
         Graph graph = constructGraph2();
         SemPm semPm = new SemPm(graph);
         ICovarianceMatrix covMatrix = constructCovMatrix2();
-        SemEstimator estimator = new SemEstimator(covMatrix, semPm);
-        System.out.println();
-        System.out.println("... Before:");
-        System.out.println(estimator);
-        estimator.estimate();
-        System.out.println();
-        System.out.println("... After:");
-        System.out.println(estimator);
+        new SemEstimator(covMatrix, semPm);
     }
 
     public void testSet3() {
-        System.out.println("\n\nTest Set 3.");
         Graph graph = constructGraph2();
         SemPm semPm = new SemPm(graph);
         ICovarianceMatrix covMatrix = constructCovMatrix2();
         SemEstimator estimator = new SemEstimator(covMatrix, semPm);
-        System.out.println();
-        System.out.println("... Before:");
-        System.out.println(estimator);
         estimator.estimate();
-        System.out.println();
-        System.out.println("... After:");
-        System.out.println(estimator);
     }
 
+    @Test
     public void testSet8() {
         Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X1");
-
-        System.out.println(graph);
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
         DataSet data = im.simulateData(1000, false);
 
-        SemIm est = new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
-//        SemIm est = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
-
-        System.out.println("\nPowell");
-        printStats(im, est);
-
-//        SemIm est2 = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
-//
-//        System.out.println("\nRandom");
-//        printStats(im, est2);
-    }
-
-    private void printStats(SemIm im, SemIm est) {
-        NumberFormat nf2 = new DecimalFormat("0.0000");
-
-        System.out.println("chi square = " + nf2.format(est.getChiSquare()));
-        System.out.println("p = " + nf2.format(est.getPValue()));
-
-        double[] imParamValues = im.getFreeParamValues();
-        double[] estParamValues = est.getFreeParamValues();
-
-        System.out.println(Arrays.toString(imParamValues));
-        System.out.println(Arrays.toString(estParamValues));
-
-        System.out.println();
-        List<Parameter> parameters = im.getSemPm().getParameters();
-        NumberFormat nf = new DecimalFormat("0.0");
-
-        for (int i = 0; i < imParamValues.length; i++) {
-            Parameter parameter = parameters.get(i);
-            double v = (Math.abs(imParamValues[i] - estParamValues[i]) / Math.abs(imParamValues[i])) * 100.;
-            System.out.println(nf.format(v)  + "% " + parameter.toString());
-        }
-    }
-
-//    public void testSet9() {
-//        Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X1");
-//
-//        System.out.println(graph);
-//
-//        SemPm pm = new SemPm(graph);
-//
-//        double[] sum1 = new double[pm.getFreeParameters().size()];
-//        double[] sum2 = new double[pm.getFreeParameters().size()];
-//        double chisqSum1 = 0.0;
-//        double chisqSum2 = 0.0;
-//        double pSum1 = 0.0;
-//        double pSum2 = 0.0;
-//
-//        int runs = 1;
-//
-//        for (int i = 0; i < runs; i++) {
-//            System.out.println("Round " + (i + 1));
-//
-//            SemIm im = new SemIm(pm);
-//
-//            double[] trueParamValues = im.getFreeParamValues();
-//
-//            DataSet data = im.simulateData(1000, false);
-//
-//            System.out.println("CDS");
-//            SemIm est1 = new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
-//            double[] imParamValues1 = est1.getFreeParamValues();
-//
-////            System.out.println("Random");
-////            SemIm est2 = new SemEstimator(data, pm, new SemOptimizerScattershot()).estimate();
-////            double[] imParamValues2 = est2.getFreeParamValues();
-//
-//            for (int j = 0; j < sum1.length; j++) sum1[j] += 100 * Math.abs(trueParamValues[j] - imParamValues1[j]) / Math.abs(trueParamValues[j]);
-////            for (int j = 0; j < sum2.length; j++) sum2[j] += 100 * Math.abs(trueParamValues[j] - imParamValues2[j]) / Math.abs(trueParamValues[j]);
-//
-//            chisqSum1 += est1.getChiSquare();
-////            chisqSum2 += est2.getChiSquare();
-//            pSum1 += est1.getPValue();
-////            pSum2 += est2.getPValue();
-//        }
-//
-//        for (int i = 0; i < sum1.length; i++) sum1[i] /= runs;
-//        for (int i = 0; i < sum2.length; i++) sum2[i] /= runs;
-//
-//        double chisqAvg1 = chisqSum1 / runs;
-//        double chisqAvg2 = chisqSum2 / runs;
-//        double pValuesSum1 = pSum1 / runs;
-//        double pValueSum2 = pSum2 / runs;
-//
-//        NumberFormat nf2 = new DecimalFormat("0.0000");
-//
-//        System.out.println("\n=====POWELL=====");
-//
-//        System.out.println("avg chi square = " + nf2.format(chisqAvg1));
-//        System.out.println("avg p = " + nf2.format(pValuesSum1));
-//
-//        System.out.println();
-//        List<Parameter> parameters = pm.getParameters();
-//        NumberFormat nf = new DecimalFormat("0.0");
-//
-//        System.out.println("Avg 100 * abs(p_est - p_true) / abs(p_true))");
-//
-//        for (int i = 0; i < sum1.length; i++) {
-//            Parameter parameter = parameters.get(i);
-//            System.out.println(nf.format(sum1[i])  + "% " + parameter.getName());
-//        }
-//
-//        System.out.println("\n=====RANDOM=====");
-//
-//        System.out.println("avg chi square = " + nf2.format(chisqAvg2));
-//        System.out.println("avg p = " + nf2.format(pValueSum2));
-//
-//        System.out.println();
-//        System.out.println("Avg 100 * abs(p_est - p_true) / abs(p_true))");
-//
-//        for (int i = 0; i < sum1.length; i++) {
-//            Parameter parameter = parameters.get(i);
-//            System.out.println(nf.format(sum2[i])  + "% " + parameter.getName());
-//        }
-//
-//    }
-
-//    public void test4() {
-//        Graph graph = DataGraphUtils.randomDag(10, 10, false);
-//        SemPm pm = new SemPm(graph);
-//        SemIm im = new SemIm(pm);
-//        DataSet dataSet = im.simulateData(1000, false);
-//        Ges search = new Ges(dataSet);
-//        Graph pattern = search.search();
-//        Graph dag = SearchGraphUtils.dagFromPattern(pattern);
-//        SemPm pm2 = new SemPm(dag);
-//        SemEstimator estimator = new SemEstimator(dataSet, pm2);
-//        SemIm estSem = estimator.estimate();
-//        System.out.println(estSem);
-//    }
-//
-//    public void test5() {
-//        Dag graph = DataGraphUtils.randomDag(10, 10, false);
-//        BayesPm pm = new BayesPm(graph);
-//        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-//        DataSet dataSet = im.simulateData(1000, false);
-//        Cpc search = new Cpc(new IndTestGSquare(dataSet, 0.05));
-//        Graph pattern = search.search();
-//        Dag dag = new Dag(SearchGraphUtils.dagFromPattern(pattern));
-//        BayesPm pm2 = new BayesPm(dag);
-//        MlBayesEstimator estimator = new MlBayesEstimator();
-//        BayesIm estSem = estimator.estimate(pm2, dataSet);
-//        System.out.println(estSem);
-//
-//    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSemEstimator.class);
-    }
-
-    private static Graph constructGraph0() {
-        Graph graph = new EdgeListGraph();
-
-        Node x1 = new GraphNode("empcur");
-        Node x2 = new GraphNode("self-eff");
-        Node x3 = new GraphNode("depressed");
-        Node x4 = new GraphNode("dadchild");
-        Node x5 = new GraphNode("dadmom");
-        Node x6 = new GraphNode("home");
-        Node x7 = new GraphNode("negbeh");
-        Node x8 = new GraphNode("coglang");
-
-        graph.addNode(x1);
-        graph.addNode(x2);
-        graph.addNode(x3);
-        graph.addNode(x4);
-        graph.addNode(x5);
-        graph.addNode(x6);
-        graph.addNode(x7);
-        graph.addNode(x8);
-
-        graph.addDirectedEdge(x1, x2);
-        graph.addDirectedEdge(x2, x3);
-        graph.addDirectedEdge(x3, x5);
-        graph.addDirectedEdge(x3, x6);
-        graph.addDirectedEdge(x5, x4);
-        graph.addDirectedEdge(x4, x6);
-        graph.addDirectedEdge(x6, x7);
-        graph.addDirectedEdge(x6, x8);
-
-        return graph;
-    }
-
-    private static ICovarianceMatrix constructCovMatrix0() {
-        String[] vars = new String[]{"empcur", "self-eff", "depressed",
-                "dadchild", "dadmom", "home", "negbeh", "coglang"};
-        double[][] arr = {{1.0}, {0.215, 1.0}, {-0.164, -0.472, 1.0},
-                {0.1120, 0.079, -0.1570, 1.0},
-                {0.034, 0.121, -0.184, 0.4070, 1.0},
-                {0.101, 0.197, -0.190, 0.176, 0.12, 1.0},
-                {0.071, -0.172, 0.206, -0.049, -0.084, -0.291, 1.0},
-                {0.043, -0.038, -0.037, -0.062, 0.028, 0.166, -0.149, 1.0}};
-//        TetradMatrix arr2 = TetradMatrix.instance(arr);
-        return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), new TetradMatrix(arr),
-                173);
+        new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
     }
 
     private Graph constructGraph1() {
@@ -374,6 +139,7 @@ public class TestSemEstimator extends TestCase {
         return graph;
     }
 
+    @Test
     public void testOptimizer2() {
         List<Node> nodes = new ArrayList<Node>();
 
@@ -394,10 +160,9 @@ public class TestSemEstimator extends TestCase {
         SemOptimizer opt = new SemOptimizerPowell();
 
         opt.optimize(im2);
-
-        System.out.println(im);
     }
 
+    @Test
     public void testOptimizer3() {
         List<Node> nodes = new ArrayList<Node>();
 
@@ -418,8 +183,6 @@ public class TestSemEstimator extends TestCase {
         SemOptimizer opt = new SemOptimizerPowell();
 
         opt.optimize(im2);
-
-        System.out.println(im);
     }
 
     private ICovarianceMatrix constructCovMatrix2() {

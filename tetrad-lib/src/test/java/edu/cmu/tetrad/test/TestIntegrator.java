@@ -23,38 +23,30 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.Function;
 import edu.cmu.tetrad.util.Integrator;
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-public class TestIntegrator extends TestCase {
+import static org.junit.Assert.assertEquals;
+
+public class TestIntegrator {
     private Function function;
 
-    public TestIntegrator(String name) {
-        super(name);
-    }
-
-    public void setUp() {
+    private void setUp() {
         function = new Function() {
             public double valueAt(double x) {
                 return x;
             }
-
             public String toString() {
                 return "y=x.";
             }
         };
     }
 
+    @Test
     public void testPdfIntegration() {
-        Assert.assertEquals("Integrator not integrate properly under the function: " +
+        setUp();
+        assertEquals("Integrator not integrate properly under the function: " +
                         function, 0.5, Integrator.getArea(function, 0.0, 1.0, 10000),
                 0.000000001);
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestIntegrator.class);
     }
 }
 

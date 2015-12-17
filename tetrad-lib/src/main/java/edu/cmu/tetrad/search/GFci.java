@@ -203,13 +203,9 @@ public final class GFci {
             ges.setKnowledge(getKnowledge());
             ges.setPenaltyDiscount(penaltyDiscount);
             ges.setVerbose(verbose);
-            ges.setLog(false);
             ges.setDepth(getDepth());
             ges.setNumPatternsToStore(0);
-            ges.setFaithfulnessAssumed(true);
-            Graph initialGraph = ges.search();
-            ges.setInitialGraph(initialGraph);
-            ges.setFaithfulnessAssumed(false);
+            ges.setFaithfulnessAssumed(faithfulnessAssumed);
             graph = ges.search();
             gesGraph = new EdgeListGraphSingleConnections(graph);
         } else if (dataSet.isDiscrete()) {
@@ -220,7 +216,6 @@ public final class GFci {
             ges.setStructurePrior(structurePrior);
             ges.setStructurePrior(1);
             ges.setVerbose(false);
-            ges.setLog(false);
             ges.setDepth(getDepth());
             ges.setNumPatternsToStore(0);
             ges.setFaithfulnessAssumed(faithfulnessAssumed);
@@ -230,14 +225,16 @@ public final class GFci {
             throw new IllegalArgumentException("Mixed data not supported.");
         }
 
-        System.out.println("GES done " + gesGraph.getNumEdges() + " edges in graph");
-        SepsetProducer sepsets;
+        if (verbose) {
+            System.out.println("GES done " + gesGraph.getNumEdges() + " edges in graph");
+        }
+        SepsetProducer sepsets = new SepsetsConservative(gesGraph, getIndependenceTest(), null, depth);
 
 //        if (possibleDsepSearchDone) {
 //            sepsets = new SepsetsPossibleDsep(gesGraph, getIndependenceTest(), knowledge, depth,
 //                    maxPathLength);
 //        } else {
-        sepsets = new SepsetsMaxPValue(gesGraph, getIndependenceTest(), null, depth);
+//        sepsets = new SepsetsConservative(gesGraph, getIndependenceTest(), null, depth);
 //        }
 
 //        if (possibleDsepSearchDone) {
@@ -328,8 +325,6 @@ public final class GFci {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
-        System.out.println("R0 start");
-
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
@@ -378,15 +373,21 @@ public final class GFci {
                     if (sepsetProducer.isCollider(a, b, c)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
-                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+
+                        if (verbose) {
+                            logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                            System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                        }
                     }
                 } else {
                     if (gesGraph.isDefCollider(a, b, c)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
-                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+
+                        if (verbose) {
+                            logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                            System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                        }
                     }
                 }
 

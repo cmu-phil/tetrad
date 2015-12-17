@@ -84,7 +84,6 @@ public final class GesParams implements MeekSearchParams {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static GesParams serializableInstance() {

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.Ccd;
+import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -160,7 +161,19 @@ public class CcdRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        DataSet dataSet = (DataSet) dataModel;
+        if (dataModel instanceof Graph) {
+            return new IndTestDSep((Graph) dataModel);
+        }
+        else if (dataModel instanceof DataSet) {
+            DataSet dataSet = (DataSet) dataModel;
+            BasicSearchParams params = (BasicSearchParams) getParams();
+            IndTestType testType = params.getIndTestType();
+            return new IndTestChooser().getTest(dataSet, params, testType);
+        }
+
+        throw new IllegalArgumentException("Expecting a graph, data set, or covariance matrix.");
+
+//        DataSet dataSet = (DataSet) dataModel;
 
 //        SingularValueDecomposition decomp = new SingularValueDecomposition(dataSet.getDoubleData().getRealMatrix());
 //        double[] singularValues = decomp.getSingularValues();
@@ -195,9 +208,9 @@ public class CcdRunner extends AbstractAlgorithmRunner
 //
 //        DataSet dataSet2 = new BoxDataSet(new DoubleDataBox(h.toArray()), dataSet.getVariables());
 
-        BasicSearchParams params = (BasicSearchParams) getParams();
-        IndTestType testType = params.getIndTestType();
-        return new IndTestChooser().getTest(dataSet, params, testType);
+//        BasicSearchParams params = (BasicSearchParams) getParams();
+//        IndTestType testType = params.getIndTestType();
+//        return new IndTestChooser().getTest(dataSet, params, testType);
     }
 
 

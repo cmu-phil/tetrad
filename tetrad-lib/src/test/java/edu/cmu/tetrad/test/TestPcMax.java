@@ -21,558 +21,199 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.bayes.BayesPm;
-import edu.cmu.tetrad.bayes.MlBayesIm;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.LargeSemSimulator;
-import edu.cmu.tetrad.util.TextTable;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
+import org.junit.Test;
 
-import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the PC search.
  *
  * @author Joseph Ramsey
  */
-public class TestPcMax extends TestCase {
-
-    private PrintStream out = System.out;
+public class TestPcMax {
 
     /**
-     * Standard constructor for JUnit test cases.
+     * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
+     * X2 --> X4, X3 --> X4.
      */
-    public TestPcMax(String name) {
-        super(name);
+    @Test
+    public void testSearch1() {
+        checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
+                "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
-
-    public void testPcMax() {
-        int numVars = 10;
-        double edgesPerNode = 1.0;
-        int numCases = 1000;
-        double alpha = .005;
-
-        final int numEdges = (int) (numVars * edgesPerNode);
-
-        out.println("Tests performance of the PCT algorithm");
-
-        long time1 = System.currentTimeMillis();
-
-        System.out.println("Making list of vars");
-
-        List<Node> vars = new ArrayList<Node>();
-
-        for (int i = 0; i < numVars; i++) {
-            vars.add(new ContinuousVariable("X" + i));
-        }
-
-        System.out.println("Finishing list of vars");
-
-        System.out.println("Making dag");
-        Graph dag;
-        int[] causalOrdering = new int[vars.size()];
-
-        dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false);
-//        dag = DataGraphUtils.scaleFreeGraph(vars, 0, 0.05, 0.05, 5, 15);
-        printDegreeDistribution(dag, System.out);
-
-        for (int i = 0; i < vars.size(); i++) {
-            causalOrdering[i] = i;
-        }
-
-        System.out.println("Graph done");
-
-        out.println("Graph done");
-
-        System.out.println("Starting simulation");
-
-        LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, causalOrdering);
-        simulator.setOut(out);
-        DataSet data = simulator.simulateDataAcyclic(numCases);
-
-//        SemPm pm = new SemPm(dag);
-//        SemIm im = new SemIm(pm);
-//        DataSet data = im.simulateData(numCases, false);
-
-        System.out.println("Finishing simulation");
-
-        long time2 = System.currentTimeMillis();
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-
-        System.out.println("Making covariance matrix");
-
-//        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
-
-        System.out.println("Covariance matrix done");
-
-
-        long time3 = System.currentTimeMillis();
-
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
-
-        IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
-//        final IndependenceTest test = new IndTestRegressionAD(data, alpha);
-        PcMax pc = new PcMax(test);
-        pc.setTrueDag(dag);
-        pc.setVerbose(true);
-        pc.setDepth(3);
-
-        System.out.println("\nStarting PCMax");
-
-        Graph estPattern = pc.search();
-
-        System.out.println("Done with PCMax");
-
-        printDegreeDistribution(estPattern, System.out);
-
-        long time4 = System.currentTimeMillis();
-
-        out.println(new Date());
-
-        out.println("# Vars = " + numVars);
-        out.println("# Edges = " + numEdges);
-        out.println("# Cases = " + numCases);
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-        out.println("Elapsed (running PCT/PCT) " + (time4 - time3) + " ms");
-        out.println("Elapsed (cov + PCT/PCT) " + (time4 - time2) + " ms");
-
-        final Graph truePattern = SearchGraphUtils.patternForDag(dag);
-
-        out.println("# edges in true pattern = " + truePattern.getNumEdges());
-        out.println("# edges in est pattern = " + estPattern.getNumEdges());
-
-        graphComparison(estPattern, truePattern);
-    }
-
-    public void testPcMaxDiscrete() {
-        int numVars = 10;
-        double edgesPerNode = 1.0;
-        int numCases = 1000;
-        double alpha = .01;
-
-        final int numEdges = (int) (numVars * edgesPerNode);
-
-        out.println("Tests performance of the PCT algorithm");
-
-        long time1 = System.currentTimeMillis();
-
-        System.out.println("Making list of vars");
-
-        List<Node> vars = new ArrayList<Node>();
-
-        for (int i = 0; i < numVars; i++) {
-            vars.add(new ContinuousVariable("X" + i));
-        }
-
-        System.out.println("Finishing list of vars");
-
-        System.out.println("Making dag");
-        Graph dag;
-
-        dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false);
-//        dag = DataGraphUtils.scaleFreeGraph(vars, 0, 0.05, 0.05, 5, 15);
-        printDegreeDistribution(dag, System.out);
-
-        BayesPm pm = new BayesPm(dag, 2, 3);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-
-        DataSet data = im.simulateData(numCases, false);
-
-        System.out.println("Finishing simulation");
-
-        long time2 = System.currentTimeMillis();
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-
-        long time3 = System.currentTimeMillis();
-
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
-
-//        final IndependenceTest test = new ProbabilisticMAPIndependence(data);
-        final IndependenceTest test = new IndTestChiSquare(data, alpha);
-        PcMax pc = new PcMax(test);
-        pc.setVerbose(true);
-        pc.setDepth(-1);
-
-        System.out.println("\nStarting PCMax");
-
-        Graph estPattern = pc.search();
-
-        System.out.println("Done with PCMax");
-
-        printDegreeDistribution(estPattern, System.out);
-
-        long time4 = System.currentTimeMillis();
-
-        out.println(new Date());
-
-        out.println("# Vars = " + numVars);
-        out.println("# Edges = " + numEdges);
-        out.println("# Cases = " + numCases);
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-        out.println("Elapsed (running PCT/PCT) " + (time4 - time3) + " ms");
-        out.println("Elapsed (cov + PCT/PCT) " + (time4 - time2) + " ms");
-
-        final Graph truePattern = SearchGraphUtils.patternForDag(dag);
-
-        out.println("# edges in true pattern = " + truePattern.getNumEdges());
-        out.println("# edges in est pattern = " + estPattern.getNumEdges());
-
-        graphComparison(estPattern, truePattern);
-    }
-
-
-    private int[][] graphComparison(Graph estPattern, Graph truePattern) {
-        GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison(estPattern, truePattern);
-
-        out.println("Adjacencies:");
-        out.println("Correct " + comparison.getAdjCorrect() + " FP = " + comparison.getAdjFp() + " FN = " + comparison.getAdjFn());
-
-        out.println("Arrow Orientations:");
-        out.println("Correct " + comparison.getArrowptCorrect() + " FP = " + comparison.getArrowptFp() + " FN = " + comparison.getArrowptFn());
-
-        int[][] counts = edgeMisclassificationCounts(truePattern, estPattern);
-        out.println(edgeMisclassifications(counts));
-
-        return counts;
-    }
-
-    public static String edgeMisclassifications1(int[][] counts) {
-        StringBuilder builder = new StringBuilder();
-
-        TextTable table2 = new TextTable(9, 7);
-
-        table2.setToken(1, 0, "---");
-        table2.setToken(2, 0, "o-o");
-        table2.setToken(3, 0, "o->");
-//        table2.setToken(4, 0, "<-o");
-        table2.setToken(4, 0, "-->");
-//        table2.setToken(6, 0, "<--");
-        table2.setToken(5, 0, "<->");
-        table2.setToken(6, 0, "No Edge");
-        table2.setToken(0, 1, "---");
-        table2.setToken(0, 2, "o-o");
-        table2.setToken(0, 3, "o->");
-        table2.setToken(0, 4, "-->");
-        table2.setToken(0, 5, "<->");
-        table2.setToken(0, 6, "No Edge");
-
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                if (i == 5 && j == 5) table2.setToken(i + 1, j + 1, "*");
-                else
-                    table2.setToken(i + 1, j + 1, "" + counts[i][j]);
-            }
-        }
-
-        builder.append(table2.toString());
-
-        return builder.toString();
-    }
-
-    private static int[][] edgeMisclassificationCounts1(Graph leftGraph, Graph topGraph) {
-        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
-
-        int[][] counts = new int[6][6];
-
-        for (Edge est : topGraph.getEdges()) {
-            Node x = est.getNode1();
-            Node y = est.getNode2();
-
-            Edge left = leftGraph.getEdge(x, y);
-
-            Edge top = topGraph.getEdge(x, y);
-
-            int m = getType1(left);
-            int n = getType1(top);
-
-            counts[m][n]++;
-        }
-
-        System.out.println("# edges in true graph = " + leftGraph.getNumEdges());
-        System.out.println("# edges in est graph = " + topGraph.getNumEdges());
-
-        for (Edge edge : leftGraph.getEdges()) {
-            if (topGraph.getEdge(edge.getNode1(), edge.getNode2()) == null) {
-                int m = getType1(edge);
-                counts[m][5]++;
-            }
-        }
-
-        return counts;
-    }
-
-    private static int getType1(Edge edge) {
-        if (edge == null) {
-            return 5;
-        }
-
-        Endpoint e1 = edge.getEndpoint1();
-        Endpoint e2 = edge.getEndpoint2();
-
-        if (e1 == Endpoint.TAIL && e2 == Endpoint.TAIL) {
-            return 0;
-        }
-
-        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.CIRCLE) {
-            return 1;
-        }
-
-        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.ARROW) {
-            return 2;
-        }
-
-        if (e1 == Endpoint.ARROW && e2 == Endpoint.CIRCLE) {
-            return 2;
-        }
-
-        if (e1 == Endpoint.TAIL && e2 == Endpoint.ARROW) {
-            return 3;
-        }
-
-        if (e1 == Endpoint.ARROW && e2 == Endpoint.TAIL) {
-            return 3;
-        }
-
-        if (e1 == Endpoint.ARROW && e2 == Endpoint.ARROW) {
-            return 4;
-        }
-
-        throw new IllegalArgumentException("Unsupported edge type : " + e1 + " " + e2);
-    }
-
-
-    public static String edgeMisclassifications(int[][] counts) {
-        if (false) {
-            return edgeMisclassifications1(counts);
-        }
-
-        StringBuilder builder = new StringBuilder();
-
-        TextTable table2 = new TextTable(9, 7);
-
-        table2.setToken(1, 0, "---");
-        table2.setToken(2, 0, "o-o");
-        table2.setToken(3, 0, "o->");
-        table2.setToken(4, 0, "<-o");
-        table2.setToken(5, 0, "-->");
-        table2.setToken(6, 0, "<--");
-        table2.setToken(7, 0, "<->");
-        table2.setToken(8, 0, "No Edge");
-        table2.setToken(0, 1, "---");
-        table2.setToken(0, 2, "o-o");
-        table2.setToken(0, 3, "o->");
-        table2.setToken(0, 4, "-->");
-        table2.setToken(0, 5, "<->");
-        table2.setToken(0, 6, "No Edge");
-
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 6; j++) {
-                if (i == 7 && j == 5) table2.setToken(i + 1, j + 1, "*");
-                else
-                    table2.setToken(i + 1, j + 1, "" + counts[i][j]);
-            }
-        }
-
-        builder.append(table2.toString());
-
-        int correctEdges = 0;
-        int estimatedEdges = 0;
-
-        for (int i = 0; i < counts.length; i++) {
-            for (int j = 0; j < counts[0].length - 1; j++) {
-                if ((i == 0 && j == 0) || (i == 1 && j == 1) || (i == 2 && j == 2) || (i == 4 && j == 3) || (i == 6 && j == 4)) {
-                    correctEdges += counts[i][j];
-                }
-
-                estimatedEdges += counts[i][j];
-            }
-        }
-
-        NumberFormat nf = new DecimalFormat("0.00");
-
-        builder.append("\nRatio correct edges to estimated edges = " + nf.format((correctEdges / (double) estimatedEdges)));
-
-        return builder.toString();
-    }
-
-    private static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph) {
-        if (false) {
-            return edgeMisclassificationCounts1(leftGraph, topGraph);
-        }
-
-        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
-
-        int[][] counts = new int[8][6];
-
-        for (Edge est : topGraph.getEdges()) {
-            Node x = est.getNode1();
-            Node y = est.getNode2();
-
-            Edge left = leftGraph.getEdge(x, y);
-
-            Edge top = topGraph.getEdge(x, y);
-
-            int m = getTypeLeft(left, top);
-            int n = getTypeTop(top);
-
-            counts[m][n]++;
-        }
-
-        System.out.println("# edges in true graph = " + leftGraph.getNumEdges());
-        System.out.println("# edges in est graph = " + topGraph.getNumEdges());
-
-        for (Edge edgeLeft : leftGraph.getEdges()) {
-            final Edge edgeTop = topGraph.getEdge(edgeLeft.getNode1(), edgeLeft.getNode2());
-            if (edgeTop == null) {
-                int m = getTypeLeft(edgeLeft, edgeLeft);
-                counts[m][5]++;
-            }
-        }
-
-        return counts;
-    }
-
-    private static int getTypeTop(Edge edgeTop) {
-        if (edgeTop == null) {
-            return 5;
-        }
-
-        Endpoint e1 = edgeTop.getEndpoint1();
-        Endpoint e2 = edgeTop.getEndpoint2();
-
-        if (e1 == Endpoint.TAIL && e2 == Endpoint.TAIL) {
-            return 0;
-        }
-
-        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.CIRCLE) {
-            return 1;
-        }
-
-        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.ARROW) {
-            return 2;
-        }
-
-        if (e1 == Endpoint.TAIL && e2 == Endpoint.ARROW) {
-            return 3;
-        }
-
-        if (e1 == Endpoint.ARROW && e2 == Endpoint.ARROW) {
-            return 4;
-        }
-
-        throw new IllegalArgumentException("Unsupported edgeTop type : " + e1 + " " + e2);
-    }
-
-
-    private static int getTypeLeft(Edge edgeLeft, Edge edgeTop) {
-        if (edgeLeft == null) {
-            return 7;
-        }
-
-        Endpoint e1 = edgeLeft.getEndpoint1();
-        Endpoint e2 = edgeLeft.getEndpoint2();
-
-        if (e1 == Endpoint.TAIL && e2 == Endpoint.TAIL) {
-            return 0;
-        }
-
-        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.CIRCLE) {
-            return 1;
-        }
-
-        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.ARROW && edgeTop.equals(edgeLeft.reverse())) {
-            return 3;
-        }
-
-        if (e1 == Endpoint.CIRCLE && e2 == Endpoint.ARROW) {
-            return 2;
-        }
-
-        if (e1 == Endpoint.TAIL && e2 == Endpoint.ARROW && edgeTop.equals(edgeLeft.reverse())) {
-            return 5;
-        }
-
-        if (e1 == Endpoint.TAIL && e2 == Endpoint.ARROW) {
-            return 4;
-        }
-
-        if (e1 == Endpoint.ARROW && e2 == Endpoint.ARROW) {
-            return 6;
-        }
-
-        throw new IllegalArgumentException("Unsupported edge type : " + e1 + " " + e2);
-    }
-
-    private static int getIndex(Endpoint endpoint) {
-        if (endpoint == Endpoint.CIRCLE) return 0;
-        if (endpoint == Endpoint.ARROW) return 1;
-        if (endpoint == Endpoint.TAIL) return 2;
-        if (endpoint == null) return 3;
-        throw new IllegalArgumentException();
-    }
-
-    private void printDegreeDistribution(Graph dag, PrintStream out) {
-        int max = 0;
-
-        for (Node node : dag.getNodes()) {
-            int degree = dag.getAdjacentNodes(node).size();
-            if (degree > max) max = degree;
-        }
-
-        int[] counts = new int[max + 1];
-        Map<Integer, List<Node>> names = new HashMap<>();
-
-        for (int i = 0; i <= max; i++) {
-            names.put(i, new ArrayList<Node>());
-        }
-
-        for (Node node : dag.getNodes()) {
-            int degree = dag.getAdjacentNodes(node).size();
-            counts[degree]++;
-            names.get(degree).add(node);
-        }
-
-        for (int k = 0; k < counts.length; k++) {
-            if (counts[k] == 0) continue;
-
-            out.print(k + " " + counts[k]);
-
-            for (Node node : names.get(k)) {
-                out.print(" " + node.getName());
-            }
-
-            out.println();
-        }
-    }
-
 
     /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
+     * Runs the PC algorithm on the graph X1 --> X2, X1 --> X3, X2 --> X4, X3 --> X4. Should produce X1 -- X2, X1 -- X3,
+     * X2 --> X4, X3 --> X4.
      */
-    public static Test suite() {
+    @Test
+    public void testSearch2() {
+        checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
+                "X1---X2,X1---X3,X2-->X4,X3-->X4");
+    }
 
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestPcMax.class);
+    /**
+     * This will fail if the orientation loop doesn't continue after the first orientation.
+     */
+    @Test
+    public void testSearch3() {
+        checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
+                "A-->D,A---B,B-->D,C-->D,D-->E");
+    }
+
+    /**
+     * This will fail if the orientation loop doesn't continue after the first orientation.
+     */
+    @Test
+    public void testSearch4() {
+        IKnowledge knowledge = new Knowledge2();
+        knowledge.setForbidden("B", "D");
+        knowledge.setForbidden("D", "B");
+        knowledge.setForbidden("C", "B");
+
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D", /*"A---B,B-->C,A-->D,C-->D", */
+                knowledge);
+    }
+
+    @Test
+    public void testCites() {
+        String citesString = "164\n" +
+                "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
+                "1.0\n" +
+                ".62\t1.0\n" +
+                ".25\t.09\t1.0\n" +
+                ".16\t.28\t.07\t1.0\n" +
+                "-.10\t.00\t.03\t.10\t1.0\n" +
+                ".29\t.25\t.34\t.37\t.13\t1.0\n" +
+                ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
+
+        char[] citesChars = citesString.toCharArray();
+        DataReader reader = new DataReader();
+        ICovarianceMatrix dataSet = reader.parseCovariance(citesChars);
+
+        IKnowledge knowledge = new Knowledge2();
+
+        knowledge.addToTier(1, "ABILITY");
+        knowledge.addToTier(2, "GPQ");
+        knowledge.addToTier(3, "QFJ");
+        knowledge.addToTier(3, "PREPROD");
+        knowledge.addToTier(4, "SEX");
+        knowledge.addToTier(5, "PUBS");
+        knowledge.addToTier(6, "CITES");
+
+        PcMax pc = new PcMax(new IndTestFisherZ(dataSet, 0.11));
+        pc.setKnowledge(knowledge);
+
+        Graph pattern = pc.search();
+
+        Graph _true = new EdgeListGraph(pattern.getNodes());
+
+        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("CITES"));
+        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("GPQ"));
+        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("PREPROD"));
+        _true.addDirectedEdge(pattern.getNode("GPQ"), pattern.getNode("QFJ"));
+        _true.addDirectedEdge(pattern.getNode("PREPROD"), pattern.getNode("CITES"));
+        _true.addDirectedEdge(pattern.getNode("PREPROD"), pattern.getNode("PUBS"));
+        _true.addDirectedEdge(pattern.getNode("PUBS"), pattern.getNode("CITES"));
+        _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("CITES"));
+        _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("PUBS"));
+        _true.addDirectedEdge(pattern.getNode("SEX"), pattern.getNode("PUBS"));
+
+        assertEquals(pattern, _true);
+    }
+
+    /**
+     * Presents the input graph to Fci and checks to make sure the output of Fci is equivalent to the given output
+     * graph.
+     */
+    private void checkSearch(String inputGraph, String outputGraph) {
+
+        // Set up graph and node objects.
+        Graph graph = GraphConverter.convert(inputGraph);
+
+        // Set up search.
+        IndependenceTest independence = new IndTestDSep(graph);
+        Pc pc = new Pc(independence);
+
+        // Run search
+//        Graph resultGraph = pc.search();
+        Graph resultGraph = pc.search(new FasStableConcurrent(independence), independence.getVariables());
+
+        // Build comparison graph.
+        Graph trueGraph = GraphConverter.convert(outputGraph);
+
+        resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
+
+        // Do test.
+        assertTrue(resultGraph.equals(trueGraph));
+    }
+
+    /**
+     * Presents the input graph to Fci and checks to make sure the output of Fci is equivalent to the given output
+     * graph.
+     */
+    private void checkWithKnowledge(String inputGraph, String outputGraph,
+                                    IKnowledge knowledge) {
+        // Set up graph and node objects.
+        Graph graph = GraphConverter.convert(inputGraph);
+
+        // Set up search.
+        IndependenceTest independence = new IndTestDSep(graph);
+        PcMax pc = new PcMax(independence);
+
+        // Set up search.
+        pc.setKnowledge(knowledge);
+
+        // Run search
+        Graph resultGraph = pc.search();
+
+        // Build comparison graph.
+        Graph trueGraph = GraphConverter.convert(outputGraph);
+
+        // Do test.
+        assertTrue(resultGraph.equals(trueGraph));
+    }
+
+    @Test
+    public void testPcStable2() {
+        RandomUtil.getInstance().setSeed(1450030184196L);
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(200, false);
+
+        TetradLogger.getInstance().setForceLog(false);
+        IndependenceTest test = new IndTestFisherZ(data, 0.05);
+
+        PcStable pc = new PcStable(test);
+        pc.setVerbose(false);
+        Graph pattern = pc.search();
+
+        for (int i = 0; i < 1; i++) {
+            DataSet data2 = DataUtils.reorderColumns(data);
+            IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
+            PcStable pc2 = new PcStable(test2);
+            pc2.setVerbose(false);
+            Graph pattern2 = pc2.search();
+            assertTrue(pattern.equals(pattern2));
+        }
     }
 }
 

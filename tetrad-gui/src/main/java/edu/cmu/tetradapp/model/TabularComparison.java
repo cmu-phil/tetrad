@@ -248,10 +248,6 @@ public final class TabularComparison implements SessionModel {
             alteredRefGraph = removeLatent(this.referenceGraph);
         }
 
-        System.out.println("Doing graph comparison");
-//        System.out.println("graph = " + targetGraph);
-//        System.out.println("trueGraph = " + alteredRefGraph);
-
         GraphUtils.GraphComparison comparison = SearchGraphUtils.
                 getGraphComparison2(targetGraph, alteredRefGraph);
 
@@ -400,7 +396,6 @@ public final class TabularComparison implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static TabularComparison serializableInstance() {

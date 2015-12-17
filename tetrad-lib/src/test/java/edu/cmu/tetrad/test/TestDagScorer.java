@@ -28,12 +28,13 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.*;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.util.RandomUtil;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -42,17 +43,13 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class TestDagScorer extends TestCase {
+public class TestDagScorer {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestDagScorer(String name) {
-        super(name);
-    }
-
+    @Test
     public void test1() {
-        List<Node> nodes = new ArrayList<Node>();
+        RandomUtil.getInstance().setSeed(492839483L);
+
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -69,35 +66,24 @@ public class TestDagScorer extends TestCase {
 
         SemEstimator est = new SemEstimator(data, pm);
         SemIm estSem = est.estimate();
-        System.out.println("FML = " + estSem.getScore());
+        double fml = estSem.getScore();
+
+        assertEquals(0.0369, fml, 0.001);
 
         dag = GraphUtils.replaceNodes(dag, data.getVariables());
 
-        System.out.println(estSem.getEdgeCoef());
-        System.out.println(estSem.getErrCovar());
-
         Scorer scorer = new DagScorer(data);
-        double fml = scorer.score(dag);
-        System.out.println("FML (scorer) = " + fml);
+        double _fml = scorer.score(dag);
 
-        System.out.println("BIC = " + scorer.getBicScore());
-        System.out.println("DOF = " + scorer.getDof());
-        System.out.println("# free params = " + scorer.getNumFreeParams());
-        System.out.println("est sem = " + scorer.getEstSem());
+        assertEquals(0.0358, _fml, 0.001);
 
-        Graph newDag = new Dag(GraphUtils.randomDag(data.getVariables(), 0, 10, 30, 15, 15, false));
-        System.out.println("new FML " + scorer.score(newDag));
-    }
+        double bicScore = scorer.getBicScore();
+        assertEquals(-205, bicScore, 1);
 
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDagScorer.class);
+        int dof = scorer.getDof();
+        assertEquals(35, dof);
+        int numFreeParams = scorer.getNumFreeParams();
+        assertEquals(20, numFreeParams);
     }
 }
 

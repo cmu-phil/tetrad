@@ -135,8 +135,6 @@ public class MultiGeneralAndersonDarlingTest {
             }
         }
 
-        System.out.println("n = " + n + " numSummed = " + numSummed);
-
         double a = -n - (1.0 / numSummed) * h;
         double aa = (1 + 0.75 / numSummed + 2.25 / Math.pow(numSummed, 2)) * a;
         double p;

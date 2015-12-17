@@ -226,7 +226,7 @@ public class ScatterPlotView extends JPanel {
                         if (panel.isSelected()) {
                             panel.setSelected(false);
                             conditioningPanels.remove(panel);
-                            scatterPlot.removeConditioningVariable(panel.getVariable().toString());  // TODO
+                            scatterPlot.removeConditioningVariable(panel.getVariable().toString());
                             refreshChart(ScatterPlotView);
                         }
                     }

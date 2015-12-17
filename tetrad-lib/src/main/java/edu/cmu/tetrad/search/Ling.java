@@ -59,7 +59,7 @@ import static java.lang.Math.*;
  * <p>
  * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015</p>
  */
-public class Ling implements GraphGroupSearch {
+public class Ling {
 
     /**
      * Number of samples used when simulating data.

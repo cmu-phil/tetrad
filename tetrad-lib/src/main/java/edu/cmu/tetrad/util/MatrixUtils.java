@@ -28,10 +28,7 @@ import cern.colt.matrix.linalg.CholeskyDecomposition;
 import cern.colt.matrix.linalg.Property;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.linear.AbstractRealMatrix;
-import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
+import org.apache.commons.math3.linear.*;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -415,20 +412,27 @@ public final class MatrixUtils {
                     "there.");
         }
 
+//        TetradMatrix g = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
+
+//        return g.times(errCovar).times(g.transpose());
+//        return g.transpose().times(errCovar).times(g);
+
+
+
         // I - B
-        TetradMatrix m1 = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
-
-        // (I - B) ^ -1
+        TetradMatrix m1 = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
+//
+//        // (I - B) ^ -1
         TetradMatrix m3 = m1.inverse();
-
-        // ((I - B) ^ -1)'
+//
+//        // ((I - B) ^ -1)'
         TetradMatrix m4 = m3.transpose();
-
-        // ((I - B) ^ -1) Cov(e)
+//
+//        // ((I - B) ^ -1) Cov(e)
         TetradMatrix m5 = m3.times(errCovar);
-
-        // ((I - B) ^ -1) Cov(e) ((I - B) ^ -1)'
-
+//
+//        // ((I - B) ^ -1) Cov(e) ((I - B) ^ -1)'
+//
         return m5.times(m4);
     }
 
@@ -567,9 +571,17 @@ public final class MatrixUtils {
      */
     @SuppressWarnings({"BooleanMethodIsAlwaysInverted"})
     public static boolean isPositiveDefinite(TetradMatrix matrix) {
-        DoubleMatrix2D _matrix = new DenseDoubleMatrix2D(matrix.toArray());
+//        DoubleMatrix2D _matrix = new DenseDoubleMatrix2D(matrix.toArray());
 //        System.out.println(MatrixUtils.toString(new CholeskyDecomposition(_matrix).getL().toArray()));
-        return new CholeskyDecomposition(_matrix).isSymmetricPositiveDefinite();
+//        return new CholeskyDecomposition(_matrix).isSymmetricPositiveDefinite();
+
+        try {
+            new RectangularCholeskyDecomposition(matrix.getRealMatrix());
+        } catch (NonPositiveDefiniteMatrixException e) {
+            return false;
+        }
+
+        return true;
     }
 
     public static double[][] cholesky(double[][] covar) {

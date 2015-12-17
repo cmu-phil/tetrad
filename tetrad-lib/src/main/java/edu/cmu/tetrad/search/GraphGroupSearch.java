@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.GraphGroup;
 
 /**
  * Interface for a search method that returns multiple graphs.
+ * @deprecated
  */
 public interface GraphGroupSearch {
 

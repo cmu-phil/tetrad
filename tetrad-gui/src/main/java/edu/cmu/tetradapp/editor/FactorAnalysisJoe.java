@@ -261,7 +261,6 @@ public class FactorAnalysisJoe {
 //            System.out.println("Prod = " + prod);
 
             TetradMatrix residual = matrixSubtract(residualMatrices.lastElement(), prod);
-            System.out.println(residual);
             residualMatrices.add(residual);
             successiveResidualHelper(residualMatrices.lastElement(), unitVector);
 

@@ -23,42 +23,30 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.data.RegexTokenizer;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
  *
  * @author Joseph Ramsey
  */
-public final class TestDelimiterTokenizer extends TestCase {
-    public TestDelimiterTokenizer(String name) {
-        super(name);
-    }
+public final class TestDelimiterTokenizer {
 
-    public static void testTokenizer() {
-//        String line1 = "a \t b  \t   c \t   d";
+    @Test
+    public void testTokenizer() {
         String line2 = "a,b,c,d";
+        String[] tokens = {"a", "b", "c", "d"};
         DelimiterType delimiterType = DelimiterType.COMMA;
         RegexTokenizer tokenizer =
                 new RegexTokenizer(line2, delimiterType.getPattern(), '"');
 
         int index = 0;
         while (tokenizer.hasMoreTokens()) {
-            System.out.println("" + (++index) + ". " + tokenizer.nextToken());
+            String s = tokenizer.nextToken();
+            assertEquals(tokens[index++], s);
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDelimiterTokenizer.class);
     }
 }
 

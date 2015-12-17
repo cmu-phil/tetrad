@@ -102,14 +102,18 @@ public final class FciOrient {
 
         ruleR0(graph);
 
-        System.out.println("R0");
+        if (verbose) {
+            System.out.println("R0");
+        }
 
 
         // Step CI D. (Zhang's step F4.)
         doFinalOrientation(graph);
 
 //        graph.closeInducingPaths();   //to make sure it's a legal PAG
-        logger.log("graph", "Returning graph: " + graph);
+        if (verbose) {
+            logger.log("graph", "Returning graph: " + graph);
+        }
 
         return graph;
     }
@@ -165,8 +169,6 @@ public final class FciOrient {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
-        System.out.println("R0 start");
-
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
@@ -203,12 +205,13 @@ public final class FciOrient {
 
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
-                    logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c));
-                    System.out.println(SearchLogUtils.colliderOrientedMsg(a, b, c));
+                    if (verbose) {
+                        logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c));
+                        System.out.println(SearchLogUtils.colliderOrientedMsg(a, b, c));
+                        String location = "R0";
 
-                    String location = "R0";
-
-                    printWrongColliderMessage(a, b, c, location, graph);
+                        printWrongColliderMessage(a, b, c, location, graph);
+                    }
                 }
             }
         }
@@ -249,7 +252,9 @@ public final class FciOrient {
                 firstTime = false;
             }
 
-            System.out.println("Epoch");
+            if (verbose) {
+                System.out.println("Epoch");
+            }
         }
     }
 
@@ -268,7 +273,9 @@ public final class FciOrient {
                 firstTime = false;
             }
 
-            System.out.println("Epoch");
+            if (verbose) {
+                System.out.println("Epoch");
+            }
         }
 
         if (isCompleteRuleSetUsed()) {
@@ -340,8 +347,11 @@ public final class FciOrient {
             graph.setEndpoint(c, b, Endpoint.TAIL);
             graph.setEndpoint(b, c, Endpoint.ARROW);
             changeFlag = true;
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
-            System.out.println(SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
+
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
+                System.out.println(SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
+            }
         }
     }
 
@@ -365,8 +375,12 @@ public final class FciOrient {
                 }
 
                 graph.setEndpoint(a, c, Endpoint.ARROW);
-                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
-                System.out.println(SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
+
+                if (verbose) {
+                    logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
+                    System.out.println(SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
+                }
+
                 changeFlag = true;
             }
         }
@@ -455,8 +469,12 @@ public final class FciOrient {
                     }
 
                     graph.setEndpoint(D, B, Endpoint.ARROW);
-                    logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
-                    System.out.println(SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
+
+                    if (verbose) {
+                        logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
+                        System.out.println(SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
+                    }
+
                     changeFlag = true;
                 }
             }
@@ -515,8 +533,11 @@ public final class FciOrient {
 
                     LinkedList<Node> reachable = new LinkedList<Node>();
                     reachable.add(a);
-                    System.out.println("Found pattern " + a + " " + b + " " + c);
-                    reachablePathFind(a, b, c, reachable, graph);
+
+                    if (verbose) {
+                        System.out.println("Found pattern " + a + " " + b + " " + c);
+                        reachablePathFind(a, b, c, reachable, graph);
+                    }
                 }
             }
         }
@@ -600,8 +621,12 @@ public final class FciOrient {
 
         if (sepset.contains(b)) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
-            System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+                System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+            }
+
             changeFlag = true;
         } else {
             if (!isArrowpointAllowed(a, b, graph)) {
@@ -739,10 +764,14 @@ public final class FciOrient {
         if (!ind && !ind2) {
             List<Node> sepset = getSepsets().getSepset(d, c);
 
-            System.out.println("Sepset for d = " + d + " and c = " + c + " = " + sepset);
+            if (verbose) {
+                System.out.println("Sepset for d = " + d + " and c = " + c + " = " + sepset);
+            }
 
             if (sepset == null) {
-                System.out.println("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
+                if (verbose) {
+                    System.out.println("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
+                }
                 return false;
             }
 
@@ -754,8 +783,12 @@ public final class FciOrient {
         if (ind) {
 //            if (sepset.contains(b)) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
-            System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+                System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+            }
+
             changeFlag = true;
             return true;
         } else {
@@ -769,8 +802,12 @@ public final class FciOrient {
 
             graph.setEndpoint(a, b, Endpoint.ARROW);
             graph.setEndpoint(c, b, Endpoint.ARROW);
-            logger.log("impliedOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
-            System.out.println(SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
+
+            if (verbose) {
+                logger.log("impliedOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
+                System.out.println(SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
+            }
+
             changeFlag = true;
             return true;
         }
@@ -783,7 +820,10 @@ public final class FciOrient {
         nodes.add(a);
         nodes.add(b);
         nodes.add(c);
-        System.out.println("DDP subgraph = " + graph.subgraph(nodes));
+
+        if (verbose) {
+            System.out.println("DDP subgraph = " + graph.subgraph(nodes));
+        }
     }
 
     private List<Node> getPath(Node c, Map<Node, Node> previous) {
@@ -834,9 +874,6 @@ public final class FciOrient {
                     graph.setEndpoint(b, a, Endpoint.TAIL);
                     orientTailPath(u, graph);
                     changeFlag = true;
-
-                    // TODO we should break here if one doesn't need to undirect
-                    // TODO every such uncovered circle path, ask Jiji?
                 }
             }
         }
@@ -1090,7 +1127,7 @@ public final class FciOrient {
         List<List<Node>> ucPdPsToC = getUcPdPaths(a, c, graph);
 
         for (List<Node> u : ucPdPsToC) {
-            Node b = u.get(1); // TODO do we need to check if b is c?
+            Node b = u.get(1);
             if (graph.isAdjacentTo(b, c)) continue;
             if (b == c) continue;
             // We know u is as required: R9 applies!
@@ -1131,7 +1168,6 @@ public final class FciOrient {
 
                 if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) continue;
                 // We know Ao->C and B-->C<--D.
-                // TODO do we need to check if d is b?  I think so--jdramsey--added code.
 
                 List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
                 List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
@@ -1140,7 +1176,7 @@ public final class FciOrient {
                     for (List<Node> u2 : ucPdPsToD) {
                         Node n = u2.get(1);
 
-                        if (m.equals(n)) continue; // TODO use ==?
+                        if (m.equals(n)) continue;
                         if (graph.isAdjacentTo(m, n)) continue;
                         // We know B,D,u1,u2 as required: R10 applies!
 

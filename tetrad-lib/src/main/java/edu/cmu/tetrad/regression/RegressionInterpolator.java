@@ -31,9 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Joseph Ramsey
  * Creates a data set in which missing values in each column are filled using
  * the mean of that column.
+ * @author Joseph Ramsey
  */
 public final class RegressionInterpolator implements DataFilter {
     public DataSet filter(DataSet dataSet) {

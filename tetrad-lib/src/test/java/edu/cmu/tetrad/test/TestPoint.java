@@ -22,20 +22,19 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.PointXy;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests basic functionality of the tetrad.util.Point class.
  *
  * @author Joseph Ramsey
  */
-public class TestPoint extends TestCase {
-    public TestPoint(String name) {
-        super(name);
-    }
+public class TestPoint {
 
+    @Test
     public void testPoint() {
         PointXy p = new PointXy(25, 50);
         PointXy q = new PointXy(35, 55);
@@ -47,10 +46,6 @@ public class TestPoint extends TestCase {
         PointXy s = new PointXy(q);
 
         assertEquals(q, s);
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestPoint.class);
     }
 }
 

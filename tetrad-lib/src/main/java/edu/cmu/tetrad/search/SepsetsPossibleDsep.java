@@ -39,6 +39,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     private int maxPathLength = 5;
     private IKnowledge knowledge = new Knowledge2();
     private int depth = -1;
+    private boolean verbose = false;
 
     public SepsetsPossibleDsep(Graph graph, IndependenceTest independenceTest, IKnowledge knowledge,
                                int depth, int maxPathLength) {
@@ -49,7 +50,6 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         this.depth = depth;
     }
 
-    @Override
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
@@ -107,8 +107,13 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     private Set<Node> getPossibleDsep(Node x, Node y, int maxPathLength) {
         Set<Node> dsep = GraphUtils.possibleDsep(x, y, graph, maxPathLength);
 //        TetradLogger.getInstance().log("details", "Possible-D-Sep(" + x + ", " + y + ") = " + dsep);
-        System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + dsep);
+
+        if (verbose) {
+            System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + dsep);
+        }
+
         return dsep;
+
     }
 
     /**
@@ -142,6 +147,14 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     @Override
     public List<Node> getVariables() {
         return independenceTest.getVariables();
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

@@ -56,6 +56,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
     private LogisticRegression logisticRegression;
     private RegressionDataset regression;
+    private boolean verbose = false;
 
     public IndTestMultinomialLogisticRegression(DataSet data, double alpha) {
         this.searchVariables = data.getVariables();
@@ -206,10 +207,12 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         this.lastP = p;
 
-        if (indep) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+        if (verbose) {
+            if (indep) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
+            } else {
+                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+            }
         }
 
         return indep;
@@ -311,10 +314,12 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         boolean indep = p > alpha;
 
-        if (indep) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+        if (verbose) {
+            if (indep) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
+            } else {
+                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+            }
         }
 
         return indep;
@@ -431,6 +436,14 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");
         return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

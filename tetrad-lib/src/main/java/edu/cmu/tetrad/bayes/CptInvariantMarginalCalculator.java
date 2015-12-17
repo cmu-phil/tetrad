@@ -99,7 +99,7 @@ public final class CptInvariantMarginalCalculator
     //=============================PUBLIC METHODS========================//
 
     /**
-     * @return P(variable=category).
+     * @return P&lpar;variable &equals; category&rpar;.
      */
     public double getMarginal(int variable, int category) {
         if (this.storedMarginals[variable][category] != -99.0) {

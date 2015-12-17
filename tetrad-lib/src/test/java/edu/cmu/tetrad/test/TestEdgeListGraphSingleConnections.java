@@ -23,30 +23,22 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
- * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the
- * Graph interface.
- *
  * @author Joseph Ramsey
  */
-public final class TestEdgeListGraphSingleConnections extends TestCase {
+public final class TestEdgeListGraphSingleConnections {
     private Node x1, x2, x3, x4, x5;
     private Graph graph;
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestEdgeListGraphSingleConnections(String name) {
-        super(name);
-    }
 
     public void setUp() {
         x1 = new GraphNode("x1");
@@ -57,7 +49,10 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
         graph = new EdgeListGraphSingleConnections();
     }
 
+    @Test
     public void testSequence1() {
+        setUp();
+
         graph.clear();
 
         // Add and remove some nodes.
@@ -92,7 +87,10 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
         assertEquals(graph, graph3);
     }
 
+    @Test
     public void testSequence2() {
+        setUp();
+
         graph.clear();
 
         // Add some edges in a cycle.
@@ -117,10 +115,7 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
         graph.addDirectedEdge(x3, x5);
         graph.addDirectedEdge(x5, x2);
 
-        System.out.println("@1 " + graph);
-
         graph.setEndpoint(x4, x3, Endpoint.ARROW);
-        System.out.println("@2 " + graph);
         graph.setEndpoint(x3, x4, Endpoint.ARROW);
 
 
@@ -128,10 +123,9 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
 
         graph.removeEdge(x1, x3);
         graph.removeEdge(graph.getEdge(x5, x2));
-
-        System.out.println(graph);
     }
 
+    @Test
     public void testSequence3() {
         List<Node> nodes = new ArrayList<Node>();
 
@@ -150,11 +144,11 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
         }
 
         boolean dsep = graph.isDSeparatedFrom(node1, node2, cond);
-
-        System.out.println(dsep);
     }
 
+    @Test
     public void testSequence4() {
+        setUp();
         graph.clear();
 
         // Add some edges in a cycle.
@@ -164,8 +158,6 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
         graph.addUndirectedEdge(x1, x2);
 
         List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
-
-        System.out.println(edges);
 
         Edge e1 = edges.get(0);
 
@@ -178,10 +170,9 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
         graph.removeEdge(e2);
 
         edges = new ArrayList<Edge>(graph.getEdges());
-
-        System.out.println(edges);
     }
 
+    @Test
     public void testSepsets() {
         List<Node> nodes = new ArrayList<Node>();
         for (int i = 0; i < 50; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -222,17 +213,6 @@ public final class TestEdgeListGraphSingleConnections extends TestCase {
 
             graph.addEdge(e);
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestEdgeListGraphSingleConnections.class);
     }
 }
 

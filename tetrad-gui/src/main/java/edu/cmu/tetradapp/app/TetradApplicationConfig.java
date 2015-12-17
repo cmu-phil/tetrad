@@ -528,10 +528,6 @@ public class TetradApplicationConfig {
         }
 
         public String getAcronym() {
-            if (this.acronym == null) {
-                System.out.println();
-            }
-
             return this.acronym;
         }
 

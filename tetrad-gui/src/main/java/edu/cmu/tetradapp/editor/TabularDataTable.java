@@ -223,15 +223,6 @@ class TabularDataTable extends AbstractTableModel {
 
         fireTableDataChanged();
         pcs.firePropertyChange("modelChanged", null, null);
-
-        // The only reason for this it to paste in columns or rows that go
-        // out of bounds, but it doesn't work anyway. Need to fix. In any
-        // case, definitely shouldn't call it every time a cell is set, since
-        // this resets the entire model every time, reallocating all columns,
-        // etc. Also, when calling it, need to somehow reset the sizes of the
-        // initial columns (MULT, index) so they don't get reset to the width
-        // of every other column. TODO.
-//        fireTableStructureChanged();
     }
 
     /**

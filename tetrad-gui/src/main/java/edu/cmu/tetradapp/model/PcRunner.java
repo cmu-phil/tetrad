@@ -96,6 +96,10 @@ public class PcRunner extends AbstractAlgorithmRunner
         super(graphWrapper.getGraph(), params);
     }
 
+    public PcRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, PcSearchParams params) {
+        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
+    }
+
 //    /**
 //     * Constucts a wrapper for the given EdgeListGraph.
 //     */
@@ -123,7 +127,6 @@ public class PcRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

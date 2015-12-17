@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.test;
 
 import jdepend.framework.JDepend;
 import jdepend.framework.JavaPackage;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,15 +32,13 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.junit.Assert.fail;
+
 /**
  * Checks for package cycles.
  */
-public class TestCyclicity extends TestCase {
+public class TestCyclicity {
     private JDepend jdepend;
-
-    public TestCyclicity(String name) {
-        super(name);
-    }
 
     public void setUp() {
         jdepend = new JDepend();
@@ -71,7 +69,9 @@ public class TestCyclicity extends TestCase {
      * UNTIL THEN IT HAS TO BE RUN MANUALLY BY DELETING THE OLD CALCULATORWRAPPER
      * RUNNING IT AND THEN RESTORING THE OLD CALCULATORWRAPPER. -Joe 2009/6/8
      */
+    @Test
     public void testAllPackagesCycle() {
+        setUp();
         Collection packages = jdepend.analyze();
 
         for (Object aPackage : packages) {
@@ -101,10 +101,6 @@ public class TestCyclicity extends TestCase {
         if (jdepend.containsCycles()) {
             fail("Package cycle(s) found!");
         }
-    }
-
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(TestCyclicity.class);
     }
 }
 

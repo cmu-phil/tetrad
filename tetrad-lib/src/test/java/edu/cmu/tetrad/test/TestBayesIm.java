@@ -23,68 +23,39 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
-import edu.cmu.tetrad.bayes.MlBayesEstimator;
 import edu.cmu.tetrad.bayes.MlBayesIm;
-import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.GeneralizedSemIm;
-import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
-import edu.pitt.csb.mgm.MGM;
-import edu.pitt.csb.mgm.MixedUtils;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the BayesIm.
  *
  * @author Joseph Ramsey
  */
-public final class TestBayesIm extends TestCase {
+public final class TestBayesIm {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestBayesIm(String name) {
-        super(name);
-    }
-
-    public static void testConstructRandom() {
-        System.out.println("\n\nTest construct random.");
+    @Test
+    public void testCopyConstructor() {
         Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
-        System.out.println(bayesIm);
-    }
-
-
-    public static void testCopyConstructor() {
-        System.out.println("\n\nTest copy constructor.");
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        Dag dag = new Dag(graph);
-        BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
-        //        System.out.println(bayesIm);
         BayesIm bayesIm2 = new MlBayesIm(bayesIm);
-        //        System.out.println(bayesIm2);
         assertEquals(bayesIm, bayesIm2);
     }
 
-    public static void testConstructManual() {
-        System.out.println("\n\nTest construct manual.");
+    @Test
+    public void testConstructManual() {
         Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm);
-        System.out.println(bayesIm);
+        Dag dag1 = bayesIm.getBayesPm().getDag();
+        Graph dag2 = GraphUtils.replaceNodes(dag1, graph.getNodes());
+        assertEquals(dag2, graph);
     }
 
     /**
@@ -96,9 +67,8 @@ public final class TestBayesIm extends TestCase {
      * double up the rows from b. Then remove the node c. Now the table for b
      * should be completely unspecified.
      */
-    public static void testAddRemoveParent() {
-        System.out.println("\n\nTest add and remove parent.");
-
+    @Test
+    public void testAddRemoveParent() {
         Node a = new GraphNode("a");
         Node b = new GraphNode("b");
 
@@ -111,21 +81,17 @@ public final class TestBayesIm extends TestCase {
 
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
-        System.out.println(bayesIm);
 
         BayesIm bayesIm2 = new MlBayesIm(bayesPm, bayesIm, MlBayesIm.MANUAL);
-        System.out.println(bayesIm2);
 
         assertEquals(bayesIm, bayesIm2);
 
         Node c = new GraphNode("c");
         dag.addNode(c);
         dag.addDirectedEdge(c, b);
-        System.out.println("dag = " + dag);
 
         BayesPm bayesPm3 = new BayesPm(dag, bayesPm);
         BayesIm bayesIm3 = new MlBayesIm(bayesPm3, bayesIm2, MlBayesIm.MANUAL);
-        System.out.println("bayesIm3 = " + bayesIm3);
 
         // Make sure the rows got repeated.
 //        assertTrue(rowsEqual(bayesIm3, bayesIm3.getNodeIndex(b), 0, 1));
@@ -138,7 +104,6 @@ public final class TestBayesIm extends TestCase {
         dag.removeNode(c);
         BayesPm bayesPm4 = new BayesPm(dag, bayesPm3);
         BayesIm bayesIm4 = new MlBayesIm(bayesPm4, bayesIm3, MlBayesIm.MANUAL);
-        System.out.println("bayesIm4 = " + bayesIm4);
 
         // Make sure the 'b' node has 2 rows of '?'s'.
         assertTrue(bayesIm4.getNumRows(bayesIm4.getNodeIndex(b)) == 2);
@@ -154,9 +119,8 @@ public final class TestBayesIm extends TestCase {
      * c that is unspecified, and it should double up the rows from b. Then
      * remove the node c. Now the table for b should be completely unspecified.
      */
-    public static void testAddRemoveValues() {
-        System.out.println("\n\nTest retain old values.");
-
+    @Test
+    public void testAddRemoveValues() {
         Node a = new GraphNode("a");
         Node b = new GraphNode("b");
         Node c = new GraphNode("c");
@@ -174,16 +138,13 @@ public final class TestBayesIm extends TestCase {
 
         BayesPm bayesPm = new BayesPm(dag, 3, 3);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
-        System.out.println(bayesIm);
 
         bayesPm.setNumCategories(a, 4);
         bayesPm.setNumCategories(c, 4);
         BayesIm bayesIm2 = new MlBayesIm(bayesPm, bayesIm, MlBayesIm.MANUAL);
-        System.out.println(bayesIm2);
 
         bayesPm.setNumCategories(a, 2);
         BayesIm bayesIm3 = new MlBayesIm(bayesPm, bayesIm2, MlBayesIm.MANUAL);
-        System.out.println(bayesIm3);
 
         bayesPm.setNumCategories(b, 2);
         BayesIm bayesIm4 = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
@@ -197,8 +158,6 @@ public final class TestBayesIm extends TestCase {
                 }
             }
         }
-
-        System.out.println(bayesIm4);
 
         double[][] aTable = {
                 {.2, .8}
@@ -242,9 +201,6 @@ public final class TestBayesIm extends TestCase {
                 bayesIm4.setProbability(_c, row, col, cTable[row][col]);
             }
         }
-
-        System.out.println(bayesIm4);
-
     }
 
     private static boolean rowsEqual(BayesIm bayesIm, int node, int row1,
@@ -269,17 +225,6 @@ public final class TestBayesIm extends TestCase {
         }
 
         return true;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestBayesIm.class);
     }
 }
 

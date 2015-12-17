@@ -37,6 +37,7 @@ public class SepsetsConservativeMajority implements SepsetProducer {
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
     private int depth = 3;
+    private boolean verbose = false;
 
     public SepsetsConservativeMajority(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -45,7 +46,6 @@ public class SepsetsConservativeMajority implements SepsetProducer {
         this.depth = depth;
     }
 
-    @Override
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
@@ -204,6 +204,15 @@ public class SepsetsConservativeMajority implements SepsetProducer {
 
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

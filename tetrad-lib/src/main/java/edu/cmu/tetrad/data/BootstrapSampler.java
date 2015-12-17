@@ -93,30 +93,6 @@ public final class BootstrapSampler {
                 newDataSet.setObject(row, col, dataSet.getObject(oldCase, col));
             }
         }
-        // todo this doesn't treat case multipliers correctly. 5/11/2013 jdr
-        // With replacement.
-//        if (newSampleSize > oldSampleSize) {
-//            throw new IllegalArgumentException();
-//        }
-//
-//        List<Integer> indices = new ArrayList<Integer>();
-//
-//        for (int i = 0; i < oldSampleSize; i++) {
-//            indices.add(i);
-//        }
-//
-//        Collections.shuffle(indices);
-//
-//        for (int row = 0; row < newSampleSize; row++) {
-//            int oldCase = indices.get(row);
-//
-//            for (int col = 0; col < ncols; col++) {
-//                newDataSet.setObject(row, col, dataSet.getObject(oldCase, col));
-//            }
-//        }
-
-
-        //    this.logger.flush();
 
         newDataSet.setKnowledge(dataSet.getKnowledge().copy());
 

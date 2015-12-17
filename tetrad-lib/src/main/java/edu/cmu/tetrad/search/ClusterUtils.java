@@ -627,7 +627,7 @@ public class ClusterUtils {
             }
             for (int j = i + 1; j < clusters.size(); j++) {
                 graph.setEndpoint(nodes.get(i), nodes.get(j),
-                        Endpoint.ARROW); //TODO: put CIRCLES back
+                        Endpoint.ARROW);
                 graph.setEndpoint(nodes.get(j), nodes.get(i),
                         Endpoint.TAIL);
             }

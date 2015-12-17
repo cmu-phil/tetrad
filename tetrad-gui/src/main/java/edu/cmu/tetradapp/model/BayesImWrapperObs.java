@@ -202,7 +202,6 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource, 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
 	 public static BayesImWrapperObs serializableInstance() {

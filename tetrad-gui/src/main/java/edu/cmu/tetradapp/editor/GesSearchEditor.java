@@ -551,7 +551,6 @@ public class GesSearchEditor extends AbstractSearchEditor
         return display;
     }
 
-    // TODO Fix this.
     private List<ScoredGraph> arrangeGraphs() {
         IGesRunner runner = (IGesRunner) getAlgorithmRunner();
         Graph resultGraph = runner.getResultGraph();

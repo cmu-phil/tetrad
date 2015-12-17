@@ -26,91 +26,68 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import nu.xom.*;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the Bayes XML parsing/rendering.
  *
  * @author Joseph Ramsey
  */
-public final class TestBayesXml extends TestCase {
+public final class TestBayesXml {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestBayesXml(String name) {
-        super(name);
-    }
-
-    public static void testRoundtrip() {
+    @Test
+    public void testRoundtrip() {
         BayesIm bayesIm = sampleBayesIm1();
         Element element = BayesXmlRenderer.getElement(bayesIm);
-
-        System.out.println("Started with this bayesIm: " + bayesIm);
-        System.out.println("\nGot this XML for it:");
-        printElement(element);
 
         BayesXmlParser parser = new BayesXmlParser();
         BayesIm bayesIm2 = parser.getBayesIm(element);
 
-        System.out.println(bayesIm2.getDag());
-        System.out.println(bayesIm2);
+        assertEquals(bayesIm, bayesIm2);
     }
 
+    @Test
     public void testRoundtrip2() {
         BayesIm bayesIm = sampleBayesIm2();
         Element element = BayesXmlRenderer.getElement(bayesIm);
 
-        System.out.println("Started with this bayesIm: " + bayesIm);
-        System.out.println("\nGot this XML for it:");
-        printElement(element);
-
         BayesXmlParser parser = new BayesXmlParser();
         BayesIm bayesIm2 = parser.getBayesIm(element);
 
-        System.out.println(bayesIm2.getDag());
-        System.out.println(bayesIm2);
+        assertEquals(bayesIm, bayesIm2);
     }
 
+    @Test
     public void testRoundtrip3() {
         BayesIm bayesIm = sampleBayesIm3();
         Element element = BayesXmlRenderer.getElement(bayesIm);
 
-        System.out.println("Started with this bayesIm: " + bayesIm);
-        System.out.println("\nGot this XML for it:");
-        printElement(element);
-
         BayesXmlParser parser = new BayesXmlParser();
         BayesIm bayesIm2 = parser.getBayesIm(element);
 
-        System.out.println(bayesIm2.getDag());
-        System.out.println(bayesIm2);
+        assertEquals(bayesIm, bayesIm2);
     }
-
-//    public void testMakeFile() {
-//        BayesIm
-//    }
 
     /**
      * Tests to make sure that a particular file produced by the renderer on
      * 6/26/04 remains parsable. VERY IMPORTANT THIS DOES NOT BREAK!!!
      */
+    @Test
     public void testLoadFromFile() {
         try {
             Builder builder = new Builder();
             Document document =
                     builder.build(new File("src/test/resources/parsableBayesNet.xml"));
-            printDocument(document);
 
             BayesXmlParser parser = new BayesXmlParser();
-            BayesIm bayesIm = parser.getBayesIm(document.getRootElement());
-            System.out.println(bayesIm);
+            parser.getBayesIm(document.getRootElement());
         }
         catch (ParsingException e) {
             e.printStackTrace();
@@ -246,17 +223,6 @@ public final class TestBayesXml extends TestCase {
         catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestBayesXml.class);
     }
 }
 

@@ -1584,7 +1584,7 @@ public class ProbUtils {
      * @param ah upper bound 1
      * @param ak upper bound 1
      * @param r  correlation
-     * @return Prob(x1 <= ah, x2 <= ak)
+     * @return Prob&lpar;x1 &le; ah, x2 &le; ak&rpar;
      */
 
     public static double biNormalCdf(double ah, double ak, double r) {

@@ -86,6 +86,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
     private DataSet timeLags;
     private Regression regression;
     private final DataSet timeSeries;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -218,8 +219,10 @@ public final class IndTestLaggedRegression implements IndependenceTest {
 
         boolean independent = p > alpha;
 
-        if (independent) {
-            System.out.println(SearchLogUtils.independenceFactMsg(xVar, yVar, zList, p));
+        if (verbose) {
+            if (independent) {
+                System.out.println(SearchLogUtils.independenceFactMsg(xVar, yVar, zList, p));
+            }
         }
 
         return independent;
@@ -431,6 +434,14 @@ public final class IndTestLaggedRegression implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

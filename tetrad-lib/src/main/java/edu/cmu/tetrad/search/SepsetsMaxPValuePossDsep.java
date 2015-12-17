@@ -36,6 +36,7 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
     private int depth = 3;
     private int maxPathLength = 3;
     private double p = Double.NaN;
+    private boolean verbose = false;
 
     public SepsetsMaxPValuePossDsep(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth, int maxPathLength) {
         this.graph = graph;
@@ -45,7 +46,6 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
         this.maxPathLength = maxPathLength;
     }
 
-    @Override
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
@@ -268,6 +268,15 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
 
     private IndependenceTest getIndependenceTest() {
         return independenceTest;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

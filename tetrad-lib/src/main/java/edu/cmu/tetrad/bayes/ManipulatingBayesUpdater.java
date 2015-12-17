@@ -64,7 +64,7 @@ public interface ManipulatingBayesUpdater extends BayesUpdater {
     BayesIm getUpdatedBayesIm();
 
     /**
-     * @return P(variable==category | evidence) where evience is getEvidence().
+     * @return P&lpar;variable&equals;category &vert; evidence&rpar; where evidence is getEvidence().
      */
     double getMarginal(int variable, int category);
 

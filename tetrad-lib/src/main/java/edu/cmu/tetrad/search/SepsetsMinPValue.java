@@ -37,6 +37,7 @@ public class SepsetsMinPValue implements SepsetProducer {
     private final SepsetMap extraSepsets;
     private int depth = 3;
     private double p = Double.NaN;
+    private boolean verbose = false;
 
     public SepsetsMinPValue(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -45,7 +46,6 @@ public class SepsetsMinPValue implements SepsetProducer {
         this.depth = depth;
     }
 
-    @Override
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
@@ -145,6 +145,15 @@ public class SepsetsMinPValue implements SepsetProducer {
 
     private IndependenceTest getIndependenceTest() {
         return independenceTest;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

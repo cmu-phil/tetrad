@@ -73,7 +73,7 @@ import static java.lang.Math.*;
  */
 public final class MlBayesIm implements BayesIm {
     static final long serialVersionUID = 23L;
-    private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
+    private static final double ALLOWABLE_DIFFERENCE = 1.0e-4;
 
     /**
      * Inidicates that new rows in this BayesIm should be initialized as
@@ -1110,8 +1110,6 @@ public final class MlBayesIm implements BayesIm {
             tiers[i] = getNodeIndex(tierOrdering.get(i));
         }
 
-        long t1 = System.currentTimeMillis();
-
         // Construct the sample.
         for (int i = 0; i < sampleSize; i++) {
             for (int t : tiers) {
@@ -1137,10 +1135,6 @@ public final class MlBayesIm implements BayesIm {
                 }
             }
         }
-
-        long t2 = System.currentTimeMillis();
-        System.out.println("Elapsed Sim = " + (t2 - t1) + "ms");
-
     }
 
     public boolean equals(Object o) {

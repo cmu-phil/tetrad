@@ -22,56 +22,27 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests basic functionality of the tetrad.util.Point class.
  *
  * @author Joseph Ramsey
  */
-public class TestTetradMatrix extends TestCase {
-    public TestTetradMatrix(String name) {
-        super(name);
-    }
+public class TestTetradMatrix {
 
+    @Test
     public void test1() {
         TetradMatrix x = new TetradMatrix(4, 0);
-
-//        x.set(0, 0, 1.0);
-//        x.set(1, 0, 1.5);
-//        x.set(2, 0, 1.3);
-//        x.set(3, 0, 1.1);
-
-        TetradMatrix y = new TetradMatrix(4, 1);
 
         TetradMatrix xT = x.transpose();
         TetradMatrix xTx = xT.times(x);
         TetradMatrix xTxInv = xTx.inverse();
-        TetradMatrix xTy = xT.times(y);
-        TetradMatrix b = xTxInv.times(xTy);
-//        if (b.columns() == 0) {
-//            b = y.like();
-//            for (int i = 0; i < b.rows(); i++) b.set(i, 0, 0.0);
-//        }
 
-        TetradMatrix yHat = x.times(b);
-        if (yHat.columns() == 0) yHat = y.like();
-
-        TetradMatrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
-
-        TetradVector _yHat = yHat.getColumn(0);
-        TetradVector _res = res.getColumn(0);
-    }
-
-    public void test2() {
-        TetradMatrix m = new TetradMatrix(0, 0);
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestTetradMatrix.class);
+        assertEquals(0, xTx.trace(), 0.01);
+        assertEquals(0, xTxInv.trace(), 0.01);
     }
 }
 

@@ -43,8 +43,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Joseph Ramsey.
  * Contains some tests for Dan Malinsky, that might be of interest to others.
+ * @author Joseph Ramsey.
  */
 public class PerformanceTestsDan {
     private void testIcaOutputForDan() {

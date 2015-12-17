@@ -88,6 +88,7 @@ public final class IndTestRegression implements IndependenceTest {
      */
     private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private DataSet dataSet;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -184,10 +185,12 @@ public final class IndTestRegression implements IndependenceTest {
 
         boolean independent = p > alpha;
 
-        if (independent) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, zList, p));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(xVar, yVar, zList, p));
+        if (verbose) {
+            if (independent) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, zList, p));
+            } else {
+                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(xVar, yVar, zList, p));
+            }
         }
 
 
@@ -398,6 +401,14 @@ public final class IndTestRegression implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

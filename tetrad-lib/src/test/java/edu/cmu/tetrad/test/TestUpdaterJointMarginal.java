@@ -26,20 +26,17 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Frank Wimberly
  */
-public final class TestUpdaterJointMarginal extends TestCase {
+public final class TestUpdaterJointMarginal {
 
-    public TestUpdaterJointMarginal(String name) {
-        super(name);
-    }
-
-    public static void testEstimate1() {
+    @Test
+    public void testEstimate1() {
 
         Dag graph = new Dag();
         Node L1 = new GraphNode("L1");
@@ -135,35 +132,16 @@ public final class TestUpdaterJointMarginal extends TestCase {
         double p1 = rseu.getJointMarginal(vars1, vals1);
         assertEquals(0.1111, p1, 0.0001);
 
-        System.out.println("p1 = " + p1);
-
         int[] vars2 = {l1Index, x1Index};
-        //int[] vars2 = {0, 1};
         int[] vals2 = {0, 0};
 
         double p2 = rseu.getJointMarginal(vars2, vals2);
         assertEquals(0.1111, p2, 0.0001);
 
-        System.out.println("p2 = " + p2);
-
         int[] vals3 = {1, 0};
 
         double p3 = rseu.getJointMarginal(vars2, vals3);
         assertEquals(0.8888, p3, 0.0001);
-
-        System.out.println("p3 = " + p3);
-    }
-
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestUpdaterJointMarginal.class);
     }
 }
 

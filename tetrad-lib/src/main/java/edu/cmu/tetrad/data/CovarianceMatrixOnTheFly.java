@@ -175,7 +175,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
                         }
 
                         double v = d;
-                        v /= sampleSize;
+                        v /= (sampleSize - 1);
 
                         variances[i] = v;
 
@@ -208,7 +208,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(new VarianceTask(chunk, 0, variables.size()));
 
-        System.out.println("Done with variances.");
+//        System.out.println("Done with variances.");
 
 
     }
@@ -221,7 +221,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         Node x = new ContinuousVariable("X");
         variables.add(x);
         TetradMatrix matrix = TetradAlgebra.identity(1);
-        return new CovarianceMatrix(variables, matrix, 100); // TODO make one that works for CovarianceMatrixOnTheFly
+        return new CovarianceMatrix(variables, matrix, 100); //
     }
 
     //============================PUBLIC METHODS=========================//
@@ -345,7 +345,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         }
 
         double v = d;
-        v /= sampleSize;
+        v /= (sampleSize - 1);
         return v;
     }
 

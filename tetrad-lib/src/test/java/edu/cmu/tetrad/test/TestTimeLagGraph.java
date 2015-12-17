@@ -24,97 +24,37 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * @author Joseph Ramsey
  */
-public final class TestTimeLagGraph extends TestCase {
+public final class TestTimeLagGraph {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestTimeLagGraph(String name) {
-        super(name);
-    }
-
+    @Test
     public void test1() {
         TimeLagGraph graph = new TimeLagGraph();
-
         Node x0 = new GraphNode("X");
         Node y0 = new GraphNode("Y");
-
-
-        graph.addNode(x0);
-        graph.addNode(y0);
-
-        graph.setMaxLag(2);
-
+        assertTrue(graph.addNode(x0));
+        assertTrue(graph.addNode(y0));
+        assertFalse(graph.setMaxLag(2));
         Node x1 = graph.getNode("X", 1);
-
-        graph.addDirectedEdge(x1, y0);
-
-        graph.setMaxLag(4);
-
-        graph.setNumInitialLags(2);
-
-        graph.setMaxLag(3);
-
-        graph.setMaxLag(5);
-
+        assertTrue(graph.addDirectedEdge(x1, y0));
+        assertTrue(graph.setMaxLag(4));
+        assertTrue(graph.setNumInitialLags(2));
+        assertFalse(graph.setMaxLag(3));
+        assertTrue(graph.setMaxLag(5));
         Node y1 = graph.getNode("Y", 1);
-
-        graph.addDirectedEdge(y1, x0);
-
-        graph.setMaxLag(1);
-
-        try {
-            graph.setMaxLag(0);
-            // fail.
-        } catch (Exception e) {
-            // succeed.
-        }
-
-        graph.removeHighLagEdges(0);
-
-        graph.addDirectedEdge(x0, y0);
-
-        System.out.println(graph);
-    }
-
-    public void test2() {
-        // This can't stay here; it will create a cycle.
-
-        TimeLagGraph graph = new TimeLagGraph();
-
-        Node x0 = new GraphNode("X");
-        Node y0 = new GraphNode("Y");
-
-
-        graph.addNode(x0);
-        graph.addNode(y0);
-
-        graph.setMaxLag(2);
-
-        Node x1 = graph.getNode("X", 1);
-        Node y1 = graph.getNode("Y", 1);
-
-//        SemPm pm = new SemPm(graph);
-
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestTimeLagGraph.class);
+        assertTrue(graph.addDirectedEdge(y1, x0));
+        assertTrue(graph.setMaxLag(1));
+        assertFalse(graph.setMaxLag(0));
+        assertFalse(graph.removeHighLagEdges(0));
+        assertTrue(graph.addDirectedEdge(x0, y0));
     }
 }
 

@@ -22,13 +22,13 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.StatUtils;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -36,12 +36,9 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-@SuppressWarnings({"UnusedDeclaration"})
-public class TestFdr extends TestCase {
-    public TestFdr(String name) {
-        super(name);
-    }
+public class TestFdr {
 
+    @Test
     public void testSimpleCase() {
         double[] p = new double[]{
                 .8, .01, .2, .07, .003, .9, .05, .03, .0001
@@ -55,26 +52,12 @@ public class TestFdr extends TestCase {
 
         double cutoff = StatUtils.fdrCutoff(alpha, pValues, negativelyCorrelated);
 
-        System.out.println("Cutoff = " + cutoff);
-
-        Collections.sort(pValues);
-
-        for (int i = 0; i < pValues.size(); i++) {
-            if (pValues.get(i) <= cutoff) {
-                System.out.println(i + ": " + pValues.get(i));
-            }
-        }
-
-        assertEquals(.01, cutoff);
+        assertEquals(.01, cutoff, .0001);
 
         negativelyCorrelated = true;
         cutoff = StatUtils.fdrCutoff(alpha, pValues, negativelyCorrelated);
-        assertEquals(0.003, cutoff);
+        assertEquals(0.003, cutoff, .0001);
 
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestFdr.class);
     }
 }
 

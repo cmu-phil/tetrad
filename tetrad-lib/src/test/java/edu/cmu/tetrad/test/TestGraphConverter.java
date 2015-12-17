@@ -22,27 +22,21 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.graph.*;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the GraphConverter class.
  *
  * @author Joseph Ramsey
  */
-public class TestGraphConverter extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestGraphConverter(String name) {
-        super(name);
-    }
+public class TestGraphConverter {
 
     /**
      * Contructs a graph the long way and using the string spec converter and compares them.
      */
+    @Test
     public void testStringSpecConverter() {
 
         // Set up graph and node objects.
@@ -75,17 +69,6 @@ public class TestGraphConverter extends TestCase {
         //        System.out.println(graph);
         //        System.out.println(convertedGraph);
         assertTrue(graph.equals(convertedGraph));
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestGraphConverter.class);
     }
 }
 

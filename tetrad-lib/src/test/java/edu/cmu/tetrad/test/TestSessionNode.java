@@ -22,15 +22,15 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.session.*;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+
+import static org.junit.Assert.*;
 
 /**
  * <p>Tests the operation of the session node. The session node needs to be able
@@ -48,7 +48,7 @@ import java.util.SortedMap;
  *
  * @author Joseph Ramsey
  */
-public class TestSessionNode extends TestCase {
+public class TestSessionNode {
 
     /**
      * A string field to help debug events.
@@ -56,17 +56,11 @@ public class TestSessionNode extends TestCase {
     private String eventId;
 
     /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSessionNode(String name) {
-        super(name);
-    }
-
-    /**
      * <p>Tests the <code>existsConstructor</code> method, which determines
      * whether a constructor exists in the model class that accepts objects of
      * the given classes as arguments.</p>
      */
+    @Test
     public void testExistsConstructor() {
         SessionNode node = new SessionNode(Type1.class);
         Class[] testSet1 = new Class[]{Type1.class};
@@ -88,6 +82,7 @@ public class TestSessionNode extends TestCase {
      * Tests whether the getValueCombination method is working. This method is
      * used to generate combinations of parent model classes.
      */
+    @Test
     public void testGetValueCombination() {
         SessionNode node = new SessionNode(Type1.class);
         int[] numValues = new int[]{2, 3, 4};
@@ -121,6 +116,7 @@ public class TestSessionNode extends TestCase {
      * required by the parameterTypes array, null should be returned. </p>
      * </ul>
      */
+    @Test
     public void testAssignParameters1() {
 
         // Set up a dummy session node to access the assign parameters
@@ -174,6 +170,7 @@ public class TestSessionNode extends TestCase {
     /**
      * Tests whether model classes can identified correctly as consistent.
      */
+    @Test
     public void testIsConsistentModelClass() {
 
         // Test single model classes.
@@ -229,6 +226,7 @@ public class TestSessionNode extends TestCase {
      * Tests whether ClassA x = y for some ClassA in a list where x is of type
      * ClassA and y is of type ClassB.
      */
+    @Test
     public void testGetAssignableClass() {
         SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
 
@@ -245,6 +243,7 @@ public class TestSessionNode extends TestCase {
     /**
      * Tests whether parent nodes can be added and removed correctly.
      */
+    @Test
     public void testAddRemoveParents() {
         SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
         SessionNode node2 = new SessionNode("???", "Node2", Type2.class);
@@ -266,6 +265,7 @@ public class TestSessionNode extends TestCase {
     /**
      * Tests whether children nodes can be added and removed correctly.
      */
+    @Test
     public void testAddRemoveChildren() {
         SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
         SessionNode node2 = new SessionNode("???", "Node2", Type2.class);
@@ -290,6 +290,7 @@ public class TestSessionNode extends TestCase {
      * that this method should not return anything but null unless all of the
      * parent classes have models in them.
      */
+    @Test
     public void testGetConsistentModelClasses() throws Exception {
         boolean simulation = true;
 
@@ -322,6 +323,7 @@ public class TestSessionNode extends TestCase {
     /**
      * Tests whether a model can be created correctly.
      */
+    @Test
     public void testCreateModel() {
         boolean simulation = true;
 
@@ -343,9 +345,6 @@ public class TestSessionNode extends TestCase {
             fail("Model not created.");
         }
 
-        // TODO: When models are destroyed, models downstream should
-        // be destroyed. This has to come from nodes listening to each
-        // other. jdramsey 12/25/01
         node1.destroyModel();
         assertNull(node1.getModel());
     }
@@ -353,6 +352,7 @@ public class TestSessionNode extends TestCase {
     /**
      * Tests to make sure events are sent and received properly.
      */
+    @Test
     public void testEvents() {
         boolean simulation = true;
 
@@ -487,6 +487,7 @@ public class TestSessionNode extends TestCase {
     /**
      * Tests the <code>isStructurallyIdentical</code> method.
      */
+    @Test
     public void testStructuralIdentity() {
         boolean simulation = true;
 
@@ -517,6 +518,7 @@ public class TestSessionNode extends TestCase {
      * specific models. (For the test, we just make up a few classes and try
      * serializing those.)
      */
+    @Test
     public void testSerialization() {
         boolean simulation = true;
 
@@ -552,6 +554,7 @@ public class TestSessionNode extends TestCase {
     /**
      * Tests whether parameters can be added correctly.
      */
+    @Test
     public void testParameterization() {
         boolean simulation = true;
 
@@ -586,21 +589,11 @@ public class TestSessionNode extends TestCase {
     /**
      * Tests whether the name of the node is set correctly.
      */
+    @Test
     public void testSetName() {
         String name = "Test";
         SessionNode node1 = new SessionNode("???", name, Type1.class);
         assertEquals(name, node1.getDisplayName());
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSessionNode.class);
     }
 }
 

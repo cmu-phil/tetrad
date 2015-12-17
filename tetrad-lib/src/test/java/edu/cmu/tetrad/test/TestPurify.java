@@ -27,29 +27,23 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.search.Mimbuild2;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import edu.cmu.tetrad.util.RandomUtil;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+
 /**
- * Tests the BooleanFunction class.
- *
  * @author Joseph Ramsey
  */
-public class TestPurify extends TestCase {
+public class TestPurify {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestPurify(String name) {
-        super(name);
-    }
-
-
+    @Test
     public void test1() {
+        RandomUtil.getInstance().setSeed(48290483L);
+
         SemGraph graph = new SemGraph();
 
         Node l1 = new GraphNode("L1");
@@ -101,15 +95,11 @@ public class TestPurify extends TestCase {
         graph.addNode(x12);
         graph.addNode(x12b);
 
-
-        // edges
-
         graph.addDirectedEdge(l1, x1);
         graph.addDirectedEdge(l1, x2);
         graph.addDirectedEdge(l1, x3);
         graph.addDirectedEdge(l1, x4);
         graph.addDirectedEdge(l1, x4b);
-//        graph.addDirectedEdge(l2, x4);
         graph.addDirectedEdge(l1, x5);
 
         graph.addDirectedEdge(l2, x5);
@@ -125,29 +115,10 @@ public class TestPurify extends TestCase {
         graph.addDirectedEdge(l3, x12b);
 
         graph.addDirectedEdge(x1, x4);
-//        graph.addDirectedEdge(x1, x8);
-//        graph.addBidirectedEdge(x3, x12);
-
-//        graph.addDirectedEdge(l1, l2);
-//        graph.addDirectedEdge(l2, l3);
-
-        System.out.println(graph);
-
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
-
-//        List<Node> nodes = graph.getNodes();
-//
-//        List<List<Node>> partition = new ArrayList<List<Node>>();
-//        partition.add(new ArrayList<Node>());
-//        partition.add(new ArrayList<Node>());
-//
-//        for (int i = 0; i < nodes.size(); i++) {
-//            if (nodes.get(i).getNodeType() == NodeType.LATENT) continue;
-//            partition.get(RandomUtil.getInstance().nextInt(2)).add(nodes.get(i));
-//        }
 
         List<List<Node>> partition = new ArrayList<List<Node>>();
 
@@ -177,17 +148,21 @@ public class TestPurify extends TestCase {
         partition.add(cluster2);
         partition.add(cluster3);
 
-        System.out.println(partition);
-
         TetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.05);
         IPurify purify = new PurifyTetradBased2(test);
-//        IPurify purify = new PurifyTetradBasedH(test, 10);
         purify.setTrueGraph(graph);
 
-        System.out.println(purify.purify(partition));
+        List<List<Node>> partition2 = purify.purify(partition);
+
+        assertEquals(3, partition2.get(0).size());
+        assertEquals(2, partition2.get(1).size());
+        assertEquals(5, partition2.get(2).size());
     }
 
+    @Test
     public void test1b() {
+        RandomUtil.getInstance().setSeed(48290483L);
+
         SemGraph graph = new SemGraph();
 
         Node l1 = new GraphNode("L1");
@@ -227,9 +202,6 @@ public class TestPurify extends TestCase {
         graph.addNode(x11);
         graph.addNode(x12);
 
-
-        // edges
-
         graph.addDirectedEdge(l1, x1);
         graph.addDirectedEdge(l1, x2);
         graph.addDirectedEdge(l1, x3);
@@ -249,8 +221,6 @@ public class TestPurify extends TestCase {
         graph.addDirectedEdge(x3, x4);
         graph.addDirectedEdge(x9, x10);
 
-        System.out.println(graph);
-
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(3000, false);
@@ -263,10 +233,8 @@ public class TestPurify extends TestCase {
         cluster1.add(x3);
         cluster1.add(x4);
         cluster1.add(x5);
-//        cluster1.add(x6);
 
         List<Node> cluster2 = new ArrayList<Node>();
-//        cluster2.add(x6);
         cluster2.add(x7);
         cluster2.add(x8);
         cluster2.add(x9);
@@ -277,36 +245,22 @@ public class TestPurify extends TestCase {
         partition.add(cluster1);
         partition.add(cluster2);
 
-        System.out.println(partition);
-
         TetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.0001);
         IPurify purify = new PurifyTetradBased2(test);
-//        IPurify purify = new PurifyTetradBasedH(test, 10);
         purify.setTrueGraph(graph);
 
         List<List<Node>> clustering = purify.purify(partition);
-        System.out.println(clustering);
 
-//        PurifyTetradBasedG purify2 = new PurifyTetradBasedG(test);
-//        System.out.println(purify2.purify(mimClustering));
+        assertEquals(4, clustering.get(0).size());
+        assertEquals(5, clustering.get(1).size());
 
-//        Clusters clusters = new Clusters();
-//
-//        for (int i = 0; i < partition.size(); i++) {
-//            for (Node node : partition.get(i)) {
-//                clusters.addToCluster(i, node.getName());
-//            }
-//        }
-//
-//        Purify purify2 = new Purify(test, clusters);
-//        List<List<Node>> _partition = purify.purify(partition);
-//
-//        System.out.println(_partition);
     }
 
+    @Test
     public void test2() {
+        RandomUtil.getInstance().setSeed(48290483L);
+
         Graph graph = new EdgeListGraph(DataGraphUtils.randomSingleFactorModel(3, 3, 5, 0, 0, 0));
-//        Graph graph = DataGraphUtils.randomMim(10, 10, 5, 0, 0, 0);
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -319,7 +273,6 @@ public class TestPurify extends TestCase {
         }
 
         Graph structuralGraph = graph.subgraph(latents);
-        System.out.println("True structural graph = " + structuralGraph);
 
         List<List<Node>> clustering = new ArrayList<List<Node>>();
 
@@ -330,7 +283,6 @@ public class TestPurify extends TestCase {
             clustering.add(adj);
         }
 
-        System.out.println("Purify");
         ContinuousTetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.001);
 
         IPurify purify = new PurifyTetradBased2(test);
@@ -345,9 +297,6 @@ public class TestPurify extends TestCase {
         Mimbuild2 mimbuild = new Mimbuild2();
         mimbuild.setAlpha(0.0001);
         Graph _graph = mimbuild.search(purifiedClustering, latentsNames, new CovarianceMatrix(data));
-//        Graph _structuralModel = mimbuild.getStructuralModel();
-
-        System.out.println(_graph);
 
         List<Node> _latents = new ArrayList<Node>();
 
@@ -356,53 +305,10 @@ public class TestPurify extends TestCase {
         }
 
         Graph _structuralGraph = _graph.subgraph(_latents);
-        System.out.println("Estimated structural graph = " + _structuralGraph);
+
+        assertEquals(3, _structuralGraph.getNumEdges());
 
 
-//        System.out.println(_structuralModel);
-
-        System.out.println("Done!");
-    }
-
-    public void testTest() {
-        List<Node> nodes = new ArrayList<Node>();
-        GraphNode x1 = new GraphNode("X1");
-        GraphNode x2 = new GraphNode("X2");
-        GraphNode x3 = new GraphNode("X3");
-        GraphNode x4 = new GraphNode("X4");
-        GraphNode x5 = new GraphNode("X5");
-
-        nodes.add(x1);
-        nodes.add(x2);
-        nodes.add(x3);
-        nodes.add(x4);
-        nodes.add(x5);
-
-        System.out.println(nodes);
-
-        Edge edge = Edges.directedEdge(x2, x4);
-
-        Node node1 = edge.getNode1();
-        Node node2 = edge.getNode2();
-
-        int i = nodes.indexOf(node1);
-        int j = nodes.indexOf(node2);
-        nodes.set(i, node2);
-        nodes.set(j, node1);
-
-        System.out.println(nodes);
-    }
-
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestPurify.class);
     }
 }
 

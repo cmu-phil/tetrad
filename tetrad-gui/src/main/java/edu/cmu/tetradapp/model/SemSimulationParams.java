@@ -53,7 +53,6 @@ public class SemSimulationParams implements TetradSerializable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static SemSimulationParams serializableInstance() {

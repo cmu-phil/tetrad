@@ -23,64 +23,42 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.calculator.parser.ExpressionLexer;
 import edu.cmu.tetrad.calculator.parser.Token;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author Tyler Gibson
  */
-public final class TestLexer extends TestCase {
+public final class TestLexer {
 
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestLexer(String name) {
-        super(name);
-    }
-
-    
-
-
+    @Test
     public void testLexer(){
         String s = "(1 + 2.5)";
         ExpressionLexer lexer = new ExpressionLexer(s);
 
         Token token = lexer.nextToken();
-        System.out.println("Token string: " + lexer.getTokenString());
         assertTrue(token == Token.LPAREN);
+        assertEquals("(", lexer.getTokenString());
 
         token = lexer.nextToken();
-        System.out.println("Token string: " + lexer.getTokenString());
         assertTrue(token == Token.NUMBER);
+        assertEquals("1", lexer.getTokenString());
 
         token = lexer.nextToken();
-        System.out.println("Token string: " + lexer.getTokenString());
         assertTrue(token == Token.OPERATOR);
+        assertEquals("+", lexer.getTokenString());
 
         token = lexer.nextToken();
-        System.out.println("Token string: " + lexer.getTokenString());
         assertTrue(token == Token.NUMBER);
+        assertEquals("2.5", lexer.getTokenString());
 
         token = lexer.nextToken();
-        System.out.println("Token string: " + lexer.getTokenString());
         assertTrue(token == Token.RPAREN);
+        assertEquals(")", lexer.getTokenString());
 
         assertTrue(lexer.nextToken() == Token.EOF);
-    }
-
-
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestLexer.class);
     }
 }
 

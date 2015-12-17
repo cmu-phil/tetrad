@@ -907,9 +907,9 @@ public final class ContinuousTetradTest implements TetradTest {
 
     public int tempTetradScore(int v1, int v2, int v3, int v4) {
         evalTetradDifferences(v1, v2, v3, v4);
-        System.out.println(prob[0]);
-        System.out.println(prob[1]);
-        System.out.println(prob[2]);
+//        System.out.println(prob[0]);
+//        System.out.println(prob[1]);
+//        System.out.println(prob[2]);
         for (int i = 0; i < 3; i++) {
             bvalues[i] = (prob[i] >= sig);
         }

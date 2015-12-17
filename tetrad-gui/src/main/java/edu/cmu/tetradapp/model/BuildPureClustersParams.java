@@ -86,7 +86,6 @@ public final class BuildPureClustersParams implements MimParams {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static BuildPureClustersParams serializableInstance() {

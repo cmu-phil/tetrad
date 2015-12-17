@@ -30,12 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mattheweasterday
- * Date: May 30, 2004
- * Time: 11:36:30 AM
- * <p>
  * This class converts a SemIm into xml.
+ * @author Matt Easterday
  */
 public class SemXmlRenderer {
 

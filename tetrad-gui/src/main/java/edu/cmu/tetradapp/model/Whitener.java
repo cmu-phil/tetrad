@@ -58,7 +58,7 @@ public class Whitener extends DataWrapper {
 
             Algebra alg = new Algebra();
 
-            boolean verbose = true;
+            boolean verbose = false;
 
             DoubleMatrix2D wInit = null;
 
@@ -157,7 +157,6 @@ public class Whitener extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
