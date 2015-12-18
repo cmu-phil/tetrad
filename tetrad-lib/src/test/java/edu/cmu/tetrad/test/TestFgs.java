@@ -29,17 +29,21 @@ import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphConverter;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
 import java.io.PrintStream;
 import java.util.*;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -174,6 +178,19 @@ public class TestFgs {
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
         }
+    }
+
+    @Test
+    public void testExplore3() {
+        RandomUtil.getInstance().setSeed(1450452162212L);
+        Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(1000, false);
+        Fgs fgs = new Fgs(data);
+        fgs.setPenaltyDiscount(1);
+        Graph pattern = fgs.search();
+        assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
 
     private void printDegreeDistribution(Graph dag, PrintStream out) {
