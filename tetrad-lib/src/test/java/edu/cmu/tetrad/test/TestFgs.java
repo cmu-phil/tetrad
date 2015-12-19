@@ -62,7 +62,7 @@ public class TestFgs {
         int numVars = 10;
         double edgesPerNode = 1.0;
         int numCases = 1000;
-        double penaltyDiscount = 4.0;
+        double penaltyDiscount = 2.0;
 
         final int numEdges = (int) (numVars * edgesPerNode);
 
@@ -182,7 +182,7 @@ public class TestFgs {
 
     @Test
     public void testExplore3() {
-//        RandomUtil.getInstance().setSeed(1450452162212L);
+        RandomUtil.getInstance().setSeed(1450452162212L);
         Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -195,7 +195,7 @@ public class TestFgs {
 
     @Test
     public void testExplore4() {
-//        RandomUtil.getInstance().setSeed(1450452162212L);
+        RandomUtil.getInstance().setSeed(1450536154213L);
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -209,7 +209,7 @@ public class TestFgs {
 
     @Test
     public void testExplore5() {
-//        RandomUtil.getInstance().setSeed(1450452162212L);
+        RandomUtil.getInstance().setSeed(1450536192774L);
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -219,6 +219,7 @@ public class TestFgs {
         fgs.setPenaltyDiscount(1);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
+//        System.out.println(RandomUtil.getInstance().getSeed());
     }
 
     private void printDegreeDistribution(Graph dag, PrintStream out) {
