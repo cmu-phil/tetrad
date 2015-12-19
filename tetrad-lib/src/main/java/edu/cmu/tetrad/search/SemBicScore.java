@@ -49,7 +49,7 @@ public class SemBicScore implements GesScore {
     private int sampleSize;
 
     // The penalty discount.
-    private double penaltyDiscount = 4.0;
+    private double penaltyDiscount = 2.0;
 
     // True if linear dependencies should return NaN for the score, and hence be
     // ignored by FGS
@@ -205,7 +205,7 @@ public class SemBicScore implements GesScore {
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > -0.5 * getPenaltyDiscount() * Math.log(sampleSize);
+        return bump > -0.25 * getPenaltyDiscount() * Math.log(sampleSize);
     }
 
     public DataSet getDataSet() {

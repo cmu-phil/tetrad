@@ -125,7 +125,7 @@ public final class Ges implements GraphSearch, GraphScorer {
     /**
      * Penalty discount--the BIC penalty is multiplied by this (for continuous variables).
      */
-    private double penaltyDiscount = 1.0;
+    private double penaltyDiscount = 2.0;
 
     /**
      * The score for discrete searches.
@@ -1325,7 +1325,7 @@ public final class Ges implements GraphSearch, GraphScorer {
         double c = getPenaltyDiscount();
 
 //        return -n * log(residualVariance) - 2 * k; //AIC
-        return -n * log(residualVariance) - c * k * log(n);
+        return -(n / 2.) * log(residualVariance) - c * k * log(n);
 //        return -n * log(residualVariance) - c * k * (log(n) - log(2 * PI));
     }
 

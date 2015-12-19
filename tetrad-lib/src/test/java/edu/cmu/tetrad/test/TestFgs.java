@@ -182,12 +182,40 @@ public class TestFgs {
 
     @Test
     public void testExplore3() {
-        RandomUtil.getInstance().setSeed(1450452162212L);
+//        RandomUtil.getInstance().setSeed(1450452162212L);
         Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
         Fgs fgs = new Fgs(data);
+        fgs.setPenaltyDiscount(1);
+        Graph pattern = fgs.search();
+        assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
+    }
+
+    @Test
+    public void testExplore4() {
+//        RandomUtil.getInstance().setSeed(1450452162212L);
+        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(1000, false);
+        Fgs fgs = new Fgs(data);
+//        fgs.setFaithfulnessAssumed(false);
+        fgs.setPenaltyDiscount(1);
+        Graph pattern = fgs.search();
+        assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
+    }
+
+    @Test
+    public void testExplore5() {
+//        RandomUtil.getInstance().setSeed(1450452162212L);
+        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(1000, false);
+        Fgs fgs = new Fgs(data);
+        fgs.setFaithfulnessAssumed(false);
         fgs.setPenaltyDiscount(1);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
