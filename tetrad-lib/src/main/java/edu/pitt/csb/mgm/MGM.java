@@ -27,18 +27,19 @@ import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
+import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.StatUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 //import cern.colt.Arrays;
@@ -138,7 +139,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
 
         this.lambda = factory1D.make(lambda);
 
-        //TODO check data
+        //Data is checked for 0 or 1 indexing and fore missing levels
         fixData();
         initParameters();
         calcWeights();
@@ -187,6 +188,9 @@ public class MGM extends ConvexProximal implements GraphSearch{
             for(int i = 1; i < lenSums.length; i++){
                 lenSums[i] = lens[i] + lenSums[i-1];
             }
+
+            if(vec.size() != lenSums[5])
+                throw new IllegalArgumentException("Param vector dimension doesn't match: Found " + vec.size() + " need " + lenSums[5]);
 
             beta = DoubleFactory2D.dense.make(vec.viewPart(0, lens[0]).toArray(), p);
             betad = vec.viewPart(lenSums[0], lens[1]).copy();
@@ -254,9 +258,11 @@ public class MGM extends ConvexProximal implements GraphSearch{
             this.theta = theta;
         }
 
-        //row vector in matrix form for easy conversion to LAML matrix...
-        //may be depreciated...
-        public double[][] toVector(){
+        /**
+         * Copy all params into a single vector
+         * @return
+         */
+        public DoubleMatrix1D toMatrix1D(){
             DoubleFactory1D fac = DoubleFactory1D.dense;
             int p = alpha1.size();
             int ltot = alpha2.size();
@@ -275,15 +281,14 @@ public class MGM extends ConvexProximal implements GraphSearch{
             outVec.viewPart(lenSums[3],lens[4]).assign(alpha1);
             outVec.viewPart(lenSums[4],lens[5]).assign(alpha2);
 
-            //TODO make this better...
-            //return DoubleFactory2D.dense.make(outVec.toArray(),1);
-            double[][] outArr = new double[1][];
-            outArr[0] = outVec.toArray();
-            return outArr;
+            return outVec;
         }
 
-        public DoubleMatrix1D toMatrix1D(){
-            return DoubleFactory1D.dense.make(toVector()[0]);
+        //likely depreciated
+        public double[][] toVector(){
+            double[][] outArr = new double[1][];
+            outArr[0] = toMatrix1D().toArray();
+            return outArr;
         }
     }
 
@@ -303,7 +308,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return DoubleFactory1D.dense.make(colArray);
     }
 
-    //
+    //init all parameters to zeros except for betad which is set to 1s
     private void initParameters(){
         lcumsum = new int[l.length+1];
         lcumsum[0] = 0;
@@ -326,7 +331,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
     }
 
     // avoid underflow in log(sum(exp(x))) calculation
-    public double logsumexp(DoubleMatrix1D x){
+    private double logsumexp(DoubleMatrix1D x){
         DoubleMatrix1D myX = x.copy();
         double maxX = StatUtils.max(myX.toArray());
         return Math.log(myX.assign(Functions.minus(maxX)).assign(Functions.exp).zSum()) + maxX;
@@ -348,18 +353,30 @@ public class MGM extends ConvexProximal implements GraphSearch{
         }
     }
 
+    /**
+     * Convert discrete data (in yDat) to a matrix of dummy variables (stored in dDat)
+     */
     private void makeDummy(){
         dDat = factory2D.make(n, lsum);
         for(int i = 0; i < q; i++){
             for(int j = 0; j < l[i]; j++){
-                dDat.viewColumn(lcumsum[i]+j).assign(yDat.viewColumn(i).copy().assign(Functions.equals(j+1)));
+                DoubleMatrix1D curCol = yDat.viewColumn(i).copy().assign(Functions.equals(j+1));
+                if(curCol.zSum() == 0)
+                    throw new IllegalArgumentException("Discrete data is missing a level: variable " + i + " level " + j);
+                dDat.viewColumn(lcumsum[i]+j).assign(curCol);
             }
         }
     }
 
+    /**
+     * checks if yDat is zero indexed and converts to 1 index. zscores x
+     */
     private void fixData(){
-        //TODO ydat needs to be converted to levels reliably for now, just check if its 0 index and convert to 1
-        if(StatUtils.min(flatten(yDat).toArray())==0){
+        double ymin = StatUtils.min(flatten(yDat).toArray());
+        if(ymin < 0 || ymin > 1)
+            throw new IllegalArgumentException("Discrete data must be either zero or one indexed. Found min index: " + ymin);
+
+        if(ymin==0){
             yDat.assign(Functions.plus(1.0));
         }
 
@@ -370,8 +387,12 @@ public class MGM extends ConvexProximal implements GraphSearch{
         }
     }
 
-    // non-penalized -log(likelihood) this is the smooth function g(x) in prox gradient
-    //public double smoothValue(MGMParams parIn){
+    /**
+     * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient
+     *
+     * @param parIn
+     * @return
+     */
     public double smoothValue(DoubleMatrix1D parIn){
         //work with copy
         MGMParams par = new MGMParams(parIn, p, lsum);
@@ -390,10 +411,10 @@ public class MGM extends ConvexProximal implements GraphSearch{
         for(int i = 0; i < q; i++){
             par.phi.viewPart(lcumsum[i], lcumsum[i], l[i], l[i]).assign(0);
         }
+        // ensure mats are upper triangular
         upperTri(par.phi,0);
         par.phi.assign(alg.transpose(par.phi), Functions.plus);
 
-        // TODO LH ensure mats are upper triangular here, skipping for now
 
         //Xbeta=X*beta*diag(1./betad);
         DoubleMatrix2D divBetaD = factory2D.diagonal(factory1D.make(p,1.0).assign(par.betad, Functions.div));
@@ -440,7 +461,6 @@ public class MGM extends ConvexProximal implements GraphSearch{
             for(int k = 0; k < n; k++){
                 DoubleMatrix1D curRow = wxTemp.viewRow(k);
 
-                // TODO: assert that yDat is only ints
                 catloss -= curRow.get((int) yDat.get(k, i) - 1);
                 catloss += logsumexp(curRow);
             }
@@ -449,10 +469,16 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return (sqloss + catloss)/((double) n);
     }
 
-    // non-penalized -log(likelihood) this is the smooth function g(x) in prox gradient
-    // this overloaded version calculates both nll and the smooth gradient at the same time
-    // any value in gradOut will be replaces by the new calculations
-    //public double smooth(MGMParams parIn, MGMParams gradOut){
+    /**
+     * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient
+     * this overloaded version calculates both nll and the smooth gradient at the same time
+     * any value in gradOut will be replaced by the new calculations
+     *
+     *
+     * @param parIn
+     * @param gradOutVec
+     * @return
+     */
     public double smooth(DoubleMatrix1D parIn, DoubleMatrix1D gradOutVec){
         //work with copy
         MGMParams par = new MGMParams(parIn, p, lsum);
@@ -476,10 +502,9 @@ public class MGM extends ConvexProximal implements GraphSearch{
         for(int i = 0; i < q; i++){
             par.phi.viewPart(lcumsum[i], lcumsum[i], l[i], l[i]).assign(0);
         }
+        //ensure matrix is upper triangular
         upperTri(par.phi,0);
         par.phi.assign(alg.transpose(par.phi), Functions.plus);
-
-        // TODO LH ensure mats are upper triangular here, skipping for now
 
         //Xbeta=X*beta*diag(1./betad);
         DoubleMatrix2D divBetaD = factory2D.diagonal(factory1D.make(p,1.0).assign(par.betad, Functions.div));
@@ -551,7 +576,6 @@ public class MGM extends ConvexProximal implements GraphSearch{
                 DoubleMatrix1D curRow = wxTemp.viewRow(k);
                 DoubleMatrix1D curRow0 = wxTemp0.viewRow(k);
 
-                // TODO: assert that yDat is only ints
                 catloss -= curRow0.get((int) yDat.get(k, i) - 1);
                 catloss += logsumexp(curRow0);
 
@@ -607,10 +631,15 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return (sqloss + catloss)/((double) n);
     }
 
-    //public double nonSmoothValue(MGMParams par){
+    /**
+     * Calculates penalty term of objective function
+     *
+     * @param parIn
+     * @return
+     */
     public double nonSmoothValue(DoubleMatrix1D parIn){
         //DoubleMatrix1D tlam = lambda.copy().assign(Functions.mult(t));
-        //TODO check dim of X...
+        //Dimension checked in constructor
         //par is a copy so we can update it
         MGMParams par = new MGMParams(parIn, p, lsum);
 
@@ -671,7 +700,12 @@ public class MGM extends ConvexProximal implements GraphSearch{
     }
 
 
-    //public MGMParams smoothGradient(MGMParams parIn){
+    /**
+     * Gradient of the pseudolikelihood
+     *
+     * @param parIn
+     * @return
+     */
     public DoubleMatrix1D smoothGradient(DoubleMatrix1D parIn){
         int n = xDat.rows();
         MGMParams grad = new MGMParams();
@@ -796,42 +830,51 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return grad.toMatrix1D();
     }
 
-
-
+    /**
+     * A proximal operator for the MGM
+     *
+     * @param t parameter for operator, must be positive
+     * @param X input vector to operator
+     * @return output vector, same dimension as X
+     */
     public DoubleMatrix1D proximalOperator(double t, DoubleMatrix1D X) {
             //System.out.println("PROX with t = " + t);
+        if(t <= 0)
+            throw new IllegalArgumentException("t must be positive: " + t);
 
-            DoubleMatrix1D tlam = lambda.copy().assign(Functions.mult(t));
-            //TODO check dim of X...
-            //par is a copy so we can update it
-            MGMParams par = new MGMParams(X.copy(), p, lsum);
 
-            //penbeta = t(1).*(wv(1:p)'*wv(1:p));
-            //betascale=zeros(size(beta));
-            //betascale=max(0,1-penbeta./abs(beta));
-            DoubleMatrix2D weightMat = alg.multOuter(weights,
-                    weights, null);
-            DoubleMatrix2D betaWeight = weightMat.viewPart(0, 0, p, p);
-            DoubleMatrix2D betascale = betaWeight.copy().assign(Functions.mult(-tlam.get(0)));
-            betascale.assign(par.beta.copy().assign(Functions.abs), Functions.div);
-            betascale.assign(Functions.plus(1));
-            betascale.assign(Functions.max(0));
+        DoubleMatrix1D tlam = lambda.copy().assign(Functions.mult(t));
 
-            //beta=beta.*betascale;
-            //par.beta.assign(betascale, Functions.mult);
-            for(int i= 0; i < p; i++){
-                for(int j = 0; j < p; j++){
-                    double curVal =  par.beta.get(i,j);
-                    if(curVal !=0){
-                        par.beta.set(i,j, curVal*betascale.get(i,j));
-                    }
+        //Constructor copies and checks dimension
+        //par is a copy so we can update it
+        MGMParams par = new MGMParams(X.copy(), p, lsum);
+
+        //penbeta = t(1).*(wv(1:p)'*wv(1:p));
+        //betascale=zeros(size(beta));
+        //betascale=max(0,1-penbeta./abs(beta));
+        DoubleMatrix2D weightMat = alg.multOuter(weights,
+                weights, null);
+        DoubleMatrix2D betaWeight = weightMat.viewPart(0, 0, p, p);
+        DoubleMatrix2D betascale = betaWeight.copy().assign(Functions.mult(-tlam.get(0)));
+        betascale.assign(par.beta.copy().assign(Functions.abs), Functions.div);
+        betascale.assign(Functions.plus(1));
+        betascale.assign(Functions.max(0));
+
+        //beta=beta.*betascale;
+        //par.beta.assign(betascale, Functions.mult);
+        for(int i= 0; i < p; i++){
+            for(int j = 0; j < p; j++){
+                double curVal =  par.beta.get(i,j);
+                if(curVal !=0){
+                    par.beta.set(i,j, curVal*betascale.get(i,j));
                 }
             }
+        }
 
-            //weight beta
-            //betaw = (wv(1:p)'*wv(1:p)).*beta;
-            //betanorms=sum(abs(betaw(:)));
-            //double betaNorm = betaWeight.copy().assign(par.beta, Functions.mult).assign(Functions.abs).zSum();
+        //weight beta
+        //betaw = (wv(1:p)'*wv(1:p)).*beta;
+        //betanorms=sum(abs(betaw(:)));
+        //double betaNorm = betaWeight.copy().assign(par.beta, Functions.mult).assign(Functions.abs).zSum();
 
         /*
         thetanorms=0;
@@ -844,15 +887,15 @@ public class MGM extends ConvexProximal implements GraphSearch{
             end
         end
         */
-            for(int i = 0; i < p; i++){
-                for(int j = 0; j < lcumsum.length-1; j++){
-                    DoubleMatrix1D tempVec = par.theta.viewColumn(i).viewPart(lcumsum[j], l[j]);
-                    //double thetaScale = Math.max(0, 1 - tlam.get(1)*weightMat.get(i, p+j)/Math.sqrt(alg.norm2(tempVec)));
-                    double foo = norm2(tempVec);
-                    double thetaScale = Math.max(0, 1 - tlam.get(1) * weightMat.get(i, p+j)/norm2(tempVec));
-                    tempVec.assign(Functions.mult(thetaScale));
-                }
+        for(int i = 0; i < p; i++){
+            for(int j = 0; j < lcumsum.length-1; j++){
+                DoubleMatrix1D tempVec = par.theta.viewColumn(i).viewPart(lcumsum[j], l[j]);
+                //double thetaScale = Math.max(0, 1 - tlam.get(1)*weightMat.get(i, p+j)/Math.sqrt(alg.norm2(tempVec)));
+                double foo = norm2(tempVec);
+                double thetaScale = Math.max(0, 1 - tlam.get(1) * weightMat.get(i, p+j)/norm2(tempVec));
+                tempVec.assign(Functions.mult(thetaScale));
             }
+        }
 
         /*
         for r=1:q
@@ -866,29 +909,38 @@ public class MGM extends ConvexProximal implements GraphSearch{
             end
         end
          */
-            for(int i = 0; i < lcumsum.length-1; i++){
-                for(int j = i+1; j < lcumsum.length-1; j++){
-                    DoubleMatrix2D tempMat = par.phi.viewPart(lcumsum[i], lcumsum[j], l[i], l[j]);
+        for(int i = 0; i < lcumsum.length-1; i++){
+            for(int j = i+1; j < lcumsum.length-1; j++){
+                DoubleMatrix2D tempMat = par.phi.viewPart(lcumsum[i], lcumsum[j], l[i], l[j]);
 
-                    //TODO figure out why this isnt Frobenius norm...
-                    //double phiScale = Math.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.norm2(tempMat));
-                    double phiScale = Math.max(0, 1 - tlam.get(2) * weightMat.get(p + i,p+j)/norm2(tempMat));
-                    //double phiScale = Math.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.normF(tempMat));
-                    tempMat.assign(Functions.mult(phiScale));
-                }
+                //Not sure why this isnt Frobenius norm...
+                //double phiScale = Math.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.norm2(tempMat));
+                double phiScale = Math.max(0, 1 - tlam.get(2) * weightMat.get(p + i,p+j)/norm2(tempMat));
+                //double phiScale = Math.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.normF(tempMat));
+                tempMat.assign(Functions.mult(phiScale));
             }
+        }
         return par.toMatrix1D();
     }
 
-    //values in pX will be replaced by result
+    /**
+     * Calculates penalty term and proximal operator at the same time for speed
+     *
+     * @param t proximal operator parameter
+     * @param X input
+     * @param pX prox operator solution
+     * @return value of penalty term
+     */
     public double nonSmooth(double t, DoubleMatrix1D X, DoubleMatrix1D pX) {
+
         //System.out.println("PROX with t = " + t);
         double nonSmooth = 0;
 
         DoubleMatrix1D tlam = lambda.copy().assign(Functions.mult(t));
-        //TODO check dim of X...
+
+        //Constructor copies and checks dimension
         //par is a copy so we can update it
-        MGMParams par = new MGMParams(X.copy(), p, lsum);
+        MGMParams par = new MGMParams(X, p, lsum);
 
         //penbeta = t(1).*(wv(1:p)'*wv(1:p));
         //betascale=zeros(size(beta));
@@ -962,7 +1014,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
             for(int j = i+1; j < lcumsum.length-1; j++){
                 DoubleMatrix2D tempMat = par.phi.viewPart(lcumsum[i], lcumsum[j], l[i], l[j]);
 
-                //TODO figure out why this isnt Frobenius norm...
+                //not sure why this isnt Frobenius norm...
                 //double phiScale = Math.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.norm2(tempMat));
                 double phiScale = Math.max(0, 1 - tlam.get(2) * weightMat.get(p + i,p+j)/norm2(tempMat));
                 //double phiScale = Math.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.normF(tempMat));
@@ -999,19 +1051,47 @@ public class MGM extends ConvexProximal implements GraphSearch{
     }*/
 
 
-    //
+    /**
+     *  Learn MGM traditional way with objective function tolerance. Recommended for inference applications that need
+     *  accurate pseudolikelihood
+     *
+     * @param epsilon tolerance in change of objective function
+     * @param iterLimit iteration limit
+     */
     public void learn(double epsilon, int iterLimit){
         ProximalGradient pg = new ProximalGradient();
         setParams(new MGMParams(pg.learnBackTrack(this, params.toMatrix1D(), epsilon, iterLimit), p, lsum));
     }
 
-
+    /**
+     *  Learn MGM using edge convergence using default 3 iterations of no edge changes. Recommended when we only care about
+     *  edge existence.
+     *
+     * @param iterLimit
+     */
     public void learnEdges(int iterLimit){
         ProximalGradient pg = new ProximalGradient(.5, .9, true);
         setParams(new MGMParams(pg.learnBackTrack(this, params.toMatrix1D(), 0.0, iterLimit), p, lsum));
     }
 
+    /**
+     *  Learn MGM using edge convergence using edgeChangeTol (see ProximalGradient for documentation). Recommended when we only care about
+     *  edge existence.
+     *
+     * @param iterLimit
+     * @param edgeChangeTol
+     */
+    public void learnEdges(int iterLimit, int edgeChangeTol){
+        ProximalGradient pg = new ProximalGradient(.5, .9, true);
+        pg.setEdgeChangeTol(edgeChangeTol);
+        setParams(new MGMParams(pg.learnBackTrack(this, params.toMatrix1D(), 0.0, iterLimit), p, lsum));
+    }
 
+    /**
+     * Converts MGM object to Graph object with edges if edge parameters are non-zero. Loses all edge param information
+     *
+     * @return
+     */
     public Graph graphFromMGM(){
 
         //List<Node> variables = getVariables();
@@ -1057,7 +1137,12 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return g;
     }
 
-    //This converts edge parameters to a single value
+    /**
+     * Converts MGM to matrix of doubles. uses 2-norm to combine c-d edge parameters into single value and f-norm for
+     * d-d edge parameters.
+     *
+     * @return
+     */
     public DoubleMatrix2D adjMatFromMGM(){
         //List<Node> variables = getVariables();
         DoubleMatrix2D outMat = DoubleFactory2D.dense.make(p+q,p+q);
@@ -1092,6 +1177,11 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return outMat;
     }
 
+    /**
+     * Simple search command for GraphSearch implementation. Uses default edge convergence, 1000 iter limit.
+     *
+     * @return
+     */
     public Graph search(){
         long startTime = System.currentTimeMillis();
         learnEdges(1000); //unlikely to hit this limit
@@ -1099,28 +1189,40 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return graphFromMGM();
     }
 
+    /**
+     * Return time of execution for learning.
+     * @return
+     */
     public long getElapsedTime(){
         return elapsedTime;
     }
 
+
+    /*
+     * PRIVATE UTILS
+     */
     //Utils
     //sum rows together if marg == 1 and cols together if marg == 2
-    public static DoubleMatrix1D margSum(DoubleMatrix2D mat, int marg){
+    //Using row-major speeds up marg=1 5x
+    private static DoubleMatrix1D margSum(DoubleMatrix2D mat, int marg){
         int n = 0;
         DoubleMatrix1D vec = null;
         DoubleFactory1D fac = DoubleFactory1D.dense;
-        Algebra alg = new Algebra();
 
-        //add all rows together output is 1 x ncolumns)
-        //TODO test if faster than forloop
         if(marg==1){
-            n = mat.rows();
-            vec = fac.make(n,1.0);
-            vec = alg.mult(alg.transpose(mat), vec);
-        } else if (marg ==2){
             n = mat.columns();
-            vec = fac.make(n,1.0);
-            vec = alg.mult(mat, vec);
+            vec = fac.make(n);
+            for (int j = 0; j < mat.rows(); j++){
+                for (int i = 0; i < n; i++){
+                    vec.setQuick(i, vec.getQuick(i) + mat.getQuick(j,i));
+                }
+            }
+        } else if (marg ==2){
+            n = mat.rows();
+            vec = fac.make(n);
+            for (int i = 0; i < n; i++) {
+                vec.setQuick(i, mat.viewRow(i).zSum());
+            }
         }
 
         return vec;
@@ -1138,7 +1240,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
     }
 
     //zeros out everthing above di-th diagonal
-    public static DoubleMatrix2D lowerTri(DoubleMatrix2D mat, int di){
+    private static DoubleMatrix2D lowerTri(DoubleMatrix2D mat, int di){
         for(int i = 0; i < mat.rows() - Math.max(di + 1, 0); i++){
             for(int j = Math.max(i + di + 1, 0); j <  mat.rows(); j++){
                 mat.set(i,j,0);
@@ -1148,8 +1250,8 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return mat;
     }
 
-    //
-    public static double norm2(DoubleMatrix2D mat){
+    // should move somewhere else...
+    private static double norm2(DoubleMatrix2D mat){
         //return Math.sqrt(mat.copy().assign(Functions.pow(2)).zSum());
         Algebra al = new Algebra();
 
@@ -1160,16 +1262,17 @@ public class MGM extends ConvexProximal implements GraphSearch{
         return al.norm2(mat);
     }
 
-    public static double norm2(DoubleMatrix1D vec){
+    private static double norm2(DoubleMatrix1D vec){
         //return Math.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
         return Math.sqrt(new Algebra().norm2(vec));
     }
 
-    public static void main(String[] args){
+    private static void runTests1(){
         try {
             //DoubleMatrix2D xIn = DoubleFactory2D.dense.make(loadDataSelect("/Users/ajsedgewick/tetrad/test_data", "med_test_C.txt"));
             //DoubleMatrix2D yIn = DoubleFactory2D.dense.make(loadDataSelect("/Users/ajsedgewick/tetrad/test_data", "med_test_D.txt"));
-            String path = MGM.class.getResource("test_data").getPath();
+            //String path = MGM.class.getResource("test_data").getPath();
+            String path = "/Users/ajsedgewick/tetrad_master/tetrad/tetrad-lib/src/main/java/edu/pitt/csb/mgm/test_data";
             System.out.println(path);
             DoubleMatrix2D xIn = DoubleFactory2D.dense.make(MixedUtils.loadDelim(path, "med_test_C.txt").getDoubleData().toArray());
             DoubleMatrix2D yIn = DoubleFactory2D.dense.make(MixedUtils.loadDelim(path, "med_test_D.txt").getDoubleData().toArray());
@@ -1187,21 +1290,6 @@ public class MGM extends ConvexProximal implements GraphSearch{
 
             System.out.println("Weights: " + Arrays.toString(model.weights.toArray()));
 
-            /*DoubleMatrix2D test = model.alg.transpose(xIn.copy());
-            long t = System.currentTimeMillis();
-            for(int i=0; i<100; i++) {
-                model.alg.mult(test, xIn);
-            }
-            System.out.println("colt mult Time: " + (System.currentTimeMillis() - t));
-
-            TetradMatrix tx = new TetradMatrix(xIn.toArray());
-            TetradMatrix ttx = tx.transpose();
-
-            t = System.currentTimeMillis();
-            for(int i=0; i<100; i++) {
-                tx.times(ttx);
-            }
-            System.out.println("tetrad mult Time: " + (System.currentTimeMillis() - t));*/
             DoubleMatrix2D test = xIn.copy();
             DoubleMatrix2D test2 = xIn.copy();
             long t = System.currentTimeMillis();
@@ -1221,55 +1309,8 @@ public class MGM extends ConvexProximal implements GraphSearch{
             System.out.println("equals Time: " + (System.currentTimeMillis() - t));
 
 
-            System.out.println("Inf Test: " + 1.0/Double.POSITIVE_INFINITY);
-
             System.out.println("Init nll: " + model.smoothValue(model.params.toMatrix1D()));
             System.out.println("Init reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
-            /*System.out.println("Weights: " + Arrays.toString(model.weights.toArray()));
-            //System.out.println("Init Params: " + model.params);
-            //System.out.println("max(0,nan)" + Math.max(0,Double.NaN));
-            //System.out.println("dDat: " + model.dDat.toString());
-
-            //model.learn(1e-7, 700);
-            //Matrix X = new DenseMatrix(model.params.toVector());
-            //System.out.println("X params:\n" + new MGMParams(DoubleFactory1D.dense.make(X.getData()[0]), 5, 10));
-
-            //Matrix G = new DenseMatrix(model.gradient().toVector());
-            //System.out.println("G norm test: " + Matlab.norm(G));
-            //model.setParams(model.gradient());
-            MGMParams grad = model.gradient(model.params);
-            System.out.println("grad nll: " + model.negLogLikelihood(grad));
-            System.out.println("grad reg term: " + model.regTerm(grad));
-            //System.out.println("grad params:\n" + grad);
-
-            DoubleMatrix1D X = DoubleFactory1D.dense.make(model.params.toVector()[0]);
-            DoubleMatrix1D G = DoubleFactory1D.dense.make(grad.toVector()[0]);
-
-            ProxMGM pm = model.new ProxMGM();
-            MGMParams X2 = new MGMParams(pm.computeColt(1, X.copy().assign(G.copy(), Functions.minus)), 24, 48);
-            System.out.println("X2 nll: " + model.negLogLikelihood(X2));
-            System.out.println("X2 reg term: " + model.regTerm(X2));*/
-            //System.out.println("X2 params:\n" + X2);
-
-
-
-            //System.out.println("triu: " + upperTri(model.gradient().beta.copy(),-1));
-            //System.out.println("tril: " + lowerTri(model.gradient().beta.copy(), -1));
-
-            //System.out.println("X+.1G params:\n" + new MGMParams(DoubleFactory1D.dense.make(X.plus(G.times(.1)).getData()[0]), 5, 10));
-
-            //ProxMGM testProx = model.new ProxMGM();
-            //Matrix newP = testProx.compute(1, G);
-            //Matrix newP = testProx.compute(.9, X);
-            //System.out.println("prox G t=1:\n" + new MGMParams(DoubleFactory1D.dense.make(newP.getData()[0]), 5, 10));
-            //Matrix newP = new DenseMatrix(1, X.getColumnDimension());;
-            //testProx.compute(newP, .9, X.minus(G.times(.9)));
-            //System.out.println("newP is null? " + (newP==null));
-
-            //model.setParams(new MGMParams(DoubleFactory1D.dense.make(newP.getData()[0]), 5, 10));
-            //System.out.println("params:\n" + model.params);
-            //System.out.println("prox .9 nll: " + model.negLogLikelihood());
-            //System.out.println("prox .9 reg term: " + model.regTerm());
 
             t = System.currentTimeMillis();
             model.learnEdges(700);
@@ -1282,463 +1323,57 @@ public class MGM extends ConvexProximal implements GraphSearch{
             System.out.println("params:\n" + model.params);
             System.out.println("adjMat:\n" + model.adjMatFromMGM());
 
-            //System.out.println("Init nll: " + model2.negLogLikelihood(model2.params));
-            //System.out.println("Init reg term: " + model2.regTerm(model2.params));
-
-            /*t = System.currentTimeMillis();
-            model2.learnBackTrack2(1e-7, 700);
-            System.out.println("New Time: " + (System.currentTimeMillis()-t));
-
-            System.out.println("nll: " + model2.negLogLikelihood(model2.params));
-            System.out.println("reg term: " + model2.regTerm(model2.params));*/
-
-            //System.out.println("params:\n" + model.params);
-            //System.out.println("new params: " + Arrays.toString(newP.getData()[0]));
-            //System.out.println("params: " + Arrays.toString(model.params.toVector()[0]));
-            //System.out.println("grad: " + Arrays.toString(model.gradient().toVector()[0]));
 
         } catch (IOException ex){
             ex.printStackTrace();
         }
-
-
-
     }
 
-        /*
-     ***Learning moved to ProximalGradient class
-    //FISTA update step
-    public void myFISTAOld(DoubleMatrix1D Yk, DoubleMatrix1D Gk, DoubleMatrix1D Xk, DoubleMatrix1D Xold, double t, double L, ProxMGM pm){
-        //double t = 1;
-        //double L = 2;
-        //DoubleMatrix1D Yt = Yk.copy();
-        //DoubleMatrix1D Gt = Gk.copy();
-        DoubleMatrix1D Xnew = pm.computeColt(1.0 / L, Yk.copy().assign(Gk.copy().assign(Functions.mult(1.0 / L)), Functions.minus));
+    /**
+     * test non penalty use cases
+     */
+    private static void runTests2(){
+        Graph g = GraphConverter.convert("X1-->X2,X3-->X2,X4-->X5");
+        //simple graph pm im gen example
 
-        //double tn = (1.0 + Math.sqrt(1.0 + 4.0*Math.pow(t,2)))/2.0;
+        HashMap<String, Integer> nd = new HashMap<>();
+        nd.put("X1", 0);
+        nd.put("X2", 0);
+        nd.put("X3", 4);
+        nd.put("X4", 4);
+        nd.put("X5", 4);
 
-        //assign yk+1 to yk
-        Yk.assign(Xnew.copy().assign(Xold.copy(), Functions.minus).assign(Functions.mult(t)));
-        //Yk.assign(Xnew.copy().assign(Xk, Functions.minus).assign(Functions.mult((t - 1.0) / tn)));
-        //Yk.assign(Xnew.copy().assign(Xk, Functions.minus).assign(Functions.mult((t - 2.0) / (t + 1.0))));
-        //Yk.assign(Xnew.copy().assign(Xk, Functions.minus).assign(Functions.mult((t) / (t + 3.0))));
-        Yk.assign(Xnew.copy(), Functions.plus);
+        g = MixedUtils.makeMixedGraph(g, nd);
 
-        Xk.assign(Xnew);
+        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(g, "Split(-1.5,-.5,.5,1.5)");
+        System.out.println(pm);
 
-        //return tn;
+        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
+        System.out.println(im);
+
+        int samps = 1000;
+        DataSet ds = im.simulateDataAvoidInfinity(samps, false);
+        ds = MixedUtils.makeMixedData(ds, nd);
+        //System.out.println(ds);
+
+        double lambda = 0;
+        MGM model = new MGM(ds, new double[]{lambda, lambda, lambda});
+
+        System.out.println("Init nll: " + model.smoothValue(model.params.toMatrix1D()));
+        System.out.println("Init reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
+
+        model.learn(1e-8,1000);
+
+        System.out.println("Learned nll: " + model.smoothValue(model.params.toMatrix1D()));
+        System.out.println("Learned reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
+
+        System.out.println("params:\n" + model.params);
+        System.out.println("adjMat:\n" + model.adjMatFromMGM());
     }
 
-    //FISTA update step
-    public void myFISTA(DoubleMatrix1D Yk, DoubleMatrix1D Gk, DoubleMatrix1D Xk, DoubleMatrix1D Xold, double t, double L, ProxMGM pm){
-        //double t = 1;
-        //double L = 2;
-        //DoubleMatrix1D Yt = Yk.copy();
-        //DoubleMatrix1D Gt = Gk.copy();
-        Yk.assign(Xk.copy().assign(Xold.copy(), Functions.minus).assign(Functions.mult(t)));
-        Yk.assign(Xk.copy(), Functions.plus);
-        Gk.assign(factory1D.make(gradient(new MGMParams(Yk, p, lsum)).toVector()[0]));
-        Xk.assign(pm.computeColt(1.0 / L, Yk.copy().assign(Gk.copy().assign(Functions.mult(1.0 / L)), Functions.minus)));
-
-        //double tn = (1.0 + Math.sqrt(1.0 + 4.0*Math.pow(t,2)))/2.0;
-
-        //assign yk+1 to yk
-
-        //Yk.assign(Xnew.copy().assign(Xk, Functions.minus).assign(Functions.mult((t - 1.0) / tn)));
-        //Yk.assign(Xnew.copy().assign(Xk, Functions.minus).assign(Functions.mult((t - 2.0) / (t + 1.0))));
-        //Yk.assign(Xnew.copy().assign(Xk, Functions.minus).assign(Functions.mult((t) / (t + 3.0))));
-
-
-        //Xk.assign(Xnew);
-
-        //return tn;
+    public static void main(String[] args){
+        runTests1();
     }
 
-    //run FISTA with constant step size
-    public void learnConst(double epsilon, int iterLimit){
-        ProxMGM pm = new ProxMGM();
-        DoubleMatrix1D X = factory1D.make(params.toVector()[0]);
-        DoubleMatrix1D Y = X.copy();
-        DoubleMatrix1D G = factory1D.make(gradient(params).toVector()[0]);
-        int iterCount = 1;
-        //double t = .5;//has to do with momentum
-        double t = (iterCount-2)/(iterCount+3);
-        double L = 4;
-        while(true){
-            DoubleMatrix1D Xold = X.copy();
-            //X and Y are updated in place
-            //myFISTA(Y, G, X, iterCount+2,pm);
-            myFISTAOld(Y, G, X, Xold, t, L, pm);
-            t = iterCount/(iterCount+3);
-            MGMParams Xpar = new MGMParams(X.copy(), p, lsum);
-
-            //squared or not?
-            double dx = alg.norm2(Xold.assign(X, Functions.minus))/alg.norm2(X);
-            if(dx < epsilon){
-                System.out.println("Converged at iter: " + iterCount + " with |dx|/|x|: " + dx + " < epsilon: " + epsilon);
-                break;
-            }
-
-            if(iterCount%10 == 0){
-                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " nll: " + negLogLikelihood(Xpar) + " reg: " + regTerm(Xpar));
-                //System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " nll: " + negLogLikelihood(params) + " reg: " + regTerm(params));
-            }
-            //setParams(new MGMParams(X.copy(), p, lsum));
-            //setParams(Xpar);
-            G = factory1D.make(gradient(new MGMParams(Y, p, lsum)).toVector()[0]);
-            //setParams(Xpar);
-
-            //System.out.println("t: " + t);
-            //System.out.println("Params: " + params);
-
-            iterCount++;
-            if(iterCount >= iterLimit){
-                System.out.println("Iter limit reached");
-                break;
-            }
-        }
-        setParams(new MGMParams(X, p, lsum));
-    }
-
-    //run FISTA with step size backtracking
-    public void learnBackTrack(double epsilon, int iterLimit) {
-        ProxMGM pm = new ProxMGM();
-        DoubleMatrix1D X = pm.computeColt(1.0, factory1D.make(params.toVector()[0]));
-        DoubleMatrix1D Y = X.copy();
-        DoubleMatrix1D Z = X.copy();
-        DoubleMatrix1D GrY = factory1D.make(gradient(params).toVector()[0]);
-        int iterCount = 0;
-        int printIter = 50;
-        //double t = .5;//has to do with momentum
-        double theta = Double.POSITIVE_INFINITY;
-        double thetaOld = theta;
-        double thetaTerm = 0;
-        double L = 1.0;
-        double Lold = L;
-        double alpha = .9;
-        double eta = 2.0;
-        double gamma = 1e-10;
-        boolean backtrackSwitch = true;
-        double dx = Double.POSITIVE_INFINITY;
-        double Fx = Double.POSITIVE_INFINITY;;
-        double Gx = Double.POSITIVE_INFINITY;;
-        double obj;
-        MGMParams Xpar;
-
-        while (true) {
-            Lold = L;
-            L = L*alpha;
-            thetaOld = theta;
-            DoubleMatrix1D Xold = X.copy();
-            obj = Fx + Gx;
-
-            while(true) {
-                theta = 2.0/(1.0+Math.sqrt(1.0+(4.0*L)/(Lold*Math.pow(thetaOld,2))));
-                if(theta < 1){
-                    Y.assign(Xold.copy().assign(Functions.mult(1-theta)));
-                    Y.assign(Z.copy().assign(Functions.mult(theta)), Functions.plus);
-                }
-
-                //System.out.println("Iter: " + iterCount +  " 1/L: " + (1.0/L) + " theta " + theta + " obj " + obj + " Fx " + Fx + " Gx " + Gx);
-                //DoubleMatrix1D Yold = Y.copy();
-                //X and Y are updated in place
-                //myFISTA(Y, G, X, iterCount+2,pm);
-                //" L: " + L
-
-                //from tfocs, increase step size each iter
-
-                //myFISTA(Y, G, X, Z, theta, L, pm);
-                GrY.assign(factory1D.make(gradient(new MGMParams(Y, p, lsum)).toVector()[0]));
-                X.assign(pm.computeColt(1.0 / L, Y.copy().assign(GrY.copy().assign(Functions.mult(1.0 / L)), Functions.minus)));
-
-                Xpar = new MGMParams(X.copy(), p, lsum);
-                MGMParams Ypar = new MGMParams(Y.copy(), p, lsum);
-
-                //squared or not?
-                //double dx = norm2(Xold.assign(X, Functions.minus)) / Math.max(1,norm2(X));
-
-                //setParams(new MGMParams(X, p, lsum));
-                //G = factory1D.make(gradient(Ypar).toVector()[0]);
-
-                //backtracking test potential new X
-
-                //DoubleMatrix1D Xnew = pm.computeColt(1.0 / L, Y.copy().assign(G.assign(Functions.mult(1.0 / L)), Functions.minus));
-                //MGMParams XnewParams = new MGMParams(Xnew, p, lsum);
-                //double gXnew = regTerm(XnewParams);
-                //double Fx = negLogLikelihood(XnewParams);
-                Gx = regTerm(Xpar);
-                Fx = negLogLikelihood(Xpar);
-
-                double Fy = negLogLikelihood(Ypar);
-                //DoubleMatrix1D YmX = Y.copy().assign(Xnew, Functions.minus);
-                //DoubleMatrix1D XmY = Xnew.copy().assign(Y, Functions.minus);
-                DoubleMatrix1D XmY = X.copy().assign(Y, Functions.minus);
-                double normXY = alg.norm2(XmY);
-                if(normXY==0)
-                    break;
-
-                double Qx;
-                double LocalL;
-
-                if(backtrackSwitch){
-                    //System.out.println("Back Norm");
-                    Qx = Fy + alg.mult(XmY, GrY) + (L / 2.0) * normXY;
-                    LocalL = L + 2*Math.max(Fx - Qx, 0)/normXY;
-                    backtrackSwitch =  Math.abs(Fy - Fx) >= gamma * Math.max(Math.abs(Fx), Math.abs(Fy));
-                } else {
-                    //System.out.println("Close Rule");
-                    DoubleMatrix1D GrX = factory1D.make(gradient(Xpar).toVector()[0]);
-                    //Fx = alg.mult(YmX, Gx.assign(G, Functions.minus));
-                    //Qx = (L / 2.0) * alg.norm2(YmX);
-                    LocalL = 2*alg.mult(XmY, GrX.assign(GrY, Functions.minus))/normXY;
-
-                }
-                //System.out.println("Iter: " + iterCount + " Fx: " + Fx + " Qx: " + Qx + " L : " + L );
-                //if(-1e-8 <= Qx - Fx){
-                //if(Fx <= Qx){
-                //System.out.println("LocalL: " + LocalL + " L: " + L);
-                if(LocalL <= L){
-                    break;
-                } else if (LocalL != Double.POSITIVE_INFINITY) {
-                    L = LocalL;
-                } else {
-                    LocalL = L;
-                }
-
-                L = Math.max(LocalL, L*eta);
-
-            }
-            dx = norm2(X.copy().assign(Xold, Functions.minus)) / Math.max(1,norm2(X));
-            if (dx < epsilon) {
-                System.out.println("Converged at iter: " + iterCount + " with |dx|/|x|: " + dx + " < epsilon: " + epsilon);
-                break;
-            }
-
-            //restart acceleration if objective got worse
-            if(Fx + Gx > obj){
-                theta = Double.POSITIVE_INFINITY;
-                Y.assign(X.copy());
-                Z.assign(X.copy());
-            }else if(theta==1){
-                Z.assign(X.copy());
-            } else {
-                Z.assign(X.copy().assign(Functions.mult(1 / theta)));
-                Z.assign(Xold.copy().assign(Functions.mult(1 - (1.0 / theta))), Functions.plus);
-            }
-
-            int diffEdges = 0;
-            for(int i =0; i<X.size(); i++){
-                double a = X.get(i);
-                double b = Xold.get(i);
-                if(a!=0 &  b==0){
-                    diffEdges++;
-                } else if (a==0 & b!=0){
-                    diffEdges++;
-                }
-            }
-
-            if (iterCount % printIter == 0) {
-                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
-                        negLogLikelihood(Xpar) + " reg: " + regTerm(Xpar) + " DiffEdges: " + diffEdges);
-                //System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " nll: " + negLogLikelihood(params) + " reg: " + regTerm(params));
-            }
-            //System.out.println("t: " + t);
-            //System.out.println("Params: " + params);
-
-            iterCount++;
-            if (iterCount >= iterLimit) {
-                System.out.println("Iter limit reached");
-                break;
-            }
-        }
-        setParams(new MGMParams(X, p, lsum));
-    }
-
-    //run FISTA with step size backtracking attempt to speed up
-    public void learnBackTrack2(double epsilon, int iterLimit) {
-        ProxMGM pm = new ProxMGM();
-        DoubleMatrix1D X = pm.computeColt(1.0, factory1D.make(params.toVector()[0]));
-        DoubleMatrix1D Y = X.copy();
-        DoubleMatrix1D Z = X.copy();
-        DoubleMatrix1D GrY = factory1D.make(gradient(params).toVector()[0]);
-        DoubleMatrix1D GrX = factory1D.make(gradient(new MGMParams(X.copy(), p, lsum)).toVector()[0]);
-        int iterCount = 0;
-        int printIter = 50;
-        //double t = .5;//has to do with momentum
-        double theta = Double.POSITIVE_INFINITY;
-        double thetaOld = theta;
-        double thetaTerm = 0;
-        double L = 1.0;
-        double Lold = L;
-        double alpha = .9;
-        double eta = 2.0;
-        double gamma = 1e-10;
-        boolean backtrackSwitch = true;
-        double dx = Double.POSITIVE_INFINITY;
-        double Fx = Double.POSITIVE_INFINITY;
-        double Gx = Double.POSITIVE_INFINITY;
-        double Fy = Double.POSITIVE_INFINITY;
-        double obj;
-        MGMParams Xpar;
-        MGMParams Ypar = new MGMParams(Y.copy(), p, lsum);;
-        MGMParams tempPar;
-
-        while (true) {
-            Lold = L;
-            L = L*alpha;
-            thetaOld = theta;
-            DoubleMatrix1D Xold = X.copy();
-            obj = Fx + Gx;
-
-            while(true) {
-                theta = 2.0/(1.0+Math.sqrt(1.0+(4.0*L)/(Lold*Math.pow(thetaOld,2))));
-                if(theta < 1){
-                    Y.assign(Xold.copy().assign(Functions.mult(1-theta)));
-                    Y.assign(Z.copy().assign(Functions.mult(theta)), Functions.plus);
-                    Ypar = new MGMParams(Y.copy(), p, lsum);
-                    //GrY = null;
-                }
-
-
-                //System.out.println("Iter: " + iterCount +  " 1/L: " + (1.0/L) + " theta " + theta + " obj " + obj + " Fx " + Fx + " Gx " + Gx);
-                //DoubleMatrix1D Yold = Y.copy();
-                //X and Y are updated in place
-                //myFISTA(Y, G, X, iterCount+2,pm);
-                //" L: " + L
-
-                //from tfocs, increase step size each iter
-
-                //myFISTA(Y, G, X, Z, theta, L, pm);
-                //TODO is using nulls worth the tradeoff of re-allocating memory?
-                //if(GrY == null) {
-
-                //}
-                //if(theta < 1) {
-                    tempPar = new MGMParams();
-                    Fy = negLogLikelihood(Ypar, tempPar);
-                    GrY.assign(factory1D.make(tempPar.toVector()[0]));
-                //}
-
-                //X.assign(pm.computeColt(1.0 / L, Y.copy().assign(GrY.copy().assign(Functions.mult(1.0 / L)), Functions.minus)));
-                Gx = pm.computeColt(1.0 / L, Y.copy().assign(GrY.copy().assign(Functions.mult(1.0 / L)), Functions.minus),X);
-                //GrX = null;
-
-                Xpar = new MGMParams(X.copy(), p, lsum);
-
-                //squared or not?
-                //double dx = norm2(Xold.assign(X, Functions.minus)) / Math.max(1,norm2(X));
-
-                //setParams(new MGMParams(X, p, lsum));
-                //G = factory1D.make(gradient(Ypar).toVector()[0]);
-
-                //backtracking test potential new X
-
-                //DoubleMatrix1D Xnew = pm.computeColt(1.0 / L, Y.copy().assign(G.assign(Functions.mult(1.0 / L)), Functions.minus));
-                //MGMParams XnewParams = new MGMParams(Xnew, p, lsum);
-                //double gXnew = regTerm(XnewParams);
-                //double Fx = negLogLikelihood(XnewParams);
-                //Gx = regTerm(Xpar);
-                //Fx = negLogLikelihood(Xpar);
-                if(backtrackSwitch){
-                    Fx = negLogLikelihood(Xpar);
-                } else {
-                    tempPar = new MGMParams();
-                    Fx = negLogLikelihood(Xpar, tempPar);
-                    GrX.assign(factory1D.make(tempPar.toVector()[0]));
-                }
-
-                //DoubleMatrix1D YmX = Y.copy().assign(Xnew, Functions.minus);
-                //DoubleMatrix1D XmY = Xnew.copy().assign(Y, Functions.minus);
-                DoubleMatrix1D XmY = X.copy().assign(Y, Functions.minus);
-                double normXY = alg.norm2(XmY);
-                if(normXY==0)
-                    break;
-
-                double Qx;
-                double LocalL;
-
-                if(backtrackSwitch){
-                    //System.out.println("Back Norm");
-                    Qx = Fy + alg.mult(XmY, GrY) + (L / 2.0) * normXY;
-                    LocalL = L + 2*Math.max(Fx - Qx, 0)/normXY;
-                    backtrackSwitch =  Math.abs(Fy - Fx) >= gamma * Math.max(Math.abs(Fx), Math.abs(Fy));
-                } else {
-                    //System.out.println("Close Rule");
-
-                    //it shouldn't be possible for GrX to be null here...
-                    //if(GrX==null)
-                        //GrX = factory1D.make(gradient(Xpar).toVector()[0]);
-                    //Fx = alg.mult(YmX, Gx.assign(G, Functions.minus));
-                    //Qx = (L / 2.0) * alg.norm2(YmX);
-                    LocalL = 2*alg.mult(XmY, GrX.assign(GrY, Functions.minus))/normXY;
-
-                }
-                //System.out.println("Iter: " + iterCount + " Fx: " + Fx + " Qx: " + Qx + " L : " + L );
-                //if(-1e-8 <= Qx - Fx){
-                //if(Fx <= Qx){
-                //System.out.println("LocalL: " + LocalL + " L: " + L);
-                if(LocalL <= L){
-                    break;
-                } else if (LocalL != Double.POSITIVE_INFINITY) {
-                    L = LocalL;
-                } else {
-                    LocalL = L;
-                }
-
-                L = Math.max(LocalL, L*eta);
-
-            }
-
-            int diffEdges = 0;
-            for(int i =0; i<X.size(); i++){
-                double a = X.get(i);
-                double b = Xold.get(i);
-                if(a!=0 &  b==0){
-                    diffEdges++;
-                } else if (a==0 & b!=0){
-                    diffEdges++;
-                }
-            }
-
-            dx = norm2(X.copy().assign(Xold, Functions.minus)) / Math.max(1,norm2(X));
-            if (dx < epsilon) {
-                System.out.println("Converged at iter: " + iterCount + " with |dx|/|x|: " + dx + " < epsilon: " + epsilon);
-                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
-                        negLogLikelihood(Xpar) + " reg: " + regTerm(Xpar) + " DiffEdges: " + diffEdges + " L: " + L);
-                break;
-            }
-
-            //restart acceleration if objective got worse
-            if(Fx + Gx > obj) {
-                theta = Double.POSITIVE_INFINITY;
-                Y.assign(X.copy());
-                Ypar = new MGMParams(Xpar);
-                Z.assign(X.copy());
-                //Fy = Fx;
-                //GrY.assign(GrX.copy());
-            }else if(theta==1){
-                Z.assign(X.copy());
-            } else {
-                Z.assign(X.copy().assign(Functions.mult(1 / theta)));
-                Z.assign(Xold.copy().assign(Functions.mult(1 - (1.0 / theta))), Functions.plus);
-            }
-
-
-            if (iterCount % printIter == 0) {
-                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
-                        negLogLikelihood(Xpar) + " reg: " + regTerm(Xpar) + " DiffEdges: " + diffEdges + " L: " + L);
-                //System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " nll: " + negLogLikelihood(params) + " reg: " + regTerm(params));
-            }
-            //System.out.println("t: " + t);
-            //System.out.println("Params: " + params);
-
-            iterCount++;
-            if (iterCount >= iterLimit) {
-                System.out.println("Iter limit reached");
-                break;
-            }
-        }
-        setParams(new MGMParams(X, p, lsum));
-    }*/
 }
 
