@@ -142,7 +142,7 @@ public class TestGes {
         // Set up search.
         Ges ges = new Ges(dataSet);
 //        Fgs ges = new Fgs(dataSet);
-        ges.setPenaltyDiscount(1);
+        ges.setPenaltyDiscount(2);
 //        ges.setTrueGraph(graph);
 
         // Run search

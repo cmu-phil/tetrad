@@ -188,7 +188,7 @@ public class TestFgs {
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(1000, false);
         Fgs fgs = new Fgs(data);
-        fgs.setPenaltyDiscount(1);
+        fgs.setPenaltyDiscount(2);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
@@ -202,7 +202,7 @@ public class TestFgs {
         DataSet data = im.simulateData(1000, false);
         Fgs fgs = new Fgs(data);
 //        fgs.setFaithfulnessAssumed(false);
-        fgs.setPenaltyDiscount(1);
+        fgs.setPenaltyDiscount(2);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
@@ -216,7 +216,7 @@ public class TestFgs {
         DataSet data = im.simulateData(1000, false);
         Fgs fgs = new Fgs(data);
         fgs.setFaithfulnessAssumed(false);
-        fgs.setPenaltyDiscount(1);
+        fgs.setPenaltyDiscount(2);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
 //        System.out.println(RandomUtil.getInstance().getSeed());
