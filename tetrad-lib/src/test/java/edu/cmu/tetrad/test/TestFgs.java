@@ -222,6 +222,28 @@ public class TestFgs {
 //        System.out.println(RandomUtil.getInstance().getSeed());
     }
 
+    public void testExplore6() {
+//        RandomUtil.getInstance().setSeed(1450536192774L);
+        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
+
+        int count = 0;
+
+        for (int i = 0; i < 100; i++) {
+            SemPm pm = new SemPm(graph);
+            SemIm im = new SemIm(pm);
+            DataSet data = im.simulateData(1000, false);
+            Fgs fgs = new Fgs(data);
+            fgs.setFaithfulnessAssumed(false);
+            fgs.setPenaltyDiscount(2);
+            Graph pattern = fgs.search();
+            if (SearchGraphUtils.patternForDag(graph).equals(pattern)) {
+                count++;
+            }
+        }
+
+        System.out.println(count);
+    }
+
     private void printDegreeDistribution(Graph dag, PrintStream out) {
         int max = 0;
 

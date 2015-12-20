@@ -204,7 +204,7 @@ public class TestGes {
         Graph resultGraph = ges.search();
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertEquals(trueGraph, resultGraph);
     }
 
     private static List<Set<Node>> powerSet(List<Node> nodes) {
