@@ -1325,7 +1325,7 @@ public final class Ges implements GraphSearch, GraphScorer {
         double c = getPenaltyDiscount();
 
 //        return -n * log(residualVariance) - 2 * k; //AIC
-        return -(n / 2.) * log(residualVariance) - c * k * log(n);
+        return -n * log(residualVariance) - c * k * log(n);
 //        return -n * log(residualVariance) - c * k * (log(n) - log(2 * PI));
     }
 
