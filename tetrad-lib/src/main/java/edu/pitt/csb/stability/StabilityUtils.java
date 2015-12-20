@@ -49,6 +49,9 @@ import java.util.concurrent.RecursiveTask;
 /**
  * Runs a search algorithm over a N subsamples of size b to asses stability
  * as in "Stability Selection" and "Stability Approach to Regularization Selection"
+ *
+ * This is under construction...likely to be buggy
+ *
  * Created by ajsedgewick on 9/4/15.
  */
 public class StabilityUtils {
@@ -64,7 +67,6 @@ public class StabilityUtils {
             DataSet dataSubSamp = data.subsetRows(samps[s]);
             Graph g = gs.search(dataSubSamp);
 
-            //TODO update graphToMatrix method
             DoubleMatrix2D curAdj = MixedUtils.skeletonToMatrix(g);
             thetaMat.assign(curAdj, Functions.plus);
         }
@@ -108,7 +110,6 @@ public class StabilityUtils {
                         DataGraphSearch curGs = gs.copy();
                         Graph g = curGs.search(dataSubSamp);
 
-                        //TODO update graphToMatrix method
                         DoubleMatrix2D curAdj = MixedUtils.skeletonToMatrix(g); //set weights so that undirected stability works
                         addToMat(thetaMat, curAdj);
                     }
@@ -143,7 +144,6 @@ public class StabilityUtils {
 
     //needs a symmetric matrix
     //array of averages of instability matrix over [all, cc, cd, dd] edges
-    //TODO directed version
     public static double[] totalInstabilityUndir(DoubleMatrix2D xi, List<Node> vars){
         if (vars.size()!= xi.columns() || vars.size()!= xi.rows()) {
             throw new IllegalArgumentException("stability mat must have same number of rows and columns as there are vars");
@@ -172,7 +172,6 @@ public class StabilityUtils {
     }
 
     //array of averages of instability matrix over [all, cc, cd, dd] edges
-    //TODO directed version
     public static double[] totalInstabilityDir(DoubleMatrix2D xi, List<Node> vars){
         if (vars.size()!= xi.columns() || vars.size()!= xi.rows()) {
             throw new IllegalArgumentException("stability mat must have same number of rows and columns as there are vars");
