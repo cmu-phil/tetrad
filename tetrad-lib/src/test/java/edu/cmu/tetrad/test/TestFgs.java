@@ -29,17 +29,21 @@ import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphConverter;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
 import java.io.PrintStream;
 import java.util.*;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -58,7 +62,7 @@ public class TestFgs {
         int numVars = 10;
         double edgesPerNode = 1.0;
         int numCases = 1000;
-        double penaltyDiscount = 4.0;
+        double penaltyDiscount = 2.0;
 
         final int numEdges = (int) (numVars * edgesPerNode);
 
@@ -174,6 +178,81 @@ public class TestFgs {
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
         }
+    }
+
+    @Test
+    public void testExplore3() {
+        RandomUtil.getInstance().setSeed(1450452162212L);
+        Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(1000, false);
+        Fgs fgs = new Fgs(data);
+        fgs.setPenaltyDiscount(2);
+        Graph pattern = fgs.search();
+        System.out.println(RandomUtil.getInstance().getSeed());
+        assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
+    }
+
+    @Test
+    public void testExplore4() {
+        RandomUtil.getInstance().setSeed(1450536154213L);
+        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(1000, false);
+        Fgs fgs = new Fgs(data);
+//        fgs.setFaithfulnessAssumed(false);
+        fgs.setPenaltyDiscount(2);
+        Graph pattern = fgs.search();
+        assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
+    }
+
+    @Test
+    public void testExplore5() {
+        RandomUtil.getInstance().setSeed(1450536192774L);
+        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(1000, false);
+        Fgs fgs = new Fgs(data);
+        fgs.setFaithfulnessAssumed(false);
+        fgs.setPenaltyDiscount(2);
+        Graph pattern = fgs.search();
+        assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
+//        System.out.println(RandomUtil.getInstance().getSeed());
+    }
+
+    @Test
+    public void testExplore6() {
+//        RandomUtil.getInstance().setSeed(1450536192774L);
+        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
+//        Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
+
+        int count = 0;
+
+        for (int i = 0; i < 100; i++) {
+            SemPm pm = new SemPm(graph);
+            SemIm im = new SemIm(pm);
+            DataSet data = im.simulateData(1000, false);
+            Fgs fgs = new Fgs(data);
+            fgs.setFaithfulnessAssumed(false);
+            fgs.setPenaltyDiscount(1);
+            Graph pattern = fgs.search();
+
+//            int shd = SearchGraphUtils.structuralHammingDistance(SearchGraphUtils.patternForDag(graph), pattern);
+//
+//            System.out.println(shd);
+//            if (shd < 6) {
+//                count++;
+//            }
+//
+            if (SearchGraphUtils.patternForDag(graph).equals(pattern)) {
+                count++;
+            }
+        }
+
+        System.out.println(count);
     }
 
     private void printDegreeDistribution(Graph dag, PrintStream out) {

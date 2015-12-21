@@ -1103,7 +1103,7 @@ public class EdgeListGraphSingleConnections implements Graph {
         if (edge == null) throw new NullPointerException();
 
         if (isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-            return false;
+            throw new IllegalArgumentException("Already adjacent.");
         }
 
 //        if (edgesSet.contains(edge)) {  // Not quite right but faster.

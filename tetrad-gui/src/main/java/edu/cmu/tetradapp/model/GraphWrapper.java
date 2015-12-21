@@ -86,7 +86,18 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
             this.graph = new EdgeListGraph();
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
-            this.graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
+            Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
+
+            boolean addCycles = Preferences.userRoot().getBoolean("randomGraphAddCycles", false);
+
+            if (addCycles) {
+                int newGraphNumMeasuredNodes = Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5);
+                int newGraphNumEdges = Preferences.userRoot().getInt("newGraphNumEdges", 3);
+                graph = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes ,newGraphNumEdges);
+            }
+//            GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
+
+            this.graph = graph;
         }
         log();
     }

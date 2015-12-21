@@ -276,6 +276,9 @@ public class MixedUtils {
 
                 //dist of 0 means Gaussian
                 int curDist = nodeDists.get(node.getName());
+                if(curDist == 1)
+                    throw new IllegalArgumentException("Dist for node " + node.getName() + " is set to one (i.e. constant) which is not supported.");
+
 
                 //for each discrete node use DiscError for categorical draw
                 if(curDist>0){
@@ -303,13 +306,13 @@ public class MixedUtils {
                 newTemp = curEx;
                 if(parents.size() != 0) {
                     for (Node parNode : parents){
-                        //TODO check case when dist = 1 category (i.e. constant)
-                        int curLevels = nodeDists.get(parNode.getName());
-                        if(curLevels>0){
+                        int parDist = nodeDists.get(parNode.getName());
+
+                        if(parDist>0){
                             //String curName = trueGraph.getParents(node).get(0).toString();
                             String curName = parNode.getName();
                             String disRep = "Switch(" + curName;
-                            for(int l = 0; l < curLevels; l++){
+                            for(int l = 0; l < parDist; l++){
                                 if(curDist>0) {
                                     disRep += ",NEW(D)";
                                 } else {

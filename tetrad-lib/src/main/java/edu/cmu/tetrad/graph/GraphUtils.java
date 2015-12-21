@@ -316,6 +316,7 @@ public final class GraphUtils {
 
             if (dag.isAdjacentTo(n1, n2)) {
                 i--;
+                continue;
             }
 
             final int indegree = dag.getIndegree(n2);

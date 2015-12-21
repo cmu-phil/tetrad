@@ -142,7 +142,7 @@ public class TestGes {
         // Set up search.
         Ges ges = new Ges(dataSet);
 //        Fgs ges = new Fgs(dataSet);
-        ges.setPenaltyDiscount(1);
+        ges.setPenaltyDiscount(2);
 //        ges.setTrueGraph(graph);
 
         // Run search
@@ -204,7 +204,7 @@ public class TestGes {
         Graph resultGraph = ges.search();
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertEquals(trueGraph, resultGraph);
     }
 
     private static List<Set<Node>> powerSet(List<Node> nodes) {

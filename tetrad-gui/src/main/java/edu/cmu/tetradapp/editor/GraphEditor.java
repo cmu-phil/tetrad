@@ -344,7 +344,7 @@ public final class GraphEditor extends JPanel
                         graph = new EdgeListGraph(graph);
                     }
 
-                    GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
+//                    GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
 
                     getWorkbench().setGraph(graph);
                 }

@@ -125,7 +125,7 @@ public final class Ges implements GraphSearch, GraphScorer {
     /**
      * Penalty discount--the BIC penalty is multiplied by this (for continuous variables).
      */
-    private double penaltyDiscount = 1.0;
+    private double penaltyDiscount = 2.0;
 
     /**
      * The score for discrete searches.

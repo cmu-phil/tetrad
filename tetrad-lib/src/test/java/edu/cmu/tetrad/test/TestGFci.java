@@ -63,7 +63,7 @@ public class TestGFci {
 //        int sampleSize = 1000;
 
         double alpha = 0.01;
-        double penaltyDiscount = 4;
+        double penaltyDiscount = 2;
         int depth = -1;
         int maxPathLength = -1;
         boolean possibleDsepDone = true;

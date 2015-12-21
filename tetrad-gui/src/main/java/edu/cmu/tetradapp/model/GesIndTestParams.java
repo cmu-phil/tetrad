@@ -74,7 +74,7 @@ GesIndTestParams implements IndTestParams {
      * The penalty discount--the BIC penalty for continuous case is multiplied
      * by this.
      */
-    private double penaltyDiscount = 4.0;
+    private double penaltyDiscount = 2.0;
 
     /**
      * True iff the f cutoff should be used in place of the usual BIC delta
