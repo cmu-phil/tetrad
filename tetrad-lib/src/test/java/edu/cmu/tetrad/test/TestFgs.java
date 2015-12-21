@@ -190,6 +190,7 @@ public class TestFgs {
         Fgs fgs = new Fgs(data);
         fgs.setPenaltyDiscount(2);
         Graph pattern = fgs.search();
+        System.out.println(RandomUtil.getInstance().getSeed());
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
 
@@ -222,9 +223,11 @@ public class TestFgs {
 //        System.out.println(RandomUtil.getInstance().getSeed());
     }
 
+    @Test
     public void testExplore6() {
 //        RandomUtil.getInstance().setSeed(1450536192774L);
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
+//        Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
 
         int count = 0;
 
@@ -234,8 +237,16 @@ public class TestFgs {
             DataSet data = im.simulateData(1000, false);
             Fgs fgs = new Fgs(data);
             fgs.setFaithfulnessAssumed(false);
-            fgs.setPenaltyDiscount(2);
+            fgs.setPenaltyDiscount(1);
             Graph pattern = fgs.search();
+
+//            int shd = SearchGraphUtils.structuralHammingDistance(SearchGraphUtils.patternForDag(graph), pattern);
+//
+//            System.out.println(shd);
+//            if (shd < 6) {
+//                count++;
+//            }
+//
             if (SearchGraphUtils.patternForDag(graph).equals(pattern)) {
                 count++;
             }

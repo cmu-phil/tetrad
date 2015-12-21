@@ -23,6 +23,8 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.RandomUtil;
+import junit.framework.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -104,8 +106,10 @@ public final class TestEdgeListGraphSingleConnections {
 
         graph.addDirectedEdge(x1, x3);
 
-        if (graph.addDirectedEdge(x1, x3)) {
+        try {
+            graph.addDirectedEdge(x1, x3);
             fail("Shouldn't have been able to add an edge already in the graph.");
+        } catch (Exception e1) {
         }
 
         graph.addDirectedEdge(x3, x4);
@@ -212,6 +216,36 @@ public final class TestEdgeListGraphSingleConnections {
             }
 
             graph.addEdge(e);
+        }
+    }
+
+    @Test
+    public void stressTest() {
+        int numNodes = 30;
+        int numEdges = 100;
+
+        List<Node> nodes = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        EdgeListGraphSingleConnections graph1 = new EdgeListGraphSingleConnections(nodes);
+        EdgeListGraph graph2 = new EdgeListGraph(nodes);
+
+        for (int i = 0; i < numEdges; i++) {
+            int t1 = RandomUtil.getInstance().nextInt(numNodes);
+            int t2 = RandomUtil.getInstance().nextInt(numNodes);
+            if (t1 == t2) continue;
+
+            if (graph1.isAdjacentTo(nodes.get(t1), nodes.get(t2))) {
+                continue;
+            }
+
+            Edge edge = Edges.directedEdge(nodes.get(t1), nodes.get(t2));
+
+            graph1.addEdge(edge);
+            graph2.addEdge(edge);
+            assertEquals(graph1, graph2);
         }
     }
 }

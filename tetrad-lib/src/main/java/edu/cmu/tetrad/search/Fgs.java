@@ -569,13 +569,13 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                             if (bump > 0.0) {
                                 Arrow arrow1 = new Arrow(bump, x, y, emptySet, emptySet);
-                                Arrow arrow2 = new Arrow(bump, y, x, emptySet, emptySet);
+//                                Arrow arrow2 = new Arrow(bump, y, x, emptySet, emptySet);
 
                                 sortedArrows.add(arrow1);
                                 addLookupArrow(x, y, arrow1);
 
-                                sortedArrows.add(arrow2);
-                                addLookupArrow(y, x, arrow2);
+//                                sortedArrows.add(arrow2);
+//                                addLookupArrow(y, x, arrow2);
                             }
                         }
                     }

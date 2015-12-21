@@ -117,7 +117,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         if (dataSet instanceof BoxDataSet) {
 
-            DataBox box = ((BoxDataSet) dataSet).getDataBox();
+            DataBox box = ((BoxDataSet) dataSet).getDataBox().copy();
 
             if (box instanceof VerticalDoubleDataBox) {
                 if (!dataSet.getVariables().equals(variables)) throw new IllegalArgumentException();
@@ -134,7 +134,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         }
 
         if (vectors == null) {
-            final TetradMatrix doubleData = dataSet.getDoubleData();
+            final TetradMatrix doubleData = dataSet.getDoubleData().copy();
             TetradVector means = DataUtils.means(doubleData);
             DataUtils.demean(doubleData, means);
 
@@ -146,7 +146,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
                 vectors[i] = realMatrix.getColumnVector(i).toArray();
             }
 
-            DataUtils.remean(doubleData, means);
+//            DataUtils.remean(doubleData, means);
         }
 
         this.variances = new double[variables.size()];

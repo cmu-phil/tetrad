@@ -51,7 +51,7 @@ public class TestIndTestWaldLR {
 
     @Test
     public void testIsIndependent() {
-        RandomUtil.getInstance().setSeed(1450196687239L);
+        RandomUtil.getInstance().setSeed(1450705713157L);
 
         int numPassed = 0;
 
@@ -104,6 +104,8 @@ public class TestIndTestWaldLR {
                 numPassed++;
             }
         }
+
+//        System.out.println(RandomUtil.getInstance().getSeed());
 
         // Do not always get all 10.
         assertEquals(10, numPassed);
