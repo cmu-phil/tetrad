@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
@@ -98,6 +99,17 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     public void execute() {
         Object source = getDataModel();
+
+        if (source instanceof DataModelList) {
+            source = ((DataModelList) source).getSelectedModel();
+        }
+
+        if (source == null) {
+            throw new RuntimeException("Data source is unspecified. You may need to double click all your data boxes, \n" +
+                    "then click Save, and then right click on them and select Propagate Downstream. \n" +
+                    "The issue is that we use a seed to simulate from IM's, so your data is not saved to \n" +
+                    "file when you save the session. It can, however, be recreated from the saved seed.");
+        }
 
         GesParams gesParams = (GesParams) getParams();
         GesIndTestParams indTestParams = (GesIndTestParams) gesParams.getIndTestParams();

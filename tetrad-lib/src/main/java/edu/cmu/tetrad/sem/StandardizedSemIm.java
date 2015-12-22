@@ -54,7 +54,7 @@ import java.util.Map;
  * </p>
  * Currently we are not allowing bidirected edges in the SEM graph.
  */
-public class StandardizedSemIm implements TetradSerializable {
+public class StandardizedSemIm implements Simulator, TetradSerializable {
     public enum Initialization {
         CALCULATE_FROM_SEM, INITIALIZE_FROM_DATA
     }
@@ -567,6 +567,16 @@ public class StandardizedSemIm implements TetradSerializable {
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         return simulateDataReducedForm(sampleSize, latentDataSaved);
+    }
+
+    @Override
+    public DataSet simulateData(int sampleSize, long sampleSeed, boolean latentDataSaved) {
+        RandomUtil random = RandomUtil.getInstance();
+        long seed = random.getSeed();
+        random.setSeed(sampleSeed);
+        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        random.setSeed(seed);
+        return dataSet;
     }
 
     /**

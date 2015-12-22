@@ -63,7 +63,7 @@ public class FindTwoFactorClusters {
     private double indTestAlpha = 0.1;
 
     // The data.
-    private DataModel dataModel;
+    private transient DataModel dataModel;
 
     private List<List<Node>> clusters;
 

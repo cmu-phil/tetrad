@@ -86,11 +86,9 @@ public class TestDataWrapper {
         modelList.setSelectedModel(second);
 
         try {
-            DataModelList modelList2 = (DataModelList) new MarshalledObject(modelList).get();
+            DataModelList modelList2 = new MarshalledObject<>(modelList).get();
             assertEquals("second", modelList2.getSelectedModel().getName());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

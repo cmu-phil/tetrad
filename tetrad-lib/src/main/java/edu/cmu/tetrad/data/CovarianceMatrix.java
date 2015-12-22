@@ -76,12 +76,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      *
      * @serial Cannot be null. Must be symmetric and positive definite.
      */
-    private TetradMatrix matrix;
-
-//    /**
-//     * @serial Do not remove this field; it is needed for serialization.
-//     */
-//    private DoubleMatrix2D matrixC;
+    private transient TetradMatrix matrix;
 
     /**
      * The list of selected variables.

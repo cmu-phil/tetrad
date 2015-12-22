@@ -283,7 +283,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements GraphSource
      * implemented in the extending class.
      */
     public void execute() {
-        DataModelList list = getDataModelList();
+        DataModelList list = (DataModelList) getDataModel();
 
         for (DataModel dataModel : list) {
             if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {

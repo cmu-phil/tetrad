@@ -1257,6 +1257,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * simulate data, instead of going tier by tier. It should work for cyclic
      * graphs as well as acyclic graphs.
      */
+    @Override
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         return simulateData(sampleSize, null, latentDataSaved);
     }
@@ -1357,11 +1358,13 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @param sampleSize how many data points in sample
      * @param sampleSeed a seed for random number generation
      */
+    @Override
     public DataSet simulateData(int sampleSize, long sampleSeed, boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
+        long seed = random.getSeed();
         random.setSeed(sampleSeed);
         DataSet dataSet = simulateData(sampleSize, latentDataSaved);
-        random.setSeed(new Date().getTime());
+        random.setSeed(seed);
         return dataSet;
     }
 

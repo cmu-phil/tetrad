@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public interface ISemIm extends TetradSerializable {
+public interface ISemIm extends Simulator, TetradSerializable {
     long serialVersionUID = 23L;
 
     SemPm getSemPm();

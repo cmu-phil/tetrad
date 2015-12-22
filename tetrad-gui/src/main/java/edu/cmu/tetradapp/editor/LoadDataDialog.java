@@ -45,7 +45,7 @@ import java.util.prefs.Preferences;
  */
 final class LoadDataDialog extends JPanel {
     private final JTabbedPane pane;
-    private DataModel[] dataModels;
+    private transient DataModel[] dataModels;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;

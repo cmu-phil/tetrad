@@ -50,11 +50,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      */
     private String name;
 
-    /**
-     * Stores a reference to the data model being wrapped.
-     *
-     * @serial Cannot be null.
-     */
     private DataModelList dataModelList;
 
     /**
@@ -100,24 +95,24 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      */
     public DataWrapper(DataWrapper wrapper) {
         this.name = wrapper.name;
-        this.dataModelList = new DataModelList();
+        DataModelList dataModelList = new DataModelList();
         int selected = -1;
 
-        for (int i = 0; i < wrapper.dataModelList.size(); i++) {
-            if (wrapper.dataModelList.get(i) instanceof DataSet) {
-                DataSet data = (DataSet) wrapper.dataModelList.get(i);
+        for (int i = 0; i < wrapper.getDataModelList().size(); i++) {
+            if (wrapper.getDataModelList().get(i) instanceof DataSet) {
+                DataSet data = (DataSet) wrapper.getDataModelList().get(i);
 
-                if (data.equals(wrapper.dataModelList.getSelectedModel())) {
+                if (data.equals(wrapper.getDataModelList().getSelectedModel())) {
                     selected = i;
                 }
 
-                this.dataModelList.add(copyData(data));
+                dataModelList.add(copyData(data));
             }
 
         }
 
         if (selected > -1) {
-            this.dataModelList.setSelectedModel(this.dataModelList.get(selected));
+            dataModelList.setSelectedModel(this.getDataModelList().get(selected));
         }
 
         if(wrapper.sourceGraph != null){
@@ -127,6 +122,8 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         if(wrapper.knownVariables != null){
             this.knownVariables = new ArrayList<Node>(wrapper.knownVariables);
         }
+
+        this.dataModelList = dataModelList;
 
         LogDataUtils.logDataModelList("Standalone data set.", getDataModelList());
     }
@@ -158,8 +155,9 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
 
         DataSet dataSet = new ColtDataSet(0, variables);
-        this.dataModelList = new DataModelList();
-        this.dataModelList.add(dataSet);
+        DataModelList dataModelList = new DataModelList();
+        dataModelList.add(dataSet);
+        this.dataModelList = dataModelList;
     }
 
     public DataWrapper(DagWrapper dagWrapper) {
@@ -215,15 +213,17 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
 
 
-        this.dataModelList = new DataModelList();
-        this.dataModelList.add(data2);
+        DataModelList dataModelList = new DataModelList();
+        dataModelList.add(data2);
+        this.dataModelList = dataModelList;
     }
 
     public DataWrapper(MimBuildRunner mimBuild) {
         ICovarianceMatrix cov = mimBuild.getCovMatrix();
 
-        this.dataModelList = new DataModelList();
-        this.dataModelList.add(cov);
+        DataModelList dataModelList = new DataModelList();
+        dataModelList.add(cov);
+        this.dataModelList = dataModelList;
     }
 
     /**
@@ -277,10 +277,14 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     //==============================PUBLIC METHODS========================//
 
     /**
+     * Stores a reference to the data model being wrapped.
+     *
+     * @serial Cannot be null.
+     */ /**
      * @return the list of models.
      */
     public DataModelList getDataModelList() {
-        return dataModelList;
+        return this.dataModelList;
     }
 
     public void setDataModelList(DataModelList dataModelList) {
@@ -291,7 +295,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * @return the data model for this wrapper.
      */
     public DataModel getSelectedDataModel() {
-        DataModelList modelList = this.dataModelList;
+        DataModelList modelList = getDataModelList();
         return modelList.getSelectedModel();
     }
 
@@ -306,8 +310,9 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         if (dataModel instanceof DataModelList) {
             this.dataModelList = (DataModelList) dataModel;
         } else {
-            this.dataModelList = new DataModelList();
-            this.dataModelList.add(dataModel);
+            DataModelList dataModelList = new DataModelList();
+            dataModelList.add(dataModel);
+            this.dataModelList = dataModelList;
         }
     }
 
@@ -396,14 +401,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (dataModelList == null) {
-            throw new NullPointerException();
-        }
-
-        if (discretizationSpecs == null) {
-            throw new NullPointerException();
-        }
     }
 
     public String getName() {

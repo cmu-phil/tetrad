@@ -22,6 +22,8 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FactorAnalysis;
@@ -51,10 +53,6 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
     private double threshold;
 
-    public DataWrapper getDataWrapper() {
-        return dataWrapper;
-    }
-
     //============================CONSTRUCTORS============================//
 
     /**
@@ -80,7 +78,9 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        FactorAnalysis analysis = new FactorAnalysis((DataSet)dataWrapper.getDataModelList().get(0));
+        DataModelList dataModel = (DataModelList) getDataModel();
+        DataSet selectedModel = (DataSet) dataModel.getSelectedModel();
+        FactorAnalysis analysis = new FactorAnalysis(selectedModel);
 
         threshold = .2;
 

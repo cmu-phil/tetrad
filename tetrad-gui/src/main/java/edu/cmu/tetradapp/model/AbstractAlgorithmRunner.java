@@ -46,6 +46,7 @@ import java.util.List;
 public abstract class AbstractAlgorithmRunner
         implements AlgorithmRunner, ParamsResettable, Unmarshallable {
     static final long serialVersionUID = 23L;
+    private DataWrapper dataWrapper;
 
     /**
      * @serial Can be null.
@@ -65,12 +66,13 @@ public abstract class AbstractAlgorithmRunner
      *
      * @serial Can be null.
      */
-    private DataModel dataModel;
+    private transient DataModel dataModel;
 
     /**
      * Retains a reference to the data model list.
+     * @deprecated
      */
-    private DataModelList dataModelList;
+    private transient DataModelList dataModelList;
 
     /**
      * Keeps a reference to the source graph, if there is one.
@@ -124,6 +126,8 @@ public abstract class AbstractAlgorithmRunner
 //            dataSource = new ColtDataSet((ColtDataSet) dataSource);
 //        }
 
+        this.dataWrapper = dataWrapper;
+
         //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
         if (knowledgeBoxModel == null) {
             getParams().setKnowledge(dataWrapper.getKnowledge());
@@ -133,8 +137,6 @@ public abstract class AbstractAlgorithmRunner
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
         new IndTestChooser().adjustIndTestParams(dataSource, params);
-        this.dataModel = dataSource;
-        this.setDataModelList(dataWrapper.getDataModelList());
     }
 
     /**
@@ -158,9 +160,7 @@ public abstract class AbstractAlgorithmRunner
 
         DataModel dataSource = getSelectedDataModel(dataWrapper);
 
-//        if (dataSource instanceof ColtDataSet) {
-//            dataSource = new ColtDataSet((ColtDataSet) dataSource);
-//        }
+        this.dataWrapper = dataWrapper;
 
         //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
         if (knowledgeBoxModel == null) {
@@ -172,8 +172,6 @@ public abstract class AbstractAlgorithmRunner
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
         new IndTestChooser().adjustIndTestParams(dataSource, params);
-        this.dataModel = dataSource;
-        this.setDataModelList(dataWrapper.getDataModelList());
     }
 
     public AbstractAlgorithmRunner(DataWrapper dataWrapper, SearchParams params) {
@@ -193,11 +191,11 @@ public abstract class AbstractAlgorithmRunner
 //            dataSource = new ColtDataSet((ColtDataSet) dataSource);
 //        }
 
+        this.dataWrapper = dataWrapper;
+
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
         new IndTestChooser().adjustIndTestParams(dataSource, params);
-        this.dataModel = dataSource;
-        this.setDataModelList(dataWrapper.getDataModelList());
     }
 
     /**
@@ -305,7 +303,15 @@ public abstract class AbstractAlgorithmRunner
     }
 
     public final DataModel getDataModel() {
-        return dataModel;
+        if (dataWrapper != null) {
+            return dataWrapper.getDataModelList();
+        }
+        else if (dataModel != null) {
+            return dataModel;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public final void setResultGraph(Graph resultGraph) {
@@ -406,14 +412,6 @@ public abstract class AbstractAlgorithmRunner
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public DataModelList getDataModelList() {
-        return dataModelList;
-    }
-
-    public void setDataModelList(DataModelList dataModelList) {
-        this.dataModelList = dataModelList;
     }
 
     public List<Graph> getGraphs() {
