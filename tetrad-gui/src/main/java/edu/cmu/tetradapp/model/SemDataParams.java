@@ -110,7 +110,7 @@ public class SemDataParams implements Params, HasCalculatorParams {
     }
 
 
-    public boolean isIncludeLatents(){
+    public boolean isLatentDataSaved(){
         return this.includeLatents;
     }
 

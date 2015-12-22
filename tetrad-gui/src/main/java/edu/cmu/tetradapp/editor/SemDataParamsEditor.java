@@ -96,7 +96,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
 //        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
 //                Preferences.userRoot().getBoolean("latentDataSaved", getParams().isIncludeLatents()));
         JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-                getParams().isIncludeLatents());
+                getParams().isLatentDataSaved());
         latentDataSaved.setHorizontalTextPosition(SwingConstants.LEFT);
         latentDataSaved.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
