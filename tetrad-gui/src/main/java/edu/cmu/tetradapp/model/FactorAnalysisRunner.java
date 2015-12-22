@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
@@ -38,16 +37,12 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- *
  * @author Michael Freenor
  */
 public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     static final long serialVersionUID = 23L;
 
-    private DataWrapper dataWrapper;
     private String output;
-
-    private DataSet dataSet;
 
     private TetradMatrix rotatedSolution;
 
@@ -62,7 +57,6 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      */
     public FactorAnalysisRunner(DataWrapper dataWrapper, PcSearchParams pc) {
         super(dataWrapper, pc, null);
-        this.dataWrapper = dataWrapper;
     }
 
     /**
@@ -78,8 +72,12 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        DataModelList dataModel = (DataModelList) getDataModel();
-        DataSet selectedModel = (DataSet) dataModel.getSelectedModel();
+        DataSet selectedModel = (DataSet) getDataModel();
+
+        if (selectedModel == null) {
+            throw new NullPointerException("Data not specified.");
+        }
+
         FactorAnalysis analysis = new FactorAnalysis(selectedModel);
 
         threshold = .2;
@@ -87,55 +85,46 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
         TetradMatrix unrotatedSolution = analysis.successiveResidual();
         rotatedSolution = FactorAnalysis.successiveFactorVarimax(unrotatedSolution);
 
-        dataSet = (DataSet) this.dataWrapper.getDataModelList().get(0);
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         output = "Unrotated Factor Loading Matrix:\n";
 
         output += tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
 
-        if(unrotatedSolution.columns() != 1)
-        {
+        if (unrotatedSolution.columns() != 1) {
             output += "\n\nRotated Matrix (using sequential varimax):\n";
             output += tableString(rotatedSolution, nf, threshold);
         }
 
         SemGraph graph = new SemGraph();
 
-        Vector<Node> observedVariables = new Vector<Node>();
+        Vector<Node> observedVariables = new Vector<>();
 
-        for(Node a : getDataSet().getVariables())
-        {
+        for (Node a : selectedModel.getVariables()) {
             graph.addNode(a);
             observedVariables.add(a);
         }
 
-        Vector<Node> factors = new Vector<Node>();
+        Vector<Node> factors = new Vector<>();
 
-        for(int i = 0; i < getRotatedSolution().columns(); i++)
-        {
+        for (int i = 0; i < getRotatedSolution().columns(); i++) {
             ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
             factor.setNodeType(NodeType.LATENT);
             graph.addNode(factor);
             factors.add(factor);
         }
 
-        for(int i = 0; i < getRotatedSolution().rows(); i++)
-        {
-            for(int j = 0; j < getRotatedSolution().columns(); j++)
-            {
-                if(Math.abs(getRotatedSolution().get(i, j)) > getThreshold())
-                {
+        for (int i = 0; i < getRotatedSolution().rows(); i++) {
+            for (int j = 0; j < getRotatedSolution().columns(); j++) {
+                if (Math.abs(getRotatedSolution().get(i, j)) > getThreshold()) {
                     graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
                 }
             }
         }
 
-//        this.window = panel;
-        
         setResultGraph(graph);
     }
-    
+
     private String tableString(TetradMatrix matrix, NumberFormat nf, double threshold) {
         TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
 
@@ -143,11 +132,9 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
             for (int j = 0; j < matrix.columns() + 1; j++) {
                 if (i > 0 && j == 0) {
                     table.setToken(i, j, "X" + i);
-                }
-                else if (i == 0 && j > 0) {
+                } else if (i == 0 && j > 0) {
                     table.setToken(i, j, "Factor " + j);
-                }
-                else if (i > 0 && j > 0) {
+                } else if (i > 0 && j > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
                     token += Math.abs(coefficient) > threshold ? "*" : " ";
@@ -168,8 +155,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
-        return names;
+        return new ArrayList<>();
     }
 
     /**
@@ -177,8 +163,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
-        return triplesList;
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -187,10 +172,6 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
     public String getOutput() {
         return output;
-    }
-
-    public DataSet getDataSet() {
-        return dataSet;
     }
 
     public TetradMatrix getRotatedSolution() {

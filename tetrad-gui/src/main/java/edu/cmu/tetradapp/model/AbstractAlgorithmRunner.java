@@ -70,6 +70,7 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * Retains a reference to the data model list.
+     *
      * @deprecated
      */
     private transient DataModelList dataModelList;
@@ -304,12 +305,16 @@ public abstract class AbstractAlgorithmRunner
 
     public final DataModel getDataModel() {
         if (dataWrapper != null) {
-            return dataWrapper.getDataModelList();
-        }
-        else if (dataModel != null) {
+            DataModelList dataModelList = dataWrapper.getDataModelList();
+
+            if (dataModelList.size() == 1) {
+                return dataModelList.get(0);
+            } else {
+                return dataModelList;
+            }
+        } else if (dataModel != null) {
             return dataModel;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException();
         }
     }

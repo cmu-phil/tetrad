@@ -210,9 +210,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
      */
 
     public void execute() {
-        Object source = ((DataModelList) getDataModel()).getSelectedModel();
-
-        DataModel dataModel = (DataModel) source;
+        DataModel dataModel = getDataModel();
 
         IKnowledge knowledge = params2.getKnowledge();
 

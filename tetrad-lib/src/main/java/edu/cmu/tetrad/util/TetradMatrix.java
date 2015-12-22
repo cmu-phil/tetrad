@@ -460,10 +460,12 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public TetradMatrix minus(TetradMatrix mb) {
+        if (mb.rows() == 0 || mb.columns() == 0) return this;
         return new TetradMatrix(apacheData.subtract(mb.apacheData), rows(), columns());
     }
 
     public TetradMatrix plus(TetradMatrix mb) {
+        if (mb.rows() == 0 || mb.columns() == 0) return this;
         return new TetradMatrix(apacheData.add(mb.apacheData), rows(), columns());
     }
 
