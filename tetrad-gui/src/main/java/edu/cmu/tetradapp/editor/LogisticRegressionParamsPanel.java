@@ -68,7 +68,7 @@ final class LogisticRegressionParamsPanel extends JPanel
      */
     private List<String> varNames;
 
-    private DataModel dataModel;
+    private transient DataModel dataModel;
 
     private String[] regressorNames;
 

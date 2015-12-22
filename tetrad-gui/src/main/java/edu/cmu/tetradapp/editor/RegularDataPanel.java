@@ -47,7 +47,7 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 final class RegularDataPanel extends JPanel {
-    private DataModel[] dataModels;
+    private transient DataModel[] dataModels;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;

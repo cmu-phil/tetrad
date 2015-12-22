@@ -50,7 +50,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      *
      * @serial Cannot be null.
      */
-    private DataModel dataModel;
+    private transient DataModel dataModel;
 
     /**
      * The parameters guiding this search (when executed).
@@ -263,18 +263,6 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (dataModel == null) {
-            throw new NullPointerException();
-        }
-
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        if (clusters == null) {
-            throw new NullPointerException();
-        }
     }
 
     public String getName() {

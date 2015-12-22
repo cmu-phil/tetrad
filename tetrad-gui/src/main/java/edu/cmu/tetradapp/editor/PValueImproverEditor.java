@@ -73,7 +73,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        if (wrapper.getGraph() != null) {
+        if (wrapper.getGraph() != null && wrapper.getResultGraph() != null && getOriginalSemIm() != null) {
             GraphUtils.circleLayout(wrapper.getGraph(), 200, 200, 150);
             setGraphWorkbench(new GraphWorkbench(wrapper.getGraph()));
             setOriginalSemIm(wrapper.getOriginalSemIm());
@@ -329,7 +329,9 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         JTabbedPane tabbedPane = new JTabbedPane();
 
         this.graphWorkbench = graphWorkbench;
-        setOriginalSemIm(new SemIm(getWrapper().getOriginalSemIm()));
+        if (getOriginalSemIm() != null) {
+            setOriginalSemIm(new SemIm(getWrapper().getOriginalSemIm()));
+        }
         this.newSemIm = getWrapper().getNewSemIm();
 
         if (getNewSemIm() != null) {

@@ -50,7 +50,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedSemIm implements IM, TetradSerializable {
+public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
@@ -300,6 +300,16 @@ public class GeneralizedSemIm implements IM, TetradSerializable {
 //        return simulateDataMinimizeSurface(sampleSize, latentDataSaved);
         return simulateDataAvoidInfinity(sampleSize, latentDataSaved);
 //        return simulateDataNSteps(sampleSize, latentDataSaved);
+    }
+
+    @Override
+    public DataSet simulateData(int sampleSize, long sampleSeed, boolean latentDataSaved) {
+        RandomUtil random = RandomUtil.getInstance();
+        long seed = random.getSeed();
+        random.setSeed(sampleSeed);
+        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        random.setSeed(seed);
+        return dataSet;
     }
 
     private DataSet simulateTimeSeries(int sampleSize) {

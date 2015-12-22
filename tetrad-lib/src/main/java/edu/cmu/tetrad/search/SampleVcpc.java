@@ -172,8 +172,6 @@ public final class SampleVcpc implements GraphSearch {
         this.indexMap = indexMap(variables);
         this.nameMap = mapNames(variables);
 
-        this.semIm = semIm;
-
         this.nodesToVariables = new HashMap<Node, Node>();
         this.variablesToNodes = new HashMap<Node, Node>();
 

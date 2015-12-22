@@ -194,9 +194,9 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 //        }
         svcpc.setSemIm(semIm);
 
-//        if (semIm != null) {
-//            vcpc.setSemIm(getEstIm());
-//        }
+        if (semIm != null) {
+            svcpc.setSemIm(this.semIm);
+        }
 
         Graph graph = svcpc.search();
 

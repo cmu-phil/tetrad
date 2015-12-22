@@ -178,7 +178,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         setPreferredSize(new Dimension(600, 400));
 
         DataModelList dataModelList = dataWrapper.getDataModelList();
-        DataModel selectedModel = dataWrapper.getSelectedDataModel();
+        DataModel selectedModel = dataModelList.getSelectedModel();
 
         removeAll();
         removeEmptyModels(dataModelList);

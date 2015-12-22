@@ -95,9 +95,9 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      */
     private IKnowledge knowledge = new Knowledge2();
 
-    private double[][] vectors = null;
+    private transient double[][] vectors = null;
 
-    private double[] variances;
+    private transient double[] variances;
 
 
     //=============================CONSTRUCTORS=========================//

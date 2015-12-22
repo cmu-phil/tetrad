@@ -21,12 +21,19 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.Simulator;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
+import java.rmi.MarshalledObject;
 
 
 /**
@@ -38,24 +45,32 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class GeneralizedSemDataWrapper extends DataWrapper implements SessionModel {
     static final long serialVersionUID = 23L;
     private GeneralizedSemIm semIm = null;
+    private SemDataParams params;
+    private long seed;
 
     //==============================CONSTRUCTORS=============================//
 
     public GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, SemDataParams params) {
-        int sampleSize = params.getSampleSize();
-        boolean latentDataSaved = params.isIncludeLatents();
-        GeneralizedSemIm semIm = wrapper.getSemIm();
-        semIm.setSimulatePositiveDataOnly(params.isPositiveDataOnly());
+        GeneralizedSemIm semIm = null;
 
-        DataModelList list = new DataModelList();
-
-        for (int i = 0; i < params.getNumDataSets(); i++) {
-            DataSet columnDataModel = semIm.simulateData(sampleSize, latentDataSaved);
-            list.add(columnDataModel);
+        try {
+            semIm = new MarshalledObject<>(wrapper.getSemIm()).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the SEM IM.");
         }
 
-//        DataSet columnDataModel = semIm.simulateData(sampleSize, latentDataSaved);
-        this.setDataModel(list);
+        this.semIm = semIm;
+
+        try {
+            params = new MarshalledObject<>(params).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not clone the SemDataParams.");
+        }
+
+        setParams(params);
+
+        setSeed();
+
         this.setSourceGraph(semIm.getSemPm().getGraph());
         setParams(params);
         this.semIm = semIm;
@@ -74,6 +89,56 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
     public static DataWrapper serializableInstance() {
         return new GeneralizedSemDataWrapper(GeneralizedSemImWrapper.serializableInstance(),
                 SemDataParams.serializableInstance());
+    }
+
+    /**
+     * Sets the data model.
+     */
+    public void setDataModel(DataModel dataModel) {
+//        if (dataModel == null) {
+//            dataModel = new ColtDataSet(0, new LinkedList<Node>());
+//        }
+//
+//        if (dataModel instanceof DataModelList) {
+//            this.dataModelList = (DataModelList) dataModel;
+//        } else {
+//            this.dataModelList = new DataModelList();
+//            this.dataModelList.add(dataModel);
+//        }
+
+        // These are generated from seeds.
+    }
+
+    private DataModelList simulateData(Simulator simulator, SemDataParams params) {
+        DataModelList list = new DataModelList();
+        int sampleSize = params.getSampleSize();
+        boolean latentDataSaved = params.isLatentDataSaved();
+
+        for (int i = 0; i < params.getNumDataSets(); i++) {
+            DataSet dataSet = simulator.simulateData(sampleSize, seed, latentDataSaved);
+            list.add(dataSet);
+        }
+        return list;
+    }
+
+    /**
+     * @return the list of models.
+     */
+    public DataModelList getDataModelList() {
+        return simulateData(semIm, params);
+//        return this.dataModelList;
+    }
+
+    public void setDataModelList(DataModelList dataModelList) {
+//        this.dataModelList = dataModelList;
+    }
+
+    public void setParams(Params params) {
+        this.params = (SemDataParams) params;
+    }
+
+    private void setSeed() {
+        this.seed = RandomUtil.getInstance().getSeed();
     }
 }
 
