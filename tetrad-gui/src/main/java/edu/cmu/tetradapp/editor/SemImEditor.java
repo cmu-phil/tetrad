@@ -1117,7 +1117,6 @@ final class SemImGraphicalEditor extends JPanel {
      * directed edges, this method automatically adjusts if the user has changed
      * the endpoints of an edge X1 --> X2 to X1 <-- X2 and returns the correct
      * parameter.
-     *
      * @throws IllegalArgumentException if the edge is neither directed nor
      *                                  bidirected.
      */
@@ -2072,6 +2071,8 @@ final class ModelStatisticsPanel extends JTextArea {
                     : new DecimalFormat("0.0000E0").format(modelPValue);
             append("\nP Value = " + (Double.isNaN(modelPValue) || modelDof == 0 ? "undefined" : pValueString));
             append("\nBIC Score = " + nf.format(semIm.getBicScore()));
+            append("\nCFI = " + nf.format(semIm.getCfi()));
+            append("\nRMSEA = " + nf.format(semIm.getRmsea()));
 
 //            append("\n(Experimental!) KIC Score = " + nf.format(semIm.getKicScore()));
 

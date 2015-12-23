@@ -107,6 +107,10 @@ public interface ISemIm extends Simulator, TetradSerializable {
 
     double getBicScore();
 
+    double getRmsea();
+
+    double getCfi();
+
     double getChiSquare();
 
     boolean isSimulatedPositiveDataOnly();

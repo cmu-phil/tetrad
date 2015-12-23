@@ -48,6 +48,8 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
     private SemDataParams params;
     private long seed;
 
+    private transient DataModelList dataModelList;
+
     //==============================CONSTRUCTORS=============================//
 
     public GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, SemDataParams params) {
@@ -110,6 +112,10 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
     }
 
     private DataModelList simulateData(Simulator simulator, SemDataParams params) {
+        if (this.dataModelList != null) {
+            return this.dataModelList;
+        }
+
         DataModelList list = new DataModelList();
         int sampleSize = params.getSampleSize();
         boolean latentDataSaved = params.isLatentDataSaved();
@@ -118,6 +124,9 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
             DataSet dataSet = simulator.simulateData(sampleSize, seed, latentDataSaved);
             list.add(dataSet);
         }
+
+        this.dataModelList = list;
+
         return list;
     }
 

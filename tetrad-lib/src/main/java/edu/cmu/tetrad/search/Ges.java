@@ -167,7 +167,7 @@ public final class Ges implements GraphSearch, GraphScorer {
             BDeuScore score = new BDeuScore(dataSet);
             score.setSamplePrior(10);
             score.setStructurePrior(0.001);
-//            discreteScore = new MdluScore(dataSet, .001); // Unpublished
+            this.discreteScore = score;
         }
         setStructurePrior(0.001);
         setSamplePrior(10.);
