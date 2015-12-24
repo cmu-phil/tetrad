@@ -549,7 +549,7 @@ public final class MlBayesIm implements BayesIm {
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
         final int size = getNumColumns(nodeIndex);
-        probs[nodeIndex][rowIndex] = getRandomWeights(size);
+        probs[nodeIndex][rowIndex] = getRandomWeights3(size);
     }
 
     private void randomizeRow2(int nodeIndex, int rowIndex, double[] biases) {
@@ -565,7 +565,27 @@ public final class MlBayesIm implements BayesIm {
 
         for (int i = 0; i < size; i++) {
 //            row[i] = RandomUtil.getInstance().nextDouble() + biases[i];
-            row[i] = RandomUtil.getInstance().nextUniform(0, biases[i]);
+            double v = RandomUtil.getInstance().nextUniform(0, biases[i]);
+            row[i] = v > 0.5 ? 2 * v : v;
+            sum += row[i];
+        }
+
+        for (int i = 0; i < size; i++) {
+            row[i] /= sum;
+        }
+
+        return row;
+    }
+
+    private static double[] getRandomWeights3(int size) {
+        assert size >= 0;
+
+        double[] row = new double[size];
+        double sum = 0.0;
+
+        for (int i = 0; i < size; i++) {
+            double v = RandomUtil.getInstance().nextUniform(0, 1);
+            row[i] = v > 0.5 ? 3 * v : v;
             sum += row[i];
         }
 
@@ -597,10 +617,10 @@ public final class MlBayesIm implements BayesIm {
      * @param nodeIndex the node for the table to be randomized.
      */
     public void randomizeTable(int nodeIndex) {
-//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-//            randomizeRow(nodeIndex, rowIndex);
-//        }
-        randomizeTable4(nodeIndex);
+        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
+            randomizeRow(nodeIndex, rowIndex);
+        }
+//        randomizeTable4(nodeIndex);
     }
 
 //    private void randomizeTable2(int nodeIndex) {
