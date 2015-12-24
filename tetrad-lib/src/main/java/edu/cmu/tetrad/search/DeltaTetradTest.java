@@ -107,10 +107,9 @@ public class DeltaTetradTest {
 
         this.cov = cov;
         this.N = cov.getSampleSize();
-//        this.numVars = cov.getVariables().size();
         this.variables = cov.getVariables();
 
-        this.variablesHash = new HashMap<Node, Integer>();
+        this.variablesHash = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             variablesHash.put(variables.get(i), i);
@@ -174,7 +173,7 @@ public class DeltaTetradTest {
                 } else if (cov != null && dataSet == null) {
 
                     // Assumes multinormality--see p. 160.
-                    double _ss = sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
+                    double _ss = sxy(e, g) * sxy(f, h) - sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
                     sigma_ss.set(i, j, _ss);
                 } else {
                     double _ss = sxyzw(e, f, g, h) - sxy(e, f) * sxy(g, h);

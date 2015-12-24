@@ -86,6 +86,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      * @serial Can be null.
      */
     private Graph structureGraph;
+    private DataWrapper dataWrapper;
 
     //===========================CONSTRUCTORS===========================//
 
@@ -101,6 +102,8 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         if (params == null) {
             throw new NullPointerException();
         }
+
+        this.dataWrapper = dataWrapper;
 
         this.params = params;
         setClusters(clusters);
@@ -169,8 +172,19 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     }
 
     public final DataModel getData() {
-        return dataModel;
-    }
+        if (dataWrapper != null) {
+            DataModelList dataModelList = dataWrapper.getDataModelList();
+
+            if (dataModelList.size() == 1) {
+                return dataModelList.get(0);
+            } else {
+                return dataModelList;
+            }
+        } else if (dataModel != null) {
+            return dataModel;
+        } else {
+            throw new IllegalArgumentException();
+        }    }
 
     public final MimParams getParams() {
         return this.params;

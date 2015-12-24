@@ -1454,7 +1454,7 @@
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.GesParams</params-class>
             </model>
-            <model name="FGS" acronym="FGS" help="ges"
+            <model name="FGS" acronym="FGS" help="fgs"
                    category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1467,9 +1467,9 @@
                     <event id="graph" description="Graph" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.FgsRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GesSearchEditor
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
                 </editor-class>
-                <params-class>edu.cmu.tetradapp.model.GesParams</params-class>
+                <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
             </model>
             <model name="iMAGES" acronym="iMAGES" help="ges"
                    category="Pattern Searches">

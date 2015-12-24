@@ -1209,9 +1209,9 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        double e = 1; // The sum of squares of the model? What's that?
 //        return e / (getSemPm().getDof() * getSampleSize());
 
-        double v = getChiSquare() / semPm.getDof();
-        double v1 = (v - 1) / (getSampleSize() - 1);
-        return sqrt(max(v1, 0));
+        double v = getChiSquare() - semPm.getDof();
+        double v1 = semPm.getDof() * (getSampleSize() - 1);
+        return sqrt(v) / sqrt(v1);
     }
 
     @Override

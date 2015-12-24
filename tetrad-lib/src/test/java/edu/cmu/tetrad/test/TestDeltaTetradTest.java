@@ -161,8 +161,8 @@ public class TestDeltaTetradTest {
         double chiSq = test.calcChiSquare(t1);
         double pValue = test.getPValue();
 
-        assertEquals(.43, chiSq, 0.01);
-        assertEquals(0.51, pValue, 0.01);
+        assertEquals(.68, chiSq, 0.01);
+        assertEquals(0.40, pValue, 0.01);
 
         // They get chi square = .73  p = .39  df = 1
     }
@@ -375,6 +375,9 @@ public class TestDeltaTetradTest {
     }
 
     private CovarianceMatrix getBollenExample2Data() {
+
+        // Union sentiment.
+
         double[][] d = new double[][]{
                 {14.610},
                 {-5.250, 11.017},
@@ -409,8 +412,6 @@ public class TestDeltaTetradTest {
     }
 
     private CovarianceMatrix getBollenSimulationExampleData() {
-
-        // Sympathy and anger, p. 164.
 
         double[][] d = new double[][]{
                 {2.034},

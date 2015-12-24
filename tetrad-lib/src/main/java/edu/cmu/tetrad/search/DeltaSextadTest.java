@@ -314,8 +314,8 @@ public class DeltaSextadTest implements IDeltaSextadTest {
                 } else if (cov != null && dataSet == null) {
 
                     // Assumes multinormality--see p. 160.
-                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(f, g);   // + or -? Different advise. + in the code.
-//                    double _ss = r(e, g) * r(f, h) - r(e, h) * r(g, f);   // shouldn't this be a tetrad?
+//                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(f, g);   // + or -? Different advise. + in the code.
+                    double _ss = r(e, g) * r(f, h) - r(e, h) * r(g, f);   // shouldn't this be a tetrad?
                     sigma_ss.set(i, j, _ss);
                     sigma_ss.set(j, i, _ss);
                 } else {
