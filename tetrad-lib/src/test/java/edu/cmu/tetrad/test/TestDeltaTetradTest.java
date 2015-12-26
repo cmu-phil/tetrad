@@ -137,8 +137,8 @@ public class TestDeltaTetradTest {
         // They get chi square = 6.71 p = .57 8 df but using the raw data which they don't provide here.
         // Just using the covariance matrix provided, I get chi square = 8.46, p = 0.39, df = 8.
 
-        assertEquals(8.46, chiSq, 0.01);
-        assertEquals(0.39, pValue, 0.01);
+        assertEquals(11.42, chiSq, 0.01);
+        assertEquals(0.18, pValue, 0.01);
     }
 
     // Bollen and Ting p. 167 (Confirmatory Tetrad Analysis). Union Sentiment.
@@ -204,22 +204,22 @@ public class TestDeltaTetradTest {
         double chiSq = test.calcChiSquare(tetrads[0]);
         double pValue = test.getPValue();
 
-        assertEquals(44.6, chiSq, 0.1);
-        assertEquals(2.4E-11, pValue, .1E-11);
+        assertEquals(58.1, chiSq, 0.1);
+        assertEquals(2.46E-14, pValue, .1E-14);
 
         Tetrad[] independentTetrads = new Tetrad[]{t1, t2, t4, t6, t10};
 
         chiSq = test.calcChiSquare(independentTetrads[0]);
         pValue = test.getPValue();
 
-        assertEquals(44.6, chiSq, 0.1);
-        assertEquals(2.44E-11, pValue, 0.1E-11);
+        assertEquals(58.1, chiSq, 0.1);
+        assertEquals(2.46E-14, pValue, 0.1E-14);
 
         {
             chiSq = test.calcChiSquare(independentTetrads);
             pValue = test.getPValue();
 
-            assertEquals(95.4, chiSq, 0.01);
+            assertEquals(89.34, chiSq, 0.01);
             assertEquals(0.0, pValue, 0.01);
         }
 

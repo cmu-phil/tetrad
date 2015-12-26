@@ -36,7 +36,6 @@ import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
 import java.util.*;
 
-import static java.lang.Math.max;
 import static java.lang.Math.sqrt;
 
 /**
@@ -1216,15 +1215,23 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
     @Override
     public double getCfi() {
-        Graph nullModel = new SemGraph(getSemPm().getGraph());
-        nullModel.removeEdges(nullModel.getEdges());
-        SemPm nullPm = new SemPm(nullModel);
-        CovarianceMatrix sampleCovar = new CovarianceMatrix(getVariableNodes(), getSampleCovar(), getSampleSize());
-        SemIm nullIm = new SemEstimator(sampleCovar, nullPm).estimate();
+        if (getSampleCovar() == null) {
+            return Double.NaN;
+        }
+
+        SemIm nullIm = independenceModel();
         double nullChiSq = nullIm.getChiSquare();
         double dNull = nullChiSq - nullIm.getSemPm().getDof();
         double dProposed = getChiSquare() - getSemPm().getDof();
         return (dNull - dProposed) / dNull;
+    }
+
+    private SemIm independenceModel() {
+        Graph nullModel = new SemGraph(getSemPm().getGraph());
+        nullModel.removeEdges(nullModel.getEdges());
+        SemPm nullPm = new SemPm(nullModel);
+        CovarianceMatrix sampleCovar = new CovarianceMatrix(getVariableNodes(), getSampleCovar(), getSampleSize());
+        return new SemEstimator(sampleCovar, nullPm).estimate();
     }
 
 //    public double getAicScore() {
@@ -1382,7 +1389,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * graphs as well as acyclic graphs.
      *
      * @param sampleSize how many data points in sample
-     * @param sampleSeed a seed for random number generation
+     * @param seed a seed for random number generation
      */
     @Override
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
