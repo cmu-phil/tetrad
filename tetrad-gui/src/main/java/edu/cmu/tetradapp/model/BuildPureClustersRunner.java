@@ -156,20 +156,43 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                 searchGraph = bpc.search();
 
             } else if (algorithm == BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS) {
-                FindOneFactorClusters bpc;
+//                FindOneFactorClusters bpc;
+//                Object source = getData();
+//
+//                if (source instanceof DataSet) {
+//                    bpc = new FindOneFactorClusters(
+//                            (DataSet) source,
+//                            tetradTestType,
+//                            getParams().getAlpha());
+//                } else {
+//                    bpc = new FindOneFactorClusters((ICovarianceMatrix) source,
+//                            tetradTestType, getParams().getAlpha());
+//                }
+//
+//                searchGraph = bpc.search();
+
+                FindOneFactorClusters2 bpc;
                 Object source = getData();
 
                 if (source instanceof DataSet) {
-                    bpc = new FindOneFactorClusters(
+                    bpc = new FindOneFactorClusters2(
                             (DataSet) source,
                             tetradTestType,
                             getParams().getAlpha());
+
+//                    bpc = new FindTwoFactorClusters4(
+//                            (DataSet) source,
+//                            getParams().getAlpha());
                 } else {
-                    bpc = new FindOneFactorClusters((ICovarianceMatrix) source,
+                    bpc = new FindOneFactorClusters2((ICovarianceMatrix) source,
                             tetradTestType, getParams().getAlpha());
+//
+//                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
+//                            getParams().getAlpha());
                 }
 
                 searchGraph = bpc.search();
+
             } else if (algorithm == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
                 FindTwoFactorClusters bpc;
                 Object source = getData();
