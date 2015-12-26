@@ -570,12 +570,12 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
     }
 
     @Override
-    public DataSet simulateData(int sampleSize, long sampleSeed, boolean latentDataSaved) {
+    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
-        long seed = random.getSeed();
-        random.setSeed(sampleSeed);
-        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        long _seed = random.getSeed();
         random.setSeed(seed);
+        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        random.revertSeed(_seed);
         return dataSet;
     }
 

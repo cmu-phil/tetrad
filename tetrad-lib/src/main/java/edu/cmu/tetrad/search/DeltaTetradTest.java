@@ -21,10 +21,12 @@
 
 package edu.cmu.tetrad.search;
 
+import cern.jet.random.ChiSquare;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.*;
 
@@ -107,10 +109,9 @@ public class DeltaTetradTest {
 
         this.cov = cov;
         this.N = cov.getSampleSize();
-//        this.numVars = cov.getVariables().size();
         this.variables = cov.getVariables();
 
-        this.variablesHash = new HashMap<Node, Integer>();
+        this.variablesHash = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             variablesHash.put(variables.get(i), i);
@@ -174,7 +175,7 @@ public class DeltaTetradTest {
                 } else if (cov != null && dataSet == null) {
 
                     // Assumes multinormality--see p. 160.
-                    double _ss = sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
+                    double _ss = sxy(e, g) * sxy(f, h) - sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
                     sigma_ss.set(i, j, _ss);
                 } else {
                     double _ss = sxyzw(e, f, g, h) - sxy(e, f) * sxy(g, h);
@@ -241,8 +242,7 @@ public class DeltaTetradTest {
      * @return the p value for the most recent test.
      */
     public double getPValue() {
-//        double cdf = ProbUtils.chisqCdf(this.cdf, this.df);
-        double cdf = ProbUtils.chisqCdf(this.chisq, this.df);
+        double cdf = new ChiSquaredDistribution(this.df).cumulativeProbability(this.chisq);
         return 1.0 - cdf;
     }
 

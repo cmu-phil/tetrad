@@ -21,11 +21,13 @@
 
 package edu.cmu.tetrad.util;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Provides a common random number generator to be used throughout Tetrad, to avoid problems that happen when random
@@ -55,6 +57,8 @@ public class RandomUtil {
     private NormalDistribution normal = new NormalDistribution(0, 1);
 
     private long seed;
+
+    private Map<Long, RandomGenerator> seedsToGenerators = new HashedMap<>();
 
 
     //========================================CONSTRUCTORS===================================//
@@ -152,10 +156,20 @@ public class RandomUtil {
      */
     public void setSeed(long seed) {
 
-        // Apache offers several random number generators; picking one that works pretty well.
+        // Do not change this generator; you will screw up innuerable unit tests!
         randomGenerator = new Well44497b(seed);
+        seedsToGenerators.put(seed, randomGenerator);
         normal = new NormalDistribution(randomGenerator, 0, 1);
         this.seed = seed;
+    }
+
+    public void revertSeed(long seed) {
+
+        // Do not change this generator; you will screw up innuerable unit tests!
+        randomGenerator = seedsToGenerators.get(seed);
+        normal = new NormalDistribution(randomGenerator, 0, 1);
+        this.seed = seed;
+
     }
 
     /**

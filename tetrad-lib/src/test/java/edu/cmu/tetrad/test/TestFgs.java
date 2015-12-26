@@ -37,6 +37,7 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -123,7 +124,7 @@ public class TestFgs {
 
     @Test
     public void explore2() {
-        RandomUtil.getInstance().setSeed(1450184974737L);
+        RandomUtil.getInstance().setSeed(1450956446672L);
 
         int numVars = 10;
         double edgeFactor = 1.0;
@@ -151,7 +152,7 @@ public class TestFgs {
         ges.setVerbose(false);
         ges.setNumPatternsToStore(0);
         ges.setFaithfulnessAssumed(false);
-        ges.setDepth(3);
+//        ges.setDepth(3);
 
         ges.setStructurePrior(structurePrior);
         ges.setSamplePrior(samplePrior);
@@ -164,16 +165,20 @@ public class TestFgs {
 
         int[][] counts = SearchGraphUtils.graphComparison(estPattern, truePattern, null);
 
+//        System.out.println(MatrixUtils.toString(counts));
+
         int[][] expectedCounts = {
-                {4, 0, 0, 0, 0, 0},
+                {2, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 6, 0, 0},
+                {0, 0, 0, 8, 0, 0},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
         };
+
+//        System.out.println(RandomUtil.getInstance().getSeed());
 
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
@@ -190,7 +195,7 @@ public class TestFgs {
         Fgs fgs = new Fgs(data);
         fgs.setPenaltyDiscount(2);
         Graph pattern = fgs.search();
-        System.out.println(RandomUtil.getInstance().getSeed());
+//        System.out.println(RandomUtil.getInstance().getSeed());
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
 
@@ -252,7 +257,7 @@ public class TestFgs {
             }
         }
 
-        System.out.println(count);
+//        System.out.println(count);
     }
 
     private void printDegreeDistribution(Graph dag, PrintStream out) {

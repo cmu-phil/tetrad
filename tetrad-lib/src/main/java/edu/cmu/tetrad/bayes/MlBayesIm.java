@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
+import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -548,7 +549,7 @@ public final class MlBayesIm implements BayesIm {
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
         final int size = getNumColumns(nodeIndex);
-        probs[nodeIndex][rowIndex] = getRandomWeights(size);
+        probs[nodeIndex][rowIndex] = getRandomWeights3(size);
     }
 
     private void randomizeRow2(int nodeIndex, int rowIndex, double[] biases) {
@@ -564,7 +565,27 @@ public final class MlBayesIm implements BayesIm {
 
         for (int i = 0; i < size; i++) {
 //            row[i] = RandomUtil.getInstance().nextDouble() + biases[i];
-            row[i] = RandomUtil.getInstance().nextUniform(0, biases[i]);
+            double v = RandomUtil.getInstance().nextUniform(0, biases[i]);
+            row[i] = v > 0.5 ? 2 * v : v;
+            sum += row[i];
+        }
+
+        for (int i = 0; i < size; i++) {
+            row[i] /= sum;
+        }
+
+        return row;
+    }
+
+    private static double[] getRandomWeights3(int size) {
+        assert size >= 0;
+
+        double[] row = new double[size];
+        double sum = 0.0;
+
+        for (int i = 0; i < size; i++) {
+            double v = RandomUtil.getInstance().nextUniform(0, 1);
+            row[i] = v > 0.5 ? 3 * v : v;
             sum += row[i];
         }
 
@@ -596,10 +617,10 @@ public final class MlBayesIm implements BayesIm {
      * @param nodeIndex the node for the table to be randomized.
      */
     public void randomizeTable(int nodeIndex) {
-//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-//            randomizeRow(nodeIndex, rowIndex);
-//        }
-        randomizeTable4(nodeIndex);
+        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
+            randomizeRow(nodeIndex, rowIndex);
+        }
+//        randomizeTable4(nodeIndex);
     }
 
 //    private void randomizeTable2(int nodeIndex) {
@@ -706,22 +727,22 @@ public final class MlBayesIm implements BayesIm {
 
         double max = Double.NEGATIVE_INFINITY;
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
 //                randomizeRow(nodeIndex, rowIndex);
                 randomizeRow2(nodeIndex, rowIndex, probs[nodeIndex][rowIndex]);
             }
 
-            double score = score(nodeIndex);
+            int score = score(nodeIndex);
 
             if (score > max) {
                 max = score;
                 copy(probs[nodeIndex], saved);
             }
 
-//            if (score == getNumParents(nodeIndex)) {
-//                break;
-//            }
+            if (score == getNumParents(nodeIndex)) {
+                break;
+            }
         }
 
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -729,7 +750,7 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
-    private double score(int nodeIndex) {
+    private int score(int nodeIndex) {
         double[][] p = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
         copy(probs[nodeIndex], p);
         int num = 0;
@@ -996,8 +1017,12 @@ public final class MlBayesIm implements BayesIm {
      * @return the simulated sample as a DataSet.
      */
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil.getInstance().setSeed(seed);
-        return simulateDataHelper(sampleSize, latentDataSaved);
+        RandomUtil random = RandomUtil.getInstance();
+        long _seed = random.getSeed();
+        random.setSeed(seed);
+        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        random.revertSeed(_seed);
+        return dataSet;
     }
 
     public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
