@@ -55,6 +55,8 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel {
     private BayesIm bayesIm = null;
     private BayesDataParams params;
 
+    private transient DataModelList dataModelList;
+
     private long seed;
 
     //============================CONSTRUCTORS=========================//
@@ -199,6 +201,10 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel {
 
 
     private DataModelList simulateData(Simulator simulator, BayesDataParams params) {
+        if (this.dataModelList != null) {
+            return this.dataModelList;
+        }
+
         DataModelList list = new DataModelList();
         int sampleSize = params.getSampleSize();
         boolean latentDataSaved = params.isLatentDataSaved();
@@ -207,6 +213,9 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel {
             DataSet dataSet = simulator.simulateData(sampleSize, seed, latentDataSaved);
             list.add(dataSet);
         }
+
+        this.dataModelList = list;
+
         return list;
     }
 

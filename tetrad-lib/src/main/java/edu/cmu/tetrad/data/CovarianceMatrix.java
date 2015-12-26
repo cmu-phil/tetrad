@@ -76,7 +76,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      *
      * @serial Cannot be null. Must be symmetric and positive definite.
      */
-    private transient TetradMatrix matrix;
+    private TetradMatrix matrix;
 
     /**
      * The list of selected variables.

@@ -1043,6 +1043,12 @@ public class SessionNode implements TetradSerializable {
      * been altered.
      */
     public boolean useClonedModel() {
+
+        // turn off model canceling to allow data to be recreated from seeds.
+        if (true) {
+            return false;
+        }
+
         try {
             if (model instanceof Unmarshallable) {
                 return false;

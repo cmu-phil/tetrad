@@ -36,6 +36,8 @@ import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
 import java.util.*;
 
+import static java.lang.Math.sqrt;
+
 /**
  * Stores an instantiated structural equation model (SEM), with error covariance
  * terms, possibly cyclic, suitable for estimation and simulation. For
@@ -850,7 +852,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * node.
      */
     public double getStdDev(Node node, TetradMatrix implCovar) {
-        return Math.sqrt(getVariance(node, implCovar));
+        return sqrt(getVariance(node, implCovar));
     }
 
     /**
@@ -1201,6 +1203,37 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        return -ges.getScore(getEstIm().getGraph());
     }
 
+    @Override
+    public double getRmsea() {
+//        double e = 1; // The sum of squares of the model? What's that?
+//        return e / (getSemPm().getDof() * getSampleSize());
+
+        double v = getChiSquare() - semPm.getDof();
+        double v1 = semPm.getDof() * (getSampleSize() - 1);
+        return sqrt(v) / sqrt(v1);
+    }
+
+    @Override
+    public double getCfi() {
+        if (getSampleCovar() == null) {
+            return Double.NaN;
+        }
+
+        SemIm nullIm = independenceModel();
+        double nullChiSq = nullIm.getChiSquare();
+        double dNull = nullChiSq - nullIm.getSemPm().getDof();
+        double dProposed = getChiSquare() - getSemPm().getDof();
+        return (dNull - dProposed) / dNull;
+    }
+
+    private SemIm independenceModel() {
+        Graph nullModel = new SemGraph(getSemPm().getGraph());
+        nullModel.removeEdges(nullModel.getEdges());
+        SemPm nullPm = new SemPm(nullModel);
+        CovarianceMatrix sampleCovar = new CovarianceMatrix(getVariableNodes(), getSampleCovar(), getSampleSize());
+        return new SemEstimator(sampleCovar, nullPm).estimate();
+    }
+
 //    public double getAicScore() {
 //        int dof = getSemPm().getDof();
 //        return getChiSquare() - 2 * dof;
@@ -1356,15 +1389,15 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * graphs as well as acyclic graphs.
      *
      * @param sampleSize how many data points in sample
-     * @param sampleSeed a seed for random number generation
+     * @param seed a seed for random number generation
      */
     @Override
-    public DataSet simulateData(int sampleSize, long sampleSeed, boolean latentDataSaved) {
+    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
-        long seed = random.getSeed();
-        random.setSeed(sampleSeed);
-        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        long _seed = random.getSeed();
         random.setSeed(seed);
+        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        random.revertSeed(_seed);
         return dataSet;
     }
 

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ import java.util.prefs.Preferences;
  * @author Ricardo Silva
  */
 public class BuildPureClustersRunner extends AbstractMimRunner
-        implements GraphSource, KnowledgeBoxInput {
+        implements GraphSource, KnowledgeBoxInput, Unmarshallable {
     static final long serialVersionUID = 23L;
 
     /**

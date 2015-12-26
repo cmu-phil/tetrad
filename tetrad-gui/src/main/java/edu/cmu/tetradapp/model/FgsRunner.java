@@ -59,16 +59,16 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     //============================CONSTRUCTORS============================//
 
-    public FgsRunner(DataWrapper dataWrapper, GesParams params) {
+    public FgsRunner(DataWrapper dataWrapper, FgsParams params) {
         super(dataWrapper, params, null);
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphSource trueGraph, GesParams params) {
+    public FgsRunner(DataWrapper dataWrapper, GraphSource trueGraph, FgsParams params) {
         this(dataWrapper, params, null);
         this.initialGraph = trueGraph.getGraph();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GesParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner(DataWrapper dataWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -85,9 +85,9 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
      *
      * @see TetradSerializableUtils
      */
-    public static IGesRunner serializableInstance() {
+    public static FgsRunner serializableInstance() {
         return new FgsRunner(DataWrapper.serializableInstance(),
-                GesParams.serializableInstance());
+                FgsParams.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -111,25 +111,14 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        GesParams gesParams = (GesParams) getParams();
-        GesIndTestParams indTestParams = (GesIndTestParams) gesParams.getIndTestParams();
-        double penalty = gesParams.getComplexityPenalty();
+        FgsParams fgsParams = (FgsParams) getParams();
+        FgsIndTestParams indTestParams = (FgsIndTestParams) fgsParams.getIndTestParams();
+        double penalty = fgsParams.getComplexityPenalty();
         Fgs ges;
-        boolean faithfulnessAssumed = false;
-        boolean ignoreLinearDependent = false;
+        boolean faithfulnessAssumed = fgsParams.isFaithfulnessAssumed();
 
         if (source instanceof ICovarianceMatrix) {
-//            ges = new FGS((ICovarianceMatrix) source);
-//            ges.setKnowledge(getParams().getKnowledge());
-//            ges.setPenaltyDiscount(penalty);
-//            ges.setVerbose(true);
-//            ges.setLog(true);
-//            ges.setDepth(-1);
-//            ges.setNumPatternsToStore(0);
-//            ges.setFaithfulnessAssumed(faithfulnessAssumed);
-
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) source);
-            gesScore.setIgnoreLinearDependent(ignoreLinearDependent);
             gesScore.setPenaltyDiscount(penalty);
             ges = new Fgs(gesScore);
             ges.setKnowledge(getParams().getKnowledge());
@@ -137,7 +126,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
             ges.setDepth(2);
             ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
             ges.setFaithfulnessAssumed(faithfulnessAssumed);
-//            ges.setIgnoreLinearDependent(ignoreLinearDependent);
             ges.setVerbose(true);
 
         } else if (source instanceof DataSet) {
@@ -145,26 +133,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
 
             if (dataSet.isContinuous()) {
 
-//                ges = new FGSSet);
-//                ges.setKnowledge(getParams().getKnowledge());
-//                ges.setPenaltyDiscount(penalty);
-//                ges.setVerbose(true);
-//                ges.setLog(true);
-//                ges.setDepth(-1);
-//                ges.setNumPatternsToStore(0);
-//                ges.setFaithfulnessAssumed(faithfulnessAssumed);
-
-//                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-//                gesScore.setPenaltyDiscount(penalty);
-//                ges = new FGS(gesScore);
-//                ges.setKnowledge(getParams().getKnowledge());
-//                ges.setDepth(-1);
-//                ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-//                ges.setFaithfulnessAssumed(faithfulnessAssumed);
-//                ges.setIgnoreLinearDependent(ignoreLinearDependent);
-
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) source));
-                gesScore.setIgnoreLinearDependent(ignoreLinearDependent);
                 gesScore.setPenaltyDiscount(penalty);
                 ges = new Fgs(gesScore);
                 ges.setKnowledge(getParams().getKnowledge());
@@ -172,7 +141,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
                 ges.setDepth(2);
                 ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
                 ges.setFaithfulnessAssumed(faithfulnessAssumed);
-//                ges.setIgnoreLinearDependent(ignoreLinearDependent);
                 ges.setVerbose(true);
             }
             else if (dataSet.isDiscrete()) {

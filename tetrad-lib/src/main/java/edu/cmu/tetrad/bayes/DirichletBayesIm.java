@@ -818,8 +818,11 @@ public final class DirichletBayesIm implements BayesIm {
     public DataSet simulateData(int sampleSize, long seed,
                                 boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
+        long _seed = random.getSeed();
         random.setSeed(seed);
-        return simulateDataHelper(sampleSize, random, latentDataSaved);
+        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        random.revertSeed(_seed);
+        return dataSet;
     }
 
     /**

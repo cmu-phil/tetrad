@@ -183,8 +183,11 @@ public class ChiSquareTest {
         }
 
         // If df == 0, return indep.
+        // Actually if you don't know one way or the other, you should return dependent. jdramsey 12/22/2015
         if (df == 0) {
-            df = 1;
+            double pValue = 1.0;
+            boolean indep = false;
+            return new ChiSquareTest.Result(xSquare, pValue, df, indep);
         }
 
         double pValue = 1.0 - ProbUtils.chisqCdf(xSquare, df);

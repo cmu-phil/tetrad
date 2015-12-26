@@ -46,6 +46,7 @@ public class SemDataWrapper extends DataWrapper implements SessionModel {
     private Simulator semIm = null;
     //    private DataModelList dataModelList;
     private long seed;
+    private transient DataModelList dataModelList;
 
 
     //==============================CONSTRUCTORS=============================//
@@ -124,9 +125,6 @@ public class SemDataWrapper extends DataWrapper implements SessionModel {
 
         setSeed();
 
-//        DataModelList dataModelList = simulateData((SemDataParams) getParams(), semIm);
-//        setDataModelList(dataModelList);
-
         setSourceGraph(wrapper.getSemUpdater().getUpdatedSemIm().getSemPm().getGraph());
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
@@ -151,8 +149,6 @@ public class SemDataWrapper extends DataWrapper implements SessionModel {
 
         setSeed();
 
-//        DataModelList dataModelList = simulateData((SemDataParams) getParams(), semIm);
-//        setDataModel(dataModelList);
         setSourceGraph(wrapper.getStandardizedSemIm().getSemPm().getGraph());
         setParams(params);
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
@@ -163,6 +159,10 @@ public class SemDataWrapper extends DataWrapper implements SessionModel {
     }
 
     private DataModelList simulateData(Simulator simulator) {
+        if (this.dataModelList != null) {
+            return this.dataModelList;
+        }
+
         DataModelList dataModelList = new DataModelList();
         int sampleSize = params.getSampleSize();
         boolean latentDataSaved = params.isLatentDataSaved();
@@ -173,6 +173,7 @@ public class SemDataWrapper extends DataWrapper implements SessionModel {
             dataModelList.add(dataSet);
         }
 
+        this.dataModelList = dataModelList;
         return dataModelList;
     }
 

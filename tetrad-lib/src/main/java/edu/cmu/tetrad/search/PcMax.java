@@ -56,7 +56,7 @@ public class PcMax implements GraphSearch {
     /**
      * The maximum number of nodes conditioned on in the search. The default it 1000.
      */
-    private int depth = 1000;
+    private int depth = -1;
 
     /**
      * The graph that's constructed during the search.
@@ -225,44 +225,13 @@ public class PcMax implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-//        independenceTest = new ProbabilisticMAPIndependence((DataSet) independenceTest.getData());
-
         SepsetsMaxPValue sepsetProducer = new SepsetsMaxPValue(graph, independenceTest, null, getDepth());
-//        sepsetProducer.setDsep(dsep);
 
         addColliders(graph, sepsetProducer, knowledge);
 
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
         rules.orientImplied(graph);
-
-//        Graph pattern = new EdgeListGraphSingleConnections(graph);
-//
-//        for (Node x : getNodes()) {
-//            for (Node y : getNodes()) {
-//                if (x == y) continue;
-//
-//                if (!localMarkovIndep(x, y, pattern, independenceTest)) {
-//                    graph.addUndirectedEdge(x, y);
-//                }
-//            }
-//        }
-//
-//        fas = new FasStableConcurrent(getIndependenceTest());
-//        fas.setInitialGraph(new EdgeListGraphSingleConnections(graph));
-//        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(getDepth());
-//        fas.setVerbose(verbose);
-//        graph = fas.search();
-//
-//        sepsetProducer = new SepsetsMaxPValue(graph, independenceTest, null, getDepth());
-//
-//        addColliders(graph, sepsetProducer, knowledge);
-//
-//        rules = new MeekRules();
-//        rules.setKnowledge(knowledge);
-//        rules.orientImplied(graph);
-
 
         this.logger.log("graph", "\nReturning this graph: " + graph);
 
@@ -290,6 +259,8 @@ public class PcMax implements GraphSearch {
         });
 
         for (Triple collider : colliders) {
+//            if (collidersPs.get(collider) < 0.2) continue;
+
             Node a = collider.getX();
             Node b = collider.getY();
             Node c = collider.getZ();
