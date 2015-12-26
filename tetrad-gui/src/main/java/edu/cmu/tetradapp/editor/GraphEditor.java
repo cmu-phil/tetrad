@@ -388,6 +388,12 @@ public final class GraphEditor extends JPanel
                                     numLatentMeasuredImpureParents,
                                     numMeasuredMeasuredImpureParents,
                                     numMeasuredMeasuredImpureAssociations);
+//
+//                            Graph graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
+//                                    maxStructuralEdges, measurementModelDegree,
+//                                    numLatentMeasuredImpureParents,
+//                                    numMeasuredMeasuredImpureParents,
+//                                    numMeasuredMeasuredImpureAssociations);
 
                             getWorkbench().setGraph(graph);
                         }
