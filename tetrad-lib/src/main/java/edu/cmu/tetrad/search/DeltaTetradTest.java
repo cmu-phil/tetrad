@@ -185,7 +185,7 @@ public class DeltaTetradTest {
         }
 
         // Need a matrix of of population estimates of partial derivatives of tetrads
-        // with respect to covariances in boldSigma.
+        // with respect to covariances in boldSigma.w
         TetradMatrix del = new TetradMatrix(boldSigma.size(), tetrads.length);
 
         for (int i = 0; i < boldSigma.size(); i++) {

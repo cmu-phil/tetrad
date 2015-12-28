@@ -877,7 +877,7 @@ public class FindOneFactorClusters2 {
                     _cluster.add(t1);
 
                     if (tetradVanishingP(_cluster) > alpha) {
-                        System.out.println("Vanishes: "  + variablesForIndices(_cluster));
+                        System.out.println("Vanishes: " + variablesForIndices(_cluster));
                     } else {
                         System.out.println("Doesn't vanish: " + variablesForIndices(_cluster));
                         allvanish = false;
@@ -1133,17 +1133,13 @@ public class FindOneFactorClusters2 {
             Tetrad t1 = new Tetrad(variables.get(x), variables.get(y), variables.get(z), variables.get(w));
             Tetrad t2 = new Tetrad(variables.get(x), variables.get(y), variables.get(w), variables.get(z));
 
-            try {
-                return test.getPValue(t1, t2);
-            } catch (IllegalArgumentException e) {
-                return 0;
-            }
+            return test.getPValue(t1, t2);
         }
 //        else {
 //            return test.getPValue(x, y, z, w) < alpha && test.tetradHolds(x, y, w, z);
 //        }
 
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Only the delta test is being used.");
     }
 
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
