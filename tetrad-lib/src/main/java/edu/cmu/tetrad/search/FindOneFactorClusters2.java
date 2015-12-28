@@ -839,7 +839,7 @@ public class FindOneFactorClusters2 {
 
     //  Finds clusters of size 3 3or the quartet first algorithm.
     private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure, Graph graph) {
-        Set<List<Integer>> fiveClusters = new HashSet<List<Integer>>();
+        Set<List<Integer>> triples = new HashSet<List<Integer>>();
         Set<List<Integer>> _clusters = new HashSet<List<Integer>>(clusters);
 
         if (unionPure.isEmpty()) {
@@ -857,7 +857,6 @@ public class FindOneFactorClusters2 {
             ChoiceGenerator gen = new ChoiceGenerator(remaining.size(), 3);
             int[] choice;
 
-            CHOICE:
             while ((choice = gen.next()) != null) {
                 int t2 = remaining.get(choice[0]);
                 int t3 = remaining.get(choice[1]);
@@ -869,27 +868,27 @@ public class FindOneFactorClusters2 {
                 cluster.add(t4);
 
                 // Check all x as a cross check; really only one should be necessary.
-                boolean allT1 = true;
-                boolean someT1 = false;
-                int count = 0;
+                boolean allvanish = true;
 
-                for (int t1 : unionPure) {
+                for (int t1 : allVariables()) {
                     if (cluster.contains(t1)) continue;
 
                     List<Integer> _cluster = new ArrayList<Integer>(cluster);
                     _cluster.add(t1);
 
-                    if (!(tetradVanishingP(_cluster) > alpha)) {
-                        allT1 = false;
+                    if (tetradVanishingP(_cluster) > alpha) {
+                        System.out.println("Vanishes: "  + variablesForIndices(_cluster));
                     } else {
-                        someT1 = true;
+                        System.out.println("Doesn't vanish: " + variablesForIndices(_cluster));
+                        allvanish = false;
+                        break;
                     }
                 }
 
-                if (someT1 && allT1) {
+                if (allvanish) {
 //                    if (modelInsignificantWithNewCluster(_clusters, cluster)) continue;
 
-                    fiveClusters.add(cluster);
+                    triples.add(cluster);
                     _clusters.add(cluster);
                     unionPure.addAll(cluster);
                     remaining.removeAll(cluster);
@@ -905,7 +904,7 @@ public class FindOneFactorClusters2 {
             break;
         }
 
-        return fiveClusters;
+        return triples;
     }
 
     private double significance(List<Integer> cluster) {
@@ -941,7 +940,7 @@ public class FindOneFactorClusters2 {
             _cluster.add(variables.get(c));
         }
 
-        Collections.sort(_cluster);
+//        Collections.sort(_cluster);
 
         return _cluster;
     }
@@ -1133,7 +1132,12 @@ public class FindOneFactorClusters2 {
         if (testType == TestType.TETRAD_DELTA) {
             Tetrad t1 = new Tetrad(variables.get(x), variables.get(y), variables.get(z), variables.get(w));
             Tetrad t2 = new Tetrad(variables.get(x), variables.get(y), variables.get(w), variables.get(z));
-            return test.getPValue(t1, t2);
+
+            try {
+                return test.getPValue(t1, t2);
+            } catch (IllegalArgumentException e) {
+                return 0;
+            }
         }
 //        else {
 //            return test.getPValue(x, y, z, w) < alpha && test.tetradHolds(x, y, w, z);

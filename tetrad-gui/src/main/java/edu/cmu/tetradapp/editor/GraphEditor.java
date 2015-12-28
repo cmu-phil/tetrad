@@ -383,17 +383,17 @@ public final class GraphEditor extends JPanel
                                             .getInt("measuredMeasuredImpureAssociations",
                                                     0);
 
-                            Graph graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                                    maxStructuralEdges, measurementModelDegree,
-                                    numLatentMeasuredImpureParents,
-                                    numMeasuredMeasuredImpureParents,
-                                    numMeasuredMeasuredImpureAssociations);
-//
-//                            Graph graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
+//                            Graph graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
 //                                    maxStructuralEdges, measurementModelDegree,
 //                                    numLatentMeasuredImpureParents,
 //                                    numMeasuredMeasuredImpureParents,
 //                                    numMeasuredMeasuredImpureAssociations);
+
+                            Graph graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
+                                    maxStructuralEdges, measurementModelDegree,
+                                    numLatentMeasuredImpureParents,
+                                    numMeasuredMeasuredImpureParents,
+                                    numMeasuredMeasuredImpureAssociations);
 
                             getWorkbench().setGraph(graph);
                         }
