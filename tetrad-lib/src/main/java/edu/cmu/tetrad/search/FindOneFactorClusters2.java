@@ -24,12 +24,12 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.*;
 
 import java.util.*;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 
 /**
@@ -801,6 +801,7 @@ public class FindOneFactorClusters2 {
 
             ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
             int[] choice2;
+            boolean found = false;
 
             while ((choice2 = gen2.next()) != null) {
                 int t1 = _cluster.get(choice2[0]);
@@ -811,13 +812,20 @@ public class FindOneFactorClusters2 {
 
                 quartet.add(o);
 
-                if (!pure(quartet, allVariables, alpha)) {
-                    continue O;
+                if (pure(quartet, allVariables, alpha)) {
+                    found = true;
+                    break;
                 }
+
+//                if (!pure(quartet, allVariables, alpha)) {
+//                    continue O;
+//                }
             }
 
-            log("Extending by " + variables.get(o), false);
-            cluster.add(o);
+            if (found) {
+                log("Extending by " + variables.get(o), false);
+                cluster.add(o);
+            }
         }
     }
 
@@ -867,8 +875,13 @@ public class FindOneFactorClusters2 {
                 cluster.add(t3);
                 cluster.add(t4);
 
+                if (zeroCorr(cluster)) {
+                    continue;
+                }
+
                 // Check all x as a cross check; really only one should be necessary.
                 boolean allvanish = true;
+                boolean someVanish = false;
 
                 for (int t1 : allVariables()) {
                     if (cluster.contains(t1)) continue;
@@ -876,16 +889,18 @@ public class FindOneFactorClusters2 {
                     List<Integer> _cluster = new ArrayList<Integer>(cluster);
                     _cluster.add(t1);
 
+
                     if (tetradVanishingP(_cluster) > alpha) {
-                        System.out.println("Vanishes: " + variablesForIndices(_cluster));
+//                        System.out.println("Vanishes: " + variablesForIndices(_cluster));
+                        someVanish = true;
                     } else {
-                        System.out.println("Doesn't vanish: " + variablesForIndices(_cluster));
+//                        System.out.println("Doesn't vanish: " + variablesForIndices(_cluster));
                         allvanish = false;
                         break;
                     }
                 }
 
-                if (allvanish) {
+                if (someVanish && allvanish) {
 //                    if (modelInsignificantWithNewCluster(_clusters, cluster)) continue;
 
                     triples.add(cluster);
@@ -956,8 +971,12 @@ public class FindOneFactorClusters2 {
     }
 
     private boolean pure(List<Integer> quartet, List<Integer> variables, double alpha) {
+        if (zeroCorr(quartet)) {
+            return false;
+        }
+
         if (tetradVanishingP(quartet) > alpha) {
-            for (int o : variables) {
+            for (int o : allVariables()) {
                 if (quartet.contains(o)) continue;
 
                 for (int i = 0; i < quartet.size(); i++) {
@@ -1117,6 +1136,22 @@ public class FindOneFactorClusters2 {
         return testVanishing(n1, n2, n3, n4);
     }
 
+    private boolean zeroCorr(List<Integer> cluster) {
+        int count = 0;
+
+        for (int i = 0; i < cluster.size(); i++) {
+            for (int j = i + 1; j < cluster.size(); j++) {
+                double r = this.corr.getValue(cluster.get(i), cluster.get(j));
+                int N = this.corr.getSampleSize();
+                double f = sqrt(N) * Math.log((1. + r) / (1. - r));
+                double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(f)));
+                if (p > alpha) count++;
+            }
+        }
+
+        return count >= 1;
+    }
+
     /**
      * The clusters output by the algorithm from the last call to search().
      */
@@ -1133,7 +1168,12 @@ public class FindOneFactorClusters2 {
             Tetrad t1 = new Tetrad(variables.get(x), variables.get(y), variables.get(z), variables.get(w));
             Tetrad t2 = new Tetrad(variables.get(x), variables.get(y), variables.get(w), variables.get(z));
 
-            return test.getPValue(t1, t2);
+            test.calcChiSquare(t1, t2);
+
+//            if (test.isZeroCorr()) return 1.0;
+            return test.getPValue();
+
+//            return test.getPValue(t1, t2);
         }
 //        else {
 //            return test.getPValue(x, y, z, w) < alpha && test.tetradHolds(x, y, w, z);
