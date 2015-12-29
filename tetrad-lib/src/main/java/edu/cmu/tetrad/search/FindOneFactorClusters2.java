@@ -1169,11 +1169,7 @@ public class FindOneFactorClusters2 {
             Tetrad t2 = new Tetrad(variables.get(x), variables.get(y), variables.get(w), variables.get(z));
 
             test.calcChiSquare(t1, t2);
-
-//            if (test.isZeroCorr()) return 1.0;
             return test.getPValue();
-
-//            return test.getPValue(t1, t2);
         }
 //        else {
 //            return test.getPValue(x, y, z, w) < alpha && test.tetradHolds(x, y, w, z);
