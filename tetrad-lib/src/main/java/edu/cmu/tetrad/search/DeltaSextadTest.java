@@ -325,7 +325,7 @@ public class DeltaSextadTest implements IDeltaSextadTest {
 
                     // Assumes multinormality--see p. 160.
 //                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(f, g);   // + or -? Different advise. + in the code.
-                    double _ss = r(e, g) * r(f, h) - r(e, h) * r(g, f);   // shouldn't this be a tetrad?
+                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(g, f);   // shouldn't this be a tetrad?
                     sigma_ss.set(i, j, _ss);
                     sigma_ss.set(j, i, _ss);
                 } else {
@@ -388,12 +388,11 @@ public class DeltaSextadTest implements IDeltaSextadTest {
 
         String s = "";
 
-//        for (Sextad storedSextad : storedSextads) {
-//            s += storedSextad + " ";
-//        }
+        for (Sextad storedSextad : storedSextads) {
+            s += storedSextad + " ";
+        }
 
-        s += "cdf = " + cdf + " p = " + nf.format(p);
-        System.out.println(s);
+        s += "chisq = " + chisq + " p = " + nf.format(p);
 
         TetradLogger.getInstance().log("sextadPValues", s);
 
