@@ -195,11 +195,11 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                 searchGraph = bpc.search();
 
             } else if (algorithm == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
-                FindTwoFactorClusters bpc;
+                FindTwoFactorClusters2 bpc;
                 Object source = getData();
 
                 if (source instanceof DataSet) {
-                    bpc = new FindTwoFactorClusters(
+                    bpc = new FindTwoFactorClusters2(
                             (DataSet) source,
                             tetradTestType,
                             getParams().getAlpha());
@@ -208,7 +208,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //                            (DataSet) source,
 //                            getParams().getAlpha());
                 } else {
-                    bpc = new FindTwoFactorClusters((ICovarianceMatrix) source,
+                    bpc = new FindTwoFactorClusters2((ICovarianceMatrix) source,
                             tetradTestType, getParams().getAlpha());
 //
 //                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,

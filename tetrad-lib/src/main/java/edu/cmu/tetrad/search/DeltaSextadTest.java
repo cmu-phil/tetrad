@@ -29,10 +29,7 @@ import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Implements a test for simultaneously zero sextads in the style of Bollen, K. (1990).
@@ -274,16 +271,29 @@ public class DeltaSextadTest implements IDeltaSextadTest {
     public double calcChiSquare(Sextad... sextads) {
         this.storedSextads = sextads;
 
-        this.df = 4; //sextads.length;
+        this.df = sextads.length;
 
+        Set<Sigma> boldSigmaSet = new LinkedHashSet<Sigma>();
         List<Sigma> boldSigma = new ArrayList<Sigma>();
 
-        List<Node> _nodes = new ArrayList<Node>(sextads[0].getNodes());
+        for (Sextad sextad : sextads) {
+            List<Node> _nodes = sextad.getNodes();
 
-        for (int i = 0; i < _nodes.size(); i++) {
-            for (int j = i + 1; j < _nodes.size(); j++) {
-                boldSigma.add(new Sigma(_nodes.get(i), _nodes.get(j)));
+//            for (int i = 0; i < _nodes.size(); i++) {
+//                for (int j = i; j < _nodes.size(); j++) {
+//                    boldSigmaSet.add(new Sigma(_nodes.get(i), _nodes.get(j)));
+//                }
+//            }
+//
+            for (int k1 = 0; k1 < 3; k1++) {
+                for (int k2 = 0; k2 < 3; k2++) {
+                    boldSigmaSet.add(new Sigma(_nodes.get(k1), _nodes.get(3 + k2)));
+                }
             }
+        }
+
+        for (Sigma sigma : boldSigmaSet) {
+            boldSigma.add(sigma);
         }
 
         // Need a matrix of variances and covariances of sample covariances.
@@ -359,31 +369,6 @@ public class DeltaSextadTest implements IDeltaSextadTest {
             this.storedValue = det; // ?
         }
 
-        //        for (int i = 0; i < sextads.length; i++) {
-//            Sextad sextad = sextads[i];
-//
-//            List<Node> nodes = new ArrayList<Node>();
-//
-//            nodes.add(sextad.getI());
-//            nodes.add(sextad.getJ());
-//            nodes.add(sextad.getK());
-//            nodes.add(sextad.getL());
-//            nodes.add(sextad.getM());
-//            nodes.add(sextad.getN());
-//
-//            TetradMatrix m = TetradMatrix.instance(3, 3);
-//
-//            for (int k1 = 0; k1 < 3; k1++) {
-//                for (int k2 = 0; k2 < 3; k2++) {
-//                    m.set(k1, k2, r(nodes.get(k1), nodes.get(3+k2)));
-//                }
-//            }
-//
-//            double value = TetradAlgebra.det(m);
-//            t.set(i, 0, value);
-//            this.storedValue = value;
-//        }
-
         TetradMatrix sigma_tt = del.transpose().times(sigma_ss).times(del);
         try {
             this.chisq = N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);
@@ -403,11 +388,12 @@ public class DeltaSextadTest implements IDeltaSextadTest {
 
         String s = "";
 
-        for (Sextad storedSextad : storedSextads) {
-            s += storedSextad + " ";
-        }
+//        for (Sextad storedSextad : storedSextads) {
+//            s += storedSextad + " ";
+//        }
 
-        s += "value = " + nf.format(storedValue) + " p = " + nf.format(p);
+        s += "cdf = " + cdf + " p = " + nf.format(p);
+        System.out.println(s);
 
         TetradLogger.getInstance().log("sextadPValues", s);
 
@@ -683,6 +669,18 @@ public class DeltaSextadTest implements IDeltaSextadTest {
 //
 //        return sum / N;
 //    }
+
+    private int dofDrton(int n) {
+        int dof = ((n - 2) * (n - 3)) / 2 - 2;
+        if (dof < 0) dof = 0;
+        return dof;
+    }
+
+    private int dofHarman(int n) {
+        int dof = n * (n - 5) / 2 + 1;
+        if (dof < 0) dof = 0;
+        return dof;
+    }
 }
 
 
