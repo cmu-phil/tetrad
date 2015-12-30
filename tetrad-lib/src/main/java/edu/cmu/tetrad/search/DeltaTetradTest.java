@@ -21,10 +21,8 @@
 
 package edu.cmu.tetrad.search;
 
-import cern.jet.random.ChiSquare;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -44,12 +42,12 @@ public class DeltaTetradTest {
     private ICovarianceMatrix cov;
     private int df;
     private double chisq;
-    private double[][][][] fourthMoment;
+    //    private double[][][][] fourthMoment;
 //    private int numVars;
 //    private double[] means;
     private List<Node> variables;
     private Map<Node, Integer> variablesHash;
-    private boolean cacheFourthMoments = true;
+//    private boolean cacheFourthMoments = false;
 
 
     // As input we require a data set and a list of non-redundant Tetrads.
@@ -74,7 +72,7 @@ public class DeltaTetradTest {
 
         this.cov = new CovarianceMatrix(dataSet);
 
-        List<DataSet> data1 = new ArrayList<DataSet>();
+        List<DataSet> data1 = new ArrayList<>();
         data1.add(dataSet);
         List<DataSet> data2 = DataUtils.center(data1);
 
@@ -85,7 +83,7 @@ public class DeltaTetradTest {
         this.variables = dataSet.getVariables();
 //        this.numVars = dataSet.getNumColumns();
 
-        this.variablesHash = new HashMap<Node, Integer>();
+        this.variablesHash = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             variablesHash.put(variables.get(i), i);
@@ -118,10 +116,10 @@ public class DeltaTetradTest {
         }
     }
 
-    private void initializeForthMomentMatrix(List<Node> variables) {
-        int n = variables.size();
-        fourthMoment = new double[n][n][n][n];
-    }
+//    private void initializeForthMomentMatrix(List<Node> variables) {
+//        int n = variables.size();
+//        fourthMoment = new double[n][n][n][n];
+//    }
 
     /**
      * Takes a list of tetrads for the given data set and returns the chi square value for the test. We assume that the
@@ -134,8 +132,8 @@ public class DeltaTetradTest {
         this.df = tetrads.length;
 
         // Need a list of symbolic covariances--i.e. covariances that appear in tetrads.
-        Set<Sigma> boldSigmaSet = new LinkedHashSet<Sigma>();
-        List<Sigma> boldSigma = new ArrayList<Sigma>();
+        Set<Sigma> boldSigmaSet = new LinkedHashSet<>();
+        List<Sigma> boldSigma = new ArrayList<>();
 
         for (Tetrad tetrad : tetrads) {
             boldSigmaSet.add(new Sigma(tetrad.getI(), tetrad.getK()));
@@ -264,53 +262,53 @@ public class DeltaTetradTest {
         return getForthMoment(x, y, z, w);
     }
 
-    private void setForthMoment(int x, int y, int z, int w, double sxyzw) {
-        fourthMoment[x][y][z][w] = sxyzw;
-        fourthMoment[x][y][w][z] = sxyzw;
-        fourthMoment[x][w][z][y] = sxyzw;
-        fourthMoment[x][w][y][z] = sxyzw;
-        fourthMoment[x][z][y][w] = sxyzw;
-        fourthMoment[x][z][w][y] = sxyzw;
-
-        fourthMoment[y][x][z][w] = sxyzw;
-        fourthMoment[y][x][w][z] = sxyzw;
-        fourthMoment[y][z][x][w] = sxyzw;
-        fourthMoment[y][z][w][x] = sxyzw;
-        fourthMoment[y][w][x][z] = sxyzw;
-        fourthMoment[y][w][z][x] = sxyzw;
-
-        fourthMoment[z][x][y][w] = sxyzw;
-        fourthMoment[z][x][w][y] = sxyzw;
-        fourthMoment[z][y][x][w] = sxyzw;
-        fourthMoment[z][y][w][x] = sxyzw;
-        fourthMoment[z][w][x][y] = sxyzw;
-        fourthMoment[z][w][y][x] = sxyzw;
-
-        fourthMoment[w][x][y][z] = sxyzw;
-        fourthMoment[w][x][z][y] = sxyzw;
-        fourthMoment[w][y][x][z] = sxyzw;
-        fourthMoment[w][y][z][x] = sxyzw;
-        fourthMoment[w][z][x][y] = sxyzw;
-        fourthMoment[w][z][y][x] = sxyzw;
-    }
+//    private void setForthMoment(int x, int y, int z, int w, double sxyzw) {
+//        fourthMoment[x][y][z][w] = sxyzw;
+//        fourthMoment[x][y][w][z] = sxyzw;
+//        fourthMoment[x][w][z][y] = sxyzw;
+//        fourthMoment[x][w][y][z] = sxyzw;
+//        fourthMoment[x][z][y][w] = sxyzw;
+//        fourthMoment[x][z][w][y] = sxyzw;
+//
+//        fourthMoment[y][x][z][w] = sxyzw;
+//        fourthMoment[y][x][w][z] = sxyzw;
+//        fourthMoment[y][z][x][w] = sxyzw;
+//        fourthMoment[y][z][w][x] = sxyzw;
+//        fourthMoment[y][w][x][z] = sxyzw;
+//        fourthMoment[y][w][z][x] = sxyzw;
+//
+//        fourthMoment[z][x][y][w] = sxyzw;
+//        fourthMoment[z][x][w][y] = sxyzw;
+//        fourthMoment[z][y][x][w] = sxyzw;
+//        fourthMoment[z][y][w][x] = sxyzw;
+//        fourthMoment[z][w][x][y] = sxyzw;
+//        fourthMoment[z][w][y][x] = sxyzw;
+//
+//        fourthMoment[w][x][y][z] = sxyzw;
+//        fourthMoment[w][x][z][y] = sxyzw;
+//        fourthMoment[w][y][x][z] = sxyzw;
+//        fourthMoment[w][y][z][x] = sxyzw;
+//        fourthMoment[w][z][x][y] = sxyzw;
+//        fourthMoment[w][z][y][x] = sxyzw;
+//    }
 
     private double getForthMoment(int x, int y, int z, int w) {
-        if (cacheFourthMoments) {
-            if (fourthMoment == null) {
-                initializeForthMomentMatrix(dataSet.getVariables());
-            }
-
-            double sxyzw = fourthMoment[x][y][z][w];
-
-            if (sxyzw == 0.0) {
-                sxyzw = sxyzw(x, y, z, w);
-                setForthMoment(x, y, z, w, sxyzw);
-            }
-
-            return sxyzw;
-        } else {
-            return sxyzw(x, y, z, w);
-        }
+//        if (cacheFourthMoments) {
+//            if (fourthMoment == null) {
+//                initializeForthMomentMatrix(dataSet.getVariables());
+//            }
+//
+//            double sxyzw = fourthMoment[x][y][z][w];
+//
+//            if (sxyzw == 0.0) {
+//                sxyzw = sxyzw(x, y, z, w);
+////                setForthMoment(x, y, z, w, sxyzw);
+//            }
+//
+//            return sxyzw;
+//        } else {
+        return sxyzw(x, y, z, w);
+//        }
     }
 
     /**
@@ -366,9 +364,9 @@ public class DeltaTetradTest {
         return 0.0;
     }
 
-    public void setCacheFourthMoments(boolean cacheFourthMoments) {
-        this.cacheFourthMoments = cacheFourthMoments;
-    }
+//    public void setCacheFourthMoments(boolean cacheFourthMoments) {
+//        this.cacheFourthMoments = cacheFourthMoments;
+//    }
 
     private static class Sigma {
         private Node a;

@@ -38,7 +38,7 @@ import static java.lang.Math.sqrt;
  *
  * @author Joseph Ramsey
  */
-public class FindOneFactorClusters2 {
+public class FindOneFactorClusters3 {
 
     public Algorithm getAlgorithm() {
         return algorithm;
@@ -77,7 +77,7 @@ public class FindOneFactorClusters2 {
 
     //========================================PUBLIC METHODS====================================//
 
-    public FindOneFactorClusters2(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
+    public FindOneFactorClusters3(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
         if (testType == null) throw new NullPointerException("Null test type.");
         cov = new CovarianceMatrix(cov);
         this.variables = cov.getVariables();
@@ -93,7 +93,7 @@ public class FindOneFactorClusters2 {
 
     }
 
-    public FindOneFactorClusters2(DataSet dataSet, TestType testType, Algorithm algorithm, double alpha) {
+    public FindOneFactorClusters3(DataSet dataSet, TestType testType, Algorithm algorithm, double alpha) {
         if (testType == null) throw new NullPointerException("Null test type.");
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
@@ -743,7 +743,7 @@ public class FindOneFactorClusters2 {
 
             ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
             int[] choice2;
-//            boolean found = false;
+            boolean found = false;
 
             while ((choice2 = gen2.next()) != null) {
                 int t1 = _cluster.get(choice2[0]);
@@ -752,23 +752,22 @@ public class FindOneFactorClusters2 {
 
                 List<Integer> quartet = triple(t1, t2, t3);
 
-
                 quartet.add(o);
 
-//                if (pure(quartet, allVariables, alpha)) {
-//                    found = true;
-//                    break;
-//                }
-
-                if (!pure(quartet, allVariables, alpha)) {
-                    continue O;
+                if (pure(quartet, allVariables, alpha)) {
+                    found = true;
+                    break;
                 }
+
+//                if (!pure(quartet, allVariables, alpha)) {
+//                    continue O;
+//                }
             }
 
-//            if (found) {
+            if (found) {
                 log("Extending by " + variables.get(o), false);
                 cluster.add(o);
-//            }
+            }
         }
     }
 
@@ -911,9 +910,9 @@ public class FindOneFactorClusters2 {
     }
 
     private boolean pure(List<Integer> quartet, List<Integer> variables, double alpha) {
-        if (zeroCorr(quartet)) {
-            return false;
-        }
+//        if (zeroCorr(quartet)) {
+//            return false;
+//        }
 
         if (vanishes(quartet)) {
             for (int o : allVariables()) {
