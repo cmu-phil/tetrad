@@ -49,7 +49,7 @@ public class FindOneFactorClusters2 {
 
     // triples first or tetrads first, two algorithms. Pendads first (GAP) is TestType.Tetrad_DELTA,
     // Tetrads first is TestType.TETRAD_WISHART. (Sorry, I'll fix this.)
-    private TestType testType = TestType.SAG;
+    private TestType testType = TestType.GAP;
 
     // The Bollen test. Testing two tetrads simultaneously.
     private DeltaTetradTest test;
@@ -231,11 +231,11 @@ public class FindOneFactorClusters2 {
     public Graph search() {
         Set<List<Integer>> allClusters;
 
-//        if (testType == TestType.SAG) {
-        allClusters = estimateClustersTetradsFirst();
-//        } else {
-//            allClusters = estimateClustersTriplesFirst();
-//        }
+        if (testType == TestType.SAG) {
+            allClusters = estimateClustersTetradsFirst();
+        } else {
+            allClusters = estimateClustersTriplesFirst();
+        }
         this.clusters = variablesForIndices2(allClusters);
         return convertToGraph(allClusters);
     }
@@ -248,8 +248,8 @@ public class FindOneFactorClusters2 {
 //        for (int i = 0; i < variables.size(); i++) _variables.add(i);
         List<Integer> _variables = allVariables();
 
-        Set<Set<Integer>> fiveClusters = findPuretriples(_variables);
-        Set<Set<Integer>> combined = combinePuretriples(fiveClusters, _variables);
+        Set<Set<Integer>> triples = findPuretriples(_variables);
+        Set<Set<Integer>> combined = combinePuretriples(triples, _variables);
 
         Set<List<Integer>> _combined = new HashSet<List<Integer>>();
 
@@ -315,6 +315,8 @@ public class FindOneFactorClusters2 {
 
             List<Integer> triple = triple(n1, n2, n3);
 
+            if (zeroCorr(triple)) continue;
+
             for (int o : allVariables) {
                 if (triple.contains(o)) {
                     continue;
@@ -370,15 +372,13 @@ public class FindOneFactorClusters2 {
                     int rejected = 0;
                     int accepted = 0;
 
-                    ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 4);
+                    ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 2);
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
                         t.clear();
                         t.add(_cluster2.get(choice[0]));
                         t.add(_cluster2.get(choice[1]));
-                        t.add(_cluster2.get(choice[2]));
-                        t.add(_cluster2.get(choice[3]));
                         t.add(o);
 
                         if (!puretriples.contains(t)) {
