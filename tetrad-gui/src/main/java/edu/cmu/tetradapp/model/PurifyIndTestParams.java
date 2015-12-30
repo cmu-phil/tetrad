@@ -22,6 +22,8 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Clusters;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -70,6 +72,8 @@ public class PurifyIndTestParams implements MimIndTestParams {
      * @serial Can be null.
      */
     private List<String> varNames;
+    private Graph sourceGraph;
+    private IKnowledge getKnowledge;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -140,6 +144,16 @@ public class PurifyIndTestParams implements MimIndTestParams {
 
     public void setLatentVarNames(List<String> latentVarNames) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Graph getSourceGraph() {
+        return this.sourceGraph;
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return this.getKnowledge;
     }
 
     //=============================PRIVATE METHODS=======================//

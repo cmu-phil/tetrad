@@ -40,6 +40,8 @@ import static java.lang.Math.sqrt;
  */
 public class FindTwoFactorClusters2 {
 
+    public enum Algorithm {SAG, GAP}
+
     private CorrelationMatrix corr;
     // The list of all variables.
     private List<Node> variables;
@@ -47,8 +49,6 @@ public class FindTwoFactorClusters2 {
     // The significance level.
     private double alpha;
 
-    // pentads first or tetrads first, two algorithms. Pendads first (GAP) is TestType.Tetrad_DELTA,
-    // Tetrads first is TestType.TETRAD_WISHART. (Sorry, I'll fix this.)
     private TestType testType = TestType.SAG;
 
     // The Bollen test. Testing two tetrads simultaneously.
@@ -72,23 +72,10 @@ public class FindTwoFactorClusters2 {
     //========================================PUBLIC METHODS====================================//
 
     public FindTwoFactorClusters2(ICovarianceMatrix cov, TestType testType, double alpha) {
-        cov = new CovarianceMatrix(cov);
-//        this.variables = cov.getVariables();
-//
-//        List<Integer> removedVars = removeVariables(cov.getMatrix(), 0.1, 0.9, .1);
-//        List<Node> allVars = new ArrayList<Node>(cov.getVariables());
-//        List<Node> _removedVars = new ArrayList<Node>();
-//        for (int i = 0; i < allVars.size(); i++) {
-//            if (removedVars.contains(i)) _removedVars.add(allVars.get(i));
-//        }
-//
-//        allVars.removeAll(_removedVars);
-//
-//        List<String> names = new ArrayList<String>();
-//        for (Node node : allVars) names.add(node.getName());
-//
-//        cov = cov.getSubmatrix(names);
+        if (testType == null) throw new NullPointerException("Null test type.");
+        if (testType != TestType.SAG && testType != TestType.GAP) throw new IllegalArgumentException("Need SAG or GAP");
 
+        cov = new CovarianceMatrix(cov);
         this.variables = cov.getVariables();
         this.indTest = new IndTestFisherZ(cov, indTestAlpha);
         this.alpha = alpha;
@@ -97,33 +84,17 @@ public class FindTwoFactorClusters2 {
         this.dataModel = cov;
 
         this.corr = new CorrelationMatrix(cov);
-
-
     }
 
     public FindTwoFactorClusters2(DataSet dataSet, TestType testType, double alpha) {
-//        CovarianceMatrix cov = new CovarianceMatrix(dataSet);
-//        this.variables = cov.getVariables();
-//
-//        List<Integer> removedVars = removeVariables(cov.getMatrix(), 0.1, 0.9, .1);
-//        List<Node> allVars = new ArrayList<Node>(cov.getVariables());
-//        List<Node> _removedVars = new ArrayList<Node>();
-//        for (int i = 0; i < allVars.size(); i++) {
-//            if (removedVars.contains(i)) _removedVars.add(allVars.get(i));
-//        }
-//
-//        allVars.removeAll(_removedVars);
-//
-//        dataSet = dataSet.subsetColumns(allVars);
-
+        if (testType == null) throw new NullPointerException("Null test type.");
+        if (testType != TestType.SAG && testType != TestType.GAP) throw new IllegalArgumentException("Need SAG or GAP");
         this.variables = dataSet.getVariables();
         this.indTest = new IndTestFisherZ(dataSet, indTestAlpha);
         this.alpha = alpha;
         this.testType = testType;
         this.test = new DeltaSextadTest(dataSet);
-//        this.test = new DeltatetradTest2(dataSet); // The old test.
         this.dataModel = dataSet;
-
         this.corr = new CorrelationMatrix(dataSet);
     }
 

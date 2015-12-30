@@ -174,11 +174,12 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
                 FindOneFactorClusters2 bpc;
                 Object source = getData();
+                FindOneFactorClusters2.Algorithm sag = FindOneFactorClusters2.Algorithm.SAG;
 
                 if (source instanceof DataSet) {
                     bpc = new FindOneFactorClusters2(
                             (DataSet) source,
-                            tetradTestType,
+                            tetradTestType, sag,
                             getParams().getAlpha());
 
 //                    bpc = new FindTwoFactorClusters4(
@@ -186,7 +187,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //                            getParams().getAlpha());
                 } else {
                     bpc = new FindOneFactorClusters2((ICovarianceMatrix) source,
-                            tetradTestType, getParams().getAlpha());
+                            tetradTestType, sag, getParams().getAlpha());
 //
 //                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
 //                            getParams().getAlpha());

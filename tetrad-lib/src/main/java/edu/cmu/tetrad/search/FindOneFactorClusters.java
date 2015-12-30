@@ -46,7 +46,6 @@ public class FindOneFactorClusters {
     public enum SortKey {size, pValue}
 
     public enum Algorithm {SAG, GAP}
-
     public enum AlgType {strict, lax, laxWithSpeedup}
 
     private ICovarianceMatrix cov;
@@ -181,15 +180,6 @@ public class FindOneFactorClusters {
     public void setDepth(int depth) {
         this.depth = depth;
     }
-
-    public AlgType getAlgType() {
-        return algType;
-    }
-
-    public void setAlgType(AlgType algType) {
-        this.algType = algType;
-    }
-
 
     public void setExtraShuffle(boolean extraShuffle) {
         this.extraShuffle = extraShuffle;

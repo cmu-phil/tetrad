@@ -21,6 +21,9 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.Clusters;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
@@ -56,6 +59,12 @@ public interface MimIndTestParams extends TetradSerializable {
     List<String> getLatentVarNames();
 
     void setLatentVarNames(List<String> latentVarNames);
+
+    Graph getSourceGraph();
+
+    IKnowledge getKnowledge();
+
+    Clusters getClusters();
 }
 
 

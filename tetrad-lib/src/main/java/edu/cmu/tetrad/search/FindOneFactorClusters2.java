@@ -40,6 +40,16 @@ import static java.lang.Math.sqrt;
  */
 public class FindOneFactorClusters2 {
 
+    public Algorithm getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(Algorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    public enum Algorithm {SAG, GAP}
+
     private CorrelationMatrix corr;
     // The list of all variables.
     private List<Node> variables;
@@ -47,18 +57,13 @@ public class FindOneFactorClusters2 {
     // The significance level.
     private double alpha;
 
-    // triples first or tetrads first, two algorithms. Pendads first (GAP) is TestType.Tetrad_DELTA,
-    // Tetrads first is TestType.TETRAD_WISHART. (Sorry, I'll fix this.)
-    private TestType testType = TestType.GAP;
+    private TestType testType = TestType.TETRAD_DELTA;
 
-    // The Bollen test. Testing two tetrads simultaneously.
+    // The Delta test. Testing two tetrads simultaneously.
     private DeltaTetradTest test;
 
-    // independence test.
-    private IndependenceTest indTest;
-
-    // independence test alpha.
-    private double indTestAlpha = 0.1;
+    // The tetrad test--using Ricardo's. Used only for Wishart.
+    private ContinuousTetradTest test2;
 
     // The data.
     private transient DataModel dataModel;
@@ -68,61 +73,35 @@ public class FindOneFactorClusters2 {
     private int depth = 0;
     private boolean verbose = false;
     private boolean significanceCalculated = false;
+    private Algorithm algorithm = Algorithm.GAP;
 
     //========================================PUBLIC METHODS====================================//
 
-    public FindOneFactorClusters2(ICovarianceMatrix cov, TestType testType, double alpha) {
+    public FindOneFactorClusters2(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
+        if (testType == null) throw new NullPointerException("Null test type.");
         cov = new CovarianceMatrix(cov);
-//        this.variables = cov.getVariables();
-//
-//        List<Integer> removedVars = removeVariables(cov.getMatrix(), 0.1, 0.9, .1);
-//        List<Node> allVars = new ArrayList<Node>(cov.getVariables());
-//        List<Node> _removedVars = new ArrayList<Node>();
-//        for (int i = 0; i < allVars.size(); i++) {
-//            if (removedVars.contains(i)) _removedVars.add(allVars.get(i));
-//        }
-//
-//        allVars.removeAll(_removedVars);
-//
-//        List<String> names = new ArrayList<String>();
-//        for (Node node : allVars) names.add(node.getName());
-//
-//        cov = cov.getSubmatrix(names);
-
         this.variables = cov.getVariables();
-        this.indTest = new IndTestFisherZ(cov, indTestAlpha);
         this.alpha = alpha;
         this.testType = testType;
         this.test = new DeltaTetradTest(cov);
+        this.test2 = new ContinuousTetradTest(cov, testType, alpha);
         this.dataModel = cov;
+        this.algorithm = algorithm;
 
         this.corr = new CorrelationMatrix(cov);
 
 
     }
 
-    public FindOneFactorClusters2(DataSet dataSet, TestType testType, double alpha) {
-//        CovarianceMatrix cov = new CovarianceMatrix(dataSet);
-//        this.variables = cov.getVariables();
-//
-//        List<Integer> removedVars = removeVariables(cov.getMatrix(), 0.1, 0.9, .1);
-//        List<Node> allVars = new ArrayList<Node>(cov.getVariables());
-//        List<Node> _removedVars = new ArrayList<Node>();
-//        for (int i = 0; i < allVars.size(); i++) {
-//            if (removedVars.contains(i)) _removedVars.add(allVars.get(i));
-//        }
-//
-//        allVars.removeAll(_removedVars);
-//
-//        dataSet = dataSet.subsetColumns(allVars);
-
+    public FindOneFactorClusters2(DataSet dataSet, TestType testType, Algorithm algorithm, double alpha) {
+        if (testType == null) throw new NullPointerException("Null test type.");
         this.variables = dataSet.getVariables();
-        this.indTest = new IndTestFisherZ(dataSet, indTestAlpha);
         this.alpha = alpha;
         this.testType = testType;
         this.test = new DeltaTetradTest(dataSet);
-//        this.test = new DeltatetradTest2(dataSet); // The old test.
+        this.test2 = new ContinuousTetradTest(dataSet, testType, alpha);
         this.dataModel = dataSet;
+        this.algorithm = algorithm;
 
         this.corr = new CorrelationMatrix(dataSet);
     }
@@ -231,10 +210,12 @@ public class FindOneFactorClusters2 {
     public Graph search() {
         Set<List<Integer>> allClusters;
 
-        if (testType == TestType.SAG) {
+        if (algorithm == Algorithm.SAG) {
             allClusters = estimateClustersTetradsFirst();
-        } else {
+        } else if (algorithm == Algorithm.GAP) {
             allClusters = estimateClustersTriplesFirst();
+        } else {
+            throw new IllegalStateException("Expected SAG or GAP: " + testType);
         }
         this.clusters = variablesForIndices2(allClusters);
         return convertToGraph(allClusters);
@@ -324,9 +305,9 @@ public class FindOneFactorClusters2 {
 
                 List<Integer> quartet = quartet(n1, n2, n3, o);
 
-                double p = tetradVanishingP(quartet);
+                boolean vanishes = vanishes(quartet);
 
-                if (!(p > alpha)) {
+                if (!vanishes) {
                     continue CHOICE;
                 }
 
@@ -698,45 +679,6 @@ public class FindOneFactorClusters2 {
 
     Map<Set<Integer>, Double> avgSumLnPs = new HashMap<Set<Integer>, Double>();
 
-    private double avgSumLnP(List<Integer> cluster) {
-        ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), 3);
-        int[] choice;
-        int count = 0;
-        double sumLnP = 0;
-
-        Set<Integer> _cluster = new HashSet<Integer>(cluster);
-
-        if (avgSumLnPs.containsKey(_cluster)) {
-            return avgSumLnPs.get(_cluster);
-        }
-
-        while ((choice = gen.next()) != null) {
-            int n1 = cluster.get(choice[0]);
-            int n2 = cluster.get(choice[1]);
-            int n3 = cluster.get(choice[2]);
-
-            List<Integer> triple = triple(n1, n2, n3);
-
-            for (int o : cluster) {
-                if (triple.contains(o)) {
-                    continue;
-                }
-
-                List<Integer> tetrad = quartet(n1, n2, n3, o);
-                double p = tetradVanishingP(tetrad);
-                sumLnP += p;
-                count++;
-            }
-        }
-
-        sumLnP /= count;
-
-        if (count == 0) sumLnP = Double.NEGATIVE_INFINITY;
-
-        avgSumLnPs.put(_cluster, sumLnP);
-        return sumLnP;
-    }
-
     // Finds clusters of size 4 or higher for the tetrad first algorithm.
     private Set<List<Integer>> findPureClusters(List<Integer> _variables, Graph graph) {
         Set<List<Integer>> clusters = new HashSet<List<Integer>>();
@@ -839,10 +781,7 @@ public class FindOneFactorClusters2 {
             log("Significance * " + __clusters + " = " + significance3, false);
         }
 
-        if (significance3 < alpha) {
-            return true;
-        }
-        return false;
+        return significance3 < alpha;
     }
 
     //  Finds clusters of size 3 3or the quartet first algorithm.
@@ -890,7 +829,7 @@ public class FindOneFactorClusters2 {
                     _cluster.add(t1);
 
 
-                    if (tetradVanishingP(_cluster) > alpha) {
+                    if (vanishes(_cluster)) {
 //                        System.out.println("Vanishes: " + variablesForIndices(_cluster));
                         someVanish = true;
                     } else {
@@ -975,7 +914,7 @@ public class FindOneFactorClusters2 {
             return false;
         }
 
-        if (tetradVanishingP(quartet) > alpha) {
+        if (vanishes(quartet)) {
             for (int o : allVariables()) {
                 if (quartet.contains(o)) continue;
 
@@ -984,7 +923,11 @@ public class FindOneFactorClusters2 {
                     _quartet.remove(quartet.get(i));
                     _quartet.add(o);
 
-                    if (!(tetradVanishingP(_quartet) > alpha)) {
+                    if (zeroCorr(_quartet)) {
+                        continue;
+                    }
+
+                    if (!(vanishes(_quartet))) {
                         return false;
                     }
                 }
@@ -1127,13 +1070,13 @@ public class FindOneFactorClusters2 {
         return triple;
     }
 
-    private double tetradVanishingP(List<Integer> quartet) {
+    private boolean vanishes(List<Integer> quartet) {
         int n1 = quartet.get(0);
         int n2 = quartet.get(1);
         int n3 = quartet.get(2);
         int n4 = quartet.get(3);
 
-        return testVanishing(n1, n2, n3, n4);
+        return vanishes(n1, n2, n3, n4);
     }
 
     private boolean zeroCorr(List<Integer> cluster) {
@@ -1163,19 +1106,17 @@ public class FindOneFactorClusters2 {
         this.verbose = verbose;
     }
 
-    private double testVanishing(int x, int y, int z, int w) {
+    private boolean vanishes(int x, int y, int z, int w) {
         if (testType == TestType.TETRAD_DELTA) {
             Tetrad t1 = new Tetrad(variables.get(x), variables.get(y), variables.get(z), variables.get(w));
             Tetrad t2 = new Tetrad(variables.get(x), variables.get(y), variables.get(w), variables.get(z));
 
-            test.calcChiSquare(t1, t2);
-            return test.getPValue();
+            return test.getPValue(t1, t2) > alpha;
+        } else if (testType == TestType.TETRAD_WISHART) {
+            return test2.tetradPValue(x, y, z, w) > alpha && test2.tetradPValue(x, y, w, z) > alpha;
         }
-//        else {
-//            return test.getPValue(x, y, z, w) < alpha && test.tetradHolds(x, y, w, z);
-//        }
 
-        throw new IllegalArgumentException("Only the delta test is being used.");
+        throw new IllegalArgumentException("Only the delta and wishart tests are being used: " + testType);
     }
 
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {

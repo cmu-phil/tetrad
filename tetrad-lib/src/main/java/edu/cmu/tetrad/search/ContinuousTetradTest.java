@@ -76,6 +76,10 @@ public final class ContinuousTetradTest implements TetradTest {
 
     public ContinuousTetradTest(DataSet dataSet, TestType sigTestType,
                                 double sig) {
+        if (sigTestType == TestType.TETRAD_BOLLEN || sigTestType == null) {
+            sigTestType = TestType.TETRAD_DELTA;
+        }
+
         if (!(sigTestType == TestType.TETRAD_WISHART ||
                 sigTestType == TestType.TETRAD_DELTA ||
                 sigTestType == TestType.GAUSSIAN_FACTOR)) {

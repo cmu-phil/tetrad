@@ -154,9 +154,9 @@ public class JpcRunner extends AbstractAlgorithmRunner
             search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
 
 //            if (useCpc) {
-//                search.setAlgorithmType(Jpc.AlgorithmType.CPC);
+//                search.setAlgorithm(Jpc.AlgorithmType.CPC);
 //            } else {
-//                search.setAlgorithmType(Jpc.AlgorithmType.PC);
+//                search.setAlgorithm(Jpc.AlgorithmType.PC);
 //            }
 
             graph = search.search();
@@ -172,7 +172,7 @@ public class JpcRunner extends AbstractAlgorithmRunner
 //            System.out.println("_p = " + alpha);
 //
 //            independenceTest.setAlpha(alpha);
-////            search.setAlgorithmType((Jpc.AlgorithmType.CPC));
+////            search.setAlgorithm((Jpc.AlgorithmType.CPC));
 //            Graph _graph = search.search();
 //
 //            Graph _graph2 = MbUtils.generatePatternDags(_graph, true).get(0);
