@@ -34,7 +34,7 @@ import static java.lang.Math.sqrt;
 
 /**
  * Implements FindOneFactorCluster by Erich Kummerfeld (adaptation of a two factor
- * quartet algorithm to a one factor sextad algorithm).
+ * quartet algorithm to a one factor MySextad algorithm).
  *
  * @author Joseph Ramsey
  */
@@ -675,7 +675,7 @@ public class FindTwoFactorClusters2 {
 
     Map<Set<Integer>, Double> avgSumLnPs = new HashMap<Set<Integer>, Double>();
 
-    // Finds clusters of size 6 or higher for the sextad first algorithm.
+    // Finds clusters of size 6 or higher for the MySextad first algorithm.
     private Set<List<Integer>> findPureClusters(List<Integer> _variables, Graph graph) {
         Set<List<Integer>> clusters = new HashSet<List<Integer>>();
 //        List<Integer> allVariables = new ArrayList<Integer>();
@@ -1117,48 +1117,55 @@ public class FindTwoFactorClusters2 {
     }
 
     private boolean vanishes(int n1, int n2, int n3, int n4, int n5, int n6) {
-        Node m1 = variables.get(n1);
-        Node m2 = variables.get(n2);
-        Node m3 = variables.get(n3);
-        Node m4 = variables.get(n4);
-        Node m5 = variables.get(n5);
-        Node m6 = variables.get(n6);
+//        Node m1 = variables.get(n1);
+//        Node m2 = variables.get(n2);
+//        Node m3 = variables.get(n3);
+//        Node m4 = variables.get(n4);
+//        Node m5 = variables.get(n5);
+//        Node m6 = variables.get(n6);
 
-//            sextad[,1]=c(indices[1],indices[2],indices[3],indices[4],indices[5],indices[6])
-//            sextad[,2]=c(indices[1],indices[5],indices[6],indices[2],indices[3],indices[4])
-//            sextad[,3]=c(indices[1],indices[4],indices[6],indices[2],indices[3],indices[5])
-//            sextad[,4]=c(indices[1],indices[4],indices[5],indices[2],indices[3],indices[6])
-//            sextad[,5]=c(indices[1],indices[3],indices[4],indices[2],indices[5],indices[6])
-//            sextad[,6]=c(indices[1],indices[3],indices[5],indices[2],indices[4],indices[6])
-//            sextad[,7]=c(indices[1],indices[3],indices[6],indices[2],indices[4],indices[5])
-//            sextad[,8]=c(indices[1],indices[2],indices[4],indices[3],indices[5],indices[6])
-//            sextad[,9]=c(indices[1],indices[2],indices[5],indices[3],indices[4],indices[6])
-//            sextad[,10]=c(indices[1],indices[2],indices[6],indices[3],indices[4],indices[5])
+        int m1 = n1;
+        int m2 = n2;
+        int m3 = n3;
+        int m4 = n4;
+        int m5 = n5;
+        int m6 = n6;
 
-        Sextad t1 = new Sextad(m1, m2, m3, m4, m5, m6);
-        Sextad t2 = new Sextad(m1, m5, m6, m2, m3, m4);
-        Sextad t3 = new Sextad(m1, m4, m6, m2, m3, m5);
-        Sextad t4 = new Sextad(m1, m4, m5, m2, m3, m6);
-        Sextad t5 = new Sextad(m1, m3, m4, m2, m5, m6);
-        Sextad t6 = new Sextad(m1, m3, m5, m2, m4, m6);
-        Sextad t7 = new Sextad(m1, m3, m6, m2, m4, m5);
-        Sextad t8 = new Sextad(m1, m2, m4, m3, m5, m6);
-        Sextad t9 = new Sextad(m1, m2, m5, m3, m4, m6);
-        Sextad t10 = new Sextad(m1, m2, m6, m3, m4, m5);
+//            MySextad[,1]=c(indices[1],indices[2],indices[3],indices[4],indices[5],indices[6])
+//            MySextad[,2]=c(indices[1],indices[5],indices[6],indices[2],indices[3],indices[4])
+//            MySextad[,3]=c(indices[1],indices[4],indices[6],indices[2],indices[3],indices[5])
+//            MySextad[,4]=c(indices[1],indices[4],indices[5],indices[2],indices[3],indices[6])
+//            MySextad[,5]=c(indices[1],indices[3],indices[4],indices[2],indices[5],indices[6])
+//            MySextad[,6]=c(indices[1],indices[3],indices[5],indices[2],indices[4],indices[6])
+//            MySextad[,7]=c(indices[1],indices[3],indices[6],indices[2],indices[4],indices[5])
+//            MySextad[,8]=c(indices[1],indices[2],indices[4],indices[3],indices[5],indices[6])
+//            MySextad[,9]=c(indices[1],indices[2],indices[5],indices[3],indices[4],indices[6])
+//            MySextad[,10]=c(indices[1],indices[2],indices[6],indices[3],indices[4],indices[5])
 
-//            Sextad[] independents = {t2, t5, t10, t3, t6};
+        IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
+        IntSextad t2 = new IntSextad(m1, m5, m6, m2, m3, m4);
+        IntSextad t3 = new IntSextad(m1, m4, m6, m2, m3, m5);
+        IntSextad t4 = new IntSextad(m1, m4, m5, m2, m3, m6);
+        IntSextad t5 = new IntSextad(m1, m3, m4, m2, m5, m6);
+        IntSextad t6 = new IntSextad(m1, m3, m5, m2, m4, m6);
+        IntSextad t7 = new IntSextad(m1, m3, m6, m2, m4, m5);
+        IntSextad t8 = new IntSextad(m1, m2, m4, m3, m5, m6);
+        IntSextad t9 = new IntSextad(m1, m2, m5, m3, m4, m6);
+        IntSextad t10 = new IntSextad(m1, m2, m6, m3, m4, m5);
 
-        List<Sextad[]> independents = new ArrayList<Sextad[]>();
-        independents.add(new Sextad[]{t1, t2, t3, t5, t6});
-//        independents.add(new Sextad[]{t1, t2, t3, t9, t10});
-//        independents.add(new Sextad[]{t6, t7, t8, t9, t10});
-//        independents.add(new Sextad[]{t1, t2, t4, t5, t9});
-//        independents.add(new Sextad[]{t1, t3, t4, t6, t10});
+//            MySextad[] independents = {t2, t5, t10, t3, t6};
+
+        List<IntSextad[]> independents = new ArrayList<IntSextad[]>();
+        independents.add(new IntSextad[]{t1, t2, t3, t5, t6});
+//        independents.add(new MySextad[]{t1, t2, t3, t9, t10});
+//        independents.add(new MySextad[]{t6, t7, t8, t9, t10});
+//        independents.add(new MySextad[]{t1, t2, t4, t5, t9});
+//        independents.add(new MySextad[]{t1, t3, t4, t6, t10});
 
         // The four tetrads implied by equation 5.17 in Harmann.
-//            independents.add(new Sextad[]{t3, t7, t8, t9});
+//            independents.add(new MySextad[]{t3, t7, t8, t9});
 
-        for (Sextad[] sextads : independents) {
+        for (IntSextad[] sextads : independents) {
             double p = test.getPValue(sextads);
             if (p < alpha) return false;
         }
