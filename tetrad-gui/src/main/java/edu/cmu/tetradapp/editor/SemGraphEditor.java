@@ -156,8 +156,7 @@ public final class SemGraphEditor extends JPanel
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
-            }
-            else if (comp instanceof DisplayEdge) {
+            } else if (comp instanceof DisplayEdge) {
                 selectedModelComponents.add(
                         ((DisplayEdge) comp).getModelEdge());
             }
@@ -203,6 +202,7 @@ public final class SemGraphEditor extends JPanel
     public Map getModelEdgesToDisplay() {
         return workbench.getModelEdgesToDisplay();
     }
+
     public Map getModelNodesToDisplay() {
         return workbench.getModelNodesToDisplay();
     }
@@ -211,8 +211,7 @@ public final class SemGraphEditor extends JPanel
         try {
             SemGraph semGraph = new SemGraph(graph);
             workbench.setGraph(semGraph);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Not a SEM graph.", e);
         }
     }
@@ -316,8 +315,7 @@ public final class SemGraphEditor extends JPanel
 
         if (getSemGraph().isShowErrorTerms()) {
             errorTerms.setText("Hide Error Terms");
-        }
-        else {
+        } else {
             errorTerms.setText("Show Error Terms");
         }
 
@@ -328,8 +326,7 @@ public final class SemGraphEditor extends JPanel
                 if ("Hide Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Show Error Terms");
                     getSemGraph().setShowErrorTerms(false);
-                }
-                else if ("Show Error Terms".equals(menuItem.getText())) {
+                } else if ("Show Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Hide Error Terms");
                     getSemGraph().setShowErrorTerms(true);
                 }
@@ -387,8 +384,7 @@ public final class SemGraphEditor extends JPanel
                             GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
                             HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
                             GraphUtils.arrangeByLayout(dag, layout);
-                        }
-                        else if (editor.isUniformlySelected()) {
+                        } else if (editor.isUniformlySelected()) {
                             if (getGraph().getNumNodes() == editor.getNumNodes()) {
                                 HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
 
@@ -406,7 +402,7 @@ public final class SemGraphEditor extends JPanel
                                 dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
                                         editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
                             }
-                        } else if (editor.isChooseFixed()){
+                        } else if (editor.isChooseFixed()) {
                             do {
                                 if (getGraph().getNumNodes() == editor.getNumNodes()) {
                                     HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
@@ -475,6 +471,8 @@ public final class SemGraphEditor extends JPanel
                         JOptionPane.PLAIN_MESSAGE);
 
                 if (ret == JOptionPane.OK_OPTION) {
+                    int numFactors = Preferences.userRoot().getInt(
+                            "randomMimNumFactors", 1);
                     int numStructuralNodes = Preferences.userRoot().getInt(
                             "numStructuralNodes", 3);
                     int maxStructuralEdges = Preferences.userRoot().getInt(
@@ -491,11 +489,24 @@ public final class SemGraphEditor extends JPanel
                                     .getInt("measuredMeasuredImpureAssociations",
                                             0);
 
-                    Graph graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                            maxStructuralEdges, measurementModelDegree,
-                            numLatentMeasuredImpureParents,
-                            numMeasuredMeasuredImpureParents,
-                            numMeasuredMeasuredImpureAssociations);
+                    Graph graph;
+
+                    if (numFactors == 1) {
+                        graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
+                                maxStructuralEdges, measurementModelDegree,
+                                numLatentMeasuredImpureParents,
+                                numMeasuredMeasuredImpureParents,
+                                numMeasuredMeasuredImpureAssociations);
+                    } else if (numFactors == 2) {
+                        graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
+                                maxStructuralEdges, measurementModelDegree,
+                                numLatentMeasuredImpureParents,
+                                numMeasuredMeasuredImpureParents,
+                                numMeasuredMeasuredImpureAssociations);
+                    } else {
+                        throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
+                                "sorry dude.");
+                    }
 
                     SemGraph semGraph = new SemGraph(graph);
                     semGraph.setShowErrorTerms(false);
@@ -573,8 +584,7 @@ public final class SemGraphEditor extends JPanel
             if (Edges.isBidirectedEdge(edge)) {
                 try {
                     graph.removeEdge(edge);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                 }
             }
         }

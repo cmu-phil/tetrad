@@ -495,91 +495,47 @@ public class DeltaSextadTest implements IDeltaSextadTest {
         Node n5 = sextad.getM();
         Node n6 = sextad.getN();
 
-        if (a == n1) {
-            if (b == n4) {
-                return r(n2, n5) * r(n3, n6) - r(n2, n6) * r(n3, n5);
+        Double x = derivative(a, b, n1, n2, n3, n4, n5, n6);
+        if (x != null) return x;
 
-            } else if (b == n5) {
-                return -r(n2, n4) * r(n3, n6) + r(n3, n4) * r(n2, n6);
-
-            } else if (b == n6) {
-                return r(n2, n4) * r(n3, n5) - r(n3, n4) * r(n2, n5);
-
-            }
-
-        } else if (a == n2) {
-            if (b == n4) {
-                return r(n3, n5) * r(n1, n6) - r(n1, n5) * r(n3, n6);
-
-            } else if (b == n5) {
-                return r(n1, n4) * r(n3, n6) - r(n3, n4) * r(n1, n6);
-
-            } else if (b == n6) {
-                return -r(n1, n4) * r(n3, n5) + r(n3, n4) * r(n1, n5);
-
-            }
-
-        } else if (a == n3) {
-            if (b == n4) {
-                return r(n1, n5) * r(n2, n6) - r(n2, n5) * r(n1, n6);
-
-            } else if (b == n5) {
-                return -r(n1, n4) * r(n2, n6) + r(n2, n4) * r(n1, n6);
-
-            } else if (b == n6) {
-                return r(n1, n4) * r(n2, n5) - r(n2, n4) * r(n1, n5);
-
-            }
-
-        }
-
-        // symmetry
-        n6 = sextad.getI();
-        n5 = sextad.getJ();
-        n4 = sextad.getK();
-        n3 = sextad.getL();
-        n2 = sextad.getM();
-        n1 = sextad.getN();
-
-        if (a == n1) {
-            if (b == n4) {
-                return r(n2, n5) * r(n3, n6) - r(n2, n6) * r(n3, n5);
-
-            } else if (b == n5) {
-                return -r(n2, n4) * r(n3, n6) + r(n3, n4) * r(n2, n6);
-
-            } else if (b == n6) {
-                return r(n2, n4) * r(n3, n5) - r(n3, n4) * r(n2, n5);
-
-            }
-
-        } else if (a == n2) {
-            if (b == n4) {
-                return r(n3, n5) * r(n1, n6) - r(n1, n5) * r(n3, n6);
-
-            } else if (b == n5) {
-                return r(n1, n4) * r(n3, n6) - r(n3, n4) * r(n1, n6);
-
-            } else if (b == n6) {
-                return -r(n1, n4) * r(n3, n5) + r(n3, n4) * r(n1, n5);
-
-            }
-
-        } else if (a == n3) {
-            if (b == n4) {
-                return r(n1, n5) * r(n2, n6) - r(n2, n5) * r(n1, n6);
-
-            } else if (b == n5) {
-                return -r(n1, n4) * r(n2, n6) + r(n2, n4) * r(n1, n6);
-
-            } else if (b == n6) {
-                return r(n1, n4) * r(n2, n5) - r(n2, n4) * r(n1, n5);
-
-            }
-
-        }
+//        x = derivative(b, a, n6, n5, n4, n3, n2, n1);
+        x = derivative(b, a, n1, n2, n3, n4, n5, n6);
+        if (x != null) return x;
 
         return 0.0;
+    }
+
+    private Double derivative(Node a, Node b, Node n1, Node n2, Node n3, Node n4, Node n5, Node n6) {
+        if (a == n1) {
+            if (b == n4) {
+                return r(n2, n5) * r(n3, n6) - r(n2, n6) * r(n3, n5);
+            } else if (b == n5) {
+                return -r(n2, n4) * r(n3, n6) + r(n3, n4) * r(n2, n6);
+            } else if (b == n6) {
+                return r(n2, n4) * r(n3, n5) - r(n3, n4) * r(n2, n5);
+            }
+
+        } else if (a == n2) {
+            if (b == n4) {
+                return r(n3, n5) * r(n1, n6) - r(n1, n5) * r(n3, n6);
+            } else if (b == n5) {
+                return r(n1, n4) * r(n3, n6) - r(n3, n4) * r(n1, n6);
+            } else if (b == n6) {
+                return -r(n1, n4) * r(n3, n5) + r(n3, n4) * r(n1, n5);
+            }
+
+        } else if (a == n3) {
+            if (b == n4) {
+                return r(n1, n5) * r(n2, n6) - r(n2, n5) * r(n1, n6);
+            } else if (b == n5) {
+                return -r(n1, n4) * r(n2, n6) + r(n2, n4) * r(n1, n6);
+            } else if (b == n6) {
+                return r(n1, n4) * r(n2, n5) - r(n2, n4) * r(n1, n5);
+            }
+
+        }
+
+        return null;
     }
 
     @Override

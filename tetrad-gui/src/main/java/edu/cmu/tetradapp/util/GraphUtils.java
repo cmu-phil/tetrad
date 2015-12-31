@@ -14,6 +14,7 @@ import java.util.prefs.Preferences;
 
 /**
  * Created by jdramsey on 12/8/15.
+ *
  * @author Joseph Ramsey
  */
 public class GraphUtils {
@@ -34,12 +35,13 @@ public class GraphUtils {
         int maxStructuralEdges = Preferences.userRoot().getInt("numStructuralEdges", 3);
         int measurementModelDegree = Preferences.userRoot().getInt("measurementModelDegree", 3);
         int numLatentMeasuredImpureParents = Preferences.userRoot().getInt("latentMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureParents =Preferences.userRoot().getInt("measuredMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureAssociations =Preferences.userRoot().getInt("measuredMeasuredImpureAssociations", 0);
+        int numMeasuredMeasuredImpureParents = Preferences.userRoot().getInt("measuredMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureAssociations = Preferences.userRoot().getInt("measuredMeasuredImpureAssociations", 0);
         double alpha = Preferences.userRoot().getDouble("scaleFreeAlpha", 0.2);
         double beta = Preferences.userRoot().getDouble("scaleFreeBeta", 0.6);
         double deltaIn = Preferences.userRoot().getDouble("scaleFreeDeltaIn", 0.2);
         double deltaOut = Preferences.userRoot().getDouble("scaleFreeDeltaOut", 0.2);
+        int numFactors = Preferences.userRoot().getInt("randomMimNumFactors", 1);
 
         final String type = Preferences.userRoot().get("randomGraphType", "Uniform");
 
@@ -57,7 +59,7 @@ public class GraphUtils {
                     graphChooseFixed,
                     addCycles);
         } else if (type.equals("Mim")) {
-            return makeRandomMim(numStructuralNodes, maxStructuralEdges, measurementModelDegree,
+            return makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
                     numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
                     numMeasuredMeasuredImpureAssociations);
         } else if (type.equals("ScaleFree")) {
@@ -148,15 +150,29 @@ public class GraphUtils {
         return graph;
     }
 
-    public static Graph makeRandomMim(int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
+    public static Graph makeRandomMim(int numFactors, int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
                                       int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
                                       int numMeasuredMeasuredImpureAssociations) {
 
-        Graph graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                maxStructuralEdges, measurementModelDegree,
-                numLatentMeasuredImpureParents,
-                numMeasuredMeasuredImpureParents,
-                numMeasuredMeasuredImpureAssociations);
+        Graph graph;
+
+        if (numFactors == 1) {
+            graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
+                    maxStructuralEdges, measurementModelDegree,
+                    numLatentMeasuredImpureParents,
+                    numMeasuredMeasuredImpureParents,
+                    numMeasuredMeasuredImpureAssociations);
+        } else if (numFactors == 2) {
+            graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
+                    maxStructuralEdges, measurementModelDegree,
+                    numLatentMeasuredImpureParents,
+                    numMeasuredMeasuredImpureParents,
+                    numMeasuredMeasuredImpureAssociations);
+        }
+        else {
+            throw new  IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
+                    "sorry dude.");
+        }
 
         return graph;
     }

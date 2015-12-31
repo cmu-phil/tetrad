@@ -25,6 +25,8 @@ import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
 
 /**
@@ -41,6 +43,27 @@ class RandomMimParamsEditor extends JPanel {
     public RandomMimParamsEditor() {
         final Preferences preferences = Preferences.userRoot();
 
+        final JComboBox<String> numFactors = new JComboBox<>();
+
+        numFactors.addItem("1");
+        numFactors.addItem("2");
+
+        numFactors.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (numFactors.getSelectedItem().equals("1")) {
+                    preferences.putInt("randomMimNumFactors", 1);
+                }
+                else if (numFactors.getSelectedItem().equals("2")) {
+                    preferences.putInt("randomMimNumFactors", 2);
+                }
+            }
+        });
+
+        numFactors.setSelectedItem(Integer.toString(preferences.getInt("randomMimNumFactors", 1)));
+
+        numFactors.setMaximumSize(numFactors.getPreferredSize());
+
         final IntTextField numStructuralEdges = new IntTextField(
                 preferences.getInt("numStructuralEdges", 3), 4);
         numStructuralEdges.setFilter(new IntTextField.Filter() {
@@ -55,8 +78,7 @@ class RandomMimParamsEditor extends JPanel {
 
                     preferences.putInt("numStructuralEdges", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -76,8 +98,7 @@ class RandomMimParamsEditor extends JPanel {
                     preferences.putInt("numStructuralNodes", value);
                     numStructuralEdges.setValue(numStructuralEdges.getValue());
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     numStructuralEdges.setValue(numStructuralEdges.getValue());
                     return oldValue;
                 }
@@ -96,8 +117,7 @@ class RandomMimParamsEditor extends JPanel {
 
                     preferences.putInt("measurementModelDegree", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -114,8 +134,7 @@ class RandomMimParamsEditor extends JPanel {
 
                     preferences.putInt("latentMeasuredImpureParents", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -132,8 +151,7 @@ class RandomMimParamsEditor extends JPanel {
 
                     preferences.putInt("measuredMeasuredImpureParents", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -152,8 +170,7 @@ class RandomMimParamsEditor extends JPanel {
                     preferences.putInt("measuredMeasuredImpureAssociations",
                             value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -163,6 +180,12 @@ class RandomMimParamsEditor extends JPanel {
         setLayout(new BorderLayout());
 
         Box b1 = Box.createVerticalBox();
+
+        Box b9 = Box.createHorizontalBox();
+        b9.add(new JLabel("Number of Factors:"));
+        b9.add(Box.createHorizontalGlue());
+        b9.add(numFactors);
+        b1.add(b9);
 
         Box b10 = Box.createHorizontalBox();
         b10.add(new JLabel("Number of structural nodes:"));

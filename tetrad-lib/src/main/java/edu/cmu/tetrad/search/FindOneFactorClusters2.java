@@ -251,27 +251,12 @@ public class FindOneFactorClusters2 {
     }
 
     private Set<List<Integer>> estimateClustersTetradsFirst() {
-        if (verbose) {
-            log("Running PC adjacency search...", true);
-        }
-
         System.out.println("A");
 
-        Graph graph = new EdgeListGraph(variables);
-        graph.fullyConnect(Endpoint.TAIL);
-//        Fas fas = new Fas(graph, indTest);
-//        fas.setDepth(depth);
-//        graph = fas.search();
-//        if (verbose) {
-//            log("...done.", true);
-//        }
-
-//        List<Integer> _variables = new ArrayList<Integer>();
-//        for (int i = 0; i < variables.size(); i++) _variables.add(i);
         List<Integer> _variables = allVariables();
 
-        Set<List<Integer>> pureClusters = findPureClusters(_variables, graph);
-        Set<List<Integer>> mixedClusters = findMixedClusters(pureClusters, _variables, unionPure(pureClusters), graph);
+        Set<List<Integer>> pureClusters = findPureClusters(_variables);
+        Set<List<Integer>> mixedClusters = findMixedClusters(pureClusters, _variables, unionPure(pureClusters));
         Set<List<Integer>> allClusters = new HashSet<List<Integer>>(pureClusters);
         allClusters.addAll(mixedClusters);
         return allClusters;
@@ -680,7 +665,7 @@ public class FindOneFactorClusters2 {
     Map<Set<Integer>, Double> avgSumLnPs = new HashMap<Set<Integer>, Double>();
 
     // Finds clusters of size 4 or higher for the tetrad first algorithm.
-    private Set<List<Integer>> findPureClusters(List<Integer> _variables, Graph graph) {
+    private Set<List<Integer>> findPureClusters(List<Integer> _variables) {
         Set<List<Integer>> clusters = new HashSet<List<Integer>>();
 //        List<Integer> allVariables = new ArrayList<Integer>();
 //        for (int i = 0; i < this.variables.size(); i++) allVariables.add(i);
@@ -720,10 +705,6 @@ public class FindOneFactorClusters2 {
                     }
                     clusters.add(cluster);
                     _variables.removeAll(cluster);
-
-                    for (int p : cluster) {
-                        graph.removeNode(variables.get(p));
-                    }
 
                     continue VARIABLES;
                 }
@@ -786,7 +767,7 @@ public class FindOneFactorClusters2 {
     }
 
     //  Finds clusters of size 3 3or the quartet first algorithm.
-    private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure, Graph graph) {
+    private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure) {
         Set<List<Integer>> triples = new HashSet<List<Integer>>();
         Set<List<Integer>> _clusters = new HashSet<List<Integer>>(clusters);
 
