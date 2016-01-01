@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.ArrayList;
@@ -24,6 +26,14 @@ public class IntSextad implements TetradSerializable {
         this.m = m;
         this.n = n;
     }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static IntSextad serializableInstance() {
+        return new IntSextad(0, 1, 2, 3, 4, 5);
+    }
+
 
     private void testDistinctness(int i, int j, int k, int l, int m, int n) {
         if (i == j || i == k || i == l || i == m || i == n) {

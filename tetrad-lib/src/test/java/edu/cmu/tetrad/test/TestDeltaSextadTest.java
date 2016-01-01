@@ -144,11 +144,11 @@ public class TestDeltaSextadTest {
 
         IntSextad[] _sextads = {t2, t5, t10, t3, t6};
         double p = test.getPValue(_sextads);
-        assertEquals(0.80, p, 0.01);
+        assertEquals(0.90, p, 0.01);
 
         _sextads = new IntSextad[] {t10};
         p = test.getPValue(_sextads);
-        assertEquals(0.90, p, 0.01);
+        assertEquals(0.30, p, 0.01);
 
         // This should throw an exception but doesn't.
 //        MySextad[] _sextads = {t1, t2, t3, t4, t5, t6, t7, t8, t9, t10};
