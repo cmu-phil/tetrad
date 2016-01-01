@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.FindOneFactorClusters2;
+import edu.cmu.tetrad.search.FindOneFactorClusters;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -74,7 +74,7 @@ public class FofcIndTestParams implements MimIndTestParams {
 
     private List varNames;
 
-    private FindOneFactorClusters2.Algorithm algorithm = FindOneFactorClusters2.Algorithm.GAP;
+    private FindOneFactorClusters.Algorithm algorithm = FindOneFactorClusters.Algorithm.GAP;
 
     private List<String> latentVarNames = new ArrayList<>();
 
@@ -142,11 +142,11 @@ public class FofcIndTestParams implements MimIndTestParams {
     /**
      * @serial
      */
-    public FindOneFactorClusters2.Algorithm getAlgorithm() {
+    public FindOneFactorClusters.Algorithm getAlgorithm() {
         return algorithm;
     }
 
-    public void setAlgorithm(FindOneFactorClusters2.Algorithm algorithm) {
+    public void setAlgorithm(FindOneFactorClusters.Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 

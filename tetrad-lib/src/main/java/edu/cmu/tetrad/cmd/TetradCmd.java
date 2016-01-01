@@ -875,13 +875,13 @@ public final class TetradCmd {
 
         if (this.data != null) {
             fofc = new FindOneFactorClusters(this.data,
-                    this.testType, significance);
+                    this.testType, FindOneFactorClusters.Algorithm.GAP, significance);
             if (!this.data.isContinuous()) {
                 outPrint("Please supply continuous data.");
             }
         } else if (this.covarianceMatrix != null) {
             fofc = new FindOneFactorClusters(this.covarianceMatrix,
-                    this.testType, significance);
+                    this.testType, FindOneFactorClusters.Algorithm.GAP, significance);
         } else {
             throw new IllegalStateException("Data did not load correctly.");
         }

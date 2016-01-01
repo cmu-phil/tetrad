@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.search.FindOneFactorClusters2;
+import edu.cmu.tetrad.search.FindOneFactorClusters;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetradapp.model.FofcIndTestParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -80,16 +80,16 @@ class FofcIndTestParamsEditor extends JComponent {
             }
         });
 
-        final JComboBox<FindOneFactorClusters2.Algorithm> algorithmSelector = new JComboBox<>();
-        algorithmSelector.addItem(FindOneFactorClusters2.Algorithm.SAG);
-        algorithmSelector.addItem(FindOneFactorClusters2.Algorithm.GAP);
+        final JComboBox<FindOneFactorClusters.Algorithm> algorithmSelector = new JComboBox<>();
+        algorithmSelector.addItem(FindOneFactorClusters.Algorithm.SAG);
+        algorithmSelector.addItem(FindOneFactorClusters.Algorithm.GAP);
 
-        FindOneFactorClusters2.Algorithm algorithmType = getParams().getAlgorithm();
+        FindOneFactorClusters.Algorithm algorithmType = getParams().getAlgorithm();
         algorithmSelector.setSelectedItem(algorithmType);
 
         algorithmSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                FindOneFactorClusters2.Algorithm index = (FindOneFactorClusters2.Algorithm) algorithmSelector.getSelectedItem();
+                FindOneFactorClusters.Algorithm index = (FindOneFactorClusters.Algorithm) algorithmSelector.getSelectedItem();
                 if (index != null) {
                     getParams().setAlgorithm(index);
                 }

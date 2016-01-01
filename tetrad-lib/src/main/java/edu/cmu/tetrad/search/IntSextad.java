@@ -27,7 +27,7 @@ public class IntSextad implements TetradSerializable {
         this.n = n;
     }
 
-    /**
+    /**  
      * Generates a simple exemplar of this class to test serialization.
      */
     public static IntSextad serializableInstance() {

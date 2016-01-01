@@ -32,7 +32,6 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.rmi.MarshalledObject;
@@ -94,7 +93,7 @@ public class FofcRunner extends AbstractMimRunner
     public void execute() {
         Graph searchGraph;
 
-        FindOneFactorClusters2 fofc;
+        FindOneFactorClusters fofc;
         Object source = getData();
         TestType tetradTestType = getParams().getTetradTestType();
         if (tetradTestType == null || (!(tetradTestType == TestType.TETRAD_DELTA ||
@@ -103,13 +102,13 @@ public class FofcRunner extends AbstractMimRunner
             getParams().setTetradTestType(tetradTestType);
         }
 
-        FindOneFactorClusters2.Algorithm algorithm = ((FofcIndTestParams) getParams().getMimIndTestParams()).getAlgorithm();
+        FindOneFactorClusters.Algorithm algorithm = ((FofcIndTestParams) getParams().getMimIndTestParams()).getAlgorithm();
 
         if (source instanceof DataSet) {
-            fofc = new FindOneFactorClusters2((DataSet) source, tetradTestType, algorithm, getParams().getAlpha());
+            fofc = new FindOneFactorClusters((DataSet) source, tetradTestType, algorithm, getParams().getAlpha());
             searchGraph = fofc.search();
         } else if (source instanceof CovarianceMatrix) {
-            fofc = new FindOneFactorClusters2((CovarianceMatrix) source, tetradTestType, algorithm, getParams().getAlpha());
+            fofc = new FindOneFactorClusters((CovarianceMatrix) source, tetradTestType, algorithm, getParams().getAlpha());
             searchGraph = fofc.search();
         } else {
             throw new IllegalArgumentException("Unrecognized data type.");
