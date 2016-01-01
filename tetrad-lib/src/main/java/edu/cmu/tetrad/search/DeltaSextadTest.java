@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -230,8 +231,8 @@ public class DeltaSextadTest {
         try {
             this.chisq = N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);
             return chisq;
-        } catch (Exception e) {
-            return Double.NaN;
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity problem.", e);
         }
     }
 

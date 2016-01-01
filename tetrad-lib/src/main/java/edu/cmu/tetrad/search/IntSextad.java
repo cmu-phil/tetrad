@@ -25,20 +25,6 @@ public class IntSextad implements TetradSerializable {
         this.n = n;
     }
 
-    public IntSextad(Integer[] nodes) {
-        if (nodes.length != 6) throw new IllegalArgumentException("Must provide exactly 6 nodes.");
-
-        this.i = nodes[0];
-        this.j = nodes[1];
-        this.k = nodes[2];
-        this.l = nodes[3];
-        this.m = nodes[4];
-        this.n = nodes[5];
-
-        testDistinctness(i, j, k, l, m, n);
-
-    }
-
     private void testDistinctness(int i, int j, int k, int l, int m, int n) {
         if (i == j || i == k || i == l || i == m || i == n) {
             throw new IllegalArgumentException("Nodes not distinct.");
@@ -84,9 +70,8 @@ public class IntSextad implements TetradSerializable {
     }
 
     public int hashCode() {
-        int hash = 17 * i * j * k;
-        hash += 29 * l * m * n;
-
+        int hash = i * j * k;
+        hash += l * m * n;
         return hash;
     }
 

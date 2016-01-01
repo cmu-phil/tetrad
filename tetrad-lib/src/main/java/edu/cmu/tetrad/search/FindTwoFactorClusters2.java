@@ -34,7 +34,7 @@ import static java.lang.Math.sqrt;
 
 /**
  * Implements FindOneFactorCluster by Erich Kummerfeld (adaptation of a two factor
- * quartet algorithm to a one factor MySextad algorithm).
+ * quartet algorithm to a one factor IntSextad algorithm).
  *
  * @author Joseph Ramsey
  */
@@ -99,11 +99,11 @@ public class FindTwoFactorClusters2 {
     private int findFrequentestIndex(Integer outliers[]) {
         Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 
-        for (int i = 0; i < outliers.length; i++) {
-            if (map.containsKey(outliers[i])) {
-                map.put(outliers[i], map.get(outliers[i]) + 1);
+        for (Integer outlier : outliers) {
+            if (map.containsKey(outlier)) {
+                map.put(outlier, map.get(outlier) + 1);
             } else {
-                map.put(outliers[i], 1);
+                map.put(outlier, 1);
             }
         }
 
@@ -244,8 +244,8 @@ public class FindTwoFactorClusters2 {
             log("Running PC adjacency search...", true);
         }
 
-        Graph graph = new EdgeListGraph(variables);
-        graph.fullyConnect(Endpoint.TAIL);
+//        Graph graph = new EdgeListGraph(variables);
+//        graph.fullyConnect(Endpoint.TAIL);
 //        Fas fas = new Fas(graph, indTest);
 //        fas.setDepth(depth);
 //        graph = fas.search();
@@ -257,8 +257,8 @@ public class FindTwoFactorClusters2 {
 //        for (int i = 0; i < variables.size(); i++) _variables.add(i);
         List<Integer> _variables = allVariables();
 
-        Set<List<Integer>> pureClusters = findPureClusters(_variables, graph);
-        Set<List<Integer>> mixedClusters = findMixedClusters(pureClusters, _variables, unionPure(pureClusters), graph);
+        Set<List<Integer>> pureClusters = findPureClusters(_variables);
+        Set<List<Integer>> mixedClusters = findMixedClusters(pureClusters, _variables, unionPure(pureClusters));
         Set<List<Integer>> allClusters = new HashSet<List<Integer>>(pureClusters);
         allClusters.addAll(mixedClusters);
         return allClusters;
@@ -675,8 +675,8 @@ public class FindTwoFactorClusters2 {
 
     Map<Set<Integer>, Double> avgSumLnPs = new HashMap<Set<Integer>, Double>();
 
-    // Finds clusters of size 6 or higher for the MySextad first algorithm.
-    private Set<List<Integer>> findPureClusters(List<Integer> _variables, Graph graph) {
+    // Finds clusters of size 6 or higher for the IntSextad first algorithm.
+    private Set<List<Integer>> findPureClusters(List<Integer> _variables) {
         Set<List<Integer>> clusters = new HashSet<List<Integer>>();
 //        List<Integer> allVariables = new ArrayList<Integer>();
 //        for (int i = 0; i < this.variables.size(); i++) allVariables.add(i);
@@ -704,7 +704,7 @@ public class FindTwoFactorClusters2 {
 
                 // Note that purity needs to be assessed with respect to all of the variables in order to
                 // remove all latent-measure impurities between pairs of latents.
-                if (pure(cluster, allVariables, alpha)) {
+                if (pure(cluster)) {
                     if (verbose) {
                         log("Found a pure: " + variablesForIndices(cluster), false);
                     }
@@ -719,10 +719,6 @@ public class FindTwoFactorClusters2 {
                     }
                     clusters.add(cluster);
                     _variables.removeAll(cluster);
-
-                    for (int p : cluster) {
-                        graph.removeNode(variables.get(p));
-                    }
 
                     continue VARIABLES;
                 }
@@ -761,7 +757,7 @@ public class FindTwoFactorClusters2 {
 //                    break;
 //                }
 
-                if (!pure(quartet, allVariables, alpha)) {
+                if (!pure(quartet)) {
                     continue O;
                 }
             }
@@ -787,7 +783,7 @@ public class FindTwoFactorClusters2 {
     }
 
     //  Finds clusters of size 5 for the quartet first algorithm.
-    private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure, Graph graph) {
+    private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure) {
         Set<List<Integer>> triples = new HashSet<List<Integer>>();
         Set<List<Integer>> _clusters = new HashSet<List<Integer>>(clusters);
 
@@ -913,7 +909,7 @@ public class FindTwoFactorClusters2 {
         return variables;
     }
 
-    private boolean pure(List<Integer> sextet, List<Integer> variables, double alpha) {
+    private boolean pure(List<Integer> sextet) {
         if (zeroCorr(sextet)) {
             return false;
         }
@@ -955,8 +951,8 @@ public class FindTwoFactorClusters2 {
         g.addNode(l1);
         g.addNode(l2);
 
-        for (int i = 0; i < quartet.size(); i++) {
-            Node n = this.variables.get(quartet.get(i));
+        for (Integer aQuartet : quartet) {
+            Node n = this.variables.get(aQuartet);
             g.addNode(n);
             g.addDirectedEdge(l1, n);
             g.addDirectedEdge(l2, n);
@@ -983,8 +979,8 @@ public class FindTwoFactorClusters2 {
     private SemIm estimateModel(List<List<Integer>> clusters) {
         Graph g = new EdgeListGraph();
 
-        List<Node> upperLatents = new ArrayList<Node>();
-        List<Node> lowerLatents = new ArrayList<Node>();
+        List<Node> upperLatents = new ArrayList<>();
+        List<Node> lowerLatents = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
             List<Integer> cluster = clusters.get(i);
@@ -1000,8 +996,8 @@ public class FindTwoFactorClusters2 {
             g.addNode(l1);
             g.addNode(l2);
 
-            for (int k = 0; k < cluster.size(); k++) {
-                Node n = this.variables.get(cluster.get(k));
+            for (Integer aCluster : cluster) {
+                Node n = this.variables.get(aCluster);
                 g.addNode(n);
                 g.addDirectedEdge(l1, n);
                 g.addDirectedEdge(l2, n);
@@ -1048,7 +1044,7 @@ public class FindTwoFactorClusters2 {
     }
 
     private List<Integer> sextet(int n1, int n2, int n3, int n4, int n5, int n6) {
-        List<Integer> sextet = new ArrayList<Integer>();
+        List<Integer> sextet = new ArrayList<>();
         sextet.add(n1);
         sextet.add(n2);
         sextet.add(n3);
@@ -1056,7 +1052,7 @@ public class FindTwoFactorClusters2 {
         sextet.add(n5);
         sextet.add(n6);
 
-        if (new HashSet<Integer>(sextet).size() < 6)
+        if (new HashSet<>(sextet).size() < 6)
             throw new IllegalArgumentException("sextet elements must be unique: <" + n1 + ", " + n2 + ", " + n3
                     + ", " + n4 + ", " + n5 + ", " + n6 + ">");
 
@@ -1064,14 +1060,14 @@ public class FindTwoFactorClusters2 {
     }
 
     private List<Integer> pentad(int n1, int n2, int n3, int n4, int n5) {
-        List<Integer> triple = new ArrayList<Integer>();
+        List<Integer> triple = new ArrayList<>();
         triple.add(n1);
         triple.add(n2);
         triple.add(n3);
         triple.add(n4);
         triple.add(n5);
 
-        if (new HashSet<Integer>(triple).size() < 5)
+        if (new HashSet<>(triple).size() < 5)
             throw new IllegalArgumentException("triple elements must be unique: <" + n1 + ", " + n2 + ", " + n3
                     + ", " + n4 + ", " + n5 + ">");
 
@@ -1131,16 +1127,16 @@ public class FindTwoFactorClusters2 {
         int m5 = n5;
         int m6 = n6;
 
-//            MySextad[,1]=c(indices[1],indices[2],indices[3],indices[4],indices[5],indices[6])
-//            MySextad[,2]=c(indices[1],indices[5],indices[6],indices[2],indices[3],indices[4])
-//            MySextad[,3]=c(indices[1],indices[4],indices[6],indices[2],indices[3],indices[5])
-//            MySextad[,4]=c(indices[1],indices[4],indices[5],indices[2],indices[3],indices[6])
-//            MySextad[,5]=c(indices[1],indices[3],indices[4],indices[2],indices[5],indices[6])
-//            MySextad[,6]=c(indices[1],indices[3],indices[5],indices[2],indices[4],indices[6])
-//            MySextad[,7]=c(indices[1],indices[3],indices[6],indices[2],indices[4],indices[5])
-//            MySextad[,8]=c(indices[1],indices[2],indices[4],indices[3],indices[5],indices[6])
-//            MySextad[,9]=c(indices[1],indices[2],indices[5],indices[3],indices[4],indices[6])
-//            MySextad[,10]=c(indices[1],indices[2],indices[6],indices[3],indices[4],indices[5])
+//            IntSextad[,1]=c(indices[1],indices[2],indices[3],indices[4],indices[5],indices[6])
+//            IntSextad[,2]=c(indices[1],indices[5],indices[6],indices[2],indices[3],indices[4])
+//            IntSextad[,3]=c(indices[1],indices[4],indices[6],indices[2],indices[3],indices[5])
+//            IntSextad[,4]=c(indices[1],indices[4],indices[5],indices[2],indices[3],indices[6])
+//            IntSextad[,5]=c(indices[1],indices[3],indices[4],indices[2],indices[5],indices[6])
+//            IntSextad[,6]=c(indices[1],indices[3],indices[5],indices[2],indices[4],indices[6])
+//            IntSextad[,7]=c(indices[1],indices[3],indices[6],indices[2],indices[4],indices[5])
+//            IntSextad[,8]=c(indices[1],indices[2],indices[4],indices[3],indices[5],indices[6])
+//            IntSextad[,9]=c(indices[1],indices[2],indices[5],indices[3],indices[4],indices[6])
+//            IntSextad[,10]=c(indices[1],indices[2],indices[6],indices[3],indices[4],indices[5])
 
         IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
         IntSextad t2 = new IntSextad(m1, m5, m6, m2, m3, m4);
@@ -1153,20 +1149,23 @@ public class FindTwoFactorClusters2 {
         IntSextad t9 = new IntSextad(m1, m2, m5, m3, m4, m6);
         IntSextad t10 = new IntSextad(m1, m2, m6, m3, m4, m5);
 
-//            MySextad[] independents = {t2, t5, t10, t3, t6};
+//            IntSextad[] independents = {t2, t5, t10, t3, t6};
 
         List<IntSextad[]> independents = new ArrayList<IntSextad[]>();
-        independents.add(new IntSextad[]{t1, t2, t3, t5, t6});
-//        independents.add(new MySextad[]{t1, t2, t3, t9, t10});
-//        independents.add(new MySextad[]{t6, t7, t8, t9, t10});
-//        independents.add(new MySextad[]{t1, t2, t4, t5, t9});
-//        independents.add(new MySextad[]{t1, t3, t4, t6, t10});
+//        independents.add(new IntSextad[]{t1, t2, t3, t5, t6});
+        independents.add(new IntSextad[]{t1, t2, t3, t9, t10});
+//        independents.add(new IntSextad[]{t6, t7, t8, t9, t10});
+//        independents.add(new IntSextad[]{t1, t2, t4, t5, t9});
+//        independents.add(new IntSextad[]{t1, t3, t4, t6, t10});
+
+//        independents.add(new IntSextad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10});
 
         // The four tetrads implied by equation 5.17 in Harmann.
-//            independents.add(new MySextad[]{t3, t7, t8, t9});
+//            independents.add(new IntSextad[]{t3, t7, t8, t9});
 
         for (IntSextad[] sextads : independents) {
             double p = test.getPValue(sextads);
+            System.out.println(p);
             if (p < alpha) return false;
         }
 
@@ -1178,7 +1177,7 @@ public class FindTwoFactorClusters2 {
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
         Graph graph = new EdgeListGraph(variables);
 
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
         for (int i = 0; i < clusters.size(); i++) {
             Node latent = new GraphNode(MimBuild.LATENT_PREFIX + (i + 1));
             latent.setNodeType(NodeType.LATENT);
@@ -1186,7 +1185,7 @@ public class FindTwoFactorClusters2 {
             graph.addNode(latent);
         }
 
-        List<Set<Node>> _clusters = new ArrayList<Set<Node>>(clusters);
+        List<Set<Node>> _clusters = new ArrayList<>(clusters);
 
         for (int i = 0; i < latents.size(); i++) {
             for (Node node : _clusters.get(i)) {
@@ -1199,10 +1198,10 @@ public class FindTwoFactorClusters2 {
     }
 
     private Graph convertToGraph(Set<List<Integer>> allClusters) {
-        Set<Set<Node>> _clustering = new HashSet<Set<Node>>();
+        Set<Set<Node>> _clustering = new HashSet<>();
 
         for (List<Integer> cluster : allClusters) {
-            Set<Node> nodes = new HashSet<Node>();
+            Set<Node> nodes = new HashSet<>();
 
             for (int i : cluster) {
                 nodes.add(variables.get(i));
@@ -1215,7 +1214,7 @@ public class FindTwoFactorClusters2 {
     }
 
     private Set<Integer> unionPure(Set<List<Integer>> pureClusters) {
-        Set<Integer> unionPure = new HashSet<Integer>();
+        Set<Integer> unionPure = new HashSet<>();
 
         for (List<Integer> cluster : pureClusters) {
             unionPure.addAll(cluster);
