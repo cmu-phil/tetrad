@@ -40,7 +40,7 @@ import static java.lang.Math.sqrt;
  */
 public class FindOneFactorClusters {
 
-    public Algorithm getAlgofrithm() {
+    public Algorithm getAlgorithm() {
         return algorithm;
     }
 

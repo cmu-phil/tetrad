@@ -169,8 +169,8 @@ public class SemStdErrorEstimator {
         //same as in the array of free parameter values stored in paramsOriginal.
         try {
 
-            TetradMatrix hessInv = hess.inverse();
-//            TetradMatrix hessInv = hess.ginverse();
+//            TetradMatrix hessInv = hess.inverse();
+            TetradMatrix hessInv = hess.ginverse();
 
 //            System.out.println("Inverse: " + hessInv);
 
