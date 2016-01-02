@@ -93,7 +93,7 @@ public class FtfcRunner extends AbstractMimRunner
     public void execute() {
         Graph searchGraph;
 
-        FindTwoFactorClusters2 ftfc;
+        FindTwoFactorClusters ftfc;
         Object source = getData();
         TestType tetradTestType = getParams().getTetradTestType();
         if (tetradTestType == null || (!(tetradTestType == TestType.TETRAD_DELTA ||
@@ -102,14 +102,14 @@ public class FtfcRunner extends AbstractMimRunner
             getParams().setTetradTestType(tetradTestType);
         }
 
-        FindTwoFactorClusters2.Algorithm algorithm = ((FtfcIndTestParams) getParams().getMimIndTestParams()).getAlgorithm();
+        FindTwoFactorClusters.Algorithm algorithm = ((FtfcIndTestParams) getParams().getMimIndTestParams()).getAlgorithm();
 
         if (source instanceof DataSet) {
-            ftfc = new FindTwoFactorClusters2((DataSet) source, algorithm, getParams().getAlpha());
+            ftfc = new FindTwoFactorClusters((DataSet) source, algorithm, getParams().getAlpha());
             ftfc.setVerbose(true);
             searchGraph = ftfc.search();
         } else if (source instanceof CovarianceMatrix) {
-            ftfc = new FindTwoFactorClusters2((CovarianceMatrix) source, algorithm, getParams().getAlpha());
+            ftfc = new FindTwoFactorClusters((CovarianceMatrix) source, algorithm, getParams().getAlpha());
             ftfc.setVerbose(true);
             searchGraph = ftfc.search();
         } else {

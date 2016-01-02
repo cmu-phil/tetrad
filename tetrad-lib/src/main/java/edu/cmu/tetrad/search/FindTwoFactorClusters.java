@@ -38,7 +38,7 @@ import static java.lang.Math.sqrt;
  *
  * @author Joseph Ramsey
  */
-public class FindTwoFactorClusters2 {
+public class FindTwoFactorClusters {
 
     public Algorithm getAlgorithm() {
         return algorithm;
@@ -72,7 +72,7 @@ public class FindTwoFactorClusters2 {
 
     //========================================PUBLIC METHODS====================================//
 
-    public FindTwoFactorClusters2(ICovarianceMatrix cov, Algorithm algorithm, double alpha) {
+    public FindTwoFactorClusters(ICovarianceMatrix cov, Algorithm algorithm, double alpha) {
         cov = new CovarianceMatrix(cov);
         this.variables = cov.getVariables();
         this.alpha = alpha;
@@ -85,7 +85,7 @@ public class FindTwoFactorClusters2 {
 
     }
 
-    public FindTwoFactorClusters2(DataSet dataSet, Algorithm algorithm, double alpha) {
+    public FindTwoFactorClusters(DataSet dataSet, Algorithm algorithm, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.test = new DeltaSextadTest(dataSet);

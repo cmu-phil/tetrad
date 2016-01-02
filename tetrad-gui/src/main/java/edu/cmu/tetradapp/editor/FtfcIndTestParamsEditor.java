@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.search.FindTwoFactorClusters2;
+import edu.cmu.tetrad.search.FindTwoFactorClusters;
 import edu.cmu.tetradapp.model.FtfcIndTestParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
@@ -58,16 +58,16 @@ class FtfcIndTestParamsEditor extends JComponent {
             }
         });
 
-        final JComboBox<FindTwoFactorClusters2.Algorithm> algorithmSelector = new JComboBox<>();
-        algorithmSelector.addItem(FindTwoFactorClusters2.Algorithm.SAG);
-        algorithmSelector.addItem(FindTwoFactorClusters2.Algorithm.GAP);
+        final JComboBox<FindTwoFactorClusters.Algorithm> algorithmSelector = new JComboBox<>();
+        algorithmSelector.addItem(FindTwoFactorClusters.Algorithm.SAG);
+        algorithmSelector.addItem(FindTwoFactorClusters.Algorithm.GAP);
 
-        FindTwoFactorClusters2.Algorithm algorithmType = getParams().getAlgorithm();
+        FindTwoFactorClusters.Algorithm algorithmType = getParams().getAlgorithm();
         algorithmSelector.setSelectedItem(algorithmType);
 
         algorithmSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                FindTwoFactorClusters2.Algorithm index = (FindTwoFactorClusters2.Algorithm) algorithmSelector.getSelectedItem();
+                FindTwoFactorClusters.Algorithm index = (FindTwoFactorClusters.Algorithm) algorithmSelector.getSelectedItem();
                 if (index != null) {
                     getParams().setAlgorithm(index);
                 }
