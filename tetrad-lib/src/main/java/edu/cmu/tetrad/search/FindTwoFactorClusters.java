@@ -322,7 +322,7 @@ public class FindTwoFactorClusters {
 
         // Lax grow phase with speedup.
         if (true) {
-            Set<Integer> t = new HashSet<Integer>();
+            Set<Integer> t = new HashSet<>();
             int count = 0;
             int total = purePentads.size();
 
@@ -341,13 +341,15 @@ public class FindTwoFactorClusters {
                     int rejected = 0;
                     int accepted = 0;
 
-                    ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 2);
+                    ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 4);
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
                         t.clear();
                         t.add(_cluster2.get(choice[0]));
                         t.add(_cluster2.get(choice[1]));
+                        t.add(_cluster2.get(choice[2]));
+                        t.add(_cluster2.get(choice[3]));
                         t.add(o);
 
                         if (!purePentads.contains(t)) {
@@ -357,15 +359,13 @@ public class FindTwoFactorClusters {
                         }
                     }
 
+                    System.out.println("accepted = " + accepted + " rejected = " + rejected);
+
                     if (rejected > accepted) {
                         continue;
                     }
 
                     _cluster.add(o);
-
-//                    if (!(avgSumLnP(new ArrayList<Integer>(_cluster)) > -10)) {
-//                        _cluster.remove(o);
-//                    }
                 }
 
                 // This takes out all pure clusters that are subsets of _cluster.
@@ -1152,8 +1152,8 @@ public class FindTwoFactorClusters {
 //            IntSextad[] independents = {t2, t5, t10, t3, t6};
 
         List<IntSextad[]> independents = new ArrayList<IntSextad[]>();
-//        independents.add(new IntSextad[]{t1, t2, t3, t5, t6});
-        independents.add(new IntSextad[]{t1, t2, t3, t9, t10});
+        independents.add(new IntSextad[]{t1, t2, t3, t5, t6});
+//        independents.add(new IntSextad[]{t1, t2, t3, t9, t10});
 //        independents.add(new IntSextad[]{t6, t7, t8, t9, t10});
 //        independents.add(new IntSextad[]{t1, t2, t4, t5, t9});
 //        independents.add(new IntSextad[]{t1, t3, t4, t6, t10});
@@ -1165,7 +1165,6 @@ public class FindTwoFactorClusters {
 
         for (IntSextad[] sextads : independents) {
             double p = test.getPValue(sextads);
-            System.out.println(p);
             if (p < alpha) return false;
         }
 

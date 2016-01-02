@@ -23,13 +23,10 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -42,17 +39,10 @@ import java.util.*;
 public class DeltaSextadTest {
     static final long serialVersionUID = 23L;
 
-    private DataSet dataSet;
     private double[][] data;
     private int N;
     private ICovarianceMatrix cov;
-    private int df;
-    private double chisq;
     private List<Node> variables;
-    private Map<Node, Integer> variablesHash;
-    private IntSextad[] storedSextads;
-    private transient NumberFormat nf = new DecimalFormat("0.000000");
-
 
     // As input we require a data set and a list of non-redundant Tetrads.
 
@@ -74,23 +64,12 @@ public class DeltaSextadTest {
             throw new IllegalArgumentException();
         }
 
-        this.cov = new CovarianceMatrix(dataSet);
+        this.cov = new CovarianceMatrixOnTheFly(dataSet);
 
-        List<DataSet> data1 = new ArrayList<>();
-        data1.add(dataSet);
-        List<DataSet> data2 = DataUtils.center(data1);
-
-        this.dataSet = data2.get(0);
-
-        this.data = this.dataSet.getDoubleData().transpose().toArray();
+        TetradMatrix centered = DataUtils.centerData(dataSet.getDoubleData());
+        this.data = centered.transpose().toArray();
         this.N = dataSet.getNumRows();
         this.variables = dataSet.getVariables();
-
-        this.variablesHash = new HashMap<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            variablesHash.put(variables.get(i), i);
-        }
     }
 
     /**
@@ -105,12 +84,6 @@ public class DeltaSextadTest {
         this.cov = cov;
         this.N = cov.getSampleSize();
         this.variables = cov.getVariables();
-
-        this.variablesHash = new HashMap<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            variablesHash.put(variables.get(i), i);
-        }
     }
 
     /**
@@ -127,139 +100,13 @@ public class DeltaSextadTest {
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
      */
-    public double calcChiSquare(IntSextad... sextads) {
-        this.storedSextads = sextads;
-
-        this.df = sextads.length;
-
-        Set<Sigma> boldSigmaSet = new LinkedHashSet<>();
-        List<Sigma> boldSigma = new ArrayList<>();
-
-        for (IntSextad sextad : sextads) {
-            List<Integer> _nodes = sextad.getNodes();
-
-            for (int i = 0; i < _nodes.size(); i++) {
-                for (int j = i; j < _nodes.size(); j++) {
-                    boldSigmaSet.add(new Sigma(_nodes.get(i), _nodes.get(j)));
-                }
-            }
-
-//            for (int k1 = 0; k1 < 3; k1++) {
-//                for (int k2 = 0; k2 < 3; k2++) {
-//                    boldSigmaSet.add(new Sigma(_nodes.get(k1), _nodes.get(3 + k2)));
-//                }
-//            }
-        }
-
-        for (Sigma sigma : boldSigmaSet) {
-            boldSigma.add(sigma);
-        }
-
-        // Need a matrix of variances and covariances of sample covariances.
-        TetradMatrix sigma_ss = new TetradMatrix(boldSigma.size(), boldSigma.size());
-
-        for (int i = 0; i < boldSigma.size(); i++) {
-            for (int j = i; j < boldSigma.size(); j++) {
-                Sigma sigmaef = boldSigma.get(i);
-                Sigma sigmagh = boldSigma.get(j);
-
-                int e = sigmaef.getA();
-                int f = sigmaef.getB();
-                int g = sigmagh.getA();
-                int h = sigmagh.getB();
-
-                if (cov != null && cov instanceof CorrelationMatrix) {
-
-//                Assumes multinormality. Using formula 23. (Not implementing formula 22 because that case
-//                does not come up.)
-                    double rr = 0.5 * (r(e, f) * r(g, h))
-                            * (r(e, g) * r(e, g) + r(e, h) * r(e, h) + r(f, g) * r(f, g) + r(f, h) * r(f, h))
-                            + r(e, g) * r(f, h) + r(e, h) * r(f, g)
-                            - r(e, f) * (r(f, g) * r(f, h) + r(e, g) * r(e, h))
-                            - r(g, h) * (r(f, g) * r(e, g) + r(f, h) * r(e, h));
-
-                    sigma_ss.set(i, j, rr);
-                    sigma_ss.set(j, i, rr);
-                } else if (cov != null && dataSet == null) {
-
-                    // Assumes multinormality--see p. 160.
-//                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(f, g); // + or -? Different advise. + in the code.
-                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(g, f);
-                    sigma_ss.set(i, j, _ss);
-                    sigma_ss.set(j, i, _ss);
-                } else {
-                    double _ss = sxyzw(e, f, g, h) - r(e, f) * r(g, h);
-                    sigma_ss.set(i, j, _ss);
-                    sigma_ss.set(j, i, _ss);
-                }
-            }
-        }
-
-        // Need a matrix of of population estimates of partial derivatives of tetrads
-        // with respect to covariances in boldSigma.
-        TetradMatrix del = new TetradMatrix(boldSigma.size(), sextads.length);
-
-        for (int j = 0; j < sextads.length; j++) {
-            IntSextad sextad = sextads[j];
-
-            for (int i = 0; i < boldSigma.size(); i++) {
-                Sigma sigma = boldSigma.get(i);
-                double derivative = getDerivative(sextad, sigma);
-                del.set(i, j, derivative);
-            }
-        }
-
-        // Need a vector of population estimates of the sextads.
-        TetradMatrix t = new TetradMatrix(sextads.length, 1);
-
-        for (int i = 0; i < sextads.length; i++) {
-            IntSextad sextad = sextads[i];
-            List<Integer> nodes = sextad.getNodes();
-            TetradMatrix m = new TetradMatrix(3, 3);
-
-            for (int k1 = 0; k1 < 3; k1++) {
-                for (int k2 = 0; k2 < 3; k2++) {
-                    m.set(k1, k2, r(nodes.get(k1), nodes.get(3 + k2)));
-                }
-            }
-//
-//            for (int k1 = 0; k1 < 6; k1++) {
-//                for (int k2 = 0; k2 < 6; k2++) {
-//                    m.set(k1, k2, r(nodes.get(k1), nodes.get(k2)));
-//                }
-//            }
-
-            double det = m.det();
-            t.set(i, 0, det);
-        }
-
-        TetradMatrix sigma_tt = del.transpose().times(sigma_ss).times(del);
-        try {
-            this.chisq = N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);
-            return chisq;
-        } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity problem.", e);
-        }
-    }
-
-    /**
-     * @return the p value for the most recent test.
-     */
-    public double getPValue() {
-        double cdf = ProbUtils.chisqCdf(this.chisq, this.df);
-        double p = 1.0 - cdf;
-
-//        String s = "";
-//
-//        for (IntSextad storedSextad : storedSextads) {
-//            s += storedSextad + " ";
-//        }
-//
-//        s += "chisq = " + chisq + " p = " + nf.format(p);
-//
-//        TetradLogger.getInstance().log("sextadPValues", s);
-
-        return p;
+    public double getPValue(IntSextad... sextads) {
+        int df = sextads.length;
+//        int df = dofHarman(sextads.length);
+        double chisq = calcChiSquare(sextads);
+//        double cdf = ProbUtils.chisqCdf(chisq, df);
+        double cdf = new ChiSquaredDistribution(df).cumulativeProbability(chisq);
+        return 1.0 - cdf;
     }
 
     /**
@@ -269,33 +116,26 @@ public class DeltaSextadTest {
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
      */
-    public double getPValue(IntSextad... sextads) {
-        this.storedSextads = sextads;
-
-        int df = sextads.length;
-
-        Set<Sigma> boldSigmaSet = new LinkedHashSet<>();
-        List<Sigma> boldSigma = new ArrayList<>();
+    public double calcChiSquare(IntSextad[] sextads) {
+        Set<Sigma> boldSigmaSet = new HashSet<>();
 
         for (IntSextad sextad : sextads) {
             List<Integer> _nodes = sextad.getNodes();
 
-            for (int i = 0; i < _nodes.size(); i++) {
-                for (int j = i; j < _nodes.size(); j++) {
-                    boldSigmaSet.add(new Sigma(_nodes.get(i), _nodes.get(j)));
-                }
-            }
-
-//            for (int k1 = 0; k1 < 3; k1++) {
-//                for (int k2 = 0; k2 < 3; k2++) {
-//                    boldSigmaSet.add(new Sigma(_nodes.get(k1), _nodes.get(3 + k2)));
+//            for (int i = 0; i < _nodes.size(); i++) {
+//                for (int j = i; j < _nodes.size(); j++) {
+//                    boldSigmaSet.add(new Sigma(_nodes.get(i), _nodes.get(j)));
 //                }
 //            }
+//
+            for (int k1 = 0; k1 < 3; k1++) {
+                for (int k2 = 0; k2 < 3; k2++) {
+                    boldSigmaSet.add(new Sigma(_nodes.get(k1), _nodes.get(3 + k2)));
+                }
+            }
         }
 
-        for (Sigma sigma : boldSigmaSet) {
-            boldSigma.add(sigma);
-        }
+        List<Sigma> boldSigma = new ArrayList<>(boldSigmaSet);
 
         // Need a matrix of variances and covariances of sample covariances.
         TetradMatrix sigma_ss = new TetradMatrix(boldSigma.size(), boldSigma.size());
@@ -320,17 +160,23 @@ public class DeltaSextadTest {
                             - r(e, f) * (r(f, g) * r(f, h) + r(e, g) * r(e, h))
                             - r(g, h) * (r(f, g) * r(e, g) + r(f, h) * r(e, h));
 
+                    // General.
+                    double rr2 = r(e, f, g, h) + 0.25 * r(e, f) * r(g, h) *
+                            (r(e, e, g, g) * r(f, f, g, g) + r(e, e, h, h) + r(f, f, h, h))
+                            - 0.5 * r(e, f) * (r(e, e, g, h) + r(f, f, g, h))
+                            - 0.5 * r(g, h) * (r(e, f, g, g) + r(e, f, h, h));
+
                     sigma_ss.set(i, j, rr);
                     sigma_ss.set(j, i, rr);
-                } else if (cov != null && dataSet == null) {
+                } else if (cov != null && data == null) {
 
                     // Assumes multinormality--see p. 160.
 //                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(f, g); // + or -? Different advise. + in the code.
-                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(g, f);
+                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(f, g);
                     sigma_ss.set(i, j, _ss);
                     sigma_ss.set(j, i, _ss);
                 } else {
-                    double _ss = sxyzw(e, f, g, h) - r(e, f) * r(g, h);
+                    double _ss = r(e, f, g, h) - r(e, f) * r(g, h);
                     sigma_ss.set(i, j, _ss);
                     sigma_ss.set(j, i, _ss);
                 }
@@ -364,25 +210,19 @@ public class DeltaSextadTest {
                     m.set(k1, k2, r(nodes.get(k1), nodes.get(3 + k2)));
                 }
             }
-//
-//            for (int k1 = 0; k1 < 6; k1++) {
-//                for (int k2 = 0; k2 < 6; k2++) {
-//                    m.set(k1, k2, r(nodes.get(k1), nodes.get(k2)));
-//                }
-//            }
 
             double det = m.det();
             t.set(i, 0, det);
         }
 
         TetradMatrix sigma_tt = del.transpose().times(sigma_ss).times(del);
+        double chisq;
         try {
-            double chisq = N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);
-            double cdf = ProbUtils.chisqCdf(chisq, df);
-            return 1.0 - cdf;
+            chisq = N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity problem.", e);
         }
+        return chisq;
     }
 
 //    public double getPValue(IntSextad... sextads) {
@@ -400,7 +240,7 @@ public class DeltaSextadTest {
         } else {
             double[] arr1 = data[i];
             double[] arr2 = data[j];
-            return sxy(arr1, arr2, arr1.length);
+            return r(arr1, arr2, arr1.length);
         }
     }
 
@@ -415,17 +255,16 @@ public class DeltaSextadTest {
         int n5 = sextad.getM();
         int n6 = sextad.getN();
 
-        Double x = derivative(a, b, n1, n2, n3, n4, n5, n6);
-        if (x != null) return x;
-
-//        x = derivative(b, a, n6, n5, n4, n3, n2, n1);
-        x = derivative(b, a, n1, n2, n3, n4, n5, n6);
-        if (x != null) return x;
-
-        return 0.0;
+        double x1 = derivative(a, b, n1, n2, n3, n4, n5, n6);
+        double x2 = derivative(a, b, n4, n5, n6, n1, n2, n3);
+//        return x2;
+//
+        if (x1 == 0) return x2;
+        if (x2 == 0) return x1;
+        throw new IllegalStateException("x1 = " + x1 + " x2 = " + x2);
     }
 
-    private Double derivative(int a, int b, int n1, int n2, int n3, int n4, int n5, int n6) {
+    private double derivative(int a, int b, int n1, int n2, int n3, int n4, int n5, int n6) {
         if (a == n1) {
             if (b == n4) {
                 return r(n2, n5) * r(n3, n6) - r(n2, n6) * r(n3, n5);
@@ -455,7 +294,7 @@ public class DeltaSextadTest {
 
         }
 
-        return null;
+        return 0.0;
     }
 
     public List<Node> getVariables() {
@@ -499,7 +338,7 @@ public class DeltaSextadTest {
     }
 
     // Assumes data are mean-centered.
-    private double sxyzw(int x, int y, int z, int w) {
+    private double r(int x, int y, int z, int w) {
         double sxyzw = 0.0;
 
         double[] _x = data[x];
@@ -517,7 +356,7 @@ public class DeltaSextadTest {
     }
 
     // Assumes data are mean-centered.
-    private double sxy(double array1[], double array2[], int N) {
+    private double r(double array1[], double array2[], int N) {
         int i;
         double sum = 0.0;
 
