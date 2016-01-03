@@ -200,9 +200,9 @@ public class FindTwoFactorClusters {
         Set<List<Integer>> allClusters;
 
         if (algorithm == Algorithm.SAG) {
-            allClusters = estimateClustersTetradsFirst();
+            allClusters = estimateClustersSextadsFirst();
         } else if (algorithm == Algorithm.GAP) {
-            allClusters = estimateClustersTriplesFirst();
+            allClusters = estimateClustersPentadsFirst();
         } else {
             throw new IllegalStateException("Expected SAG or GAP: " + algorithm);
         }
@@ -213,13 +213,13 @@ public class FindTwoFactorClusters {
     //========================================PRIVATE METHODS====================================//
 
     // This is the main algorithm.
-    private Set<List<Integer>> estimateClustersTriplesFirst() {
+    private Set<List<Integer>> estimateClustersPentadsFirst() {
 //        List<Integer> _variables = new ArrayList<Integer>();
 //        for (int i = 0; i < variables.size(); i++) _variables.add(i);
         List<Integer> _variables = allVariables();
 
-        Set<Set<Integer>> triples = findPuretriples(_variables);
-        Set<Set<Integer>> combined = combinePuretriples(triples, _variables);
+        Set<Set<Integer>> pentads = findPurepentads(_variables);
+        Set<Set<Integer>> combined = combinePurePentads(pentads, _variables);
 
         Set<List<Integer>> _combined = new HashSet<List<Integer>>();
 
@@ -239,7 +239,7 @@ public class FindTwoFactorClusters {
         return _variables;
     }
 
-    private Set<List<Integer>> estimateClustersTetradsFirst() {
+    private Set<List<Integer>> estimateClustersSextadsFirst() {
         if (verbose) {
             log("Running PC adjacency search...", true);
         }
@@ -265,12 +265,12 @@ public class FindTwoFactorClusters {
 
     }
 
-    private Set<Set<Integer>> findPuretriples(List<Integer> variables) {
+    private Set<Set<Integer>> findPurepentads(List<Integer> variables) {
         if (variables.size() < 6) {
             return new HashSet<>();
         }
 
-        log("Finding pure triples.", true);
+        log("Finding pure pentads.", true);
 
         ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 5);
         int[] choice;
@@ -316,8 +316,8 @@ public class FindTwoFactorClusters {
         return purePentads;
     }
 
-    private Set<Set<Integer>> combinePuretriples(Set<Set<Integer>> purePentads, List<Integer> _variables) {
-        log("Growing pure triples.", true);
+    private Set<Set<Integer>> combinePurePentads(Set<Set<Integer>> purePentads, List<Integer> _variables) {
+        log("Growing pure pentads.", true);
         Set<Set<Integer>> grown = new HashSet<Set<Integer>>();
 
         // Lax grow phase with speedup.
@@ -532,7 +532,7 @@ public class FindTwoFactorClusters {
         }
 
         if (false) {
-            System.out.println("# pure triples = " + purePentads.size());
+            System.out.println("# pure pentads = " + purePentads.size());
 
             List<Set<Integer>> clusters = new LinkedList<Set<Integer>>(purePentads);
             Set<Integer> t = new HashSet<Integer>();
@@ -784,7 +784,7 @@ public class FindTwoFactorClusters {
 
     //  Finds clusters of size 5 for the quartet first algorithm.
     private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure) {
-        Set<List<Integer>> triples = new HashSet<List<Integer>>();
+        Set<List<Integer>> pentads = new HashSet<List<Integer>>();
         Set<List<Integer>> _clusters = new HashSet<List<Integer>>(clusters);
 
         if (unionPure.isEmpty()) {
@@ -844,7 +844,7 @@ public class FindTwoFactorClusters {
                 if (someVanish && allvanish) {
 //                    if (modelInsignificantWithNewCluster(_clusters, cluster)) continue;
 
-                    triples.add(cluster);
+                    pentads.add(cluster);
                     _clusters.add(cluster);
                     unionPure.addAll(cluster);
                     remaining.removeAll(cluster);
@@ -860,13 +860,13 @@ public class FindTwoFactorClusters {
             break;
         }
 
-        return triples;
+        return pentads;
     }
 
     private double significance(List<Integer> cluster) {
         double chisq = getClusterChiSquare(cluster);
 
-        // From "Algebraic factor analysis: sextads, triples and beyond" Drton et al.
+        // From "Algebraic factor analysis: sextads, pentads and beyond" Drton et al.
         int n = cluster.size();
         int dof = dofHarman(n);
         double q = ProbUtils.chisqCdf(chisq, dof);
@@ -1160,7 +1160,7 @@ public class FindTwoFactorClusters {
 
 //        independents.add(new IntSextad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10});
 
-        // The four tetrads implied by equation 5.17 in Harmann.
+        // The four sextads implied by equation 5.17 in Harmann.
 //            independents.add(new IntSextad[]{t3, t7, t8, t9});
 
         for (IntSextad[] sextads : independents) {
