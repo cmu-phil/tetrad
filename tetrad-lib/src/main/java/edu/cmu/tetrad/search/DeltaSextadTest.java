@@ -101,8 +101,8 @@ public class DeltaSextadTest {
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
      */
     public double getPValue(IntSextad... sextads) {
-        int df = sextads.length;
-//        int df = dofHarman(sextads.length);
+//        int df = sextads.length;
+        int df = dofHarman(sextads.length);
         double chisq = calcChiSquare(sextads);
 //        double cdf = ProbUtils.chisqCdf(chisq, df);
         double cdf = new ChiSquaredDistribution(df).cumulativeProbability(chisq);
