@@ -200,9 +200,9 @@ public class FindTwoFactorClusters {
         Set<List<Integer>> allClusters;
 
         if (algorithm == Algorithm.SAG) {
-            allClusters = estimateClustersSextadsFirst();
+            allClusters = estimateClustersSAG();
         } else if (algorithm == Algorithm.GAP) {
-            allClusters = estimateClustersPentadsFirst();
+            allClusters = estimateClustersGAP();
         } else {
             throw new IllegalStateException("Expected SAG or GAP: " + algorithm);
         }
@@ -213,7 +213,7 @@ public class FindTwoFactorClusters {
     //========================================PRIVATE METHODS====================================//
 
     // This is the main algorithm.
-    private Set<List<Integer>> estimateClustersPentadsFirst() {
+    private Set<List<Integer>> estimateClustersGAP() {
 //        List<Integer> _variables = new ArrayList<Integer>();
 //        for (int i = 0; i < variables.size(); i++) _variables.add(i);
         List<Integer> _variables = allVariables();
@@ -239,7 +239,7 @@ public class FindTwoFactorClusters {
         return _variables;
     }
 
-    private Set<List<Integer>> estimateClustersSextadsFirst() {
+    private Set<List<Integer>> estimateClustersSAG() {
         if (verbose) {
             log("Running PC adjacency search...", true);
         }
@@ -1168,9 +1168,13 @@ public class FindTwoFactorClusters {
             if (p < alpha) return false;
         }
 
-        return true;
+//        IntSextad[] sextads = new IntSextad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10};
+//
+//        for (IntSextad sextad : sextads) {
+//            if (test.getPValue(sextad) < alpha) return false;
+//        }
 
-//            return test.getPValue(independents.get(0));
+        return true;
     }
 
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {

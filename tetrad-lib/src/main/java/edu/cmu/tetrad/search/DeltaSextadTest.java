@@ -225,12 +225,7 @@ public class DeltaSextadTest {
         return chisq;
     }
 
-//    public double getPValue(IntSextad... sextads) {
-//        calcChiSquare(sextads);
-//        return getPValue();
-//    }
-
-    /**
+     /**
      * If using a covariance matrix or a correlation matrix, just returns the lookups. Otherwise calculates the
      * covariance.
      */
@@ -256,12 +251,12 @@ public class DeltaSextadTest {
         int n6 = sextad.getN();
 
         double x1 = derivative(a, b, n1, n2, n3, n4, n5, n6);
-        double x2 = derivative(a, b, n4, n5, n6, n1, n2, n3);
-//        return x2;
-//
+//        double x2 = derivative(a, b, n4, n5, n6, n1, n2, n3);
+        double x2 = derivative(b, a, n1, n2, n3, n4, n5, n6);
+
         if (x1 == 0) return x2;
         if (x2 == 0) return x1;
-        throw new IllegalStateException("x1 = " + x1 + " x2 = " + x2);
+        throw new IllegalStateException("Both nonzero at the same time: x1 = " + x1 + " x2 = " + x2);
     }
 
     private double derivative(int a, int b, int n1, int n2, int n3, int n4, int n5, int n6) {
@@ -329,7 +324,7 @@ public class DeltaSextadTest {
         }
 
         public int hashCode() {
-            return 1; //a.hashCode() + b.hashCode();
+            return a + b;
         }
 
         public String toString() {
