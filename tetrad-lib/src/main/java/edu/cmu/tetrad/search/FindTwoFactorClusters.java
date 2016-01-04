@@ -1057,6 +1057,11 @@ public class FindTwoFactorClusters {
 
         for (IntSextad[] sextads : independents) {
             double p = test.getPValue(sextads);
+
+            if (Double.isNaN(p)) {
+                return false;
+            }
+
             if (p < alpha) return false;
         }
 
