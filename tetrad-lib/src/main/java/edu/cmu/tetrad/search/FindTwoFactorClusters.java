@@ -244,17 +244,6 @@ public class FindTwoFactorClusters {
             log("Running PC adjacency search...", true);
         }
 
-//        Graph graph = new EdgeListGraph(variables);
-//        graph.fullyConnect(Endpoint.TAIL);
-//        Fas fas = new Fas(graph, indTest);
-//        fas.setDepth(depth);
-//        graph = fas.search();
-//        if (verbose) {
-//            log("...done.", true);
-//        }
-
-//        List<Integer> _variables = new ArrayList<Integer>();
-//        for (int i = 0; i < variables.size(); i++) _variables.add(i);
         List<Integer> _variables = allVariables();
 
         Set<List<Integer>> pureClusters = findPureClusters(_variables);
