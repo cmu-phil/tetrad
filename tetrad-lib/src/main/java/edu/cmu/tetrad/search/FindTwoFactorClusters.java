@@ -667,8 +667,6 @@ public class FindTwoFactorClusters {
     // Finds clusters of size 6 or higher for the IntSextad first algorithm.
     private Set<List<Integer>> findPureClusters(List<Integer> _variables) {
         Set<List<Integer>> clusters = new HashSet<List<Integer>>();
-//        List<Integer> allVariables = new ArrayList<Integer>();
-//        for (int i = 0; i < this.variables.size(); i++) allVariables.add(i);
         List<Integer> allVariables = allVariables();
 
         VARIABLES:
