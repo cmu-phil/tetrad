@@ -42,6 +42,8 @@ public class SimulateDataFromGraphCliTest {
 
     /**
      * Test of main method, of class SimulateDataFromGraphCli.
+     *
+     * @throws IOException
      */
     @Test
     public void testMain() throws IOException {
