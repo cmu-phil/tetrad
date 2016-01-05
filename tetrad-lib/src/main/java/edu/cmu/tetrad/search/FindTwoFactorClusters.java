@@ -312,39 +312,49 @@ public class FindTwoFactorClusters {
 
                 Set<Integer> cluster = purePentads.iterator().next();
                 Set<Integer> _cluster = new HashSet<>(cluster);
+                boolean changed = true;
 
-                for (int o : _variables) {
-                    if (_cluster.contains(o)) continue;
+                while (changed) {
+                    changed = false;
 
-                    List<Integer> _cluster2 = new ArrayList<>(_cluster);
-                    int rejected = 0;
-                    int accepted = 0;
+                    for (int o : _variables) {
+                        if (_cluster.contains(o)) continue;
 
-                    ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 4);
-                    int[] choice;
+                        List<Integer> _cluster2 = new ArrayList<>(_cluster);
+                        int rejected = 0;
+                        int accepted = 0;
 
-                    while ((choice = gen.next()) != null) {
-                        t.clear();
-                        t.add(_cluster2.get(choice[0]));
-                        t.add(_cluster2.get(choice[1]));
-                        t.add(_cluster2.get(choice[2]));
-                        t.add(_cluster2.get(choice[3]));
-                        t.add(o);
+                        ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 4);
+                        int[] choice;
 
-                        if (!purePentads.contains(t)) {
-                            rejected++;
-                        } else {
-                            accepted++;
+                        while ((choice = gen.next()) != null) {
+                            t.clear();
+                            t.add(_cluster2.get(choice[0]));
+                            t.add(_cluster2.get(choice[1]));
+                            t.add(_cluster2.get(choice[2]));
+                            t.add(_cluster2.get(choice[3]));
+                            t.add(o);
+
+                            if (!purePentads.contains(t)) {
+                                rejected++;
+                            } else {
+                                accepted++;
+                            }
                         }
+
+                        System.out.println("accepted = " + accepted + " rejected = " + rejected);
+
+                        if (rejected > accepted) {
+                            continue;
+                        }
+
+                        if (rejected > 0) {
+                            continue;
+                        }
+
+                        _cluster.add(o);
+                        changed = true;
                     }
-
-                    System.out.println("accepted = " + accepted + " rejected = " + rejected);
-
-                    if (rejected > accepted) {
-                        continue;
-                    }
-
-                    _cluster.add(o);
                 }
 
                 // This takes out all pure clusters that are subsets of _cluster.
@@ -516,23 +526,23 @@ public class FindTwoFactorClusters {
             for (int i = 0; i < clusters.size(); i++) {
                 System.out.println("I = " + i);
 
-//                // remove "i" clusters that intersect with previous clusters.
-//                for (int k = 0; k < i - 1; k++) {
-//                    Set<Integer> ck = clusters.get(k);
-//                    Set<Integer> ci = clusters.get(i);
-//
-//                    if (ck == null) continue;
-//                    if (ci == null) continue;
-//
-//                    Set<Integer> cm = new HashSet<Integer>(ck);
-//                    cm.retainAll(ci);
-//
-//                    if (!cm.isEmpty()) {
-//                        clusters.remove(i);
-//                        i--;
-//                        continue I;
-//                    }
-//                }
+                // remove "i" clusters that intersect with previous clusters.
+                for (int k = 0; k < i - 1; k++) {
+                    Set<Integer> ck = clusters.get(k);
+                    Set<Integer> ci = clusters.get(i);
+
+                    if (ck == null) continue;
+                    if (ci == null) continue;
+
+                    Set<Integer> cm = new HashSet<Integer>(ck);
+                    cm.retainAll(ci);
+
+                    if (!cm.isEmpty()) {
+                        clusters.remove(i);
+                        i--;
+                        continue I;
+                    }
+                }
 
                 J:
                 for (int j = i + 1; j < clusters.size(); j++) {
@@ -586,24 +596,42 @@ public class FindTwoFactorClusters {
 
         List<Set<Integer>> list = new ArrayList<>(grown);
 
-        Collections.sort(list, new Comparator<Set<Integer>>() {
-            @Override
-            public int compare(Set<Integer> o1, Set<Integer> o2) {
-                return o2.size() - o1.size();
+        while (!list.isEmpty()) {
+            Collections.sort(list, new Comparator<Set<Integer>>() {
+                @Override
+                public int compare(Set<Integer> o1, Set<Integer> o2) {
+                    return o2.size() - o1.size();
+                }
+            });
+
+            Set<Integer> first = list.get(0);
+            out.add(first);
+            list.remove(first);
+
+            for (Set<Integer> s : new ArrayList<>(list)) {
+                s.removeAll(first);
+                if (s.size() < 5) list.remove(s);
             }
-        });
-
-        Set<Integer> all = new HashSet<>();
-
-        CLUSTER:
-        for (Set<Integer> cluster : list) {
-            for (Integer i : cluster) {
-                if (all.contains(i)) continue CLUSTER;
-            }
-
-            out.add(cluster);
-            all.addAll(cluster);
         }
+
+//        Collections.sort(list, new Comparator<Set<Integer>>() {
+//            @Override
+//            public int compare(Set<Integer> o1, Set<Integer> o2) {
+//                return o2.size() - o1.size();
+//            }
+//        });
+//
+//        Set<Integer> all = new HashSet<>();
+//
+//        CLUSTER:
+//        for (Set<Integer> cluster : list) {
+//            for (Integer i : cluster) {
+//                if (all.contains(i)) continue CLUSTER;
+//            }
+//
+//            out.add(cluster);
+//            all.addAll(cluster);
+//        }
 
         boolean significanceCalculated = false;
         if (significanceCalculated) {
