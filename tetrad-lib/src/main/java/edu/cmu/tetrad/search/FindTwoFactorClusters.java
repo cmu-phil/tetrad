@@ -348,9 +348,9 @@ public class FindTwoFactorClusters {
                             continue;
                         }
 
-                        if (rejected > 0) {
-                            continue;
-                        }
+//                        if (rejected > 0) {
+//                            continue;
+//                        }
 
                         _cluster.add(o);
                         changed = true;
