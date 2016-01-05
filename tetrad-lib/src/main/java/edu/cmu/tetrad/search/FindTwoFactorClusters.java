@@ -236,10 +236,6 @@ public class FindTwoFactorClusters {
     }
 
     private Set<List<Integer>> estimateClustersSAG() {
-        if (verbose) {
-            log("Running PC adjacency search...", true);
-        }
-
         List<Integer> _variables = allVariables();
 
         Set<List<Integer>> pureClusters = findPureClusters(_variables);
