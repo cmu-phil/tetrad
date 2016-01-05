@@ -85,14 +85,14 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only");
-        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
-        positiveOnlyBox.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox b = (JCheckBox)e.getSource();
-                getParams().setPositiveDataOnly(b.isSelected());
-            }
-        });
+//        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only");
+//        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
+//        positiveOnlyBox.addActionListener(new ActionListener(){
+//            public void actionPerformed(ActionEvent e) {
+//                JCheckBox b = (JCheckBox)e.getSource();
+//                getParams().setPositiveDataOnly(b.isSelected());
+//            }
+//        });
 
 
         setLayout(new BorderLayout());
@@ -109,9 +109,9 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
         b2.add(latentVarsBox);
         b2.add(Box.createHorizontalGlue());
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(positiveOnlyBox);
-        b3.add(Box.createHorizontalGlue());
+//        Box b3 = Box.createHorizontalBox();
+//        b3.add(positiveOnlyBox);
+//        b3.add(Box.createHorizontalGlue());
 
         b6.add(b1);
     //    b6.add(Box.createVerticalStrut(5));

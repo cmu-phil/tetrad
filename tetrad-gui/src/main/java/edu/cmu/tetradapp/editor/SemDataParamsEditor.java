@@ -105,15 +105,15 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only",
-                getParams().isPositiveDataOnly());
-        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
-        positiveOnlyBox.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox b = (JCheckBox)e.getSource();
-                getParams().setPositiveDataOnly(b.isSelected());
-            }
-        });
+//        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only",
+//                getParams().isPositiveDataOnly());
+//        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
+//        positiveOnlyBox.addActionListener(new ActionListener(){
+//            public void actionPerformed(ActionEvent e) {
+//                JCheckBox b = (JCheckBox)e.getSource();
+//                getParams().setPositiveDataOnly(b.isSelected());
+//            }
+//        });
 
         setLayout(new BorderLayout());
 
@@ -136,9 +136,9 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
         b2.add(latentDataSaved);
         b.add(b2);
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(positiveOnlyBox);
-        b.add(b3);
+//        Box b3 = Box.createHorizontalBox();
+//        b3.add(positiveOnlyBox);
+//        b.add(b3);
 
         add(b, BorderLayout.CENTER);
         setBorder(new EmptyBorder(5, 5, 5, 5));
