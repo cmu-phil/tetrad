@@ -550,6 +550,8 @@ public final class TimeLagGraphEditor extends JPanel
                         JOptionPane.PLAIN_MESSAGE);
 
                 if (ret == JOptionPane.OK_OPTION) {
+                    int numFactors = Preferences.userRoot().getInt(
+                            "randomMimNumFactors", 1);
                     int numStructuralNodes = Preferences.userRoot().getInt(
                             "numStructuralNodes", 3);
                     int maxStructuralEdges = Preferences.userRoot().getInt(
@@ -566,11 +568,24 @@ public final class TimeLagGraphEditor extends JPanel
                                     .getInt("measuredMeasuredImpureAssociations",
                                             0);
 
-                    Graph graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                            maxStructuralEdges, measurementModelDegree,
-                            numLatentMeasuredImpureParents,
-                            numMeasuredMeasuredImpureParents,
-                            numMeasuredMeasuredImpureAssociations);
+                    Graph graph;
+
+                    if (numFactors == 1) {
+                        graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
+                                maxStructuralEdges, measurementModelDegree,
+                                numLatentMeasuredImpureParents,
+                                numMeasuredMeasuredImpureParents,
+                                numMeasuredMeasuredImpureAssociations);
+                    } else if (numFactors == 2) {
+                        graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
+                                maxStructuralEdges, measurementModelDegree,
+                                numLatentMeasuredImpureParents,
+                                numMeasuredMeasuredImpureParents,
+                                numMeasuredMeasuredImpureAssociations);
+                    } else {
+                        throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
+                                "sorry dude.");
+                    }
 
                     getWorkbench().setGraph(graph);
                 }

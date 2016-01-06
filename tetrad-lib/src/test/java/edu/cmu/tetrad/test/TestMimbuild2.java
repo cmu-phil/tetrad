@@ -35,8 +35,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.rmi.MarshalledObject;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -68,7 +66,8 @@ public class TestMimbuild2 {
             List<List<Node>> partition;
 
             if (algorithm.equals("FOFC")) {
-                FindOneFactorClusters fofc = new FindOneFactorClusters(data, TestType.TETRAD_WISHART, 0.001);
+                FindOneFactorClusters fofc = new FindOneFactorClusters(data, TestType.TETRAD_WISHART,
+                        FindOneFactorClusters.Algorithm.GAP, 0.001);
                 searchGraph = fofc.search();
                 partition = fofc.getClusters();
             } else if (algorithm.equals("BPC")) {
@@ -121,7 +120,7 @@ public class TestMimbuild2 {
                     int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
 //                    System.out.println("SHD = " + shd);
 
-                    assertEquals(3, shd);
+                    assertEquals(7, shd);
 //                    System.out.println();
                 } else if (mimbuildMethod == 3) {
 //                    System.out.println("Mimbuild Trek\n");

@@ -289,6 +289,8 @@ public class DataGraphUtils {
 //            }
 //        }
 
+        GraphUtils.fruchtermanReingoldLayout(mim);
+
         return mim;
     }
 

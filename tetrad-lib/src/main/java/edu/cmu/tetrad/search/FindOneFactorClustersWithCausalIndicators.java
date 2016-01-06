@@ -113,7 +113,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 
             if (testType == TestType.TETRAD_DELTA) {
                 deltaTest = new DeltaTetradTest(dataSet);
-                deltaTest.setCacheFourthMoments(false);
+//                deltaTest.setCacheFourthMoments(false);
             }
 
             this.cov = new CovarianceMatrix(dataSet);
@@ -127,7 +127,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 
             if (testType == TestType.TETRAD_DELTA) {
                 deltaTest = new DeltaTetradTest(dataSet);
-                deltaTest.setCacheFourthMoments(false);
+//                deltaTest.setCacheFourthMoments(false);
             }
         }
     }

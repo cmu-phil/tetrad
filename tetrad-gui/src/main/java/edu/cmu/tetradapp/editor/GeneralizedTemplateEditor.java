@@ -32,6 +32,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -97,7 +99,7 @@ public class GeneralizedTemplateEditor extends JComponent {
     /**
      *
      */
-    private JComboBox combo = new JComboBox();
+    private JComboBox<String> combo = new JComboBox<>();
 
 //    /**
 //     * If this is selected, then variables are listed in the box. Exclusive with <code>errorsCheckBox</code> and
@@ -158,9 +160,8 @@ public class GeneralizedTemplateEditor extends JComponent {
 
         final Map<String, String> expressionsMap = getExpressionsMap(semPm);
         String[] expressionTokens = getExpressionTokens(expressionsMap);
-        final JComboBox expressionsBox = new JComboBox(expressionTokens);
+        final JComboBox<String> expressionsBox = new JComboBox<>(expressionTokens);
         expressionsBox.setMaximumSize(expressionsBox.getPreferredSize());
-
 
         JButton insertButton = new JButton("Insert");
 
@@ -191,8 +192,6 @@ public class GeneralizedTemplateEditor extends JComponent {
         combo.setSelectedItem("Variables");
 
         updateEquationsDisplay();
-
-;
 
         combo.addActionListener(new ActionListener() {
             @Override
@@ -291,22 +290,11 @@ public class GeneralizedTemplateEditor extends JComponent {
         saveTemplate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                saveTemplate();
+                listen();
             }
         });
 
         startsWithField = new StringTextField("", 6);
-
-//        startsWithField.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent actionEvent) {
-//                String text = startsWithField.getText();
-//                String template = getSemPm().getStartsWithParameterTemplate(text);
-//                if (template != null) {
-//                    setParseText("boo");
-//                    updateEquationsDisplay();
-//                }
-//            }
-//        });
 
         startsWithField.setFilter(new StringTextField.Filter() {
             public String filter(String value, String oldValue) {
@@ -413,7 +401,7 @@ public class GeneralizedTemplateEditor extends JComponent {
                         continue;
                     }
 
-                    if (color == Color.RED) {
+                    if (color.equals(Color.RED)) {
                         document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
                     } else if (color == Color.BLACK) {
                         document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
@@ -431,7 +419,20 @@ public class GeneralizedTemplateEditor extends JComponent {
                 this.stop = true;
             }
         }
-        ;
+
+        expressionTextDoc.addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent documentEvent) {
+                listen();
+            }
+
+            public void removeUpdate(DocumentEvent documentEvent) {
+                listen();
+            }
+
+            public void changedUpdate(DocumentEvent documentEvent) {
+                listen();
+            }
+        });
 
         final ColorThread thread = new ColorThread();
         thread.start();
@@ -451,6 +452,19 @@ public class GeneralizedTemplateEditor extends JComponent {
         });
 
         expressionTextPane.setCaretPosition(expressionTextPane.getText().length());
+
+        // When the dialog closes, we want to make sure the expression gets parsed and set.
+        addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent ancestorEvent) {
+            }
+
+            public void ancestorRemoved(AncestorEvent ancestorEvent) {
+                listen();
+            }
+
+            public void ancestorMoved(AncestorEvent ancestorEvent) {
+            }
+        });
 
         setFocusCycleRoot(true);
     }
@@ -609,6 +623,7 @@ public class GeneralizedTemplateEditor extends JComponent {
             expressionTextDoc.remove(0, expressionTextPane.getText().length());
             expressionTextDoc.insertString(0, text, null);
         } catch (BadLocationException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -797,7 +812,7 @@ public class GeneralizedTemplateEditor extends JComponent {
         equationsBox.repaint();
     }
 
-    private void saveTemplate() {
+    private void listen() {
         String expressionString = expressionTextPane.getText();
 
         ExpressionParser parser = new ExpressionParser();
@@ -816,28 +831,25 @@ public class GeneralizedTemplateEditor extends JComponent {
 
             if ("Variables".equals(combo.getSelectedItem())) {
                 if (!"".equals(expressionString.trim())) {
-                    getSemPm().setVariablesTemplate(expressionString);
+//                    getSemPm().setVariablesTemplate(expressionString);
                 }
             }
-
-            if ("Errors".equals(combo.getSelectedItem())) {
+            else if ("Errors".equals(combo.getSelectedItem())) {
                 if (!"".equals(expressionString.trim())) {
-                    getSemPm().setErrorsTemplate(expressionString);
+//                    getSemPm().setErrorsTemplate(expressionString);
                 }
             }
-
-            if ("Parameter Initializations".equals(combo.getSelectedItem())) {
+            else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
                 if (!"".equals(startsWithText.trim())) {
                     getSemPm().setStartsWithParametersTemplate(startsWithText, expressionString);
                 }
-                getSemPm().setParametersTemplate(expressionString);
+//                getSemPm().setParametersTemplate(expressionString);
             }
-
-            if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
+            else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
                 if (!"".equals(startsWithText.trim())) {
                     getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWithText, expressionString);
                 }
-                getSemPm().setParametersEstimationInitializationTemplate(expressionString);
+//                getSemPm().setParametersEstimationInitializationTemplate(expressionString);
             }
         } catch (ParseException e) {
             color = Color.RED;

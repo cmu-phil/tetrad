@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.MimBuildIndTestParams;
+import edu.cmu.tetradapp.model.MimIndTestParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,9 +40,9 @@ import java.util.List;
  * @author Ricardo Silva
  */
 class MimBuildIndTestParamsEditor extends JComponent {
-    private MimBuildIndTestParams params;
+    private MimIndTestParams params;
 
-    public MimBuildIndTestParamsEditor(final MimBuildIndTestParams params) {
+    public MimBuildIndTestParamsEditor(final MimIndTestParams params) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
@@ -60,7 +61,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
             }
         });
 
-//        if (getParams().getAlgorithmType() == 1) {
+//        if (getParams().getAlgorithm() == 1) {
 //            alphaField.setEnabled(true);
 //        }
 //        else {
@@ -117,15 +118,15 @@ class MimBuildIndTestParamsEditor extends JComponent {
 
 //        final String[] descriptions = MimBuild.getAlgorithmDescriptions();
 //        JComboBox algorithmSelector = new JComboBox(descriptions);
-//        algorithmSelector.setSelectedIndex(params.getAlgorithmType());
+//        algorithmSelector.setSelectedIndex(params.getAlgorithm());
 
 //        algorithmSelector.addActionListener(new ActionListener() {
 //            public void actionPerformed(ActionEvent e) {
 //                JComboBox combo = (JComboBox) e.getSource();
 //                int index = combo.getSelectedIndex();
-//                getParams().setAlgorithmType(index);
+//                getParams().setAlgorithm(index);
 //
-//                if (getParams().getAlgorithmType() == 1) {
+//                if (getParams().getAlgorithm() == 1) {
 //                    alphaField.setEnabled(true);
 //                }
 //                else {
@@ -184,7 +185,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
         return params.getVarNames();
     }
 
-    private MimBuildIndTestParams getParams() {
+    private MimIndTestParams getParams() {
         return params;
     }
 }

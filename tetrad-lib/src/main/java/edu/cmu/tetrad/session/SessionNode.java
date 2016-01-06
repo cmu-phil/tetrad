@@ -1354,7 +1354,9 @@ public class SessionNode implements TetradSerializable {
                     e.printStackTrace();
 
                     throw new InvocationTargetException(e,
-                            "Could not construct node; root cause: " + e.getCause().getMessage());
+                            "Could not construct node; root cause: " + e.getCause().getMessage()
+                                    + " " + packagePath + " " + begin + " " + name
+                    );
                 }
 
                 this.modelParamTypes = parameterTypes;

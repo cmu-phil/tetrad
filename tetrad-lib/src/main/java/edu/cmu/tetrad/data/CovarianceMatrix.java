@@ -136,6 +136,10 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      */
     public CovarianceMatrix(List<Node> variables, TetradMatrix matrix,
                             int sampleSize) {
+        if (variables.size() != matrix.rows() && variables.size() != matrix.columns()) {
+            throw new IllegalArgumentException("# variables not equal to matrix dimension.");
+        }
+
         this.variables = Collections.unmodifiableList(variables);
         this.sampleSize = sampleSize;
         this.matrix = matrix;
@@ -476,10 +480,10 @@ public class CovarianceMatrix implements ICovarianceMatrix {
                     "Sample size must be at least 1.");
         }
 
-        if (numVars != matrix.rows() || numVars != matrix.columns()) {
-            throw new IllegalArgumentException("Number of variables does not " +
-                    "equal the dimension of the matrix.");
-        }
+//        if (numVars != matrix.rows() || numVars != matrix.columns()) {
+//            throw new IllegalArgumentException("Number of variables does not " +
+//                    "equal the dimension of the matrix.");
+//        }
 
         for (int i = 0; i < matrix.rows(); i++) {
             for (int j = 0; j < matrix.columns(); j++) {

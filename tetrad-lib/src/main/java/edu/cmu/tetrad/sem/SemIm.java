@@ -166,6 +166,11 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     private TetradMatrix sampleCovarC;
 
     /**
+     * The variable of the sample covariance.
+     */
+    private List<Node> sampleCovarVariables;
+
+    /**
      * The sample size.
      *
      * @serial Range >= 0.
@@ -496,6 +501,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         ICovarianceMatrix covMatrix2 = fixVarOrder(covMatrix);
         this.sampleCovarC = covMatrix2.getMatrix().copy();
+        this.sampleCovarVariables = covMatrix2.getVariables();
         this.sampleSize = covMatrix2.getSampleSize();
         this.sampleCovInv = null;
 
@@ -1230,7 +1236,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         Graph nullModel = new SemGraph(getSemPm().getGraph());
         nullModel.removeEdges(nullModel.getEdges());
         SemPm nullPm = new SemPm(nullModel);
-        CovarianceMatrix sampleCovar = new CovarianceMatrix(getVariableNodes(), getSampleCovar(), getSampleSize());
+        CovarianceMatrix sampleCovar = new CovarianceMatrix(sampleCovarVariables, getSampleCovar(), getSampleSize());
         return new SemEstimator(sampleCovar, nullPm).estimate();
     }
 

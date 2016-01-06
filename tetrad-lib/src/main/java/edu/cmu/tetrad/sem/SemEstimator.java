@@ -350,6 +350,7 @@ public final class SemEstimator implements TetradSerializable {
         try {
             return covMatrix.getSubmatrix(measuredVarNames);
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             throw new RuntimeException(
                     "All of the variables from the SEM parameterized model " +
                             "must be in the data set.", e);

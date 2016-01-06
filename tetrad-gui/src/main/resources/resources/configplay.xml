@@ -1728,6 +1728,44 @@
                 <params-class>edu.cmu.tetradapp.model.BuildPureClustersParams
                 </params-class>
             </model>
+            <model name="FOFC" acronym="FOFC" help="fofc"
+                   category="Multiple Indicator Model searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="detail" description="Details"/>
+                    <event id="tetrads" description="Tetrads"/>
+                    <event id="sextadPValues" description="Sextad P Values"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="clusters" description="Clusters"/>
+                    <event id="elapsed" description="Elapsed Time"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.FofcRunner
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FofcSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FofcParams
+                </params-class>
+            </model>
+            <model name="FTFC" acronym="FTFC" help="ftfc"
+                   category="Multiple Indicator Model searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="detail" description="Details"/>
+                    <event id="tetrads" description="Tetrads"/>
+                    <event id="sextadPValues" description="Sextad P Values"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="clusters" description="Clusters"/>
+                    <event id="elapsed" description="Elapsed Time"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.FtfcRunner
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FtfcSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FtfcParams
+                </params-class>
+            </model>
             <model name="Purify" acronym="Purify" help="purify"
                    category="Multiple Indicator Model searches">
                 <logger>

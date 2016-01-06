@@ -151,7 +151,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
     //============================PUBLIC METHODS==========================//
 
-	public final Graph getResultGraph() {
+    public final Graph getResultGraph() {
         return this.resultGraph;
     }
 
@@ -184,7 +184,8 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
             return dataModel;
         } else {
             throw new IllegalArgumentException();
-        }    }
+        }
+    }
 
     public final MimParams getParams() {
         return this.params;
@@ -236,8 +237,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
             if (dataSet.isDiscrete()) {
                 return dataSet;
-            }
-            else if (dataSet.isContinuous()) {
+            } else if (dataSet.isContinuous()) {
                 return dataSet;
             }
 
@@ -245,11 +245,9 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
                     "This dataModel set contains a mixture of discrete and continuous " +
                     "<br>columns; there are no algorithms in Tetrad currently to " +
                     "<br>search over such data sets." + "</html>");
-        }
-        else if (dataModel instanceof ICovarianceMatrix) {
+        } else if (dataModel instanceof ICovarianceMatrix) {
             return dataModel;
-        }
-        else if (dataModel instanceof TimeSeriesData) {
+        } else if (dataModel instanceof TimeSeriesData) {
             return dataModel;
         }
 
@@ -259,24 +257,6 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
     private void transferVarNamesToParams(List names) {
         getParams().setVarNames(names);
-    }
-
-    /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
     }
 
     public String getName() {

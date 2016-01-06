@@ -33,51 +33,46 @@ import java.util.*;
 // EXPERIMENTAL!!
 
 /**
- * A clean-up of Ricardo's Sextad-based purify.
+ * A clean-up of Ricardo's IntSextad-based purify.
  *
  * @author Joe Ramsey
  */
-public class PurifySextadBased implements IPurify {
+public class PurifySextadBased {
     private boolean outputMessage = true;
-    private IDeltaSextadTest sextadTest;
+    private DeltaSextadTest sextadTest;
 
-    private List<Node> nodes;
+    private List<Integer> nodes;
     private Graph mim;
     private double alpha = 0.05;
 
-    public PurifySextadBased(IDeltaSextadTest sextadTest, double alpha) {
+    public PurifySextadBased(DeltaSextadTest sextadTest, double alpha) {
         this.sextadTest = sextadTest;
-        this.nodes = sextadTest.getVariables();
+
+        this.nodes = new ArrayList<>();
+
+        for (int i = 0; i < sextadTest.getVariables().size(); i++) {
+            this.nodes.add(i);
+        }
         this.alpha = alpha;
     }
 
-    public List<List<Node>> purify(List<List<Node>> clustering) {
+    public List<List<Integer>> purify(List<List<Integer>> clustering) {
 
-        // The input nodes may not be object identical to the ones from the Sextad test, so we map them over then
+        // The input nodes may not be object identical to the ones from the IntSextad test, so we map them over then
         // back by their names.
-        List<Node> originalNodes = new ArrayList<Node>();
-
-        for (List<Node> cluster : clustering) {
-            originalNodes.addAll(cluster);
+        for (List<Integer> cluster : clustering) {
+            clustering.add(cluster);
         }
 
-        List<List<Node>> _clustering = new ArrayList<List<Node>>();
-
-        for (List<Node> cluster : clustering) {
-            List<Node> converted = GraphUtils.replaceNodes(cluster, nodes);
-            _clustering.add(converted);
-        }
-
-        if (_clustering.isEmpty()) {
+        if (clustering.isEmpty()) {
             throw new NullPointerException("Clusters not specified.");
         }
 
-        List<List<Node>> result = combinedSearch(_clustering);
-        List<List<Node>> convertedResult = new ArrayList<List<Node>>();
+        List<List<Integer>> result = combinedSearch(clustering);
+        List<List<Integer>> convertedResult = new ArrayList<List<Integer>>();
 
-        for (List<Node> cluster : result) {
-            List<Node> converted = GraphUtils.replaceNodes(cluster, originalNodes);
-            convertedResult.add(converted);
+        for (List<Integer> cluster : result) {
+            convertedResult.add(cluster);
         }
 
         System.out.println(convertedResult);
@@ -89,46 +84,46 @@ public class PurifySextadBased implements IPurify {
         this.mim = mim;
     }
 
-    private List<List<Node>> combinedSearch(List<List<Node>> clustering) {
-        Set<Node> eliminated = new HashSet<Node>();
+    private List<List<Integer>> combinedSearch(List<List<Integer>> clustering) {
+        Set<Integer> eliminated = new HashSet<Integer>();
 
-        Set<Sextad> allImpurities = null;
+        Set<IntSextad> allImpurities = null;
         double cutoff = alpha;
         int count = 0;
 
-        for (List<Node> cluster : clustering) {
+        for (List<Integer> cluster : clustering) {
             System.out.println("Within cluster: " + ++count);
-            Set<Sextad> impurities = listSextads(cluster, eliminated, cutoff);
+            Set<IntSextad> impurities = listSextads(cluster, eliminated, cutoff);
 
             if (impurities != null) {
                 if (allImpurities == null) {
-                    allImpurities = new HashSet<Sextad>();
+                    allImpurities = new HashSet<IntSextad>();
                 }
                 allImpurities.addAll(impurities);
             }
         }
 
-        Set<Sextad> impurities = listCrossConstructSextads(clustering, eliminated, cutoff);
+        Set<IntSextad> impurities = listCrossConstructSextads(clustering, eliminated, cutoff);
 
         if (impurities != null) {
             if (allImpurities == null) {
-                allImpurities = new HashSet<Sextad>();
+                allImpurities = new HashSet<IntSextad>();
             }
             allImpurities.addAll(impurities);
         }
 
         if (allImpurities == null) {
-            return new ArrayList<List<Node>>();
+            return new ArrayList<List<Integer>>();
         }
 
         NumberFormat nf = new DecimalFormat("0.####E00");
 
         while (true) {
             int max = 0;
-            Node maxNode = null;
-            Map<Node, Set<Sextad>> impuritiesPerNode = getImpuritiesPerNode(allImpurities, eliminated);
+            Integer maxNode = null;
+            Map<Integer, Set<IntSextad>> impuritiesPerNode = getImpuritiesPerNode(allImpurities, eliminated);
 
-            for (Node node : nodes) {
+            for (Integer node : nodes) {
                 if (impuritiesPerNode.get(node).size() > max) {
                     max = impuritiesPerNode.get(node).size();
                     maxNode = node;
@@ -140,8 +135,8 @@ public class PurifySextadBased implements IPurify {
             double minP = Double.POSITIVE_INFINITY;
             double maxP = Double.NEGATIVE_INFINITY;
 
-            for (Sextad sextad : impuritiesPerNode.get(maxNode)) {
-                double pValue = sextadTest.getPValue(sextad);
+            for (IntSextad IntSextad : impuritiesPerNode.get(maxNode)) {
+                double pValue = sextadTest.getPValue(IntSextad);
 
                 if (pValue < minP) {
                     minP = pValue;
@@ -161,56 +156,56 @@ public class PurifySextadBased implements IPurify {
         return buildSolution(clustering, eliminated);
     }
 
-    private Map<Node, Set<Sextad>> getImpuritiesPerNode(Set<Sextad> allImpurities, Set<Node> _eliminated) {
-        Map<Node, Set<Sextad>> impuritiesPerNode = new HashMap<Node, Set<Sextad>>();
+    private Map<Integer, Set<IntSextad>> getImpuritiesPerNode(Set<IntSextad> allImpurities, Set<Integer> _eliminated) {
+        Map<Integer, Set<IntSextad>> impuritiesPerNode = new HashMap<Integer, Set<IntSextad>>();
 
-        for (Node node : nodes) {
-            impuritiesPerNode.put(node, new HashSet<Sextad>());
+        for (Integer node : nodes) {
+            impuritiesPerNode.put(node, new HashSet<IntSextad>());
         }
 
-        for (Sextad sextad : allImpurities) {
-            if (_eliminated.contains(sextad.getI())) {
+        for (IntSextad IntSextad : allImpurities) {
+            if (_eliminated.contains(IntSextad.getI())) {
                 continue;
             }
 
-            if (_eliminated.contains(sextad.getJ())) {
+            if (_eliminated.contains(IntSextad.getJ())) {
                 continue;
             }
 
-            if (_eliminated.contains(sextad.getK())) {
+            if (_eliminated.contains(IntSextad.getK())) {
                 continue;
             }
 
-            if (_eliminated.contains(sextad.getL())) {
+            if (_eliminated.contains(IntSextad.getL())) {
                 continue;
             }
 
-            if (_eliminated.contains(sextad.getM())) {
+            if (_eliminated.contains(IntSextad.getM())) {
                 continue;
             }
 
-            if (_eliminated.contains(sextad.getN())) {
+            if (_eliminated.contains(IntSextad.getN())) {
                 continue;
             }
 
-            impuritiesPerNode.get(sextad.getI()).add(sextad);
-            impuritiesPerNode.get(sextad.getJ()).add(sextad);
-            impuritiesPerNode.get(sextad.getK()).add(sextad);
-            impuritiesPerNode.get(sextad.getL()).add(sextad);
-            impuritiesPerNode.get(sextad.getM()).add(sextad);
-            impuritiesPerNode.get(sextad.getN()).add(sextad);
+            impuritiesPerNode.get(IntSextad.getI()).add(IntSextad);
+            impuritiesPerNode.get(IntSextad.getJ()).add(IntSextad);
+            impuritiesPerNode.get(IntSextad.getK()).add(IntSextad);
+            impuritiesPerNode.get(IntSextad.getL()).add(IntSextad);
+            impuritiesPerNode.get(IntSextad.getM()).add(IntSextad);
+            impuritiesPerNode.get(IntSextad.getN()).add(IntSextad);
         }
         return impuritiesPerNode;
     }
 
-    private Set<Sextad> listCrossConstructSextads(List<List<Node>> clustering, Set<Node> eliminated, double cutoff) {
-        Set<Sextad> allSextads = new HashSet<Sextad>();
+    private Set<IntSextad> listCrossConstructSextads(List<List<Integer>> clustering, Set<Integer> eliminated, double cutoff) {
+        Set<IntSextad> allSextads = new HashSet<IntSextad>();
         boolean countable = false;
 
         for (int p1 = 0; p1 < clustering.size(); p1++) {
             for (int p2 = p1 + 1; p2 < clustering.size(); p2++) {
-                List<Node> cluster1 = clustering.get(p1);
-                List<Node> cluster2 = clustering.get(p2);
+                List<Integer> cluster1 = clustering.get(p1);
+                List<Integer> cluster2 = clustering.get(p2);
 
                 if (cluster1.size() >= 5 && cluster2.size() >= 1) {
                     ChoiceGenerator gen1 = new ChoiceGenerator(cluster1.size(), 5);
@@ -221,10 +216,10 @@ public class PurifySextadBased implements IPurify {
                         int[] choice2;
 
                         while ((choice2 = gen2.next()) != null) {
-                            List<Node> crossCluster = new ArrayList<Node>();
+                            List<Integer> crossCluster = new ArrayList<Integer>();
                             for (int i : choice1) crossCluster.add(cluster1.get(i));
                             for (int i : choice2) crossCluster.add(cluster2.get(i));
-                            Set<Sextad> Sextads = listSextads(crossCluster, eliminated, cutoff);
+                            Set<IntSextad> Sextads = listSextads(crossCluster, eliminated, cutoff);
 
                             if (Sextads != null) {
                                 countable = true;
@@ -243,11 +238,11 @@ public class PurifySextadBased implements IPurify {
                         int[] choice2;
 
                         while ((choice2 = gen2.next()) != null) {
-                            List<Node> crossCluster = new ArrayList<Node>();
+                            List<Integer> crossCluster = new ArrayList<Integer>();
                             for (int i : choice1) crossCluster.add(cluster2.get(i));
                             for (int i : choice2) crossCluster.add(cluster1.get(i));
 
-                            Set<Sextad> Sextads = listSextads(crossCluster, eliminated, cutoff);
+                            Set<IntSextad> Sextads = listSextads(crossCluster, eliminated, cutoff);
 
                             if (Sextads != null) {
                                 countable = true;
@@ -266,11 +261,11 @@ public class PurifySextadBased implements IPurify {
 //                        int[] choice2;
 //
 //                        while ((choice2 = gen2.next()) != null) {
-//                            List<Node> crossCluster = new ArrayList<Node>();
+//                            List<Integer> crossCluster = new ArrayList<Integer>();
 //                            for (int i : choice1) crossCluster.add(cluster1.get(i));
 //                            for (int i : choice2) crossCluster.add(cluster2.get(i));
 //
-//                            Set<Sextad> Sextads = listSextads2By2(crossCluster, eliminated, cutoff);
+//                            Set<IntSextad> Sextads = listSextads2By2(crossCluster, eliminated, cutoff);
 //
 //                            if (Sextads != null) {
 //                                countable = true;
@@ -286,12 +281,12 @@ public class PurifySextadBased implements IPurify {
     }
 
 
-    private Set<Sextad> listSextads(List<Node> cluster, Set<Node> eliminated, double cutoff) {
+    private Set<IntSextad> listSextads(List<Integer> cluster, Set<Integer> eliminated, double cutoff) {
         if (cluster.size() < 6) return null;
-        cluster = new ArrayList<Node>(cluster);
+        cluster = new ArrayList<Integer>(cluster);
         boolean countable = false;
 
-        Set<Sextad> Sextads = new HashSet<Sextad>();
+        Set<IntSextad> Sextads = new HashSet<IntSextad>();
         ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), 6);
         int[] choice;
 
@@ -303,12 +298,12 @@ public class PurifySextadBased implements IPurify {
             int _m = choice[4];
             int _n = choice[5];
 
-            Node m1 = cluster.get(_i);
-            Node m2 = cluster.get(_j);
-            Node m3 = cluster.get(_k);
-            Node m4 = cluster.get(_l);
-            Node m5 = cluster.get(_m);
-            Node m6 = cluster.get(_n);
+            int m1 = cluster.get(_i);
+            int m2 = cluster.get(_j);
+            int m3 = cluster.get(_k);
+            int m4 = cluster.get(_l);
+            int m5 = cluster.get(_m);
+            int m6 = cluster.get(_n);
 
             if (eliminated.contains(m1) || eliminated.contains(m2) || eliminated.contains(m3) || eliminated.contains(m4)
                     || eliminated.contains(m5) || eliminated.contains(m6)) {
@@ -318,16 +313,16 @@ public class PurifySextadBased implements IPurify {
             countable = true;
             double p1, p2, p3, p4, p5, p6, p7, p8, p9, p10;
 
-            Sextad t1 = new Sextad(m1, m2, m3, m4, m5, m6);
-            Sextad t2 = new Sextad(m1, m2, m4, m3, m5, m6);
-            Sextad t3 = new Sextad(m1, m2, m5, m3, m4, m6);
-            Sextad t4 = new Sextad(m1, m2, m6, m3, m4, m5);
-            Sextad t5 = new Sextad(m1, m3, m4, m2, m5, m6);
-            Sextad t6 = new Sextad(m1, m3, m5, m2, m4, m6);
-            Sextad t7 = new Sextad(m1, m3, m6, m2, m4, m5);
-            Sextad t8 = new Sextad(m1, m4, m5, m2, m3, m6);
-            Sextad t9 = new Sextad(m1, m4, m6, m2, m3, m5);
-            Sextad t10 = new Sextad(m1, m5, m6, m2, m3, m4);
+            IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
+            IntSextad t2 = new IntSextad(m1, m2, m4, m3, m5, m6);
+            IntSextad t3 = new IntSextad(m1, m2, m5, m3, m4, m6);
+            IntSextad t4 = new IntSextad(m1, m2, m6, m3, m4, m5);
+            IntSextad t5 = new IntSextad(m1, m3, m4, m2, m5, m6);
+            IntSextad t6 = new IntSextad(m1, m3, m5, m2, m4, m6);
+            IntSextad t7 = new IntSextad(m1, m3, m6, m2, m4, m5);
+            IntSextad t8 = new IntSextad(m1, m4, m5, m2, m3, m6);
+            IntSextad t9 = new IntSextad(m1, m4, m6, m2, m3, m5);
+            IntSextad t10 = new IntSextad(m1, m5, m6, m2, m3, m4);
 
             p1 = sextadTest.getPValue(t1);
             p2 = sextadTest.getPValue(t2);
@@ -384,10 +379,10 @@ public class PurifySextadBased implements IPurify {
         return countable ? Sextads : null;
     }
 
-//    private Set<Sextad> listSextads2By2(List<Node> cluster, Set<Node> eliminated, double cutoff) {
+//    private Set<IntSextad> listSextads2By2(List<Integer> cluster, Set<Integer> eliminated, double cutoff) {
 //        if (cluster.size() < 4) return null;
-//        cluster = new ArrayList<Node>(cluster);
-//        Set<Sextad> Sextads = new HashSet<Sextad>();
+//        cluster = new ArrayList<Integer>(cluster);
+//        Set<IntSextad> Sextads = new HashSet<IntSextad>();
 //
 //        Node ci = cluster.get(0);
 //        Node cj = cluster.get(1);
@@ -402,18 +397,18 @@ public class PurifySextadBased implements IPurify {
 ////        double p3 = SextadTest.SextadPValue(nodes.indexOf(ci), nodes.indexOf(cj), nodes.indexOf(cl), nodes.indexOf(ck));
 //
 //        if (p3 < cutoff) {
-//            Sextads.add(new Sextad(ci, ck, cl, cj, p3));
-////            Sextads.add(new Sextad(ci, cj, cl, ck, p3));
+//            Sextads.add(new IntSextad(ci, ck, cl, cj, p3));
+////            Sextads.add(new IntSextad(ci, cj, cl, ck, p3));
 //        }
 //
 //        return Sextads;
 //    }
 
-    private List<List<Node>> buildSolution(List<List<Node>> clustering, Set<Node> eliminated) {
-        List<List<Node>> solution = new ArrayList<List<Node>>();
+    private List<List<Integer>> buildSolution(List<List<Integer>> clustering, Set<Integer> eliminated) {
+        List<List<Integer>> solution = new ArrayList<List<Integer>>();
 
-        for (List<Node> cluster : clustering) {
-            List<Node> _cluster = new ArrayList<Node>(cluster);
+        for (List<Integer> cluster : clustering) {
+            List<Integer> _cluster = new ArrayList<Integer>(cluster);
             _cluster.removeAll(eliminated);
             solution.add(_cluster);
         }

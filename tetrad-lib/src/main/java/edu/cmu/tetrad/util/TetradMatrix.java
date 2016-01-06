@@ -221,136 +221,138 @@ public class TetradMatrix implements TetradSerializable {
         // Trying for a speedup by not having to construct the matrix factorization.
         if (rows() == 0) {
             return new TetradMatrix(0, 0);
-        } else if (rows() == 1) {
-            TetradMatrix m = new TetradMatrix(1, 1);
-            m.set(0, 0, 1.0 / apacheData.getEntry(0, 0));
-            return m;
-        } else if (rows() == 2) {
-            double a = apacheData.getEntry(0, 0);
-            double b = apacheData.getEntry(0, 1);
-            double c = apacheData.getEntry(1, 0);
-            double d = apacheData.getEntry(1, 1);
-
-            double delta = a * d - b * c;
-
-            TetradMatrix inverse = new TetradMatrix(2, 2);
-            inverse.set(0, 0, d);
-            inverse.set(0, 1, -b);
-            inverse.set(1, 0, -c);
-            inverse.set(1, 1, a);
-
-            return inverse.scalarMult(1.0 / delta);
-
-        } else if (rows() == 3) {
-            RealMatrix m = apacheData;
-
-            double a11 = m.getEntry(0, 0);
-            double a12 = m.getEntry(0, 1);
-            double a13 = m.getEntry(0, 2);
-
-            double a21 = m.getEntry(1, 0);
-            double a22 = m.getEntry(1, 1);
-            double a23 = m.getEntry(1, 2);
-
-            double a31 = m.getEntry(2, 0);
-            double a32 = m.getEntry(2, 1);
-            double a33 = m.getEntry(2, 2);
-
-            final double denom = -a12 * a21 * a33 + a11 * a22 * a33 - a13 * a22 * a31 +
-                    a12 * a23 * a31 + a13 * a21 * a32 - a11 * a23 * a32;
-
-            double[][] inverse = new double[][]
-                    {
-                            {(a22 * a33 - a23 * a32) / denom,
-                                    (-a12 * a33 + a13 * a32) / denom,
-                                    (-a13 * a22 + a12 * a23) / denom},
-
-                            {(-a21 * a33 + a23 * a31) / denom,
-                                    (a11 * a33 - a13 * a31) / denom,
-                                    (a13 * a21 - a11 * a23) / denom},
-
-                            {(-a22 * a31 + a21 * a32) / denom,
-                                    (a12 * a31 - a11 * a32) / denom,
-                                    (-a12 * a21 + a11 * a22) / denom}
-                    };
-
-            return new TetradMatrix(inverse);
-        } else if (rows() == 4) {
-            RealMatrix m = apacheData;
-
-            double a11 = m.getEntry(0, 0);
-            double a12 = m.getEntry(0, 1);
-            double a13 = m.getEntry(0, 2);
-            double a14 = m.getEntry(0, 3);
-
-            double a21 = m.getEntry(1, 0);
-            double a22 = m.getEntry(1, 1);
-            double a23 = m.getEntry(1, 2);
-            double a24 = m.getEntry(1, 3);
-
-            double a31 = m.getEntry(2, 0);
-            double a32 = m.getEntry(2, 1);
-            double a33 = m.getEntry(2, 2);
-            double a34 = m.getEntry(2, 3);
-
-            double a41 = m.getEntry(3, 0);
-            double a42 = m.getEntry(3, 1);
-            double a43 = m.getEntry(3, 2);
-            double a44 = m.getEntry(3, 3);
-
-            final double denom = a14 * a23 * a32 * a41 - a13 * a24 * a32 * a41 -
-                    a14 * a22 * a33 * a41 + a12 * a24 * a33 * a41 + a13 * a22 * a34 * a41 -
-                    a12 * a23 * a34 * a41 - a14 * a23 * a31 * a42 + a13 * a24 * a31 * a42 +
-                    a14 * a21 * a33 * a42 - a11 * a24 * a33 * a42 - a13 * a21 * a34 * a42 +
-                    a11 * a23 * a34 * a42 + a14 * a22 * a31 * a43 - a12 * a24 * a31 * a43 -
-                    a14 * a21 * a32 * a43 + a11 * a24 * a32 * a43 + a12 * a21 * a34 * a43 -
-                    a11 * a22 * a34 * a43 - a13 * a22 * a31 * a44 + a12 * a23 * a31 * a44 +
-                    a13 * a21 * a32 * a44 - a11 * a23 * a32 * a44 - a12 * a21 * a33 * a44 +
-                    a11 * a22 * a33 * a44;
-
-            double[][] inverse = new double[][]
-
-                    {{(-a24 * a33 * a42 + a23 * a34 * a42 + a24 * a32 * a43 - a22 * a34 * a43 -
-                            a23 * a32 * a44 + a22 * a33 * a44) / denom,
-                            (a14 * a33 * a42 - a13 * a34 * a42 - a14 * a32 * a43 +
-                                    a12 * a34 * a43 + a13 * a32 * a44 - a12 * a33 * a44) / denom,
-                            (-a14 * a23 * a42 + a13 * a24 * a42 +
-                                    a14 * a22 * a43 - a12 * a24 * a43 - a13 * a22 * a44 +
-                                    a12 * a23 * a44) / denom,
-                            (a14 * a23 * a32 - a13 * a24 * a32 - a14 * a22 * a33 +
-                                    a12 * a24 * a33 + a13 * a22 * a34 - a12 * a23 * a34) / denom},
-                            {(a24 * a33 * a41 - a23 * a34 * a41 - a24 * a31 * a43 + a21 * a34 * a43 + a23 * a31 * a44 -
-                                    a21 * a33 * a44) / denom,
-                                    (-a14 * a33 * a41 + a13 * a34 * a41 + a14 * a31 * a43 -
-                                            a11 * a34 * a43 - a13 * a31 * a44 + a11 * a33 * a44) / denom,
-                                    (a14 * a23 * a41 - a13 * a24 * a41 -
-                                            a14 * a21 * a43 + a11 * a24 * a43 + a13 * a21 * a44 -
-                                            a11 * a23 * a44) / denom,
-                                    (-a14 * a23 * a31 + a13 * a24 * a31 + a14 * a21 * a33 -
-                                            a11 * a24 * a33 - a13 * a21 * a34 + a11 * a23 * a34) / denom},
-                            {(-a24 * a32 * a41 +
-                                    a22 * a34 * a41 + a24 * a31 * a42 - a21 * a34 * a42 - a22 * a31 * a44 +
-                                    a21 * a32 * a44) / denom,
-                                    (a14 * a32 * a41 - a12 * a34 * a41 - a14 * a31 * a42 +
-                                            a11 * a34 * a42 + a12 * a31 * a44 - a11 * a32 * a44) / denom,
-                                    (-a14 * a22 * a41 + a12 * a24 * a41 +
-                                            a14 * a21 * a42 - a11 * a24 * a42 - a12 * a21 * a44 +
-                                            a11 * a22 * a44) / denom,
-                                    (a14 * a22 * a31 - a12 * a24 * a31 - a14 * a21 * a32 +
-                                            a11 * a24 * a32 + a12 * a21 * a34 - a11 * a22 * a34) / denom},
-                            {(a23 * a32 * a41 -
-                                    a22 * a33 * a41 - a23 * a31 * a42 + a21 * a33 * a42 + a22 * a31 * a43 -
-                                    a21 * a32 * a43) / denom,
-                                    (-a13 * a32 * a41 + a12 * a33 * a41 + a13 * a31 * a42 -
-                                            a11 * a33 * a42 - a12 * a31 * a43 + a11 * a32 * a43) / denom,
-                                    (a13 * a22 * a41 - a12 * a23 * a41 -
-                                            a13 * a21 * a42 + a11 * a23 * a42 + a12 * a21 * a43 -
-                                            a11 * a22 * a43) / denom,
-                                    (-a13 * a22 * a31 + a12 * a23 * a31 + a13 * a21 * a32 -
-                                            a11 * a23 * a32 - a12 * a21 * a33 + a11 * a22 * a33) / denom}};
-
-            return new TetradMatrix(inverse);
-        } else {
+        }
+//        else if (rows() == 1) {
+//            TetradMatrix m = new TetradMatrix(1, 1);
+//            m.set(0, 0, 1.0 / apacheData.getEntry(0, 0));
+//            return m;
+//        } else if (rows() == 2) {
+//            double a = apacheData.getEntry(0, 0);
+//            double b = apacheData.getEntry(0, 1);
+//            double c = apacheData.getEntry(1, 0);
+//            double d = apacheData.getEntry(1, 1);
+//
+//            double delta = a * d - b * c;
+//
+//            TetradMatrix inverse = new TetradMatrix(2, 2);
+//            inverse.set(0, 0, d);
+//            inverse.set(0, 1, -b);
+//            inverse.set(1, 0, -c);
+//            inverse.set(1, 1, a);
+//
+//            return inverse.scalarMult(1.0 / delta);
+//
+//        } else if (rows() == 3) {
+//            RealMatrix m = apacheData;
+//
+//            double a11 = m.getEntry(0, 0);
+//            double a12 = m.getEntry(0, 1);
+//            double a13 = m.getEntry(0, 2);
+//
+//            double a21 = m.getEntry(1, 0);
+//            double a22 = m.getEntry(1, 1);
+//            double a23 = m.getEntry(1, 2);
+//
+//            double a31 = m.getEntry(2, 0);
+//            double a32 = m.getEntry(2, 1);
+//            double a33 = m.getEntry(2, 2);
+//
+//            final double denom = -a12 * a21 * a33 + a11 * a22 * a33 - a13 * a22 * a31 +
+//                    a12 * a23 * a31 + a13 * a21 * a32 - a11 * a23 * a32;
+//
+//            double[][] inverse = new double[][]
+//                    {
+//                            {(a22 * a33 - a23 * a32) / denom,
+//                                    (-a12 * a33 + a13 * a32) / denom,
+//                                    (-a13 * a22 + a12 * a23) / denom},
+//
+//                            {(-a21 * a33 + a23 * a31) / denom,
+//                                    (a11 * a33 - a13 * a31) / denom,
+//                                    (a13 * a21 - a11 * a23) / denom},
+//
+//                            {(-a22 * a31 + a21 * a32) / denom,
+//                                    (a12 * a31 - a11 * a32) / denom,
+//                                    (-a12 * a21 + a11 * a22) / denom}
+//                    };
+//
+//            return new TetradMatrix(inverse);
+//        } else if (rows() == 4) {
+//            RealMatrix m = apacheData;
+//
+//            double a11 = m.getEntry(0, 0);
+//            double a12 = m.getEntry(0, 1);
+//            double a13 = m.getEntry(0, 2);
+//            double a14 = m.getEntry(0, 3);
+//
+//            double a21 = m.getEntry(1, 0);
+//            double a22 = m.getEntry(1, 1);
+//            double a23 = m.getEntry(1, 2);
+//            double a24 = m.getEntry(1, 3);
+//
+//            double a31 = m.getEntry(2, 0);
+//            double a32 = m.getEntry(2, 1);
+//            double a33 = m.getEntry(2, 2);
+//            double a34 = m.getEntry(2, 3);
+//
+//            double a41 = m.getEntry(3, 0);
+//            double a42 = m.getEntry(3, 1);
+//            double a43 = m.getEntry(3, 2);
+//            double a44 = m.getEntry(3, 3);
+//
+//            final double denom = a14 * a23 * a32 * a41 - a13 * a24 * a32 * a41 -
+//                    a14 * a22 * a33 * a41 + a12 * a24 * a33 * a41 + a13 * a22 * a34 * a41 -
+//                    a12 * a23 * a34 * a41 - a14 * a23 * a31 * a42 + a13 * a24 * a31 * a42 +
+//                    a14 * a21 * a33 * a42 - a11 * a24 * a33 * a42 - a13 * a21 * a34 * a42 +
+//                    a11 * a23 * a34 * a42 + a14 * a22 * a31 * a43 - a12 * a24 * a31 * a43 -
+//                    a14 * a21 * a32 * a43 + a11 * a24 * a32 * a43 + a12 * a21 * a34 * a43 -
+//                    a11 * a22 * a34 * a43 - a13 * a22 * a31 * a44 + a12 * a23 * a31 * a44 +
+//                    a13 * a21 * a32 * a44 - a11 * a23 * a32 * a44 - a12 * a21 * a33 * a44 +
+//                    a11 * a22 * a33 * a44;
+//
+//            double[][] inverse = new double[][]
+//
+//                    {{(-a24 * a33 * a42 + a23 * a34 * a42 + a24 * a32 * a43 - a22 * a34 * a43 -
+//                            a23 * a32 * a44 + a22 * a33 * a44) / denom,
+//                            (a14 * a33 * a42 - a13 * a34 * a42 - a14 * a32 * a43 +
+//                                    a12 * a34 * a43 + a13 * a32 * a44 - a12 * a33 * a44) / denom,
+//                            (-a14 * a23 * a42 + a13 * a24 * a42 +
+//                                    a14 * a22 * a43 - a12 * a24 * a43 - a13 * a22 * a44 +
+//                                    a12 * a23 * a44) / denom,
+//                            (a14 * a23 * a32 - a13 * a24 * a32 - a14 * a22 * a33 +
+//                                    a12 * a24 * a33 + a13 * a22 * a34 - a12 * a23 * a34) / denom},
+//                            {(a24 * a33 * a41 - a23 * a34 * a41 - a24 * a31 * a43 + a21 * a34 * a43 + a23 * a31 * a44 -
+//                                    a21 * a33 * a44) / denom,
+//                                    (-a14 * a33 * a41 + a13 * a34 * a41 + a14 * a31 * a43 -
+//                                            a11 * a34 * a43 - a13 * a31 * a44 + a11 * a33 * a44) / denom,
+//                                    (a14 * a23 * a41 - a13 * a24 * a41 -
+//                                            a14 * a21 * a43 + a11 * a24 * a43 + a13 * a21 * a44 -
+//                                            a11 * a23 * a44) / denom,
+//                                    (-a14 * a23 * a31 + a13 * a24 * a31 + a14 * a21 * a33 -
+//                                            a11 * a24 * a33 - a13 * a21 * a34 + a11 * a23 * a34) / denom},
+//                            {(-a24 * a32 * a41 +
+//                                    a22 * a34 * a41 + a24 * a31 * a42 - a21 * a34 * a42 - a22 * a31 * a44 +
+//                                    a21 * a32 * a44) / denom,
+//                                    (a14 * a32 * a41 - a12 * a34 * a41 - a14 * a31 * a42 +
+//                                            a11 * a34 * a42 + a12 * a31 * a44 - a11 * a32 * a44) / denom,
+//                                    (-a14 * a22 * a41 + a12 * a24 * a41 +
+//                                            a14 * a21 * a42 - a11 * a24 * a42 - a12 * a21 * a44 +
+//                                            a11 * a22 * a44) / denom,
+//                                    (a14 * a22 * a31 - a12 * a24 * a31 - a14 * a21 * a32 +
+//                                            a11 * a24 * a32 + a12 * a21 * a34 - a11 * a22 * a34) / denom},
+//                            {(a23 * a32 * a41 -
+//                                    a22 * a33 * a41 - a23 * a31 * a42 + a21 * a33 * a42 + a22 * a31 * a43 -
+//                                    a21 * a32 * a43) / denom,
+//                                    (-a13 * a32 * a41 + a12 * a33 * a41 + a13 * a31 * a42 -
+//                                            a11 * a33 * a42 - a12 * a31 * a43 + a11 * a32 * a43) / denom,
+//                                    (a13 * a22 * a41 - a12 * a23 * a41 -
+//                                            a13 * a21 * a42 + a11 * a23 * a42 + a12 * a21 * a43 -
+//                                            a11 * a22 * a43) / denom,
+//                                    (-a13 * a22 * a31 + a12 * a23 * a31 + a13 * a21 * a32 -
+//                                            a11 * a23 * a32 - a12 * a21 * a33 + a11 * a22 * a33) / denom}};
+//
+//            return new TetradMatrix(inverse);
+//        }
+        else {
 
             // Using LUDecomposition.
             // other options: QRDecomposition, CholeskyDecomposition, EigenDecomposition, QRDecomposition,

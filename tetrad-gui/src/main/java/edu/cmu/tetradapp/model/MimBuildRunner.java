@@ -62,7 +62,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     }
 
     public MimBuildRunner(DataWrapper dataWrapper,
-                          BuildPureClustersRunner mmWrapper,
+                          FofcRunner mmWrapper,
                           MimBuildParams params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
