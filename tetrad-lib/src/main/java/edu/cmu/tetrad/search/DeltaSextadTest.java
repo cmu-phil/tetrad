@@ -364,13 +364,13 @@ public class DeltaSextadTest {
 
     private int dofDrton(int n) {
         int dof = ((n - 2) * (n - 3)) / 2 - 2;
-        if (dof < 0) dof = 0;
+        if (dof < 1) dof = 1;
         return dof;
     }
 
     private int dofHarman(int n) {
         int dof = n * (n - 5) / 2 + 1;
-        if (dof < 0) dof = 0;
+        if (dof < 1) dof = 1;
         return dof;
     }
 

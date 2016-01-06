@@ -144,7 +144,7 @@ public class TestDeltaSextadTest {
 
         IntSextad[] _sextads = {t2, t5, t10, t3, t6};
         double p = test.getPValue(_sextads);
-        assertEquals(0.90, p, 0.01);
+        assertEquals(0.21, p, 0.01);
 
         _sextads = new IntSextad[] {t10};
         p = test.getPValue(_sextads);
