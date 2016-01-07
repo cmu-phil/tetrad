@@ -144,10 +144,10 @@ public class FgsCli {
     private static void printOutParameters(PrintStream stream) {
         stream.println("Datasets:");
         stream.println(dataFile.getFileName().toString());
-        stream.println();
 
-        stream.println("Knowledge:");
         if (knowledgeFile != null) {
+            stream.println();
+            stream.println("Knowledge:");
             stream.println(String.format("knowledge = %s", knowledgeFile.toString()));
         }
         stream.println();
