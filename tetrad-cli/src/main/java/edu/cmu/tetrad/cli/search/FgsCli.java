@@ -118,7 +118,7 @@ public class FgsCli {
             printOutParameters(stream);
             stream.flush();
 
-            DataSet dataSet = BigDataSetUtility.readInContinuousData(dataFile.toFile(), delimiter);
+            DataSet dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
 
             Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
             fgs.setOut(stream);
