@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.cli.search;
 
+import edu.cmu.tetrad.cli.ExtendedCommandLineParser;
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.data.BigDataSetUtility;
@@ -33,7 +34,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -51,18 +51,16 @@ public class FgsCli {
 
     private static final String USAGE = "java -cp tetrad-cli.jar edu.cmu.tetrad.cli.search.FgsCli";
 
-    private static final Options HELP_OPTIONS = new Options();
     private static final Options MAIN_OPTIONS = new Options();
+    private static final Option HELP_OPTION = new Option("h", "help", false, "Show help.");
 
     static {
-        Option helpOption = new Option("h", "help", false, "Show help.");
-        HELP_OPTIONS.addOption(helpOption);
-
         // added required option
         Option requiredOption = new Option("d", "data", true, "Data file.");
         requiredOption.setRequired(true);
         MAIN_OPTIONS.addOption(requiredOption);
 
+        MAIN_OPTIONS.addOption(HELP_OPTION);
         MAIN_OPTIONS.addOption("k", "knowledge", true, "Prior knowledge file.");
         MAIN_OPTIONS.addOption("l", "delimiter", true, "Data file delimiter.");
         MAIN_OPTIONS.addOption("m", "depth", true, "Search depth.");
@@ -71,7 +69,6 @@ public class FgsCli {
         MAIN_OPTIONS.addOption("p", "penalty-discount", true, "Penalty discount.");
         MAIN_OPTIONS.addOption("n", "name", true, "Output file name.");
         MAIN_OPTIONS.addOption("o", "dir-out", true, "Result directory.");
-        MAIN_OPTIONS.addOption(helpOption);
     }
 
     private static Path dataFile;
@@ -89,16 +86,14 @@ public class FgsCli {
      */
     public static void main(String[] args) {
         try {
-            CommandLineParser cmdParser = new DefaultParser();
-            CommandLine cmd = cmdParser.parse(HELP_OPTIONS, args, true);
-            if (cmd.hasOption("h")) {
+            ExtendedCommandLineParser cmdParser = new ExtendedCommandLineParser(new DefaultParser());
+            if (cmdParser.hasOption(HELP_OPTION, args)) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp(USAGE, MAIN_OPTIONS, true);
                 return;
             }
 
-            cmd = cmdParser.parse(MAIN_OPTIONS, args);
-
+            CommandLine cmd = cmdParser.parse(MAIN_OPTIONS, args);
             dataFile = Args.getPathFile(cmd.getOptionValue("d"), true);
             knowledgeFile = Args.getPathFile(cmd.getOptionValue("k", null), false);
             delimiter = Args.getCharacter(cmd.getOptionValue("l", "\t"));
@@ -110,7 +105,7 @@ public class FgsCli {
             fileOut = cmd.getOptionValue("n", String.format("fgs_pd%1.2f_d%d_%d.txt", penaltyDiscount, depth, System.currentTimeMillis()));
         } catch (ParseException | FileNotFoundException | IllegalArgumentException exception) {
             System.err.println(exception.getLocalizedMessage());
-            return;
+            System.exit(127);
         }
 
         Path outputFile = Paths.get(dirOut.toString(), fileOut);
@@ -144,20 +139,18 @@ public class FgsCli {
     private static void printOutParameters(PrintStream stream) {
         stream.println("Datasets:");
         stream.println(dataFile.getFileName().toString());
+        stream.println();
 
         if (knowledgeFile != null) {
-            stream.println();
             stream.println("Knowledge:");
             stream.println(String.format("knowledge = %s", knowledgeFile.toString()));
+            stream.println();
         }
-        stream.println();
 
         stream.println("Graph Parameters:");
         stream.println(String.format("penalty discount = %f", penaltyDiscount));
         stream.println(String.format("depth = %s", depth));
         stream.println(String.format("faithfulness = %s", faithfulness));
-
-        stream.println();
     }
 
 }

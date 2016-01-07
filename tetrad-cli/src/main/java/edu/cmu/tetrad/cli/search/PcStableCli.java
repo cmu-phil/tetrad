@@ -142,19 +142,17 @@ public class PcStableCli {
     private static void printOutParameters(PrintStream stream) {
         stream.println("Datasets:");
         stream.println(dataFile.getFileName().toString());
+        stream.println();
 
         if (knowledgeFile != null) {
-            stream.println();
             stream.println("Knowledge:");
             stream.println(String.format("knowledge = %s", knowledgeFile.toString()));
+            stream.println();
         }
-        stream.println();
 
         stream.println("Graph Parameters:");
         stream.println(String.format("alpha (significance level) = %f", alpha));
         stream.println(String.format("depth = %s", depth));
-
-        stream.println();
     }
 
 }
