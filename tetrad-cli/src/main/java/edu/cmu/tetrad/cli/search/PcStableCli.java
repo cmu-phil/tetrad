@@ -62,10 +62,10 @@ public class PcStableCli {
         MAIN_OPTIONS.addOption(requiredOption);
 
         MAIN_OPTIONS.addOption(HELP_OPTION);
-        MAIN_OPTIONS.addOption("k", "knowledge", true, "Prior knowledge file.");
+        MAIN_OPTIONS.addOption("k", "knowledge", true, "A file containing prior knowledge.");
         MAIN_OPTIONS.addOption("l", "delimiter", true, "Data file delimiter.");
-        MAIN_OPTIONS.addOption("m", "depth", true, "Search depth.");
-        MAIN_OPTIONS.addOption("a", "alpha", true, "Alpha (significance level).");
+        MAIN_OPTIONS.addOption("m", "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited).");
+        MAIN_OPTIONS.addOption("a", "alpha", true, "Alpha (significance level in the range [0.0, 1.0]).");
         MAIN_OPTIONS.addOption("v", "verbose", false, "Verbose message.");
         MAIN_OPTIONS.addOption("n", "name", true, "Output file name.");
         MAIN_OPTIONS.addOption("o", "dir-out", true, "Result directory.");
