@@ -21,6 +21,7 @@ package edu.cmu.tetrad.cli.data;
 import edu.cmu.tetrad.cli.ExtendedCommandLineParser;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.data.BigDataSetUtility;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataWriter;
@@ -63,11 +64,13 @@ public class CovarianceMatrixCli {
 
         MAIN_OPTIONS.addOption(HELP_OPTION);
         MAIN_OPTIONS.addOption("l", "delimiter", true, "Data file delimiter.");
+        MAIN_OPTIONS.addOption("f", "on-the-fly", true, "Compute covariance on the fly.");
         MAIN_OPTIONS.addOption("o", "dir-out", true, "Result directory.");
         MAIN_OPTIONS.addOption("n", "name", true, "Output file name.");
     }
 
     private static Path dataFile;
+    private static boolean onTheFly;
     private static Path dirOut;
     private static char delimiter;
     private static String fileOut;
@@ -87,6 +90,7 @@ public class CovarianceMatrixCli {
             CommandLine cmd = cmdParser.parse(MAIN_OPTIONS, args);
             dataFile = Args.getPathFile(cmd.getOptionValue("d"), true);
             delimiter = Args.getCharacter(cmd.getOptionValue("l", "\t"));
+            onTheFly = cmd.hasOption("f");
             dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
             fileOut = cmd.getOptionValue("n", String.format("%s.cov", dataFile.getFileName().toString()));
         } catch (ParseException | FileNotFoundException | IllegalArgumentException exception) {
@@ -94,23 +98,20 @@ public class CovarianceMatrixCli {
             System.exit(127);
         }
 
-        DataSet dataSet = null;
         try {
-            dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
+            DataSet dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
+
+            ICovarianceMatrix covarianceMatrix = (onTheFly)
+                    ? new CovarianceMatrixOnTheFly(dataSet)
+                    : new CovarianceMatrix(dataSet);
+            Path outputFile = Paths.get(dirOut.toString(), fileOut);
+
+            try (PrintWriter stream = new PrintWriter(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+                DataWriter.writeCovMatrix(covarianceMatrix, stream, NumberFormatUtil.getInstance().getNumberFormat());
+            }
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
             System.exit(127);
-        }
-
-        if (dataSet != null) {
-            ICovarianceMatrix covarianceMatrix = new CovarianceMatrixOnTheFly(dataSet);
-            Path outputFile = Paths.get(dirOut.toString(), fileOut);
-            try (PrintWriter stream = new PrintWriter(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-                DataWriter.writeCovMatrix(covarianceMatrix, stream, NumberFormatUtil.getInstance().getNumberFormat());
-            } catch (IOException exception) {
-                exception.printStackTrace(System.err);
-                System.exit(127);
-            }
         }
     }
 
