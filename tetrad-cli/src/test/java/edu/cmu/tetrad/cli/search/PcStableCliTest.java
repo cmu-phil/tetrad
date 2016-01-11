@@ -19,12 +19,14 @@
 package edu.cmu.tetrad.cli.search;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -39,9 +41,32 @@ public class PcStableCliTest extends AbstractAlgorithmTest {
     }
 
     /**
-     * Test of main method, of class PcStableCli.
+     * This method will run first for each test case.
      *
-     * @throws IOException
+     * @throws NoSuchFieldException
+     * @throws SecurityException
+     * @throws IllegalAccessException
+     */
+    @Before
+    public void setUp() throws NoSuchFieldException, SecurityException, IllegalAccessException {
+        // clean up static variables
+        Field[] fields = {
+            PcStableCli.class.getDeclaredField("dataFile"),
+            PcStableCli.class.getDeclaredField("covarianceFile"),
+            PcStableCli.class.getDeclaredField("knowledgeFile"),
+            PcStableCli.class.getDeclaredField("dirOut"),
+            PcStableCli.class.getDeclaredField("fileOut")
+        };
+        for (Field field : fields) {
+            field.setAccessible(true);
+            field.set(null, null);
+        }
+    }
+
+    /**
+     * Test of main method of class PcStableCli.
+     *
+     * @throws IOException whenever unable to read or right to file
      */
     @Test
     public void testMain() throws IOException {
@@ -52,28 +77,73 @@ public class PcStableCliTest extends AbstractAlgorithmTest {
         Path dataFile = Paths.get(dataDir, "sim_data_20vars_100cases.txt");
         Files.write(dataFile, Arrays.asList(dataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        // create prior knowledge file
-        Path knowledgeFile = Paths.get(dataDir, "knowledge_sim_data_20vars_100cases.txt");
-        Files.write(knowledgeFile, Arrays.asList(knowledgeDataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-
         // create folder for results
         String outDir = tempFolder.newFolder("results").toString();
-        String fileName = "pcstable.txt";
+        String outputFile = "pcstable.txt";
 
         // run without prior knowledge
         String[] args = {
             "-d", dataFile.toAbsolutePath().toString(),
             "-o", outDir,
-            "-n", fileName
+            "-n", outputFile
         };
         PcStableCli.main(args);
+    }
 
-        // run with prior knowledge
-        args = new String[]{
+    /**
+     * Test of main method of class PcStableCli with prior knowledge.
+     *
+     * @throws IOException whenever unable to read or right to file
+     */
+    @Test
+    public void testMainPriorKnowledge() throws IOException {
+        System.out.println("main: prior knowledge");
+
+        // create dataset file
+        String dataDir = tempFolder.newFolder("data").toString();
+        Path dataFile = Paths.get(dataDir, "sim_data_20vars_100cases.txt");
+        Files.write(dataFile, Arrays.asList(dataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+
+        // create folder for results
+        String outDir = tempFolder.newFolder("results").toString();
+        String outputFile = "pcstable.txt";
+
+        // create prior knowledge file
+        Path knowledgeFile = Paths.get(dataDir, "knowledge_sim_data_20vars_100cases.txt");
+        Files.write(knowledgeFile, Arrays.asList(knowledgeDataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+
+        String[] args = {
             "-d", dataFile.toAbsolutePath().toString(),
             "-k", knowledgeFile.toAbsolutePath().toString(),
             "-o", outDir,
-            "-n", fileName
+            "-n", outputFile
+        };
+        PcStableCli.main(args);
+    }
+
+    /**
+     * Test of main method of class PcStableCli. Read in covariance matrix
+     * instead of dataset.
+     *
+     * @throws IOException whenever unable to read or right to file
+     */
+    @Test
+    public void testMainCovariance() throws IOException {
+        System.out.println("main: covariance");
+
+        // create covariance matrix file
+        String dataDir = tempFolder.newFolder("data").toString();
+        Path covarianceFile = Paths.get(dataDir, "sim_data_20vars_100cases.cov");
+        Files.write(covarianceFile, Arrays.asList(dataset20var100caseCovariance), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+
+        String outDir = tempFolder.newFolder("results").toString();
+        String outputFile = "pcstable.txt";
+
+        String[] args = {
+            "-c", covarianceFile.toAbsolutePath().toString(),
+            "-o", outDir,
+            "-n", outputFile,
+            "-h"
         };
         PcStableCli.main(args);
     }

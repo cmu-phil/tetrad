@@ -22,7 +22,9 @@ import edu.cmu.tetrad.cli.ExtendedCommandLineParser;
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.data.BigDataSetUtility;
+import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestChiSquare;
 import edu.cmu.tetrad.search.IndTestFisherZ;
@@ -39,6 +41,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -57,9 +60,12 @@ public class PcStableCli {
 
     static {
         // added required option
-        Option requiredOption = new Option("d", "data", true, "Data file.");
-        requiredOption.setRequired(true);
-        MAIN_OPTIONS.addOption(requiredOption);
+        OptionGroup optionGroup = new OptionGroup();
+        optionGroup.setRequired(true);
+        optionGroup.addOption(new Option("d", "data", true, "Data file."));
+        optionGroup.addOption(new Option("c", "covariance", true, "Covariance matrix file."));
+
+        MAIN_OPTIONS.addOptionGroup(optionGroup);
 
         MAIN_OPTIONS.addOption(HELP_OPTION);
         MAIN_OPTIONS.addOption("k", "knowledge", true, "A file containing prior knowledge.");
@@ -72,6 +78,7 @@ public class PcStableCli {
     }
 
     private static Path dataFile;
+    private static Path covarianceFile;
     private static Path knowledgeFile;
     private static Path dirOut;
     private static char delimiter;
@@ -93,7 +100,12 @@ public class PcStableCli {
             }
 
             CommandLine cmd = cmdParser.parse(MAIN_OPTIONS, args);
-            dataFile = Args.getPathFile(cmd.getOptionValue("d"), true);
+            if (cmd.hasOption("d")) {
+                dataFile = Args.getPathFile(cmd.getOptionValue("d"), true);
+            } else {
+                covarianceFile = Args.getPathFile(cmd.getOptionValue("c"), true);
+            }
+
             knowledgeFile = Args.getPathFile(cmd.getOptionValue("k", null), false);
             delimiter = Args.getCharacter(cmd.getOptionValue("l", "\t"));
             alpha = Args.parseDouble(cmd.getOptionValue("p", "0.05"));
@@ -111,9 +123,17 @@ public class PcStableCli {
             printOutParameters(stream);
             stream.flush();
 
-            DataSet dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
+            IndependenceTest independenceTest;
+            if (dataFile == null) {
+                DataReader dataReader = new DataReader();
+                ICovarianceMatrix covarianceMatrix = dataReader.parseCovariance(covarianceFile.toFile());
+                independenceTest = new IndTestFisherZ(covarianceMatrix, alpha);
+            } else {
+                DataSet dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
+                independenceTest = getIndependenceTest(dataSet, true, alpha);
+            }
 
-            PcStable pc = new PcStable(getIndependenceTest(dataSet, true, alpha));
+            PcStable pc = new PcStable(independenceTest);
             pc.setOut(stream);
             pc.setDepth(depth);
             pc.setVerbose(verbose);
@@ -141,7 +161,13 @@ public class PcStableCli {
 
     private static void printOutParameters(PrintStream stream) {
         stream.println("Datasets:");
-        stream.println(dataFile.getFileName().toString());
+        if (dataFile == null) {
+            stream.println(covarianceFile.getFileName().toString());
+            System.out.println(covarianceFile.getFileName().toString());
+        } else {
+            System.out.println(dataFile.getFileName().toString());
+            stream.println(dataFile.getFileName().toString());
+        }
         stream.println();
 
         if (knowledgeFile != null) {
