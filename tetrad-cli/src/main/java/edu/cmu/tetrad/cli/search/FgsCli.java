@@ -120,7 +120,7 @@ public class FgsCli {
             fgs.setDepth(depth);
             fgs.setPenaltyDiscount(penaltyDiscount);
             fgs.setNumPatternsToStore(0);  // always set to zero
-            fgs.setFaithfulnessAssumed(true);
+            fgs.setFaithfulnessAssumed(faithfulness);
             fgs.setVerbose(verbose);
             if (knowledgeFile != null) {
                 fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
