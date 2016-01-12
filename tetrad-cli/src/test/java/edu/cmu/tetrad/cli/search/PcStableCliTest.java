@@ -142,8 +142,7 @@ public class PcStableCliTest extends AbstractAlgorithmTest {
         String[] args = {
             "-c", covarianceFile.toAbsolutePath().toString(),
             "-o", outDir,
-            "-n", outputFile,
-            "-h"
+            "-n", outputFile
         };
         PcStableCli.main(args);
     }

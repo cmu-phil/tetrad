@@ -21,6 +21,7 @@ package edu.cmu.tetrad.cli.search;
 import edu.cmu.tetrad.cli.ExtendedCommandLineParser;
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.util.Args;
+import edu.cmu.tetrad.cli.util.GraphmlSerializer;
 import edu.cmu.tetrad.data.BigDataSetUtility;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
@@ -28,6 +29,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fgs;
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -69,6 +71,7 @@ public class FgsCli {
         MAIN_OPTIONS.addOption("p", "penalty-discount", true, "Penalty discount.");
         MAIN_OPTIONS.addOption("n", "name", true, "Output file name.");
         MAIN_OPTIONS.addOption("o", "dir-out", true, "Result directory.");
+        MAIN_OPTIONS.addOption("g", "graphml", false, "Create graphML output.");
     }
 
     private static Path dataFile;
@@ -79,7 +82,8 @@ public class FgsCli {
     private static int depth;
     private static boolean faithfulness;
     private static boolean verbose;
-    private static String fileOut;
+    private static boolean outputGraphML;
+    private static String outputFileName;
 
     /**
      * @param args the command line arguments
@@ -102,36 +106,47 @@ public class FgsCli {
             faithfulness = cmd.hasOption("f");
             verbose = cmd.hasOption("v");
             dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
-            fileOut = cmd.getOptionValue("n", String.format("fgs_pd%1.2f_d%d_%d.txt", penaltyDiscount, depth, System.currentTimeMillis()));
+            outputFileName = cmd.getOptionValue("n", String.format("fgs_pd%1.2f_d%d_%d", penaltyDiscount, depth, System.currentTimeMillis()));
+            outputGraphML = cmd.hasOption("g");
         } catch (ParseException | FileNotFoundException | IllegalArgumentException exception) {
             System.err.println(exception.getLocalizedMessage());
             System.exit(127);
         }
 
-        Path outputFile = Paths.get(dirOut.toString(), fileOut);
-        try (PrintStream stream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-            printOutParameters(stream);
-            stream.flush();
-
+        try {
             DataSet dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
 
-            Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
-            fgs.setOut(stream);
-            fgs.setDepth(depth);
-            fgs.setPenaltyDiscount(penaltyDiscount);
-            fgs.setNumPatternsToStore(0);  // always set to zero
-            fgs.setFaithfulnessAssumed(faithfulness);
-            fgs.setVerbose(verbose);
-            if (knowledgeFile != null) {
-                fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
-            }
-            stream.flush();
+            Graph graph;
+            Path outputFile = Paths.get(dirOut.toString(), outputFileName + ".txt");
+            try (PrintStream stream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+                printOutParameters(stream);
+                stream.flush();
 
-            Graph graph = fgs.search();
-            stream.println();
-            stream.println(graph.toString().trim());
-            stream.flush();
-        } catch (Exception exception) {
+                Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
+                fgs.setOut(stream);
+                fgs.setDepth(depth);
+                fgs.setPenaltyDiscount(penaltyDiscount);
+                fgs.setNumPatternsToStore(0);  // always set to zero
+                fgs.setFaithfulnessAssumed(faithfulness);
+                fgs.setVerbose(verbose);
+                if (knowledgeFile != null) {
+                    fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
+                }
+                stream.flush();
+
+                graph = fgs.search();
+                stream.println();
+                stream.println(graph.toString().trim());
+                stream.flush();
+            }
+
+            if (outputGraphML) {
+                Path graphOutputFile = Paths.get(dirOut.toString(), outputFileName + ".graphml");
+                try (PrintStream stream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
+                    stream.println(GraphmlSerializer.serialize(graph, outputFileName));
+                }
+            }
+        } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }
     }
