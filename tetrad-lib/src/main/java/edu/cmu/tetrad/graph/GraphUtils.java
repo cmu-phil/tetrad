@@ -1785,6 +1785,31 @@ public final class GraphUtils {
         return graph2;
     }
 
+    public static Graph undirectedMoralizedGraph(Graph graph) {
+        Graph graph2 = new EdgeListGraph(graph.getNodes());
+
+        // copy skeleton from graph 1
+        for (Edge edge : graph.getEdges()) {
+            if (!graph2.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                graph2.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+            }
+        }
+
+        // for every unshielded collider in graph 1, connect the parents
+        // with an undirected edge
+        LinkedList<Triple> colliders = listColliderTriples(graph);
+        for (Triple triple : colliders) {
+            Node X = triple.getX();
+            Node Z = triple.getZ();
+
+            if (!graph2.isAdjacentTo(X, Z)) {
+                graph2.addUndirectedEdge(X, Z);
+            }
+        }
+
+        return graph2;
+    }
+
     public static Graph nondirectedGraph(Graph graph) {
         Graph graph2 = new EdgeListGraph(graph.getNodes());
 
