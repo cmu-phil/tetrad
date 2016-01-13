@@ -177,9 +177,7 @@ public class PcStableCli {
         stream.println("Datasets:");
         if (dataFile == null) {
             stream.println(covarianceFile.getFileName().toString());
-            System.out.println(covarianceFile.getFileName().toString());
         } else {
-            System.out.println(dataFile.getFileName().toString());
             stream.println(dataFile.getFileName().toString());
         }
         stream.println();
