@@ -21,6 +21,7 @@ package edu.cmu.tetrad.cli.search;
 import edu.cmu.tetrad.cli.ExtendedCommandLineParser;
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.util.Args;
+import edu.cmu.tetrad.cli.util.GraphmlSerializer;
 import edu.cmu.tetrad.data.BigDataSetUtility;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
@@ -75,6 +76,7 @@ public class PcStableCli {
         MAIN_OPTIONS.addOption("v", "verbose", false, "Verbose message.");
         MAIN_OPTIONS.addOption("n", "name", true, "Output file name.");
         MAIN_OPTIONS.addOption("o", "dir-out", true, "Result directory.");
+        MAIN_OPTIONS.addOption("g", "graphml", false, "Create graphML output.");
     }
 
     private static Path dataFile;
@@ -85,7 +87,8 @@ public class PcStableCli {
     private static double alpha;
     private static int depth;
     private static boolean verbose;
-    private static String fileOut;
+    private static boolean outputGraphML;
+    private static String outputFileName;
 
     /**
      * @param args the command line arguments
@@ -112,17 +115,14 @@ public class PcStableCli {
             depth = Args.parseInteger(cmd.getOptionValue("m", "-1"), -1);
             verbose = cmd.hasOption("v");
             dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
-            fileOut = cmd.getOptionValue("n", String.format("pcstable_pd%1.2f_d%d_%d.txt", alpha, depth, System.currentTimeMillis()));
+            outputGraphML = cmd.hasOption("g");
+            outputFileName = cmd.getOptionValue("n", String.format("pcstable_pd%1.2f_d%d_%d", alpha, depth, System.currentTimeMillis()));
         } catch (ParseException | FileNotFoundException | IllegalArgumentException exception) {
             System.err.println(exception.getLocalizedMessage());
             System.exit(127);
         }
 
-        Path outputFile = Paths.get(dirOut.toString(), fileOut);
-        try (PrintStream stream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-            printOutParameters(stream);
-            stream.flush();
-
+        try {
             IndependenceTest independenceTest;
             if (dataFile == null) {
                 DataReader dataReader = new DataReader();
@@ -133,19 +133,33 @@ public class PcStableCli {
                 independenceTest = getIndependenceTest(dataSet, true, alpha);
             }
 
-            PcStable pc = new PcStable(independenceTest);
-            pc.setOut(stream);
-            pc.setDepth(depth);
-            pc.setVerbose(verbose);
-            if (knowledgeFile != null) {
-                pc.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
-            }
-            stream.flush();
+            Graph graph;
+            Path outputFile = Paths.get(dirOut.toString(), outputFileName + ".txt");
+            try (PrintStream stream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+                printOutParameters(stream);
+                stream.flush();
 
-            Graph graph = pc.search();
-            stream.println();
-            stream.println(graph.toString().trim());
-            stream.flush();
+                PcStable pc = new PcStable(independenceTest);
+                pc.setOut(stream);
+                pc.setDepth(depth);
+                pc.setVerbose(verbose);
+                if (knowledgeFile != null) {
+                    pc.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
+                }
+                stream.flush();
+
+                graph = pc.search();
+                stream.println();
+                stream.println(graph.toString().trim());
+                stream.flush();
+            }
+
+            if (outputGraphML) {
+                Path graphOutputFile = Paths.get(dirOut.toString(), outputFileName + ".graphml");
+                try (PrintStream stream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
+                    stream.println(GraphmlSerializer.serialize(graph, outputFileName));
+                }
+            }
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
         }

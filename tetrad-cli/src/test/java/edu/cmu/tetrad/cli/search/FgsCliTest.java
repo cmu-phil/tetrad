@@ -43,7 +43,7 @@ public class FgsCliTest extends AbstractAlgorithmTest {
     }
 
     /**
-     * This method will run first for each test case.
+     * Reset static variables for each test case.
      *
      * @throws NoSuchFieldException
      * @throws SecurityException
@@ -140,7 +140,7 @@ public class FgsCliTest extends AbstractAlgorithmTest {
     }
 
     /**
-     * Test of main method, of class FgsCli.
+     * Test of main method, of class FgsCli. Output GraphML.
      *
      * @throws IOException whenever unable to read or right to file
      */
