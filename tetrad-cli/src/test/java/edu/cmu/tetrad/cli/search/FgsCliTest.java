@@ -19,7 +19,6 @@
 package edu.cmu.tetrad.cli.search;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -28,7 +27,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -40,38 +38,6 @@ import org.junit.Test;
 public class FgsCliTest extends AbstractAlgorithmTest {
 
     public FgsCliTest() {
-    }
-
-    /**
-     * Reset static variables for each test case.
-     *
-     * @throws NoSuchFieldException
-     * @throws SecurityException
-     * @throws IllegalAccessException
-     */
-    @Before
-    public void setUp() throws NoSuchFieldException, SecurityException, IllegalAccessException {
-        // clean up static variables
-        Field[] fields = {
-            FgsCli.class.getDeclaredField("dataFile"),
-            FgsCli.class.getDeclaredField("knowledgeFile"),
-            FgsCli.class.getDeclaredField("dirOut"),
-            FgsCli.class.getDeclaredField("outputFileName")
-        };
-        for (Field field : fields) {
-            field.setAccessible(true);
-            field.set(null, null);
-        }
-
-        fields = new Field[]{
-            FgsCli.class.getDeclaredField("faithfulness"),
-            FgsCli.class.getDeclaredField("verbose"),
-            FgsCli.class.getDeclaredField("outputGraphML")
-        };
-        for (Field field : fields) {
-            field.setAccessible(true);
-            field.setBoolean(null, false);
-        }
     }
 
     /**
@@ -96,11 +62,16 @@ public class FgsCliTest extends AbstractAlgorithmTest {
         String[] args = {
             "-d", dataFile.toAbsolutePath().toString(),
             "-f",
+            "-t", "2",
             "-o", outDir,
             "-n", outputFileName
         };
 
         FgsCli.main(args);
+
+        Path outFile = Paths.get(outDir, outputFileName + ".txt");
+        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
     }
 
     /**

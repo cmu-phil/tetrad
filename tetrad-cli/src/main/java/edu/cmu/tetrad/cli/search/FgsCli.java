@@ -70,6 +70,7 @@ public class FgsCli {
         MAIN_OPTIONS.addOption("v", "verbose", false, "Verbose message.");
         MAIN_OPTIONS.addOption("p", "penalty-discount", true, "Penalty discount.");
         MAIN_OPTIONS.addOption("n", "name", true, "Output file name.");
+        MAIN_OPTIONS.addOption("t", "thread", true, "Number of threads to use.");
         MAIN_OPTIONS.addOption("o", "dir-out", true, "Result directory.");
         MAIN_OPTIONS.addOption("g", "graphml", false, "Create graphML output.");
     }
@@ -81,6 +82,7 @@ public class FgsCli {
     private static double penaltyDiscount;
     private static int depth;
     private static boolean faithfulness;
+    private static int numOfThreads;
     private static boolean verbose;
     private static boolean outputGraphML;
     private static String outputFileName;
@@ -104,6 +106,7 @@ public class FgsCli {
             penaltyDiscount = Args.parseDouble(cmd.getOptionValue("p", "4.0"));
             depth = Args.parseInteger(cmd.getOptionValue("m", "3"), -1);
             faithfulness = cmd.hasOption("f");
+            numOfThreads = Args.parseInteger(cmd.getOptionValue("t", Runtime.getRuntime().availableProcessors() + ""));
             verbose = cmd.hasOption("v");
             dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
             outputFileName = cmd.getOptionValue("n", String.format("fgs_pd%1.2f_d%d_%d", penaltyDiscount, depth, System.currentTimeMillis()));
@@ -128,6 +131,7 @@ public class FgsCli {
                 fgs.setPenaltyDiscount(penaltyDiscount);
                 fgs.setNumPatternsToStore(0);  // always set to zero
                 fgs.setFaithfulnessAssumed(faithfulness);
+                fgs.setNumProcessors(numOfThreads);
                 fgs.setVerbose(verbose);
                 if (knowledgeFile != null) {
                     fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
@@ -152,20 +156,25 @@ public class FgsCli {
     }
 
     private static void printOutParameters(PrintStream stream) {
+        stream.println("Runtime Parameters:");
+        stream.printf("number of threads = %d\n", numOfThreads);
+        stream.printf("verbose = %s\n", verbose);
+        stream.println();
+
         stream.println("Datasets:");
         stream.println(dataFile.getFileName().toString());
         stream.println();
 
         if (knowledgeFile != null) {
             stream.println("Knowledge:");
-            stream.println(String.format("knowledge = %s", knowledgeFile.toString()));
+            stream.printf("knowledge = %s\n", knowledgeFile.toString());
             stream.println();
         }
 
-        stream.println("Graph Parameters:");
-        stream.println(String.format("penalty discount = %f", penaltyDiscount));
-        stream.println(String.format("depth = %s", depth));
-        stream.println(String.format("faithfulness = %s", faithfulness));
+        stream.println("Algorithm Parameters:");
+        stream.printf("penalty discount = %f\n", penaltyDiscount);
+        stream.printf("depth = %s\n", depth);
+        stream.printf("faithfulness = %s\n", faithfulness);
     }
 
 }
