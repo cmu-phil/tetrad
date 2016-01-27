@@ -25,16 +25,14 @@ import static java.util.concurrent.ForkJoinTask.invokeAll;
 import java.util.concurrent.RecursiveAction;
 
 /**
- * Compute covariance in parallel on the fly. Warning! This class will overwrite
- * the values in the input data.
  *
- * Jan 27, 2016 4:08:04 PM
+ * Jan 27, 2016 5:41:24 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
+public class RealCovarianceMatrixForkJoinOnTheFly implements RealCovariance {
 
-    private final float[][] data;
+    private final double[][] data;
 
     private final int numOfRows;
 
@@ -44,7 +42,7 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
 
     private final ForkJoinPool pool;
 
-    public CovarianceMatrixForkJoinOnTheFly(float[][] data, int numOfThreads) {
+    public RealCovarianceMatrixForkJoinOnTheFly(double[][] data, int numOfThreads) {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
@@ -53,8 +51,8 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
     }
 
     @Override
-    public float[] computeLowerTriangle(boolean biasCorrected) {
-        float[] covarianceMatrix = new float[(numOfCols * (numOfCols + 1)) / 2];
+    public double[] computeLowerTriangle(boolean biasCorrected) {
+        double[] covarianceMatrix = new double[(numOfCols * (numOfCols + 1)) / 2];
 
         pool.invoke(new MeanAction(data, 0, numOfCols - 1));
         pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, 0, numOfCols - 1, biasCorrected));
@@ -63,8 +61,8 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
     }
 
     @Override
-    public float[][] compute(boolean biasCorrected) {
-        float[][] covarianceMatrix = new float[numOfCols][numOfCols];
+    public double[][] compute(boolean biasCorrected) {
+        double[][] covarianceMatrix = new double[numOfCols][numOfCols];
 
         pool.invoke(new MeanAction(data, 0, numOfCols - 1));
         pool.invoke(new CovarianceAction(covarianceMatrix, 0, numOfCols - 1, biasCorrected));
@@ -76,11 +74,11 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
 
         private static final long serialVersionUID = 8712680208513044295L;
 
-        private final float[][] data;
+        private final double[][] data;
         private final int start;
         private final int end;
 
-        public MeanAction(float[][] data, int start, int end) {
+        public MeanAction(double[][] data, int start, int end) {
             this.data = data;
             this.start = start;
             this.end = end;
@@ -88,7 +86,7 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
 
         private void computeMean() {
             for (int col = start; col <= end; col++) {
-                float mean = 0;
+                double mean = 0;
                 for (int row = 0; row < numOfRows; row++) {
                     mean += data[row][col];
                 }
@@ -126,12 +124,12 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
 
         private static final long serialVersionUID = 4550727841863953665L;
 
-        private final float[] covariance;
+        private final double[] covariance;
         private final int start;
         private final int end;
         private final boolean biasCorrected;
 
-        public CovarianceLowerTriangleAction(float[] covariance, int start, int end, boolean biasCorrected) {
+        public CovarianceLowerTriangleAction(double[] covariance, int start, int end, boolean biasCorrected) {
             this.covariance = covariance;
             this.start = start;
             this.end = end;
@@ -142,17 +140,17 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
             int index = (start * (start + 1)) / 2;
             for (int col = start; col <= end; col++) {
                 for (int col2 = 0; col2 < col; col2++) {
-                    float variance = 0;
+                    double variance = 0;
                     for (int row = 0; row < numOfRows; row++) {
                         variance += ((data[row][col]) * (data[row][col2]) - variance) / (row + 1);
                     }
-                    covariance[index++] = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
+                    covariance[index++] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
                 }
-                float variance = 0;
+                double variance = 0;
                 for (int row = 0; row < numOfRows; row++) {
                     variance += ((data[row][col]) * (data[row][col]) - variance) / (row + 1);
                 }
-                covariance[index++] = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
+                covariance[index++] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
             }
         }
 
@@ -184,12 +182,12 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
 
         private static final long serialVersionUID = 5505202257690193574L;
 
-        private final float[][] covariance;
+        private final double[][] covariance;
         private final int start;
         private final int end;
         private final boolean biasCorrected;
 
-        public CovarianceAction(float[][] covariance, int start, int end, boolean biasCorrected) {
+        public CovarianceAction(double[][] covariance, int start, int end, boolean biasCorrected) {
             this.covariance = covariance;
             this.start = start;
             this.end = end;
@@ -199,19 +197,19 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
         private void computeCovariance() {
             for (int col = start; col <= end; col++) {
                 for (int col2 = 0; col2 < col; col2++) {
-                    float variance = 0;
+                    double variance = 0;
                     for (int row = 0; row < numOfRows; row++) {
                         variance += ((data[row][col]) * (data[row][col2]) - variance) / (row + 1);
                     }
-                    variance = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
+                    variance = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
                     covariance[col][col2] = variance;
                     covariance[col2][col] = variance;
                 }
-                float variance = 0;
+                double variance = 0;
                 for (int row = 0; row < numOfRows; row++) {
                     variance += ((data[row][col]) * (data[row][col]) - variance) / (row + 1);
                 }
-                covariance[col][col] = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
+                covariance[col][col] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
             }
         }
 

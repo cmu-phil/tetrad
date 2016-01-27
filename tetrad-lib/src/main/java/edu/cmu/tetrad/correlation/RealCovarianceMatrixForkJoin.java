@@ -25,16 +25,14 @@ import static java.util.concurrent.ForkJoinTask.invokeAll;
 import java.util.concurrent.RecursiveAction;
 
 /**
- * Compute covariance in parallel on the fly. Warning! This class will overwrite
- * the values in the input data.
  *
- * Jan 27, 2016 4:08:04 PM
+ * Jan 27, 2016 5:37:40 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
+public class RealCovarianceMatrixForkJoin implements RealCovariance {
 
-    private final float[][] data;
+    private final double[][] data;
 
     private final int numOfRows;
 
@@ -44,7 +42,7 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
 
     private final ForkJoinPool pool;
 
-    public CovarianceMatrixForkJoinOnTheFly(float[][] data, int numOfThreads) {
+    public RealCovarianceMatrixForkJoin(double[][] data, int numOfThreads) {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
@@ -53,144 +51,40 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
     }
 
     @Override
-    public float[] computeLowerTriangle(boolean biasCorrected) {
-        float[] covarianceMatrix = new float[(numOfCols * (numOfCols + 1)) / 2];
+    public double[] computeLowerTriangle(boolean biasCorrected) {
+        double[] covarianceMatrix = new double[(numOfCols * (numOfCols + 1)) / 2];
 
-        pool.invoke(new MeanAction(data, 0, numOfCols - 1));
-        pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, 0, numOfCols - 1, biasCorrected));
+        double[] means = new double[numOfCols];
+        pool.invoke(new MeanAction(means, data, 0, numOfCols - 1));
+        pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, means, 0, numOfCols - 1, biasCorrected));
 
         return covarianceMatrix;
     }
 
     @Override
-    public float[][] compute(boolean biasCorrected) {
-        float[][] covarianceMatrix = new float[numOfCols][numOfCols];
+    public double[][] compute(boolean biasCorrected) {
+        double[][] covarianceMatrix = new double[numOfCols][numOfCols];
 
-        pool.invoke(new MeanAction(data, 0, numOfCols - 1));
-        pool.invoke(new CovarianceAction(covarianceMatrix, 0, numOfCols - 1, biasCorrected));
+        double[] means = new double[numOfCols];
+        pool.invoke(new MeanAction(means, data, 0, numOfCols - 1));
+        pool.invoke(new CovarianceAction(covarianceMatrix, means, 0, numOfCols - 1, biasCorrected));
 
         return covarianceMatrix;
     }
 
-    class MeanAction extends RecursiveAction {
-
-        private static final long serialVersionUID = 8712680208513044295L;
-
-        private final float[][] data;
-        private final int start;
-        private final int end;
-
-        public MeanAction(float[][] data, int start, int end) {
-            this.data = data;
-            this.start = start;
-            this.end = end;
-        }
-
-        private void computeMean() {
-            for (int col = start; col <= end; col++) {
-                float mean = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    mean += data[row][col];
-                }
-                mean /= numOfRows;
-                for (int row = 0; row < numOfRows; row++) {
-                    data[row][col] -= mean;
-                }
-            }
-        }
-
-        @Override
-        protected void compute() {
-            int limit = numOfCols / numOfThreads;
-            int length = end - start;
-            int delta = length / numOfThreads;
-            if (length <= limit) {
-                computeMean();
-            } else {
-                List<MeanAction> actions = new LinkedList<>();
-                int startIndex = start;
-                int endIndex;
-                int size = numOfThreads - 1;
-                for (int i = 0; i < size; i++) {
-                    endIndex = startIndex + delta;
-                    actions.add(new MeanAction(data, startIndex, endIndex));
-                    startIndex = endIndex + 1;
-                }
-                actions.add(new MeanAction(data, startIndex, end));
-                invokeAll(actions);
-            }
-        }
-    }
-
-    class CovarianceLowerTriangleAction extends RecursiveAction {
-
-        private static final long serialVersionUID = 4550727841863953665L;
-
-        private final float[] covariance;
-        private final int start;
-        private final int end;
-        private final boolean biasCorrected;
-
-        public CovarianceLowerTriangleAction(float[] covariance, int start, int end, boolean biasCorrected) {
-            this.covariance = covariance;
-            this.start = start;
-            this.end = end;
-            this.biasCorrected = biasCorrected;
-        }
-
-        private void computeCovariance() {
-            int index = (start * (start + 1)) / 2;
-            for (int col = start; col <= end; col++) {
-                for (int col2 = 0; col2 < col; col2++) {
-                    float variance = 0;
-                    for (int row = 0; row < numOfRows; row++) {
-                        variance += ((data[row][col]) * (data[row][col2]) - variance) / (row + 1);
-                    }
-                    covariance[index++] = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
-                }
-                float variance = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    variance += ((data[row][col]) * (data[row][col]) - variance) / (row + 1);
-                }
-                covariance[index++] = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
-            }
-        }
-
-        @Override
-        protected void compute() {
-            int limit = numOfCols / numOfThreads;
-            int length = end - start;
-            int delta = length / numOfThreads;
-            if (length <= limit) {
-                computeCovariance();
-            } else {
-                List<CovarianceLowerTriangleAction> actions = new LinkedList<>();
-                int startIndex = start;
-                int endIndex;
-                int size = numOfThreads - 1;
-                for (int i = 0; i < size; i++) {
-                    endIndex = startIndex + delta;
-                    actions.add(new CovarianceLowerTriangleAction(covariance, startIndex, endIndex, biasCorrected));
-                    startIndex = endIndex + 1;
-                }
-                actions.add(new CovarianceLowerTriangleAction(covariance, startIndex, end, biasCorrected));
-                invokeAll(actions);
-            }
-        }
-
-    }
-
     class CovarianceAction extends RecursiveAction {
 
-        private static final long serialVersionUID = 5505202257690193574L;
+        private static final long serialVersionUID = 1034920868427599720L;
 
-        private final float[][] covariance;
+        private final double[][] covariance;
+        private final double[] means;
         private final int start;
         private final int end;
         private final boolean biasCorrected;
 
-        public CovarianceAction(float[][] covariance, int start, int end, boolean biasCorrected) {
+        public CovarianceAction(double[][] covariance, double[] means, int start, int end, boolean biasCorrected) {
             this.covariance = covariance;
+            this.means = means;
             this.start = start;
             this.end = end;
             this.biasCorrected = biasCorrected;
@@ -199,19 +93,19 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
         private void computeCovariance() {
             for (int col = start; col <= end; col++) {
                 for (int col2 = 0; col2 < col; col2++) {
-                    float variance = 0;
+                    double variance = 0;
                     for (int row = 0; row < numOfRows; row++) {
-                        variance += ((data[row][col]) * (data[row][col2]) - variance) / (row + 1);
+                        variance += ((data[row][col] - means[col]) * (data[row][col2] - means[col2]) - variance) / (row + 1);
                     }
-                    variance = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
+                    variance = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
                     covariance[col][col2] = variance;
                     covariance[col2][col] = variance;
                 }
-                float variance = 0;
+                double variance = 0;
                 for (int row = 0; row < numOfRows; row++) {
-                    variance += ((data[row][col]) * (data[row][col]) - variance) / (row + 1);
+                    variance += ((data[row][col] - means[col]) * (data[row][col] - means[col]) - variance) / (row + 1);
                 }
-                covariance[col][col] = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
+                covariance[col][col] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
             }
         }
 
@@ -229,14 +123,123 @@ public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
                 int size = numOfThreads - 1;
                 for (int i = 0; i < size; i++) {
                     endIndex = startIndex + delta;
-                    actions.add(new CovarianceAction(covariance, startIndex, endIndex, biasCorrected));
+                    actions.add(new CovarianceAction(covariance, means, startIndex, endIndex, biasCorrected));
                     startIndex = endIndex + 1;
                 }
-                actions.add(new CovarianceAction(covariance, startIndex, end, biasCorrected));
+                actions.add(new CovarianceAction(covariance, means, startIndex, end, biasCorrected));
                 invokeAll(actions);
             }
         }
 
+    }
+
+    class CovarianceLowerTriangleAction extends RecursiveAction {
+
+        private static final long serialVersionUID = 1818119309247848613L;
+
+        private final double[] covariance;
+        private final double[] means;
+        private final int start;
+        private final int end;
+        private final boolean biasCorrected;
+
+        public CovarianceLowerTriangleAction(double[] covariance, double[] means, int start, int end, boolean biasCorrected) {
+            this.covariance = covariance;
+            this.means = means;
+            this.start = start;
+            this.end = end;
+            this.biasCorrected = biasCorrected;
+        }
+
+        private void computeCovariance() {
+            int index = (start * (start + 1)) / 2;
+            for (int col = start; col <= end; col++) {
+                for (int col2 = 0; col2 < col; col2++) {
+                    double variance = 0;
+                    for (int row = 0; row < numOfRows; row++) {
+                        variance += ((data[row][col] - means[col]) * (data[row][col2] - means[col2]) - variance) / (row + 1);
+                    }
+                    covariance[index++] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
+                }
+                double variance = 0;
+                for (int row = 0; row < numOfRows; row++) {
+                    variance += ((data[row][col] - means[col]) * (data[row][col] - means[col]) - variance) / (row + 1);
+                }
+                covariance[index++] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
+            }
+        }
+
+        @Override
+        protected void compute() {
+            int limit = numOfCols / numOfThreads;
+            int length = end - start;
+            int delta = length / numOfThreads;
+            if (length <= limit) {
+                computeCovariance();
+            } else {
+                List<CovarianceLowerTriangleAction> actions = new LinkedList<>();
+                int startIndex = start;
+                int endIndex;
+                int size = numOfThreads - 1;
+                for (int i = 0; i < size; i++) {
+                    endIndex = startIndex + delta;
+                    actions.add(new CovarianceLowerTriangleAction(covariance, means, startIndex, endIndex, biasCorrected));
+                    startIndex = endIndex + 1;
+                }
+                actions.add(new CovarianceLowerTriangleAction(covariance, means, startIndex, end, biasCorrected));
+                invokeAll(actions);
+            }
+        }
+
+    }
+
+    class MeanAction extends RecursiveAction {
+
+        private static final long serialVersionUID = 2419217605658853345L;
+
+        private final double[] means;
+        private final double[][] data;
+        private final int start;
+        private final int end;
+
+        public MeanAction(double[] means, double[][] data, int start, int end) {
+            this.means = means;
+            this.data = data;
+            this.start = start;
+            this.end = end;
+        }
+
+        private void computeMean() {
+            for (int col = start; col <= end; col++) {
+                double sum = 0;
+                for (int row = 0; row < numOfRows; row++) {
+                    sum += data[row][col];
+                }
+                means[col] = sum / numOfRows;
+            }
+        }
+
+        @Override
+        protected void compute() {
+            int limit = numOfCols / numOfThreads;
+            int length = end - start;
+            int delta = length / numOfThreads;
+            if (length <= limit) {
+                computeMean();
+            } else {
+                List<MeanAction> actions = new LinkedList<>();
+                int startIndex = start;
+                int endIndex;
+                int size = numOfThreads - 1;
+                for (int i = 0; i < size; i++) {
+                    endIndex = startIndex + delta;
+                    actions.add(new MeanAction(means, data, startIndex, endIndex));
+                    startIndex = endIndex + 1;
+                }
+                actions.add(new MeanAction(means, data, startIndex, end));
+                invokeAll(actions);
+            }
+        }
     }
 
 }
