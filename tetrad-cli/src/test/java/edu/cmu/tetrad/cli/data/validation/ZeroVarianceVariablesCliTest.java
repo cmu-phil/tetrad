@@ -77,7 +77,8 @@ public class ZeroVarianceVariablesCliTest implements SimulatedDatasets {
 
         String[] args = {
             "--data", dataFile.toAbsolutePath().toString(),
-            "--delim", "\t",
+            "--delimiter", "\t",
+            "--thread", "2",
             "--dir-out", dirOut
         };
         ZeroVarianceVariablesCli.main(args);

@@ -21,6 +21,7 @@ package edu.cmu.tetrad.cli.data.validation;
 import edu.cmu.tetrad.cli.ExtendedCommandLineParser;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.correlation.RealCovariance;
+import edu.cmu.tetrad.correlation.RealCovarianceMatrixForkJoinOnTheFly;
 import edu.cmu.tetrad.correlation.RealCovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.BigDataSetUtility;
 import edu.cmu.tetrad.data.DataSet;
@@ -60,12 +61,14 @@ public class ZeroVarianceVariablesCli {
         MAIN_OPTIONS.addOption(requiredOption);
 
         MAIN_OPTIONS.addOption(HELP_OPTION);
-        MAIN_OPTIONS.addOption(null, "delim", true, "Data delimiter.  Default is tab.");
+        MAIN_OPTIONS.addOption(null, "delimiter", true, "Data delimiter.  Default is tab.");
+        MAIN_OPTIONS.addOption(null, "thread", true, "Number of threads.");
         MAIN_OPTIONS.addOption(null, "dir-out", true, "Output directory.");
     }
 
     private static Path dataFile;
     private static char delimiter;
+    private static int numOfThreads;
     private static Path dirOut;
 
     /**
@@ -82,7 +85,8 @@ public class ZeroVarianceVariablesCli {
 
             CommandLine cmd = cmdParser.parse(MAIN_OPTIONS, args);
             dataFile = Args.getPathFile(cmd.getOptionValue("data"), true);
-            delimiter = Args.getCharacter(cmd.getOptionValue("delim", "\t"));
+            delimiter = Args.getCharacter(cmd.getOptionValue("delimiter", "\t"));
+            numOfThreads = Args.parseInteger(cmd.getOptionValue("thread", "1"));
             dirOut = Args.getPathDir(cmd.getOptionValue("dir-out", "."), false);
         } catch (ParseException | FileNotFoundException exception) {
             System.err.println(exception.getLocalizedMessage());
@@ -92,7 +96,13 @@ public class ZeroVarianceVariablesCli {
         try {
             DataSet dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
 
-            RealCovariance covariance = new RealCovarianceMatrixOnTheFly(dataSet.getDoubleData().toArray());
+            RealCovariance covariance;
+            if (numOfThreads == 1) {
+                covariance = new RealCovarianceMatrixOnTheFly(dataSet.getDoubleData().toArray());
+            } else {
+                covariance = new RealCovarianceMatrixForkJoinOnTheFly(dataSet.getDoubleData().toArray(), numOfThreads);
+            }
+
             double[] lowerTraingleCovariance = covariance.computeLowerTriangle(true);
 
             Path outputFile = Paths.get(dirOut.toString(), dataFile.getFileName() + "_vars.txt");
