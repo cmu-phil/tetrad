@@ -107,14 +107,12 @@ public class RealCovarianceMatrixForkJoinOnTheFly implements RealCovariance {
             } else {
                 List<MeanAction> actions = new LinkedList<>();
                 int startIndex = start;
-                int endIndex;
-                int size = numOfThreads - 1;
-                for (int i = 0; i < size; i++) {
-                    endIndex = startIndex + delta;
+                int endIndex = startIndex + delta;
+                while (endIndex < numOfCols) {
                     actions.add(new MeanAction(data, startIndex, endIndex));
                     startIndex = endIndex + 1;
+                    endIndex = startIndex + delta;
                 }
-                actions.add(new MeanAction(data, startIndex, end));
                 invokeAll(actions);
             }
         }
@@ -164,14 +162,12 @@ public class RealCovarianceMatrixForkJoinOnTheFly implements RealCovariance {
             } else {
                 List<CovarianceLowerTriangleAction> actions = new LinkedList<>();
                 int startIndex = start;
-                int endIndex;
-                int size = numOfThreads - 1;
-                for (int i = 0; i < size; i++) {
-                    endIndex = startIndex + delta;
+                int endIndex = startIndex + delta;
+                while (endIndex < numOfCols) {
                     actions.add(new CovarianceLowerTriangleAction(covariance, startIndex, endIndex, biasCorrected));
                     startIndex = endIndex + 1;
+                    endIndex = startIndex + delta;
                 }
-                actions.add(new CovarianceLowerTriangleAction(covariance, startIndex, end, biasCorrected));
                 invokeAll(actions);
             }
         }
@@ -223,14 +219,12 @@ public class RealCovarianceMatrixForkJoinOnTheFly implements RealCovariance {
             } else {
                 List<CovarianceAction> actions = new LinkedList<>();
                 int startIndex = start;
-                int endIndex;
-                int size = numOfThreads - 1;
-                for (int i = 0; i < size; i++) {
-                    endIndex = startIndex + delta;
+                int endIndex = startIndex + delta;
+                while (endIndex < numOfCols) {
                     actions.add(new CovarianceAction(covariance, startIndex, endIndex, biasCorrected));
                     startIndex = endIndex + 1;
+                    endIndex = startIndex + delta;
                 }
-                actions.add(new CovarianceAction(covariance, startIndex, end, biasCorrected));
                 invokeAll(actions);
             }
         }
