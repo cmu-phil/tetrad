@@ -29,6 +29,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -76,6 +77,7 @@ public class PcStableCliTest extends AbstractAlgorithmTest {
      *
      * @throws IOException whenever unable to read or right to file
      */
+    @Ignore
     @Test
     public void testMain() throws IOException {
         System.out.println("main");
@@ -107,6 +109,7 @@ public class PcStableCliTest extends AbstractAlgorithmTest {
      *
      * @throws IOException whenever unable to read or right to file
      */
+    @Ignore
     @Test
     public void testMainPriorKnowledge() throws IOException {
         System.out.println("main: prior knowledge");
@@ -143,6 +146,7 @@ public class PcStableCliTest extends AbstractAlgorithmTest {
      *
      * @throws IOException whenever unable to read or right to file
      */
+    @Ignore
     @Test
     public void testMainCovariance() throws IOException {
         System.out.println("main: covariance");
@@ -172,6 +176,7 @@ public class PcStableCliTest extends AbstractAlgorithmTest {
      *
      * @throws IOException whenever unable to read or right to file
      */
+    @Ignore
     @Test
     public void testMainGraphML() throws IOException {
         System.out.println("main: graphML");
