@@ -54,38 +54,38 @@ public class FgsCli {
     private static final String USAGE = "java -cp tetrad-cli.jar edu.cmu.tetrad.cli.search.FgsCli";
 
     private static final Options MAIN_OPTIONS = new Options();
-    private static final Option HELP_OPTION = new Option("h", "help", false, "Show help.");
+    private static final Option HELP_OPTION = new Option(null, "help", false, "Show help.");
 
     static {
         // added required option
-        Option requiredOption = new Option("d", "data", true, "Data file.");
+        Option requiredOption = new Option(null, "data", true, "Data file.");
         requiredOption.setRequired(true);
         MAIN_OPTIONS.addOption(requiredOption);
 
         MAIN_OPTIONS.addOption(HELP_OPTION);
-        MAIN_OPTIONS.addOption("k", "knowledge", true, "A file containing prior knowledge.");
-        MAIN_OPTIONS.addOption("l", "delimiter", true, "Data file delimiter.");
-        MAIN_OPTIONS.addOption("m", "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited).");
-        MAIN_OPTIONS.addOption("f", "faithfulness", false, "Assume faithfulness.");
-        MAIN_OPTIONS.addOption("v", "verbose", false, "Verbose message.");
-        MAIN_OPTIONS.addOption("p", "penalty-discount", true, "Penalty discount.");
-        MAIN_OPTIONS.addOption("n", "name", true, "Output file name.");
-        MAIN_OPTIONS.addOption("t", "thread", true, "Number of threads to use.");
-        MAIN_OPTIONS.addOption("o", "dir-out", true, "Result directory.");
-        MAIN_OPTIONS.addOption("g", "graphml", false, "Create graphML output.");
+        MAIN_OPTIONS.addOption(null, "knowledge", true, "A file containing prior knowledge.");
+        MAIN_OPTIONS.addOption(null, "delimiter", true, "Data delimiter.  Default is tab.");
+        MAIN_OPTIONS.addOption(null, "penalty-discount", true, "Penalty discount.");
+        MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited).");
+        MAIN_OPTIONS.addOption(null, "faithful", false, "Assume faithfulness.");
+        MAIN_OPTIONS.addOption(null, "thread", true, "Number of threads.");
+        MAIN_OPTIONS.addOption(null, "verbose", false, "Verbose message.");
+        MAIN_OPTIONS.addOption(null, "graphml", false, "Create graphML output.");
+        MAIN_OPTIONS.addOption(null, "dir-out", true, "Output directory.");
+        MAIN_OPTIONS.addOption(null, "prefix-out", true, "Output prefix file name.");
     }
 
     private static Path dataFile;
     private static Path knowledgeFile;
-    private static Path dirOut;
     private static char delimiter;
     private static double penaltyDiscount;
     private static int depth;
     private static boolean faithfulness;
     private static int numOfThreads;
     private static boolean verbose;
-    private static boolean outputGraphML;
-    private static String outputFileName;
+    private static boolean graphML;
+    private static Path dirOut;
+    private static String prefixOutput;
 
     /**
      * @param args the command line arguments
@@ -100,17 +100,17 @@ public class FgsCli {
             }
 
             CommandLine cmd = cmdParser.parse(MAIN_OPTIONS, args);
-            dataFile = Args.getPathFile(cmd.getOptionValue("d"), true);
-            knowledgeFile = Args.getPathFile(cmd.getOptionValue("k", null), false);
-            delimiter = Args.getCharacter(cmd.getOptionValue("l", "\t"));
-            penaltyDiscount = Args.parseDouble(cmd.getOptionValue("p", "4.0"));
-            depth = Args.parseInteger(cmd.getOptionValue("m", "3"), -1);
-            faithfulness = cmd.hasOption("f");
-            numOfThreads = Args.parseInteger(cmd.getOptionValue("t", Runtime.getRuntime().availableProcessors() + ""));
-            verbose = cmd.hasOption("v");
-            dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
-            outputFileName = cmd.getOptionValue("n", String.format("fgs_pd%1.2f_d%d_%d", penaltyDiscount, depth, System.currentTimeMillis()));
-            outputGraphML = cmd.hasOption("g");
+            dataFile = Args.getPathFile(cmd.getOptionValue("data"), true);
+            knowledgeFile = Args.getPathFile(cmd.getOptionValue("knowledge", null), false);
+            delimiter = Args.getCharacter(cmd.getOptionValue("delimiter", "\t"));
+            penaltyDiscount = Args.getDouble(cmd.getOptionValue("penalty-discount", "4.0"));
+            depth = Args.getIntegerMin(cmd.getOptionValue("depth", "3"), -1);
+            faithfulness = cmd.hasOption("faithful");
+            numOfThreads = Args.getInteger(cmd.getOptionValue("thread", Integer.toString(Runtime.getRuntime().availableProcessors())));
+            verbose = cmd.hasOption("verbose");
+            graphML = cmd.hasOption("graphml");
+            dirOut = Args.getPathDir(cmd.getOptionValue("dir-out", "."), false);
+            prefixOutput = cmd.getOptionValue("prefix-out", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
         } catch (ParseException | FileNotFoundException | IllegalArgumentException exception) {
             System.err.println(exception.getLocalizedMessage());
             System.exit(127);
@@ -120,7 +120,7 @@ public class FgsCli {
             DataSet dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
 
             Graph graph;
-            Path outputFile = Paths.get(dirOut.toString(), outputFileName + ".txt");
+            Path outputFile = Paths.get(dirOut.toString(), prefixOutput + "_output.txt");
             try (PrintStream stream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
                 printOutParameters(stream);
                 stream.flush();
@@ -144,10 +144,10 @@ public class FgsCli {
                 stream.flush();
             }
 
-            if (outputGraphML) {
-                Path graphOutputFile = Paths.get(dirOut.toString(), outputFileName + ".graphml");
+            if (graphML) {
+                Path graphOutputFile = Paths.get(dirOut.toString(), prefixOutput + "_graph.txt");
                 try (PrintStream stream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
-                    stream.println(GraphmlSerializer.serialize(graph, outputFileName));
+                    stream.println(GraphmlSerializer.serialize(graph, prefixOutput));
                 }
             }
         } catch (IOException exception) {

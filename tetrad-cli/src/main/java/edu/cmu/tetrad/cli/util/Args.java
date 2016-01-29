@@ -36,6 +36,7 @@ public class Args {
     private Args() {
     }
 
+    @Deprecated
     public static int parseInteger(String value) {
         try {
             return Integer.parseInt(value);
@@ -44,6 +45,7 @@ public class Args {
         }
     }
 
+    @Deprecated
     public static int parseInteger(String value, int min) {
         int intValue = parseInteger(value);
         if (min > intValue) {
@@ -54,6 +56,7 @@ public class Args {
         return intValue;
     }
 
+    @Deprecated
     public static int parseInteger(String value, int min, int max) {
         int intValue = parseInteger(value);
         if (min <= intValue && intValue <= max) {
@@ -64,11 +67,48 @@ public class Args {
         }
     }
 
+    @Deprecated
     public static double parseDouble(String value) {
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(String.format("'%s' is not a double.", value));
+        }
+    }
+
+    public static double getDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(String.format("'%s' is not a double.", value));
+        }
+    }
+
+    public static int getInteger(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(String.format("'%s' is not an integer.", value));
+        }
+    }
+
+    public static int getIntegerMin(String value, int minValue) {
+        int intValue = getInteger(value);
+        if (minValue > intValue) {
+            throw new IllegalArgumentException(
+                    String.format("Value (%d) must be greater than or equal to %d.", intValue, minValue));
+        }
+
+        return intValue;
+    }
+
+    public static int getIntegerMinMax(String value, int minValue, int maxValue) {
+        int intValue = getInteger(value);
+        if (minValue <= intValue && intValue <= maxValue) {
+            return intValue;
+        } else {
+            throw new IllegalArgumentException(
+                    String.format("Value (%d) must be between %d and %d.", intValue, minValue, maxValue));
         }
     }
 

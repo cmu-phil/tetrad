@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.cli.search;
 
+import edu.cmu.tetrad.cli.SimulatedDatasets;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -26,8 +27,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  *
@@ -35,9 +40,34 @@ import org.junit.Test;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgsCliTest extends AbstractAlgorithmTest {
+public class FgsCliTest implements SimulatedDatasets {
+
+    @ClassRule
+    public static TemporaryFolder tmpDir = new TemporaryFolder();
+
+    private static final String dataFileName = "sim_20vars100cases.txt";
+    private static final String knowledgeFileName = "sim_20vars100cases_knowledge.txt";
+
+    private static Path dataFile;
+    private static Path knowledgeFile;
 
     public FgsCliTest() {
+    }
+
+    @BeforeClass
+    public static void setUpClass() throws IOException {
+        String dataDir = tmpDir.newFolder("data").toString();
+
+        dataFile = Paths.get(dataDir, dataFileName);
+        Files.write(dataFile, Arrays.asList(SIM_20VARS_100CASES), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+
+        knowledgeFile = Paths.get(dataDir, knowledgeFileName);
+        Files.write(knowledgeFile, Arrays.asList(SIM_20VARS_100CASES_KNOWLEDGE), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        tmpDir.delete();
     }
 
     /**
@@ -49,103 +79,89 @@ public class FgsCliTest extends AbstractAlgorithmTest {
     public void testMain() throws IOException {
         System.out.println("main");
 
-        // create dataset file
-        String dataDir = tempFolder.newFolder("data").toString();
-        Path dataFile = Paths.get(dataDir, "sim_data_20vars_100cases.txt");
-        Files.write(dataFile, Arrays.asList(dataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+        String dataFilePath = dataFile.toAbsolutePath().toString();
+        String penaltyDiscount = "4.0";
+        String depth = "-1";
+        String prefixOutput = "fgs";
+        String outDir = tmpDir.newFolder("fgs").toString();
 
-        // create folder for results
-        String outDir = tempFolder.newFolder("results").toString();
-        String outputFileName = "fgs";
-
-        // run without prior knowledge
         String[] args = {
-            "-d", dataFile.toAbsolutePath().toString(),
-            "-f",
-            "-t", "2",
-            "-o", outDir,
-            "-n", outputFileName
+            "--data", dataFilePath,
+            "--penalty-discount", penaltyDiscount,
+            "--depth", depth,
+            "--prefix-out", prefixOutput,
+            "--dir-out", outDir
         };
-
         FgsCli.main(args);
 
-        Path outFile = Paths.get(outDir, outputFileName + ".txt");
+        Path outFile = Paths.get(outDir, prefixOutput + "_output.txt");
         String errMsg = outFile.getFileName().toString() + " does not exist.";
         Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
     }
 
     /**
-     * Test of main method, of class FgsCli with prior knowledge.
-     *
-     * @throws IOException whenever unable to read or right to file
-     */
-    @Test
-    public void testMainPriorKnowledge() throws IOException {
-        System.out.println("main: prior knowledge");
-
-        // create dataset file
-        String dataDir = tempFolder.newFolder("data").toString();
-        Path dataFile = Paths.get(dataDir, "sim_data_20vars_100cases.txt");
-        Files.write(dataFile, Arrays.asList(dataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-
-        // create folder for results
-        String outDir = tempFolder.newFolder("results").toString();
-        String outputFileName = "fgs";
-
-        Path knowledgeFile = Paths.get(dataDir, "knowledge_sim_data_20vars_100cases.txt");
-        Files.write(knowledgeFile, Arrays.asList(knowledgeDataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-
-        // run without prior knowledge
-        String[] args = {
-            "-d", dataFile.toAbsolutePath().toString(),
-            "-k", knowledgeFile.toAbsolutePath().toString(),
-            "-f",
-            "-o", outDir,
-            "-n", outputFileName
-        };
-        FgsCli.main(args);
-
-        Path outFile = Paths.get(outDir, outputFileName + ".txt");
-        String errMsg = outFile.getFileName().toString() + " does not exist.";
-        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
-    }
-
-    /**
-     * Test of main method, of class FgsCli. Output GraphML.
+     * Test of main method, of class FgsCli, with Graph ML.
      *
      * @throws IOException whenever unable to read or right to file
      */
     @Test
     public void testMainGraphML() throws IOException {
-        System.out.println("main: graphML");
+        System.out.println("main: Graph ML");
 
-        // create dataset file
-        String dataDir = tempFolder.newFolder("data").toString();
-        Path dataFile = Paths.get(dataDir, "sim_data_20vars_100cases.txt");
-        Files.write(dataFile, Arrays.asList(dataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+        String dataFilePath = dataFile.toAbsolutePath().toString();
+        String penaltyDiscount = "2.0";
+        String depth = "3";
+        String prefixOutput = "fgs";
+        String outDir = tmpDir.newFolder("fgs_graphml").toString();
 
-        // create folder for results
-        String outDir = tempFolder.newFolder("results").toString();
-        String outputFileName = "fgs";
-
-        // run without prior knowledge
         String[] args = {
-            "-d", dataFile.toAbsolutePath().toString(),
-            "-f",
-            "-g",
-            "-o", outDir,
-            "-n", outputFileName
+            "--data", dataFilePath,
+            "--penalty-discount", penaltyDiscount,
+            "--depth", depth,
+            "--prefix-out", prefixOutput,
+            "--graphml",
+            "--dir-out", outDir
         };
         FgsCli.main(args);
 
-        Path[] resultFiles = {
-            Paths.get(outDir, outputFileName + ".txt"),
-            Paths.get(outDir, outputFileName + ".graphml")
+        Path outFile = Paths.get(outDir, prefixOutput + "_output.txt");
+        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
+
+        Path graphOutputFile = Paths.get(outDir, prefixOutput + "_graph.txt");
+        errMsg = graphOutputFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(graphOutputFile, LinkOption.NOFOLLOW_LINKS));
+    }
+
+    /**
+     * Test of main method, of class FgsCli, with knowledge.
+     *
+     * @throws IOException whenever unable to read or right to file
+     */
+    @Test
+    public void testMainKnowledge() throws IOException {
+        System.out.println("main: knowledge");
+
+        String dataFilePath = dataFile.toAbsolutePath().toString();
+        String knowledgePath = knowledgeFile.toAbsolutePath().toString();
+        String penaltyDiscount = "2.0";
+        String depth = "3";
+        String prefixOutput = "fgs";
+        String outDir = tmpDir.newFolder("fgs_knowledge").toString();
+
+        String[] args = {
+            "--data", dataFilePath,
+            "--knowledge", knowledgePath,
+            "--penalty-discount", penaltyDiscount,
+            "--depth", depth,
+            "--prefix-out", prefixOutput,
+            "--dir-out", outDir
         };
-        for (Path resultFile : resultFiles) {
-            String errMsg = resultFile.getFileName().toString() + " does not exist.";
-            Assert.assertTrue(errMsg, Files.exists(resultFile, LinkOption.NOFOLLOW_LINKS));
-        }
+        FgsCli.main(args);
+
+        Path outFile = Paths.get(outDir, prefixOutput + "_output.txt");
+        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
     }
 
 }
