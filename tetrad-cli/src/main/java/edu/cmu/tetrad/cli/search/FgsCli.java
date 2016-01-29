@@ -109,7 +109,7 @@ public class FgsCli {
             variableFile = Args.getPathFile(cmd.getOptionValue("exclude-variables", null), false);
             delimiter = Args.getCharacter(cmd.getOptionValue("delimiter", "\t"));
             penaltyDiscount = Args.getDouble(cmd.getOptionValue("penalty-discount", "4.0"));
-            depth = Args.getIntegerMin(cmd.getOptionValue("depth", "3"), -1);
+            depth = Args.getIntegerMin(cmd.getOptionValue("depth", "-1"), -1);
             faithfulness = cmd.hasOption("faithful");
             numOfThreads = Args.getInteger(cmd.getOptionValue("thread", Integer.toString(Runtime.getRuntime().availableProcessors())));
             verbose = cmd.hasOption("verbose");
