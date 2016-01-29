@@ -21,6 +21,7 @@ package edu.cmu.tetrad.cli.search;
 import edu.cmu.tetrad.cli.ExtendedCommandLineParser;
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.util.Args;
+import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.cli.util.GraphmlSerializer;
 import edu.cmu.tetrad.data.BigDataSetUtility;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
@@ -35,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -64,6 +66,7 @@ public class FgsCli {
 
         MAIN_OPTIONS.addOption(HELP_OPTION);
         MAIN_OPTIONS.addOption(null, "knowledge", true, "A file containing prior knowledge.");
+        MAIN_OPTIONS.addOption(null, "exclude-variables", true, "A file containing variables to exclude.");
         MAIN_OPTIONS.addOption(null, "delimiter", true, "Data delimiter.  Default is tab.");
         MAIN_OPTIONS.addOption(null, "penalty-discount", true, "Penalty discount.");
         MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited).");
@@ -77,6 +80,7 @@ public class FgsCli {
 
     private static Path dataFile;
     private static Path knowledgeFile;
+    private static Path variableFile;
     private static char delimiter;
     private static double penaltyDiscount;
     private static int depth;
@@ -102,6 +106,7 @@ public class FgsCli {
             CommandLine cmd = cmdParser.parse(MAIN_OPTIONS, args);
             dataFile = Args.getPathFile(cmd.getOptionValue("data"), true);
             knowledgeFile = Args.getPathFile(cmd.getOptionValue("knowledge", null), false);
+            variableFile = Args.getPathFile(cmd.getOptionValue("exclude-variables", null), false);
             delimiter = Args.getCharacter(cmd.getOptionValue("delimiter", "\t"));
             penaltyDiscount = Args.getDouble(cmd.getOptionValue("penalty-discount", "4.0"));
             depth = Args.getIntegerMin(cmd.getOptionValue("depth", "3"), -1);
@@ -117,7 +122,13 @@ public class FgsCli {
         }
 
         try {
-            DataSet dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
+            DataSet dataSet;
+            if (variableFile == null) {
+                dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
+            } else {
+                Set<String> variables = FileIO.extractLineByLine(variableFile);
+                dataSet = BigDataSetUtility.readInContinuousData(dataFile.toFile(), delimiter, variables);
+            }
 
             Graph graph;
             Path outputFile = Paths.get(dirOut.toString(), prefixOutput + "_output.txt");

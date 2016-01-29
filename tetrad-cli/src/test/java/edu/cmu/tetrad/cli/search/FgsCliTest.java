@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.cli.search;
 
+import edu.cmu.tetrad.cli.FileIO;
 import edu.cmu.tetrad.cli.SimulatedDatasets;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -47,9 +48,11 @@ public class FgsCliTest implements SimulatedDatasets {
 
     private static final String dataFileName = "sim_20vars100cases.txt";
     private static final String knowledgeFileName = "sim_20vars100cases_knowledge.txt";
+    private static final String variableFileName = "sim_20vars100cases_vars.txt";
 
     private static Path dataFile;
     private static Path knowledgeFile;
+    private static Path variableFile;
 
     public FgsCliTest() {
     }
@@ -63,6 +66,9 @@ public class FgsCliTest implements SimulatedDatasets {
 
         knowledgeFile = Paths.get(dataDir, knowledgeFileName);
         Files.write(knowledgeFile, Arrays.asList(SIM_20VARS_100CASES_KNOWLEDGE), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+
+        variableFile = Paths.get(dataDir, variableFileName);
+        Files.write(variableFile, Arrays.asList(SIM_20VARS_100CASES_VARIABLES), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
     }
 
     @AfterClass
@@ -162,6 +168,37 @@ public class FgsCliTest implements SimulatedDatasets {
         Path outFile = Paths.get(outDir, prefixOutput + "_output.txt");
         String errMsg = outFile.getFileName().toString() + " does not exist.";
         Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
+    }
+
+    /**
+     * Test of main method, of class FgsCli, with variable exclusion.
+     *
+     * @throws IOException whenever unable to read or right to file
+     */
+    @Test
+    public void testMainExcludeVariables() throws IOException {
+        System.out.println("main: exclude variables");
+
+        String dataFilePath = dataFile.toAbsolutePath().toString();
+        String variableFilePath = variableFile.toAbsolutePath().toString();
+        String prefixOutput = "fgs";
+        String outDir = tmpDir.newFolder("fgs_var").toString();
+
+        String[] args = {
+            "--data", dataFilePath,
+            "--prefix-out", prefixOutput,
+            "--exclude-variables", variableFilePath,
+            "--dir-out", outDir
+        };
+        FgsCli.main(args);
+
+        Path outFile = Paths.get(outDir, prefixOutput + "_output.txt");
+        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
+
+        System.out.println("================================================================================");
+        FileIO.printFile(outFile);
+        System.out.println("================================================================================");
     }
 
 }

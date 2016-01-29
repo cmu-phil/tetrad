@@ -268,4 +268,11 @@ public interface SimulatedDatasets {
         "3.9467\t1.6785\t-0.9798\t0.9288\t9.3180\t1.1160\t-1.9870\t-0.5274\t0.1678\t8.8065\t0.3668\t-0.5781\t-0.5325\t-6.9778\t-5.4919\t-0.3751\t-1.7633\t-5.8260\t0.6118\t14.8996"
     };
 
+    public final String[] SIM_20VARS_100CASES_VARIABLES = {
+        "X3",
+        "X10",
+        "X15",
+        "X18"
+    };
+
 }
