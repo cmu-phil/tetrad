@@ -18,7 +18,6 @@
  */
 package edu.cmu.tetrad.cli.search;
 
-import edu.cmu.tetrad.cli.FileIO;
 import edu.cmu.tetrad.cli.SimulatedDatasets;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -195,10 +194,6 @@ public class FgsCliTest implements SimulatedDatasets {
         Path outFile = Paths.get(outDir, prefixOutput + "_output.txt");
         String errMsg = outFile.getFileName().toString() + " does not exist.";
         Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
-
-        System.out.println("================================================================================");
-        FileIO.printFile(outFile);
-        System.out.println("================================================================================");
     }
 
 }
