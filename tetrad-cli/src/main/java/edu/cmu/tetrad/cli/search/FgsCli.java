@@ -72,6 +72,7 @@ public class FgsCli {
         MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited).");
         MAIN_OPTIONS.addOption(null, "faithful", false, "Assume faithfulness.");
         MAIN_OPTIONS.addOption(null, "thread", true, "Number of threads.");
+        MAIN_OPTIONS.addOption(null, "ignore-linear-dependence", false, "Ignore linear dependence.");
         MAIN_OPTIONS.addOption(null, "verbose", false, "Verbose message.");
         MAIN_OPTIONS.addOption(null, "graphml", false, "Create graphML output.");
         MAIN_OPTIONS.addOption(null, "dir-out", true, "Output directory.");
@@ -87,6 +88,7 @@ public class FgsCli {
     private static boolean faithfulness;
     private static int numOfThreads;
     private static boolean verbose;
+    private static boolean ignoreLinearDependence;
     private static boolean graphML;
     private static Path dirOut;
     private static String prefixOutput;
@@ -113,6 +115,7 @@ public class FgsCli {
             faithfulness = cmd.hasOption("faithful");
             numOfThreads = Args.getInteger(cmd.getOptionValue("thread", Integer.toString(Runtime.getRuntime().availableProcessors())));
             verbose = cmd.hasOption("verbose");
+            ignoreLinearDependence = cmd.hasOption("ignore-linear-dependence");
             graphML = cmd.hasOption("graphml");
             dirOut = Args.getPathDir(cmd.getOptionValue("dir-out", "."), false);
             prefixOutput = cmd.getOptionValue("prefix-out", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
@@ -139,6 +142,7 @@ public class FgsCli {
                 Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
                 fgs.setOut(stream);
                 fgs.setDepth(depth);
+                fgs.setIgnoreLinearDependent(ignoreLinearDependence);
                 fgs.setPenaltyDiscount(penaltyDiscount);
                 fgs.setNumPatternsToStore(0);  // always set to zero
                 fgs.setFaithfulnessAssumed(faithfulness);
@@ -186,6 +190,11 @@ public class FgsCli {
         stream.printf("penalty discount = %f\n", penaltyDiscount);
         stream.printf("depth = %s\n", depth);
         stream.printf("faithfulness = %s\n", faithfulness);
+        stream.printf("ignore linear dependence = %s\n", ignoreLinearDependence);
+
+        if (verbose) {
+            stream.println();
+        }
     }
 
 }

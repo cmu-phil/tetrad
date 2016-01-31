@@ -95,6 +95,9 @@ public class FgsCliTest implements SimulatedDatasets {
             "--penalty-discount", penaltyDiscount,
             "--depth", depth,
             "--prefix-out", prefixOutput,
+            "--faithful",
+            "--verbose",
+            "--ignore-linear-dependence",
             "--dir-out", outDir
         };
         FgsCli.main(args);
