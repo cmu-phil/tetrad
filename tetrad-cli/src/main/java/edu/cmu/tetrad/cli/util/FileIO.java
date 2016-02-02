@@ -19,10 +19,13 @@
 package edu.cmu.tetrad.cli.util;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -36,15 +39,29 @@ public class FileIO {
     private FileIO() {
     }
 
-    public static Set<String> extractLineByLine(Path file) {
+    public static List<String> extractLineByLine(Path file) throws IOException {
+        List<String> lines = new LinkedList<>();
+
+        if (file != null) {
+            try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    lines.add(line);
+                }
+            }
+        }
+
+        return lines;
+    }
+
+    public static Set<String> extractUniqueLine(Path file) throws IOException {
         Set<String> lines = new HashSet<>();
 
-        try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                lines.add(line);
+        if (file != null) {
+            try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    lines.add(line);
+                }
             }
-        } catch (Exception exception) {
-            exception.printStackTrace(System.err);
         }
 
         return lines;

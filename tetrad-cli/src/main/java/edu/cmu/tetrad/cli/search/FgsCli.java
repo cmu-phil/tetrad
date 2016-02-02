@@ -28,7 +28,9 @@ import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.util.DataUtility;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -36,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -124,23 +127,65 @@ public class FgsCli {
             System.exit(127);
         }
 
+        Graph graph;
         try {
-            DataSet dataSet;
-            if (variableFile == null) {
-                dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
-            } else {
-                Set<String> variables = FileIO.extractLineByLine(variableFile);
-                dataSet = BigDataSetUtility.readInContinuousData(dataFile.toFile(), delimiter, variables);
-            }
-
-            Graph graph;
             Path outputFile = Paths.get(dirOut.toString(), prefixOutput + "_output.txt");
-            try (PrintStream stream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-                printOutParameters(stream);
-                stream.flush();
+            try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+                writer.println("Runtime Parameters:");
+                writer.printf("number of threads = %,d\n", numOfThreads);
+                writer.printf("verbose = %s\n", verbose);
+                writer.println();
+
+                writer.println("Algorithm Parameters:");
+                writer.printf("penalty discount = %f\n", penaltyDiscount);
+                writer.printf("depth = %s\n", depth);
+                writer.printf("faithfulness = %s\n", faithfulness);
+                writer.printf("ignore linear dependence = %s\n", ignoreLinearDependence);
+                writer.println();
+
+                File datasetFile = dataFile.toFile();
+                int numOfCases = DataUtility.countLine(datasetFile) - 1;
+                int numOfVars = DataUtility.countColumn(datasetFile, delimiter);
+                writer.println("Data File:");
+                writer.printf("file = %s\n", dataFile.getFileName());
+                writer.printf("cases = %,d\n", numOfCases);
+                writer.printf("variables = %,d\n", numOfVars);
+                writer.println();
+
+                if (knowledgeFile != null) {
+                    writer.println("Knowledge:");
+                    writer.printf("file = %s\n", knowledgeFile.toString());
+                    writer.println();
+                }
+
+                Set<String> variables = FileIO.extractUniqueLine(variableFile);
+                if (variableFile != null) {
+                    writer.println("Variable Exclusion:");
+                    writer.printf("file = %s\n", variableFile.toString());
+                    writer.printf("variables to exclude = %,d\n", variables.size());
+                    writer.println();
+                }
+
+                DataSet dataSet;
+                if (variables.isEmpty()) {
+                    dataSet = BigDataSetUtility.readInContinuousData(dataFile.toFile(), delimiter);
+                } else {
+                    dataSet = BigDataSetUtility.readInContinuousData(dataFile.toFile(), delimiter, variables);
+                }
+                writer.println("Dataset Read In:");
+                writer.printf("cases = %,d\n", dataSet.getNumRows());
+                writer.printf("variables = %,d\n", dataSet.getNumColumns());
+                writer.printf("variable list size = %,d\n", dataSet.getVariableNames().size());
+                writer.printf("node list size = %,d\n", dataSet.getVariables().size());
+                writer.printf("variable counts should be = %,d\n", numOfVars - variables.size());
+                writer.printf("unique variable list size = %,d\n", new HashSet<>(dataSet.getVariableNames()).size());
+
+                if (verbose) {
+                    writer.println();
+                }
 
                 Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
-                fgs.setOut(stream);
+                fgs.setOut(writer);
                 fgs.setDepth(depth);
                 fgs.setIgnoreLinearDependent(ignoreLinearDependence);
                 fgs.setPenaltyDiscount(penaltyDiscount);
@@ -151,49 +196,22 @@ public class FgsCli {
                 if (knowledgeFile != null) {
                     fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
                 }
-                stream.flush();
+                writer.flush();
 
                 graph = fgs.search();
-                stream.println();
-                stream.println(graph.toString().trim());
-                stream.flush();
+                writer.println();
+                writer.println(graph.toString().trim());
+                writer.flush();
             }
 
             if (graphML) {
                 Path graphOutputFile = Paths.get(dirOut.toString(), prefixOutput + "_graph.txt");
-                try (PrintStream stream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
-                    stream.println(GraphmlSerializer.serialize(graph, prefixOutput));
+                try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
+                    writer.println(GraphmlSerializer.serialize(graph, prefixOutput));
                 }
             }
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
-        }
-    }
-
-    private static void printOutParameters(PrintStream stream) {
-        stream.println("Runtime Parameters:");
-        stream.printf("number of threads = %d\n", numOfThreads);
-        stream.printf("verbose = %s\n", verbose);
-        stream.println();
-
-        stream.println("Datasets:");
-        stream.println(dataFile.getFileName().toString());
-        stream.println();
-
-        if (knowledgeFile != null) {
-            stream.println("Knowledge:");
-            stream.printf("knowledge = %s\n", knowledgeFile.toString());
-            stream.println();
-        }
-
-        stream.println("Algorithm Parameters:");
-        stream.printf("penalty discount = %f\n", penaltyDiscount);
-        stream.printf("depth = %s\n", depth);
-        stream.printf("faithfulness = %s\n", faithfulness);
-        stream.printf("ignore linear dependence = %s\n", ignoreLinearDependence);
-
-        if (verbose) {
-            stream.println();
         }
     }
 
