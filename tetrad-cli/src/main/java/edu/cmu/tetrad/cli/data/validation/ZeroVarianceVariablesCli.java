@@ -108,18 +108,15 @@ public class ZeroVarianceVariablesCli {
             double[] lowerTraingleCovariance = covariance.computeLowerTriangle(true);
 
             List<String> variableNames = dataSet.getVariableNames();
+
+            Set<String> exclusions = new HashSet<>();
+            findZeroVarianceVariables(lowerTraingleCovariance, variableNames, exclusions);
+            findNonUniqueVariables(variableNames, exclusions);
+
             Path outputFile = Paths.get(dirOut.toString(), dataFile.getFileName() + "_vars.txt");
             try (PrintWriter writer = new PrintWriter(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-                writeZeroVarianceVariables(lowerTraingleCovariance, variableNames, writer);
-
-                // check for uniqueness
-                Set<String> uniqueVars = new HashSet<>();
-                for (String variable : variableNames) {
-                    if (uniqueVars.contains(variable)) {
-                        writer.println(variable);
-                    } else {
-                        uniqueVars.add(variable);
-                    }
+                for (String exclude : exclusions) {
+                    writer.println(exclude);
                 }
             }
         } catch (IOException exception) {
@@ -127,12 +124,23 @@ public class ZeroVarianceVariablesCli {
         }
     }
 
-    private static void writeZeroVarianceVariables(double[] lowerTraingleCovariance, List<String> variables, PrintWriter writer) {
+    private static void findNonUniqueVariables(List<String> variables, Set<String> exclusions) {
+        Set<String> uniqueVars = new HashSet<>();
+        for (String variable : variables) {
+            if (uniqueVars.contains(variable)) {
+                exclusions.add(variable);
+            } else {
+                uniqueVars.add(variable);
+            }
+        }
+    }
+
+    private static void findZeroVarianceVariables(double[] lowerTraingleCovariance, List<String> variables, Set<String> exclusions) {
         int col = 0;
         for (String variable : variables) {
             int row = (col * (col + 1)) / 2;
             if (lowerTraingleCovariance[row + col] == 0) {
-                writer.println(variable);
+                exclusions.add(variable);
             }
             col++;
         }
