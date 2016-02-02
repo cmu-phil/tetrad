@@ -33,7 +33,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -94,7 +96,7 @@ public class ZeroVarianceVariablesCli {
         }
 
         try {
-            DataSet dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
+            DataSet dataSet = BigDataSetUtility.readInContinuousData(dataFile.toFile(), delimiter);
 
             RealCovariance covariance;
             if (numOfThreads == 1) {
@@ -105,9 +107,20 @@ public class ZeroVarianceVariablesCli {
 
             double[] lowerTraingleCovariance = covariance.computeLowerTriangle(true);
 
+            List<String> variableNames = dataSet.getVariableNames();
             Path outputFile = Paths.get(dirOut.toString(), dataFile.getFileName() + "_vars.txt");
             try (PrintWriter writer = new PrintWriter(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-                writeZeroVarianceVariables(lowerTraingleCovariance, dataSet.getVariableNames(), writer);
+                writeZeroVarianceVariables(lowerTraingleCovariance, variableNames, writer);
+
+                // check for uniqueness
+                Set<String> uniqueVars = new HashSet<>();
+                for (String variable : variableNames) {
+                    if (uniqueVars.contains(variable)) {
+                        writer.println(variable);
+                    } else {
+                        uniqueVars.add(variable);
+                    }
+                }
             }
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
