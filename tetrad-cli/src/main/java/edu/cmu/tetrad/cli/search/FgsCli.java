@@ -19,11 +19,12 @@
 package edu.cmu.tetrad.cli.search;
 
 import edu.cmu.tetrad.cli.ExtendedCommandLineParser;
+import edu.cmu.tetrad.cli.data.DatasetReader;
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
+import edu.cmu.tetrad.cli.data.TabularDatasetReader;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.cli.util.GraphmlSerializer;
-import edu.cmu.tetrad.data.BigDataSetUtility;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -166,12 +167,8 @@ public class FgsCli {
                     writer.println();
                 }
 
-                DataSet dataSet;
-                if (variables.isEmpty()) {
-                    dataSet = BigDataSetUtility.readInContinuousData(dataFile.toFile(), delimiter);
-                } else {
-                    dataSet = BigDataSetUtility.readInContinuousData(dataFile.toFile(), delimiter, variables);
-                }
+                DatasetReader datasetReader = new TabularDatasetReader(dataFile, delimiter);
+                DataSet dataSet = datasetReader.readInContinuousData(variables);
                 writer.println("Dataset Read In:");
                 writer.printf("cases = %,d\n", dataSet.getNumRows());
                 writer.printf("variables = %,d\n", dataSet.getNumColumns());
