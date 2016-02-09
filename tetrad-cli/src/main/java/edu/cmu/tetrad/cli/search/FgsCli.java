@@ -18,7 +18,6 @@
  */
 package edu.cmu.tetrad.cli.search;
 
-import edu.cmu.tetrad.cli.ExtendedCommandLineParser;
 import edu.cmu.tetrad.cli.data.DatasetReader;
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.data.TabularDatasetReader;
@@ -29,6 +28,8 @@ import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.stat.RealVariance;
+import edu.cmu.tetrad.stat.RealVarianceVectorForkJoin;
 import edu.cmu.tetrad.util.DataUtility;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -40,8 +41,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -57,10 +60,7 @@ import org.apache.commons.cli.ParseException;
  */
 public class FgsCli {
 
-    private static final String USAGE = "java -cp tetrad-cli.jar edu.cmu.tetrad.cli.search.FgsCli";
-
     private static final Options MAIN_OPTIONS = new Options();
-    private static final Option HELP_OPTION = new Option(null, "help", false, "Show help.");
 
     static {
         // added required option
@@ -68,7 +68,6 @@ public class FgsCli {
         requiredOption.setRequired(true);
         MAIN_OPTIONS.addOption(requiredOption);
 
-        MAIN_OPTIONS.addOption(HELP_OPTION);
         MAIN_OPTIONS.addOption(null, "knowledge", true, "A file containing prior knowledge.");
         MAIN_OPTIONS.addOption(null, "exclude-variables", true, "A file containing variables to exclude.");
         MAIN_OPTIONS.addOption(null, "delimiter", true, "Data delimiter.  Default is tab.");
@@ -80,7 +79,8 @@ public class FgsCli {
         MAIN_OPTIONS.addOption(null, "verbose", false, "Verbose message.");
         MAIN_OPTIONS.addOption(null, "graphml", false, "Create graphML output.");
         MAIN_OPTIONS.addOption(null, "dir-out", true, "Output directory.");
-        MAIN_OPTIONS.addOption(null, "prefix-out", true, "Output prefix file name.");
+        MAIN_OPTIONS.addOption(null, "help", false, "Show help.");
+        MAIN_OPTIONS.addOption(null, "output-prefix", true, "Output prefix file name.");
     }
 
     private static Path dataFile;
@@ -95,20 +95,19 @@ public class FgsCli {
     private static boolean ignoreLinearDependence;
     private static boolean graphML;
     private static Path dirOut;
-    private static String prefixOutput;
+    private static String outputPrefix;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        try {
-            ExtendedCommandLineParser cmdParser = new ExtendedCommandLineParser(new DefaultParser());
-            if (cmdParser.hasOption(HELP_OPTION, args)) {
-                HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp(USAGE, MAIN_OPTIONS, true);
-                return;
-            }
+        if (args == null || args.length == 0 || Args.hasLongOption(args, "help")) {
+            showHelp();
+            return;
+        }
 
+        try {
+            CommandLineParser cmdParser = new DefaultParser();
             CommandLine cmd = cmdParser.parse(MAIN_OPTIONS, args);
             dataFile = Args.getPathFile(cmd.getOptionValue("data"), true);
             knowledgeFile = Args.getPathFile(cmd.getOptionValue("knowledge", null), false);
@@ -122,15 +121,15 @@ public class FgsCli {
             ignoreLinearDependence = cmd.hasOption("ignore-linear-dependence");
             graphML = cmd.hasOption("graphml");
             dirOut = Args.getPathDir(cmd.getOptionValue("dir-out", "."), false);
-            prefixOutput = cmd.getOptionValue("prefix-out", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
-        } catch (ParseException | FileNotFoundException | IllegalArgumentException exception) {
+            outputPrefix = cmd.getOptionValue("output-prefix", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
+        } catch (ParseException | FileNotFoundException exception) {
             System.err.println(exception.getLocalizedMessage());
-            System.exit(127);
+            showHelp();
+            return;
         }
 
-        Graph graph;
         try {
-            Path outputFile = Paths.get(dirOut.toString(), prefixOutput + "_output.txt");
+            Path outputFile = Paths.get(dirOut.toString(), outputPrefix + "_output.txt");
             try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
                 writer.println("Runtime Parameters:");
                 writer.printf("number of threads = %,d\n", numOfThreads);
@@ -172,44 +171,103 @@ public class FgsCli {
                 writer.println("Dataset Read In:");
                 writer.printf("cases = %,d\n", dataSet.getNumRows());
                 writer.printf("variables = %,d\n", dataSet.getNumColumns());
-                writer.printf("variable list size = %,d\n", dataSet.getVariableNames().size());
-                writer.printf("node list size = %,d\n", dataSet.getVariables().size());
-                writer.printf("variable counts should be = %,d\n", numOfVars - variables.size());
-                writer.printf("unique variable list size = %,d\n", new HashSet<>(dataSet.getVariableNames()).size());
 
                 if (verbose) {
                     writer.println();
                 }
 
-                Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
-                fgs.setOut(writer);
-                fgs.setDepth(depth);
-                fgs.setIgnoreLinearDependent(ignoreLinearDependence);
-                fgs.setPenaltyDiscount(penaltyDiscount);
-                fgs.setNumPatternsToStore(0);  // always set to zero
-                fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setNumProcessors(numOfThreads);
-                fgs.setVerbose(verbose);
-                if (knowledgeFile != null) {
-                    fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
-                }
-                writer.flush();
+                if (validate(dataSet, writer)) {
+                    Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
+                    fgs.setOut(writer);
+                    fgs.setDepth(depth);
+                    fgs.setIgnoreLinearDependent(ignoreLinearDependence);
+                    fgs.setPenaltyDiscount(penaltyDiscount);
+                    fgs.setNumPatternsToStore(0);  // always set to zero
+                    fgs.setFaithfulnessAssumed(faithfulness);
+                    fgs.setNumProcessors(numOfThreads);
+                    fgs.setVerbose(verbose);
+                    if (knowledgeFile != null) {
+                        fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
+                    }
+                    writer.flush();
 
-                graph = fgs.search();
-                writer.println();
-                writer.println(graph.toString().trim());
-                writer.flush();
-            }
+                    Graph graph = fgs.search();
+                    writer.println();
+                    writer.println(graph.toString().trim());
+                    writer.flush();
 
-            if (graphML) {
-                Path graphOutputFile = Paths.get(dirOut.toString(), prefixOutput + "_graph.txt");
-                try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
-                    writer.println(GraphmlSerializer.serialize(graph, prefixOutput));
+                    if (graphML) {
+                        Path graphOutputFile = Paths.get(dirOut.toString(), outputPrefix + "_graph.txt");
+                        try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
+                            graphWriter.println(GraphmlSerializer.serialize(graph, outputPrefix));
+                        }
+                    }
                 }
             }
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }
+    }
+
+    private static boolean validate(DataSet dataSet, PrintStream writer) {
+        double[][] data = dataSet.getDoubleData().toArray();
+        List<String> variables = dataSet.getVariableNames();
+
+        // check for non-unique variables
+        Set<String> vars = new HashSet<>();
+        Set<String> unique = new HashSet<>();
+        variables.forEach(var -> {
+            if (unique.contains(var)) {
+                vars.add(var);
+            } else {
+                unique.add(var);
+            }
+        });
+        int size = vars.size();
+        if (size > 0) {
+            writer.println();
+            writer.printf("Non-unique variable counts: %d", size);
+            writer.println();
+            writeToFile(Paths.get(dirOut.toString(), outputPrefix + "_non-unique.txt"), vars);
+            writer.println();
+        }
+
+        // check for zero-variance
+        RealVariance variance = new RealVarianceVectorForkJoin(data, numOfThreads);
+        double[] varianceVector = variance.compute(true);
+        int index = 0;
+        vars.clear();
+        for (String variable : variables) {
+            if (varianceVector[index++] == 0) {
+                vars.add(variable);
+            }
+        }
+        size = vars.size();
+        if (size > 0) {
+            writer.println();
+            writer.printf("Zero-variance counts: %d", size);
+            writer.println();
+            writeToFile(Paths.get(dirOut.toString(), outputPrefix + "_zero-variance.txt"), vars);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static void writeToFile(Path outputFile, Set<String> set) {
+        try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+            set.forEach(s -> {
+                writer.println(s);
+            });
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
+        }
+    }
+
+    private static void showHelp() {
+        String cmdLineSyntax = "java -jar tetrad-cli.jar --algorithm fgs";
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp(cmdLineSyntax, MAIN_OPTIONS);
     }
 
 }

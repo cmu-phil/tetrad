@@ -90,6 +90,7 @@ public class TabularDatasetReaderTest {
         Assert.assertEquals(numOfColumns, expectedNumOfColumns);
     }
 
+    @Ignore
     @Test
     public void testReadInContinuousDataWithVariableExclusions() throws IOException {
         System.out.println("testReadInContinuousDataWithVariableExclusions");

@@ -216,4 +216,21 @@ public class Args {
         return null;
     }
 
+    public static boolean hasLongOption(String[] args, String option) {
+        if (args == null || args.length == 0 || option == null) {
+            return false;
+        }
+
+        for (String arg : args) {
+            if (arg.startsWith("--")) {
+                arg = arg.substring(2, arg.length());
+                if (arg.equals(option)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 }
