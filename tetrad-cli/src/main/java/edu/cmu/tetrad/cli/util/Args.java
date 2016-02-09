@@ -168,4 +168,52 @@ public class Args {
         return path;
     }
 
+    public static String[] removeOption(String[] args, String option) {
+        String[] arguments = new String[args.length - 2];
+
+        int index = 0;
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.startsWith("--")) {
+                arg = arg.substring(2, arg.length());
+                if (arg.equals(option)) {
+                    i++;
+                    continue;
+                }
+            } else if (arg.startsWith("-")) {
+                arg = arg.substring(1, arg.length());
+                if (arg.equals(option)) {
+                    i++;
+                    continue;
+                }
+            }
+            arguments[index++] = args[i];
+        }
+
+        return arguments;
+    }
+
+    public static String getOptionValue(String[] args, String option) {
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            boolean isOption = arg.startsWith("--") || arg.startsWith("-");
+            if (isOption) {
+                if (arg.startsWith("--")) {
+                    arg = arg.substring(2, arg.length());
+                } else if (arg.startsWith("-")) {
+                    arg = arg.substring(1, arg.length());
+                }
+
+                if (arg.equals(option)) {
+                    i++;
+                    if (i < args.length) {
+                        return args[i];
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
 }
