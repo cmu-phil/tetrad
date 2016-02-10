@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -58,24 +59,25 @@ public class FgsCliTest implements SimulatedDatasets {
      *
      * @throws IOException whenever unable to read or right to file
      */
+    @Ignore
     @Test
     public void testMain() throws IOException {
         System.out.println("main");
 
-        String data = DATA_FILE.toAbsolutePath().toString();
+        String data = ZERO_VARIANCE_DATA_FILE.toAbsolutePath().toString();
         String delimiter = ",";
         String dirOut = tmpDir.newFolder("fgs").toString();
         String outputPrefix = "fgs";
         String[] args = {
             "--data", data,
             "--delimiter", delimiter,
-            "--dir-out", dirOut,
-            "--output-prefix", outputPrefix,
-            "--verbose"
+            "--out", dirOut,
+            "--verbose",
+            "--output-prefix", outputPrefix
         };
         FgsCli.main(args);
 
-        Path outFile = Paths.get(dirOut, outputPrefix + "_output.txt");
+        Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
         Path zeroVarOutFile = Paths.get(dirOut, outputPrefix + "_zero-variance.txt");
         Path nonUnique = Paths.get(dirOut, outputPrefix + "_non-unique.txt");
         System.out.println("================================================================================");

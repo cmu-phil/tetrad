@@ -78,7 +78,7 @@ public class FgsCli {
         MAIN_OPTIONS.addOption(null, "ignore-linear-dependence", false, "Ignore linear dependence.");
         MAIN_OPTIONS.addOption(null, "verbose", false, "Verbose message.");
         MAIN_OPTIONS.addOption(null, "graphml", false, "Create graphML output.");
-        MAIN_OPTIONS.addOption(null, "dir-out", true, "Output directory.");
+        MAIN_OPTIONS.addOption(null, "out", true, "Output directory.");
         MAIN_OPTIONS.addOption(null, "help", false, "Show help.");
         MAIN_OPTIONS.addOption(null, "output-prefix", true, "Output prefix file name.");
     }
@@ -120,16 +120,16 @@ public class FgsCli {
             verbose = cmd.hasOption("verbose");
             ignoreLinearDependence = cmd.hasOption("ignore-linear-dependence");
             graphML = cmd.hasOption("graphml");
-            dirOut = Args.getPathDir(cmd.getOptionValue("dir-out", "."), false);
+            dirOut = Args.getPathDir(cmd.getOptionValue("out", "."), false);
             outputPrefix = cmd.getOptionValue("output-prefix", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
         } catch (ParseException | FileNotFoundException exception) {
             System.err.println(exception.getLocalizedMessage());
             showHelp();
-            return;
+            System.exit(-127);
         }
 
         try {
-            Path outputFile = Paths.get(dirOut.toString(), outputPrefix + "_output.txt");
+            Path outputFile = Paths.get(dirOut.toString(), outputPrefix + ".txt");
             try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
                 writer.println("Runtime Parameters:");
                 writer.printf("number of threads = %,d\n", numOfThreads);
@@ -172,44 +172,45 @@ public class FgsCli {
                 writer.printf("cases = %,d\n", dataSet.getNumRows());
                 writer.printf("variables = %,d\n", dataSet.getNumColumns());
 
+                validate(dataSet, writer);
+
                 if (verbose) {
                     writer.println();
                 }
 
-                if (validate(dataSet, writer)) {
-                    Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
-                    fgs.setOut(writer);
-                    fgs.setDepth(depth);
-                    fgs.setIgnoreLinearDependent(ignoreLinearDependence);
-                    fgs.setPenaltyDiscount(penaltyDiscount);
-                    fgs.setNumPatternsToStore(0);  // always set to zero
-                    fgs.setFaithfulnessAssumed(faithfulness);
-                    fgs.setNumProcessors(numOfThreads);
-                    fgs.setVerbose(verbose);
-                    if (knowledgeFile != null) {
-                        fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
-                    }
-                    writer.flush();
+                Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
+                fgs.setOut(writer);
+                fgs.setDepth(depth);
+                fgs.setIgnoreLinearDependent(ignoreLinearDependence);
+                fgs.setPenaltyDiscount(penaltyDiscount);
+                fgs.setNumPatternsToStore(0);  // always set to zero
+                fgs.setFaithfulnessAssumed(faithfulness);
+                fgs.setNumProcessors(numOfThreads);
+                fgs.setVerbose(verbose);
+                if (knowledgeFile != null) {
+                    fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
+                }
+                writer.flush();
 
-                    Graph graph = fgs.search();
-                    writer.println();
-                    writer.println(graph.toString().trim());
-                    writer.flush();
+                Graph graph = fgs.search();
+                writer.println();
+                writer.println(graph.toString().trim());
+                writer.flush();
 
-                    if (graphML) {
-                        Path graphOutputFile = Paths.get(dirOut.toString(), outputPrefix + "_graph.txt");
-                        try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
-                            graphWriter.println(GraphmlSerializer.serialize(graph, outputPrefix));
-                        }
+                if (graphML) {
+                    Path graphOutputFile = Paths.get(dirOut.toString(), outputPrefix + "_graph.txt");
+                    try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
+                        graphWriter.println(GraphmlSerializer.serialize(graph, outputPrefix));
                     }
                 }
             }
-        } catch (IOException exception) {
-            exception.printStackTrace(System.err);
+        } catch (Exception exception) {
+            System.err.println(exception.getMessage());
+            System.exit(-126);
         }
     }
 
-    private static boolean validate(DataSet dataSet, PrintStream writer) {
+    private static void validate(DataSet dataSet, PrintStream writer) throws Exception {
         double[][] data = dataSet.getDoubleData().toArray();
         List<String> variables = dataSet.getVariableNames();
 
@@ -225,11 +226,11 @@ public class FgsCli {
         });
         int size = vars.size();
         if (size > 0) {
-            writer.println();
-            writer.printf("Non-unique variable counts: %d", size);
+            writer.println("Error:");
+            writer.printf("non-unique variable = %d\n", size);
             writer.println();
             writeToFile(Paths.get(dirOut.toString(), outputPrefix + "_non-unique.txt"), vars);
-            writer.println();
+            throw new Exception("Non-unique variable(s) found.");
         }
 
         // check for zero-variance
@@ -244,14 +245,12 @@ public class FgsCli {
         }
         size = vars.size();
         if (size > 0) {
-            writer.println();
-            writer.printf("Zero-variance counts: %d", size);
+            writer.println("Error:");
+            writer.printf("zero-variance = %d\n", size);
             writer.println();
             writeToFile(Paths.get(dirOut.toString(), outputPrefix + "_zero-variance.txt"), vars);
-            return false;
+            throw new Exception("Zero-variance found.");
         }
-
-        return true;
     }
 
     private static void writeToFile(Path outputFile, Set<String> set) {
