@@ -154,14 +154,14 @@ public class FgsCli {
 
                 if (knowledgeFile != null) {
                     writer.println("Knowledge:");
-                    writer.printf("file = %s\n", knowledgeFile.toString());
+                    writer.printf("file = %s\n", knowledgeFile.getFileName());
                     writer.println();
                 }
 
                 Set<String> variables = FileIO.extractUniqueLine(variableFile);
                 if (variableFile != null) {
                     writer.println("Variable Exclusion:");
-                    writer.printf("file = %s\n", variableFile.toString());
+                    writer.printf("file = %s\n", variableFile.getFileName());
                     writer.printf("variables to exclude = %,d\n", variables.size());
                     writer.println();
                 }
