@@ -70,17 +70,18 @@ public class FgsCli {
 
         MAIN_OPTIONS.addOption(null, "knowledge", true, "A file containing prior knowledge.");
         MAIN_OPTIONS.addOption(null, "exclude-variables", true, "A file containing variables to exclude.");
-        MAIN_OPTIONS.addOption(null, "delimiter", true, "Data delimiter.  Default is tab.");
-        MAIN_OPTIONS.addOption(null, "penalty-discount", true, "Penalty discount.");
-        MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited).");
+        MAIN_OPTIONS.addOption(null, "delimiter", true, "Data delimiter. Default is tab.");
+        MAIN_OPTIONS.addOption(null, "penalty-discount", true, "Penalty discount. Default is 4.0");
+        MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited). Default is -1.");
         MAIN_OPTIONS.addOption(null, "faithful", false, "Assume faithfulness.");
         MAIN_OPTIONS.addOption(null, "thread", true, "Number of threads.");
         MAIN_OPTIONS.addOption(null, "ignore-linear-dependence", false, "Ignore linear dependence.");
-        MAIN_OPTIONS.addOption(null, "verbose", false, "Verbose message.");
+        MAIN_OPTIONS.addOption(null, "verbose", false, "Print additional information.");
         MAIN_OPTIONS.addOption(null, "graphml", false, "Create graphML output.");
         MAIN_OPTIONS.addOption(null, "out", true, "Output directory.");
         MAIN_OPTIONS.addOption(null, "help", false, "Show help.");
-        MAIN_OPTIONS.addOption(null, "output-prefix", true, "Output prefix file name.");
+        MAIN_OPTIONS.addOption(null, "no-validation-output", false, "No validation output files created.");
+        MAIN_OPTIONS.addOption(null, "output-prefix", true, "Prefix name of output files.");
     }
 
     private static Path dataFile;
@@ -94,6 +95,7 @@ public class FgsCli {
     private static boolean verbose;
     private static boolean ignoreLinearDependence;
     private static boolean graphML;
+    private static boolean validationOutput;
     private static Path dirOut;
     private static String outputPrefix;
 
@@ -122,6 +124,7 @@ public class FgsCli {
             graphML = cmd.hasOption("graphml");
             dirOut = Args.getPathDir(cmd.getOptionValue("out", "."), false);
             outputPrefix = cmd.getOptionValue("output-prefix", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
+            validationOutput = !cmd.hasOption("no-validation-output");
         } catch (ParseException | FileNotFoundException exception) {
             System.err.println(exception.getLocalizedMessage());
             showHelp();
@@ -171,12 +174,9 @@ public class FgsCli {
                 writer.println("Dataset Read In:");
                 writer.printf("cases = %,d\n", dataSet.getNumRows());
                 writer.printf("variables = %,d\n", dataSet.getNumColumns());
+                writer.println();
 
                 validate(dataSet, writer);
-
-                if (verbose) {
-                    writer.println();
-                }
 
                 Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
                 fgs.setOut(writer);
@@ -229,7 +229,9 @@ public class FgsCli {
             writer.println("Error:");
             writer.printf("non-unique variable = %d\n", size);
             writer.println();
-            writeToFile(Paths.get(dirOut.toString(), outputPrefix + "_non-unique.txt"), vars);
+            if (validationOutput) {
+                writeToFile(Paths.get(dirOut.toString(), outputPrefix + "_non-unique.txt"), vars);
+            }
             throw new Exception("Non-unique variable(s) found.");
         }
 
@@ -248,7 +250,9 @@ public class FgsCli {
             writer.println("Error:");
             writer.printf("zero-variance = %d\n", size);
             writer.println();
-            writeToFile(Paths.get(dirOut.toString(), outputPrefix + "_zero-variance.txt"), vars);
+            if (validationOutput) {
+                writeToFile(Paths.get(dirOut.toString(), outputPrefix + "_zero-variance.txt"), vars);
+            }
             throw new Exception("Zero-variance found.");
         }
     }
