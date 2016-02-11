@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.correlation;
+package edu.cmu.tetrad.stat.correlation;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -25,12 +25,14 @@ import static java.util.concurrent.ForkJoinTask.invokeAll;
 import java.util.concurrent.RecursiveAction;
 
 /**
+ * Compute covariance in parallel on the fly. Warning! This class will overwrite
+ * the values in the input data.
  *
- * Jan 25, 2016 3:42:10 PM
+ * Jan 27, 2016 4:08:04 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class CovarianceMatrixForkJoin implements Covariance {
+public class CovarianceMatrixForkJoinOnTheFly implements Covariance {
 
     private final float[][] data;
 
@@ -42,7 +44,7 @@ public class CovarianceMatrixForkJoin implements Covariance {
 
     private final ForkJoinPool pool;
 
-    public CovarianceMatrixForkJoin(float[][] data, int numOfThreads) {
+    public CovarianceMatrixForkJoinOnTheFly(float[][] data, int numOfThreads) {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
@@ -54,9 +56,8 @@ public class CovarianceMatrixForkJoin implements Covariance {
     public float[] computeLowerTriangle(boolean biasCorrected) {
         float[] covarianceMatrix = new float[(numOfCols * (numOfCols + 1)) / 2];
 
-        float[] means = new float[numOfCols];
-        pool.invoke(new MeanAction(means, data, 0, numOfCols - 1));
-        pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, means, 0, numOfCols - 1, biasCorrected));
+        pool.invoke(new MeanAction(data, 0, numOfCols - 1));
+        pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, 0, numOfCols - 1, biasCorrected));
 
         return covarianceMatrix;
     }
@@ -65,47 +66,36 @@ public class CovarianceMatrixForkJoin implements Covariance {
     public float[][] compute(boolean biasCorrected) {
         float[][] covarianceMatrix = new float[numOfCols][numOfCols];
 
-        float[] means = new float[numOfCols];
-        pool.invoke(new MeanAction(means, data, 0, numOfCols - 1));
-        pool.invoke(new CovarianceAction(covarianceMatrix, means, 0, numOfCols - 1, biasCorrected));
+        pool.invoke(new MeanAction(data, 0, numOfCols - 1));
+        pool.invoke(new CovarianceAction(covarianceMatrix, 0, numOfCols - 1, biasCorrected));
 
         return covarianceMatrix;
     }
 
-    class CovarianceAction extends RecursiveAction {
+    class MeanAction extends RecursiveAction {
 
-        private static final long serialVersionUID = 1034920868427599720L;
+        private static final long serialVersionUID = 8712680208513044295L;
 
-        private final float[][] covariance;
-        private final float[] means;
+        private final float[][] data;
         private final int start;
         private final int end;
-        private final boolean biasCorrected;
 
-        public CovarianceAction(float[][] covariance, float[] means, int start, int end, boolean biasCorrected) {
-            this.covariance = covariance;
-            this.means = means;
+        public MeanAction(float[][] data, int start, int end) {
+            this.data = data;
             this.start = start;
             this.end = end;
-            this.biasCorrected = biasCorrected;
         }
 
-        private void computeCovariance() {
+        private void computeMean() {
             for (int col = start; col <= end; col++) {
-                for (int col2 = 0; col2 < col; col2++) {
-                    float variance = 0;
-                    for (int row = 0; row < numOfRows; row++) {
-                        variance += ((data[row][col] - means[col]) * (data[row][col2] - means[col2]) - variance) / (row + 1);
-                    }
-                    variance = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
-                    covariance[col][col2] = variance;
-                    covariance[col2][col] = variance;
-                }
-                float variance = 0;
+                float mean = 0;
                 for (int row = 0; row < numOfRows; row++) {
-                    variance += ((data[row][col] - means[col]) * (data[row][col] - means[col]) - variance) / (row + 1);
+                    mean += data[row][col];
                 }
-                covariance[col][col] = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
+                mean /= numOfRows;
+                for (int row = 0; row < numOfRows; row++) {
+                    data[row][col] -= mean;
+                }
             }
         }
 
@@ -115,35 +105,32 @@ public class CovarianceMatrixForkJoin implements Covariance {
             int length = end - start;
             int delta = length / numOfThreads;
             if (length <= limit) {
-                computeCovariance();
+                computeMean();
             } else {
-                List<CovarianceAction> actions = new LinkedList<>();
+                List<MeanAction> actions = new LinkedList<>();
                 int startIndex = start;
                 int endIndex = startIndex + delta;
                 while (endIndex < numOfCols) {
-                    actions.add(new CovarianceAction(covariance, means, startIndex, endIndex, biasCorrected));
+                    actions.add(new MeanAction(data, startIndex, endIndex));
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
                 invokeAll(actions);
             }
         }
-
     }
 
     class CovarianceLowerTriangleAction extends RecursiveAction {
 
-        private static final long serialVersionUID = 1818119309247848613L;
+        private static final long serialVersionUID = 4550727841863953665L;
 
         private final float[] covariance;
-        private final float[] means;
         private final int start;
         private final int end;
         private final boolean biasCorrected;
 
-        public CovarianceLowerTriangleAction(float[] covariance, float[] means, int start, int end, boolean biasCorrected) {
+        public CovarianceLowerTriangleAction(float[] covariance, int start, int end, boolean biasCorrected) {
             this.covariance = covariance;
-            this.means = means;
             this.start = start;
             this.end = end;
             this.biasCorrected = biasCorrected;
@@ -155,13 +142,13 @@ public class CovarianceMatrixForkJoin implements Covariance {
                 for (int col2 = 0; col2 < col; col2++) {
                     float variance = 0;
                     for (int row = 0; row < numOfRows; row++) {
-                        variance += ((data[row][col] - means[col]) * (data[row][col2] - means[col2]) - variance) / (row + 1);
+                        variance += ((data[row][col]) * (data[row][col2]) - variance) / (row + 1);
                     }
                     covariance[index++] = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
                 }
                 float variance = 0;
                 for (int row = 0; row < numOfRows; row++) {
-                    variance += ((data[row][col] - means[col]) * (data[row][col] - means[col]) - variance) / (row + 1);
+                    variance += ((data[row][col]) * (data[row][col]) - variance) / (row + 1);
                 }
                 covariance[index++] = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
             }
@@ -179,7 +166,7 @@ public class CovarianceMatrixForkJoin implements Covariance {
                 int startIndex = start;
                 int endIndex = startIndex + delta;
                 while (endIndex < numOfCols) {
-                    actions.add(new CovarianceLowerTriangleAction(covariance, means, startIndex, endIndex, biasCorrected));
+                    actions.add(new CovarianceLowerTriangleAction(covariance, startIndex, endIndex, biasCorrected));
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
@@ -189,29 +176,38 @@ public class CovarianceMatrixForkJoin implements Covariance {
 
     }
 
-    class MeanAction extends RecursiveAction {
+    class CovarianceAction extends RecursiveAction {
 
-        private static final long serialVersionUID = 2419217605658853345L;
+        private static final long serialVersionUID = 5505202257690193574L;
 
-        private final float[] means;
-        private final float[][] data;
+        private final float[][] covariance;
         private final int start;
         private final int end;
+        private final boolean biasCorrected;
 
-        public MeanAction(float[] means, float[][] data, int start, int end) {
-            this.means = means;
-            this.data = data;
+        public CovarianceAction(float[][] covariance, int start, int end, boolean biasCorrected) {
+            this.covariance = covariance;
             this.start = start;
             this.end = end;
+            this.biasCorrected = biasCorrected;
         }
 
-        private void computeMean() {
+        private void computeCovariance() {
             for (int col = start; col <= end; col++) {
-                float sum = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    sum += data[row][col];
+                for (int col2 = 0; col2 < col; col2++) {
+                    float variance = 0;
+                    for (int row = 0; row < numOfRows; row++) {
+                        variance += ((data[row][col]) * (data[row][col2]) - variance) / (row + 1);
+                    }
+                    variance = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
+                    covariance[col][col2] = variance;
+                    covariance[col2][col] = variance;
                 }
-                means[col] = sum / numOfRows;
+                float variance = 0;
+                for (int row = 0; row < numOfRows; row++) {
+                    variance += ((data[row][col]) * (data[row][col]) - variance) / (row + 1);
+                }
+                covariance[col][col] = biasCorrected ? variance * ((float) numOfRows / (float) (numOfRows - 1)) : variance;
             }
         }
 
@@ -221,19 +217,20 @@ public class CovarianceMatrixForkJoin implements Covariance {
             int length = end - start;
             int delta = length / numOfThreads;
             if (length <= limit) {
-                computeMean();
+                computeCovariance();
             } else {
-                List<MeanAction> actions = new LinkedList<>();
+                List<CovarianceAction> actions = new LinkedList<>();
                 int startIndex = start;
                 int endIndex = startIndex + delta;
                 while (endIndex < numOfCols) {
-                    actions.add(new MeanAction(means, data, startIndex, endIndex));
+                    actions.add(new CovarianceAction(covariance, startIndex, endIndex, biasCorrected));
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
                 invokeAll(actions);
             }
         }
+
     }
 
 }

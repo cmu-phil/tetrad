@@ -16,15 +16,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.correlation;
+package edu.cmu.tetrad.stat.correlation;
 
 /**
  *
- * Jan 27, 2016 5:48:23 PM
+ * Jan 27, 2016 5:35:01 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class RealCovarianceMatrixOnTheFly implements RealCovariance {
+public class RealCovarianceMatrix implements RealCovariance {
 
     private final double[][] data;
 
@@ -32,43 +32,43 @@ public class RealCovarianceMatrixOnTheFly implements RealCovariance {
 
     private final int numOfCols;
 
-    public RealCovarianceMatrixOnTheFly(double[][] data) {
+    public RealCovarianceMatrix(double[][] data) {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
     }
 
-    private void computeMeans() {
+    private double[] computeMeans() {
+        double[] mean = new double[numOfCols];
         for (int col = 0; col < numOfCols; col++) {
-            double mean = 0;
+            double sum = 0;
             for (int row = 0; row < numOfRows; row++) {
-                mean += data[row][col];
+                sum += data[row][col];
             }
-            mean /= numOfRows;
-            for (int row = 0; row < numOfRows; row++) {
-                data[row][col] -= mean;
-            }
+            mean[col] = sum / numOfRows;
         }
+
+        return mean;
     }
 
     @Override
     public double[] computeLowerTriangle(boolean biasCorrected) {
         double[] covarianceMatrix = new double[(numOfCols * (numOfCols + 1)) / 2];
 
-        computeMeans();
+        double[] mean = computeMeans();
 
         int index = 0;
         for (int col = 0; col < numOfCols; col++) {
             for (int col2 = 0; col2 < col; col2++) {
                 double variance = 0;
                 for (int row = 0; row < numOfRows; row++) {
-                    variance += ((data[row][col]) * (data[row][col2]) - variance) / (row + 1);
+                    variance += ((data[row][col] - mean[col]) * (data[row][col2] - mean[col2]) - variance) / (row + 1);
                 }
                 covarianceMatrix[index++] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
             }
             double variance = 0;
             for (int row = 0; row < numOfRows; row++) {
-                variance += ((data[row][col]) * (data[row][col]) - variance) / (row + 1);
+                variance += ((data[row][col] - mean[col]) * (data[row][col] - mean[col]) - variance) / (row + 1);
             }
             covarianceMatrix[index++] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
         }
@@ -80,13 +80,13 @@ public class RealCovarianceMatrixOnTheFly implements RealCovariance {
     public double[][] compute(boolean biasCorrected) {
         double[][] covarianceMatrix = new double[numOfCols][numOfCols];
 
-        computeMeans();
+        double[] mean = computeMeans();
 
         for (int col = 0; col < numOfCols; col++) {
             for (int col2 = 0; col2 < col; col2++) {
                 double variance = 0;
                 for (int row = 0; row < numOfRows; row++) {
-                    variance += ((data[row][col]) * (data[row][col2]) - variance) / (row + 1);
+                    variance += ((data[row][col] - mean[col]) * (data[row][col2] - mean[col2]) - variance) / (row + 1);
                 }
                 variance = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
                 covarianceMatrix[col][col2] = variance;
@@ -94,7 +94,7 @@ public class RealCovarianceMatrixOnTheFly implements RealCovariance {
             }
             double variance = 0;
             for (int row = 0; row < numOfRows; row++) {
-                variance += ((data[row][col]) * (data[row][col]) - variance) / (row + 1);
+                variance += ((data[row][col] - mean[col]) * (data[row][col] - mean[col]) - variance) / (row + 1);
             }
             covarianceMatrix[col][col] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
         }

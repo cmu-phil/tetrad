@@ -16,19 +16,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.correlation;
+package edu.cmu.tetrad.stat.correlation;
 
 /**
- * Interface for computing covariances.
  *
- * Jan 25, 2016 2:11:36 PM
+ * Jan 27, 2016 4:46:07 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public interface Covariance {
+public interface RealCovariance {
 
-    public float[] computeLowerTriangle(boolean biasCorrected);
+    public double[] computeLowerTriangle(boolean biasCorrected);
 
-    public float[][] compute(boolean biasCorrected);
+    public double[][] compute(boolean biasCorrected);
 
 }
