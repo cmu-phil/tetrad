@@ -19,6 +19,11 @@
 package edu.cmu.tetrad.cli.data;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -47,17 +52,26 @@ public class SimulateDataCliTest {
         System.out.println("main");
 
         String dirOut = tempFolder.newFolder("simulate").toString();
-        String cases = "20";
-        String variables = "15";
-        String fileName = String.format("sim_data_%svars_%scases", variables, cases);
+        String cases = "100";
+        String variables = "20";
+        String outputFileName = String.format("sim_data_%svars_%scases", variables, cases);
         String[] args = {
             "-c", cases,
             "-v", variables,
+            "-d", "\t",
+            "-g",
             "-o", dirOut,
-            "-n", fileName,
-            "-d", "\t"
+            "-n", outputFileName
         };
         SimulateDataCli.main(args);
+
+        Path outFile = Paths.get(dirOut, outputFileName + ".txt");
+        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
+
+        outFile = Paths.get(dirOut, outputFileName + ".graph");
+        errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
     }
 
 }

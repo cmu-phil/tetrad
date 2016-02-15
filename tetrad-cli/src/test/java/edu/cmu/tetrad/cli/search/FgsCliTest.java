@@ -18,14 +18,18 @@
  */
 package edu.cmu.tetrad.cli.search;
 
+import edu.cmu.tetrad.cli.FileIO;
+import edu.cmu.tetrad.cli.SimulatedDatasets;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
+import org.junit.AfterClass;
+import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  *
@@ -33,49 +37,59 @@ import org.junit.Test;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgsCliTest extends AbstractAlgorithmTest {
+public class FgsCliTest implements SimulatedDatasets {
+
+    @ClassRule
+    public static TemporaryFolder tmpDir = new TemporaryFolder();
+
+    private static final Path DATA_FILE = Paths.get("test", "data", "sim_data_20vars_100cases.csv");
+    private static final Path ZERO_VARIANCE_DATA_FILE = Paths.get("test", "data", "zero_variance_sim_data_20vars_100cases.csv");
+    private static final Path NON_UNIQUE_DATA_FILE = Paths.get("test", "data", "non_unique_sim_data_21vars_100cases.csv");
 
     public FgsCliTest() {
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        tmpDir.delete();
     }
 
     /**
      * Test of main method, of class FgsCli.
      *
-     * @throws IOException
+     * @throws IOException whenever unable to read or right to file
      */
+    @Ignore
     @Test
     public void testMain() throws IOException {
         System.out.println("main");
 
-        // create dataset file
-        String dataDir = tempFolder.newFolder("data").toString();
-        Path dataFile = Paths.get(dataDir, "sim_data_20vars_100cases.txt");
-        Files.write(dataFile, Arrays.asList(dataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-
-        // create prior knowledge file
-        Path knowledgeFile = Paths.get(dataDir, "knowledge_sim_data_20vars_100cases.txt");
-        Files.write(knowledgeFile, Arrays.asList(knowledgeDataset20var100case), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-
-        String outDir = tempFolder.newFolder("results").toString();
-        String fileName = "fgs.txt";
-
-        // run without prior knowledge
+        String data = ZERO_VARIANCE_DATA_FILE.toAbsolutePath().toString();
+        String delimiter = ",";
+        String dirOut = tmpDir.newFolder("fgs").toString();
+        String outputPrefix = "fgs";
         String[] args = {
-            "-d", dataFile.toAbsolutePath().toString(),
-            "-f",
-            "-o", outDir,
-            "-n", fileName
+            "--data", data,
+            "--delimiter", delimiter,
+            "--out", dirOut,
+            "--verbose",
+            "--output-prefix", outputPrefix
         };
         FgsCli.main(args);
 
-        // run with prior knowledge
-        args = new String[]{
-            "-d", dataFile.toAbsolutePath().toString(),
-            "-o", outDir,
-            "-n", fileName,
-            "-k", knowledgeFile.toAbsolutePath().toString()
-        };
-        FgsCli.main(args);
+        Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
+        Path zeroVarOutFile = Paths.get(dirOut, outputPrefix + "_zero-variance.txt");
+        Path nonUnique = Paths.get(dirOut, outputPrefix + "_non-unique.txt");
+        System.out.println("================================================================================");
+        FileIO.printFile(outFile);
+        System.out.println("--------------------------------------------------------------------------------");
+        if (Files.exists(nonUnique, LinkOption.NOFOLLOW_LINKS)) {
+            FileIO.printFile(nonUnique);
+        }
+        if (Files.exists(zeroVarOutFile, LinkOption.NOFOLLOW_LINKS)) {
+            FileIO.printFile(zeroVarOutFile);
+        }
+        System.out.println("================================================================================");
     }
 
 }

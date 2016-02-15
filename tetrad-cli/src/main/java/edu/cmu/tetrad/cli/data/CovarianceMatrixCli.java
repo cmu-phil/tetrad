@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2016 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,16 +19,22 @@
 package edu.cmu.tetrad.cli.data;
 
 import edu.cmu.tetrad.cli.ExtendedCommandLineParser;
-import edu.cmu.tetrad.cli.graph.GraphFactory;
-import edu.cmu.tetrad.cli.graph.GraphIO;
 import edu.cmu.tetrad.cli.util.Args;
+import edu.cmu.tetrad.data.BigDataSetUtility;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.data.DataWriter;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -37,44 +43,37 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * Simulate Dataset Command-line Interface.
+ * A command-line interface to compute covariance and save it to a file.
  *
- * Dec 3, 2015 8:51:28 AM
+ * Jan 8, 2016 12:19:26 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class SimulateDataCli {
+public class CovarianceMatrixCli {
 
-    private static final String USAGE = "java -cp tetrad-cli.jar edu.cmu.tetrad.cli.data.SimulateDataCli";
+    private static final String USAGE = "java -cp tetrad-cli.jar edu.cmu.tetrad.cli.data.CovarianceMatrixCli";
 
     private static final Options MAIN_OPTIONS = new Options();
     private static final Option HELP_OPTION = new Option("h", "help", false, "Show help.");
 
     static {
         // added required option
-        Option requiredOption = new Option("c", "case", true, "Number of cases to generate.");
-        requiredOption.setRequired(true);
-        MAIN_OPTIONS.addOption(requiredOption);
-
-        requiredOption = new Option("v", "var", true, "Number of variables to generate.");
+        Option requiredOption = new Option("d", "data", true, "Data file.");
         requiredOption.setRequired(true);
         MAIN_OPTIONS.addOption(requiredOption);
 
         MAIN_OPTIONS.addOption(HELP_OPTION);
-        MAIN_OPTIONS.addOption("e", "edge", true, "Number of edges per node. Default is 1.");
-        MAIN_OPTIONS.addOption("n", "name", true, "Name of output file.");
-        MAIN_OPTIONS.addOption("d", "delimiter", true, "Data file delimiter.");
-        MAIN_OPTIONS.addOption("g", "graph", false, "Save graph to file.");
-        MAIN_OPTIONS.addOption("o", "dir-out", true, "Directory where results is written to. Default is the current working directory");
+        MAIN_OPTIONS.addOption("l", "delimiter", true, "Data file delimiter.");
+        MAIN_OPTIONS.addOption("f", "on-the-fly", true, "Compute covariance on the fly.");
+        MAIN_OPTIONS.addOption("o", "dir-out", true, "Result directory.");
+        MAIN_OPTIONS.addOption("n", "name", true, "Output file name.");
     }
 
-    private static int numOfCases;
-    private static int numOfVariables;
-    private static int numOfEdges;
-    private static char delimiter;
-    private static boolean saveGraph;
+    private static Path dataFile;
+    private static boolean onTheFly;
     private static Path dirOut;
-    private static String outputFileName;
+    private static char delimiter;
+    private static String fileOut;
 
     /**
      * @param args the command line arguments
@@ -89,33 +88,30 @@ public class SimulateDataCli {
             }
 
             CommandLine cmd = cmdParser.parse(MAIN_OPTIONS, args);
-            numOfCases = Args.parseInteger(cmd.getOptionValue("c"));
-            numOfVariables = Args.parseInteger(cmd.getOptionValue("v"));
-            numOfEdges = Args.parseInteger(cmd.getOptionValue("e", "1"));
-            delimiter = Args.getCharacter(cmd.getOptionValue("d", "\t"));
-            saveGraph = cmd.hasOption("g");
+            dataFile = Args.getPathFile(cmd.getOptionValue("d"), true);
+            delimiter = Args.getCharacter(cmd.getOptionValue("l", "\t"));
+            onTheFly = cmd.hasOption("f");
             dirOut = Args.getPathDir(cmd.getOptionValue("o", "./"), false);
-            outputFileName = cmd.getOptionValue("n", String.format("sim_data_%dvars_%dcases_%d", numOfVariables, numOfCases, System.currentTimeMillis()));
-        } catch (ParseException | FileNotFoundException exception) {
-            System.err.println(exception.getMessage());
-            return;
+            fileOut = cmd.getOptionValue("n", String.format("%s.cov", dataFile.getFileName().toString()));
+        } catch (ParseException | FileNotFoundException | IllegalArgumentException exception) {
+            System.err.println(exception.getLocalizedMessage());
+            System.exit(127);
         }
 
         try {
-            if (!Files.exists(dirOut)) {
-                Files.createDirectory(dirOut);
-            }
+            DataSet dataSet = BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter);
 
-            Graph graph = GraphFactory.createRandomForwardEdges(numOfVariables, numOfEdges);
-            DataSet dataSet = DataSetFactory.buildSemSimulateDataAcyclic(graph, numOfCases);
+            ICovarianceMatrix covarianceMatrix = (onTheFly)
+                    ? new CovarianceMatrixOnTheFly(dataSet)
+                    : new CovarianceMatrix(dataSet);
+            Path outputFile = Paths.get(dirOut.toString(), fileOut);
 
-            DataSetIO.write(dataSet, delimiter, Paths.get(dirOut.toString(), outputFileName + ".txt"));
-
-            if (saveGraph) {
-                GraphIO.write(graph, Paths.get(dirOut.toString(), outputFileName + ".graph"));
+            try (PrintWriter stream = new PrintWriter(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+                DataWriter.writeCovMatrix(covarianceMatrix, stream, NumberFormatUtil.getInstance().getNumberFormat());
             }
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
+            System.exit(127);
         }
     }
 
