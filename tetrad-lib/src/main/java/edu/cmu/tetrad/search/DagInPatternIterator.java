@@ -75,10 +75,6 @@ public class DagInPatternIterator {
             this.knowledge = knowledge;
         }
 
-//        if (pattern.existsDirectedCycle()) {
-//            System.out.println("Pattern already has a cycle!");
-//        }
-
         this.allowNewColliders = allowNewColliders;
 
         assert knowledge != null;
@@ -170,18 +166,6 @@ public class DagInPatternIterator {
         return knowledge;
     }
 
-//    private void setKnowledge(IKnowledge knowledge) {
-//        if (knowledge == null) throw new IllegalArgumentException();
-//        this.knowledge = knowledge;
-//    }
-
-//    private void fail(Graph graph, String label) {
-//        if (knowledge.isViolatedBy(graph)) {
-////                System.out.println(this.graph);
-//            throw new IllegalArgumentException("IKnowledge violated: " + label);
-//        }
-//    }
-
     //==============================CLASSES==============================//
 
     private static class DecoratedGraph {
@@ -260,28 +244,16 @@ public class DagInPatternIterator {
                 graph.removeEdge(edge.getNode1(), edge.getNode2());
                 graph.addDirectedEdge(edge.getNode2(), edge.getNode1());
 
-//                System.out.println("Explicitly orienting: " + graph.getEdge(edge.getNode2(), edge.getNode1()));
-//
-//                if (graph.existsDirectedCycle()) {
-//                    System.out.println("Cycle!");
-//                }
 
                 edges.add(graph.getEdge(edge.getNode2(), edge.getNode1()));
                 edges.addAll(new HashSet<Edge>(getChangedEdges().get(this.graph)));
 
                 MeekRules meek = new MeekRules();
                 meek.setKnowledge(getKnowledge());
-//                meek.setAggressivelyPreventCycles(true);
                 meek.orientImplied(graph);
 
                 // Keep track of changed edges for highlighting
                 Set<Edge> changedEdges = meek.getChangedEdges().keySet();
-
-//                System.out.println("Meek oriented: " + changedEdges);
-//
-//                if (graph.existsDirectedCycle()) {
-//                    System.out.println("Cycle!");
-//                }
 
                 edges.addAll(changedEdges);
                 this.getChangedEdges().put(graph, edges);

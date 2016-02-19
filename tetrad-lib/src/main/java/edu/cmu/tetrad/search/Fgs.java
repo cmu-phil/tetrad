@@ -264,7 +264,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
         this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
         this.logger.flush();
 
-        System.out.println("FGS result graph = " + graph);
+        if (verbose) {
+            out.println("FGS result graph = " + graph);
+        }
 
         return graph;
 
@@ -638,12 +640,11 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            Set<Node> t = arrow.getHOrT();
+            Set<Node> T = arrow.getHOrT();
             double bump = arrow.getBump();
 
-            if (!insert(x, y, t, bump)) {
-                continue;
-            }
+            boolean inserted = insert(x, y, T, bump);
+            if (!inserted) continue;
 
             score += bump;
 
@@ -698,17 +699,19 @@ public final class Fgs implements GraphSearch, GraphScorer {
             HashSet<Node> diff = new HashSet<>(arrow.getNaYX());
             diff.removeAll(arrow.getHOrT());
 
-            if (!isClique(diff)) continue;
+            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX())) continue;
 
-            Set<Node> h = arrow.getHOrT();
+            Set<Node> H = arrow.getHOrT();
             double bump = arrow.getBump();
 
-            delete(x, y, h, bump, arrow.getNaYX());
+            boolean deleted = delete(x, y, H, bump, arrow.getNaYX());
+            if (!deleted) continue;
+
             score += bump;
 
             clearArrow(x, y);
 
-            Set<Node> visited = reapplyOrientation(x, y, h);
+            Set<Node> visited = reapplyOrientation(x, y, H);
 
             Set<Node> toProcess = new HashSet<>();
 
@@ -888,18 +891,19 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
                 if (bump > 0.0) {
-                    maxNaYX = naYX;
-                    maxT = T;
-                    maxBump = bump;
+                    addArrow(a, b, naYX, T, bump);
+//                    maxNaYX = naYX;
+//                    maxT = T;
+//                    maxBump = bump;
                 }
             }
 
             if (!found) break;
         }
 
-        if (maxNaYX != null) {
-            addArrow(a, b, maxNaYX, maxT, maxBump);
-        }
+//        if (maxNaYX != null) {
+//            addArrow(a, b, maxNaYX, maxT, maxBump);
+//        }
     }
 
     private void addArrow(Node a, Node b, Set<Node> naYX, Set<Node> hOrT, double bump) {
@@ -1216,7 +1220,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     }
 
     // Do an actual deletion (Definition 13 from Chickering, 2002).
-    private void delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
+    private boolean delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
         Edge trueEdge = null;
 
         if (trueGraph != null) {
@@ -1272,14 +1276,52 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 }
             }
         }
+
+        return true;
     }
 
     // Test if the candidate insertion is a valid operation
     // (Theorem 15 from Chickering, 2002).
-    private boolean validInsert(Node x, Node y, Set<Node> s, Set<Node> naYX) {
-        Set<Node> union = new HashSet<>(s);
+    private boolean validInsert(Node x, Node y, Set<Node> T, Set<Node> naYX) {
+        boolean violatesKnowledge = false;
+
+        if (existsKnowledge()) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                violatesKnowledge = true;
+            }
+
+            for (Node t : T) {
+                if (knowledge.isForbidden(t.getName(), y.getName())) {
+                    violatesKnowledge = true;
+                }
+            }
+        }
+
+        Set<Node> union = new HashSet<>(T);
         union.addAll(naYX);
-        return isClique(union) && !existsUnblockedSemiDirectedPath(y, x, union, cycleBound);
+        boolean clique = isClique(union);
+        boolean noCycle = !existsUnblockedSemiDirectedPath(y, x, union, cycleBound);
+        return clique && noCycle && !violatesKnowledge;
+    }
+
+    private boolean validDelete(Node x, Node y, Set<Node> H, Set<Node> naYX) {
+        boolean violatesKnowledge = false;
+
+        if (existsKnowledge()) {
+            for (Node h : H) {
+                if (knowledge.isForbidden(x.getName(), h.getName())) {
+                    violatesKnowledge = true;
+                }
+
+                if (knowledge.isForbidden(y.getName(), h.getName())) {
+                    violatesKnowledge = true;
+                }
+            }
+        }
+
+        Set<Node> diff = new HashSet<>(naYX);
+        diff.removeAll(H);
+        return isClique(diff) && !violatesKnowledge;
     }
 
     // Adds edges required by knowledge.
@@ -1458,6 +1500,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private Set<Node> meekOrientRestricted(List<Node> nodes, IKnowledge knowledge) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
+        rules.setUndirectUnforcedEdges(true);
         rules.orientImplied(graph, nodes);
         return rules.getVisited();
     }

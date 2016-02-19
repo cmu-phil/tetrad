@@ -130,6 +130,8 @@ public class TestPc {
         _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("PUBS"));
         _true.addDirectedEdge(pattern.getNode("SEX"), pattern.getNode("PUBS"));
 
+//        System.out.println(pattern);
+
         assertEquals(pattern, _true);
     }
 
@@ -182,12 +184,17 @@ public class TestPc {
 
         // Set up search.
         pc.setKnowledge(knowledge);
+//        pc.setVerbose(true);
 
         // Run search
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert(outputGraph);
+
+//        System.out.println("Knowledge = " + knowledge);
+//        System.out.println("True graph = " + graph);
+//        System.out.println("Result graph = " + resultGraph);
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));

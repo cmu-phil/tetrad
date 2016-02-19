@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -138,14 +139,14 @@ public final class TabularComparison implements SessionModel {
     private int twoCycleCorrect;
 
     /**
-     * @deprecated
      * @serial
+     * @deprecated
      */
-    private  int arrowptAfp;
+    private int arrowptAfp;
 
     /**
-     * @deprecated
      * @serial
+     * @deprecated
      */
     private int arrowptAfn;
 
@@ -189,7 +190,7 @@ public final class TabularComparison implements SessionModel {
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public TabularComparison(SessionModel model1, SessionModel model2,
-            GraphComparisonParams params) {
+                             GraphComparisonParams params) {
         if (params == null) {
             throw new NullPointerException("Params must not be null");
         }
@@ -218,16 +219,13 @@ public final class TabularComparison implements SessionModel {
             this.referenceGraph = ((GraphSource) model1).getGraph();
             this.targetGraph = ((GraphSource) model2).getGraph();
             this.params.setReferenceGraphName(model1.getName());
-        }
-        else if (referenceName.equals(model1.getName())) {
+        } else if (referenceName.equals(model1.getName())) {
             this.referenceGraph = ((GraphSource) model1).getGraph();
             this.targetGraph = ((GraphSource) model2).getGraph();
-        }
-        else if (referenceName.equals(model2.getName())) {
+        } else if (referenceName.equals(model2.getName())) {
             this.referenceGraph = ((GraphSource) model2).getGraph();
             this.targetGraph = ((GraphSource) model1).getGraph();
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(
                     "Neither of the supplied session " + "models is named '" +
                             referenceName + "'.");
@@ -243,8 +241,7 @@ public final class TabularComparison implements SessionModel {
         // MimBuild might not want to do this.
         if (this.params != null && this.params.isKeepLatents()) {
             alteredRefGraph = this.referenceGraph;
-        }
-        else {
+        } else {
             alteredRefGraph = removeLatent(this.referenceGraph);
         }
 
@@ -266,10 +263,20 @@ public final class TabularComparison implements SessionModel {
         this.edgesReorientedFrom = comparison.getEdgesReorientedFrom();
         this.edgesReorientedTo = comparison.getEdgesReorientedTo();
 
+        if (!(adjFn == 0 && adjFp == 0 && arrowptFn == 0 && arrowptFp == 0)) {
+            System.out.println("ERROR!");
+//            System.out.println("Reference graph = " + referenceGraph);q
+            System.out.println("Target graph = " + targetGraph);
+            System.out.println("adj fn = " + adjFn + " adj fp = " + adjFp + " arrowptfn = " + arrowptFn +
+                    " arrowptfp = " + arrowptFp);
+
+            Preferences.userRoot().putBoolean("errorFound", true);
+        }
+
         if (this.params != null) {
-            this.params.addRecord(getAdjCorrect(), getAdjFn(), getAdjFp(),
-                    getArrowptCorrect(), getArrowptFn(), getArrowptFp(),
-                    getTwoCycleCorrect(), getTwoCycleFn(), getTwoCycleFp());
+            this.params.addRecord(adjCorrect, adjFn, adjFp,
+                    arrowptCorrect, arrowptFn, arrowptFp,
+                    twoCycleCorrect, twoCycleFn, twoCycleFp);
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
@@ -277,27 +284,27 @@ public final class TabularComparison implements SessionModel {
     }
 
     public TabularComparison(GraphWrapper referenceGraph,
-            AbstractAlgorithmRunner algorithmRunner,
-            GraphComparisonParams params) {
+                             AbstractAlgorithmRunner algorithmRunner,
+                             GraphComparisonParams params) {
         this(referenceGraph, (SessionModel) algorithmRunner,
                 params);
     }
 
     public TabularComparison(GraphWrapper referenceWrapper,
-            GraphWrapper targetWrapper, GraphComparisonParams params) {
+                             GraphWrapper targetWrapper, GraphComparisonParams params) {
         this(referenceWrapper, (SessionModel) targetWrapper,
                 params);
     }
 
     public TabularComparison(DagWrapper referenceGraph,
-            AbstractAlgorithmRunner algorithmRunner,
-            GraphComparisonParams params) {
+                             AbstractAlgorithmRunner algorithmRunner,
+                             GraphComparisonParams params) {
         this(referenceGraph, (SessionModel) algorithmRunner,
                 params);
     }
 
     public TabularComparison(DagWrapper referenceWrapper,
-            GraphWrapper targetWrapper, GraphComparisonParams params) {
+                             GraphWrapper targetWrapper, GraphComparisonParams params) {
         this(referenceWrapper, (SessionModel) targetWrapper,
                 params);
     }
@@ -314,8 +321,7 @@ public final class TabularComparison implements SessionModel {
         // MimBuild might not want to do this.
         if (params != null && params.isKeepLatents()) {
             alteredRefGraph = this.referenceGraph;
-        }
-        else {
+        } else {
             alteredRefGraph = removeLatent(this.targetGraph);
         }
 
@@ -345,12 +351,12 @@ public final class TabularComparison implements SessionModel {
     }
 
     public TabularComparison(Graph referenceGraph, Graph targetGraph,
-                           Graph trueGraph) {
+                             Graph trueGraph) {
         this.referenceGraph = referenceGraph;
         this.targetGraph = targetGraph;
         this.trueGraph = trueGraph;
-        String datasetName = "Comparing " + params.getReferenceGraphName() + " to " 
-        + params.getTargetGraphName();
+        String datasetName = "Comparing " + params.getReferenceGraphName() + " to "
+                + params.getTargetGraphName();
         this.getDataSet().setName(datasetName);
         Graph alteredRefGraph;
 
@@ -359,8 +365,7 @@ public final class TabularComparison implements SessionModel {
         // MimBuild might not want to do this.
         if (params != null && params.isKeepLatents()) {
             alteredRefGraph = this.referenceGraph;
-        }
-        else {
+        } else {
             alteredRefGraph = removeLatent(this.targetGraph);
         }
 

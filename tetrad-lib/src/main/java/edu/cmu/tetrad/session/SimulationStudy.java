@@ -24,6 +24,7 @@ package edu.cmu.tetrad.session;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
+import java.util.prefs.Preferences;
 
 /**
  * Runs a simulation study for a session which traverses a subtree of the
@@ -232,7 +233,14 @@ public final class SimulationStudy {
         // jdramsey 1/11/01
         int repetition = doRepetition ? getRepetition(sessionNode) : 1;
 
+        Preferences.userRoot().putBoolean("errorFound", false);
+
         for (int i = 0; i < repetition; i++) {
+            if (Preferences.userRoot().getBoolean("experimental", false) &&
+                    Preferences.userRoot().getBoolean("errorFound", false)) {
+                break;
+            }
+
             if (!overwrite && sessionNode.getModel() != null) {
                 return false;
             }

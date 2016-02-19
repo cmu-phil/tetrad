@@ -32,8 +32,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphConverter;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -175,7 +174,7 @@ public class TestFgs {
                 {0, 0, 0, 8, 0, 0},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 1, 0, 0},
         };
 
 //        System.out.println(RandomUtil.getInstance().getSeed());
@@ -183,6 +182,9 @@ public class TestFgs {
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
         }
+
+//        System.out.println(MatrixUtils.toString(counts));
+//        System.out.println(MatrixUtils.toString(expectedCounts));
     }
 
     @Test
@@ -258,6 +260,18 @@ public class TestFgs {
         }
 
 //        System.out.println(count);
+    }
+
+    @Test
+    public void testFromGraph() {
+        for (int i = 0; i < 1; i++) {
+            Graph dag = GraphUtils.randomDag(6, 0, 6, 10, 10, 10, false);
+            Fgs fgs = new Fgs(new GraphScore(dag));
+            Graph pattern1 = fgs.search();
+            Pc pc = new Pc(new IndTestDSep(dag));
+            Graph pattern2 = pc.search();
+            assertEquals(pattern2, pattern1);
+        }
     }
 
     private void printDegreeDistribution(Graph dag, PrintStream out) {

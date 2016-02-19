@@ -72,6 +72,9 @@ public class MeekRules implements ImpliedOrientation {
     // Edges already oriented by the algorithm to avoid repeats and prevent cycles.
     private HashSet<Edge> oriented;
 
+    // True if unforced parents should be undirected before orienting.
+    private boolean undirectUnforcedEdges = false;
+
     /**
      * Constructs the <code>MeekRules</code> with no logging.
      */
@@ -124,15 +127,25 @@ public class MeekRules implements ImpliedOrientation {
         return visited;
     }
 
+    public boolean isUndirectUnforcedEdges() {
+        return undirectUnforcedEdges;
+    }
+
+    public void setUndirectUnforcedEdges(boolean undirectUnforcedEdges) {
+        this.undirectUnforcedEdges = undirectUnforcedEdges;
+    }
+
     //============================== Private Methods ===================================//
 
     private void orientUsingMeekRulesLocally(IKnowledge knowledge, Graph graph) {
 
         oriented = new HashSet<>();
 
-        for (Node node : nodes) {
-            undirectUnforcedEdges(node, graph);
-            directStack.addAll(graph.getAdjacentNodes(node));
+        if (undirectUnforcedEdges) {
+            for (Node node : nodes) {
+                undirectUnforcedEdges(node, graph);
+                directStack.addAll(graph.getAdjacentNodes(node));
+            }
         }
 
         for (Node node : this.nodes) {
@@ -141,7 +154,11 @@ public class MeekRules implements ImpliedOrientation {
 
         while (!directStack.isEmpty()) {
             Node node = directStack.removeLast();
-            undirectUnforcedEdges(node, graph);
+
+            if (undirectUnforcedEdges) {
+                undirectUnforcedEdges(node, graph);
+            }
+
             runMeekRules(node, graph, knowledge);
         }
     }
@@ -339,8 +356,8 @@ public class MeekRules implements ImpliedOrientation {
     private void direct(Node a, Node c, Graph graph) {
         Edge before = graph.getEdge(a, c);
 
-        if (!Edges.isUndirectedEdge(before)) {
-            throw new RuntimeException();
+        if (knowledge != null && knowledge.isForbidden(a.getName(), c.getName())) {
+            return;
         }
 
         Edge after = Edges.directedEdge(a, c);
