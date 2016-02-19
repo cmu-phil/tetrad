@@ -287,6 +287,7 @@ public final class GraphUtils {
                     numLatentConfounders);
         }
 
+
         final Graph dag = new EdgeListGraphSingleConnections(nodes);
 
         final List<Node> nodes2 = dag.getNodes(); // new ArrayList<Node>(nodes);
@@ -422,11 +423,11 @@ public final class GraphUtils {
 //
 //        References
 //                ----------
-//        .. [1] B. Bollob{\'a}s, C. Borgs, J. Chayes, and O. Riordan,
-//            Directed scale-free graphs,
-//                    Proceedings of the fourteenth annual ACM-SIAM symposium on
-//            Discrete algorithms, 132--139, 2003.
-//            """
+        //        .. [1] B. Bollob{\'a}s, C. Borgs, J. Chayes, and O. Riordan,
+        //            Directed scale-free graphs,
+        //                    Proceedings of the fourteenth annual ACM-SIAM symposium on
+        //            Discrete algorithms, 132--139, 2003.
+        //            """
 //
 //            def _choose_node(G,distribution,delta):
 //            cumsum=0.0
@@ -536,6 +537,8 @@ public final class GraphUtils {
                 parents.put(m, new HashSet<Node>());
                 children.put(m, new HashSet<Node>());
             }
+
+            if (G.isAdjacentTo(nodes.get(v), nodes.get(w))) continue;
 
             G.addDirectedEdge(nodes.get(v), nodes.get(w));
 
@@ -1769,6 +1772,29 @@ public final class GraphUtils {
             }
         }
 
+        for (Edge edge1 : graph2.getEdges()) {
+            Node node1 = edge1.getNode1();
+            Node node2 = edge1.getNode2();
+
+            Edge edge2 = graph1.getEdge(node1, node2);
+
+            if (edge1.getEndpoint1() == Endpoint.ARROW) {
+                if (edge2 == null) {
+                    count++;
+                } else if (edge2.getProximalEndpoint(edge1.getNode1()) != Endpoint.ARROW) {
+                    count++;
+                }
+            }
+
+            if (edge1.getEndpoint2() == Endpoint.ARROW) {
+                if (edge2 == null) {
+                    count++;
+                } else if (edge2.getProximalEndpoint(edge1.getNode2()) != Endpoint.ARROW) {
+                    count++;
+                }
+            }
+        }
+
         return count;
     }
 
@@ -1778,15 +1804,15 @@ public final class GraphUtils {
         Set<Edge> edges = estimated.getEdges();
         int numCorrect = 0;
 
-        for (Edge edge1 : edges) {
-            Edge edge2 = correct.getEdge(edge1.getNode1(), edge1.getNode2());
-            if (edge2 == null) continue;
+        for (Edge estEdge : edges) {
+            Edge correctEdge = correct.getEdge(estEdge.getNode1(), estEdge.getNode2());
+            if (correctEdge == null) continue;
 
-            if (edge1.getEndpoint1() == Endpoint.ARROW && edge2.getProximalEndpoint(edge1.getNode1()) == Endpoint.ARROW) {
+            if (estEdge.getProximalEndpoint(estEdge.getNode1()) == Endpoint.ARROW && correctEdge.getProximalEndpoint(estEdge.getNode1()) == Endpoint.ARROW) {
                 numCorrect++;
             }
 
-            if (edge1.getEndpoint2() == Endpoint.ARROW && edge2.getProximalEndpoint(edge1.getNode2()) == Endpoint.ARROW) {
+            if (estEdge.getProximalEndpoint(estEdge.getNode2()) == Endpoint.ARROW && correctEdge.getProximalEndpoint(estEdge.getNode2()) == Endpoint.ARROW) {
                 numCorrect++;
             }
         }
@@ -3089,6 +3115,37 @@ public final class GraphUtils {
         throw new IllegalArgumentException("Unsupported edge type : " + edgeLeft);
     }
 
+    public static Set<Set<Node>> maximalCliques(Graph graph, List<Node> nodes) {
+        Set<Set<Node>> report = new HashSet<>();
+        brokKerbosh1(new HashSet<Node>(), new HashSet<>(nodes), new HashSet<Node>(), report, graph);
+        return report;
+    }
+
+    //        BronKerbosch1(R, P, X):
+    //            if P and X are both empty:
+    //                   report R as a maximal clique
+    //            for each vertex v in P:
+    //                   BronKerbosch1(R â {v}, P â N(v), X â N(v))
+    //                   P := P \ {v}
+    //                   X := X â {v}
+    private static void brokKerbosh1(Set<Node> R, Set<Node> P, Set<Node> X, Set<Set<Node>> report, Graph graph) {
+        if (P.isEmpty() && X.isEmpty()) {
+            report.add(new HashSet<>(R));
+        }
+
+        for (Node v : new HashSet<>(P)) {
+            Set<Node> _R = new HashSet<>(R);
+            Set<Node> _P = new HashSet<>(P);
+            Set<Node> _X = new HashSet<>(X);
+            _R.add(v);
+            _P.retainAll(graph.getAdjacentNodes(v));
+            _X.retainAll(graph.getAdjacentNodes(v));
+            brokKerbosh1(_R, _P, _X, report, graph);
+            P.remove(v);
+            X.add(v);
+        }
+    }
+
     public static class GraphComparison {
         private int adjFn;
         private int adjFp;
@@ -3290,6 +3347,7 @@ public final class GraphUtils {
             }
 
             public boolean equals(Object o) {
+                if (!(o instanceof EdgeNode)) throw new IllegalArgumentException();
                 EdgeNode _o = (EdgeNode) o;
                 return _o.edge == edge && _o.node == node;
             }
@@ -3302,9 +3360,9 @@ public final class GraphUtils {
 
         for (Edge edge : graph.getEdges(x)) {
             if (edge.getDistalNode(x) == y) return true;
-            EdgeNode edgePoint = new EdgeNode(edge, x);
-            Q.offer(edgePoint);
-            V.add(edgePoint);
+            EdgeNode edgeNode = new EdgeNode(edge, x);
+            Q.offer(edgeNode);
+            V.add(edgeNode);
         }
 
         while (!Q.isEmpty()) {
@@ -3322,10 +3380,11 @@ public final class GraphUtils {
                     if (c == y) return true;
 
                     EdgeNode u = new EdgeNode(edge2, b);
-                    if (V.contains(u)) continue;
 
-                    V.add(u);
-                    Q.offer(u);
+                    if (!V.contains(u)) {
+                        V.add(u);
+                        Q.offer(u);
+                    }
                 }
             }
         }
@@ -3372,6 +3431,101 @@ public final class GraphUtils {
 
         return false;
     }
+
+    // Depth first.
+    public static boolean isDConnectedTo2(Node x, Node y, List<Node> z, Graph graph) {
+        LinkedList<Node> path = new LinkedList<Node>();
+
+        path.add(x);
+
+        for (Node c : graph.getAdjacentNodes(x)) {
+            if (isDConnectedToVisit2(x, c, y, path, z, graph)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isDConnectedTo2(Node x, Node y, List<Node> z, Graph graph, LinkedList<Node> path) {
+        path.add(x);
+
+        for (Node c : graph.getAdjacentNodes(x)) {
+            if (isDConnectedToVisit2(x, c, y, path, z, graph)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isDConnectedToVisit2(Node a, Node b, Node y, LinkedList<Node> path, List<Node> z, Graph graph) {
+        if (b == y) {
+            path.addLast(b);
+            return true;
+        }
+
+        if (path.contains(b)) {
+            return false;
+        }
+
+        path.addLast(b);
+
+        for (Node c : graph.getAdjacentNodes(b)) {
+            if (a == c) continue;
+
+            if (reachable(a, b, c, z, graph)) {
+                if (isDConnectedToVisit2(b, c, y, path, z, graph)) {
+//                    path.removeLast();
+                    return true;
+                }
+            }
+        }
+
+        path.removeLast();
+        return false;
+    }
+
+    public static boolean isDConnectedTo3(Node x, Node y, List<Node> z, Graph graph) {
+        return reachableDConnectedNodes(x, z, graph).contains(y);
+    }
+
+    private static Set<Node> reachableDConnectedNodes(Node x, List<Node> z, Graph graph) {
+        Set<Node> R = new HashSet<Node>();
+        R.add(x);
+
+        Queue<OrderedPair<Node>> Q = new ArrayDeque<OrderedPair<Node>>();
+        Set<OrderedPair<Node>> V = new HashSet<OrderedPair<Node>>();
+
+        for (Node node : graph.getAdjacentNodes(x)) {
+            OrderedPair<Node> edge = new OrderedPair<Node>(x, node);
+            Q.offer(edge);
+            V.add(edge);
+            R.add(node);
+        }
+
+        while (!Q.isEmpty()) {
+            OrderedPair<Node> t = Q.poll();
+
+            Node a = t.getFirst();
+            Node b = t.getSecond();
+
+            for (Node c : graph.getAdjacentNodes(b)) {
+                if (c == a) continue;
+                if (!reachable(a, b, c, z, graph, null)) continue;
+                R.add(c);
+
+                OrderedPair<Node> u = new OrderedPair<Node>(b, c);
+                if (V.contains(u)) continue;
+
+                V.add(u);
+                Q.offer(u);
+            }
+        }
+
+        return R;
+    }
+
 
 
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
@@ -3514,7 +3668,14 @@ public final class GraphUtils {
             return true;
         }
 
-        boolean ancestor = isAncestor(b, z, graph);
+
+        boolean ancestor = zAncestors(z, graph).contains(b);
+        boolean ancestor2 = isAncestor(b, z, graph);
+
+//        if (ancestor != ancestor2) {
+//            System.out.println("Ancestors of " + z + " are " + zAncestors(z, graph));
+//        }
+
         return collider && ancestor;
     }
 
@@ -3538,16 +3699,13 @@ public final class GraphUtils {
     }
 
     private static boolean isAncestor(Node b, List<Node> z, Graph graph) {
-        boolean ancestor = false;
-
         for (Node n : z) {
             if (graph.isAncestorOf(b, n)) {
-                ancestor = true;
-                break;
+                return true;
             }
         }
 
-        return ancestor;
+        return false;
     }
 
     private static List<Node> getPassNodes(Node a, Node b, List<Node> z, Graph graph, Set<Triple> colliders) {
@@ -3577,9 +3735,10 @@ public final class GraphUtils {
             Node t = Q.poll();
 
             for (Node c : graph.getParents(t)) {
-                if (V.contains(c)) continue;
-                V.add(c);
-                Q.offer(c);
+                if (!V.contains(c)) {
+                    Q.offer(c);
+                    V.add(c);
+                }
             }
         }
 
@@ -3803,156 +3962,80 @@ public final class GraphUtils {
         return max;
     }
 
-    /**
-     * Number directed edges in both graph1 and graph2 divided by the number of directed edges in graph1.
-     */
-    public static double orientationPrecision(Graph graph1, Graph graph2) {
-        Graph _graph2 = replaceNodes(graph1, graph2.getNodes());
+    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
+    // length at most 'bound'. Cycle checker in other words.
+    public static List<Node> existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, int bound, Graph graph) {
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
+        Q.offer(from);
+        V.add(from);
+        Node e = null;
+        int distance = 0;
+        Map<Node, Node> back = new HashMap<>();
 
-        if (!new HashSet<Node>(graph2.getNodes()).equals(new HashSet<Node>(graph1.getNodes()))) {
-            throw new IllegalArgumentException("Variables in the two graphs must be the same.");
-        }
-
-        int intersection = 0;
-        int numGraph2 = 0;
-
-        for (Edge edge : graph2.getEdges()) {
-            edge = new Edge(edge);
-            if (Edges.isPartiallyOrientedEdge(edge)) edge.setEndpoint1(Endpoint.TAIL);
-
-            if (!edge.isDirected()) continue;
-
-//            Edge oppositeEdge = new Edge(edge.getNode1(), edge.getNode2(), edge.getEndpoint2(), edge.getEndpoint1());
-//
-//            Ignore cycles.
-//            if (graph1.containsEdge(oppositeEdge)) {
-//                continue;
-//            }
-
-            numGraph2++;
-
-            if (_graph2.containsEdge(edge)) {
-                intersection++;
+        while (!Q.isEmpty()) {
+            Node t = Q.remove();
+            if (t == to) {
+                LinkedList<Node> _back = new LinkedList<>();
+                _back.add(to);
+                return _back;
             }
-        }
 
-        return intersection / (double) numGraph2;
-    }
+            if (e == t) {
+                e = null;
+                distance++;
+                if (distance > (bound == -1 ? 1000 : bound)) return null;
+            }
 
-    public static double adjacencyPrecision(Graph graph1, Graph graph2) {
-        List<Node> nodes = graph1.getNodes();
-        Graph _graph2 = replaceNodes(graph2, nodes);
+            for (Node u : graph.getAdjacentNodes(t)) {
+                Edge edge = graph.getEdge(t, u);
+                Node c = traverseSemiDirected(t, edge);
+                if (c == null) continue;
+                if (cond.contains(c)) continue;
 
-        if (!new HashSet(nodes).equals(new HashSet<Node>(graph2.getNodes()))) {
-            throw new IllegalArgumentException("Variables in the two graphs must be the same.");
-        }
+                if (c == to) {
+                    back.put(c, t);
+                    LinkedList<Node> _back = new LinkedList<>();
+                    _back.addLast(to);
+                    Node f = to;
 
-        int intersection = 0;
-        int numGraph1 = 0;
+                    for (int i = 0; i < 10; i++) {
+                        f = back.get(f);
+                        if (f == null) break;
+                        _back.addFirst(f);
+                    }
 
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                Node node1 = nodes.get(i);
-                Node node2 = nodes.get(j);
+                    return _back;
+                }
 
-                if (graph1.isAdjacentTo(node1, node2)) {
-                    numGraph1++;
+                if (!V.contains(c)) {
+                    back.put(c, t);
+                    V.add(c);
+                    Q.offer(c);
 
-                    if (_graph2.isAdjacentTo(node1, node2)) {
-                        intersection++;
+                    if (e == null) {
+                        e = u;
                     }
                 }
             }
         }
 
-//        for (Edge edge : graph1.getEdges()) {
-//            numGraph1++;
-//
-//            if (_graph2.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-//                intersection++;
-//            }
-//        }
-
-        return intersection / (double) numGraph1;
+        return null;
     }
 
-
-    public static int arrowEndpointComplement(Graph graph1, Graph graph2) {
-        int count = 0;
-
-        for (Edge edge1 : graph1.getEdges()) {
-            String name1 = edge1.getNode1().getName();
-            String name2 = edge1.getNode2().getName();
-
-            Node node21 = graph2.getNode(name1);
-            Node node22 = graph2.getNode(name2);
-
-            Edge edge2 = graph2.getEdge(node21, node22);
-//
-//            if (edge1.getEndpoint1() == Endpoint.ARROW) {
-//                if (edge2 == null) {
-//                    count++;
-//                } else if (edge2.getProximalEndpoint(node21) != Endpoint.ARROW) {
-//                    count++;
-//                }
-//            }
-//
-//            if (edge1.getEndpoint2() == Endpoint.ARROW) {
-//                if (edge2 == null) {
-//                    count++;
-//                } else if (edge2.getProximalEndpoint(node22) != Endpoint.ARROW) {
-//                    count++;
-//                }
-//            }
-
-
-            if (edge2 != null) {
-                if (edge1.getEndpoint1() == Endpoint.ARROW && edge2.getProximalEndpoint(node21) != Endpoint.ARROW) {
-                    count++;
-                }
-
-                if (edge1.getEndpoint2() == Endpoint.ARROW && edge2.getProximalEndpoint(node22) != Endpoint.ARROW) {
-                    count++;
-                }
-            } else {
-                if (Edges.isBidirectedEdge(edge1)) {
-                    count += 2;
-                } else if (Edges.isDirectedEdge(edge1)) {
-                    count++;
-                }
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
             }
         }
-
-
-        return count;
+        return null;
     }
-
-    /**
-     * @param graph1 An arbitrary graph.
-     * @param graph2 Another arbitrary graph with the same number of nodes
-     *               and node names.
-     * @return the edges that are in <code>graph1</code> but not in <code>graph2</code>.
-     */
-    public static List<Edge> edgesComplement(Graph graph1, Graph graph2) {
-        List<Edge> edges = new ArrayList<Edge>();
-
-        for (Edge edge1 : graph1.getEdges()) {
-            String name1 = edge1.getNode1().getName();
-            String name2 = edge1.getNode2().getName();
-
-            Node node21 = graph2.getNode(name1);
-            Node node22 = graph2.getNode(name2);
-
-            Edge edge2 = graph2.getEdge(node21, node22);
-
-            if (edge2 == null || !edge1.equals(edge2)) {
-                edges.add(edge1);
-            }
-        }
-
-        return edges;
-    }
-
 
 }
 

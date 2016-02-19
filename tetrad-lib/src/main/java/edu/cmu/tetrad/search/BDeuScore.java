@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ProbUtils;
+import org.apache.commons.math3.special.Gamma;
 
 import java.util.List;
 
@@ -33,7 +33,6 @@ import java.util.List;
 public class BDeuScore implements LocalDiscreteScore, GesScore {
     private List<Node> variables;
     private int[][] data;
-    //    private final LocalScoreCache localScoreCache = new LocalScoreCache();
     private int sampleSize;
 
     private double samplePrior = 1;
@@ -141,25 +140,36 @@ public class BDeuScore implements LocalDiscreteScore, GesScore {
         //Finally, compute the score
         double score = 0.0;
 
-        score += (r - 1) * q * Math.log(getStructurePrior());
+//        score += r * q * FastMath.log(getStructurePrior());
+
+        score += Math.log(1.0 / r) * sampleSize;
+//
+//        score += getPriorForStructure(parents.length);
 
         final double cellPrior = getSamplePrior() / (r * q);
         final double rowPrior = getSamplePrior() / q;
 
         for (int j = 0; j < q; j++) {
-            score -= ProbUtils.lngamma(rowPrior + n_j[j]);
+            score -= Gamma.logGamma(rowPrior + n_j[j]);
 
             for (int k = 0; k < r; k++) {
-                score += ProbUtils.lngamma(cellPrior + n_jk[j][k]);
+                score += Gamma.logGamma(cellPrior + n_jk[j][k]);
             }
         }
 
-        score += q * ProbUtils.lngamma(rowPrior);
-        score -= r * q * ProbUtils.lngamma(cellPrior);
+        score += q * Gamma.logGamma(rowPrior);
+        score -= r * q * Gamma.logGamma(cellPrior);
 
-        lastBumpThreshold = ((r - 1) * q * Math.log(getStructurePrior()));
+        lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
 
         return score;
+    }
+
+    private double getPriorForStructure(int numParents) {
+        double e = getStructurePrior();
+        double k = numParents;
+        double n = data.length;
+        return k * Math.log(e / n) + (n - k) * Math.log(1.0 - (e / n));
     }
 
     @Override
@@ -200,23 +210,25 @@ public class BDeuScore implements LocalDiscreteScore, GesScore {
         //Finally, compute the score
         double score = 0.0;
 
-        score += (r - 1) * q * Math.log(getStructurePrior());
+//        score += (r) * q * FastMath.log(getStructurePrior());
+
+        score += getPriorForStructure(1);
 
         final double cellPrior = getSamplePrior() / (r * q);
         final double rowPrior = getSamplePrior() / q;
 
         for (int j = 0; j < q; j++) {
-            score -= ProbUtils.lngamma(rowPrior + n_j[j]);
+            score -= Gamma.logGamma(rowPrior + n_j[j]);
 
             for (int k = 0; k < r; k++) {
-                score += ProbUtils.lngamma(cellPrior + n_jk[j][k]);
+                score += Gamma.logGamma(cellPrior + n_jk[j][k]);
             }
         }
 
-        score += q * ProbUtils.lngamma(rowPrior);
-        score -= r * q * ProbUtils.lngamma(cellPrior);
+        score += q * Gamma.logGamma(rowPrior);
+        score -= r * q * Gamma.logGamma(cellPrior);
 
-        lastBumpThreshold = ((r - 1) * q * Math.log(getStructurePrior()));
+        lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
 
         return score;
     }
@@ -242,21 +254,23 @@ public class BDeuScore implements LocalDiscreteScore, GesScore {
         //Finally, compute the score
         double score = 0.0;
 
-        score += (r - 1) * Math.log(getStructurePrior());
+//        score += (r) * q * FastMath.log(getStructurePrior());
+
+        score += getPriorForStructure(0);
 
         final double cellPrior = getSamplePrior() / r;
         final double rowPrior = getSamplePrior();
 
-        score -= ProbUtils.lngamma(rowPrior + n_j);
+        score -= Gamma.logGamma(rowPrior + n_j);
 
         for (int k = 0; k < r; k++) {
-            score += ProbUtils.lngamma(cellPrior + n_jk[k]);
+            score += Gamma.logGamma(cellPrior + n_jk[k]);
         }
 
-        score += ProbUtils.lngamma(rowPrior);
-        score -= r * ProbUtils.lngamma(cellPrior);
+        score += Gamma.logGamma(rowPrior);
+        score -= r * Gamma.logGamma(cellPrior);
 
-        lastBumpThreshold = ((r - 1) * Math.log(getStructurePrior()));
+        lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
 
         return score;
     }
