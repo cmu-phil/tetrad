@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.Ges;
+import edu.cmu.tetrad.search.GraphScore;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -89,7 +90,7 @@ public class TestGes {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,A-->D,C-->D",
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A---C,A---D,B---A,B---C,C---D",
                 knowledge);
     }
 
@@ -192,12 +193,12 @@ public class TestGes {
         Graph graph = GraphConverter.convert(inputGraph);
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
-        SemPm semPm = new SemPm(graph);
-        SemIm semIM = new SemIm(semPm);
-        DataSet dataSet = semIM.simulateData(5000, false);
+//        SemPm semPm = new SemPm(graph);
+//        SemIm semIM = new SemIm(semPm);
+//        DataSet dataSet = semIM.simulateData(5000, false);
 
         // Set up search.
-        Fgs ges = new Fgs(dataSet);
+        Fgs ges = new Fgs(new GraphScore(graph));
         ges.setKnowledge(knowledge);
 
         // Run search

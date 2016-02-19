@@ -315,8 +315,15 @@ public abstract class AbstractAlgorithmRunner
         } else if (dataModel != null) {
             return dataModel;
         } else {
-            throw new IllegalArgumentException();
+
+            // Do not throw an exception here!
+            return null;
         }
+    }
+
+    public final DataModelList getDataModelList() {
+        if (dataWrapper == null) return null;
+        return dataWrapper.getDataModelList();
     }
 
     public final void setResultGraph(Graph resultGraph) {
