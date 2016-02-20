@@ -21,12 +21,15 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.util.RandomUtil;
 import junit.framework.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -254,6 +257,79 @@ public final class TestGraphUtils {
         assertTrue(graph.isDConnectedTo(c, a, Collections.singletonList(b)));
     }
 
+    @Test
+    public void printEdgeData() {
+
+        String[] autistics = {
+                "autistic_normal_ROI_data_spline_smooth_clean_001.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_002.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_003.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_004.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_005.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_006.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_007.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_008.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_009.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_010.txt"
+        };
+
+        String[] neurotypicals = {
+                "neurotyp_normal_ROI_data_spline_smooth_clean_001.txt",
+                "neurotyp_normal_ROI_data_spline_smooth_clean_002.txt",
+                "neurotyp_normal_ROI_data_spline_smooth_clean_003.txt",
+                "neurotyp_normal_ROI_data_spline_smooth_clean_004.txt",
+                "neurotyp_normal_ROI_data_spline_smooth_clean_005.txt",
+                "neurotyp_normal_ROI_data_spline_smooth_clean_006.txt",
+                "neurotyp_normal_ROI_data_spline_smooth_clean_007.txt",
+                "neurotyp_normal_ROI_data_spline_smooth_clean_008.txt",
+                "neurotyp_normal_ROI_data_spline_smooth_clean_009.txt",
+                "neurotyp_normal_ROI_data_spline_smooth_clean_010.txt"
+        };
+
+        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_54_Variable";
+
+        try {
+            List<DataSet> autisticDataSets = new ArrayList<>();
+
+            for (int i = 0; i < 10; i++) {
+                DataReader reader = new DataReader();
+                reader.setDelimiter(DelimiterType.TAB);
+                autisticDataSets.add(reader.parseTabular(new File(path, autistics[i])));
+            }
+
+            List<DataSet> neurotypicalDataSets = new ArrayList<>();
+
+            for (int i = 0; i < 10; i++) {
+                DataReader reader = new DataReader();
+                reader.setDelimiter(DelimiterType.TAB);
+                neurotypicalDataSets.add(reader.parseTabular(new File(path, autistics[i])));
+            }
+
+            List<Graph> autisticGraphs = new ArrayList<>();
+
+            for (DataSet dataSet : autisticDataSets) {
+                Fgs fgs = new Fgs(dataSet);
+                fgs.setPenaltyDiscount(2);
+                autisticGraphs.add(fgs.search());
+            }
+
+            List<Graph> neurotypicalGraphs = new ArrayList<>();
+
+            for (DataSet dataSet : neurotypicalDataSets) {
+                Fgs fgs = new Fgs(dataSet);
+                fgs.setPenaltyDiscount(2);
+                neurotypicalGraphs.add(fgs.search());
+            }
+
+            List<List<Graph>> allGraphs = new ArrayList<>();
+            allGraphs.add(autisticGraphs);
+            allGraphs.add(neurotypicalGraphs);
+
+            GraphUtils.printEdgeDataSet(allGraphs, path, "edgedata");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 
