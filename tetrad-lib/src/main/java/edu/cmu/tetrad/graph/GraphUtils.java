@@ -2900,22 +2900,41 @@ public final class GraphUtils {
             }
         }
 
+        for (Edge edge : new ArrayList<>(_edges)) {
+            int count = 0;
+            int total = 0;
+
+            for (List<Graph> _graphs : graphs) {
+                for (Graph graph : _graphs) {
+                    if (graph.containsEdge(edge)) {
+                        count++;
+                    }
+
+                    total++;
+                }
+            }
+
+            if (count < 5) {
+                _edges.remove(edge);
+            }
+        }
+
         List<Edge> edges = new ArrayList<>(_edges);
 
         for (int i = 0; i < edges.size(); i++) {
-            out1.print("X" + (i + 1) + "\t");
+            out1.print(edges.get(i) + "\t");
+//            out1.print("X" + (i + 1) + "\t");
         }
 
         out1.println("Group");
 
-        for (List<Graph> _graphs : graphs2) {
-            for (Graph graph : _graphs) {
+        for (int i = 0; i < graphs2.size(); i++) {
+            for (Graph graph : graphs2.get(i)) {
                 for (Edge edge : edges) {
                     out1.print(graph.containsEdge(edge) ? "1\t" : "0\t");
                 }
 
-                out1.print(graphs2.indexOf(_graphs));
-                out1.println();
+                out1.println(i);
             }
         }
 
@@ -3628,7 +3647,6 @@ public final class GraphUtils {
 
         return R;
     }
-
 
 
     // Finds a sepset for x and y, if there is one; otherwise, returns null.

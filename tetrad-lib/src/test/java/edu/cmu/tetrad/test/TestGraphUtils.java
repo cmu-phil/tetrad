@@ -302,7 +302,7 @@ public final class TestGraphUtils {
             for (int i = 0; i < 10; i++) {
                 DataReader reader = new DataReader();
                 reader.setDelimiter(DelimiterType.TAB);
-                neurotypicalDataSets.add(reader.parseTabular(new File(path, autistics[i])));
+                neurotypicalDataSets.add(reader.parseTabular(new File(path, neurotypicals[i])));
             }
 
             List<Graph> autisticGraphs = new ArrayList<>();

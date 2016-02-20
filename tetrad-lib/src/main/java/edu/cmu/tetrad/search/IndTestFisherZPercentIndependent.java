@@ -235,7 +235,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * @throws UnsupportedOperationException
      */
     public DataSet getData() {
-        return DataUtils.concatenateData(dataSets);
+        return DataUtils.concatenate(dataSets);
     }
 
     public ICovarianceMatrix getCov() {
@@ -245,7 +245,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataUtils.concatenateData(dataSets));
+        return new CovarianceMatrix(DataUtils.concatenate(dataSets));
     }
 
     @Override

@@ -76,7 +76,7 @@ public final class IndTestMulti implements IndependenceTest {
             dataSets.add((DataSet) test.getData());
         }
 
-//        this.concatenatedData = DataUtils.concatenateData(dataSets);
+//        this.concatenatedData = DataUtils.concatenate(dataSets);
     }
 
     //==========================PUBLIC METHODS=============================//

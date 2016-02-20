@@ -275,7 +275,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataUtils.concatenateData(_dataSets));
+        return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
     }
 
     @Override
