@@ -2840,6 +2840,96 @@ public final class GraphUtils {
         return b;
     }
 
+    /**
+     * Builds a data set with columns being the set of all edges in the supplied graphs
+     * plus a class label column for which group they belong to.
+     */
+    public static void printEdgeDataSet(List<List<Graph>> graphs, String path, String prefix) {
+        File file1 = new File(path, prefix + ".data.txt");
+        File file2 = new File(path, prefix + ".edges.txt");
+        File dir = new File(path);
+
+        PrintStream out1 = null;
+        PrintStream out2 = null;
+        try {
+            out1 = new PrintStream(new FileOutputStream(file1));
+            out2 = new PrintStream(new FileOutputStream(file2));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+
+        Set<Node> _nodes = new HashSet<>();
+
+        for (List<Graph> _graphs : graphs) {
+            for (Graph graph : _graphs) {
+                for (Node node : graph.getNodes()) {
+                    boolean found = false;
+
+                    for (Node _node : _nodes) {
+                        if (_node.getName().equals(node.getName())) {
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        _nodes.add(node);
+                    }
+                }
+            }
+        }
+
+        List<List<Graph>> graphs2 = new ArrayList<>();
+
+        for (List<Graph> _graphs : graphs) {
+            List<Graph> _graphs2 = new ArrayList<>();
+
+            for (Graph graph : _graphs) {
+                Graph graph2 = GraphUtils.replaceNodes(graph, new ArrayList<Node>(_nodes));
+                _graphs2.add(graph2);
+            }
+
+            graphs2.add(_graphs2);
+        }
+
+        Set<Edge> _edges = new HashSet<>();
+
+        for (List<Graph> _graphs : graphs) {
+            for (Graph graph : _graphs) {
+                _edges.addAll(graph.getEdges());
+            }
+        }
+
+        List<Edge> edges = new ArrayList<>(_edges);
+
+        for (int i = 0; i < edges.size(); i++) {
+            out1.print("X" + (i + 1) + "\t");
+        }
+
+        out1.println("Group");
+
+        for (List<Graph> _graphs : graphs2) {
+            for (Graph graph : _graphs) {
+                for (Edge edge : edges) {
+                    out1.print(graph.containsEdge(edge) ? "1\t" : "0\t");
+                }
+
+                out1.print(graphs2.indexOf(_graphs));
+                out1.println();
+            }
+        }
+
+        out1.close();
+
+        for (int i = 0; i < edges.size(); i++) {
+            out2.println("X" + (i + 1) + "\t" + edges.get(i));
+        }
+
+        out2.println("Group");
+
+        out2.close();
+    }
+
     private static StringBuilder directedEdges(List<Graph> directedGraphs) {
         Set<Edge> directedEdgesSet = new HashSet<>();
 
