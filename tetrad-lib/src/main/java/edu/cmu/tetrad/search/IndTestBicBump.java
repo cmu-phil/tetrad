@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.distribution.TDistribution;
 
 import java.io.PrintStream;
 import java.text.NumberFormat;
@@ -32,7 +31,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
@@ -41,32 +39,17 @@ import static java.lang.Math.sqrt;
  * @author Joseph Ramsey
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
  */
-public final class IndTestCorrelationT implements IndependenceTest {
+public final class IndTestBicBump implements IndependenceTest {
 
     /**
      * The covariance matrix.
      */
-    private final ICovarianceMatrix covMatrix;
-
-    /**
-     * The matrix out of the cov matrix.
-     */
-    private final TetradMatrix _covMatrix;
+    private ICovarianceMatrix covMatrix;
 
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
     private List<Node> variables;
-
-    /**
-     * The significance level of the independence tests.
-     */
-    private double alpha;
-
-    /**
-     * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
-     */
-    private double pValue;
 
     /**
      * Formats as 0.0000.
@@ -81,8 +64,15 @@ public final class IndTestCorrelationT implements IndependenceTest {
     private PrintStream pValueLogger;
     private Map<Node, Integer> indexMap;
     private Map<String, Node> nameMap;
-    private TDistribution tDistribution;
-    private boolean verbose = false;
+    private boolean verbose = true;
+
+    private double bump;
+    private SemBicScore score;
+    private double penaltyDiscount = 1;
+
+    // Legacy
+    private double alpha;
+
 
     //==========================CONSTRUCTORS=============================//
 
@@ -91,57 +81,32 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * given data set (must be continuous). The given significance level is used.
      *
      * @param dataSet A data set containing only continuous columns.
-     * @param alpha   The alpha level of the test.
      */
-    public IndTestCorrelationT(DataSet dataSet, double alpha) {
+    public IndTestBicBump(DataSet dataSet, double penaltyDicount) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
-
-        this.covMatrix = new CovarianceMatrix(dataSet);
-        this._covMatrix = covMatrix.getMatrix();
-        List<Node> nodes = covMatrix.getVariables();
-
-        this.variables = Collections.unmodifiableList(nodes);
-        this.indexMap = indexMap(variables);
-        this.nameMap = mapNames(variables);
-        setAlpha(alpha);
-
-        this.dataSet = DataUtils.center(dataSet);
-
-        tDistribution = new TDistribution(dataSet.getNumRows() - 2);
-    }
-
-    /**
-     * Constructs a new Fisher Z independence test with the listed arguments.
-     *
-     * @param data      A 2D continuous data set with no missing values.
-     * @param variables A list of variables, a subset of the variables of <code>data</code>.
-     * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
-     */
-    public IndTestCorrelationT(TetradMatrix data, List<Node> variables, double alpha) {
-        this.dataSet = ColtDataSet.makeContinuousData(variables, data);
-        this.dataSet = DataUtils.center(dataSet);
-        this.covMatrix = new CovarianceMatrix(dataSet);
-        this._covMatrix = covMatrix.getMatrix();
-        this.variables = Collections.unmodifiableList(variables);
-        this.indexMap = indexMap(variables);
-        this.nameMap = mapNames(variables);
-        setAlpha(alpha);
+        this.dataSet = dataSet;
+        this.penaltyDiscount = penaltyDicount;
+        this.score = new SemBicScore(new CorrelationMatrix(dataSet));
+        this.variables = this.score.getVariables();
+        score.setPenaltyDiscount(penaltyDiscount);
     }
 
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
      */
-    public IndTestCorrelationT(ICovarianceMatrix corrMatrix, double alpha) {
-        this.covMatrix = corrMatrix;
-        this._covMatrix = corrMatrix.getMatrix();
-        this.variables = Collections.unmodifiableList(corrMatrix.getVariables());
+    public IndTestBicBump(ICovarianceMatrix covMatrix, double penaltyDiscount) {
+        this.covMatrix = covMatrix;
+        this.penaltyDiscount = penaltyDiscount;
         this.indexMap = indexMap(variables);
-        this.nameMap = mapNames(variables);
-        setAlpha(alpha);
+        this.nameMap = nameMap(variables);
+        this.score = new SemBicScore(covMatrix);
+        this.variables = score.getVariables();
+        score.setPenaltyDiscount(penaltyDiscount);
     }
+
 
     //==========================PUBLIC METHODS=============================//
 
@@ -167,9 +132,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
         }
 
         ICovarianceMatrix newCovMatrix = covMatrix.getSubmatrix(indices);
-
-        double alphaNew = getAlpha();
-        return new IndTestCorrelationT(newCovMatrix, alphaNew);
+        return new IndTestBicBump(newCovMatrix, getPenaltyDiscount());
     }
 
     /**
@@ -182,96 +145,19 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-//        System.out.println("A");
+            double v = -this.score.localScoreDiff(variables.indexOf(y), varIndices(z), variables.indexOf(x));
+            this.bump = v;
+            return v > 0;
+    }
 
-        double r;
-        int n = sampleSize();
+    private int[] varIndices(List<Node> z) {
+        int[] indices = new int[z.size()];
 
-        if (z.isEmpty()) {
-            Integer xi = indexMap.get(x);
-            Integer yi = indexMap.get(y);
-
-            if (xi == null || yi == null) {
-                xi = indexMap.get(nameMap.get(x.getName()));
-                yi = indexMap.get(nameMap.get(y.getName()));
-
-                if (xi == null || yi == null) {
-                    throw new IllegalArgumentException("Node not in map");
-                }
-            }
-
-            double a = _covMatrix.get(xi, xi);
-            double b = _covMatrix.get(xi, yi);
-            double d = _covMatrix.get(yi, yi);
-
-            r = -b / sqrt(a * d);
-        } else {
-            TetradMatrix submatrix = DataUtils.subMatrix(_covMatrix, indexMap, x, y, z);
-            r = StatUtils.partialCorrelation(submatrix);
+        for (int i = 0; i < z.size(); i++) {
+            indices[i] = variables.indexOf(z.get(i));
         }
 
-        // Either dividing by a zero standard deviation (in which case it's dependent) or doing a regression
-//        // (effectively) with a multicolliarity.. or missing values in the data!
-//        if (Double.isNaN(r)) {
-//
-//            // Maybe it's missing values. Try calculating r using just the rows in the data set
-//            // (if it exists) with defined values for all compared variables.
-//            if (dataSet != null) {
-//                int[] vars = new int[2 + z.size()];
-//
-//                vars[0] = variables.indexOf(x);
-//                vars[1] = variables.indexOf(y);
-//
-//                for (int k = 0; k < z.size(); k++) {
-//                    vars[2 + k] = variables.indexOf(z.get(k));
-//                }
-//
-//                int[] _n = new int[1];
-//
-//                TetradMatrix submatrix = DataUtils.covMatrixForDefinedRows(dataSet, vars, _n);
-//
-//                r = StatUtils.partialCorrelation(submatrix);
-//            }
-//
-//            if (Double.isNaN(r)) {
-//                return false;
-//            }
-//        }
-
-
-        if (r > 1.) r = 1.;
-        if (r < -1.) r = -1.;
-
-//        double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
-//
-//        if (Double.isInfinite(fisherZ)) {
-//            pValue = 0;
-//        }
-//        else {
-//            pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
-//        }
-
-        double tr = sqrt(n - 2 - z.size()) * sqrt((r * r) / (1 - r * r));
-        double t = gettDistribution().cumulativeProbability(tr);
-        pValue = 2.0 * (1.0 - abs(t));
-
-        boolean independent = pValue > alpha;
-
-        if (verbose) {
-            if (independent) {
-                TetradLogger.getInstance().log("independencies",
-                        SearchLogUtils.independenceFactMsg(x, y, z, r)); //getScore()));
-            } else {
-                if (pValueLogger != null) {
-                    pValueLogger.println(getPValue());
-                }
-
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
-            }
-        }
-
-        return independent;
+        return indices;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -291,26 +177,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return pValue;
-    }
-
-    /**
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
-     */
-    public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance out of range.");
-        }
-
-        this.alpha = alpha;
-    }
-
-    /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -353,13 +220,12 @@ public final class IndTestCorrelationT implements IndependenceTest {
 
         int i = covMatrix.getVariables().indexOf(x);
 
-        TetradMatrix matrix2D = covMatrix.getMatrix();
-        double variance = matrix2D.get(i, i);
+        double variance = covMatrix.getValue(i, i);
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            TetradMatrix Czz = matrix2D.getSelection(parents, parents);
+            TetradMatrix Czz = covMatrix.getSelection(parents, parents);
             TetradMatrix inverse;
 
             try {
@@ -368,14 +234,23 @@ public final class IndTestCorrelationT implements IndependenceTest {
                 return true;
             }
 
-            TetradVector Cyz = matrix2D.getColumn(i);
-            Cyz = Cyz.viewSelection(parents);
+            TetradVector Cyz = covMatrix.getSelection(parents, new int[]{i}).getColumn(0);
             TetradVector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);
         }
 
         return variance < 1e-20;
+    }
+
+    @Override
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    @Override
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 
     /**
@@ -385,12 +260,6 @@ public final class IndTestCorrelationT implements IndependenceTest {
         return dataSet;
     }
 
-    public void shuffleVariables() {
-        ArrayList<Node> nodes = new ArrayList<Node>(this.variables);
-        Collections.shuffle(nodes);
-        this.variables = Collections.unmodifiableList(nodes);
-    }
-
     /**
      * @return a string representation of this test.
      */
@@ -398,21 +267,13 @@ public final class IndTestCorrelationT implements IndependenceTest {
         return "Fisher's Z, alpha = " + nf.format(getAlpha());
     }
 
-    public void setPValueLogger(PrintStream pValueLogger) {
-        this.pValueLogger = pValueLogger;
-    }
-
     //==========================PRIVATE METHODS============================//
-
-    private int sampleSize() {
-        return covMatrix().getSampleSize();
-    }
 
     private ICovarianceMatrix covMatrix() {
         return covMatrix;
     }
 
-    private Map<String, Node> mapNames(List<Node> variables) {
+    private Map<String, Node> nameMap(List<Node> variables) {
         Map<String, Node> nameMap = new ConcurrentHashMap<String, Node>();
 
         for (Node node : variables) {
@@ -462,21 +323,25 @@ public final class IndTestCorrelationT implements IndependenceTest {
         return null;
     }
 
-    @Override
-    public double getScore() {
-        return getPValue();
-    }
-
-    public TDistribution gettDistribution() {
-        return tDistribution;
-    }
-
     public boolean isVerbose() {
         return verbose;
     }
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    @Override
+    public double getScore() {
+        return this.bump;
     }
 }
 

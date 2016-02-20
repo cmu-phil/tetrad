@@ -304,6 +304,11 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
 
 }
 

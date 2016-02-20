@@ -106,7 +106,7 @@ public final class Ccd implements GraphSearch {
         Graph psi = search.search();
         SepsetMap sepsetsFromFas = search.getSepsets();
 
-        SepsetProducer sepsets = new SepsetsMaxPValue(psi, test, null, depth);
+        SepsetProducer sepsets = new SepsetsMaxScore(psi, test, null, depth);
 
         psi.reorientAllWith(Endpoint.CIRCLE);
         SearchGraphUtils.pcOrientbk(knowledge, psi, nodes);
@@ -280,7 +280,7 @@ public final class Ccd implements GraphSearch {
                 if (sepset == null) continue;
 
                 if (!sepset.contains(b)) {
-                    colliders.put(new Triple(a, b, c), sepsetProducer.getPValue());
+                    colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
 
                     if (verbose) {
                         TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
@@ -324,7 +324,7 @@ public final class Ccd implements GraphSearch {
 
                 if (sepset == null) continue;
 
-//                if (sepsetProducer.getPValue() < test.getAlpha()) continue;
+//                if (sepsetProducer.getScore() < test.getAlpha()) continue;
 
                 if (sepset.contains(b)) {
                     if (verbose) {

@@ -331,6 +331,11 @@ public final class IndTestDrton implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     public void shuffleVariables() {
         ArrayList<Node> nodes = new ArrayList<Node>(this.variables);
         Collections.shuffle(nodes);

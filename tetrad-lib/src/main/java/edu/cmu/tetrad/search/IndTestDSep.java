@@ -295,6 +295,11 @@ public class IndTestDSep implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     public void startRecordingFacts() {
         this.facts = new HashSet<IndependenceFact>();
     }

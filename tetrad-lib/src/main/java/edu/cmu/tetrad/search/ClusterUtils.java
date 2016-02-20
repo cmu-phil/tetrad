@@ -640,7 +640,7 @@ public class ClusterUtils {
 //            System.out.println("chisq = " +
 //                    estimator.getEstimatedSem().getChiSquare());
 //            System.out.println(
-//                    "pvalue = " + estimator.getEstimatedSem().getPValue());
+//                    "pvalue = " + estimator.getEstimatedSem().getScore());
 //        }
 
         return graph;

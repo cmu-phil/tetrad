@@ -200,6 +200,11 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     public boolean isVerbose() {
         return verbose;
     }

@@ -396,6 +396,11 @@ public final class IndTestChiSquare implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return pValue;
+    }
+
     public void startRecordingFacts() {
         this.facts = new HashSet<IndependenceFact>();
 

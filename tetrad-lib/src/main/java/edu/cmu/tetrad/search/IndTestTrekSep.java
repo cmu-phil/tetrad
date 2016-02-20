@@ -445,6 +445,11 @@ public final class IndTestTrekSep implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     public TDistribution gettDistribution() {
         return tDistribution;
     }

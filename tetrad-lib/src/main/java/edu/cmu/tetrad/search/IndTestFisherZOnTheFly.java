@@ -429,6 +429,11 @@ public final class IndTestFisherZOnTheFly implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return 0;
+    }
+
     public void shuffleVariables() {
         List<Node> nodes = new ArrayList(this.variables);
         Collections.shuffle(nodes);

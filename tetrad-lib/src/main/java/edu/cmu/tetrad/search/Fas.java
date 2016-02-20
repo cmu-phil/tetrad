@@ -306,12 +306,12 @@ public class Fas implements IFas {
                         getSepsets().set(x, y, empty);
                     }
 
-                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                            nf.format(test.getPValue()));
+                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+                            nf.format(test.getScore()));
 
                     if (verbose) {
-                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                                nf.format(test.getPValue()));
+                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+                                nf.format(test.getScore()));
                     }
 
                 } else if (!forbiddenEdge(x, y)) {
@@ -319,8 +319,8 @@ public class Fas implements IFas {
                     adjacencies.get(y).add(x);
 
                     if (verbose) {
-                        TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                                nf.format(test.getPValue()));
+                        TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+                                nf.format(test.getScore()));
                     }
                 }
             }
@@ -411,9 +411,9 @@ public class Fas implements IFas {
                             getSepsets().set(x, y, condSet);
 
                             if (verbose) {
-                                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-                                        nf.format(test.getPValue()));
-                                out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
+                                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) +
+                                        " score = " + nf.format(test.getScore()));
+                                out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getScore()));
                             }
 
                             continue EDGE;

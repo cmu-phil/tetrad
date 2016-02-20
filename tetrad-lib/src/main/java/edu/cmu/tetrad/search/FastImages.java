@@ -102,7 +102,7 @@ public final class FastImages implements GraphSearch, GraphScorer, IImages {
     private long elapsedTime;
 
     /**
-     * Penalty discount--the BIC penalty is multiplied by this (for continuous variables).
+     * Penalty penaltyDiscount--the BIC penalty is multiplied by this (for continuous variables).
      */
     private double penaltyDiscount = 1.0;
 
@@ -444,7 +444,7 @@ public final class FastImages implements GraphSearch, GraphScorer, IImages {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         if (penaltyDiscount < 0) {
-            throw new IllegalArgumentException("Penalty discount must be >= 0: "
+            throw new IllegalArgumentException("Penalty penaltyDiscount must be >= 0: "
                     + penaltyDiscount);
         }
 
@@ -2033,7 +2033,7 @@ public final class FastImages implements GraphSearch, GraphScorer, IImages {
      * @param nodes         The nodes over which edge coefs are to be done. Why not specify this in advance?
      * @param knowledge     Knowledge under which IMaGES should operate.
      * @param numBootstraps The number of bootstrap samples to be drawn.
-     * @param penalty       The penalty discount at which the bootstrap analysis is to be done.
+     * @param penalty       The penalty penaltyDiscount at which the bootstrap analysis is to be done.
      * @return A map from edges to coefs, where the edges are over the nodes of the datasets.
      */
     private Map<Edge, Integer> bootstrapImagesCounts(List<DataSet> dataSets, List<Node> nodes, IKnowledge knowledge,
@@ -2203,7 +2203,7 @@ public final class FastImages implements GraphSearch, GraphScorer, IImages {
                 "the resulting model score m(e), and then reporting m(e) - m. The score used is " +
                 "the IMScore, L - SUM_i{kc ln n(i)}, L is the maximum likelihood of the model, " +
                 "k isthe number of parameters of the model, n(i) is the sample size of the ith " +
-                "data set, and c is the penalty discount. Note that the more negative the score, " +
+                "data set, and c is the penalty penaltyDiscount. Note that the more negative the score, " +
                 "the more important the edge is to the posterior probability of the IMaGES model. " +
                 "Edges are given in order of their importance so measured.\n\n");
 

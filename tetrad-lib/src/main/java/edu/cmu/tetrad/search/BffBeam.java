@@ -916,7 +916,7 @@ public final class BffBeam implements Bff {
             this.aic = chisq - 2 * dof;
 
 //            this.chisq = scorer.getChiSquare();
-//            this.pValue = scorer.getPValue();
+//            this.pValue = scorer.getScore();
 //            this.bic = scorer.getBicScore();
 //            this.aic = scorer.getAicScore();
         }

@@ -172,8 +172,9 @@ public final class IndTestChooser {
             return new IndTestFisherZBootstrap(dataSet, indTestParams.getAlpha(), 15, dataSet.getNumRows());
         }
         if (IndTestType.LINEAR_REGRESSION == testType) {
-            return new IndTestLaggedRegression(dataSet,
-                    indTestParams.getAlpha(), 1);
+            return new IndTestBicBump(dataSet, indTestParams.getAlpha() * 100);
+//            return new IndTestLaggedRegression(dataSet,
+//                    indTestParams.getAlpha(), 1);
         } else {
             params.setIndTestType(IndTestType.FISHER_Z);
             return new IndTestFisherZ(dataSet, indTestParams.getAlpha());

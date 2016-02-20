@@ -313,7 +313,7 @@ public final class MimBuildPc {
 
     private double scoreModel(SemIm semIm) {
 //        return -semIm.getBicScore();
-//        return semIm.getPValue();
+//        return semIm.getScore();
         return -semIm.getScore();
 
 

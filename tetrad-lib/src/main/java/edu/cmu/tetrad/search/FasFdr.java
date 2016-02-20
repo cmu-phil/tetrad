@@ -422,7 +422,7 @@ public class FasFdr implements IFas {
                         if (verbose) {
                             out.println(SearchLogUtils.independenceFactMsg(x, y, theRest, test.getPValue()));
 //                            out.println(x + " _||_ " + y + " | the rest" + " p = " +
-//                                    nf.format(test.getPValue()));
+//                                    nf.format(test.getScore()));
                         }
 
                         removed = true;
@@ -432,7 +432,7 @@ public class FasFdr implements IFas {
 
 //                    if (verbose) {
 //                        out.println(SearchLogUtils.dependenceFactMsg(x, y, empty) + " p = " +
-//                                nf.format(test.getPValue()));
+//                                nf.format(test.getScore()));
 //                    }
                     }
                 } else {
@@ -614,7 +614,7 @@ public class FasFdr implements IFas {
 //                        else {
 //                            if (verbose) {
 //                                out.println("Dependence: " + SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-//                                        nf.format(test.getPValue()));
+//                                        nf.format(test.getScore()));
 //                            }
 //                        }
 

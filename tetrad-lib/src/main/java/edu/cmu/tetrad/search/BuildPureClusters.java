@@ -277,7 +277,7 @@ public final class BuildPureClusters {
 //            print("chisq = " +
 //                    estimator.getEstimatedSem().getChiSquare());
 //            print("p-value = " +
-//                    estimator.getEstimatedSem().getPValue());
+//                    estimator.getEstimatedSem().getScore());
 //        }
 
         this.logger.log("graph", "\nReturning this graph: " + graph);

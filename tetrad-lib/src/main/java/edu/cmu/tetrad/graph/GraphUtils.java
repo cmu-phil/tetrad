@@ -2894,25 +2894,35 @@ public final class GraphUtils {
         List<List<Edge>> groups = new ArrayList<>();
         for (int i = 0; i < directedGraphs2.size(); i++) groups.add(new ArrayList<Edge>());
         Set<Edge> contradicted = new HashSet<>();
+        Map<Edge, Integer> directionCounts = new HashMap<>();
 
         for (Edge edge : directedEdges) {
             if (!edge.isDirected()) continue;
 
-            int count = 0;
+            int count1 = 0;
             int count2 = 0;
 
             for (Graph graph : directedGraphs2) {
                 if (graph.containsEdge(edge)) {
-                    count++;
-                } else if (uncontradicted(edge, graph.getEdge(edge.getNode1(), edge.getNode2()))) {
+                    count1++;
+                } else if (graph.containsEdge(edge.reverse())) {
                     count2++;
-                } else if (!contradicted.contains(edge) && !contradicted.contains(edge.reverse())) {
-                    contradicted.add(edge);
                 }
             }
 
+            if (count1 != 0 && count2 != 0 && !contradicted.contains(edge.reverse())) {
+                contradicted.add(edge);
+            }
+
+            directionCounts.put(edge, count1);
+            directionCounts.put(edge.reverse(), count2);
+
+            if (count1 == 0) {
+                groups.get(count2 - 1).add(edge);
+            }
+
             if (count2 == 0) {
-                groups.get(count - 1).add(edge);
+                groups.get(count1 - 1).add(edge);
             }
         }
 
@@ -2930,7 +2940,10 @@ public final class GraphUtils {
         int index = 1;
 
         for (Edge edge : contradicted) {
-            b.append("\n").append(index++).append(". ").append(edge);
+            b.append("\n").append(index++).append(". ").append(Edges.undirectedEdge(edge.getNode1(), edge.getNode2())).
+                    append(" (--> ").
+                    append(directionCounts.get(edge)).append(" <-- ").
+                    append(directionCounts.get(edge.reverse())).append(")");
         }
 
         return b;

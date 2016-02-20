@@ -319,11 +319,11 @@ public class Vcfas {
                     getApparentlyNonadjacencies().put(Edges.undirectedEdge(x, y), empty);
 
 //                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                            nf.format(test.getPValue()));
+//                            nf.format(test.getScore()));
 
                     if (verbose) {
 //                        System.out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                                nf.format(test.getPValue()));
+//                                nf.format(test.getScore()));
                     }
 
                 } else if (!forbiddenEdge(x, y)) {
@@ -331,11 +331,11 @@ public class Vcfas {
                     adjacencies.get(y).add(x);
 
 //                    TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                            nf.format(test.getPValue()));
+//                            nf.format(test.getScore()));
 
 //                    if (verbose) {
 //                        System.out.println(SearchLogUtils.dependenceFactMsg(x, y, empty) + " p = " +
-//                                nf.format(test.getPValue()));
+//                                nf.format(test.getScore()));
 //                    }
                 }
             }
@@ -422,9 +422,9 @@ public class Vcfas {
 //                    @Override
 //                    public int compare(Node node1, Node node2) {
 //                        test.isIndependent(_x, node1);
-//                        double p1 = test.getPValue();
+//                        double p1 = test.getScore();
 //                        test.isIndependent(_x, node2);
-//                        double p2 = test.getPValue();
+//                        double p2 = test.getScore();
 //                        return Double.compare(p2, p1);
 //                    }
 //                });
@@ -462,7 +462,7 @@ public class Vcfas {
                         }
 //                        else {
 //                            if (verbose) {
-//                                System.out.println(SearchLogUtils.dependenceFactMsg(x, y, condSet, test.getPValue()));
+//                                System.out.println(SearchLogUtils.dependenceFactMsg(x, y, condSet, test.getScore()));
 //                            }
 //
 //                        }

@@ -62,7 +62,7 @@ public class SepsetsSet implements SepsetProducer {
     }
 
     @Override
-    public double getPValue() {
+    public double getScore() {
         return test.getPValue();
     }
 

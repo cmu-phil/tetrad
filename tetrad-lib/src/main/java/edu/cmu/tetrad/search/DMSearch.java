@@ -28,11 +28,11 @@ public class DMSearch {
     private double alphaPC = .05;
 
 
-    //Starting ges penalty discount.
+    //Starting ges penalty penaltyDiscount.
     private double gesDiscount = 10;
     private int gesDepth = 0;
 
-    //Minimum ges penalty discount to use in recursive search.
+    //Minimum ges penalty penaltyDiscount to use in recursive search.
     private int minDiscount = 4;
 
     //If true, use GES, else use PC.

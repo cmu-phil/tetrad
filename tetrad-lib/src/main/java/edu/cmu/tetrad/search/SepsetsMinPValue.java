@@ -56,13 +56,13 @@ public class SepsetsMinPValue implements SepsetProducer {
     public boolean isCollider(Node i, Node j, Node k) {
 //        if (graph.isAdjacentTo(i, k)) return false;
         List<Node> _v = getMaxSepset(i, k);
-        return /*getPValue() > independenceTest.getAlpha() &&*/ _v != null && !_v.contains(j);
+        return /*getScore() > independenceTest.getAlpha() &&*/ _v != null && !_v.contains(j);
     }
 
     public boolean isNoncollider(Node i, Node j, Node k) {
 //        if (graph.isAdjacentTo(i, k)) return false;
         List<Node> _v = getMaxSepset(i, k);
-        return /*getPValue() > independenceTest.getAlpha() &&*/ _v != null && _v.contains(j);
+        return /*getScore() > independenceTest.getAlpha() &&*/ _v != null && _v.contains(j);
     }
 
     private List<Node> getMaxSepset(Node i, Node k) {
@@ -134,7 +134,7 @@ public class SepsetsMinPValue implements SepsetProducer {
     }
 
     @Override
-    public double getPValue() {
+    public double getScore() {
         return p;
     }
 

@@ -130,7 +130,7 @@ public class SepsetsAdjacents implements SepsetProducer {
     }
 
     @Override
-    public double getPValue() {
+    public double getScore() {
         return p;
     }
 

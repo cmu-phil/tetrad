@@ -260,6 +260,11 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     /**
      * @return a string representation of this test.
      */

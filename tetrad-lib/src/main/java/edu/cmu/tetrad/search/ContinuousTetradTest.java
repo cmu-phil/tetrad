@@ -803,7 +803,7 @@ public final class ContinuousTetradTest implements TetradTest {
 //            estimator.estimate();
 //            SemIm semIm = estimator.getEstimatedSem();
 //            //System.out.println("Model p-value: " + semIm.getLikelihoodRatioP());
-//            return semIm.getPValue() > sig;
+//            return semIm.getScore() > sig;
         }
 
         protected abstract SemPm buildSemPm(int indices[]);

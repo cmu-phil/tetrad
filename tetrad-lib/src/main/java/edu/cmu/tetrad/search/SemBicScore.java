@@ -48,7 +48,7 @@ public class SemBicScore implements GesScore {
     // The sample size of the covariance matrix.
     private int sampleSize;
 
-    // The penalty discount.
+    // The penalty penaltyDiscount.
     private double penaltyDiscount = 2.0;
 
     // True if linear dependencies should return NaN for the score, and hence be

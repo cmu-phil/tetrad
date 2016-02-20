@@ -123,7 +123,7 @@ public final class Ges implements GraphSearch, GraphScorer {
     private transient List<PropertyChangeListener> listeners;
 
     /**
-     * Penalty discount--the BIC penalty is multiplied by this (for continuous variables).
+     * Penalty penaltyDiscount--the BIC penalty is multiplied by this (for continuous variables).
      */
     private double penaltyDiscount = 2.0;
 
@@ -335,7 +335,7 @@ public final class Ges implements GraphSearch, GraphScorer {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         if (penaltyDiscount < 0) {
-            throw new IllegalArgumentException("Penalty discount must be >= 0: "
+            throw new IllegalArgumentException("Penalty penaltyDiscount must be >= 0: "
                     + penaltyDiscount);
         }
 

@@ -225,7 +225,7 @@ public class PcMax implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-        SepsetsMaxPValue sepsetProducer = new SepsetsMaxPValue(graph, independenceTest, null, getDepth());
+        SepsetsMaxScore sepsetProducer = new SepsetsMaxScore(graph, independenceTest, null, getDepth());
 
         addColliders(graph, sepsetProducer, knowledge);
 
@@ -309,14 +309,12 @@ public class PcMax implements GraphSearch {
 
                 if (sepset == null) continue;
 
-//                if (sepsetProducer.getPValue() < 0.5) continue;
-
                 if (!sepset.contains(b)) {
                     if (verbose) {
                         System.out.println("\nCollider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
                     }
 
-                    colliders.put(new Triple(a, b, c), sepsetProducer.getPValue());
+                    colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
 
                     TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
                 }

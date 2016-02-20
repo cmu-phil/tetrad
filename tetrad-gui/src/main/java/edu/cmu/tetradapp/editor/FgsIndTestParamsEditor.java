@@ -56,10 +56,11 @@ class FgsIndTestParamsEditor extends JComponent {
         this.discreteData = discreteData;
 
         NumberFormat nf = new DecimalFormat("0.0####");
+        NumberFormat smallNf = new DecimalFormat("0.0E0");
 
         if (this.discreteData) {
             this.cellPriorField = new DoubleTextField(
-                    getFgsIndTestParams().getSamplePrior(), 5, nf);
+                    getFgsIndTestParams().getSamplePrior(),  5, nf, smallNf, 1e-4);
 
             this.cellPriorField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {

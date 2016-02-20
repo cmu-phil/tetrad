@@ -309,7 +309,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         if (penaltyDiscount < 0) {
-            throw new IllegalArgumentException("Penalty discount must be >= 0: "
+            throw new IllegalArgumentException("Penalty penaltyDiscount must be >= 0: "
                     + penaltyDiscount);
         }
 

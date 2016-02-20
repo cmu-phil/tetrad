@@ -317,7 +317,7 @@ public final class MimBuild {
 
     private double scoreModel(SemIm semIm) {
 //        return -semIm.getBicScore();
-//        return semIm.getPValue();
+//        return semIm.getScore();
 //        return -semIm.getScore();
 
         double fml = semIm.getScore();

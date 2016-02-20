@@ -347,8 +347,8 @@ public class FasDeterministic implements IFas {
                             nf.format(test.getPValue()));
 
 //                    if (verbose) {
-//                        out.println(SearchLogUtils.dependenceFactMsg(x, y, empty, test.getPValue()) + " p = " +
-//                                nf.format(test.getPValue()));
+//                        out.println(SearchLogUtils.dependenceFactMsg(x, y, empty, test.getScore()) + " p = " +
+//                                nf.format(test.getScore()));
 //                    }
                 }
             }
@@ -439,9 +439,9 @@ public class FasDeterministic implements IFas {
 //                    @Override
 //                    public int compare(Node node1, Node node2) {
 //                        test.isIndependent(_x, node1);
-//                        double p1 = test.getPValue();
+//                        double p1 = test.getScore();
 //                        test.isIndependent(_x, node2);
-//                        double p2 = test.getPValue();
+//                        double p2 = test.getScore();
 //                        return Double.compare(p2, p1);
 //                    }
 //                });
@@ -495,7 +495,7 @@ public class FasDeterministic implements IFas {
                             continue EDGE;
                         } else {
 //                            if (verbose) {
-//                                out.println(SearchLogUtils.dependenceFactMsg(x, y, condSet, test.getPValue()));
+//                                out.println(SearchLogUtils.dependenceFactMsg(x, y, condSet, test.getScore()));
 //                            }
 
                         }

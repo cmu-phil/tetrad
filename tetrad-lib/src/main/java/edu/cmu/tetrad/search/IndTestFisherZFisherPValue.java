@@ -293,6 +293,11 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     /**
      * @return a string representation of this test.
      */
