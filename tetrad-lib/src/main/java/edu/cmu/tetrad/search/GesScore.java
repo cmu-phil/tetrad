@@ -39,8 +39,6 @@ public interface GesScore {
 
     List<Node> getVariables();
 
-    int getSampleSize();
-
     boolean isEffectEdge(double bump);
 
     boolean isDiscrete();

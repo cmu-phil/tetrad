@@ -21,16 +21,23 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.BayesProperties;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.sem.SemEstimator;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
-import edu.cmu.tetradapp.util.*;
+import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.LayoutEditable;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
@@ -43,40 +50,41 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Edits some algorithms to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */
-public class ImagesSearchEditor extends AbstractSearchEditor
+public class FgsSearchEditorOld extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, Indexable, DoNotScroll {
 
     private JTextArea modelStatsText;
-    private JTextArea logBayesFactorsScroll;
-    private JTextArea bootstrapEdgeCountsScroll;
     private JTabbedPane tabbedPane;
-    private boolean alreadyLaidOut = false;
     private GesDisplay gesDisplay;
-    private ImagesIndTestParamsEditor paramsEditor;
 
     //=========================CONSTRUCTORS============================//
 
     /**
      * Opens up an editor to let the user view the given GesRunner.
      */
-    public ImagesSearchEditor(GesRunner runner) {
+    public FgsSearchEditorOld(GesRunner runner) {
         super(runner, "Result Pattern");
 //        getWorkbench().setGraph(runner.getTopGraphs().get(runner.getTopGraphs().size() - 1).getGraph());
     }
 
-    public ImagesSearchEditor(ImagesRunner runner) {
+    /**
+     * Opens up an editor to let the user view the given GesRunner.
+     */
+    public FgsSearchEditorOld(FgsRunnerOld runner) {
+        super(runner, "Result Pattern");
+//        getWorkbench().setGraph(runner.getTopGraphs().get(runner.getTopGraphs().size() - 1).getGraph());
+    }
+
+    public FgsSearchEditorOld(FgsRunner runner) {
         super(runner, "Result Pattern");
     }
 
@@ -134,7 +142,7 @@ public class ImagesSearchEditor extends AbstractSearchEditor
                     IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
-                                getWorkbench(),
+                                JOptionUtils.centeringComp(),
                                 "Using previously set knowledge. (To edit, use " +
                                         "the Knowledge menu.)");
                         knowledgeMessageShown = true;
@@ -191,8 +199,6 @@ public class ImagesSearchEditor extends AbstractSearchEditor
                 firePropertyChange("algorithmFinished", null, null);
                 getExecuteButton().setEnabled(true);
                 firePropertyChange("modelChanged", null, null);
-
-                doPostExecutionSteps();
             }
         };
 
@@ -254,6 +260,7 @@ public class ImagesSearchEditor extends AbstractSearchEditor
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
 
+        modelStatsText = new JTextArea();
         tabbedPane = new JTabbedPane();
         tabbedPane.add("Pattern", gesDisplay());
 
@@ -299,7 +306,7 @@ public class ImagesSearchEditor extends AbstractSearchEditor
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        if (!(getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix)) {
+        if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
             Box b3 = Box.createHorizontalBox();
             b3.add(Box.createGlue());
             b3.add(statsButton);
@@ -346,9 +353,6 @@ public class ImagesSearchEditor extends AbstractSearchEditor
 
     protected void doPostExecutionSteps() {
         System.out.println("Post execution.");
-        GesIndTestParams gesIndTestParams = (GesIndTestParams) getAlgorithmRunner().getParams().getIndTestParams();
-        this.paramsEditor.setPenaltyDiscount(gesIndTestParams.getPenaltyDiscount());
-
     }
 
     protected void addSpecialMenus(JMenuBar menuBar) {
@@ -373,7 +377,7 @@ public class ImagesSearchEditor extends AbstractSearchEditor
         JMenu graph = new JMenu("Graph");
         JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        final JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -384,7 +388,7 @@ public class ImagesSearchEditor extends AbstractSearchEditor
 //        graph.add(new TreksAction(getWorkbench()));
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
-//        graph.add(new TriplesAction(getWorkbench(), getAlgorithmRunner()));
+        graph.add(new TriplesAction(getWorkbench(), getAlgorithmRunner()));
         graph.addSeparator();
 
         graph.add(meekOrient);
@@ -425,9 +429,9 @@ public class ImagesSearchEditor extends AbstractSearchEditor
                             return;
                         }
 
-                        if (runner instanceof ImagesRunner) {
-                            GraphScorer scorer = ((ImagesRunner) runner).getGraphScorer();
-                            Graph _graph = ((ImagesRunner) runner).getTopGraphs().get(getIndex()).getGraph();
+                        if (runner instanceof GesRunner) {
+                            GraphScorer scorer = ((GesRunner) runner).getGraphScorer();
+                            Graph _graph = ((GesRunner) runner).getTopGraphs().get(getIndex()).getGraph();
 
                             ScoredGraphsDisplay display = new ScoredGraphsDisplay(_graph, scorer);
                             GraphWorkbench workbench = getWorkbench();
@@ -550,6 +554,7 @@ public class ImagesSearchEditor extends AbstractSearchEditor
 
     private List<ScoredGraph> arrangeGraphs() {
         IGesRunner runner = (IGesRunner) getAlgorithmRunner();
+        Graph resultGraph = runner.getResultGraph();
 
         List<ScoredGraph> topGraphs = runner.getTopGraphs();
 
@@ -560,20 +565,19 @@ public class ImagesSearchEditor extends AbstractSearchEditor
 
         boolean arrangedAll = false;
 
-        for (int i = 0; i < topGraphs.size(); i++) {
-            arrangedAll = GraphUtils.arrangeBySourceGraph(topGraphs.get(i).getGraph(),
+        for (ScoredGraph topGraph1 : topGraphs) {
+            arrangedAll = GraphUtils.arrangeBySourceGraph(topGraph1.getGraph(),
                     latestWorkbenchGraph);
         }
 
         if (!arrangedAll) {
-            for (ScoredGraph topGraph : topGraphs) {
-                arrangedAll = GraphUtils.arrangeBySourceGraph(topGraph.getGraph(), sourceGraph);
-            }
+            arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph, sourceGraph);
         }
 
         if (!arrangedAll) {
             for (ScoredGraph topGraph : topGraphs) {
                 GraphUtils.circleLayout(topGraph.getGraph(), 200, 200, 150);
+                GraphUtils.circleLayout(resultGraph, 200, 200, 150);
             }
         }
 
@@ -592,6 +596,7 @@ public class ImagesSearchEditor extends AbstractSearchEditor
 
 
     private void calcStats() {
+//        Graph resultGraph = getAlgorithmRunner().getResultGraph();
         IGesRunner runner = (IGesRunner) getAlgorithmRunner();
 
         if (runner.getTopGraphs().isEmpty()) {
@@ -601,11 +606,12 @@ public class ImagesSearchEditor extends AbstractSearchEditor
 
         Graph resultGraph = runner.getTopGraphs().get(runner.getIndex()).getGraph();
 
-        if (!(getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix)) {
+        if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
 
             //resultGraph may be the output of a PC search.
             //Such graphs sometimes contain doubly directed edges.
-            //We converte such edges to directed edges here.
+
+            // /We converte such edges to directed edges here.
             //For the time being an orientation is arbitrarily selected.
             Set<Edge> allEdges = resultGraph.getEdges();
 
@@ -622,85 +628,108 @@ public class ImagesSearchEditor extends AbstractSearchEditor
             }
 
             Pattern pattern = new Pattern(resultGraph);
-            Graph dag = SearchGraphUtils.dagFromPattern(pattern);
+            PatternToDag ptd = new PatternToDag(pattern);
+            Graph dag = ptd.patternToDagMeekRules();
 
-//            DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
-//            String report;
-//
-//            if (dataSet.isContinuous()) {
-//                report = reportIfContinuous(dag, dataSet);
-//            } else if (dataSet.isDiscrete()) {
-//                report = reportIfDiscrete(dag, dataSet);
-//            } else {
-//                throw new IllegalArgumentException("");
-//            }
+            DataSet dataSet =
+                    (DataSet) getAlgorithmRunner().getDataModel();
+            String report;
 
-            String bayesFactorsReport = ((ImagesRunner) getAlgorithmRunner()).getBayesFactorsReport(dag);
-            String bootstrapEdgeCountsReport = ((ImagesRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(25);
+            if (dataSet.isContinuous()) {
+                report = reportIfContinuous(dag, dataSet);
+            } else if (dataSet.isDiscrete()) {
+                report = reportIfDiscrete(dag, dataSet);
+            } else {
+                throw new IllegalArgumentException("");
+            }
 
             JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
-
-            modelStatsText = new JTextArea();
-            logBayesFactorsScroll = new JTextArea();
-            bootstrapEdgeCountsScroll = new JTextArea();
-
             modelStatsText.setLineWrap(true);
             modelStatsText.setWrapStyleWord(true);
-//            modelStatsText.setText(report);
-
-            logBayesFactorsScroll.setLineWrap(true);
-            logBayesFactorsScroll.setWrapStyleWord(true);
-            logBayesFactorsScroll.setText(bayesFactorsReport);
-
-            bootstrapEdgeCountsScroll.setLineWrap(true);
-            bootstrapEdgeCountsScroll.setWrapStyleWord(true);
-            bootstrapEdgeCountsScroll.setText(bootstrapEdgeCountsReport);
-
-            JPanel bootstrapPanel = new JPanel();
-            bootstrapPanel.setLayout(new BorderLayout());
-            bootstrapPanel.add(bootstrapEdgeCountsScroll, BorderLayout.CENTER);
-
-            Box b = Box.createHorizontalBox();
-            b.add(new JLabel("# Bootstraps = "));
-
-            final IntTextField numBootstraps = new IntTextField(25, 8);
-
-            numBootstraps.setFilter(new IntTextField.Filter() {
-                public int filter(int value, int oldValue) {
-                    if (value < 0) return oldValue;
-                    else return value;
-                }
-            });
-
-            b.add(numBootstraps);
-
-            JButton goButton = new JButton("Go!");
-
-            goButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent actionEvent) {
-                    Window owner = (Window) getTopLevelAncestor();
-
-                    new WatchedProcess(owner) {
-                        public void watch() {
-                            int n = numBootstraps.getValue();
-                            String bootstrapEdgeCountsReport = ((ImagesRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(n);
-                            bootstrapEdgeCountsScroll.setText(bootstrapEdgeCountsReport);
-                        }
-                    };
-                }
-            });
-
-            b.add(Box.createHorizontalGlue());
-            b.add(goButton);
-
-            bootstrapPanel.add(b, BorderLayout.NORTH);
+            modelStatsText.setText(report);
 
             removeStatsTabs();
             tabbedPane.addTab("DAG in pattern", dagWorkbenchScroll);
-//            tabbedPane.addTab("DAG Model Statistics", new JScrollPane(modelStatsText));
-            tabbedPane.addTab("Log Bayes Factors", new JScrollPane(logBayesFactorsScroll));
-            tabbedPane.addTab("Edge Bootstraps", new JScrollPane(bootstrapPanel));
+            tabbedPane.addTab("DAG Model Statistics", modelStatsText);
         }
+    }
+
+    private String reportIfContinuous(Graph dag, DataSet dataSet) {
+        SemPm semPm = new SemPm(dag);
+
+        SemEstimator estimator = new SemEstimator(dataSet, semPm);
+        estimator.estimate();
+        SemIm semIm = estimator.getEstimatedSem();
+
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(4);
+
+        StringBuilder buf = new StringBuilder();
+        buf.append("\nDegrees of Freedom = ").append(semPm.getDof())
+                .append("Chi-Square = ").append(nf.format(semIm.getChiSquare()))
+                .append("\nP Value = ").append(nf.format(semIm.getPValue()))
+                .append("\nBIC Score = ").append(nf.format(semIm.getBicScore()));
+
+        buf.append("\n\nThe above chi square test assumes that the maximum " +
+                "likelihood function over the measured variables has been " +
+                "maximized. Under that assumption, the null hypothesis for " +
+                "the test is that the population covariance matrix over all " +
+                "of the measured variables is equal to the estimated covariance " +
+                "matrix over all of the measured variables written as a function " +
+                "of the free model parameters--that is, the unfixed parameters " +
+                "for each directed edge (the linear coefficient for that edge), " +
+                "each exogenous variable (the variance for the error term for " +
+                "that variable), and each bidirected edge (the covariance for " +
+                "the exogenous variables it connects).  The model is explained " +
+                "in Bollen, Structural Equations with Latent Variable, 110. ");
+
+        return buf.toString();
+    }
+
+    private String reportIfDiscrete(Graph dag, DataSet dataSet) {
+        List vars = dataSet.getVariables();
+        Map<String, DiscreteVariable> nodesToVars =
+                new HashMap<String, DiscreteVariable>();
+        for (int i = 0; i < dataSet.getNumColumns(); i++) {
+            DiscreteVariable var = (DiscreteVariable) vars.get(i);
+            String name = var.getName();
+            Node node = new GraphNode(name);
+            nodesToVars.put(node.getName(), var);
+        }
+
+        BayesPm bayesPm = new BayesPm(new Dag(dag));
+        List<Node> nodes = bayesPm.getDag().getNodes();
+
+        for (Node node : nodes) {
+            Node var = nodesToVars.get(node.getName());
+
+            if (var instanceof DiscreteVariable) {
+                DiscreteVariable var2 = nodesToVars.get(node.getName());
+                int numCategories = var2.getNumCategories();
+                List<String> categories = new ArrayList<String>();
+                for (int j = 0; j < numCategories; j++) {
+                    categories.add(var2.getCategory(j));
+                }
+                bayesPm.setCategories(node, categories);
+            }
+        }
+
+
+        BayesProperties properties = new BayesProperties(dataSet, dag);
+        properties.setGraph(dag);
+
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(4);
+
+        StringBuilder buf = new StringBuilder();
+        buf.append("\nP-value = ").append(properties.getLikelihoodRatioP());
+        buf.append("\nDf = ").append(properties.getPValueDf());
+        buf.append("\nChi square = ")
+                .append(nf.format(properties.getPValueChisq()));
+        buf.append("\nBIC score = ").append(nf.format(properties.getBic()));
+        buf.append("\n\nH0: Completely disconnected graph.");
+
+        return buf.toString();
     }
 
     private void removeStatsTabs() {
@@ -710,10 +739,6 @@ public class ImagesSearchEditor extends AbstractSearchEditor
             if (name.equals("DAG Model Statistics")) {
                 tabbedPane.removeTabAt(i);
             } else if (name.equals("DAG in pattern")) {
-                tabbedPane.removeTabAt(i);
-            } else if (name.equals("Log Bayes Factors")) {
-                tabbedPane.removeTabAt(i);
-            } else if (name.equals("Edge Bootstraps")) {
                 tabbedPane.removeTabAt(i);
             }
         }
@@ -731,8 +756,7 @@ public class ImagesSearchEditor extends AbstractSearchEditor
     private void addCovMatrixTestMenuItems(JMenu test) {
         IndTestType testType = getTestType();
         if (testType != IndTestType.FISHER_Z
-//                &&
-//                testType != IndTestType.CORRELATION_T
+//                && testType != IndTestType.CORRELATION_T
                 ) {
             setTestType(IndTestType.FISHER_Z);
         }
@@ -742,9 +766,9 @@ public class ImagesSearchEditor extends AbstractSearchEditor
         group.add(fishersZ);
         test.add(fishersZ);
 
-        JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
-        group.add(tTest);
-        test.add(tTest);
+//        JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
+//        group.add(tTest);
+//        test.add(tTest);
 
         testType = getTestType();
 
@@ -785,38 +809,59 @@ public class ImagesSearchEditor extends AbstractSearchEditor
 
         Box b2 = Box.createVerticalBox();
 
-        JComponent indTestParamBox = getIndTestParamBox();
-        if (indTestParamBox != null) {
-            b2.add(indTestParamBox);
-        }
+//        JComponent indTestParamBox = getIndTestParamBox();
+//        if (indTestParamBox != null) {
+//            b2.add(indTestParamBox);
+//        }
 
         paramsPanel.add(b2);
         paramsPanel.setBorder(new TitledBorder("Parameters"));
         return paramsPanel;
     }
 
-    private JComponent getIndTestParamBox() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        IndTestParams indTestParams = params.getIndTestParams();
-        return getIndTestParamBox(indTestParams);
-    }
+//    private JComponent getIndTestParamBox() {
+//        FgsParams params = (FgsParams) getAlgorithmRunner().getParams();
+//        IndTestParams indTestParams = params.getIndTestParams();
+//        return getIndTestParamBox(indTestParams);
+//    }
 
-    /**
-     * Factory to return the correct param editor for independence test params.
-     * This will go in a little box in the search editor.
-     */
-    private JComponent getIndTestParamBox(IndTestParams indTestParams) {
-        if (indTestParams == null) {
-            throw new NullPointerException();
-        }
-
-        GesIndTestParams params = (GesIndTestParams) indTestParams;
-        ImagesIndTestParamsEditor paramsEditor = new ImagesIndTestParamsEditor(params, false);
-
-        this.paramsEditor = paramsEditor;
-
-        return paramsEditor;
-    }
+//    /**
+//     * Factory to return the correct param editor for independence test params.
+//     * This will go in a little box in the search editor.
+//     */
+//    private JComponent getIndTestParamBox(IndTestParams indTestParams) {
+//        if (indTestParams == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        if (indTestParams instanceof FgsIndTestParams) {
+//            if (getAlgorithmRunner() instanceof FgsRunnerOld) {
+//                IGesRunner gesRunner = ((IGesRunner) getAlgorithmRunner());
+//                FgsIndTestParams params = (FgsIndTestParams) indTestParams;
+//                DataModel dataModel = gesRunner.getDataModel();
+//                boolean discreteData = dataModel instanceof DataSet && ((DataSet) dataModel).isDiscrete();
+//                return new FgsIndTestParamsEditor(params, );
+//            }
+//
+//            if (getAlgorithmRunner() instanceof FgsRunner) {
+//                FgsRunner gesRunner = ((FgsRunner) getAlgorithmRunner());
+//                FgsIndTestParams params = (FgsIndTestParams) indTestParams;
+//                DataSet dataSet = (DataSet) gesRunner.getDataModel();
+//                boolean discreteData = dataSet.isDiscrete();
+//                return new FgsIndTestParamsEditor(params, discreteData);
+//            }
+//        }
+//
+//        if (indTestParams instanceof FgsIndTestParams) {
+//            FgsRunnerOld fgsRunner = ((FgsRunnerOld) getAlgorithmRunner());
+//            FgsIndTestParams params = (FgsIndTestParams) indTestParams;
+//            DataModel dataModel = fgsRunner.getDataModel();
+//            boolean discreteData = dataModel instanceof DataSet && ((DataSet) dataModel).isDiscrete();
+//            return new FgsIndTestParamsEditor(params, discreteData);
+//        }
+//
+//        return new IndTestParamsEditor(indTestParams);
+//    }
 
     private JScrollPane dagWorkbenchScroll(Graph dag) {
 
@@ -834,246 +879,6 @@ public class ImagesSearchEditor extends AbstractSearchEditor
 
         return dagWorkbenchScroll;
     }
-
-    private static class ImagesIndTestParamsEditor extends JComponent {
-
-        private GesIndTestParams params;
-        private DoubleTextField cellPriorField, structurePriorField;
-        private JButton defaultStructurePrior;
-        private JButton uniformStructurePrior;
-        private boolean discreteData;
-        private IntTextField numPatternsToSave;
-        private DoubleTextField penaltyDiscount;
-        private JCheckBox firstNontriangular;
-        private DoubleTextField minJump;
-
-        public ImagesIndTestParamsEditor(GesIndTestParams simulator, boolean discreteData) {
-            this.params = simulator;
-            this.discreteData = discreteData;
-
-            NumberFormat nf = new DecimalFormat("0.0####");
-
-            if (this.discreteData) {
-                this.cellPriorField = new DoubleTextField(
-                        getGesIndTestParams().getSamplePrior(), 5, nf);
-
-                this.cellPriorField.setFilter(new DoubleTextField.Filter() {
-                    public double filter(double value, double oldValue) {
-                        try {
-                            getGesIndTestParams().setSamplePrior(value);
-                            return value;
-                        } catch (IllegalArgumentException e) {
-                            return oldValue;
-                        }
-                    }
-                });
-
-                this.structurePriorField = new DoubleTextField(
-                        getGesIndTestParams().getStructurePrior(), 5, nf);
-                this.structurePriorField.setFilter(new DoubleTextField.Filter() {
-                    public double filter(double value, double oldValue) {
-                        try {
-                            getGesIndTestParams().setStructurePrior(value);
-                            return value;
-                        } catch (IllegalArgumentException e) {
-                            return oldValue;
-                        }
-                    }
-                });
-
-                this.defaultStructurePrior =
-                        new JButton("Default structure prior = 0.05");
-                Font font = new Font("Dialog", Font.BOLD, 10);
-                this.defaultStructurePrior.setFont(font);
-                this.defaultStructurePrior.setBorder(null);
-                this.defaultStructurePrior.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        structurePriorField.setValue(0.05);
-                    }
-                });
-
-                this.uniformStructurePrior =
-                        new JButton("Uniform structure prior = 1.0");
-                this.uniformStructurePrior.setFont(font);
-                this.uniformStructurePrior.setBorder(null);
-                this.uniformStructurePrior.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        structurePriorField.setValue(1.0);
-                    }
-                });
-            } else {
-                penaltyDiscount = new DoubleTextField(
-                        getGesIndTestParams().getPenaltyDiscount(), 5, nf);
-                penaltyDiscount.setFilter(new DoubleTextField.Filter() {
-                    public double filter(double value, double oldValue) {
-                        try {
-                            getGesIndTestParams().setPenaltyDiscount(value);
-                            return value;
-                        } catch (IllegalArgumentException e) {
-                            return oldValue;
-                        }
-                    }
-                });
-            }
-
-            this.numPatternsToSave = new IntTextField(
-                    getGesIndTestParams().getNumPatternsToSave(), 5);
-            this.numPatternsToSave.setFilter(new IntTextField.Filter() {
-                public int filter(int value, int oldValue) {
-                    try {
-                        getGesIndTestParams().setNumPatternsToSave(value);
-                        return value;
-                    } catch (IllegalArgumentException e) {
-                        return oldValue;
-                    }
-                }
-            });
-
-
-//            if (!discreteData) {
-//                this.fCutoffP = new DoubleTextField(
-//                        getGesIndTestParams().getfCutoffP(), 5, nf);
-//                this.fCutoffP.setFilter(new DoubleTextField.Filter() {
-//                    public double filter(double value, double oldValue) {
-//                        try {
-//                            getGesIndTestParams().setMinimumJump(value);
-//                            return value;
-//                        }
-//                        catch (IllegalArgumentException e) {
-//                            return oldValue;
-//                        }
-//                    }
-//                });
-//
-//                this.useFCutoff = new JCheckBox();
-//                this.useFCutoff.setSelected(getGesIndTestParams().isUseMinimumJump());
-//                this.useFCutoff.addActionListener(new ActionListener() {
-//                    public void actionPerformed(ActionEvent actionEvent) {
-//                        JCheckBox box = (JCheckBox) actionEvent.getSource();
-//                        getGesIndTestParams().setUseFCutoff(box.isSelected());
-//                    }
-//                });
-//            }
-
-            if (!discreteData) {
-                this.minJump = new DoubleTextField(
-                        getGesIndTestParams().getMinJump(), 5, nf);
-                this.minJump.setFilter(new DoubleTextField.Filter() {
-                    public double filter(double value, double oldValue) {
-                        try {
-                            getGesIndTestParams().setMinJump(value);
-                            return value;
-                        } catch (IllegalArgumentException e) {
-                            return oldValue;
-                        }
-                    }
-                });
-            }
-
-            firstNontriangular = new JCheckBox("Find first nontriangular");
-            firstNontriangular = new JCheckBox();
-            firstNontriangular.setSelected(getGesIndTestParams().isFirstNontriangular());
-            firstNontriangular.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent actionEvent) {
-                    JCheckBox source = (JCheckBox) actionEvent.getSource();
-                    firstNontriangular.setSelected(source.isSelected());
-                    getGesIndTestParams().setFirstNontriangular(source.isSelected());
-                }
-            });
-
-            buildGui();
-        }
-
-        private void buildGui() {
-            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-            if (discreteData) {
-                Box b0 = Box.createHorizontalBox();
-                b0.add(new JLabel("BDeu:"));
-                b0.add(Box.createHorizontalGlue());
-                add(b0);
-                add(Box.createVerticalStrut(5));
-
-                Box b2 = Box.createHorizontalBox();
-                b2.add(Box.createHorizontalStrut(5));
-                b2.add(new JLabel("Sample prior:"));
-                b2.add(Box.createHorizontalGlue());
-                b2.add(this.cellPriorField);
-                add(b2);
-                add(Box.createVerticalStrut(5));
-
-                Box b3 = Box.createHorizontalBox();
-                b3.add(Box.createHorizontalStrut(5));
-                b3.add(new JLabel("Structure prior:"));
-                b3.add(Box.createHorizontalGlue());
-                b3.add(this.structurePriorField);
-                add(b3);
-
-                Box b4 = Box.createHorizontalBox();
-                b4.add(Box.createHorizontalGlue());
-                b4.add(this.defaultStructurePrior);
-                add(b4);
-
-                Box b5 = Box.createHorizontalBox();
-                b5.add(Box.createHorizontalGlue());
-                b5.add(this.uniformStructurePrior);
-                add(b5);
-                add(Box.createVerticalStrut(10));
-
-//            Box b6 = Box.createHorizontalBox();
-//            b6.add(new JLabel("Continuous (SEM Score):"));
-//            b6.add(Box.createHorizontalGlue());
-//            add(b6);
-//            add(Box.createVerticalStrut(5));
-            } else {
-                Box b7 = Box.createHorizontalBox();
-                b7.add(new JLabel("Penalty Discount"));
-                b7.add(Box.createHorizontalGlue());
-                b7.add(penaltyDiscount);
-                add(b7);
-
-//                Box b7a = Box.createHorizontalBox();
-//                b7a.add(this.useFCutoff);
-//                b7a.add(new JLabel("Use F Cutoff, p ="));
-//                b7a.add(Box.createHorizontalGlue());
-//                b7a.add(this.fCutoffP);
-//                add(b7a);
-
-//                Box b7a = Box.createHorizontalBox();
-//                b7a.add(new JLabel("Min jump = "));
-//                b7a.add(Box.createHorizontalGlue());
-//                b7a.add(this.minJump);
-//                add(b7a);
-
-
-//            Box b1 = Box.createHorizontalBox();
-//            b1.add(new JLabel("No parameters to set"));
-//            add(b1);
-                add(Box.createHorizontalGlue());
-
-                Box b8 = Box.createHorizontalBox();
-                b8.add(new JLabel("Num Patterns to Save"));
-                b8.add(Box.createHorizontalGlue());
-                b8.add(this.numPatternsToSave);
-                add(b8);
-
-                Box b9 = Box.createHorizontalBox();
-                b9.add(new JLabel("Find first nontriangular: "));
-                b9.add(firstNontriangular);
-                add(b9);
-            }
-        }
-
-        private GesIndTestParams getGesIndTestParams() {
-            return params;
-        }
-
-        public void setPenaltyDiscount(double penaltyDiscount) {
-            System.out.println("**** " + penaltyDiscount);
-            this.penaltyDiscount.setValue(penaltyDiscount);
-        }
-    }
-
 }
 
 

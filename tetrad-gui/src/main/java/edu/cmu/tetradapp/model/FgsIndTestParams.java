@@ -36,7 +36,7 @@ public class FgsIndTestParams implements IndTestParams {
     /**
      * @serial Range (-inf, +inf?).
      */
-    private double structurePrior = 0.1;
+    private double structurePrior = 1;
 
     /**
      * @serial Range (0, +inf).

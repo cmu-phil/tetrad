@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import java.util.*;
 
 /**
- * Implements the continuous BIC score for FGS.
+ * Implements Chickering and Meek's (2002) locally consistent score criterion.
  *
  * @author Joseph Ramsey
  */
@@ -54,8 +54,6 @@ public class GraphScore implements GesScore {
                 this.variables.add(node);
             }
         }
-
-//        Collections.shuffle(this.variables);
     }
 
     /**
@@ -65,7 +63,6 @@ public class GraphScore implements GesScore {
         throw new UnsupportedOperationException();
     }
 
-
     private List<Node> getVariableList(int[] indices) {
         List<Node> variables = new ArrayList<>();
         for (int i : indices) {
@@ -74,219 +71,13 @@ public class GraphScore implements GesScore {
         return variables;
     }
 
-    private Set<Node> getVariableSet(int[] indices) {
-        Set<Node> variables = new HashSet<>();
-        for (int i : indices) {
-            variables.add(this.variables.get(i));
-        }
-
-        return variables;
-    }
-
 
     @Override
-    public synchronized double localScoreDiff(int i, int[] parents, int extra) {
-
-
+    public double localScoreDiff(int i, int[] parents, int extra) {
         Node y = variables.get(i);
         Node x = variables.get(extra);
         List<Node> scoreParents = getVariableList(parents);
-//        scoreParents.add(x);
-
-//        if (scoreParents.contains(x)) throw new RuntimeException("Score parents containx x");
-//
-//        scoreParents.remove(x);
-
-//        if (scoreParents.contains(x)) throw new IllegalArgumentException();
-//
-        double diff = score1(x, y, scoreParents);
-//        double diff = score2(x, y, scoreParents);
-//        double diff = score3(x, y, scoreParents);
-//        double diff = score4(x, y, scoreParents);
-//        double diff = score5(x, y, scoreParents);
-//        double diff = score6(x, y, scoreParents);
-
-//        System.out.println("Score diff for " + x + "-->" + y + " given " + scoreParents + " = " + diff);
-
-        return diff;
-    }
-
-    private double score1(Node x, Node y, List<Node> scoreParents) {
-        double diff;
-//        scoreParents.add(x);
-//        scoreParents.remove(x);
-
-        if (dag.isDSeparatedFrom(x, y, scoreParents)) {
-            diff  = -1;
-        } else {
-            diff = 1;
-        }
-
-//        System.out.println("dsep " + x + "_||_" + y + "|" + scoreParents + " = " + diff);
-
-
-        return diff;
-    }
-
-    private double score2(Node x, Node y, List<Node> scoreParents) {
-        double diff = 0;
-
-        if (dag.isDConnectedTo(x, y, scoreParents)) {
-            diff += 1;
-        }
-
-        List<Node> yUnionScoreParents = new ArrayList<>();
-        yUnionScoreParents.add(y);
-        yUnionScoreParents.addAll(scoreParents);
-
-        for (Node z : scoreParents) {
-            if (
-                    dag.isDConnectedTo(x, y, scoreParents) &&
-                            dag.isDConnectedTo(z, y, scoreParents) &&
-//                            !dag.isDConnectedTo(x, z, scoreParents) &&
-                            dag.isDConnectedTo(z, y, scoreParents) &&
-                            dag.isDConnectedTo(x, z, yUnionScoreParents)
-                    ) {
-                diff += 1;
-                break;
-            }
-        }
-
-
-        return diff;
-    }
-
-    private double score3(Node x, Node y, List<Node> scoreParents) {
-
-        List<Node> _scoreParents = new ArrayList<>(scoreParents);
-        scoreParents = _scoreParents;
-
-        List<Node> yUnionScoreParents = new ArrayList<>();
-        yUnionScoreParents.add(y);
-        yUnionScoreParents.addAll(scoreParents);
-        int numDependencies = 0;
-        int numIndependencies = 0;
-
-        for (Node z : scoreParents) {
-            List<Node> sepset = dag.getSepset(x, z);
-
-            System.out.println("sepset for " + x + " and " + z + " is " + sepset + " contains " + y + " = " + (sepset != null ? sepset.contains(y) : ""));
-
-
-            if (dag.isDConnectedTo(z, y, new ArrayList<>(scoreParents))) {
-                numDependencies++;
-            } else {
-                numIndependencies++;
-            }
-
-            if (dag.isDSeparatedFrom(x, z, scoreParents)) {
-                numIndependencies++;
-            }
-
-            if (dag.isDSeparatedFrom(x, z, Collections.EMPTY_LIST)) {
-                numIndependencies++;
-            }
-
-            if (dag.isDConnectedTo(x, z, yUnionScoreParents)) {
-                numDependencies++;
-            } else {
-                numIndependencies++;
-            }
-        }
-
-        boolean xyConnected = dag.isDConnectedTo(x, y, scoreParents);
-
-        if (xyConnected) {
-            numDependencies++;
-        } else {
-            numIndependencies++;
-
-
-        }
-
-        if (xyConnected) {
-            return numDependencies;
-        } else {
-            return -numIndependencies;
-        }
-    }
-
-    private double score4(Node x, Node y, List<Node> scoreParents) {
-        int count = 0;
-
-        for (Node z : scoreParents) {
-            List<Node> sepset = dag.getSepset(x, z);
-
-            if (sepset != null) {
-                if (!sepset.contains(y)) {
-                    count++;
-                } else {
-                    count--;
-                }
-            }
-        }
-
-//        scoreParents.add(x);
-//        if (dag.isDSeparatedFrom(x, y, scoreParents)) {
-        if (dag.isAdjacentTo(x, y)) {
-            return 1 + count;
-        } else {
-            return -1;
-        }
-
-//        if (dag.isDSeparatedFrom(x, y, scoreParents)) {
-//            return -1 - count;
-//        } else {
-//            return 1 + count;
-//        }
-    }
-    private double score5(Node x, Node y, List<Node> scoreParents) {
-        List<Node> vars = new ArrayList<>(scoreParents);
-
-        double score;
-
-        if (dag.isDSeparatedFrom(x, y, vars)) {
-//            score = -1 - scoreParents.size();
-            score = -1 - Math.tanh(scoreParents.size()) / 1000.;
-        } else {
-            score = 1 + Math.tanh(scoreParents.size()) / 1000.;
-        }
-
-//        System.out.println( "x = " + x + " y = " + y + " scoreParents = " + scoreParents + " score = " + score);
-
-        return score;
-    }
-
-    private double score6(Node x, Node y, List<Node> scoreParents) {
-        int count = 0;
-
-        for (Node z : scoreParents) {
-            List<Node> sepset = dag.getSepset(x, z);
-
-            if (sepset != null) {
-                if (!sepset.contains(y)) {
-                    count++;
-                } else {
-                    count--;
-                }
-            } else {
-                count--;
-            }
-        }
-
-//        scoreParents.add(x);
-        if (!dag.isDSeparatedFrom(x, y, scoreParents)) {
-//        if (dag.isAdjacentTo(x, y)) {
-            return 1 + count;
-        } else {
-            return -1 - count;
-        }
-
-//        if (dag.isDSeparatedFrom(x, y, scoreParents)) {
-//            return -1 - count;
-//        } else {
-//            return 1 + count;
-//        }
+        return dag.isDSeparatedFrom(x, y, scoreParents) ? -1.0 : 1.0;
     }
 
 
@@ -302,14 +93,14 @@ public class GraphScore implements GesScore {
      */
 
     public double localScore(int i, int parent) {
-        return localScore(i, new int[]{parent});
+        throw new UnsupportedOperationException();
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
     public double localScore(int i) {
-        return localScore(i, new int[]{});
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -334,7 +125,6 @@ public class GraphScore implements GesScore {
         return variables;
     }
 
-    @Override
     public int getSampleSize() {
         return 0;
     }

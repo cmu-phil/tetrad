@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetradapp.model.FgsIndTestParams;
+import edu.cmu.tetradapp.model.FgsRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -39,10 +40,10 @@ import java.text.NumberFormat;
  */
 
 class FgsIndTestParamsEditor extends JComponent {
+    private final FgsRunner.Type type;
     private FgsIndTestParams params;
     private DoubleTextField cellPriorField, structurePriorField;
     private JButton uniformStructurePrior;
-    private boolean discreteData;
     private DoubleTextField penaltyDiscount;
     private IntTextField numPatternsToSave;
 
@@ -51,14 +52,14 @@ class FgsIndTestParamsEditor extends JComponent {
      */
     private JCheckBox faithfulnessAssumed;
 
-    public FgsIndTestParamsEditor(FgsIndTestParams params, boolean discreteData) {
+    public FgsIndTestParamsEditor(FgsIndTestParams params, FgsRunner.Type type) {
         this.params = params;
-        this.discreteData = discreteData;
+        this.type = type;
 
         NumberFormat nf = new DecimalFormat("0.0####");
         NumberFormat smallNf = new DecimalFormat("0.0E0");
 
-        if (this.discreteData) {
+        if (type == FgsRunner.Type.DISCRETE) {
             this.cellPriorField = new DoubleTextField(
                     getFgsIndTestParams().getSamplePrior(),  5, nf, smallNf, 1e-4);
 
@@ -153,7 +154,7 @@ class FgsIndTestParamsEditor extends JComponent {
     private void buildGui() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (discreteData) {
+        if (type == FgsRunner.Type.DISCRETE) {
             Box b0 = Box.createHorizontalBox();
             b0.add(new JLabel("BDeu:"));
             b0.add(Box.createHorizontalGlue());
@@ -185,26 +186,38 @@ class FgsIndTestParamsEditor extends JComponent {
             b5.add(this.uniformStructurePrior);
             add(b5);
             add(Box.createVerticalStrut(10));
-        } else {
+
+            Box b8 = Box.createHorizontalBox();
+            b8.add(new JLabel("Num Patterns to Save"));
+            b8.add(Box.createHorizontalGlue());
+            b8.add(this.numPatternsToSave);
+            add(b8);
+
+            Box b4a = Box.createHorizontalBox();
+            b4a.add(new JLabel("Length 1 faithfulness assumed "));
+            b4a.add(faithfulnessAssumed);
+            add(b4a);
+        } else if (type == FgsRunner.Type.CONTINUOUS){
             Box b7 = Box.createHorizontalBox();
             b7.add(new JLabel("Penalty Discount"));
             b7.add(Box.createHorizontalGlue());
             b7.add(this.penaltyDiscount);
             add(b7);
+
+            Box b4a = Box.createHorizontalBox();
+            b4a.add(new JLabel("Length 1 faithfulness assumed "));
+            b4a.add(faithfulnessAssumed);
+            add(b4a);
+        } else if (type == FgsRunner.Type.GRAPH) {
+            Box b8 = Box.createHorizontalBox();
+            b8.add(new JLabel("Num Patterns to Save"));
+            b8.add(Box.createHorizontalGlue());
+            b8.add(this.numPatternsToSave);
+            add(b8);
+        } else {
+            throw new IllegalStateException("Unrecognized type: " + type);
         }
 
-        Box b8 = Box.createHorizontalBox();
-        b8.add(new JLabel("Num Patterns to Save"));
-        b8.add(Box.createHorizontalGlue());
-        b8.add(this.numPatternsToSave);
-        add(b8);
-
-        Box b4a = Box.createHorizontalBox();
-        b4a.add(new JLabel("Length 1 faithfulness assumed "));
-        b4a.add(faithfulnessAssumed);
-        add(b4a);
-
-        add(b4a);
     }
 
     private FgsIndTestParams getFgsIndTestParams() {

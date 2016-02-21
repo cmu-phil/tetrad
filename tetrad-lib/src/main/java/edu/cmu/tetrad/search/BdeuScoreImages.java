@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
@@ -37,10 +38,10 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScore implements ISemBicScore {
+public class BdeuScoreImages implements IBDeuScore {
 
     // The covariance matrix.
-    private ICovarianceMatrix covariances;
+    private List<BDeuScore> scores;
 
     // The variables of the covariance matrix.
     private List<Node> variables;
@@ -48,75 +49,82 @@ public class SemBicScore implements ISemBicScore {
     // The sample size of the covariance matrix.
     private int sampleSize;
 
-    // The penalty penaltyDiscount.
-    private double penaltyDiscount = 2.0;
-
-    // True if linear dependencies should return NaN for the score, and hence be
-    // ignored by FGS
-    private boolean ignoreLinearDependent = false;
-
     // The printstream output should be sent to.
     private PrintStream out = System.out;
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;
 
+    private double samplePrior = 1.0;
+
+    private double structurePrior = 1.0;
+
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(ICovarianceMatrix covariances) {
-        if (covariances == null) {
+    public BdeuScoreImages(List<DataModel> dataModels) {
+        if (dataModels == null) {
             throw new NullPointerException();
         }
 
-        this.setCovariances(covariances);
-        this.variables = covariances.getVariables();
-        this.sampleSize = covariances.getSampleSize();
+        List<BDeuScore> scores = new ArrayList<>();
+
+        for (DataModel model : dataModels) {
+            if (model instanceof DataSet) {
+                DataSet dataSet = (DataSet) model;
+
+                if (!dataSet.isDiscrete()) {
+                    throw new IllegalArgumentException("Datasets must be continuous.");
+                }
+
+                scores.add(new BDeuScore(dataSet));
+            } else {
+                throw new IllegalArgumentException("Only continuous data sets and covariance matrices may be used as input.");
+            }
+        }
+
+        List<Node> variables = scores.get(0).getVariables();
+
+        for (int i = 2; i < scores.size(); i++) {
+            scores.get(i).setVariables(variables);
+        }
+
+        this.scores = scores;
+        this.variables = variables;
+    }
+
+
+    public double localScoreDiff(int i, int[] parents, int extra) {
+        double sum = 0.0;
+
+        for (BDeuScore score : scores) {
+            sum += score.localScoreDiff(i, parents, extra);
+        }
+
+        return sum / scores.size();
     }
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int[] parents) {
-        if (parents.length == 0) return localScore(i);
-        else if (parents.length == 1) return localScore(i, parents[0]);
+        double sum = 0.0;
 
-        double residualVariance = getCovariances().getValue(i, i);
-        int n = getSampleSize();
-        int p = parents.length;
-        TetradMatrix covxx = getSelection1(getCovariances(), parents);
-        TetradMatrix covxxInv;
-
-        try {
-            covxxInv = covxx.inverse();
-        } catch (Exception e) {
-            if (isIgnoreLinearDependent()) {
-                return Double.NaN;
-            } else {
-                printMinimalLinearlyDependentSet(parents, getCovariances());
-                return Double.NaN;
-            }
+        for (BDeuScore score : scores) {
+            sum += score.localScore(i, parents);
         }
 
-        TetradVector covxy = getSelection2(getCovariances(), parents, i);
-        TetradVector b = covxxInv.times(covxy);
-        residualVariance -= covxy.dotProduct(b);
-
-        if (residualVariance <= 0) {
-            if (isVerbose()) {
-                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
-            }
-            return Double.NaN;
-        }
-
-        double c = getPenaltyDiscount();
-        return score(residualVariance, n, p, c);
+        return sum / scores.size();
     }
 
-    @Override
-    public double localScoreDiff(int i, int[] parents, int extra) {
-        return localScore(i, append(parents, extra)) - localScore(i, parents);
+    public double localScore(int i, int[] parents, int index) {
+        return localScoreOneDataSet(i, parents, index);
     }
+
+    private double localScoreOneDataSet(int i, int[] parents, int index) {
+        return scores.get(index).localScore(i, parents);
+    }
+
 
     int[] append(int[] parents, int extra) {
         int[] all = new int[parents.length + 1];
@@ -129,91 +137,39 @@ public class SemBicScore implements ISemBicScore {
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
     public double localScore(int i, int parent) {
-        double residualVariance = getCovariances().getValue(i, i);
-        int n = getSampleSize();
-        int p = 1;
-        final double covXX = getCovariances().getValue(parent, parent);
+        double sum = 0.0;
 
-        if (covXX == 0) {
-            if (isVerbose()) {
-                out.println("Dividing by zero");
-            }
-            return Double.NaN;
+        for (BDeuScore score : scores) {
+            sum += score.localScore(i, parent);
         }
 
-        double covxxInv = 1.0 / covXX;
-        double covxy = getCovariances().getValue(i, parent);
-        double b = covxxInv * covxy;
-        residualVariance -= covxy * b;
-
-        if (residualVariance <= 0) {
-            if (isVerbose()) {
-                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
-            }
-            return Double.NaN;
-        }
-
-        double c = getPenaltyDiscount();
-        return score(residualVariance, n, p, c);
+        return sum / scores.size();
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
     public double localScore(int i) {
-        double residualVariance = getCovariances().getValue(i, i);
-        int n = getSampleSize();
-        int p = 0;
+        double sum = 0.0;
 
-        if (residualVariance <= 0) {
-            if (isVerbose()) {
-                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
-            }
-            return Double.NaN;
+        for (BDeuScore score : scores) {
+            sum += score.localScore(i);
         }
 
-        double c = getPenaltyDiscount();
-        return score(residualVariance, n, p, c);
-    }
-
-    /**
-     * True iff edges that cause linear dependence are ignored.
-     */
-    public boolean isIgnoreLinearDependent() {
-        return ignoreLinearDependent;
-    }
-
-    public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
-        this.ignoreLinearDependent = ignoreLinearDependent;
+        return sum / scores.size();
     }
 
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    public ICovarianceMatrix getCovariances() {
-        return covariances;
-    }
-
-    public int getSampleSize() {
-        return sampleSize;
-    }
-
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > -0.25 * getPenaltyDiscount() * Math.log(sampleSize);
+        return false;
     }
 
     public DataSet getDataSet() {
         throw new UnsupportedOperationException();
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
     }
 
     public boolean isVerbose() {
@@ -273,13 +229,26 @@ public class SemBicScore implements ISemBicScore {
         }
     }
 
-    private void setCovariances(ICovarianceMatrix covariances) {
-        this.covariances = covariances;
+    public double getSamplePrior() {
+        return samplePrior;
     }
 
-    public void setVariables(List<Node> variables) {
-        covariances.setVariables(variables);
-        this.variables = variables;
+    public void setSamplePrior(double samplePrior) {
+        for (BDeuScore score : scores) {
+            score.setSamplePrior(samplePrior);
+        }
+        this.samplePrior = samplePrior;
+    }
+
+    public double getStructurePrior() {
+        return structurePrior;
+    }
+
+    public void setStructurePrior(double structurePrior) {
+        for (BDeuScore score : scores) {
+            score.setStructurePrior(structurePrior);
+        }
+        this.structurePrior = structurePrior;
     }
 }
 

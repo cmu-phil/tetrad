@@ -666,8 +666,8 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                 return new GesIndTestParamsEditor(params, discreteData);
             }
 
-            if (getAlgorithmRunner() instanceof ImagesRunner) {
-                ImagesRunner gesRunner = ((ImagesRunner) getAlgorithmRunner());
+            if (getAlgorithmRunner() instanceof FgsRunner) {
+                FgsRunner gesRunner = ((FgsRunner) getAlgorithmRunner());
                 GesIndTestParams params = (GesIndTestParams) indTestParams;
                 DataSet dataSet = (DataSet) gesRunner.getDataModel();
                 boolean discreteData = dataSet.isDiscrete();

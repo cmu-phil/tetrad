@@ -55,6 +55,8 @@ public class LagIndTestParams implements IndTestParams {
      */
     private int numLags = 1;
 
+    private int numPatternsToSave = 0;
+
     //============================CONSTRUCTORS=========================//
 
     public LagIndTestParams() {
@@ -161,6 +163,15 @@ public class LagIndTestParams implements IndTestParams {
             throw new IllegalArgumentException("NumLags must be in [1, " +
                     ", numTimePoints - 1]: " + numLags);
         }
+    }
+
+    @Override
+    public int getNumPatternsToSave() {
+        return numPatternsToSave;
+    }
+
+    public void setNumPatternsToSave(int numPatternsToSave) {
+        this.numPatternsToSave = numPatternsToSave;
     }
 }
 

@@ -79,12 +79,12 @@ public class GesSearchEditor extends AbstractSearchEditor
     /**
      * Opens up an editor to let the user view the given GesRunner.
      */
-    public GesSearchEditor(FgsRunner runner) {
+    public GesSearchEditor(FgsRunnerOld runner) {
         super(runner, "Result Pattern");
 //        getWorkbench().setGraph(runner.getTopGraphs().get(runner.getTopGraphs().size() - 1).getGraph());
     }
 
-    public GesSearchEditor(ImagesRunner runner) {
+    public GesSearchEditor(FgsRunner runner) {
         super(runner, "Result Pattern");
     }
 
@@ -842,8 +842,8 @@ public class GesSearchEditor extends AbstractSearchEditor
                 return new GesIndTestParamsEditor(params, discreteData);
             }
 
-            if (getAlgorithmRunner() instanceof ImagesRunner) {
-                ImagesRunner gesRunner = ((ImagesRunner) getAlgorithmRunner());
+            if (getAlgorithmRunner() instanceof FgsRunner) {
+                FgsRunner gesRunner = ((FgsRunner) getAlgorithmRunner());
                 GesIndTestParams params = (GesIndTestParams) indTestParams;
                 DataSet dataSet = (DataSet) gesRunner.getDataModel();
                 boolean discreteData = dataSet.isDiscrete();

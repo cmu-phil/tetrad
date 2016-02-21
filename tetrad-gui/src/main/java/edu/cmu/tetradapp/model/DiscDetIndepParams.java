@@ -49,6 +49,8 @@ public final class DiscDetIndepParams implements IndTestParams {
      */
     private double discDetLb = 0.95;
 
+    private int numPatternsToSave = 0;
+
     //============================CONSTRUCTORS=========================//
 
     public DiscDetIndepParams() {
@@ -128,6 +130,15 @@ public final class DiscDetIndepParams implements IndTestParams {
 
     public void setDiscDetLb(double discDetLb) {
         this.discDetLb = discDetLb;
+    }
+
+    @Override
+    public int getNumPatternsToSave() {
+        return numPatternsToSave;
+    }
+
+    public void setNumPatternsToSave(int numPatternsToSave) {
+        this.numPatternsToSave = numPatternsToSave;
     }
 }
 

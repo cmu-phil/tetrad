@@ -38,6 +38,8 @@ public interface IndTestParams extends TetradSerializable {
     void setDepth(int depth);
 
     int getDepth();
+
+    int getNumPatternsToSave();
 }
 
 

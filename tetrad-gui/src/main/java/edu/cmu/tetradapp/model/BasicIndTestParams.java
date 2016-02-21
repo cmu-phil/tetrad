@@ -43,6 +43,7 @@ public final class BasicIndTestParams implements IndTestParams {
      * @serial Range greater than -1.
      */
     private int depth = -1;
+    private int numPatternsToSave = 0;
 
     //============================CONSTRUCTORS=========================//
 
@@ -115,6 +116,15 @@ public final class BasicIndTestParams implements IndTestParams {
             throw new IllegalArgumentException(
                     "Depth should be >= -1: " + depth);
         }
+    }
+
+    @Override
+    public int getNumPatternsToSave() {
+        return numPatternsToSave;
+    }
+
+    public void setNumPatternsToSave(int numPatternsToSave) {
+        this.numPatternsToSave = numPatternsToSave;
     }
 }
 

@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Calculates the BDeu score.
  */
-public class BDeuScore implements LocalDiscreteScore, GesScore {
+public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
     private List<Node> variables;
     private int[][] data;
     private int sampleSize;
@@ -280,7 +280,6 @@ public class BDeuScore implements LocalDiscreteScore, GesScore {
         return this.variables;
     }
 
-    @Override
     public int getSampleSize() {
         return sampleSize;
     }
@@ -311,20 +310,35 @@ public class BDeuScore implements LocalDiscreteScore, GesScore {
         return rowIndex;
     }
 
+    @Override
     public double getStructurePrior() {
         return structurePrior;
     }
 
+    @Override
     public double getSamplePrior() {
         return samplePrior;
     }
 
+    @Override
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
+    @Override
     public void setSamplePrior(double samplePrior) {
         this.samplePrior = samplePrior;
+    }
+
+    public void setVariables(List<Node> variables) {
+        for (int i = 0; i < variables.size(); i++) {
+            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
+                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
+                        "as the variable being substituted for it.");
+            }
+        }
+
+        this.variables = variables;
     }
 }
 
