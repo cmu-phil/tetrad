@@ -489,7 +489,6 @@ public class BCInference {
                     countsTreePtr += nodeDimension[parents[node][i + 1]];
 
                     if (countsPtr > maxCells) {
-                        System.out.println("A");
                         System.out.println(maxCells);
                         System.out.println(countsTreePtr);
                         System.out.println(ctPtr);
@@ -501,7 +500,6 @@ public class BCInference {
             }
 
             if (countsPtr > maxCells) {
-                System.out.println("B");
                 System.out.println(maxCells);
                 System.out.println(countsTreePtr);
                 System.out.println(ctPtr);
@@ -519,7 +517,6 @@ public class BCInference {
 
             countsPtr += nodeDimension[node];
             if (countsPtr > maxCells) {
-                System.out.println("C");
                 System.out.println(maxCells);
                 System.out.println(countsTreePtr);
                 System.out.println(ctPtr);

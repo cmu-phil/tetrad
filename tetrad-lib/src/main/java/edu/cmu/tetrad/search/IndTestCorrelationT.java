@@ -182,8 +182,6 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-//        System.out.println("A");
-
         double r;
         int n = sampleSize();
 

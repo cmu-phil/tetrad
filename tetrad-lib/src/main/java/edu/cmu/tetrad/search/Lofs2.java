@@ -1050,8 +1050,6 @@ public class Lofs2 {
             }
         } else {
 
-            System.out.println("B");
-
             // Default case: search for the maximum score over the entire range.
             for (int i = 0; i < numParams; i++) {
                 dLeftMin[i] = -range;

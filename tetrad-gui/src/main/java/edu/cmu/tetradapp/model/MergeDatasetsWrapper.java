@@ -87,8 +87,6 @@ public class MergeDatasetsWrapper extends DataWrapper {
     }
 
     private void construct(DataWrapper...dataWrappers) {
-        System.out.println("A");
-
         for (DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
@@ -104,9 +102,6 @@ public class MergeDatasetsWrapper extends DataWrapper {
         this.setDataModel(merged);
 
         LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
-
-        System.out.println("B");
-
     }
 
     /**
