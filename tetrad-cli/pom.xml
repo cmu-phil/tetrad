@@ -38,9 +38,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- required to override vendor standard -->
+                     <!--required to override vendor standard-->
                     <extension>true</extension>
-                    <schemaFiles>graphml.xsd</schemaFiles>
+                    <!--<schemaFiles>graphml.xsd</schemaFiles>-->
                 </configuration>
             </plugin>
             <plugin>
