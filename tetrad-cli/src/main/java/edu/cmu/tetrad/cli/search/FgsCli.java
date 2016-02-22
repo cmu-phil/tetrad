@@ -185,7 +185,7 @@ public class FgsCli {
                 fgs.setPenaltyDiscount(penaltyDiscount);
                 fgs.setNumPatternsToStore(0);  // always set to zero
                 fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setNumProcessors(numOfThreads);
+                fgs.setParallelism(numOfThreads);
                 fgs.setVerbose(verbose);
                 if (knowledgeFile != null) {
                     fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
