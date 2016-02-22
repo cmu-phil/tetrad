@@ -309,15 +309,16 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
+        FgsParams params = (FgsParams) getParams();
+
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             fgs = new Fgs(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
-            fgs.setNumPatternsToStore(50);
+            fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
             fgs.setVerbose(true);
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
-            FgsParams params = (FgsParams) getParams();
 
             if (dataSet.isContinuous()) {
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
@@ -342,7 +343,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            FgsParams params = (FgsParams) getParams();
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
             fgs = new Fgs(gesScore);

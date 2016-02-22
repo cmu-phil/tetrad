@@ -269,10 +269,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
         this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
         this.logger.flush();
 
-        if (verbose) {
-            out.println("FGS result graph = " + graph);
-        }
-
         this.modelScore = score;
 
         return graph;

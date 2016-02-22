@@ -227,6 +227,12 @@ class FgsIndTestParamsEditor extends JComponent {
             b8.add(Box.createHorizontalGlue());
             b8.add(this.numPatternsToSave);
             add(b8);
+
+            Box b4a = Box.createHorizontalBox();
+            b4a.add(new JLabel("Length 1 faithfulness assumed "));
+            b4a.add(faithfulnessAssumed);
+            add(b4a);
+
         } else {
             throw new IllegalStateException("Unrecognized type: " + type);
         }
