@@ -1471,7 +1471,7 @@
                 <!--</editor-class>-->
                 <!--<params-class>edu.cmu.tetradapp.model.FgsParams</params-class>-->
             <!--</model>-->
-            <model name="FGS-IMaGES" acronym="FGS" help="fgs"
+            <model name="FGS" acronym="FGS" help="fgs"
                    category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1484,6 +1484,23 @@
                     <event id="graph" description="Graph" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.FgsRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
+            </model>
+            <model name="IMaGES" acronym="IMaGES" help="fgs"
+                   category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="insertedEdges" description="Inserted Edges" default="on"/>
+                    <event id="deletedEdges" description="Deleted Edges" default="on"/>
+                    <event id="directedEdges" description="Directed Edges" default="on"/>
+                    <event id="edgeEvaluations" description="Edge Evaluations"/>
+                    <event id="impliedOrientations" description="Implied Orientations"/>
+                    <event id="rebuiltPatterns" description="Rebuilt Patterns"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.ImagesRunner</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>

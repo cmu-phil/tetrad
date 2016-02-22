@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Interface for a score suitable for FGS
  */
-public interface GesScore {
+public interface FgsScore {
     double localScore(int node, int parents[]);
 
     double localScoreDiff(int i, int[] parents, int extra);

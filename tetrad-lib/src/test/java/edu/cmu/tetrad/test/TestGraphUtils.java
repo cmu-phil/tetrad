@@ -260,6 +260,32 @@ public final class TestGraphUtils {
     @Test
     public void printEdgeData() {
 
+//        String[] autistics = {
+//                "autistic_normal_ROI_data_spline_smooth_clean_001.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_002.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_003.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_004.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_005.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_006.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_007.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_008.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_009.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_010.txt"
+//        };
+//
+//        String[] neurotypicals = {
+//                "typical_normal_ROI_data_spline_smooth_clean_001.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_002.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_003.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_004.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_005.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_006.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_007.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_008.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_009.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_010.txt"
+//        };
+
         String[] autistics = {
                 "autistic_normal_ROI_data_spline_smooth_clean_001.txt",
                 "autistic_normal_ROI_data_spline_smooth_clean_002.txt",
@@ -274,19 +300,20 @@ public final class TestGraphUtils {
         };
 
         String[] neurotypicals = {
-                "neurotyp_normal_ROI_data_spline_smooth_clean_001.txt",
-                "neurotyp_normal_ROI_data_spline_smooth_clean_002.txt",
-                "neurotyp_normal_ROI_data_spline_smooth_clean_003.txt",
-                "neurotyp_normal_ROI_data_spline_smooth_clean_004.txt",
-                "neurotyp_normal_ROI_data_spline_smooth_clean_005.txt",
-                "neurotyp_normal_ROI_data_spline_smooth_clean_006.txt",
-                "neurotyp_normal_ROI_data_spline_smooth_clean_007.txt",
-                "neurotyp_normal_ROI_data_spline_smooth_clean_008.txt",
-                "neurotyp_normal_ROI_data_spline_smooth_clean_009.txt",
-                "neurotyp_normal_ROI_data_spline_smooth_clean_010.txt"
+                "typical_normal_ROI_data_spline_smooth_clean_001.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_002.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_003.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_004.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_005.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_006.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_007.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_008.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_009.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_010.txt"
         };
 
-        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_54_Variable";
+
+        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
 
         try {
             List<DataSet> autisticDataSets = new ArrayList<>();
@@ -310,7 +337,7 @@ public final class TestGraphUtils {
             for (DataSet dataSet : autisticDataSets) {
                 Fgs fgs = new Fgs(dataSet);
                 fgs.setPenaltyDiscount(2);
-                autisticGraphs.add(fgs.search());
+                autisticGraphs.add(GraphUtils.undirectedGraph(fgs.search()));
             }
 
             List<Graph> neurotypicalGraphs = new ArrayList<>();
@@ -318,7 +345,7 @@ public final class TestGraphUtils {
             for (DataSet dataSet : neurotypicalDataSets) {
                 Fgs fgs = new Fgs(dataSet);
                 fgs.setPenaltyDiscount(2);
-                neurotypicalGraphs.add(fgs.search());
+                neurotypicalGraphs.add(GraphUtils.undirectedGraph(fgs.search()));
             }
 
             List<List<Graph>> allGraphs = new ArrayList<>();

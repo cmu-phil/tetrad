@@ -39,48 +39,46 @@ import java.util.Map;
  * @author Ricardo Silva
  */
 
-public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
+public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
         PropertyChangeListener, IGesRunner, Indexable {
     static final long serialVersionUID = 23L;
 
-    public Type getType() {
+    public FgsRunner.Type getType() {
         return type;
     }
-
-    public enum Type {CONTINUOUS, DISCRETE, GRAPH}
 
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
     private transient Fgs fgs;
     private Graph graph;
-    private Type type;
+    private FgsRunner.Type type;
 
     //============================CONSTRUCTORS============================//
 
-    public FgsRunner(DataWrapper dataWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public ImagesRunner(DataWrapper dataWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, FgsParams params) {
+    public ImagesRunner(DataWrapper dataWrapper, FgsParams params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params) {
+    public ImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
         this.graph = graph.getGraph();
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public ImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
         this.graph = graph.getGraph();
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper1,
+    public ImagesRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
                      FgsParams params) {
 
@@ -93,7 +91,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
     }
 
-    public FgsRunner(DataWrapper dataWrapper1,
+    public ImagesRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
                      DataWrapper dataWrapper3,
                      FgsParams params) {
@@ -108,7 +106,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper1,
+    public ImagesRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
                      DataWrapper dataWrapper3,
                      DataWrapper dataWrapper4,
@@ -125,7 +123,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper1,
+    public ImagesRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
                      DataWrapper dataWrapper3,
                      DataWrapper dataWrapper4,
@@ -144,7 +142,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper1,
+    public ImagesRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
                      DataWrapper dataWrapper3,
                      DataWrapper dataWrapper4,
@@ -165,7 +163,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper1,
+    public ImagesRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
                      DataWrapper dataWrapper3,
                      DataWrapper dataWrapper4,
@@ -188,7 +186,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper1,
+    public ImagesRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
                      DataWrapper dataWrapper3,
                      DataWrapper dataWrapper4,
@@ -213,7 +211,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper1,
+    public ImagesRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
                      DataWrapper dataWrapper3,
                      DataWrapper dataWrapper4,
@@ -240,7 +238,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper1,
+    public ImagesRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
                      DataWrapper dataWrapper3,
                      DataWrapper dataWrapper4,
@@ -269,12 +267,12 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         type = computeType();
     }
 
-    public FgsRunner(GraphWrapper graphWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public ImagesRunner(GraphWrapper graphWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
         type = computeType();
     }
 
-    public FgsRunner(GraphWrapper graphWrapper, FgsParams params) {
+    public ImagesRunner(GraphWrapper graphWrapper, FgsParams params) {
         super(graphWrapper.getGraph(), params, null);
         type = computeType();
     }
@@ -284,8 +282,8 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
      *
      * @see TetradSerializableUtils
      */
-    public static FgsRunner serializableInstance() {
-        return new FgsRunner(DataWrapper.serializableInstance(),
+    public static ImagesRunner serializableInstance() {
+        return new ImagesRunner(DataWrapper.serializableInstance(),
                 FgsParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
     }
 
@@ -360,10 +358,10 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 }
             }
 
-            if (list.size() != 1) {
-                throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or graph " +
-                        "as input. For multiple data sets as input, use IMaGES.");
-            }
+//            if (list.size() != 1) {
+//                throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or graph " +
+//                        "as input. For multiple data sets as input, use IMaGES.");
+//            }
 
             FgsParams FgsParams = (FgsParams) getParams();
             FgsIndTestParams indTestParams = (FgsIndTestParams) FgsParams.getIndTestParams();
@@ -429,7 +427,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-    public Type computeType() {
+    public FgsRunner.Type computeType() {
         Object model = getDataModel();
 
         if (model == null && getSourceGraph() != null) {
@@ -444,26 +442,26 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         }
 
         if (model instanceof Graph) {
-            type = Type.GRAPH;
+            type = FgsRunner.Type.GRAPH;
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                type = Type.CONTINUOUS;
+                type = FgsRunner.Type.CONTINUOUS;
             } else if (dataSet.isDiscrete()) {
-                type = Type.DISCRETE;
+                type = FgsRunner.Type.DISCRETE;
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            type = Type.CONTINUOUS;
+            type = FgsRunner.Type.CONTINUOUS;
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
             if (allContinuous(list)) {
-                type = Type.CONTINUOUS;
+                type = FgsRunner.Type.CONTINUOUS;
             } else if (allDiscrete(list)) {
-                type = Type.DISCRETE;
+                type = FgsRunner.Type.DISCRETE;
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }

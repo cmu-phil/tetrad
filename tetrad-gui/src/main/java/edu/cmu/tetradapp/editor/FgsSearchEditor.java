@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import com.sun.javafx.iio.ImageStorage;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -35,6 +36,7 @@ import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
+import javax.imageio.ImageReader;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
@@ -73,6 +75,10 @@ public class FgsSearchEditor extends AbstractSearchEditor
      * Opens up an editor to let the user view the given FgsRunner.
      */
     public FgsSearchEditor(FgsRunner runner) {
+        super(runner, "Result Pattern");
+    }
+
+    public FgsSearchEditor(ImagesRunner runner) {
         super(runner, "Result Pattern");
     }
 
@@ -140,7 +146,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
                 try {
                     storeLatestWorkbenchGraph();
                     getAlgorithmRunner().execute();
-                    FgsRunner runner = (FgsRunner) getAlgorithmRunner();
+                    IFgsRunner runner = (IFgsRunner) getAlgorithmRunner();
                     arrangeGraphs();
                     gesDisplay.resetGraphs(runner.getTopGraphs());
                 } catch (Exception e) {
@@ -538,11 +544,11 @@ public class FgsSearchEditor extends AbstractSearchEditor
     }
 
     private List<ScoredGraph> arrangeGraphs() {
-        FgsRunner runner = (FgsRunner) getAlgorithmRunner();
+        IFgsRunner runner = (IFgsRunner) getAlgorithmRunner();
 
         List<ScoredGraph> topGraphs = runner.getTopGraphs();
 
-        if (topGraphs == null) topGraphs = new ArrayList<ScoredGraph>();
+        if (topGraphs == null) topGraphs = new ArrayList<>();
 
         Graph latestWorkbenchGraph = runner.getParams().getSourceGraph();
         Graph sourceGraph = runner.getSourceGraph();
@@ -799,9 +805,15 @@ public class FgsSearchEditor extends AbstractSearchEditor
             throw new NullPointerException();
         }
 
-        FgsRunner fgsRunner = ((FgsRunner) getAlgorithmRunner());
-        FgsIndTestParams params = (FgsIndTestParams) indTestParams;
-        return new FgsIndTestParamsEditor(params, fgsRunner.getType());
+        AlgorithmRunner algorithmRunner = getAlgorithmRunner();
+
+        if (algorithmRunner instanceof  IFgsRunner) {
+            IFgsRunner fgsRunner = ((IFgsRunner) algorithmRunner);
+            FgsIndTestParams params = (FgsIndTestParams) indTestParams;
+            return new FgsIndTestParamsEditor(params, fgsRunner.getType());
+        }
+
+        throw new IllegalArgumentException();
     }
 
     private JScrollPane dagWorkbenchScroll(Graph dag) {

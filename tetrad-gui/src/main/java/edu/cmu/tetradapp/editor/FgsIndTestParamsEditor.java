@@ -197,10 +197,17 @@ class FgsIndTestParamsEditor extends JComponent {
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
             b4a.add(faithfulnessAssumed);
             add(b4a);
+
+            Box b9 = Box.createHorizontalBox();
+            b9.add(new JLabel("Num Patterns to Save"));
+            b9.add(Box.createHorizontalGlue());
+            b9.add(this.numPatternsToSave);
+            add(b9);
         } else if (type == FgsRunner.Type.CONTINUOUS){
             Box b7 = Box.createHorizontalBox();
             b7.add(new JLabel("Penalty Discount"));
             b7.add(Box.createHorizontalGlue());
+
             b7.add(this.penaltyDiscount);
             add(b7);
 
@@ -208,6 +215,12 @@ class FgsIndTestParamsEditor extends JComponent {
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
             b4a.add(faithfulnessAssumed);
             add(b4a);
+
+            Box b8 = Box.createHorizontalBox();
+            b8.add(new JLabel("Num Patterns to Save"));
+            b8.add(Box.createHorizontalGlue());
+            b8.add(this.numPatternsToSave);
+            add(b8);
         } else if (type == FgsRunner.Type.GRAPH) {
             Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num Patterns to Save"));

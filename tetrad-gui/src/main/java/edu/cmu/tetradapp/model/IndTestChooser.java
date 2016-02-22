@@ -214,10 +214,11 @@ public final class IndTestChooser {
         IndTestParams indTestParams = params.getIndTestParams();
 
         if (IndTestType.G_SQUARE == testType) {
-            return new IndTestGSquare(dataDiscrete, indTestParams.getAlpha());
+            return new IndTestBDeuBump(dataDiscrete, 1, .1);
+//            return new IndTestGSquare(dataDiscrete, indTestParams.getAlpha());
         }
         if (IndTestType.CHI_SQUARE == testType) {
-            return new IndTestChiSquare(dataDiscrete, indTestParams.getAlpha());
+//            return new IndTestChiSquare(dataDiscrete, indTestParams.getAlpha());
         }
         if (IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION == testType) {
             return new IndTestMultinomialLogisticRegression(dataDiscrete, indTestParams.getAlpha());

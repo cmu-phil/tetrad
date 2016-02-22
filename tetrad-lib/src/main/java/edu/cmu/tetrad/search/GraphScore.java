@@ -31,7 +31,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class GraphScore implements GesScore {
+public class GraphScore implements FgsScore {
 
     private final Graph dag;
 
