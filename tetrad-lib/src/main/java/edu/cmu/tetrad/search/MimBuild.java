@@ -209,17 +209,11 @@ public final class MimBuild {
             ICovarianceMatrix newCovMatrix = expectedCovarianceMatrix.getSubmatrix(latentVarNames);
 
             score = newScore;
-//            System.out.println("alpha = " + getAlpha());
 //
-            Ges ges = new Ges(newCovMatrix);
+            Fgs ges = new Fgs(newCovMatrix);
             ges.setKnowledge(getKnowledge());
             Graph newStructuralModel = ges.search();
 //
-//            Jpc jpc = new Jpc(new IndTestFisherZ(newCovMatrix, getAlpha()));
-//            jpc.setKnowledge(getKnowledge());
-//            jpc.setAggressivelyPreventCycles(true);
-//            Graph newStructuralModel = jpc.search();
-
             this.structuralModel = newStructuralModel;
 
             for (Edge edge : new ArrayList<Edge>(newStructuralModel.getEdges())) {

@@ -654,26 +654,26 @@ public final class TetradCmd {
             TetradLogger.getInstance().log("info", "Testing it.");
         }
 
-        Fgs ges;
+        Fgs fgs;
 
         if (useCovariance) {
-            ges = new Fgs(new SemBicScore(covarianceMatrix));
+            fgs = new Fgs(new SemBicScore(covarianceMatrix));
         } else {
-            ges = new Fgs(new SemBicScore(new CovarianceMatrixOnTheFly(data)));
+            fgs = new Fgs(new SemBicScore(new CovarianceMatrixOnTheFly(data)));
         }
 
         if (initialGraph != null) {
-            ges.setInitialGraph(initialGraph);
+            fgs.setInitialGraph(initialGraph);
         }
 
-        ges.setPenaltyDiscount(penaltyDiscount);
-        ges.setSamplePrior(samplePrior);
-        ges.setStructurePrior(structurePrior);
+        fgs.setPenaltyDiscount(penaltyDiscount);
+        fgs.setSamplePrior(samplePrior);
+        fgs.setStructurePrior(structurePrior);
 
-        ges.setKnowledge(getKnowledge());
+        fgs.setKnowledge(getKnowledge());
 
         // Convert back to Graph..
-        Graph resultGraph = ges.search();
+        Graph resultGraph = fgs.search();
 
         // PrintUtil outputStreamPath problem and graphs.
         outPrint("\nResult graph:");

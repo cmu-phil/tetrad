@@ -231,14 +231,14 @@ public class FgsRunnerOld extends AbstractAlgorithmRunner implements GraphSource
         return index;
     }
 
-    private Map<Graph, Double> scoreGraphs(Fgs ges, Graph graph) {
+    private Map<Graph, Double> scoreGraphs(Fgs fgs, Graph graph) {
         Map<Graph, Double> dagsToScores = new HashMap<Graph, Double>();
 
         if (false) {
             final List<Graph> dags = SearchGraphUtils.generatePatternDags(graph, true);
 
             for (Graph _graph : dags) {
-                double score = ges.scoreDag(_graph);
+                double score = fgs.scoreDag(_graph);
                 dagsToScores.put(_graph, score);
             }
         }

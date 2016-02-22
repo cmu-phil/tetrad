@@ -1,5 +1,6 @@
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ScoredGraph;
 
@@ -16,4 +17,6 @@ public interface IFgsRunner {
     SearchParams getParams();
 
     Graph getSourceGraph();
+
+    DataModel getDataModel();
 }

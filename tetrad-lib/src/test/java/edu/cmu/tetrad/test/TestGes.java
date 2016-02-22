@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.Ges;
 import edu.cmu.tetrad.search.GraphScore;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.SemIm;
@@ -115,7 +114,7 @@ public class TestGes {
         SemIm im = new SemIm(semPm);
         DataSet dataSet = im.simulateData(sampleSize, false);
 
-        Ges ges = new Ges(dataSet);
+        Fgs ges = new Fgs(dataSet);
         ges.setTrueGraph(trueGraph);
 
         // Run search
@@ -141,7 +140,7 @@ public class TestGes {
         DataSet dataSet = semIM.simulateData(1000, false);
 
         // Set up search.
-        Ges ges = new Ges(dataSet);
+        Fgs ges = new Fgs(dataSet);
 //        Fgs ges = new Fgs(dataSet);
         ges.setPenaltyDiscount(2);
 //        ges.setTrueGraph(graph);

@@ -128,10 +128,6 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(GesRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
     public DagWrapper(MimBuildRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }

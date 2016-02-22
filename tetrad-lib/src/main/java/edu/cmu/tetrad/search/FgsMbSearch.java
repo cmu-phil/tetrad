@@ -32,17 +32,17 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GesMbSearch implements MbSearch {
+public class FgsMbSearch implements MbSearch {
     private DataSet dataSet;
 
-    public GesMbSearch(DataSet dataSet) {
+    public FgsMbSearch(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
     public List<Node> findMb(String targetName) {
         Node target = getVariableForName(targetName);
 
-        Ges search = new Ges(dataSet);
+        Fgs search = new Fgs(dataSet);
         Graph graph = search.search();
         MbUtils.trimToMbNodes(graph, target, false);
         List<Node> mbVariables = graph.getNodes();

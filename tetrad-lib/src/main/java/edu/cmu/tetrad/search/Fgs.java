@@ -158,6 +158,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
     // The ordering doesn't matter; it just have to be transitive.
     int arrowIndex = 0;
 
+    // The final score after search.
+    private double modelScore;
+
     //===========================CONSTRUCTORS=============================//
 
     /**
@@ -270,8 +273,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
             out.println("FGS result graph = " + graph);
         }
 
-        return graph;
+        this.modelScore = score;
 
+        return graph;
     }
 
     /**
@@ -1024,6 +1028,10 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (fgsScore instanceof LocalDiscreteScore) {
             ((LocalDiscreteScore) fgsScore).setStructurePrior(expectedNumParents);
         }
+    }
+
+    public double getModelScore() {
+        return modelScore;
     }
 
     // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with

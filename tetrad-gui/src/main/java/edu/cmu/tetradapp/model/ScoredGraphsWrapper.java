@@ -97,10 +97,6 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this(runner.getTopGraphs().get(runner.getIndex()).getGraph(), runner.getGraphScorer());
     }
 
-    public ScoredGraphsWrapper(GesRunner runner) {
-        this(runner.getTopGraphs().get(runner.getIndex()).getGraph(), runner.getGraphScorer());
-    }
-
     public ScoredGraphsWrapper(DagWrapper wrapper) {
         this(wrapper.getGraph(), null);
     }

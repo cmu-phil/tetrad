@@ -23,9 +23,9 @@ import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.util.GraphmlSerializer;
 import edu.cmu.tetrad.data.BigDataSetUtility;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.FastImages;
+
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,6 +36,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 import java.util.List;
+
+import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.SemBicScoreImages;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -117,7 +120,7 @@ public class FastImagesCli {
         }
 
         try {
-            List<DataSet> datasets = new LinkedList<>();
+            List<DataModel> datasets = new LinkedList<>();
             for (Path dataFile : dataFiles) {
                 datasets.add(BigDataSetUtility.readContinuous(dataFile.toFile(), delimiter));
             }
@@ -128,7 +131,7 @@ public class FastImagesCli {
                 printOutParameters(stream);
                 stream.flush();
 
-                FastImages fastImages = new FastImages(datasets, true);
+                Fgs fastImages = new Fgs(new SemBicScoreImages(datasets));
                 fastImages.setPenaltyDiscount(penaltyDiscount);
                 fastImages.setDepth(depth);
                 fastImages.setNumPatternsToStore(0);  // always set to zero
