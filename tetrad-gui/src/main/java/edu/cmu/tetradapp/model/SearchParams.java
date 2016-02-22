@@ -53,7 +53,7 @@ public interface SearchParams extends Params, KnowledgeTransferable {
     IndTestParams getIndTestParams();
 
 
-    void setIndTestParams2(IndTestParams params);
+    void setIndTestParams(IndTestParams params);
 
     /**
      * @return the list of variable names.

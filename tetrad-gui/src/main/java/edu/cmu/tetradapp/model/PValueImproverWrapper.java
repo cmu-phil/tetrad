@@ -63,7 +63,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     /**
      * @deprecated
      */
-    private GesParams params;
+    private FgsParams params;
     private PcSearchParams params2;
     private SemIm estSem;
     private Graph trueDag;

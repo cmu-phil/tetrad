@@ -144,7 +144,7 @@ public final class GaParams implements SearchParams {
         return indTestParams;
     }
 
-    public void setIndTestParams2(IndTestParams indTestParams) {
+    public void setIndTestParams(IndTestParams indTestParams) {
         if (indTestParams == null) {
             throw new NullPointerException();
         }

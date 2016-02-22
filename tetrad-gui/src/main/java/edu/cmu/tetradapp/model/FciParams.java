@@ -100,7 +100,7 @@ public final class FciParams implements SearchParams {
         return indTestParams;
     }
 
-    public void setIndTestParams2(IndTestParams indTestParams) {
+    public void setIndTestParams(IndTestParams indTestParams) {
         this.indTestParams = indTestParams;
     }
 

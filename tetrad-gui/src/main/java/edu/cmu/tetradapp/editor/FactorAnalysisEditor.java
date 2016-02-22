@@ -149,13 +149,11 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof GesIndTestParams) {
+        if (indTestParams instanceof FgsIndTestParams) {
             if (getAlgorithmRunner() instanceof IFgsRunner) {
                 IFgsRunner gesRunner = ((IFgsRunner) getAlgorithmRunner());
-                GesIndTestParams params = (GesIndTestParams) indTestParams;
-                DataSet dataSet = (DataSet) gesRunner.getDataModel();
-                boolean discreteData = dataSet.isDiscrete();
-                return new GesIndTestParamsEditor(params, discreteData);
+                FgsIndTestParams params = (FgsIndTestParams) indTestParams;
+                return new FgsIndTestParamsEditor(params, gesRunner.getType());
             }
         }
 

@@ -95,7 +95,7 @@ public final class GlassoSearchParams implements SearchParams {
     }
 
     @Override
-    public void setIndTestParams2(IndTestParams params) {
+    public void setIndTestParams(IndTestParams params) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

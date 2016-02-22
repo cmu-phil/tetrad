@@ -57,7 +57,7 @@ public final class IndTestChooser {
         IndTestParams indTestParams = params.getIndTestParams();
         if (indTestParams == null) {
             indTestParams = new BasicIndTestParams();
-            params.setIndTestParams2(indTestParams);
+            params.setIndTestParams(indTestParams);
         }
 
         if (dataSource instanceof DataModelList) {
@@ -172,9 +172,9 @@ public final class IndTestChooser {
             return new IndTestFisherZBootstrap(dataSet, indTestParams.getAlpha(), 15, dataSet.getNumRows());
         }
         if (IndTestType.LINEAR_REGRESSION == testType) {
-            return new IndTestBicBump(dataSet, indTestParams.getAlpha() * 100);
-//            return new IndTestLaggedRegression(dataSet,
-//                    indTestParams.getAlpha(), 1);
+//            return new IndTestBicBump(dataSet, indTestParams.getAlpha() * 100);
+            return new IndTestLaggedRegression(dataSet,
+                    indTestParams.getAlpha(), 1);
         } else {
             params.setIndTestType(IndTestType.FISHER_Z);
             return new IndTestFisherZ(dataSet, indTestParams.getAlpha());
@@ -214,11 +214,10 @@ public final class IndTestChooser {
         IndTestParams indTestParams = params.getIndTestParams();
 
         if (IndTestType.G_SQUARE == testType) {
-            return new IndTestBDeuBump(dataDiscrete, 1, .1);
-//            return new IndTestGSquare(dataDiscrete, indTestParams.getAlpha());
+            return new IndTestGSquare(dataDiscrete, indTestParams.getAlpha());
         }
         if (IndTestType.CHI_SQUARE == testType) {
-//            return new IndTestChiSquare(dataDiscrete, indTestParams.getAlpha());
+            return new IndTestChiSquare(dataDiscrete, indTestParams.getAlpha());
         }
         if (IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION == testType) {
             return new IndTestMultinomialLogisticRegression(dataDiscrete, indTestParams.getAlpha());
@@ -279,7 +278,7 @@ public final class IndTestChooser {
             indTestParams = new LagIndTestParams();
             ((LagIndTestParams) indTestParams).setNumTimePoints(
                     data.getData().rows());
-            params.setIndTestParams2(indTestParams);
+            params.setIndTestParams(indTestParams);
         }
         IndTestTimeSeries test =
                 new IndTestTimeSeries(data.getData(), data.getVariables());
@@ -301,21 +300,21 @@ public final class IndTestChooser {
                 IndTestParams indTestParams = params.getIndTestParams();
                 if (indTestParams == null) {
                     indTestParams = new BasicIndTestParams();
-                    params.setIndTestParams2(indTestParams);
+                    params.setIndTestParams(indTestParams);
                 }
                 return;
             } else if (dataSet.isDiscrete()) {
                 IndTestParams indTestParams = params.getIndTestParams();
                 if (indTestParams == null) {
                     indTestParams = new BasicIndTestParams();
-                    params.setIndTestParams2(indTestParams);
+                    params.setIndTestParams(indTestParams);
                 }
                 return;
             } else if (dataSet.isMixed()) {
                 IndTestParams indTestParams = params.getIndTestParams();
                 if (indTestParams == null) {
                     indTestParams = new BasicIndTestParams();
-                    params.setIndTestParams2(indTestParams);
+                    params.setIndTestParams(indTestParams);
                 }
                 return;
             } else {
@@ -328,7 +327,7 @@ public final class IndTestChooser {
             IndTestParams indTestParams = params.getIndTestParams();
             if (indTestParams == null) {
                 indTestParams = new BasicIndTestParams();
-                params.setIndTestParams2(indTestParams);
+                params.setIndTestParams(indTestParams);
             }
             return;
         }
@@ -337,7 +336,7 @@ public final class IndTestChooser {
             IndTestParams indTestParams = params.getIndTestParams();
             if (indTestParams == null) {
                 indTestParams = new BasicIndTestParams();
-                params.setIndTestParams2(indTestParams);
+                params.setIndTestParams(indTestParams);
             }
             return;
         }
@@ -346,7 +345,7 @@ public final class IndTestChooser {
             IndTestParams indTestParams = params.getIndTestParams();
             if (indTestParams == null) {
                 indTestParams = new GraphIndTestParams();
-                params.setIndTestParams2(indTestParams);
+                params.setIndTestParams(indTestParams);
             }
             return;
         }
@@ -359,7 +358,7 @@ public final class IndTestChooser {
                     getOldNumTimePoints(indTestParams) ==
                             data.getNumTimePoints())) {
                 indTestParams = new BasicIndTestParams();
-                params.setIndTestParams2(indTestParams);
+                params.setIndTestParams(indTestParams);
             }
             return;
         }
@@ -368,7 +367,7 @@ public final class IndTestChooser {
             IndTestParams indTestParams = params.getIndTestParams();
             if (indTestParams == null) {
                 indTestParams = new BasicIndTestParams();
-                params.setIndTestParams2(indTestParams);
+                params.setIndTestParams(indTestParams);
             }
             return;
         }
@@ -378,7 +377,7 @@ public final class IndTestChooser {
             IndTestParams indTestParams = params.getIndTestParams();
             if (indTestParams == null) {
                 indTestParams = new BasicIndTestParams();
-                params.setIndTestParams2(indTestParams);
+                params.setIndTestParams(indTestParams);
             }
             return;
         }

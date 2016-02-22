@@ -21,9 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import com.sun.javafx.iio.ImageStorage;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
@@ -36,7 +34,6 @@ import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
-import javax.imageio.ImageReader;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
@@ -46,8 +43,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +61,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
     //    private JTextArea bootstrapEdgeCountsScroll;
     private JTabbedPane tabbedPane;
     private boolean alreadyLaidOut = false;
-    private GesDisplay gesDisplay;
+    private FgsDisplay gesDisplay;
     private FgsIndTestParamsEditor paramsEditor;
 
     //=========================CONSTRUCTORS============================//
@@ -516,10 +511,10 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
     //==============================PRIVATE METHODS=============================//
 
-    private GesDisplay gesDisplay() {
+    private FgsDisplay gesDisplay() {
         Graph resultGraph = resultGraph();
         List<ScoredGraph> topGraphs = arrangeGraphs();
-        GesDisplay display = new GesDisplay(resultGraph, topGraphs, this);
+        FgsDisplay display = new FgsDisplay(resultGraph, topGraphs, this);
         this.gesDisplay = display;
 
         // Superfluous?
