@@ -257,7 +257,6 @@ public final class TestGraphUtils {
         assertTrue(graph.isDConnectedTo(c, a, Collections.singletonList(b)));
     }
 
-    @Test
     public void printEdgeData() {
 
 //        String[] autistics = {
