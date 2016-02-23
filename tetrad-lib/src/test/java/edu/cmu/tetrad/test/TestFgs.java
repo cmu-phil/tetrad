@@ -220,8 +220,12 @@ public class TestFgs {
 
     @Test
     public void testFromGraph() {
-        for (int i = 0; i < 1; i++) {
-            Graph dag = GraphUtils.randomDag(6, 0, 6, 10, 10, 10, false);
+        int numNodes = 6;
+        int numIterations = 1;
+
+        for (int i = 0; i < numIterations; i++) {
+            System.out.println(i);
+            Graph dag = GraphUtils.randomDag(numNodes, 0, 2 * numNodes, 10, 10, 10, false);
             Fgs fgs = new Fgs(new GraphScore(dag));
             Graph pattern1 = fgs.search();
             Pc pc = new Pc(new IndTestDSep(dag));
