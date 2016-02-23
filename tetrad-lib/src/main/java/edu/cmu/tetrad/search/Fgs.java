@@ -709,9 +709,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
             clearArrow(x, y);
 
             Set<Node> visited = reapplyOrientation(x, y, H);
-
+//
             Set<Node> toProcess = new HashSet<>();
-
+//
             for (Node node : visited) {
                 final Set<Node> neighbors = getNeighbors(node);
                 final Set<Node> storedNeighbors = this.neighbors.get(node);
@@ -728,6 +728,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
             storeGraph();
             reevaluateBackward(toProcess);
         }
+
+        meekOrientRestricted(getVariables(), getKnowledge());
     }
 
     private Set<Node> getCommonAdjacents(Node x, Node y) {
@@ -866,11 +868,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
         final int _depth = Math.min(TNeighbors.size(), depth == -1 ? 1000 : depth);
 
-        Set<Node> maxNaYX = null;
-        Set<Node> maxT = null;
-        double maxBump = Double.NaN;
-        int maxSize = -1;
-
         for (int i = 0; i <= _depth; i++) {
             final ChoiceGenerator gen = new ChoiceGenerator(TNeighbors.size(), i);
             int[] choice;
@@ -889,18 +886,11 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                 if (bump > 0.0) {
                     addArrow(a, b, naYX, T, bump);
-//                    maxNaYX = naYX;
-//                    maxT = T;
-//                    maxBump = bump;
                 }
             }
 
             if (!found) break;
         }
-
-//        if (maxNaYX != null) {
-//            addArrow(a, b, maxNaYX, maxT, maxBump);
-//        }
     }
 
     private void addArrow(Node a, Node b, Set<Node> naYX, Set<Node> hOrT, double bump) {
@@ -1142,29 +1132,18 @@ public final class Fgs implements GraphSearch, GraphScorer {
     // Evaluate the Insert(X, Y, T) operator (Definition 12 from Chickering, 2002).
     private double insertEval(Node x, Node y, Set<Node> t, Set<Node> naYX,
                               Map<Node, Integer> hashIndices) {
-        Set<Node> parents = new HashSet<>(graph.getParents(y));
-
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
-        set.addAll(parents);
-
+        set.addAll(graph.getParents(y));
         return scoreGraphChange(y, set, x, hashIndices);
     }
 
     // Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
     private double deleteEval(Node x, Node y, Set<Node> diff, Set<Node> naYX,
                               Map<Node, Integer> hashIndices) {
-
-        if (!naYX.equals(getNaYX(x, y))) {
-            throw new IllegalArgumentException();
-        }
-
-        Set<Node> parents = new HashSet<>(graph.getParents(y));
-        parents.remove(x);
-
         Set<Node> set = new HashSet<>(diff);
-        set.addAll(parents);
-
+        set.addAll(graph.getParents(y));
+        set.remove(x);
         return -scoreGraphChange(y, set, x, hashIndices);
     }
 
