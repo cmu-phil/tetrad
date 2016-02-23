@@ -2900,7 +2900,10 @@ public final class GraphUtils {
             }
         }
 
-        for (Edge edge : new ArrayList<>(_edges)) {
+        List<Edge> __edges = new ArrayList<>();
+        System.out.println("# edges = " + _edges.size());
+
+        for (Edge edge : _edges) {
             int count = 0;
             int total = 0;
 
@@ -2914,23 +2917,23 @@ public final class GraphUtils {
                 }
             }
 
-            if (count < 5) {
-                _edges.remove(edge);
+            if (count >= 2 && count <= 10) {
+                __edges.add(edge);
             }
         }
 
-        List<Edge> edges = new ArrayList<>(_edges);
+        System.out.println("# __edges = " + __edges.size());
 
-        for (int i = 0; i < edges.size(); i++) {
-            out1.print(edges.get(i) + "\t");
-//            out1.print("X" + (i + 1) + "\t");
+        for (int i = 0; i < __edges.size(); i++) {
+//            out1.print(edges.get(i) + "\t");
+            out1.print("X" + (i + 1) + "\t");
         }
 
         out1.println("Group");
 
         for (int i = 0; i < graphs2.size(); i++) {
             for (Graph graph : graphs2.get(i)) {
-                for (Edge edge : edges) {
+                for (Edge edge : __edges) {
                     out1.print(graph.containsEdge(edge) ? "1\t" : "0\t");
                 }
 
@@ -2940,8 +2943,8 @@ public final class GraphUtils {
 
         out1.close();
 
-        for (int i = 0; i < edges.size(); i++) {
-            out2.println("X" + (i + 1) + "\t" + edges.get(i));
+        for (int i = 0; i < __edges.size(); i++) {
+            out2.println("X" + (i + 1) + "\t" + __edges.get(i));
         }
 
         out2.println("Group");
