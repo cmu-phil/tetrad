@@ -709,9 +709,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
             clearArrow(x, y);
 
             Set<Node> visited = reapplyOrientation(x, y, H);
-
+//
             Set<Node> toProcess = new HashSet<>();
-
+//
             for (Node node : visited) {
                 final Set<Node> neighbors = getNeighbors(node);
                 final Set<Node> storedNeighbors = this.neighbors.get(node);
@@ -728,6 +728,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
             storeGraph();
             reevaluateBackward(toProcess);
         }
+
+        meekOrientRestricted(getVariables(), getKnowledge());
     }
 
     private Set<Node> getCommonAdjacents(Node x, Node y) {
