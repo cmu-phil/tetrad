@@ -65,7 +65,7 @@ public class DagSepsets implements SepsetProducer {
     }
 
     @Override
-    public double getPValue() {
+    public double getScore() {
         throw new UnsupportedOperationException();
     }
 

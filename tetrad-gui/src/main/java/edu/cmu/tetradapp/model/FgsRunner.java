@@ -21,21 +21,15 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.Triple;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -45,52 +39,254 @@ import java.util.Map;
  * @author Ricardo Silva
  */
 
-public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
-        PropertyChangeListener, Indexable, IGesRunner, DoNotAddOldModel {
+public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
+        PropertyChangeListener, IGesRunner, Indexable {
     static final long serialVersionUID = 23L;
+
+    public Type getType() {
+        return type;
+    }
+
+    public enum Type {CONTINUOUS, DISCRETE, GRAPH}
+
     private transient List<PropertyChangeListener> listeners;
-    private Map<Graph, Double> dagsToScores;
-    private List<ScoredGraph> topGraphs = new ArrayList<ScoredGraph>();
+    private List<ScoredGraph> topGraphs;
     private int index;
-    private List<Map<Graph, Double>> allDagsToScores;
-    private Graph initialGraph;
-    private Graph trueGraph;// deprecated.
+    private transient Fgs fgs;
+    private Graph graph;
+    private Type type;
 
     //============================CONSTRUCTORS============================//
 
-    public FgsRunner(GraphWrapper graphWrapper, FgsParams params) {
-        super(graphWrapper.getGraph(), params, null);
+    public FgsRunner(DataWrapper dataWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+        type = computeType();
     }
 
     public FgsRunner(DataWrapper dataWrapper, FgsParams params) {
-        super(dataWrapper, params, null);
+        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+        type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphSource trueGraph, FgsParams params) {
-        this(dataWrapper, params, null);
-        this.initialGraph = trueGraph.getGraph();
+    public FgsRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params) {
+        super(new MergeDatasetsWrapper(dataWrapper), params, null);
+        this.graph = graph.getGraph();
+        type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, params, knowledgeBoxModel);
+    public FgsRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+        this.graph = graph.getGraph();
+        type = computeType();
     }
 
-    /**
-     * Constucts a wrapper for the given EdgeListGraph.
-     */
-    public FgsRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner(DataWrapper dataWrapper1,
+                     DataWrapper dataWrapper2,
+                     FgsParams params) {
+
+        super(new MergeDatasetsWrapper(
+                        dataWrapper1,
+                        dataWrapper2
+                ),
+                params, null);
+        type = computeType();
+
+    }
+
+    public FgsRunner(DataWrapper dataWrapper1,
+                     DataWrapper dataWrapper2,
+                     DataWrapper dataWrapper3,
+                     FgsParams params) {
+
+        super(new MergeDatasetsWrapper(
+                        dataWrapper1,
+                        dataWrapper2,
+                        dataWrapper3
+                ),
+                params, null);
+
+        type = computeType();
+    }
+
+    public FgsRunner(DataWrapper dataWrapper1,
+                     DataWrapper dataWrapper2,
+                     DataWrapper dataWrapper3,
+                     DataWrapper dataWrapper4,
+                     FgsParams params) {
+
+        super(new MergeDatasetsWrapper(
+                        dataWrapper1,
+                        dataWrapper2,
+                        dataWrapper3,
+                        dataWrapper4
+                ),
+                params, null);
+
+        type = computeType();
+    }
+
+    public FgsRunner(DataWrapper dataWrapper1,
+                     DataWrapper dataWrapper2,
+                     DataWrapper dataWrapper3,
+                     DataWrapper dataWrapper4,
+                     DataWrapper dataWrapper5,
+                     FgsParams params) {
+
+        super(new MergeDatasetsWrapper(
+                        dataWrapper1,
+                        dataWrapper2,
+                        dataWrapper3,
+                        dataWrapper4,
+                        dataWrapper5
+                ),
+                params, null);
+
+        type = computeType();
+    }
+
+    public FgsRunner(DataWrapper dataWrapper1,
+                     DataWrapper dataWrapper2,
+                     DataWrapper dataWrapper3,
+                     DataWrapper dataWrapper4,
+                     DataWrapper dataWrapper5,
+                     DataWrapper dataWrapper6,
+                     FgsParams params) {
+
+        super(new MergeDatasetsWrapper(
+                        dataWrapper1,
+                        dataWrapper2,
+                        dataWrapper3,
+                        dataWrapper4,
+                        dataWrapper5,
+                        dataWrapper6
+                ),
+                params, null);
+
+        type = computeType();
+    }
+
+    public FgsRunner(DataWrapper dataWrapper1,
+                     DataWrapper dataWrapper2,
+                     DataWrapper dataWrapper3,
+                     DataWrapper dataWrapper4,
+                     DataWrapper dataWrapper5,
+                     DataWrapper dataWrapper6,
+                     DataWrapper dataWrapper7,
+                     FgsParams params) {
+
+        super(new MergeDatasetsWrapper(
+                        dataWrapper1,
+                        dataWrapper2,
+                        dataWrapper3,
+                        dataWrapper4,
+                        dataWrapper5,
+                        dataWrapper6,
+                        dataWrapper7
+                ),
+                params, null);
+
+        type = computeType();
+    }
+
+    public FgsRunner(DataWrapper dataWrapper1,
+                     DataWrapper dataWrapper2,
+                     DataWrapper dataWrapper3,
+                     DataWrapper dataWrapper4,
+                     DataWrapper dataWrapper5,
+                     DataWrapper dataWrapper6,
+                     DataWrapper dataWrapper7,
+                     DataWrapper dataWrapper8,
+                     FgsParams params) {
+
+        super(new MergeDatasetsWrapper(
+                        dataWrapper1,
+                        dataWrapper2,
+                        dataWrapper3,
+                        dataWrapper4,
+                        dataWrapper5,
+                        dataWrapper6,
+                        dataWrapper7,
+                        dataWrapper8
+                ),
+                params, null);
+
+        type = computeType();
+    }
+
+    public FgsRunner(DataWrapper dataWrapper1,
+                     DataWrapper dataWrapper2,
+                     DataWrapper dataWrapper3,
+                     DataWrapper dataWrapper4,
+                     DataWrapper dataWrapper5,
+                     DataWrapper dataWrapper6,
+                     DataWrapper dataWrapper7,
+                     DataWrapper dataWrapper8,
+                     DataWrapper dataWrapper9,
+                     FgsParams params) {
+
+        super(new MergeDatasetsWrapper(
+                        dataWrapper1,
+                        dataWrapper2,
+                        dataWrapper3,
+                        dataWrapper4,
+                        dataWrapper5,
+                        dataWrapper6,
+                        dataWrapper7,
+                        dataWrapper8,
+                        dataWrapper9
+                ),
+                params, null);
+
+        type = computeType();
+    }
+
+    public FgsRunner(DataWrapper dataWrapper1,
+                     DataWrapper dataWrapper2,
+                     DataWrapper dataWrapper3,
+                     DataWrapper dataWrapper4,
+                     DataWrapper dataWrapper5,
+                     DataWrapper dataWrapper6,
+                     DataWrapper dataWrapper7,
+                     DataWrapper dataWrapper8,
+                     DataWrapper dataWrapper9,
+                     DataWrapper dataWrapper10,
+                     FgsParams params) {
+
+        super(new MergeDatasetsWrapper(
+                        dataWrapper1,
+                        dataWrapper2,
+                        dataWrapper3,
+                        dataWrapper4,
+                        dataWrapper5,
+                        dataWrapper6,
+                        dataWrapper7,
+                        dataWrapper8,
+                        dataWrapper9,
+                        dataWrapper10
+                ),
+                params, null);
+
+        type = computeType();
+    }
+
+    public FgsRunner(GraphWrapper graphWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
+        type = computeType();
+    }
+
+    public FgsRunner(GraphWrapper graphWrapper, FgsParams params) {
+        super(graphWrapper.getGraph(), params, null);
+        type = computeType();
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     *
      * @see TetradSerializableUtils
      */
     public static FgsRunner serializableInstance() {
         return new FgsRunner(DataWrapper.serializableInstance(),
-                FgsParams.serializableInstance());
+                FgsParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -99,87 +295,110 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-
     public void execute() {
-        Object source = getDataModel();
+        Object model = getDataModel();
 
-        if (source == null && getSourceGraph() != null) {
-            source = getSourceGraph();
+        if (model == null && getSourceGraph() != null) {
+            model = getSourceGraph();
         }
 
-        if (source == null) {
+        if (model == null) {
             throw new RuntimeException("Data source is unspecified. You may need to double click all your data boxes, \n" +
                     "then click Save, and then right click on them and select Propagate Downstream. \n" +
                     "The issue is that we use a seed to simulate from IM's, so your data is not saved to \n" +
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        FgsParams fgsParams = (FgsParams) getParams();
-        FgsIndTestParams indTestParams = (FgsIndTestParams) fgsParams.getIndTestParams();
-        double penalty = fgsParams.getComplexityPenalty();
-        Fgs ges;
-        boolean faithfulnessAssumed = fgsParams.isFaithfulnessAssumed();
+        FgsParams params = (FgsParams) getParams();
 
-        if (source instanceof ICovarianceMatrix) {
-            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) source);
-            gesScore.setPenaltyDiscount(penalty);
-            ges = new Fgs(gesScore);
-            ges.setKnowledge(getParams().getKnowledge());
-            ges.setPenaltyDiscount(penalty);
-            ges.setDepth(2);
-            ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-            ges.setFaithfulnessAssumed(faithfulnessAssumed);
-            ges.setVerbose(true);
-
-        } else if (source instanceof DataSet) {
-            DataSet dataSet = (DataSet) source;
+        if (model instanceof Graph) {
+            GraphScore gesScore = new GraphScore((Graph) model);
+            fgs = new Fgs(gesScore);
+            fgs.setKnowledge(getParams().getKnowledge());
+            fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+            fgs.setVerbose(true);
+        } else if (model instanceof DataSet) {
+            DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-
-                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) source));
-                gesScore.setPenaltyDiscount(penalty);
-                ges = new Fgs(gesScore);
-                ges.setKnowledge(getParams().getKnowledge());
-                ges.setPenaltyDiscount(penalty);
-//                ges.setDepth(2);
-                ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-//                ges.setFaithfulnessAssumed(faithfulnessAssumed);
-                ges.setVerbose(true);
-            }
-            else if (dataSet.isDiscrete()) {
+                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
+                gesScore.setPenaltyDiscount(params.getComplexityPenalty());
+                fgs = new Fgs(gesScore);
+                fgs.setKnowledge(getParams().getKnowledge());
+                fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+                fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+                fgs.setVerbose(true);
+            } else if (dataSet.isDiscrete()) {
                 double samplePrior = ((FgsParams) getParams()).getSamplePrior();
                 double structurePrior = ((FgsParams) getParams()).getStructurePrior();
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
-//                BDeuScore score = new BDeuScore(dataSet);
-                ges = new Fgs(score);
-                ges.setVerbose(true);
-                ges.setKnowledge(getParams().getKnowledge());
-//                ges.setDepth(2);
-                ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-                ges.setFaithfulnessAssumed(faithfulnessAssumed);
-            }
-            else {
+                fgs = new Fgs(score);
+                fgs.setVerbose(true);
+                fgs.setKnowledge(getParams().getKnowledge());
+                fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+                fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+            } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
-        } else if (source instanceof Graph) {
-            GraphScore gesScore = new GraphScore((Graph) source);
-            ges = new Fgs(gesScore);
-            ges.setKnowledge(getParams().getKnowledge());
-            ges.setPenaltyDiscount(penalty);
-//                ges.setDepth(2);
-            ges.setNumPatternsToStore(50);
-//                ges.setFaithfulnessAssumed(faithfulnessAssumed);
-            ges.setVerbose(true);
+        } else if (model instanceof ICovarianceMatrix) {
+            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+            gesScore.setPenaltyDiscount(params.getComplexityPenalty());
+            fgs = new Fgs(gesScore);
+            fgs.setKnowledge(getParams().getKnowledge());
+            fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+            fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+            fgs.setVerbose(true);
+        } else if (model instanceof DataModelList) {
+            DataModelList list = (DataModelList) model;
+
+            for (DataModel dataModel : list) {
+                if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
+                    throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
+                            "covariance matrices, or else all discrete data sets, or else a single graph.");
+                }
+            }
+
+            if (list.size() != 1) {
+                throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or graph " +
+                        "as input. For multiple data sets as input, use IMaGES.");
+            }
+
+            FgsParams FgsParams = (FgsParams) getParams();
+            FgsIndTestParams indTestParams = (FgsIndTestParams) FgsParams.getIndTestParams();
+
+            if (allContinuous(list)) {
+                double penalty = ((FgsParams) getParams()).getComplexityPenalty();
+
+                if (indTestParams.isFirstNontriangular()) {
+                    fgs = new Fgs(new SemBicScoreImages(list));
+                    fgs.setPenaltyDiscount(penalty);
+                } else {
+                    fgs = new Fgs(new SemBicScoreImages(list));
+                    fgs.setPenaltyDiscount(penalty);
+                }
+            } else if (allDiscrete(list)) {
+                double structurePrior = ((FgsParams) getParams()).getStructurePrior();
+                double samplePrior = ((FgsParams) getParams()).getSamplePrior();
+
+                if (indTestParams.isFirstNontriangular()) {
+                    fgs = new Fgs(new BdeuScoreImages(list));
+                    fgs.setSamplePrior(samplePrior);
+                    fgs.setStructurePrior(structurePrior);
+                } else {
+                    fgs = new Fgs(new BdeuScoreImages(list));
+                    fgs.setSamplePrior(samplePrior);
+                    fgs.setStructurePrior(structurePrior);
+                }
+            } else {
+                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
+            }
         } else {
-            throw new RuntimeException(
-                    "GES does not accept this type of data input.");
+            System.out.println("No viable input.");
         }
 
-        ges.setInitialGraph(initialGraph);
-
-        Graph graph = ges.search();
+        Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -191,84 +410,121 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
 
         setResultGraph(graph);
 
+        this.topGraphs = new ArrayList<>(fgs.getTopGraphs());
+
         if (topGraphs.isEmpty()) {
             topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
         }
 
-        this.topGraphs = new ArrayList<>(ges.getTopGraphs());
+        this.topGraphs = new ArrayList<>(fgs.getTopGraphs());
 
         if (this.topGraphs.isEmpty()) {
             this.topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
         }
 
-        this.allDagsToScores = new ArrayList<>();
-
-        for (ScoredGraph scoredGraph : topGraphs) {
-            Map<Graph, Double> dagsToScores = scoreGraphs(ges, scoredGraph.getGraph());
-            this.allDagsToScores.add(dagsToScores);
-        }
-
         setIndex(topGraphs.size() - 1);
     }
 
-    public void setIndex(int index) {
-        if (getTopGraphs().size() == 0) {
-            return;
-        } else {
-            if (index < -1) {
-                throw new IllegalArgumentException("Must be greater than or equal to -1: " + index);
+    /**
+     * Executes the algorithm, producing (at least) a result workbench. Must be
+     * implemented in the extending class.
+     */
+    public Type computeType() {
+        Object model = getDataModel();
+
+        if (model == null && getSourceGraph() != null) {
+            model = getSourceGraph();
+        }
+
+        if (model == null) {
+            throw new RuntimeException("Data source is unspecified. You may need to double click all your data boxes, \n" +
+                    "then click Save, and then right click on them and select Propagate Downstream. \n" +
+                    "The issue is that we use a seed to simulate from IM's, so your data is not saved to \n" +
+                    "file when you save the session. It can, however, be recreated from the saved seed.");
+        }
+
+        if (model instanceof Graph) {
+            type = Type.GRAPH;
+        } else if (model instanceof DataSet) {
+            DataSet dataSet = (DataSet) model;
+
+            if (dataSet.isContinuous()) {
+                type = Type.CONTINUOUS;
+            } else if (dataSet.isDiscrete()) {
+                type = Type.DISCRETE;
+            } else {
+                throw new IllegalStateException("Data set must either be continuous or discrete.");
+            }
+        } else if (model instanceof ICovarianceMatrix) {
+            type = Type.CONTINUOUS;
+        } else if (model instanceof DataModelList) {
+            DataModelList list = (DataModelList) model;
+
+            if (allContinuous(list)) {
+                type = Type.CONTINUOUS;
+            } else if (allDiscrete(list)) {
+                type = Type.DISCRETE;
+            } else {
+                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }
         }
 
-        this.dagsToScores = this.allDagsToScores.get(index);
+        return type;
+    }
+
+    private boolean allContinuous(List<DataModel> dataModels) {
+        for (DataModel dataModel : dataModels) {
+            if (dataModel instanceof DataSet) {
+                if (!((DataSet) dataModel).isContinuous() || dataModel instanceof ICovarianceMatrix) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private boolean allDiscrete(List<DataModel> dataModels) {
+        for (DataModel dataModel : dataModels) {
+            if (dataModel instanceof DataSet) {
+                if (!((DataSet) dataModel).isDiscrete()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public void setIndex(int index) {
+        if (index < -1) {
+            throw new IllegalArgumentException("Must be in >= -1: " + index);
+        }
+
         this.index = index;
-        firePropertyChange(new PropertyChangeEvent(this, "modelChanged", null, null));
     }
 
     public int getIndex() {
         return index;
     }
 
-    private Map<Graph, Double> scoreGraphs(Fgs ges, Graph graph) {
-        Map<Graph, Double> dagsToScores = new HashMap<Graph, Double>();
-
-        if (false) {
-            final List<Graph> dags = SearchGraphUtils.generatePatternDags(graph, true);
-
-            for (Graph _graph : dags) {
-                double score = ges.scoreDag(_graph);
-                dagsToScores.put(_graph, score);
-            }
-        }
-
-        return dagsToScores;
-    }
-
     public Graph getGraph() {
-        return getResultGraph();
-//        return getTopGraphs().get(getIndex()).getGraph();
+        return getTopGraphs().get(getIndex()).getGraph();
     }
+
 
     /**
-     * @return the names of the triple classifications. Coordinates with getTriplesList.
+     * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
-        names.add("Colliders");
-        names.add("Noncolliders");
-        return names;
+        return new ArrayList<String>();
     }
 
     /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
-     * for the given node.
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
-        Graph graph = getGraph();
-        triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
-        triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));
-        return triplesList;
+        return new ArrayList<List<Triple>>();
     }
 
     public boolean supportsKnowledge() {
@@ -279,14 +535,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getParams().getKnowledge());
         return rules;
-    }
-
-    private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
-        }
-        return false;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -310,14 +558,22 @@ public class FgsRunner extends AbstractAlgorithmRunner implements GraphSource,
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 
-
     public List<ScoredGraph> getTopGraphs() {
         return this.topGraphs;
     }
 
-    public GraphScorer getGraphScorer() {
-        return null;
+    public String getBayesFactorsReport(Graph dag) {
+        if (fgs == null) {
+            return "Please re-run IMaGES.";
+        } else {
+            return fgs.logEdgeBayesFactorsString(dag);
+        }
     }
+
+    public GraphScorer getGraphScorer() {
+        return fgs;
+    }
+
 }
 
 

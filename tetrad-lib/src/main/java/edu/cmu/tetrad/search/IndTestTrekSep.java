@@ -189,7 +189,6 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-//        System.out.println("A");
         int n = sampleSize();
         int xi = latents.indexOf(x);
         int yi = latents.indexOf(y);
@@ -443,6 +442,11 @@ public final class IndTestTrekSep implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
     }
 
     public TDistribution gettDistribution() {

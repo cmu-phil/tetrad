@@ -84,7 +84,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         setAlpha(alpha);
 
-//        this.concatenatedData = DataUtils.concatenateData(dataSets);
+//        this.concatenatedData = DataUtils.concatenate(dataSets);
 
         this.variables = dataSets.get(0).getVariables();
 
@@ -316,7 +316,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * @throws UnsupportedOperationException
      */
     public DataSet getData() {
-        return DataUtils.concatenateData(dataSets);
+        return DataUtils.concatenate(dataSets);
     }
 
     @Override
@@ -327,7 +327,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataUtils.concatenateData(_dataSets));
+        return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
     }
 
     @Override
@@ -343,6 +343,11 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
     }
 
 

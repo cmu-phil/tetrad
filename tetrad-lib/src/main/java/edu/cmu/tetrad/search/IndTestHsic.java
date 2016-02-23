@@ -809,6 +809,11 @@ public final class IndTestHsic implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     public void shuffleVariables() {
         List<Node> nodes = new ArrayList(this.variables);
         Collections.shuffle(nodes);

@@ -55,6 +55,8 @@ public final class JpcIndTestParams implements IndTestParams {
 
     private int maxDescendantPath = 30;
 
+    private int numPatternsToSave = 0;
+
     /**
      * @serial
      * @deprecated
@@ -172,6 +174,15 @@ public final class JpcIndTestParams implements IndTestParams {
 
     public void setMaxDescendantPath(int maxDescendantPath) {
         this.maxDescendantPath = maxDescendantPath;
+    }
+
+    @Override
+    public int getNumPatternsToSave() {
+        return numPatternsToSave;
+    }
+
+    public void setNumPatternsToSave(int numPatternsToSave) {
+        this.numPatternsToSave = numPatternsToSave;
     }
 }
 

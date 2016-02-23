@@ -180,8 +180,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-//        System.out.println("A");
-
         double r;
         int n = sampleSize();
 
@@ -449,6 +447,11 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
     }
 
     public boolean isVerbose() {

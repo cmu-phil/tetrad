@@ -181,7 +181,6 @@ public class BDeScore implements LocalDiscreteScore {
         return dataSet.getVariables();
     }
 
-    @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
     }

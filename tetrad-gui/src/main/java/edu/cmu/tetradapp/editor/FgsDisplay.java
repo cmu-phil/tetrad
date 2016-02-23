@@ -46,7 +46,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GesDisplay extends JPanel implements GraphEditable {
+public class FgsDisplay extends JPanel implements GraphEditable {
     private final Graph resultGraph;
     private GraphWorkbench workbench;
     private List<ScoredGraph> topGraphs;
@@ -56,7 +56,7 @@ public class GesDisplay extends JPanel implements GraphEditable {
     private JLabel scoreLabel;
     private Indexable indexable;
 
-    public GesDisplay(Graph resultGraph, final List<ScoredGraph> topGraphs, Indexable indexable) {
+    public FgsDisplay(Graph resultGraph, final List<ScoredGraph> topGraphs, Indexable indexable) {
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
         this.indexable = indexable;
         this.topGraphs = topGraphs;

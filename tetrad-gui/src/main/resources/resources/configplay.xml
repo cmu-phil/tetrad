@@ -1616,23 +1616,23 @@
                 <params-class>edu.cmu.tetradapp.model.BasicSearchParams
                 </params-class>
             </model>
-            <model name="GES" acronym="GES" help="ges"
-                   category="Pattern Searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="insertedEdges" description="Inserted Edges" default="on"/>
-                    <event id="deletedEdges" description="Deleted Edges" default="on"/>
-                    <event id="directedEdges" description="Directed Edges" default="on"/>
-                    <event id="edgeEvaluations" description="Edge Evaluations"/>
-                    <event id="impliedOrientations" description="Implied Orientations"/>
-                    <event id="rebuiltPatterns" description="Rebuilt Patterns"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.GesRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GesSearchEditor
-                </editor-class>
-                <params-class>edu.cmu.tetradapp.model.GesParams</params-class>
-            </model>
+            <!--<model name="FGS" acronym="FGS" help="fgs" category="Unlisted">-->
+                <!--&lt;!&ndash;category="Pattern Searches">&ndash;&gt;-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="insertedEdges" description="Inserted Edges" default="on"/>-->
+                    <!--<event id="deletedEdges" description="Deleted Edges" default="on"/>-->
+                    <!--<event id="directedEdges" description="Directed Edges" default="on"/>-->
+                    <!--<event id="edgeEvaluations" description="Edge Evaluations"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations"/>-->
+                    <!--<event id="rebuiltPatterns" description="Rebuilt Patterns"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.FgsRunnerOld</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+                <!--</editor-class>-->
+                <!--<params-class>edu.cmu.tetradapp.model.FgsParams</params-class>-->
+            <!--</model>-->
             <model name="FGS" acronym="FGS" help="fgs"
                    category="Pattern Searches">
                 <logger>
@@ -1650,7 +1650,7 @@
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
             </model>
-            <model name="iMAGES" acronym="iMAGES" help="ges"
+            <model name="IMaGES" acronym="IMaGES" help="fgs"
                    category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1663,9 +1663,9 @@
                     <event id="graph" description="Graph" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.ImagesRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.ImagesSearchEditor
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
                 </editor-class>
-                <params-class>edu.cmu.tetradapp.model.GesParams</params-class>
+                <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
             </model>
             <!--Heuristic Best Significant Model Search-->
             <model name="BFF" acronym="BFF" help="bff"

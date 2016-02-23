@@ -193,7 +193,7 @@ public class SepsetsConservative implements SepsetProducer {
     }
 
     @Override
-    public double getPValue() {
+    public double getScore() {
         return independenceTest.getPValue();
     }
 

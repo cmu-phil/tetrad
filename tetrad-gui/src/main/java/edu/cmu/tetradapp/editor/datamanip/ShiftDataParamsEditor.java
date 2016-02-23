@@ -103,7 +103,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
             }
         }
 
-        final List<DataSet> dataSets = new ArrayList<DataSet>();
+        final List<DataModel> dataSets = new ArrayList<>();
 
         for (Object aDataModelList : dataModelList) {
             dataSets.add((DataSet) aDataModelList);
@@ -234,18 +234,18 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         });
     }
 
-    private void setUpA1(List<DataSet> dataSets, Box a1) {
+    private void setUpA1(List<DataModel> dataSets, Box a1) {
         int[] shifts = params.getShifts();
 
-        if (shifts.length != dataSets.get(0).getNumColumns()) {
-            shifts = new int[dataSets.get(0).getNumColumns()];
+        if (shifts.length != ((DataSet)dataSets.get(0)).getNumColumns()) {
+            shifts = new int[((DataSet)dataSets.get(0)).getNumColumns()];
             params.setShifts(shifts);
         }
 
         final int[] _shifts = shifts;
 
-        for (int i = 0; i < dataSets.get(0).getNumColumns(); i++) {
-            Node node = dataSets.get(0).getVariable(i);
+        for (int i = 0; i < ((DataSet)dataSets.get(0)).getNumColumns(); i++) {
+            Node node = ((DataSet)dataSets.get(0)).getVariable(i);
             Box a5 = Box.createHorizontalBox();
 
             SpinnerModel shiftModel = new SpinnerNumberModel(_shifts[i], -50, 50, 1);
@@ -272,7 +272,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         }
     }
 
-    private void doShiftSearch(List<DataSet> dataSets, JTextArea textArea) {
+    private void doShiftSearch(List<DataModel> dataSets, JTextArea textArea) {
         TextAreaOutputStream out = new TextAreaOutputStream(textArea);
 
         search = new ShiftSearch(dataSets);

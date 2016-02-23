@@ -202,6 +202,11 @@ public final class IndTestMimBuild implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     public void setCovMatrix(ICovarianceMatrix covMatrix) {
         this.covMatrix = covMatrix;
     }
@@ -494,7 +499,7 @@ public final class IndTestMimBuild implements IndependenceTest {
 //////            System.out.println("\nEvaluating model without edge, MLE...");
 ////            estimator.estimate();
 ////            SemIm sem = estimator.getEstimatedSem();
-////            double prob_wo_edge = sem.getPValue();
+////            double prob_wo_edge = sem.getScore();
 //////            System.out.println("Prob significance = " + prob_wo_edge);
 ////
 ////            graph.addDirectedEdge(node_x, node_y);
@@ -504,7 +509,7 @@ public final class IndTestMimBuild implements IndependenceTest {
 //////            System.out.println("Evaluating model with edge, MLE...");
 ////            estimator.estimate();
 ////            SemIm sem2 = estimator.getEstimatedSem();
-////            double prob_w_edge = sem2.getPValue();
+////            double prob_w_edge = sem2.getScore();
 //////            System.out.println("Prob significance = " + prob_w_edge);
 ////
 ////            /*if (prob_wo_edge > sig) {

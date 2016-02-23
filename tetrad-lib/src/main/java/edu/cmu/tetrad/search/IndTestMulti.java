@@ -76,7 +76,7 @@ public final class IndTestMulti implements IndependenceTest {
             dataSets.add((DataSet) test.getData());
         }
 
-//        this.concatenatedData = DataUtils.concatenateData(dataSets);
+//        this.concatenatedData = DataUtils.concatenate(dataSets);
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -249,6 +249,11 @@ public final class IndTestMulti implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
     }
 
     /**

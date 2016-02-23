@@ -28,6 +28,8 @@ import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -94,7 +96,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     /**
      * The score for discrete searches.
      */
-    private GesScore gesScore;
+    private FgsScore fgsScore;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -156,6 +158,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
     // The ordering doesn't matter; it just have to be transitive.
     int arrowIndex = 0;
 
+    // The final score after search.
+    private double modelScore;
+
     //===========================CONSTRUCTORS=============================//
 
     /**
@@ -167,9 +172,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
         }
 
         if (dataSet.isDiscrete()) {
-            setGesScore(new BDeuScore(dataSet));
+            setFgsScore(new BDeScore(dataSet));
         } else {
-            setGesScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+            setFgsScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
         }
 
         if (verbose) {
@@ -185,7 +190,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
             out.println("GES constructor");
         }
 
-        setGesScore(new SemBicScore(covMatrix));
+        setFgsScore(new SemBicScore(covMatrix));
 
         this.graph = new EdgeListGraphSingleConnections(getVariables());
 
@@ -194,9 +199,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
         }
     }
 
-    public Fgs(GesScore gesScore) {
-        if (gesScore == null) throw new NullPointerException();
-        setGesScore(gesScore);
+    public Fgs(FgsScore fgsScore) {
+        if (fgsScore == null) throw new NullPointerException();
+        setFgsScore(fgsScore);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
     }
 
@@ -264,12 +269,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
         this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
         this.logger.flush();
 
-        if (verbose) {
-            out.println("FGS result graph = " + graph);
-        }
+        this.modelScore = score;
 
         return graph;
-
     }
 
     /**
@@ -297,8 +299,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * For BIC score, a multiplier on the penalty term. For continuous searches.
      */
     public double getPenaltyDiscount() {
-        if (gesScore instanceof SemBicScore) {
-            return ((SemBicScore) gesScore).getPenaltyDiscount();
+        if (fgsScore instanceof ISemBicScore) {
+            return ((ISemBicScore) fgsScore).getPenaltyDiscount();
         } else {
             return 2.0;
         }
@@ -308,13 +310,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * For BIC score, a multiplier on the penalty term. For continuous searches.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
-        if (penaltyDiscount < 0) {
-            throw new IllegalArgumentException("Penalty discount must be >= 0: "
-                    + penaltyDiscount);
-        }
-
-        if (gesScore instanceof SemBicScore) {
-            ((SemBicScore) gesScore).setPenaltyDiscount(penaltyDiscount);
+        if (fgsScore instanceof ISemBicScore) {
+            ((ISemBicScore) fgsScore).setPenaltyDiscount(penaltyDiscount);
         }
     }
 
@@ -468,16 +465,16 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * True iff edges that cause linear dependence are ignored.
      */
     public boolean isIgnoreLinearDependent() {
-        if (gesScore instanceof SemBicScore) {
-            return ((SemBicScore) gesScore).isIgnoreLinearDependent();
+        if (fgsScore instanceof SemBicScore) {
+            return ((SemBicScore) fgsScore).isIgnoreLinearDependent();
         }
 
         throw new UnsupportedOperationException("Operation supported only for SemBicScore.");
     }
 
     public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
-        if (gesScore instanceof SemBicScore) {
-            ((SemBicScore) gesScore).setIgnoreLinearDependent(ignoreLinearDependent);
+        if (fgsScore instanceof SemBicScore) {
+            ((SemBicScore) fgsScore).setIgnoreLinearDependent(ignoreLinearDependent);
         } else {
             throw new UnsupportedOperationException("Operation supported only for SemBicScore.");
         }
@@ -493,12 +490,12 @@ public final class Fgs implements GraphSearch, GraphScorer {
     //===========================PRIVATE METHODS========================//
 
     //Sets the discrete scoring function to use.
-    private void setGesScore(GesScore gesScore) {
-        this.gesScore = gesScore;
+    private void setFgsScore(FgsScore fgsScore) {
+        this.fgsScore = fgsScore;
 
         this.variables = new ArrayList<>();
 
-        for (Node node : gesScore.getVariables()) {
+        for (Node node : fgsScore.getVariables()) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 this.variables.add(node);
             }
@@ -560,9 +557,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                             int child = hashIndices.get(y);
                             int parent = hashIndices.get(x);
-                            double bump = gesScore.localScoreDiff(child, new int[]{}, parent);
+                            double bump = fgsScore.localScoreDiff(child, new int[]{}, parent);
 
-                            if (isFaithfulnessAssumed() && gesScore.isEffectEdge(bump)) {
+                            if (isFaithfulnessAssumed() && fgsScore.isEffectEdge(bump)) {
                                 final Edge edge = Edges.undirectedEdge(x, y);
                                 if (boundGraph != null && !boundGraph.isAdjacentTo(edge.getNode1(), edge.getNode2()))
                                     continue;
@@ -1018,15 +1015,19 @@ public final class Fgs implements GraphSearch, GraphScorer {
     }
 
     public void setSamplePrior(double samplePrior) {
-        if (gesScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) gesScore).setSamplePrior(samplePrior);
+        if (fgsScore instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) fgsScore).setSamplePrior(samplePrior);
         }
     }
 
     public void setStructurePrior(double expectedNumParents) {
-        if (gesScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) gesScore).setStructurePrior(expectedNumParents);
+        if (fgsScore instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) fgsScore).setStructurePrior(expectedNumParents);
         }
+    }
+
+    public double getModelScore() {
+        return modelScore;
     }
 
     // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with
@@ -1561,12 +1562,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
             }
 
             int yIndex = hashIndices.get(y);
-
-            for (int i = 0; i < parentIndices.length - 1; i++) {
-                int[] _parents = Arrays.copyOf(parentIndices, i);
-                int xIndex = parentIndices[i + 1];
-                score += gesScore.localScoreDiff(yIndex, _parents, xIndex);
-            }
+            score += fgsScore.localScore(yIndex, parentIndices);
         }
 
         return score;
@@ -1585,7 +1581,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
             parentIndices[count++] = hashIndices.get(parent);
         }
 
-        return gesScore.localScoreDiff(yIndex, parentIndices, hashIndices.get(x));
+        return fgsScore.localScoreDiff(yIndex, parentIndices, hashIndices.get(x));
     }
 
     private List<Node> getVariables() {
@@ -1603,6 +1599,60 @@ public final class Fgs implements GraphSearch, GraphScorer {
             topGraphs.removeFirst();
         }
     }
+
+    public String logEdgeBayesFactorsString(Graph dag) {
+        Map<Edge, Double> factors = logEdgeBayesFactors(dag);
+        return logBayesPosteriorFactorsString(factors, scoreDag(dag));
+    }
+
+    public Map<Edge, Double> logEdgeBayesFactors(Graph dag) {
+        Map<Edge, Double> logBayesFactors = new HashMap<Edge, Double>();
+        double withEdge = scoreDag(dag);
+
+        for (Edge edge : dag.getEdges()) {
+            dag.removeEdge(edge);
+            double withoutEdge = scoreDag(dag);
+            double difference = withEdge - withoutEdge;
+            logBayesFactors.put(edge, difference);
+            dag.addEdge(edge);
+        }
+
+        return logBayesFactors;
+    }
+
+    private String logBayesPosteriorFactorsString(final Map<Edge, Double> factors, double modelScore) {
+        NumberFormat nf = new DecimalFormat("0.00");
+        StringBuilder builder = new StringBuilder();
+
+        List<Edge> edges = new ArrayList<>(factors.keySet());
+
+        Collections.sort(edges, new Comparator<Edge>() {
+            @Override
+            public int compare(Edge o1, Edge o2) {
+                return -Double.compare(factors.get(o1), factors.get(o2));
+            }
+        });
+
+        builder.append("Edge Posterior Log Bayes Factors:\n\n");
+
+        builder.append("For a DAG in the IMaGES pattern with model score m, for each edge e in the " +
+                "DAG, the model score that would result from removing each edge, calculating " +
+                "the resulting model score m(e), and then reporting m - m(e). The score used is " +
+                "the IMScore, L - SUM_i{kc ln n(i)}, L is the maximum likelihood of the model, " +
+                "k isthe number of parameters of the model, n(i) is the sample size of the ith " +
+                "data set, and c is the penalty penaltyDiscount. Note that the more negative the score, " +
+                "the more important the edge is to the posterior probability of the IMaGES model. " +
+                "Edges are given in order of their importance so measured.\n\n");
+
+        int i = 0;
+
+        for (Edge edge : edges) {
+            builder.append(++i).append(". ").append(edge).append(" ").append(nf.format(factors.get(edge))).append("\n");
+        }
+
+        return builder.toString();
+    }
+
 }
 
 

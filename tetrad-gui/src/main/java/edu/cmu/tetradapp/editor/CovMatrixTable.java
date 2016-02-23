@@ -81,7 +81,7 @@ class CovMatrixTable extends AbstractTableModel {
      * @return the row count of the wrapped model or 100, whichever is larger.
      */
     public int getRowCount() {
-        return (getNumVariables() < 100) ? 100 : getNumVariables();
+        return (getNumVariables() < 100) ? 100 : getNumVariables() + 4;
     }
 
     /**

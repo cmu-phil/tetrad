@@ -121,7 +121,7 @@ public abstract class AbstractAlgorithmRunner
         this.params = params;
         this.sourceGraph = dataWrapper.getSourceGraph();
 
-        DataModel dataSource = getSelectedDataModel(dataWrapper);
+        DataModelList dataSource = dataWrapper.getDataModelList();
 
 //        if (dataSource instanceof ColtDataSet) {
 //            dataSource = new ColtDataSet((ColtDataSet) dataSource);

@@ -94,7 +94,7 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
             }
         }
 
-        DataSet concatenated = DataUtils.concatenateData(dataSets);
+        DataSet concatenated = DataUtils.concatenate(dataSets);
 
         this.setDataModel(concatenated);
 

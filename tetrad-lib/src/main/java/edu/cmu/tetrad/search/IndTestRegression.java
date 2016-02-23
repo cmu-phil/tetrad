@@ -403,6 +403,11 @@ public final class IndTestRegression implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     public boolean isVerbose() {
         return verbose;
     }

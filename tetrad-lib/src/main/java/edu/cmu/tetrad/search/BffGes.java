@@ -168,7 +168,7 @@ public final class BffGes implements Bff {
 //                    continue;
 //                }
 //
-//                double p = estSem.getPValue(param, 10000);
+//                double p = estSem.getScore(param, 10000);
 //                Edge edge = bestGraph.getEdge(param.getNodeA(), param.getNodeB());
 //
 //                if (p > getHighPValueAlpha()) {
@@ -347,7 +347,7 @@ public final class BffGes implements Bff {
                 }
             }
             if (x != null) {
-//                if (scoreGraph(graph).getPValue() < alpha) {
+//                if (scoreGraph(graph).getScore() < alpha) {
 //                    return score;
 //                }
 
@@ -841,7 +841,7 @@ public final class BffGes implements Bff {
 //                if (param.getType() != ParamType.COEF) {
 //                    continue;
 //                }
-//                double p = this.estimatedSem.getPValue(param, 10000);
+//                double p = this.estimatedSem.getScore(param, 10000);
 //                if (p > maxP) maxP = p;
 //            }
 //

@@ -84,14 +84,6 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         super(runner, "Result PAG");
     }
 
-    /**
-     * Opens up an editor to let the user view the given GesRunner.
-     */
-    public FciCcdSearchEditor(GesRunner runner) {
-        super(runner, "Result Pattern");
-    }
-
-
     public Graph getGraph() {
         return getWorkbench().getGraph();
     }
@@ -395,12 +387,10 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof GesIndTestParams) {
-            GesRunner gesRunner = ((GesRunner) getAlgorithmRunner());
-            GesIndTestParams params = (GesIndTestParams) indTestParams;
-            DataSet dataSet = (DataSet) gesRunner.getDataModel();
-            boolean discreteData = dataSet.isDiscrete();
-            return new GesIndTestParamsEditor(params, discreteData);
+        if (indTestParams instanceof FgsIndTestParams) {
+            FgsRunner fgsRunner = ((FgsRunner) getAlgorithmRunner());
+            FgsIndTestParams params = (FgsIndTestParams) indTestParams;
+            return new FgsIndTestParamsEditor(params, fgsRunner.getType());
         }
 
         if (indTestParams instanceof LagIndTestParams) {

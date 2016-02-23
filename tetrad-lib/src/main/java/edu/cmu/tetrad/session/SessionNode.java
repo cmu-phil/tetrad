@@ -576,7 +576,7 @@ public class SessionNode implements TetradSerializable {
 
         if (this.model == null) {
             TetradLogger.getInstance().log("info", getDisplayName() + " was not created.");
-            throw new CouldNotCreateModelException(modelClass);
+                throw new CouldNotCreateModelException(modelClass);
         }
 
         // If we're running a simulation, try executing the model.

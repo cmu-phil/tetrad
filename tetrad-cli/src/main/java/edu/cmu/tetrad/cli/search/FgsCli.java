@@ -185,7 +185,7 @@ public class FgsCli {
                 fgs.setPenaltyDiscount(penaltyDiscount);
                 fgs.setNumPatternsToStore(0);  // always set to zero
                 fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setNumProcessors(numOfThreads);
+                fgs.setParallelism(numOfThreads);
                 fgs.setVerbose(verbose);
                 if (knowledgeFile != null) {
                     fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
@@ -217,13 +217,13 @@ public class FgsCli {
         // check for non-unique variables
         Set<String> vars = new HashSet<>();
         Set<String> unique = new HashSet<>();
-        variables.forEach(var -> {
+        for (String var : variables) {
             if (unique.contains(var)) {
                 vars.add(var);
             } else {
                 unique.add(var);
             }
-        });
+        }
         int size = vars.size();
         if (size > 0) {
             writer.println("Error:");
@@ -259,9 +259,9 @@ public class FgsCli {
 
     private static void writeToFile(Path outputFile, Set<String> set) {
         try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-            set.forEach(s -> {
+            for (String s : set) {
                 writer.println(s);
-            });
+            }
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }

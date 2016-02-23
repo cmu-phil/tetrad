@@ -21,23 +21,16 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.bayes.BayesPm;
-import edu.cmu.tetrad.bayes.BayesProperties;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.SemEstimator;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
-import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.LayoutEditable;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
@@ -50,9 +43,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Edits some algorithms to search for Markov blanket patterns.
@@ -62,26 +56,21 @@ import java.util.List;
 public class FgsSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, Indexable, DoNotScroll {
 
-    private JTextArea modelStatsText;
+    //    private JTextArea modelStatsText;
+    private JTextArea logBayesFactorsScroll;
+    //    private JTextArea bootstrapEdgeCountsScroll;
     private JTabbedPane tabbedPane;
-    private GesDisplay gesDisplay;
+    private boolean alreadyLaidOut = false;
+    private FgsDisplay gesDisplay;
+    private FgsIndTestParamsEditor paramsEditor;
 
     //=========================CONSTRUCTORS============================//
 
     /**
-     * Opens up an editor to let the user view the given GesRunner.
-     */
-    public FgsSearchEditor(GesRunner runner) {
-        super(runner, "Result Pattern");
-//        getWorkbench().setGraph(runner.getTopGraphs().get(runner.getTopGraphs().size() - 1).getGraph());
-    }
-
-    /**
-     * Opens up an editor to let the user view the given GesRunner.
+     * Opens up an editor to let the user view the given FgsRunner.
      */
     public FgsSearchEditor(FgsRunner runner) {
         super(runner, "Result Pattern");
-//        getWorkbench().setGraph(runner.getTopGraphs().get(runner.getTopGraphs().size() - 1).getGraph());
     }
 
     public FgsSearchEditor(ImagesRunner runner) {
@@ -142,7 +131,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
                     IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
-                                JOptionUtils.centeringComp(),
+                                getWorkbench(),
                                 "Using previously set knowledge. (To edit, use " +
                                         "the Knowledge menu.)");
                         knowledgeMessageShown = true;
@@ -152,7 +141,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
                 try {
                     storeLatestWorkbenchGraph();
                     getAlgorithmRunner().execute();
-                    IGesRunner runner = (IGesRunner) getAlgorithmRunner();
+                    IFgsRunner runner = (IFgsRunner) getAlgorithmRunner();
                     arrangeGraphs();
                     gesDisplay.resetGraphs(runner.getTopGraphs());
                 } catch (Exception e) {
@@ -199,6 +188,8 @@ public class FgsSearchEditor extends AbstractSearchEditor
                 firePropertyChange("algorithmFinished", null, null);
                 getExecuteButton().setEnabled(true);
                 firePropertyChange("modelChanged", null, null);
+
+                doPostExecutionSteps();
             }
         };
 
@@ -260,7 +251,6 @@ public class FgsSearchEditor extends AbstractSearchEditor
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
 
-        modelStatsText = new JTextArea();
         tabbedPane = new JTabbedPane();
         tabbedPane.add("Pattern", gesDisplay());
 
@@ -306,7 +296,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
+        if (!(getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix)) {
             Box b3 = Box.createHorizontalBox();
             b3.add(Box.createGlue());
             b3.add(statsButton);
@@ -351,12 +341,8 @@ public class FgsSearchEditor extends AbstractSearchEditor
         return toolbar;
     }
 
-    protected void doPostExecutionSteps() {
-        System.out.println("Post execution.");
-    }
-
     protected void addSpecialMenus(JMenuBar menuBar) {
-        if (!(getAlgorithmRunner() instanceof IGesRunner)) {
+        if (!(getAlgorithmRunner() instanceof FgsRunner)) {
             JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
@@ -377,7 +363,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
         JMenu graph = new JMenu("Graph");
         JMenuItem showDags = new JMenuItem("Show DAGs in Pattern");
         JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
+        final JMenuItem dagInPattern = new JMenuItem("Choose DAG in Pattern");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -388,7 +374,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
 //        graph.add(new TreksAction(getWorkbench()));
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
-        graph.add(new TriplesAction(getWorkbench(), getAlgorithmRunner()));
+//        graph.add(new TriplesAction(getWorkbench(), getAlgorithmRunner()));
         graph.addSeparator();
 
         graph.add(meekOrient);
@@ -429,9 +415,9 @@ public class FgsSearchEditor extends AbstractSearchEditor
                             return;
                         }
 
-                        if (runner instanceof GesRunner) {
-                            GraphScorer scorer = ((GesRunner) runner).getGraphScorer();
-                            Graph _graph = ((GesRunner) runner).getTopGraphs().get(getIndex()).getGraph();
+                        if (runner instanceof FgsRunner) {
+                            GraphScorer scorer = ((FgsRunner) runner).getGraphScorer();
+                            Graph _graph = ((FgsRunner) runner).getTopGraphs().get(getIndex()).getGraph();
 
                             ScoredGraphsDisplay display = new ScoredGraphsDisplay(_graph, scorer);
                             GraphWorkbench workbench = getWorkbench();
@@ -525,10 +511,10 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
     //==============================PRIVATE METHODS=============================//
 
-    private GesDisplay gesDisplay() {
+    private FgsDisplay gesDisplay() {
         Graph resultGraph = resultGraph();
         List<ScoredGraph> topGraphs = arrangeGraphs();
-        GesDisplay display = new GesDisplay(resultGraph, topGraphs, this);
+        FgsDisplay display = new FgsDisplay(resultGraph, topGraphs, this);
         this.gesDisplay = display;
 
         // Superfluous?
@@ -553,31 +539,31 @@ public class FgsSearchEditor extends AbstractSearchEditor
     }
 
     private List<ScoredGraph> arrangeGraphs() {
-        IGesRunner runner = (IGesRunner) getAlgorithmRunner();
-        Graph resultGraph = runner.getResultGraph();
+        IFgsRunner runner = (IFgsRunner) getAlgorithmRunner();
 
         List<ScoredGraph> topGraphs = runner.getTopGraphs();
 
-        if (topGraphs == null) topGraphs = new ArrayList<ScoredGraph>();
+        if (topGraphs == null) topGraphs = new ArrayList<>();
 
         Graph latestWorkbenchGraph = runner.getParams().getSourceGraph();
         Graph sourceGraph = runner.getSourceGraph();
 
         boolean arrangedAll = false;
 
-        for (ScoredGraph topGraph1 : topGraphs) {
-            arrangedAll = GraphUtils.arrangeBySourceGraph(topGraph1.getGraph(),
+        for (int i = 0; i < topGraphs.size(); i++) {
+            arrangedAll = GraphUtils.arrangeBySourceGraph(topGraphs.get(i).getGraph(),
                     latestWorkbenchGraph);
         }
 
         if (!arrangedAll) {
-            arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph, sourceGraph);
+            for (ScoredGraph topGraph : topGraphs) {
+                arrangedAll = GraphUtils.arrangeBySourceGraph(topGraph.getGraph(), sourceGraph);
+            }
         }
 
         if (!arrangedAll) {
             for (ScoredGraph topGraph : topGraphs) {
                 GraphUtils.circleLayout(topGraph.getGraph(), 200, 200, 150);
-                GraphUtils.circleLayout(resultGraph, 200, 200, 150);
             }
         }
 
@@ -596,8 +582,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
 
     private void calcStats() {
-//        Graph resultGraph = getAlgorithmRunner().getResultGraph();
-        IGesRunner runner = (IGesRunner) getAlgorithmRunner();
+        FgsRunner runner = (FgsRunner) getAlgorithmRunner();
 
         if (runner.getTopGraphs().isEmpty()) {
             throw new IllegalArgumentException("No patterns were recorded. Please adjust the number of " +
@@ -606,12 +591,11 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
         Graph resultGraph = runner.getTopGraphs().get(runner.getIndex()).getGraph();
 
-        if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
+        if (!(getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix)) {
 
             //resultGraph may be the output of a PC search.
             //Such graphs sometimes contain doubly directed edges.
-
-            // /We converte such edges to directed edges here.
+            //We converte such edges to directed edges here.
             //For the time being an orientation is arbitrarily selected.
             Set<Edge> allEdges = resultGraph.getEdges();
 
@@ -628,108 +612,85 @@ public class FgsSearchEditor extends AbstractSearchEditor
             }
 
             Pattern pattern = new Pattern(resultGraph);
-            PatternToDag ptd = new PatternToDag(pattern);
-            Graph dag = ptd.patternToDagMeekRules();
+            Graph dag = SearchGraphUtils.dagFromPattern(pattern);
 
-            DataSet dataSet =
-                    (DataSet) getAlgorithmRunner().getDataModel();
-            String report;
+//            DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
+//            String report;
+//
+//            if (dataSet.isContinuous()) {
+//                report = reportIfContinuous(dag, dataSet);
+//            } else if (dataSet.isDiscrete()) {
+//                report = reportIfDiscrete(dag, dataSet);
+//            } else {
+//                throw new IllegalArgumentException("");
+//            }
 
-            if (dataSet.isContinuous()) {
-                report = reportIfContinuous(dag, dataSet);
-            } else if (dataSet.isDiscrete()) {
-                report = reportIfDiscrete(dag, dataSet);
-            } else {
-                throw new IllegalArgumentException("");
-            }
+            String bayesFactorsReport = ((FgsRunner) getAlgorithmRunner()).getBayesFactorsReport(dag);
+//            String bootstrapEdgeCountsReport = ((ImaFgsRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(25);
 
             JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
-            modelStatsText.setLineWrap(true);
-            modelStatsText.setWrapStyleWord(true);
-            modelStatsText.setText(report);
+
+//            modelStatsText = new JTextArea();
+            logBayesFactorsScroll = new JTextArea();
+//            bootstrapEdgeCountsScroll = new JTextArea();
+
+//            modelStatsText.setLineWrap(true);
+//            modelStatsText.setWrapStyleWord(true);
+//            modelStatsText.setText(report);
+
+            logBayesFactorsScroll.setLineWrap(true);
+            logBayesFactorsScroll.setWrapStyleWord(true);
+            logBayesFactorsScroll.setText(bayesFactorsReport);
+
+//            bootstrapEdgeCountsScroll.setLineWrap(true);
+//            bootstrapEdgeCountsScroll.setWrapStyleWord(true);
+//            bootstrapEdgeCountsScroll.setText(bootstrapEdgeCountsReport);
+
+//            JPanel bootstrapPanel = new JPanel();
+//            bootstrapPanel.setLayout(new BorderLayout());
+//            bootstrapPanel.add(bootstrapEdgeCountsScroll, BorderLayout.CENTER);
+
+            Box b = Box.createHorizontalBox();
+            b.add(new JLabel("# Bootstraps = "));
+
+            final IntTextField numBootstraps = new IntTextField(25, 8);
+
+            numBootstraps.setFilter(new IntTextField.Filter() {
+                public int filter(int value, int oldValue) {
+                    if (value < 0) return oldValue;
+                    else return value;
+                }
+            });
+
+            b.add(numBootstraps);
+
+            JButton goButton = new JButton("Go!");
+
+            goButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
+                    Window owner = (Window) getTopLevelAncestor();
+
+                    new WatchedProcess(owner) {
+                        public void watch() {
+                            int n = numBootstraps.getValue();
+//                            String bootstrapEdgeCountsReport = ((ImaFgsRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(n);
+//                            bootstrapEdgeCountsScroll.setText(bootstrapEdgeCountsReport);
+                        }
+                    };
+                }
+            });
+
+            b.add(Box.createHorizontalGlue());
+            b.add(goButton);
+
+//            bootstrapPanel.add(b, BorderLayout.NORTH);
 
             removeStatsTabs();
             tabbedPane.addTab("DAG in pattern", dagWorkbenchScroll);
-            tabbedPane.addTab("DAG Model Statistics", modelStatsText);
+//            tabbedPane.addTab("DAG Model Statistics", new JScrollPane(modelStatsText));
+            tabbedPane.addTab("Log Bayes Factors", new JScrollPane(logBayesFactorsScroll));
+//            tabbedPane.addTab("Edge Bootstraps", new JScrollPane(bootstrapPanel));
         }
-    }
-
-    private String reportIfContinuous(Graph dag, DataSet dataSet) {
-        SemPm semPm = new SemPm(dag);
-
-        SemEstimator estimator = new SemEstimator(dataSet, semPm);
-        estimator.estimate();
-        SemIm semIm = estimator.getEstimatedSem();
-
-        NumberFormat nf = NumberFormat.getInstance();
-        nf.setMaximumFractionDigits(4);
-
-        StringBuilder buf = new StringBuilder();
-        buf.append("\nDegrees of Freedom = ").append(semPm.getDof())
-                .append("Chi-Square = ").append(nf.format(semIm.getChiSquare()))
-                .append("\nP Value = ").append(nf.format(semIm.getPValue()))
-                .append("\nBIC Score = ").append(nf.format(semIm.getBicScore()));
-
-        buf.append("\n\nThe above chi square test assumes that the maximum " +
-                "likelihood function over the measured variables has been " +
-                "maximized. Under that assumption, the null hypothesis for " +
-                "the test is that the population covariance matrix over all " +
-                "of the measured variables is equal to the estimated covariance " +
-                "matrix over all of the measured variables written as a function " +
-                "of the free model parameters--that is, the unfixed parameters " +
-                "for each directed edge (the linear coefficient for that edge), " +
-                "each exogenous variable (the variance for the error term for " +
-                "that variable), and each bidirected edge (the covariance for " +
-                "the exogenous variables it connects).  The model is explained " +
-                "in Bollen, Structural Equations with Latent Variable, 110. ");
-
-        return buf.toString();
-    }
-
-    private String reportIfDiscrete(Graph dag, DataSet dataSet) {
-        List vars = dataSet.getVariables();
-        Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<String, DiscreteVariable>();
-        for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            DiscreteVariable var = (DiscreteVariable) vars.get(i);
-            String name = var.getName();
-            Node node = new GraphNode(name);
-            nodesToVars.put(node.getName(), var);
-        }
-
-        BayesPm bayesPm = new BayesPm(new Dag(dag));
-        List<Node> nodes = bayesPm.getDag().getNodes();
-
-        for (Node node : nodes) {
-            Node var = nodesToVars.get(node.getName());
-
-            if (var instanceof DiscreteVariable) {
-                DiscreteVariable var2 = nodesToVars.get(node.getName());
-                int numCategories = var2.getNumCategories();
-                List<String> categories = new ArrayList<String>();
-                for (int j = 0; j < numCategories; j++) {
-                    categories.add(var2.getCategory(j));
-                }
-                bayesPm.setCategories(node, categories);
-            }
-        }
-
-
-        BayesProperties properties = new BayesProperties(dataSet, dag);
-        properties.setGraph(dag);
-
-        NumberFormat nf = NumberFormat.getInstance();
-        nf.setMaximumFractionDigits(4);
-
-        StringBuilder buf = new StringBuilder();
-        buf.append("\nP-value = ").append(properties.getLikelihoodRatioP());
-        buf.append("\nDf = ").append(properties.getPValueDf());
-        buf.append("\nChi square = ")
-                .append(nf.format(properties.getPValueChisq()));
-        buf.append("\nBIC score = ").append(nf.format(properties.getBic()));
-        buf.append("\n\nH0: Completely disconnected graph.");
-
-        return buf.toString();
     }
 
     private void removeStatsTabs() {
@@ -739,6 +700,10 @@ public class FgsSearchEditor extends AbstractSearchEditor
             if (name.equals("DAG Model Statistics")) {
                 tabbedPane.removeTabAt(i);
             } else if (name.equals("DAG in pattern")) {
+                tabbedPane.removeTabAt(i);
+            } else if (name.equals("Log Bayes Factors")) {
+                tabbedPane.removeTabAt(i);
+            } else if (name.equals("Edge Bootstraps")) {
                 tabbedPane.removeTabAt(i);
             }
         }
@@ -756,7 +721,8 @@ public class FgsSearchEditor extends AbstractSearchEditor
     private void addCovMatrixTestMenuItems(JMenu test) {
         IndTestType testType = getTestType();
         if (testType != IndTestType.FISHER_Z
-//                && testType != IndTestType.CORRELATION_T
+//                &&
+//                testType != IndTestType.CORRELATION_T
                 ) {
             setTestType(IndTestType.FISHER_Z);
         }
@@ -766,9 +732,9 @@ public class FgsSearchEditor extends AbstractSearchEditor
         group.add(fishersZ);
         test.add(fishersZ);
 
-//        JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
-//        group.add(tTest);
-//        test.add(tTest);
+        JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
+        group.add(tTest);
+        test.add(tTest);
 
         testType = getTestType();
 
@@ -820,7 +786,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        FgsParams params = (FgsParams) getAlgorithmRunner().getParams();
+        SearchParams params = getAlgorithmRunner().getParams();
         IndTestParams indTestParams = params.getIndTestParams();
         return getIndTestParamBox(indTestParams);
     }
@@ -834,33 +800,15 @@ public class FgsSearchEditor extends AbstractSearchEditor
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof GesIndTestParams) {
-            if (getAlgorithmRunner() instanceof IGesRunner) {
-                IGesRunner gesRunner = ((IGesRunner) getAlgorithmRunner());
-                GesIndTestParams params = (GesIndTestParams) indTestParams;
-                DataModel dataModel = gesRunner.getDataModel();
-                boolean discreteData = dataModel instanceof DataSet && ((DataSet) dataModel).isDiscrete();
-                return new GesIndTestParamsEditor(params, discreteData);
-            }
+        AlgorithmRunner algorithmRunner = getAlgorithmRunner();
 
-            if (getAlgorithmRunner() instanceof ImagesRunner) {
-                ImagesRunner gesRunner = ((ImagesRunner) getAlgorithmRunner());
-                GesIndTestParams params = (GesIndTestParams) indTestParams;
-                DataSet dataSet = (DataSet) gesRunner.getDataModel();
-                boolean discreteData = dataSet.isDiscrete();
-                return new GesIndTestParamsEditor(params, discreteData);
-            }
-        }
-
-        if (indTestParams instanceof FgsIndTestParams) {
-            FgsRunner fgsRunner = ((FgsRunner) getAlgorithmRunner());
+        if (algorithmRunner instanceof  IFgsRunner) {
+            IFgsRunner fgsRunner = ((IFgsRunner) algorithmRunner);
             FgsIndTestParams params = (FgsIndTestParams) indTestParams;
-            DataModel dataModel = fgsRunner.getDataModel();
-            boolean discreteData = dataModel instanceof DataSet && ((DataSet) dataModel).isDiscrete();
-            return new FgsIndTestParamsEditor(params, discreteData);
+            return new FgsIndTestParamsEditor(params, fgsRunner.getType());
         }
 
-        return new IndTestParamsEditor(indTestParams);
+        throw new IllegalArgumentException();
     }
 
     private JScrollPane dagWorkbenchScroll(Graph dag) {

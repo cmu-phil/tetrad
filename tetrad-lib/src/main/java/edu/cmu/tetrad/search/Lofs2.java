@@ -1050,8 +1050,6 @@ public class Lofs2 {
             }
         } else {
 
-            System.out.println("B");
-
             // Default case: search for the maximum score over the entire range.
             for (int i = 0; i < numParams; i++) {
                 dLeftMin[i] = -range;
@@ -1154,7 +1152,7 @@ public class Lofs2 {
     }
 
     private Graph entropyBased(Graph graph) {
-        DataSet dataSet = DataUtils.concatenateData(dataSets);
+        DataSet dataSet = DataUtils.concatenate(dataSets);
         dataSet = DataUtils.standardizeData(dataSet);
         Graph _graph = new EdgeListGraph(graph.getNodes());
 
@@ -1194,7 +1192,7 @@ public class Lofs2 {
     }
 
     private Graph tanhGraph(Graph graph) {
-        DataSet dataSet = DataUtils.concatenateData(dataSets);
+        DataSet dataSet = DataUtils.concatenate(dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
         dataSet = DataUtils.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
@@ -1244,7 +1242,7 @@ public class Lofs2 {
 
     // @param empirical True if the skew signs are estimated empirically.
     private Graph skewGraph(Graph graph, boolean empirical) {
-        DataSet dataSet = DataUtils.concatenateData(dataSets);
+        DataSet dataSet = DataUtils.concatenate(dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
         dataSet = DataUtils.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
@@ -1303,7 +1301,7 @@ public class Lofs2 {
 
     // @param empirical True if the skew signs are estimated empirically.
     private Graph robustSkewGraph(Graph graph, boolean empirical) {
-        DataSet dataSet = DataUtils.concatenateData(dataSets);
+        DataSet dataSet = DataUtils.concatenate(dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
         dataSet = DataUtils.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
@@ -1364,7 +1362,7 @@ public class Lofs2 {
     // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
     private Graph patelTauOrientation(Graph graph, double cutoff) {
         List<DataSet> centered = DataUtils.center(dataSets);
-        DataSet concat = DataUtils.concatenateData(centered);
+        DataSet concat = DataUtils.concatenate(centered);
         DataSet dataSet = DataUtils.standardizeData(concat);
 
         Graph _graph = new EdgeListGraph(graph.getNodes());

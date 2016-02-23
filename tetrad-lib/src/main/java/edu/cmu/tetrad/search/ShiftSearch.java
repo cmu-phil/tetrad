@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
@@ -42,7 +39,7 @@ import java.util.List;
  */
 public class ShiftSearch {
 
-    private List<DataSet> dataSets;
+    private List<DataModel> dataSets;
 
     private int maxShift = 2;
     private IKnowledge knowledge = new Knowledge2();
@@ -52,11 +49,11 @@ public class ShiftSearch {
     private boolean scheduleStop = false;
     private boolean forwardSearch;
 
-    public ShiftSearch(List<DataSet> dataSets) {
+    public ShiftSearch(List<DataModel> dataSets) {
         this(dataSets, null);
     }
 
-    public ShiftSearch(List<DataSet> dataSets, Graph measuredDag) {
+    public ShiftSearch(List<DataModel> dataSets, Graph measuredDag) {
         this.dataSets = dataSets;
     }
 
@@ -65,11 +62,11 @@ public class ShiftSearch {
             throw new IllegalStateException("Max shift should be >= 1: " + maxShift);
         }
 
-        int numVars = dataSets.get(0).getNumColumns();
+        int numVars = ((DataSet) dataSets.get(0)).getNumColumns();
         List<Node> nodes = dataSets.get(0).getVariables();
         int[] shifts;
         int[] bestshifts = new int[numVars];
-        int maxNumRows = dataSets.get(0).getNumRows() - maxShift;
+        int maxNumRows = ((DataSet)dataSets.get(0)).getNumRows() - maxShift;
 
         double b = getAvgBic(dataSets);
 
@@ -83,7 +80,7 @@ public class ShiftSearch {
             shifts = new int[nodes.size()];
 
             double zSize = Math.pow(getMaxShift(), choice.length);
-            int iIndex = dataSets.get(0).getVariables().indexOf(dataSets.get(0).getVariable("I"));
+            int iIndex = dataSets.get(0).getVariables().indexOf(((DataSet)dataSets.get(0)).getVariable("I"));
 
             Z:
             for (int z = 0; z < zSize; z++) {
@@ -105,7 +102,7 @@ public class ShiftSearch {
                     _z /= getMaxShift();
                 }
 
-                List<DataSet> _shiftedDataSets = getShiftedDataSets(shifts, maxNumRows);
+                List<DataModel> _shiftedDataSets = getShiftedDataSets(shifts, maxNumRows);
                 double _b = getAvgBic(_shiftedDataSets);
 
                 if (_b < 0.999 * b) {
@@ -144,11 +141,11 @@ public class ShiftSearch {
         }
     }
 
-    private List<DataSet> getShiftedDataSets(int[] shifts, int maxNumRows) {
-        List<DataSet> shiftedDataSets2 = new ArrayList<DataSet>();
+    private List<DataModel> getShiftedDataSets(int[] shifts, int maxNumRows) {
+        List<DataModel> shiftedDataSets2 = new ArrayList<>();
 
-        for (DataSet dataSet : dataSets) {
-            DataSet shiftedData = TimeSeriesUtils.createShiftedData(dataSet, shifts);
+        for (DataModel dataSet : dataSets) {
+            DataSet shiftedData = TimeSeriesUtils.createShiftedData((DataSet)dataSet, shifts);
             shiftedDataSets2.add(shiftedData);
         }
 
@@ -169,10 +166,11 @@ public class ShiftSearch {
         return truncatedData;
     }
 
-    private List<DataSet> ensureNumRows(List<DataSet> dataSets, int numRows) {
-        List<DataSet> truncatedData = new ArrayList<DataSet>();
+    private List<DataModel> ensureNumRows(List<DataModel> dataSets, int numRows) {
+        List<DataModel> truncatedData = new ArrayList<>();
 
-        for (DataSet dataSet : dataSets) {
+        for (DataModel _dataSet : dataSets) {
+            DataSet dataSet = (DataSet) _dataSet;
             TetradMatrix mat = dataSet.getDoubleData();
             TetradMatrix mat2 = mat.getPart(0, numRows - 1, 0, mat.columns() - 1);
             truncatedData.add(ColtDataSet.makeContinuousData(dataSet.getVariables(), mat2));
@@ -181,41 +179,12 @@ public class ShiftSearch {
         return truncatedData;
     }
 
-    private double getAvgBic(List<DataSet> dataSets) {
-        Images images = new Images(dataSets);
+    private double getAvgBic(List<DataModel> dataSets) {
+        Fgs images = new Fgs(new SemBicScoreImages(dataSets));
         images.setPenaltyDiscount(c);
         images.setKnowledge(knowledge);
-        Graph pattern = images.search();
-
-//        System.out.println(pattern);
-
+        images.search();
         return -images.getModelScore() / dataSets.size();
-
-//
-//        Graph dag = SearchGraphUtils.dagFromPattern(pattern);
-//
-//        double score = 0.0;
-//
-//        for (DataSet dataSet : dataSets) {
-//            Images images2 = new Images(Collections.singletonList(dataSet));
-//
-////            println(ges.getScore(dag));
-////
-//            double bic = -images2.getScore(dag);
-////
-////            SemPm semPm = new SemPm(dag);
-////            SemEstimator est = new SemEstimator(dataSet, semPm);
-////            est.estimate();
-////            SemIm im = est.getEstimatedSem();
-////            double bic = im.getFullBicScore();
-//
-////            println(im.getFullBicScore());
-////            println();
-//
-//            score += bic;
-//        }
-//
-//        return score /= dataSets.size();
     }
 
     public int getMaxShift() {

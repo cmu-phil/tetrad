@@ -66,6 +66,7 @@ public class GFciIndTestParams implements IndTestParams {
      */
     private int maxReachablePathLength = -1;
     private boolean faithfulnessAssumed = false;
+    private int numPatternsToSave = 0;
 
     //============================CONSTRUCTORS=========================//
 
@@ -110,6 +111,11 @@ public class GFciIndTestParams implements IndTestParams {
      */
     public int getDepth() {
         return this.depth;
+    }
+
+    @Override
+    public int getNumPatternsToSave() {
+        return numPatternsToSave;
     }
 
     public boolean isCompleteRuleSetUsed() {
@@ -207,6 +213,10 @@ public class GFciIndTestParams implements IndTestParams {
         }
 
         this.structurePrior = structurePrior;
+    }
+
+    public void setNumPatternsToSave(int numPatternsToSave) {
+        this.numPatternsToSave = numPatternsToSave;
     }
 }
 

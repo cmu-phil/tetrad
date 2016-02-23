@@ -21,12 +21,15 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.util.RandomUtil;
 import junit.framework.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -254,6 +257,135 @@ public final class TestGraphUtils {
         assertTrue(graph.isDConnectedTo(c, a, Collections.singletonList(b)));
     }
 
+    public void printEdgeData() {
+
+//        String[] autistics = {
+//                "autistic_normal_ROI_data_spline_smooth_clean_001.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_002.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_003.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_004.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_005.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_006.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_007.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_008.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_009.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_010.txt"
+//        };
+//
+//        String[] neurotypicals = {
+//                "typical_normal_ROI_data_spline_smooth_clean_001.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_002.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_003.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_004.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_005.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_006.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_007.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_008.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_009.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_010.txt"
+//        };
+
+        String[] autistics = {
+                "autistic_normal_ROI_data_spline_smooth_clean_001.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_002.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_003.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_004.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_005.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_006.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_007.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_008.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_009.txt",
+                "autistic_normal_ROI_data_spline_smooth_clean_010.txt"
+        };
+
+        String[] neurotypicals = {
+                "typical_normal_ROI_data_spline_smooth_clean_001.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_002.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_003.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_004.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_005.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_006.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_007.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_008.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_009.txt",
+                "typical_normal_ROI_data_spline_smooth_clean_010.txt"
+        };
+
+
+        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
+
+        try {
+            List<DataSet> autisticDataSets = new ArrayList<>();
+
+            for (int i = 0; i < 10; i++) {
+                DataReader reader = new DataReader();
+                reader.setDelimiter(DelimiterType.TAB);
+                autisticDataSets.add(reader.parseTabular(new File(path, autistics[i])));
+            }
+
+            List<DataSet> neurotypicalDataSets = new ArrayList<>();
+
+            for (int i = 0; i < 10; i++) {
+                DataReader reader = new DataReader();
+                reader.setDelimiter(DelimiterType.TAB);
+                neurotypicalDataSets.add(reader.parseTabular(new File(path, neurotypicals[i])));
+            }
+
+            List<Graph> autisticGraphs = new ArrayList<>();
+
+            for (DataSet dataSet : autisticDataSets) {
+                Fgs fgs = new Fgs(dataSet);
+                fgs.setPenaltyDiscount(2);
+                autisticGraphs.add(GraphUtils.undirectedGraph(fgs.search()));
+            }
+
+            List<Graph> neurotypicalGraphs = new ArrayList<>();
+
+            for (DataSet dataSet : neurotypicalDataSets) {
+                Fgs fgs = new Fgs(dataSet);
+                fgs.setPenaltyDiscount(2);
+                neurotypicalGraphs.add(GraphUtils.undirectedGraph(fgs.search()));
+            }
+
+            List<List<Graph>> allGraphs = new ArrayList<>();
+            allGraphs.add(autisticGraphs);
+            allGraphs.add(neurotypicalGraphs);
+
+            GraphUtils.printEdgeDataSet(allGraphs, path, "edgedata");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void test8() {
+        int numNodes = 5;
+
+        for (int i = 0; i < 100000; i++) {
+            Graph graph = GraphUtils.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true);
+
+            List<Node> nodes = graph.getNodes();
+            Node x = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            Node y = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            Node z1 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            Node z2 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+
+            if (graph.isDSeparatedFrom(x, y, list(z1)) && graph.isDSeparatedFrom(x, y, list(z2)) &&
+                    !graph.isDSeparatedFrom(x, y, list(z1, z2))) {
+                System.out.println("x = " + x);
+                System.out.println("y = " + y);
+                System.out.println("z1 = " + z1);
+                System.out.println("z2 = " + z2);
+                System.out.println(graph);
+                return;
+            }
+        }
+    }
+
+    private List<Node> list(Node... z) {
+        List<Node> list = new ArrayList<>();
+        Collections.addAll(list, z);
+        return list;
+    }
 }
 
 

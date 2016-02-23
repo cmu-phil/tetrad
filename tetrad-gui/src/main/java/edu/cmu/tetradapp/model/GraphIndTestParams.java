@@ -39,6 +39,7 @@ public class GraphIndTestParams implements IndTestParams {
      * @serial Range greater than or equal to -1.
      */
     private int depth = -1;
+    private int numPatternsToSave = 0;
 
     //===============================CONSTRUCTORS=========================//
 
@@ -84,6 +85,11 @@ public class GraphIndTestParams implements IndTestParams {
         return this.depth;
     }
 
+    @Override
+    public int getNumPatternsToSave() {
+        return numPatternsToSave;
+    }
+
     public int getNumLags() {
         throw new UnsupportedOperationException();
     }
@@ -125,7 +131,11 @@ public class GraphIndTestParams implements IndTestParams {
             throw new NullPointerException();
         }
     }
-}                                         
+
+    public void setNumPatternsToSave(int numPatternsToSave) {
+        this.numPatternsToSave = numPatternsToSave;
+    }
+}
 
 
 

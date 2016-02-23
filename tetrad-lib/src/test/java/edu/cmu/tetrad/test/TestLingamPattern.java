@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Ges;
+import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.LingamPattern;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -35,8 +35,6 @@ import edu.cmu.tetrad.util.dist.Normal;
 import edu.cmu.tetrad.util.dist.Uniform;
 import org.junit.Test;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -72,12 +70,11 @@ public class TestLingamPattern {
         variableDistributions.add(new Normal(0, 1));
         variableDistributions.add(new Normal(0, 1));
 
-
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
 
         DataSet dataSet = simulateDataNonNormal(semIm, sampleSize, variableDistributions);
-        Graph estPattern = new Ges(dataSet).search();
+        Graph estPattern = new Fgs(dataSet).search();
 
         LingamPattern lingam = new LingamPattern(estPattern, dataSet);
         lingam.search();

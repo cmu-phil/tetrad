@@ -122,7 +122,7 @@ public final class CcdParams implements SearchParams {
         throw new UnsupportedOperationException();
     }
 
-    public void setIndTestParams2(IndTestParams indTestParams) {
+    public void setIndTestParams(IndTestParams indTestParams) {
         this.indTestParams = indTestParams;
     }
 

@@ -186,7 +186,7 @@ public class JpcRunner extends AbstractAlgorithmRunner
 //
 //            if (sem == null) continue;
 //
-//            double pValue = sem.getPValue();
+//            double pValue = sem.getScore();
 //
 //            System.out.println("Pvalue = " + pValue);
 //

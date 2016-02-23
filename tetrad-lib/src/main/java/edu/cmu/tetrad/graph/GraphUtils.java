@@ -2840,6 +2840,115 @@ public final class GraphUtils {
         return b;
     }
 
+    /**
+     * Builds a data set with columns being the set of all edges in the supplied graphs
+     * plus a class label column for which group they belong to.
+     */
+    public static void printEdgeDataSet(List<List<Graph>> graphs, String path, String prefix) {
+        File file1 = new File(path, prefix + ".data.txt");
+        File file2 = new File(path, prefix + ".edges.txt");
+        File dir = new File(path);
+
+        PrintStream out1 = null;
+        PrintStream out2 = null;
+        try {
+            out1 = new PrintStream(new FileOutputStream(file1));
+            out2 = new PrintStream(new FileOutputStream(file2));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+
+        Set<Node> _nodes = new HashSet<>();
+
+        for (List<Graph> _graphs : graphs) {
+            for (Graph graph : _graphs) {
+                for (Node node : graph.getNodes()) {
+                    boolean found = false;
+
+                    for (Node _node : _nodes) {
+                        if (_node.getName().equals(node.getName())) {
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        _nodes.add(node);
+                    }
+                }
+            }
+        }
+
+        List<List<Graph>> graphs2 = new ArrayList<>();
+
+        for (List<Graph> _graphs : graphs) {
+            List<Graph> _graphs2 = new ArrayList<>();
+
+            for (Graph graph : _graphs) {
+                Graph graph2 = GraphUtils.replaceNodes(graph, new ArrayList<Node>(_nodes));
+                _graphs2.add(graph2);
+            }
+
+            graphs2.add(_graphs2);
+        }
+
+        Set<Edge> _edges = new HashSet<>();
+
+        for (List<Graph> _graphs : graphs) {
+            for (Graph graph : _graphs) {
+                _edges.addAll(graph.getEdges());
+            }
+        }
+
+        for (Edge edge : new ArrayList<>(_edges)) {
+            int count = 0;
+            int total = 0;
+
+            for (List<Graph> _graphs : graphs) {
+                for (Graph graph : _graphs) {
+                    if (graph.containsEdge(edge)) {
+                        count++;
+                    }
+
+                    total++;
+                }
+            }
+
+            if (count < 5) {
+                _edges.remove(edge);
+            }
+        }
+
+        List<Edge> edges = new ArrayList<>(_edges);
+
+        for (int i = 0; i < edges.size(); i++) {
+            out1.print(edges.get(i) + "\t");
+//            out1.print("X" + (i + 1) + "\t");
+        }
+
+        out1.println("Group");
+
+        for (int i = 0; i < graphs2.size(); i++) {
+            for (Graph graph : graphs2.get(i)) {
+                for (Edge edge : edges) {
+                    out1.print(graph.containsEdge(edge) ? "1\t" : "0\t");
+                }
+
+                out1.println(i);
+            }
+        }
+
+        out1.close();
+
+        for (int i = 0; i < edges.size(); i++) {
+            out2.println("X" + (i + 1) + "\t" + edges.get(i));
+        }
+
+        out2.println("Group");
+
+        out2.close();
+    }
+
     private static StringBuilder directedEdges(List<Graph> directedGraphs) {
         Set<Edge> directedEdgesSet = new HashSet<>();
 
@@ -2894,25 +3003,35 @@ public final class GraphUtils {
         List<List<Edge>> groups = new ArrayList<>();
         for (int i = 0; i < directedGraphs2.size(); i++) groups.add(new ArrayList<Edge>());
         Set<Edge> contradicted = new HashSet<>();
+        Map<Edge, Integer> directionCounts = new HashMap<>();
 
         for (Edge edge : directedEdges) {
             if (!edge.isDirected()) continue;
 
-            int count = 0;
+            int count1 = 0;
             int count2 = 0;
 
             for (Graph graph : directedGraphs2) {
                 if (graph.containsEdge(edge)) {
-                    count++;
-                } else if (uncontradicted(edge, graph.getEdge(edge.getNode1(), edge.getNode2()))) {
+                    count1++;
+                } else if (graph.containsEdge(edge.reverse())) {
                     count2++;
-                } else if (!contradicted.contains(edge) && !contradicted.contains(edge.reverse())) {
-                    contradicted.add(edge);
                 }
             }
 
+            if (count1 != 0 && count2 != 0 && !contradicted.contains(edge.reverse())) {
+                contradicted.add(edge);
+            }
+
+            directionCounts.put(edge, count1);
+            directionCounts.put(edge.reverse(), count2);
+
+            if (count1 == 0) {
+                groups.get(count2 - 1).add(edge);
+            }
+
             if (count2 == 0) {
-                groups.get(count - 1).add(edge);
+                groups.get(count1 - 1).add(edge);
             }
         }
 
@@ -2930,7 +3049,10 @@ public final class GraphUtils {
         int index = 1;
 
         for (Edge edge : contradicted) {
-            b.append("\n").append(index++).append(". ").append(edge);
+            b.append("\n").append(index++).append(". ").append(Edges.undirectedEdge(edge.getNode1(), edge.getNode2())).
+                    append(" (--> ").
+                    append(directionCounts.get(edge)).append(" <-- ").
+                    append(directionCounts.get(edge.reverse())).append(")");
         }
 
         return b;
@@ -3525,7 +3647,6 @@ public final class GraphUtils {
 
         return R;
     }
-
 
 
     // Finds a sepset for x and y, if there is one; otherwise, returns null.

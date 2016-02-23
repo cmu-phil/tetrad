@@ -119,7 +119,7 @@ public final class GFci {
     int sampleSize;
 
     /**
-     * The penalty discount for the GES search. By default 2.
+     * The penalty penaltyDiscount for the GES search. By default 2.
      */
     private double penaltyDiscount = 2;
 
@@ -250,7 +250,7 @@ public final class GFci {
 //                if (!j.isEmpty()) {
 //                    sepsets.getSepset(i, k);
 //
-//                    if (sepsets.getPValue() > getIndependenceTest().getAlpha()) {
+//                    if (sepsets.getScore() > getIndependenceTest().getAlpha()) {
 //                        gesGraph.removeEdge(edge);
 //                    }
 //                }
@@ -270,7 +270,7 @@ public final class GFci {
             if (!j.isEmpty()) {
                 sepsets.getSepset(i, k);
 
-                if (sepsets.getPValue() > getIndependenceTest().getAlpha()) {
+                if (sepsets.getScore() > getIndependenceTest().getAlpha()) {
                     graph.removeEdge(edge);
                 }
             }
@@ -320,7 +320,7 @@ public final class GFci {
     }
 
     public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets, Fgs ges) {
-        SepsetsMaxPValue sepsetProducer = new SepsetsMaxPValue(graph, independenceTest, null, getDepth());
+        SepsetsMaxScore sepsetProducer = new SepsetsMaxScore(graph, independenceTest, null, getDepth());
 
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());

@@ -33,7 +33,7 @@ import java.util.List;
  * <p>
  * Created by josephramsey on 3/24/15.
  */
-public class SepsetsMaxPValue implements SepsetProducer {
+public class SepsetsMaxScore implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
@@ -42,7 +42,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
 //    private IndependenceTest dsep = null;
     private boolean verbose = false;
 
-    public SepsetsMaxPValue(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
+    public SepsetsMaxScore(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
@@ -53,22 +53,22 @@ public class SepsetsMaxPValue implements SepsetProducer {
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
     public List<Node> getSepset(Node i, Node k) {
-        return getMaxPValueSet(i, k);
+        return getMaxScoreSet(i, k);
     }
 
     public boolean isCollider(Node i, Node j, Node k) {
-        List<Node> set = getMaxPValueSet(i, k);
+        List<Node> set = getMaxScoreSet(i, k);
         return set != null && !set.contains(j);
     }
 
     public boolean isNoncollider(Node i, Node j, Node k) {
-        List<Node> set = getMaxPValueSet(i, k);
+        List<Node> set = getMaxScoreSet(i, k);
         return set != null && set.contains(j);
     }
 
     double cutoff = .2;
 
-    private List<Node> getMaxPValueSet(Node i, Node k) {
+    private List<Node> getMaxScoreSet(Node i, Node k) {
         double _p = 0.0;
         List<Node> _v = null;
 
@@ -76,7 +76,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
             final List<Node> v = extraSepsets.get(i, k);
             if (v != null) {
                 independenceTest.isIndependent(i, k, v);
-                double p = independenceTest.getPValue();
+                double p = independenceTest.getScore();
 
 //                printDsepP(i, k, v, p);
 
@@ -101,7 +101,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
                 List<Node> v = GraphUtils.asList(choice, adji);
 
                 getIndependenceTest().isIndependent(i, k, v);
-                double p = getIndependenceTest().getPValue();
+                double p = getIndependenceTest().getScore();
 
 //                printDsepP(i, k, v, p);
 
@@ -124,7 +124,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
                     List<Node> v = GraphUtils.asList(choice, adjk);
 
                     getIndependenceTest().isIndependent(i, k, v);
-                    double p = getIndependenceTest().getPValue();
+                    double p = getIndependenceTest().getScore();
 
 //                    printDsepP(i, k, v, p);
 
@@ -159,7 +159,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
     }
 
     @Override
-    public double getPValue() {
+    public double getScore() {
         return p;
     }
 

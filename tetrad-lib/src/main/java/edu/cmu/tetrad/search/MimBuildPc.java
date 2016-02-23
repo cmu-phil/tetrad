@@ -199,8 +199,6 @@ public final class MimBuildPc {
         estimator.estimate();
         newScore = Double.NEGATIVE_INFINITY; // scoreModel(estimator.getEstimatedSem());
 
-        System.out.println("B");
-
         do {
             List<Node> continuousVariables = DataUtils.createContinuousVariables(varNames);
             TetradMatrix oldExpectedCovariance = optimizer.getExpectedCovarianceMatrix();
@@ -211,7 +209,6 @@ public final class MimBuildPc {
             ICovarianceMatrix newCovMatrix = expectedCovarianceMatrix.getSubmatrix(latentVarNames);
 
             score = newScore;
-            System.out.println("C");
 
             System.out.println("alpha = " + getAlpha());
 //
@@ -245,8 +242,6 @@ public final class MimBuildPc {
             if (getKnowledge().isViolatedBy(directedStructuralModel)) {
                 System.out.println("VIOLATED2!");
             }
-
-            System.out.println("E");
 
             DagInPatternIterator iterator = new DagInPatternIterator(directedStructuralModel, getKnowledge(), false, true);
             directedStructuralModel = iterator.next();
@@ -313,7 +308,7 @@ public final class MimBuildPc {
 
     private double scoreModel(SemIm semIm) {
 //        return -semIm.getBicScore();
-//        return semIm.getPValue();
+//        return semIm.getScore();
         return -semIm.getScore();
 
 

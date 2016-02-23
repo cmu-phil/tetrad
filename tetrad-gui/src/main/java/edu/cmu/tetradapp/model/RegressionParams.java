@@ -115,7 +115,7 @@ public final class RegressionParams implements StandardRegressionParams {
         throw new UnsupportedOperationException();
     }
 
-    public void setIndTestParams2(IndTestParams indTestParams) {
+    public void setIndTestParams(IndTestParams indTestParams) {
         //Ignore.
     }
 

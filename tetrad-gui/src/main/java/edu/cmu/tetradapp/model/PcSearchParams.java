@@ -144,7 +144,7 @@ public final class PcSearchParams implements MeekSearchParams {
         return this.indTestParams2;
     }
 
-    public void setIndTestParams2(IndTestParams indTestParams2) {
+    public void setIndTestParams(IndTestParams indTestParams2) {
         if (indTestParams2 == null) {
             throw new NullPointerException();
         }

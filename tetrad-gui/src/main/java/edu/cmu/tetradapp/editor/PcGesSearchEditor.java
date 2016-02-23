@@ -128,14 +128,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result Pattern");
     }
 
-    /**
-     * Opens up an editor to let the user view the given GesRunner.
-     */
-    public PcGesSearchEditor(GesRunner runner) {
-        super(runner, "Result Pattern");
-    }
-
-    public PcGesSearchEditor(ImagesRunner runner) {
+    public PcGesSearchEditor(FgsRunner runner) {
         super(runner, "Result Pattern");
     }
 
@@ -782,29 +775,12 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof GesIndTestParams) {
-            if (getAlgorithmRunner() instanceof IGesRunner) {
-                GesRunner gesRunner = ((GesRunner) getAlgorithmRunner());
-                GesIndTestParams params = (GesIndTestParams) indTestParams;
-                DataModel dataModel = gesRunner.getDataModel();
-                boolean discreteData = dataModel instanceof DataSet && ((DataSet) dataModel).isDiscrete();
-                return new GesIndTestParamsEditor(params, discreteData);
+        if (indTestParams instanceof FgsIndTestParams) {
+            if (getAlgorithmRunner() instanceof IFgsRunner) {
+                IFgsRunner gesRunner = ((IFgsRunner) getAlgorithmRunner());
+                FgsIndTestParams params = (FgsIndTestParams) indTestParams;
+                return new FgsIndTestParamsEditor(params, gesRunner.getType());
             }
-
-            if (getAlgorithmRunner() instanceof ImagesRunner) {
-                ImagesRunner gesRunner = ((ImagesRunner) getAlgorithmRunner());
-                GesIndTestParams params = (GesIndTestParams) indTestParams;
-                DataSet dataSet = (DataSet) gesRunner.getDataModel();
-                boolean discreteData = dataSet.isDiscrete();
-                return new GesIndTestParamsEditor(params, discreteData);
-            }
-//            else if (getAlgorithmRunner() instanceof PValueImproverWrapper) {
-//                PValueImproverWrapper runner = ((PValueImproverWrapper) getAlgorithmRunner());
-//                GesIndTestParams params = (GesIndTestParams) indTestParams;
-//                boolean discreteData =
-//                        runner.getSelectedDataModel() instanceof RectangularDataSet;
-//                return new GesIndTestParamsEditor(params, discreteData);
-//            }
         }
 
         if (indTestParams instanceof LagIndTestParams) {

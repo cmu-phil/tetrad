@@ -34,6 +34,7 @@ import java.io.ObjectInputStream;
 public final class FciIndTestParamsOld implements IndTestParams {
     static final long serialVersionUID = 23L;
 
+
     /**
      * @serial Range [0, 1].
      */
@@ -48,6 +49,8 @@ public final class FciIndTestParamsOld implements IndTestParams {
      *
      */
     private boolean collidersOrientedLocally = false;
+
+    private int numPatternsToSave = 0;
 
     //============================CONSTRUCTORS=========================//
 
@@ -94,6 +97,11 @@ public final class FciIndTestParamsOld implements IndTestParams {
         return this.depth;
     }
 
+    @Override
+    public int getNumPatternsToSave() {
+        return getNumPatternsToSave();
+    }
+
     public boolean isCollidersOrientedLocally() {
         return collidersOrientedLocally;
     }
@@ -128,6 +136,10 @@ public final class FciIndTestParamsOld implements IndTestParams {
             throw new IllegalArgumentException(
                     "Depth should be >= -1: " + depth);
         }
+    }
+
+    public void setNumPatternsToSave(int numPatternsToSave) {
+        this.numPatternsToSave = numPatternsToSave;
     }
 }
 

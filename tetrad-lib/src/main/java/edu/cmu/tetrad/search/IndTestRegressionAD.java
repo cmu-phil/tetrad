@@ -402,6 +402,11 @@ public final class IndTestRegressionAD implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     public boolean isVerbose() {
         return verbose;
     }

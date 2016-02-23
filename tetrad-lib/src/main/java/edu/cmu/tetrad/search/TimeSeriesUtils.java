@@ -159,7 +159,7 @@ public class TimeSeriesUtils {
 
 //        IndependenceTest test = new IndTestFisherZ(timeLags, 0.05);
 //        Cpc search = new Cpc(test);
-        Ges search = new Ges(timeLags);
+        Fgs search = new Fgs(timeLags);
         search.setKnowledge(knowledge);
         Graph graph = search.search();
 

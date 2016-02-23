@@ -3044,7 +3044,7 @@ public final class SearchGraphUtils {
                 dataSets.add((DataSet) _dataModel);
             }
 
-            FastImages images = new FastImages(dataSets);
+            Fgs images = new Fgs(new SemBicScoreImages(dataSets));
 
             images.setBoundGraph(graph);
             images.setKnowledge(knowledge);

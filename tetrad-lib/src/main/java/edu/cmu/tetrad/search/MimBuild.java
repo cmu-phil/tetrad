@@ -151,8 +151,6 @@ public final class MimBuild {
      * Perform MIMBuild with GES search and BIC score.
      */
     private Graph mimBuildGesSearch() {
-//        System.out.println("A");
-
         double score, newScore;
 
         // Form the graph over measured and latent variables with a directed
@@ -201,8 +199,6 @@ public final class MimBuild {
         estimator.estimate();
         newScore = Double.NEGATIVE_INFINITY; // scoreModel(estimator.getEstimatedSem());
 
-//        System.out.println("B");
-
         do {
             List<Node> continuousVariables = DataUtils.createContinuousVariables(varNames);
             TetradMatrix oldExpectedCovariance = optimizer.getExpectedCovarianceMatrix();
@@ -213,19 +209,11 @@ public final class MimBuild {
             ICovarianceMatrix newCovMatrix = expectedCovarianceMatrix.getSubmatrix(latentVarNames);
 
             score = newScore;
-//            System.out.println("C");
 //
-//            System.out.println("alpha = " + getAlpha());
-//
-            Ges ges = new Ges(newCovMatrix);
+            Fgs ges = new Fgs(newCovMatrix);
             ges.setKnowledge(getKnowledge());
             Graph newStructuralModel = ges.search();
 //
-//            Jpc jpc = new Jpc(new IndTestFisherZ(newCovMatrix, getAlpha()));
-//            jpc.setKnowledge(getKnowledge());
-//            jpc.setAggressivelyPreventCycles(true);
-//            Graph newStructuralModel = jpc.search();
-
             this.structuralModel = newStructuralModel;
 
             for (Edge edge : new ArrayList<Edge>(newStructuralModel.getEdges())) {
@@ -234,8 +222,6 @@ public final class MimBuild {
 //                    newStructuralModel.addUndirectedEdge(edge.getNode1(), edge.getNode2());
                 }
             }
-
-//            System.out.println("D");
 
             if (getKnowledge().isViolatedBy(newStructuralModel)) {
                 System.out.println("VIOLATED1!");
@@ -247,8 +233,6 @@ public final class MimBuild {
             if (getKnowledge().isViolatedBy(directedStructuralModel)) {
                 System.out.println("VIOLATED2!");
             }
-
-//            System.out.println("E");
 
             DagInPatternIterator iterator = new DagInPatternIterator(directedStructuralModel, getKnowledge(), true, true);
             directedStructuralModel = iterator.next();
@@ -269,17 +253,11 @@ public final class MimBuild {
                 System.out.println("VIOLATED4!");
             }
 
-//            System.out.println("F");
 
             estimator = new SemEstimator(covMatrix, new SemPm(newCandidate), optimizer);
             estimator.estimate();
 
-//            System.out.println("G");
-
             newScore = -estimator.getEstimatedSem().getScore(); //   scoreModel(estimator.getEstimatedSem());
-
-
-//            System.out.println("H");
 
             if (newScore > score) {
                 graph = getUpdatedGraph(graph, newStructuralModel);
@@ -289,9 +267,6 @@ public final class MimBuild {
                 }
             }
         } while (newScore > score);
-//        System.out.println("Yes, I got here!!!");
-
-//        System.out.println(graph);
 
         return graph;
     }
@@ -317,7 +292,7 @@ public final class MimBuild {
 
     private double scoreModel(SemIm semIm) {
 //        return -semIm.getBicScore();
-//        return semIm.getPValue();
+//        return semIm.getScore();
 //        return -semIm.getScore();
 
         double fml = semIm.getScore();

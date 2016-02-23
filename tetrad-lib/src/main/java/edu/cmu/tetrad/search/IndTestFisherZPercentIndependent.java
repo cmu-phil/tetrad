@@ -131,7 +131,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         this.pValue = pValues.get(index);
 
 //        if (this.pValue == 0) {
-//            System.out.println("Zero pvalue "+ SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+//            System.out.println("Zero pvalue "+ SearchLogUtils.independenceFactMsg(x, y, z, getScore()));
 //        }
 
         boolean independent = this.pValue > _cutoff;
@@ -140,7 +140,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             if (independent) {
                 TetradLogger.getInstance().log("independencies",
                         SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-//            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+//            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getScore()));
             } else {
                 TetradLogger.getInstance().log("dependencies",
                         SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
@@ -235,7 +235,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * @throws UnsupportedOperationException
      */
     public DataSet getData() {
-        return DataUtils.concatenateData(dataSets);
+        return DataUtils.concatenate(dataSets);
     }
 
     public ICovarianceMatrix getCov() {
@@ -245,7 +245,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataUtils.concatenateData(dataSets));
+        return new CovarianceMatrix(DataUtils.concatenate(dataSets));
     }
 
     @Override
@@ -261,6 +261,11 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return ncov;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
     }
 
     /**

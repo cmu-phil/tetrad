@@ -382,6 +382,11 @@ public final class IndTestCramerT implements IndependenceTest {
         return null;
     }
 
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
     /**
      * @return the list of variable names
      */

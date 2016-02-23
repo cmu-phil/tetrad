@@ -1505,6 +1505,11 @@ public final class IndTestTimeSeries implements IndependenceTest {
     public List<TetradMatrix> getCovMatrices() {
         return null;
     }
+
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
 }
 
 

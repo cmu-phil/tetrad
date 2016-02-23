@@ -195,7 +195,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
 
         gesRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                wrapper.setAlgorithmType(PValueImproverWrapper.AlgorithmType.GES);
+                wrapper.setAlgorithmType(PValueImproverWrapper.AlgorithmType.FGS);
                 alphaField.setEnabled(false);
                 beamWidthField.setEnabled(false);
             }
@@ -206,7 +206,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
             alphaField.setEnabled(true);
             beamWidthField.setEnabled(true);
         }
-        else if (getWrapper().getAlgorithmType() == PValueImproverWrapper.AlgorithmType.GES) {
+        else if (getWrapper().getAlgorithmType() == PValueImproverWrapper.AlgorithmType.FGS) {
             gesRadioButton.setSelected(true);
             alphaField.setEnabled(false);
             beamWidthField.setEnabled(false);

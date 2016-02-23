@@ -105,8 +105,8 @@ public final class FgsParams implements MeekSearchParams {
         return this.indTestParams;
     }
 
-    public void setIndTestParams2(IndTestParams indTestParams) {
-        if (!(indTestParams instanceof GesIndTestParams)) {
+    public void setIndTestParams(IndTestParams indTestParams) {
+        if (!(indTestParams instanceof FgsIndTestParams)) {
             throw new IllegalArgumentException(
                     "Illegal IndTestParams " + "in GesIndTestParams");
         }

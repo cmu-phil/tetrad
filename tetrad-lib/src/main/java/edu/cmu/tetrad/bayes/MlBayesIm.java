@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -34,9 +33,13 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.pow;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm
@@ -74,7 +77,7 @@ import static java.lang.Math.*;
  */
 public final class MlBayesIm implements BayesIm {
     static final long serialVersionUID = 23L;
-    private static final double ALLOWABLE_DIFFERENCE = 1.0e-4;
+    private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
 
     /**
      * Inidicates that new rows in this BayesIm should be initialized as

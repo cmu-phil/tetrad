@@ -43,7 +43,7 @@ import static java.lang.Math.sqrt;
 
 /**
  * An implemetation of Mimbuild based on the Fgsl score. The search will attempt a GES search first and if that
- * throws and exception then a CPC search. The penalty discount parameter is for the GES search; the alpha
+ * throws and exception then a CPC search. The penalty penaltyDiscount parameter is for the GES search; the alpha
  * value is for the CPC search. Or you can just grab the latent covariance matrix and run whatever search you
  * want to. (I don't know why GES sometimes fails, it is a mystery.)
  * </p>

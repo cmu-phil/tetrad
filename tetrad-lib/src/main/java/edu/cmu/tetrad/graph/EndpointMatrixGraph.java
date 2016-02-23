@@ -660,8 +660,6 @@ public class EndpointMatrixGraph implements Graph {
     }
 
     private boolean isDConnectedTo(List<Node> x, List<Node> y, List<Node> z) {
-//        System.out.println("");
-
         Set<Node> zAncestors = zAncestors2(z);
 
         Queue<Pair> Q = new ArrayDeque<>();

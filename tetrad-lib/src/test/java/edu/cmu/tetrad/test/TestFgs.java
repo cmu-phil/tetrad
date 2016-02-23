@@ -38,9 +38,12 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.junit.Test;
 
 import java.io.PrintStream;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -174,7 +177,7 @@ public class TestFgs {
                 {0, 0, 0, 8, 0, 0},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 1, 0, 0},
+                {0, 0, 0, 0, 0, 0},
         };
 
 //        System.out.println(RandomUtil.getInstance().getSeed());
@@ -182,7 +185,7 @@ public class TestFgs {
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
         }
-
+//
 //        System.out.println(MatrixUtils.toString(counts));
 //        System.out.println(MatrixUtils.toString(expectedCounts));
     }
@@ -307,8 +310,22 @@ public class TestFgs {
             out.println();
         }
     }
-}
 
+    @Test
+    public void test17() {
+        int n = 1000;
+        NumberFormat nf = new DecimalFormat("0.00");
+
+        int p = 2;
+
+        for (int j = 900; j <= 1111; j++) {
+            double b = j / 1000.0;
+            double f = -n * Math.log(b);// - (n / 2.0) * b + (n / 2.) * 1;
+            System.out.println("b = " + b + " f = " + nf.format(f) + " p = " + p +
+                    " n = " + n + " -k log n = " + -(p + 1) * Math.log(n));
+        }
+    }
+}
 
 
 

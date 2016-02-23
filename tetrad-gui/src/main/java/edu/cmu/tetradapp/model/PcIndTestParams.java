@@ -59,6 +59,7 @@ public final class PcIndTestParams implements IndTestParams {
      * @deprecated
      */
     private boolean collidersOrientedLocally = false;
+    private int numPatternsToSave = 0;
 
     //============================CONSTRUCTORS=========================//
 
@@ -116,6 +117,11 @@ public final class PcIndTestParams implements IndTestParams {
         return this.depth;
     }
 
+    @Override
+    public int getNumPatternsToSave() {
+        return numPatternsToSave;
+    }
+
     public int getBeamWidth() {
         return beamWidth;
     }
@@ -153,6 +159,10 @@ public final class PcIndTestParams implements IndTestParams {
         }
 
         if (beamWidth == 0) beamWidth = 5;
+    }
+
+    public void setNumPatternsToSave(int numPatternsToSave) {
+        this.numPatternsToSave = numPatternsToSave;
     }
 }
 

@@ -182,8 +182,6 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-//        System.out.println("A");
-
         double r;
         int n = sampleSize();
 
@@ -260,7 +258,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
         if (verbose) {
             if (independent) {
                 TetradLogger.getInstance().log("independencies",
-                        SearchLogUtils.independenceFactMsg(x, y, z, r)); //getPValue()));
+                        SearchLogUtils.independenceFactMsg(x, y, z, r)); //getScore()));
             } else {
                 if (pValueLogger != null) {
                     pValueLogger.println(getPValue());
@@ -460,6 +458,11 @@ public final class IndTestCorrelationT implements IndependenceTest {
     @Override
     public List<TetradMatrix> getCovMatrices() {
         return null;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
     }
 
     public TDistribution gettDistribution() {

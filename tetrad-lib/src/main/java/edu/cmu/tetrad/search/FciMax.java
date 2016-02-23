@@ -207,7 +207,7 @@ public final class FciMax implements GraphSearch {
 
 //        SepsetProducer sp = new SepsetsPossibleDsep(graph, independenceTest, knowledge, depth, maxPathLength);
         SepsetProducer sp = new SepsetsMaxPValuePossDsep(graph, independenceTest, null, depth, maxPathLength);
-        SepsetProducer sp2 = new SepsetsMaxPValue(graph, independenceTest, null, depth);
+        SepsetProducer sp2 = new SepsetsMaxScore(graph, independenceTest, null, depth);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
@@ -314,21 +314,21 @@ public final class FciMax implements GraphSearch {
                 if (sepset == null) continue;
 
 //
-                if (sepsetProducer.getPValue() < getIndependenceTest().getAlpha()) continue;
+                if (sepsetProducer.getScore() < getIndependenceTest().getAlpha()) continue;
 
                 if (!sepset.contains(b)) {
-                    System.out.println("sepset = " + sepset + " b = " + b + " p = " + sepsetProducer.getPValue());
+                    System.out.println("sepset = " + sepset + " b = " + b + " p = " + sepsetProducer.getScore());
 
                     if (verbose) {
                         System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
                     }
 
                     IndependenceTest test2 = new IndTestDSep(trueDag);
-                    SepsetProducer sp2 = new SepsetsMaxPValue(graph, test2, null, depth);
+                    SepsetProducer sp2 = new SepsetsMaxScore(graph, test2, null, depth);
 
                     System.out.println("Dsep sepset = " + sp2.getSepset(a, c));
 
-                    colliders.put(new Triple(a, b, c), sepsetProducer.getPValue());
+                    colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
 
 //                    colliders.add(new Triple(a, b, c));
                     TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));

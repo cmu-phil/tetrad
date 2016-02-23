@@ -856,11 +856,11 @@ public final class DiscreteTetradTest implements TetradTest {
 //                new MimBuildEstimator(covarianceMatrix, semPm, 5, 5);
 //        //System.out.println("1.");
 //        est.estimate();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            cacheOneFactorTest(this.indices, true);
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            cacheOneFactorTest(this.indices, false);
 //            return false;
 //        }
@@ -1020,11 +1020,11 @@ public final class DiscreteTetradTest implements TetradTest {
 //        MimBuildEstimator est =
 //                new MimBuildEstimator(CovarianceMatrix, semPm, 5, 5);
 //        est.estimate();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            cacheOneFactorTest(this.indices, true);
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            cacheOneFactorTest(this.indices, false);
 //            return false;
 //        }
@@ -1136,10 +1136,10 @@ public final class DiscreteTetradTest implements TetradTest {
 //        MimBuildEstimator est =
 //                new MimBuildEstimator(CovarianceMatrix, semPm, 5, 5);
 //        est.estimate();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            return false;
 //        }
 //
@@ -1268,12 +1268,12 @@ public final class DiscreteTetradTest implements TetradTest {
 //                new MimBuildEstimator(CovarianceMatrix, semPm, 5, 5);
 //        //System.out.println("1.");
 //        est.estimate();
-//        tempProb = est.getEstimatedSem().getPValue();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        tempProb = est.getEstimatedSem().getScore();
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            cacheTwoFactorTest(this.indices, true);
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            cacheTwoFactorTest(this.indices, false);
 //            return false;
 //        }
@@ -1418,10 +1418,10 @@ public final class DiscreteTetradTest implements TetradTest {
 //        MimBuildEstimator est =
 //                new MimBuildEstimator(CovarianceMatrix, semPm, 5, 5);
 //        est.estimate();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            return false;
 //        }
 //
@@ -1541,10 +1541,10 @@ public final class DiscreteTetradTest implements TetradTest {
 //        MimBuildEstimator est =
 //                new MimBuildEstimator(CovarianceMatrix, semPm, 5, 5);
 //        est.estimate();
-//        if (est.getEstimatedSem().getPValue() > this.sig) {
+//        if (est.getEstimatedSem().getScore() > this.sig) {
 //            return true;
 //        }
-//        if (est.getEstimatedSem().getPValue() < 1.e-10) {
+//        if (est.getEstimatedSem().getScore() < 1.e-10) {
 //            return false;
 //        }
 //

@@ -116,7 +116,7 @@ public final class MbSearchParams implements MeekSearchParams {
         return indTestParams;
     }
 
-    public void setIndTestParams2(IndTestParams indTestParams) {
+    public void setIndTestParams(IndTestParams indTestParams) {
         if (indTestParams == null) {
             throw new NullPointerException();
         }

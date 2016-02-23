@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
@@ -45,7 +45,7 @@ import java.util.Map;
  * @author Ricardo Silva
  */
 
-public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
+public class FgsRunnerOld extends AbstractAlgorithmRunner implements GraphSource,
         PropertyChangeListener, Indexable, IGesRunner, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
     private transient List<PropertyChangeListener> listeners;
@@ -58,35 +58,38 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     //============================CONSTRUCTORS============================//
 
-    public GesRunner(DataWrapper dataWrapper, GesParams params) {
+    public FgsRunnerOld(GraphWrapper graphWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
+    }
+
+    public FgsRunnerOld(DataWrapper dataWrapper, FgsParams params) {
         super(dataWrapper, params, null);
     }
 
-    public GesRunner(DataWrapper dataWrapper, GraphSource trueGraph, GesParams params) {
+    public FgsRunnerOld(DataWrapper dataWrapper, GraphSource trueGraph, FgsParams params) {
         this(dataWrapper, params, null);
         this.initialGraph = trueGraph.getGraph();
     }
 
-    public GesRunner(DataWrapper dataWrapper, GesParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunnerOld(DataWrapper dataWrapper, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public GesRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunnerOld(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     *
      * @see TetradSerializableUtils
      */
-    public static IGesRunner serializableInstance() {
-        return new GesRunner(DataWrapper.serializableInstance(),
-                GesParams.serializableInstance());
+    public static FgsRunnerOld serializableInstance() {
+        return new FgsRunnerOld(DataWrapper.serializableInstance(),
+                FgsParams.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -99,52 +102,86 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
     public void execute() {
         Object source = getDataModel();
 
-        GesParams gesParams = (GesParams) getParams();
-        GesIndTestParams indTestParams = (GesIndTestParams) gesParams.getIndTestParams();
-        double penalty = gesParams.getComplexityPenalty();
-        Ges ges;
+        if (source == null && getSourceGraph() != null) {
+            source = getSourceGraph();
+        }
+
+        if (source == null) {
+            throw new RuntimeException("Data source is unspecified. You may need to double click all your data boxes, \n" +
+                    "then click Save, and then right click on them and select Propagate Downstream. \n" +
+                    "The issue is that we use a seed to simulate from IM's, so your data is not saved to \n" +
+                    "file when you save the session. It can, however, be recreated from the saved seed.");
+        }
+
+        FgsParams fgsParams = (FgsParams) getParams();
+        FgsIndTestParams indTestParams = (FgsIndTestParams) fgsParams.getIndTestParams();
+        double penalty = fgsParams.getComplexityPenalty();
+        Fgs fgs;
+        boolean faithfulnessAssumed = fgsParams.isFaithfulnessAssumed();
 
         if (source instanceof ICovarianceMatrix) {
-            ges = new Ges((ICovarianceMatrix) source);
-            ges.setKnowledge(getParams().getKnowledge());
-            ges.setPenaltyDiscount(penalty);
-            ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-            ges.setVerbose(true);
+            List<DataModel> dataModels = new ArrayList<>();
+            dataModels.add((DataModel) source);
+//            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) source);
+            SemBicScoreImages gesScore = new SemBicScoreImages(dataModels);
+            gesScore.setPenaltyDiscount(penalty);
+            fgs = new Fgs(gesScore);
+            fgs.setKnowledge(getParams().getKnowledge());
+            fgs.setPenaltyDiscount(penalty);
+            fgs.setDepth(2);
+            fgs.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
+            fgs.setFaithfulnessAssumed(faithfulnessAssumed);
+            fgs.setVerbose(true);
+
         } else if (source instanceof DataSet) {
             DataSet dataSet = (DataSet) source;
 
             if (dataSet.isContinuous()) {
-                ges = new Ges((DataSet) source);
-                ges.setKnowledge(getParams().getKnowledge());
-                ges.setPenaltyDiscount(penalty);
-                ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-                ges.setVerbose(true);
-            }
-            else if (dataSet.isDiscrete()) {
-                double samplePrior = ((GesParams) getParams()).getSamplePrior();
-                double structurePrior = ((GesParams) getParams()).getStructurePrior();
+                List<DataModel> dataModels = new ArrayList<>();
+                dataModels.add((DataModel) source);
+                SemBicScoreImages gesScore = new SemBicScoreImages(dataModels);
+//                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) source));
+                gesScore.setPenaltyDiscount(penalty);
+                fgs = new Fgs(gesScore);
+                fgs.setKnowledge(getParams().getKnowledge());
+                fgs.setPenaltyDiscount(penalty);
+//                fgs.setDepth(2);
+                fgs.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
+//                fgs.setFaithfulnessAssumed(faithfulnessAssumed);
+                fgs.setVerbose(true);
+            } else if (dataSet.isDiscrete()) {
+                double samplePrior = ((FgsParams) getParams()).getSamplePrior();
+                double structurePrior = ((FgsParams) getParams()).getStructurePrior();
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
-                ges = new Ges((DataSet) source);
-                ges.setVerbose(true);
-                ges.setLog(true);
-                ges.setKnowledge(getParams().getKnowledge());
-                ges.setSamplePrior(((GesParams) getParams()).getSamplePrior());
-                ges.setStructurePrior(((GesParams) getParams()).getStructurePrior());
-                ges.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
-            }
-            else {
+//                BDeuScore score = new BDeuScore(dataSet);
+                fgs = new Fgs(score);
+                fgs.setVerbose(true);
+                fgs.setKnowledge(getParams().getKnowledge());
+//                fgs.setDepth(2);
+                fgs.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
+                fgs.setFaithfulnessAssumed(faithfulnessAssumed);
+            } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
+        } else if (source instanceof Graph) {
+            GraphScore gesScore = new GraphScore((Graph) source);
+            fgs = new Fgs(gesScore);
+            fgs.setKnowledge(getParams().getKnowledge());
+            fgs.setPenaltyDiscount(penalty);
+//                fgs.setDepth(2);
+            fgs.setNumPatternsToStore(50);
+//                fgs.setFaithfulnessAssumed(faithfulnessAssumed);
+            fgs.setVerbose(true);
         } else {
             throw new RuntimeException(
-                    "GES does not accept this type of data input.");
+                    "FGSdoes not accept this type of data input.");
         }
 
-        ges.setInitialGraph(initialGraph);
+        fgs.setInitialGraph(initialGraph);
 
-        Graph graph = ges.search();
+        Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -160,7 +197,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
             topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
         }
 
-        this.topGraphs = new ArrayList<>(ges.getTopGraphs());
+        this.topGraphs = new ArrayList<>(fgs.getTopGraphs());
 
         if (this.topGraphs.isEmpty()) {
             this.topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
@@ -169,7 +206,7 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
         this.allDagsToScores = new ArrayList<>();
 
         for (ScoredGraph scoredGraph : topGraphs) {
-            Map<Graph, Double> dagsToScores = scoreGraphs(ges, scoredGraph.getGraph());
+            Map<Graph, Double> dagsToScores = scoreGraphs(fgs, scoredGraph.getGraph());
             this.allDagsToScores.add(dagsToScores);
         }
 
@@ -194,14 +231,14 @@ public class GesRunner extends AbstractAlgorithmRunner implements GraphSource,
         return index;
     }
 
-    private Map<Graph, Double> scoreGraphs(Ges ges, Graph graph) {
+    private Map<Graph, Double> scoreGraphs(Fgs fgs, Graph graph) {
         Map<Graph, Double> dagsToScores = new HashMap<Graph, Double>();
 
         if (false) {
             final List<Graph> dags = SearchGraphUtils.generatePatternDags(graph, true);
 
             for (Graph _graph : dags) {
-                double score = ges.scoreDag(_graph);
+                double score = fgs.scoreDag(_graph);
                 dagsToScores.put(_graph, score);
             }
         }
