@@ -356,6 +356,36 @@ public final class TestGraphUtils {
             e.printStackTrace();
         }
     }
+
+    public void test8() {
+        int numNodes = 5;
+
+        for (int i = 0; i < 100000; i++) {
+            Graph graph = GraphUtils.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true);
+
+            List<Node> nodes = graph.getNodes();
+            Node x = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            Node y = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            Node z1 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            Node z2 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+
+            if (graph.isDSeparatedFrom(x, y, list(z1)) && graph.isDSeparatedFrom(x, y, list(z2)) &&
+                    !graph.isDSeparatedFrom(x, y, list(z1, z2))) {
+                System.out.println("x = " + x);
+                System.out.println("y = " + y);
+                System.out.println("z1 = " + z1);
+                System.out.println("z2 = " + z2);
+                System.out.println(graph);
+                return;
+            }
+        }
+    }
+
+    private List<Node> list(Node... z) {
+        List<Node> list = new ArrayList<>();
+        Collections.addAll(list, z);
+        return list;
+    }
 }
 
 
