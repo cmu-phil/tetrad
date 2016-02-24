@@ -184,36 +184,15 @@ public class Jcpc implements GraphSearch {
         List<Graph> graphs = new ArrayList<Graph>();
         IndependenceTest test = getIndependenceTest();
 
-        Graph graph;
-
-//        if (true) {
-            graph = new EdgeListGraph(test.getVariables());
-//        } else {
-//            if (initialGraph != null) {
-//                graph = initialGraph;
-//            }
-//            else {
-//                Cpc search = new Cpc(test);
-//                search.setKnowledge(getKnowledge());
-//                search.setDepth(getCpcDepth());
-//                search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-//                graph = search.search();
-//            }
-//        }
-
-//        undirectedGraph(graph);
+        Graph graph = new EdgeListGraph(test.getVariables());
 
         // This is the list of all changed nodes from the last iteration
         List<Node> nodes = graph.getNodes();
 
-        int count = -1;
-
-        int minNumErrors = Integer.MAX_VALUE;
         Graph outGraph = null;
 
         int numEdges = nodes.size() * (nodes.size() - 1) / 2;
         int index = 0;
-
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -235,26 +214,6 @@ public class Jcpc implements GraphSearch {
                 for (Node w : graph.getAdjacentNodes(y)) {
                     tryRemovingEdge(test, graph, graph, graph.getEdge(w, y));
                 }
-//
-//                if (edge != null) {
-////                    Set<Node> addedEdges = new HashSet<>();
-////                    addedEdges.add(edge);
-//
-//                    Set<Node> visited = reapplyOrientation(x, y, null, graph);
-//                    Set<Node> toProcess = new HashSet<>();
-//
-//                    for (Node node : visited) {
-//                        final Set<Node> neighbors = new HashSet<>(graph.getAdjacentNodes(node));
-//                        final Set<Node> storedNeighbors = this.adjacents.get(node);
-//
-//                        if (!(neighbors.equals(storedNeighbors))) {
-//                            toProcess.add(node);
-//                        }
-//                    }
-//
-//                    toProcess.add(x);
-//                    toProcess.add(y);
-//                }
             }
         }
 
@@ -269,81 +228,6 @@ public class Jcpc implements GraphSearch {
 
             tryRemovingEdge(test, graph, graph, edge);
         }
-
-
-
-//        toProcess.add(x);
-//        toProcess.add(y);
-//        LOOP:
-//        while (++count < getMaxIterations()) {
-//            log("info", "Round = " + (count + 1));
-//            numAdded = 0;
-//            numRemoved = 0;
-//            index = 0;
-//
-//            int indexBackwards = 0;
-//            int numEdgesBackwards = graph.getNumEdges();
-//
-//            for (Edge edge : toProcess) {
-//                index++;
-//
-//                if (index % 10000 == 0) {
-//                    log("info", index + " of " + numEdges);
-//                }
-//
-//                tryAddingEdge(test, graph, nodes, graph, i, j);
-//
-//                Node x = nodes.get(i);
-//                Node y = nodes.get(j);
-//
-//                if (graph.getAdjacentNodes(x).size() > getSoftmaxAdjacencies()) {
-//                    for (Node w : graph.getAdjacentNodes(x)) {
-//                        if (w == y) continue;
-//                        tryRemovingEdge(test, graph, graph, graph.getEdge(x, w));
-//                    }
-//                }
-//
-//                if (graph.getAdjacentNodes(y).size() > getSoftmaxAdjacencies()) {
-//                    for (Node w : graph.getAdjacentNodes(y)) {
-//                        if (w == x) continue;
-//                        tryRemovingEdge(test, graph, graph, graph.getEdge(y, w));
-//                    }
-//                }
-//            }
-//
-//            if (getSoftmaxAdjacencies() > 0) {
-//                for (Edge edge : graph.getEdges()) {
-//                    if (++indexBackwards % 10000 == 0) {
-//                        log("info", index + " of " + numEdgesBackwards);
-//                    }
-//
-//                    tryRemovingEdge(test, graph, graph, edge);
-//                }
-//            }
-
-//            log("info", "Num added = " + numAdded);
-//            log("info", "Num removed = " + numRemoved);
-//
-//            int numErrors = numAdded + numRemoved;
-//
-//            // Keep track of the last graph with the fewest changes; this is returned.
-//            final EdgeListGraph graph1 = new EdgeListGraph(graph);
-//
-//            if (numErrors <= minNumErrors) {
-//                minNumErrors = numErrors;
-//                outGraph = graph1;
-//            }
-//
-//            orientCpc(graph, getKnowledge(), getOrientationDepth(), test);
-//            graphs.add(graph1);
-//
-//            for (int i = graphs.size() - 2; i >= 0; i--) {
-//                if (graphs.get(graphs.size() - 1).equals(graphs.get(i))) {
-//                    outGraph = graph1;
-//                    break LOOP;
-//                }
-//            }
-//        }
 
         outGraph = graph;
 
@@ -408,10 +292,6 @@ public class Jcpc implements GraphSearch {
                     existsSepset = true;
                 }
             }
-        } else if (getPathBlockingSet() == PathBlockingSet.SMALL) {
-            sepsetX = pathBlockingSetSmall(test, oldGraph, x, y);
-            sepsetY = pathBlockingSetSmall(test, oldGraph, y, x);
-            existsSepset = sepsetX != null || sepsetY != null;
         } else {
             throw new IllegalStateException("Unrecognized sepset type.");
         }
@@ -450,10 +330,6 @@ public class Jcpc implements GraphSearch {
                     existsSepset = true;
                 }
             }
-        } else if (getPathBlockingSet() == PathBlockingSet.SMALL) {
-            sepsetX = pathBlockingSetSmall(test, oldGraph, x, y);
-            sepsetY = pathBlockingSetSmall(test, oldGraph, y, x);
-            existsSepset = sepsetX != null || sepsetY != null;
         } else {
             throw new IllegalStateException("Unrecognized sepset type.");
         }
@@ -481,13 +357,13 @@ public class Jcpc implements GraphSearch {
         int[] choice;
 
         while ((choice = generator.next()) != null) {
-            Set<Node> colliders = new HashSet<Node>(GraphUtils.asList(choice, commonAdjacents));
+            Set<Node> notConditioned = new HashSet<>(GraphUtils.asList(choice, commonAdjacents));
 
-            List<Node> _descendants = graph.getDescendants(new ArrayList<Node>(colliders));
-            Set<Node> descendants = new HashSet<Node>(_descendants);
+            List<Node> _descendants = graph.getDescendants(new ArrayList<Node>(notConditioned));
+            Set<Node> descendants = new HashSet<>(_descendants);
 
-            Set<Node> sepset = pathBlockingSetExcluding(graph, x, y, colliders, descendants);
-            ArrayList<Node> _sepset = new ArrayList<Node>(sepset);
+            Set<Node> sepset = pathBlockingSetExcluding(graph, x, y, notConditioned, descendants);
+            ArrayList<Node> _sepset = new ArrayList<>(sepset);
 
             if (test.isIndependent(x, y, _sepset)) {
                 return _sepset;
@@ -497,85 +373,32 @@ public class Jcpc implements GraphSearch {
         return null;
     }
 
-//    private List<Node> pathBlockingSet2(IndependenceTest test, Graph graph, Node x, Node y) {
-//        Set<Node> boundary = markovBoundaryWithoutXY(graph, x, y);
-//
-//        ArrayList<Node> _boundary = new ArrayList<Node>(boundary);
-//
-//        if (!_boundary.contains(y)) {
-//            if (test.isIndependent(x, y, _boundary)) {
-//                return _boundary;
-//            }
-//        } else {
-//            _boundary.remove(y);
-//
-//            DepthChoiceGenerator gen = new DepthChoiceGenerator(_boundary.size(), 2);
-//            int[] choice;
-//
-//            while ((choice = gen.next()) != null) {
-//                List<Node> cond = GraphUtils.asList(choice, _boundary);
-//
-//                if (test.isIndependent(x, y, cond)) {
-//                    return cond;
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }
-
-    private List<Node> pathBlockingSetSmall(IndependenceTest test, Graph graph, Node x, Node y) {
-        List<Node> adjX = graph.getAdjacentNodes(x);
-        adjX.removeAll(graph.getParents(x));
-        adjX.removeAll(graph.getChildren(x));
-
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(adjX.size(), -1);
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            List<Node> selection = GraphUtils.asList(choice, adjX);
-            Set<Node> sepset = new HashSet<Node>(selection);
-            sepset.addAll(graph.getParents(x));
-
-            sepset.remove(x);
-            sepset.remove(y);
-
-            ArrayList<Node> sepsetList = new ArrayList<Node>(sepset);
-
-            if (test.isIndependent(x, y, sepsetList)) {
-                return sepsetList;
-            }
-        }
-
-        return null;
-    }
-
-    private Set<Node> pathBlockingSetExcluding(Graph graph, Node x, Node y, Set<Node> colliders, Set<Node> descendants) {
+    private Set<Node> pathBlockingSetExcluding(Graph graph, Node x, Node y, Set<Node> notConditioned, Set<Node> descendants) {
         Set<Node> condSet = new HashSet<Node>();
 
         for (Node b : graph.getAdjacentNodes(x)) {
             if (b == y) continue;
 
-            if (!colliders.contains(b) && !descendants.contains(b)) {
+            if (!notConditioned.contains(b) /*&& !descendants.contains(b)*/) {
                 if (graph.getAdjacentNodes(b).size() > 1) {
                     condSet.add(b);
                 }
             }
 
-            if (!graph.isParentOf(b, x)) {
-                for (Node c : graph.getParents(b)) {
-                    if (!colliders.contains(c) && !descendants.contains(c)) {
-                        condSet.add(c);
-                    }
-                }
-            }
+//            if (!graph.isParentOf(b, x)) {
+//                for (Node c : graph.getParents(b)) {
+//                    if (!notConditioned.contains(c) /*&& !descendants.contains(c)*/) {
+//                        condSet.add(c);
+//                    }
+//                }
+//            }
         }
 
-        for (Node c : graph.getParents(y)) {
-            if (!colliders.contains(c) && !descendants.contains(c)) {
-                condSet.add(c);
-            }
-        }
+//        for (Node c : graph.getParents(y)) {
+//            if (!notConditioned.contains(c) && !descendants.contains(c)) {
+//                condSet.add(c);
+//            }
+//        }
 
         condSet.remove(x);
         condSet.remove(y);
@@ -583,42 +406,13 @@ public class Jcpc implements GraphSearch {
         return condSet;
     }
 
-//    private Set<Node> markovBoundaryWithoutXY(Graph graph, Node x, Node y) {
-//        Set<Node> condSet = new HashSet<Node>();
-//
-//        for (Node b : graph.getAdjacentNodes(x)) {
-//            if (b != y) {
-//                condSet.add(b);
-//
-//                if (!graph.isParentOf(b, x)) {
-//                    for (Node c : graph.getAdjacentNodes(b)) {
-//                        condSet.add(c);
-//                    }
-//                }
-//            }
-//        }
-//
-//        condSet.remove(x);
-//
-//        return condSet;
-//    }
-
-
     private void orientCpc(Graph graph, IKnowledge knowledge, int depth, IndependenceTest test) {
-        undirectedGraph(graph);
         SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
         orientUnshieldedTriples(graph, test, depth, knowledge);
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         meekRules.setKnowledge(knowledge);
         meekRules.orientImplied(graph);
-    }
-
-    private void undirectedGraph(Graph graph) {
-        for (Edge edge : graph.getEdges()) {
-            edge.setEndpoint1(Endpoint.TAIL);
-            edge.setEndpoint2(Endpoint.TAIL);
-        }
     }
 
     /**
@@ -674,10 +468,6 @@ public class Jcpc implements GraphSearch {
                 graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
             }
         }
-    }
-
-    public int getMaxIterations() {
-        return maxIterations;
     }
 
     public void setMaxIterations(int maxIterations) {
