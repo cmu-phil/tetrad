@@ -41,6 +41,8 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Linear Regression");
     public static final IndTestType CONDITIONAL_CORRELATION =
             new IndTestType("Conditional Correlation Test");
+    public static final IndTestType BIC_BUMP =
+            new IndTestType("BIC Bump");
     public static final IndTestType LOGISTIC_REGRESSION =
             new IndTestType("Logistic Regression");
     public static final IndTestType MULTINOMIAL_LOGISTIC_REGRESSION =

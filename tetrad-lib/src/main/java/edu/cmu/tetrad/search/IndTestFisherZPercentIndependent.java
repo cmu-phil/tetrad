@@ -60,6 +60,10 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         this.dataSets = dataSets;
         this.variables = dataSets.get(0).getVariables();
 
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         data = new ArrayList<TetradMatrix>();
 
         for (DataSet dataSet : dataSets) {

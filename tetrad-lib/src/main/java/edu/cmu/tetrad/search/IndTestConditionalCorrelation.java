@@ -90,6 +90,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         List<Node> nodes = dataSet.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);

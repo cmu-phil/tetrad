@@ -59,6 +59,10 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         ICovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
         this.dataSet = dataSet;
 

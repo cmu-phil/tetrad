@@ -175,7 +175,12 @@ public final class IndTestChooser {
 //            return new IndTestBicBump(dataSet, indTestParams.getAlpha() * 100);
             return new IndTestLaggedRegression(dataSet,
                     indTestParams.getAlpha(), 1);
-        } else {
+        }
+        if (IndTestType.BIC_BUMP == testType) {
+            return new IndTestBicBump(dataSet, indTestParams.getAlpha());
+        }
+
+        {
             params.setIndTestType(IndTestType.FISHER_Z);
             return new IndTestFisherZ(dataSet, indTestParams.getAlpha());
         }

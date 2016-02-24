@@ -100,6 +100,10 @@ public final class IndTestRegression implements IndependenceTest {
      * @param alpha   The alpha level of the test.
      */
     public IndTestRegression(DataSet dataSet, double alpha) {
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         this.dataSet = dataSet;
         this.data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
         this.variables = Collections.unmodifiableList(dataSet.getVariables());

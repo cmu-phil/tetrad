@@ -95,6 +95,10 @@ public final class IndTestLaggedRegression implements IndependenceTest {
      * given data set (must be continuous). The given significance level is used.
      */
     public IndTestLaggedRegression(DataSet timeSeries, double alpha, int numLags) {
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         this.timeSeries = timeSeries;
 //        this.data = new DenseDoubleMatrix2D(timeSeries.getDoubleData().toArray());
         this.variables = Collections.unmodifiableList(timeSeries.getVariables());

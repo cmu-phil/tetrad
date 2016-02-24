@@ -86,6 +86,7 @@ public final class IndTestBicBump implements IndependenceTest {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
+
         this.dataSet = dataSet;
         this.penaltyDiscount = penaltyDicount;
         this.score = new SemBicScore(new CorrelationMatrix(dataSet));

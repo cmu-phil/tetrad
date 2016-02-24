@@ -214,7 +214,7 @@ public class Jcpc implements GraphSearch {
 
         LOOP:
         while (++count < getMaxIterations()) {
-            TetradLogger.getInstance().log("info", "Round = " + (count + 1));
+            log("info", "Round = " + (count + 1));
             numAdded = 0;
             numRemoved = 0;
             int index = 0;
@@ -229,7 +229,7 @@ public class Jcpc implements GraphSearch {
                     index++;
 
                     if (index % 10000 == 0) {
-                        TetradLogger.getInstance().log("info", index + " of " + numEdges);
+                        log("info", index + " of " + numEdges);
                     }
 
                     tryAddingEdge(test, graph, nodes, graph, i, j);
@@ -256,15 +256,15 @@ public class Jcpc implements GraphSearch {
             if (getSoftmaxAdjacencies() > 0) {
                 for (Edge edge : graph.getEdges()) {
                     if (++indexBackwards % 10000 == 0) {
-                        TetradLogger.getInstance().log("info", index + " of " + numEdgesBackwards);
+                        log("info", index + " of " + numEdgesBackwards);
                     }
 
                     tryRemovingEdge(test, graph, graph, edge);
                 }
             }
 
-            TetradLogger.getInstance().log("info", "Num added = " + numAdded);
-            TetradLogger.getInstance().log("info", "Num removed = " + numRemoved);
+            log("info", "Num added = " + numAdded);
+            log("info", "Num removed = " + numRemoved);
 
             int numErrors = numAdded + numRemoved;
 
@@ -295,6 +295,13 @@ public class Jcpc implements GraphSearch {
         orientCpc(outGraph, getKnowledge(), getOrientationDepth(), test);
 
         return outGraph;
+    }
+
+    private void log(String info, String message) {
+        TetradLogger.getInstance().log(info, message);
+        if ("info".equals(info)) {
+            System.out.println(message);
+        }
     }
 
     private void tryAddingEdge(IndependenceTest test, Graph graph, List<Node> _changedNodes, Graph oldGraph, int i, int j) {
@@ -530,7 +537,7 @@ public class Jcpc implements GraphSearch {
      * Assumes a graph with only required knowledge orientations.
      */
     private Set<Node> orientUnshieldedTriples(Graph graph, IndependenceTest test, int depth, IKnowledge knowledge) {
-        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
+        log("info", "Starting Collider Orientation:");
 
         List<Node> nodes = graph.getNodes();
         Set<Node> colliderNodes = new HashSet<Node>();
@@ -540,7 +547,7 @@ public class Jcpc implements GraphSearch {
             orientCollidersAboutNode(graph, test, depth, knowledge, colliderNodes, y);
         }
 
-        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+        log("info", "Finishing Collider Orientation.");
 
         return colliderNodes;
     }
@@ -573,7 +580,7 @@ public class Jcpc implements GraphSearch {
                 graph.setEndpoint(z, y, Endpoint.ARROW);
 
                 colliderNodes.add(y);
-                TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
+                log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
             } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
                 Triple triple = new Triple(x, y, z);
                 graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());

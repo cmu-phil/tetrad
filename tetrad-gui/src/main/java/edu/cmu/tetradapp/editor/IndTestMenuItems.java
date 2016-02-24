@@ -81,6 +81,7 @@ public class IndTestMenuItems {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.FISHER_Z &&
                 testType != IndTestType.FISHER_ZD &&
+                testType != IndTestType.BIC_BUMP &&
                 testType != IndTestType.FISHER_Z_BOOTSTRAP &&
 //                testType != IndTestType.CORRELATION_T &&
                 testType != IndTestType.CONDITIONAL_CORRELATION &&
@@ -121,6 +122,10 @@ public class IndTestMenuItems {
         group.add(linRegrTest);
         test.add(linRegrTest);
 
+        JCheckBoxMenuItem bicBump = new JCheckBoxMenuItem("BIC Score Bump");
+        group.add(bicBump);
+        test.add(bicBump);
+
         logr.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setter.setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
@@ -142,6 +147,8 @@ public class IndTestMenuItems {
             linRegrTest.setSelected(true);
         } else if (testType == IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION) {
             logr.setSelected(true);
+        } else if (testType == IndTestType.BIC_BUMP) {
+            bicBump.setSelected(true);
         }
 
         fishersZ.addActionListener(new ActionListener() {
@@ -197,6 +204,14 @@ public class IndTestMenuItems {
                 setter.setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using multinomial logistic regression test.");
+            }
+        });
+
+        bicBump.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setter.setTestType(IndTestType.BIC_BUMP);
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Using the BIC bump test.");
             }
         });
 
