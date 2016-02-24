@@ -198,7 +198,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 //
 //            LingamPattern lingamPattern = new LingamPattern(pattern, dataSet);
 //            lingamPattern.setKnowledge(getParams().getKnowledge());
-//            lingamPattern.setAlpha(getParams().getIndTestParams().getAlpha());
+//            lingamPattern.setParameter1(getParams().getIndTestParams().getParameter1());
 //            // lingamPattern.setNumSamples(200);
 //
 //            // Graph estPattern = new PcSearch(simulateData, new Knowledge2()).search();

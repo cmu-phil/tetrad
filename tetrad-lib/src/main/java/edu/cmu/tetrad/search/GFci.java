@@ -250,7 +250,7 @@ public final class GFci {
 //                if (!j.isEmpty()) {
 //                    sepsets.getSepset(i, k);
 //
-//                    if (sepsets.getScore() > getIndependenceTest().getAlpha()) {
+//                    if (sepsets.getScore() > getIndependenceTest().getParameter1()) {
 //                        gesGraph.removeEdge(edge);
 //                    }
 //                }

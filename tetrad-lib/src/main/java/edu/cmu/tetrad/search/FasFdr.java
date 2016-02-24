@@ -305,10 +305,10 @@ public class FasFdr implements IFas {
 //        List<Node> nodes = graph.getNodes();
 //
 //        Map<Node, Set<Node>> _adjacencies = copy(adjacencies);
-//        test.setAlpha(alpha);
+//        test.setParameter1(alpha);
 //        searchICov(nodes, test, adjacencies);
-//        double cutoff = StatUtils.fdr(test.getAlpha(), pValueList, false);
-//        test.setAlpha(cutoff);
+//        double cutoff = StatUtils.fdr(test.getParameter1(), pValueList, false);
+//        test.setParameter1(cutoff);
 //        adjacencies = _adjacencies;
 //        searchICov(nodes, test, adjacencies);
 //
@@ -319,26 +319,26 @@ public class FasFdr implements IFas {
 ////            adjacencies.put(node, new TreeSet<Node>());
 ////        }
 ////
-////        test.setAlpha(alpha);
+////        test.setParameter1(alpha);
 ////
 ////        searchAtDepth0(nodes, test, adjacencies);
 ////
-////        cutoff = StatUtils.fdr(test.getAlpha(), pValueList, false);
+////        cutoff = StatUtils.fdr(test.getParameter1(), pValueList, false);
 ////
-////        test.setAlpha(cutoff);
+////        test.setParameter1(cutoff);
 ////
 ////        searchAtDepth0(nodes, test, adjacencies);
 //
 //        for (int d = 0; d <= _depth; d++) {
 //            boolean more;
 //
-//            test.setAlpha(alpha);
+//            test.setParameter1(alpha);
 //
 //            searchAtDepth(nodes, test, adjacencies, d);
 //
-//            cutoff = StatUtils.fdr(test.getAlpha(), pValueList, false);
+//            cutoff = StatUtils.fdr(test.getParameter1(), pValueList, false);
 //
-//            test.setAlpha(cutoff);
+//            test.setParameter1(cutoff);
 //
 //            more = searchAtDepth(nodes, test, adjacencies, d);
 //

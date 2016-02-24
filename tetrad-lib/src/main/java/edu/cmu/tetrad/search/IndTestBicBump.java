@@ -70,9 +70,6 @@ public final class IndTestBicBump implements IndependenceTest {
     private SemBicScore score;
     private double penaltyDiscount = 1;
 
-    // Legacy
-    private double alpha;
-
 
     //==========================CONSTRUCTORS=============================//
 
@@ -89,7 +86,7 @@ public final class IndTestBicBump implements IndependenceTest {
 
         this.dataSet = dataSet;
         this.penaltyDiscount = penaltyDicount;
-        this.score = new SemBicScore(new CorrelationMatrix(dataSet));
+        this.score = new SemBicScore(new CorrelationMatrix(dataSet), penaltyDiscount);
         this.variables = this.score.getVariables();
         score.setPenaltyDiscount(penaltyDiscount);
     }
@@ -100,10 +97,11 @@ public final class IndTestBicBump implements IndependenceTest {
      */
     public IndTestBicBump(ICovarianceMatrix covMatrix, double penaltyDiscount) {
         this.covMatrix = covMatrix;
+        this.variables = covMatrix.getVariables();
         this.penaltyDiscount = penaltyDiscount;
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
-        this.score = new SemBicScore(covMatrix);
+        this.score = new SemBicScore(covMatrix, penaltyDiscount);
         this.variables = score.getVariables();
         score.setPenaltyDiscount(penaltyDiscount);
     }
@@ -146,9 +144,9 @@ public final class IndTestBicBump implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-            double v = -this.score.localScoreDiff(variables.indexOf(y), varIndices(z), variables.indexOf(x));
-            this.bump = v;
-            return v > 0;
+        double v = -this.score.localScoreDiff(variables.indexOf(x), variables.indexOf(y), varIndices(z));
+        this.bump = v;
+        return v > 0;
     }
 
     private int[] varIndices(List<Node> z) {
@@ -246,12 +244,12 @@ public final class IndTestBicBump implements IndependenceTest {
 
     @Override
     public double getAlpha() {
-        return this.alpha;
+        return this.penaltyDiscount;
     }
 
     @Override
     public void setAlpha(double alpha) {
-        this.alpha = alpha;
+        this.penaltyDiscount = alpha;
     }
 
     /**

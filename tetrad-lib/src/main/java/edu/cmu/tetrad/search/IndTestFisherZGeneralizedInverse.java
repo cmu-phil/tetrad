@@ -130,7 +130,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 //        CorrelationMatrix newCorrMatrix = new CorrelationMatrix(vars, m,
 //                sampleSize);
 //
-//        double alphaNew = getAlpha();
+//        double alphaNew = getParameter1();
 //        IndependenceTest newIndTest = new IndTestCramerT(newCorrMatrix,
 //                alphaNew);
 //        return newIndTest;
@@ -421,7 +421,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 //                PersistentRandomUtil.getInstance().getEngine());
 //
 //        double p = chiSquare.cdf(sum);
-//        boolean determined = p < 1 - getAlpha();
+//        boolean determined = p < 1 - getParameter1();
 //
         boolean determined = variance < getAlpha();
 

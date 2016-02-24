@@ -73,11 +73,11 @@ public class GraphScore implements FgsScore {
 
 
     @Override
-    public double localScoreDiff(int i, int[] parents, int extra) {
-        Node y = variables.get(i);
-        Node x = variables.get(extra);
-        List<Node> scoreParents = getVariableList(parents);
-        return dag.isDSeparatedFrom(x, y, scoreParents) ? -1.0 : 1.0;
+    public double localScoreDiff(int x, int y, int[] z) {
+        Node _y = variables.get(y);
+        Node _x = variables.get(x);
+        List<Node> scoreParents = getVariableList(z);
+        return dag.isDSeparatedFrom(_x, _y, scoreParents) ? -1.0 : 1.0;
     }
 
 
@@ -132,6 +132,14 @@ public class GraphScore implements FgsScore {
     @Override
     public boolean isDiscrete() {
         return false;
+    }
+
+    public double getParameter1() {
+        throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
+    }
+
+    public void setParameter1(double alpha) {
+        throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
     }
 }
 

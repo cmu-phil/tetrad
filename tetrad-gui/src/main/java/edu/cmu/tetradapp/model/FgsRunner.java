@@ -29,9 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the GES algorithm.
@@ -321,8 +319,8 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
-                gesScore.setPenaltyDiscount(params.getComplexityPenalty());
+                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model),
+                        params.getComplexityPenalty());
                 fgs = new Fgs(gesScore);
                 fgs.setKnowledge(getParams().getKnowledge());
                 fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
@@ -343,7 +341,8 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model,
+                    params.getComplexityPenalty());
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
             fgs = new Fgs(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());

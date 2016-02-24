@@ -657,9 +657,9 @@ public final class TetradCmd {
         Fgs fgs;
 
         if (useCovariance) {
-            fgs = new Fgs(new SemBicScore(covarianceMatrix));
+            fgs = new Fgs(new SemBicScore(covarianceMatrix, penaltyDiscount));
         } else {
-            fgs = new Fgs(new SemBicScore(new CovarianceMatrixOnTheFly(data)));
+            fgs = new Fgs(new SemBicScore(new CovarianceMatrixOnTheFly(data), penaltyDiscount));
         }
 
         if (initialGraph != null) {

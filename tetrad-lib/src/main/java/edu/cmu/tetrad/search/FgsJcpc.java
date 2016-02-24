@@ -50,7 +50,7 @@ import java.util.concurrent.*;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class Fgs implements GraphSearch, GraphScorer {
+public final class FgsJcpc implements GraphSearch, GraphScorer {
 
     /**
      * Specification of forbidden and required edges.
@@ -166,7 +166,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     /**
      * The data set must either be all continuous or all discrete.
      */
-    public Fgs(DataSet dataSet) {
+    public FgsJcpc(DataSet dataSet) {
         if (verbose) {
             out.println("GES constructor");
         }
@@ -185,7 +185,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     /**
      * Continuous case--where a covariance matrix is already available.
      */
-    public Fgs(ICovarianceMatrix covMatrix) {
+    public FgsJcpc(ICovarianceMatrix covMatrix) {
         if (verbose) {
             out.println("GES constructor");
         }
@@ -199,7 +199,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
         }
     }
 
-    public Fgs(FgsScore fgsScore) {
+    public FgsJcpc(FgsScore fgsScore) {
         if (fgsScore == null) throw new NullPointerException();
         setFgsScore(fgsScore);
         this.graph = new EdgeListGraphSingleConnections(getVariables());

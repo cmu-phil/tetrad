@@ -136,7 +136,7 @@ public final class IndTestDirichletScore implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        double v = -this.score.localScoreDiff(variables.indexOf(y), varIndices(z), variables.indexOf(x));
+        double v = -this.score.localScoreDiff(variables.indexOf(x), variables.indexOf(y), varIndices(z));
         this.bump = v;
         return v > 0;
     }

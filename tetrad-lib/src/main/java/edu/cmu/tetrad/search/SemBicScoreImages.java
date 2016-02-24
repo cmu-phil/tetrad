@@ -25,16 +25,13 @@ import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.stat.correlation.CovarianceMatrix;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -50,7 +47,6 @@ public class SemBicScoreImages implements ISemBicScore {
     // The variables of the covariance matrix.
     private List<Node> variables;
 
-    // The sample size of the covariance matrix.
     private int sampleSize;
 
     // The penalty penaltyDiscount.
@@ -84,9 +80,9 @@ public class SemBicScoreImages implements ISemBicScore {
                     throw new IllegalArgumentException("Datasets must be continuous.");
                 }
 
-                semBicScores.add(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)));
+                semBicScores.add(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet), penaltyDiscount));
             } else if (model instanceof ICovarianceMatrix) {
-                semBicScores.add(new SemBicScore((ICovarianceMatrix) model));
+                semBicScores.add(new SemBicScore((ICovarianceMatrix) model, penaltyDiscount));
             } else {
                 throw new IllegalArgumentException("Only continuous data sets and covariance matrices may be used as input.");
             }
@@ -100,15 +96,16 @@ public class SemBicScoreImages implements ISemBicScore {
 
         this.semBicScores = semBicScores;
         this.variables = variables;
+        this.sampleSize = semBicScores.get(0).getSampleSize();
     }
 
 
     @Override
-    public double localScoreDiff(int i, int[] parents, int extra) {
+    public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
 
         for (SemBicScore score : semBicScores) {
-            sum += score.localScoreDiff(i, parents, extra);
+            sum += score.localScoreDiff(x, y, z);
         }
 
         return sum / semBicScores.size();
@@ -209,6 +206,21 @@ public class SemBicScoreImages implements ISemBicScore {
     @Override
     public boolean isDiscrete() {
         return false;
+    }
+
+    @Override
+    public double getParameter1() {
+        return penaltyDiscount;
+    }
+
+    @Override
+    public void setParameter1(double alpha) {
+        this.penaltyDiscount = alpha;
+    }
+
+    @Override
+    public int getSampleSize() {
+        return sampleSize;
     }
 
     // Calculates the BIC score.

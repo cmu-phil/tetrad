@@ -165,10 +165,10 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 ////                    bpc = new FindOneFactorClusters(
 ////                            (DataSet) source,
 ////                            tetradTestType,
-////                            getParams().getAlpha());
+////                            getParams().getParameter1());
 ////                } else {
 ////                    bpc = new FindOneFactorClusters((ICovarianceMatrix) source,
-////                            tetradTestType, getParams().getAlpha());
+////                            tetradTestType, getParams().getParameter1());
 ////                }
 ////
 ////                searchGraph = bpc.search();
@@ -181,17 +181,17 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //                    bpc = new FindOneFactorClusters2(
 //                            (DataSet) source,
 //                            tetradTestType, sag,
-//                            getParams().getAlpha());
+//                            getParams().getParameter1());
 //
 ////                    bpc = new FindTwoFactorClusters4(
 ////                            (DataSet) source,
-////                            getParams().getAlpha());
+////                            getParams().getParameter1());
 //                } else {
 //                    bpc = new FindOneFactorClusters2((ICovarianceMatrix) source,
-//                            tetradTestType, sag, getParams().getAlpha());
+//                            tetradTestType, sag, getParams().getParameter1());
 ////
 ////                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
-////                            getParams().getAlpha());
+////                            getParams().getParameter1());
 //                }
 //
 //                searchGraph = bpc.search();
@@ -205,17 +205,17 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //                    bpc = new FindTwoFactorClusters2(
 //                            (DataSet) source,
 //                            tetradTestType,
-//                            getParams().getAlpha());
+//                            getParams().getParameter1());
 //
 ////                    bpc = new FindTwoFactorClusters4(
 ////                            (DataSet) source,
-////                            getParams().getAlpha());
+////                            getParams().getParameter1());
 //                } else {
 //                    bpc = new FindTwoFactorClusters2((ICovarianceMatrix) source,
-//                            tetradTestType, getParams().getAlpha());
+//                            tetradTestType, getParams().getParameter1());
 ////
 ////                    bpc = new FindTwoFactorClusters4((ICovarianceMatrix) source,
-////                            getParams().getAlpha());
+////                            getParams().getParameter1());
 //                }
 //
 //                searchGraph = bpc.search();

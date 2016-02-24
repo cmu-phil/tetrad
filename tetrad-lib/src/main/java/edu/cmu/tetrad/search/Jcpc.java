@@ -28,10 +28,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implements the JCPC algorithm.
@@ -41,6 +38,7 @@ import java.util.Set;
 public class Jcpc implements GraphSearch {
     private int numAdded;
     private int numRemoved;
+    private Map<Node, Set<Node>> adjacents = new HashMap();
 
     public enum PathBlockingSet {
         LARGE, SMALL
@@ -188,19 +186,20 @@ public class Jcpc implements GraphSearch {
 
         Graph graph;
 
-        if (startFromEmptyGraph) {
+//        if (true) {
             graph = new EdgeListGraph(test.getVariables());
-        } else {
-            if (initialGraph != null) {
-                graph = initialGraph;
-            } else {
-                Cpc search = new Cpc(test);
-                search.setKnowledge(getKnowledge());
-                search.setDepth(getCpcDepth());
-                search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-                graph = search.search();
-            }
-        }
+//        } else {
+//            if (initialGraph != null) {
+//                graph = initialGraph;
+//            }
+//            else {
+//                Cpc search = new Cpc(test);
+//                search.setKnowledge(getKnowledge());
+//                search.setDepth(getCpcDepth());
+//                search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+//                graph = search.search();
+//            }
+//        }
 
 //        undirectedGraph(graph);
 
@@ -212,80 +211,141 @@ public class Jcpc implements GraphSearch {
         int minNumErrors = Integer.MAX_VALUE;
         Graph outGraph = null;
 
-        LOOP:
-        while (++count < getMaxIterations()) {
-            log("info", "Round = " + (count + 1));
-            numAdded = 0;
-            numRemoved = 0;
-            int index = 0;
+        int numEdges = nodes.size() * (nodes.size() - 1) / 2;
+        int index = 0;
 
-            int indexBackwards = 0;
-            int numEdgesBackwards = graph.getNumEdges();
 
-            int numEdges = nodes.size() * (nodes.size() - 1) / 2;
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                ++index;
 
-            for (int i = 0; i < nodes.size(); i++) {
-                for (int j = i + 1; j < nodes.size(); j++) {
-                    index++;
-
-                    if (index % 10000 == 0) {
-                        log("info", index + " of " + numEdges);
-                    }
-
-                    tryAddingEdge(test, graph, nodes, graph, i, j);
-
-                    Node x = nodes.get(i);
-                    Node y = nodes.get(j);
-
-                    if (graph.getAdjacentNodes(x).size() > getSoftmaxAdjacencies()) {
-                        for (Node w : graph.getAdjacentNodes(x)) {
-                            if (w == y) continue;
-                            tryRemovingEdge(test, graph, graph, graph.getEdge(x, w));
-                        }
-                    }
-
-                    if (graph.getAdjacentNodes(y).size() > getSoftmaxAdjacencies()) {
-                        for (Node w : graph.getAdjacentNodes(y)) {
-                            if (w == x) continue;
-                            tryRemovingEdge(test, graph, graph, graph.getEdge(y, w));
-                        }
-                    }
+                if (index % 100 == 0) {
+                    log("info", index + " of " + numEdges);
                 }
-            }
 
-            if (getSoftmaxAdjacencies() > 0) {
-                for (Edge edge : graph.getEdges()) {
-                    if (++indexBackwards % 10000 == 0) {
-                        log("info", index + " of " + numEdgesBackwards);
-                    }
+                tryAddingEdge(test, graph, nodes, graph, i, j);
 
-                    tryRemovingEdge(test, graph, graph, edge);
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                for (Node w : graph.getAdjacentNodes(x)) {
+                    tryRemovingEdge(test, graph, graph, graph.getEdge(w, x));
                 }
-            }
 
-            log("info", "Num added = " + numAdded);
-            log("info", "Num removed = " + numRemoved);
-
-            int numErrors = numAdded + numRemoved;
-
-            // Keep track of the last graph with the fewest changes; this is returned.
-            final EdgeListGraph graph1 = new EdgeListGraph(graph);
-
-            if (numErrors <= minNumErrors) {
-                minNumErrors = numErrors;
-                outGraph = graph1;
-            }
-
-            orientCpc(graph, getKnowledge(), getOrientationDepth(), test);
-            graphs.add(graph1);
-
-            for (int i = graphs.size() - 2; i >= 0; i--) {
-                if (graphs.get(graphs.size() - 1).equals(graphs.get(i))) {
-                    outGraph = graph1;
-                    break LOOP;
+                for (Node w : graph.getAdjacentNodes(y)) {
+                    tryRemovingEdge(test, graph, graph, graph.getEdge(w, y));
                 }
+//
+//                if (edge != null) {
+////                    Set<Node> addedEdges = new HashSet<>();
+////                    addedEdges.add(edge);
+//
+//                    Set<Node> visited = reapplyOrientation(x, y, null, graph);
+//                    Set<Node> toProcess = new HashSet<>();
+//
+//                    for (Node node : visited) {
+//                        final Set<Node> neighbors = new HashSet<>(graph.getAdjacentNodes(node));
+//                        final Set<Node> storedNeighbors = this.adjacents.get(node);
+//
+//                        if (!(neighbors.equals(storedNeighbors))) {
+//                            toProcess.add(node);
+//                        }
+//                    }
+//
+//                    toProcess.add(x);
+//                    toProcess.add(y);
+//                }
             }
         }
+
+        index = 0;
+
+        for (Edge edge : graph.getEdges()) {
+            ++index;
+
+            if (index % 10 == 0) {
+                log("info", "Backwards " + index + " of " + numEdges);
+            }
+
+            tryRemovingEdge(test, graph, graph, edge);
+        }
+
+
+
+//        toProcess.add(x);
+//        toProcess.add(y);
+//        LOOP:
+//        while (++count < getMaxIterations()) {
+//            log("info", "Round = " + (count + 1));
+//            numAdded = 0;
+//            numRemoved = 0;
+//            index = 0;
+//
+//            int indexBackwards = 0;
+//            int numEdgesBackwards = graph.getNumEdges();
+//
+//            for (Edge edge : toProcess) {
+//                index++;
+//
+//                if (index % 10000 == 0) {
+//                    log("info", index + " of " + numEdges);
+//                }
+//
+//                tryAddingEdge(test, graph, nodes, graph, i, j);
+//
+//                Node x = nodes.get(i);
+//                Node y = nodes.get(j);
+//
+//                if (graph.getAdjacentNodes(x).size() > getSoftmaxAdjacencies()) {
+//                    for (Node w : graph.getAdjacentNodes(x)) {
+//                        if (w == y) continue;
+//                        tryRemovingEdge(test, graph, graph, graph.getEdge(x, w));
+//                    }
+//                }
+//
+//                if (graph.getAdjacentNodes(y).size() > getSoftmaxAdjacencies()) {
+//                    for (Node w : graph.getAdjacentNodes(y)) {
+//                        if (w == x) continue;
+//                        tryRemovingEdge(test, graph, graph, graph.getEdge(y, w));
+//                    }
+//                }
+//            }
+//
+//            if (getSoftmaxAdjacencies() > 0) {
+//                for (Edge edge : graph.getEdges()) {
+//                    if (++indexBackwards % 10000 == 0) {
+//                        log("info", index + " of " + numEdgesBackwards);
+//                    }
+//
+//                    tryRemovingEdge(test, graph, graph, edge);
+//                }
+//            }
+
+//            log("info", "Num added = " + numAdded);
+//            log("info", "Num removed = " + numRemoved);
+//
+//            int numErrors = numAdded + numRemoved;
+//
+//            // Keep track of the last graph with the fewest changes; this is returned.
+//            final EdgeListGraph graph1 = new EdgeListGraph(graph);
+//
+//            if (numErrors <= minNumErrors) {
+//                minNumErrors = numErrors;
+//                outGraph = graph1;
+//            }
+//
+//            orientCpc(graph, getKnowledge(), getOrientationDepth(), test);
+//            graphs.add(graph1);
+//
+//            for (int i = graphs.size() - 2; i >= 0; i--) {
+//                if (graphs.get(graphs.size() - 1).equals(graphs.get(i))) {
+//                    outGraph = graph1;
+//                    break LOOP;
+//                }
+//            }
+//        }
+
+        outGraph = graph;
 
         this.logger.log("graph", "\nReturning this graph: " + graph);
 
@@ -304,12 +364,33 @@ public class Jcpc implements GraphSearch {
         }
     }
 
-    private void tryAddingEdge(IndependenceTest test, Graph graph, List<Node> _changedNodes, Graph oldGraph, int i, int j) {
+    private Set<Node> reapplyOrientation(Node x, Node y, Set<Node> newArrows, Graph graph) {
+        Set<Node> toProcess = new HashSet<>();
+        toProcess.add(x);
+        toProcess.add(y);
+
+        if (newArrows != null) {
+            toProcess.addAll(newArrows);
+        }
+
+        return meekOrientRestricted(new ArrayList<>(toProcess), getKnowledge(), graph);
+    }
+
+    // Runs Meek rules on just the changed adj.
+    private Set<Node> meekOrientRestricted(List<Node> nodes, IKnowledge knowledge, Graph graph) {
+        MeekRules rules = new MeekRules();
+        rules.setKnowledge(knowledge);
+        rules.setUndirectUnforcedEdges(true);
+        rules.orientImplied(graph, nodes);
+        return rules.getVisited();
+    }
+
+    private Edge tryAddingEdge(IndependenceTest test, Graph graph, List<Node> _changedNodes, Graph oldGraph, int i, int j) {
         Node x = _changedNodes.get(i);
         Node y = _changedNodes.get(j);
 
         if (graph.isAdjacentTo(x, y)) {
-            return;
+            return null;
         }
 
         List<Node> sepsetX, sepsetY;
@@ -338,15 +419,19 @@ public class Jcpc implements GraphSearch {
 
         if (!existsSepset) {
             if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
-                return;
+                return null;
             }
 
-            graph.addUndirectedEdge(x, y);
+            Edge edge = Edges.undirectedEdge(x, y);
+            graph.addEdge(edge);
             numAdded++;
+            return edge;
         }
+
+        return null;
     }
 
-    private void tryRemovingEdge(IndependenceTest test, Graph graph, Graph oldGraph, Edge edge) {
+    private Edge tryRemovingEdge(IndependenceTest test, Graph graph, Graph oldGraph, Edge edge) {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
 
@@ -375,12 +460,15 @@ public class Jcpc implements GraphSearch {
 
         if (existsSepset) {
             if (!getKnowledge().noEdgeRequired(x.getName(), y.getName())) {
-                return;
+                return null;
             }
 
-            graph.removeEdges(edge.getNode1(), edge.getNode2());
+            graph.removeEdges(x, y);
             numRemoved++;
+            return Edges.undirectedEdge(x, y);
         }
+
+        return null;
     }
 
     //================================PRIVATE METHODS=======================//

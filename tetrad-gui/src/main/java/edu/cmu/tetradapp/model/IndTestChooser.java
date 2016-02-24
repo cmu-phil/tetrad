@@ -71,9 +71,9 @@ public final class IndTestChooser {
 
             return getMultiContinuousTest(_dataSets, params, testType);
 
-//            return new IndTestFisherZConcatenateResiduals(_dataSets, params.getIndTestParams().getAlpha());
+//            return new IndTestFisherZConcatenateResiduals(_dataSets, params.getIndTestParams().getParameter1());
 
-//            return getMultiContinuousTest(_dataSets, params.getIndTestParams().getAlpha());
+//            return getMultiContinuousTest(_dataSets, params.getIndTestParams().getParameter1());
         }
 
         if (dataSource instanceof DataSet) {
@@ -157,7 +157,7 @@ public final class IndTestChooser {
 
 //        if (IndTestType.CORRELATION_T == testType) {
 ////            return new ProbabilisticIndependence(dataSet);
-//            return new IndTestCorrelationT(dataSet, indTestParams.getAlpha());
+//            return new IndTestCorrelationT(dataSet, indTestParams.getParameter1());
 //        }
         if (IndTestType.CONDITIONAL_CORRELATION == testType) {
             return new IndTestConditionalCorrelation(dataSet, indTestParams.getAlpha());
@@ -172,12 +172,14 @@ public final class IndTestChooser {
             return new IndTestFisherZBootstrap(dataSet, indTestParams.getAlpha(), 15, dataSet.getNumRows());
         }
         if (IndTestType.LINEAR_REGRESSION == testType) {
-//            return new IndTestBicBump(dataSet, indTestParams.getAlpha() * 100);
+//            return new IndTestBicBump(dataSet, indTestParams.getParameter1() * 100);
             return new IndTestLaggedRegression(dataSet,
                     indTestParams.getAlpha(), 1);
         }
         if (IndTestType.BIC_BUMP == testType) {
-            return new IndTestBicBump(dataSet, indTestParams.getAlpha());
+//            return new IndTestBicBump(new CovarianceMatrixOnTheFly(dataSet), indTestParams.getParameter1());
+            return new ScoreIndependenceTest(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)),
+                    indTestParams.getAlpha());
         }
 
         {
@@ -189,9 +191,9 @@ public final class IndTestChooser {
     private IndependenceTest getMultiContinuousTest(List<DataSet> dataSets,
                                                     SearchParams params, IndTestType testType) {
         if (IndTestType.POOL_RESIDUALS_FISHER_Z == testType) {
-//            return new IndTestFisherZConcatenateResiduals(dataSets, params.getIndTestParams().getAlpha());
+//            return new IndTestFisherZConcatenateResiduals(dataSets, params.getIndTestParams().getParameter1());
             return new IndTestFisherZPercentIndependent(dataSets, params.getIndTestParams().getAlpha());
-//            return new IndTestFisherZConcatenateResiduals3(dataSets, params.getIndTestParams().getAlpha());
+//            return new IndTestFisherZConcatenateResiduals3(dataSets, params.getIndTestParams().getParameter1());
         } else if (IndTestType.TIPPETT == testType) {
             List<IndependenceTest> independenceTests = new ArrayList<IndependenceTest>();
             for (DataModel dataModel : dataSets) {
@@ -204,7 +206,7 @@ public final class IndTestChooser {
 //            List<IndependenceTest> independenceTests = new ArrayList<IndependenceTest>();
 //            for (DataModel dataModel : dataSets) {
 //                DataSet dataSet = (DataSet) dataModel;
-//                independenceTests.add(new IndTestFisherZ(dataSet, params.getIndTestParams().getAlpha()));
+//                independenceTests.add(new IndTestFisherZ(dataSet, params.getIndTestParams().getParameter1()));
 //            }
 //
 //            return new IndTestMulti(independenceTests, ResolveSepsets.Method.fisher2);
@@ -246,7 +248,7 @@ public final class IndTestChooser {
                                               SearchParams params, IndTestType testType) {
 //        if (IndTestType.CORRELATION_T == testType) {
 //            return new IndTestCorrelationT(covMatrix,
-//                    params.getIndTestParams().getAlpha());
+//                    params.getIndTestParams().getParameter1());
 //        }
 //        if (IndTestType.FISHER_Z == testType) {
         return new IndTestFisherZ(covMatrix,
@@ -254,7 +256,7 @@ public final class IndTestChooser {
 //        }
 //        else {
 //            params.setIndTestType(IndTestType.CORRELATION_T);
-//            return new IndTestCorrelationT(covMatrix, params.getIndTestParams().getAlpha());
+//            return new IndTestCorrelationT(covMatrix, params.getIndTestParams().getParameter1());
 //        }
     }
 
@@ -262,16 +264,16 @@ public final class IndTestChooser {
 //            SearchParams params, IndTestType testType) {
 //        if (IndTestType.CORRELATION_T == testType) {
 //            return new IndTestCramerT(covMatrix,
-//                    params.getIndTestParams().getAlpha());
+//                    params.getIndTestParams().getParameter1());
 //        }
 //        if (IndTestType.FISHER_Z == testType) {
 //            return new IndTestFisherZ(covMatrix,
-//                    params.getIndTestParams().getAlpha());
+//                    params.getIndTestParams().getParameter1());
 //        }
 //        else {
 //            params.setIndTestType(IndTestType.CORRELATION_T);
 //            return new IndTestCramerT(covMatrix,
-//                    params.getIndTestParams().getAlpha());
+//                    params.getIndTestParams().getParameter1());
 //        }
 //    }
 

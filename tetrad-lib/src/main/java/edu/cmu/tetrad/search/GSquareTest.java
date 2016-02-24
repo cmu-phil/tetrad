@@ -320,14 +320,14 @@ public final class GSquareTest extends ChiSquareTest {
 //    /**
 //     * @return the getModel significance level being used for tests.
 //     */
-//    public double getAlpha() {
+//    public double getParameter1() {
 //        return this.alpha;
 //    }
 
 //    /**
 //     * Sets the significance level to be used for tests.
 //     */
-//    public void setAlpha(double alpha) {
+//    public void setParameter1(double alpha) {
 //        this.alpha = alpha;
 //    }
 

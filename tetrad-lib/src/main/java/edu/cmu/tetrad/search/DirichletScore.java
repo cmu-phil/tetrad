@@ -182,8 +182,8 @@ public class DirichletScore implements LocalDiscreteScore, FgsScore {
     }
 
     @Override
-    public double localScoreDiff(int i, int[] parents, int extra) {
-        return localScore(i, append(parents, extra)) - localScore(i, parents);
+    public double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     int[] append(int[] parents, int extra) {
@@ -298,6 +298,16 @@ public class DirichletScore implements LocalDiscreteScore, FgsScore {
     @Override
     public boolean isDiscrete() {
         return true;
+    }
+
+    @Override
+    public double getParameter1() {
+        return 0;
+    }
+
+    @Override
+    public void setParameter1(double alpha) {
+
     }
 
     @Override

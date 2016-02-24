@@ -94,7 +94,7 @@ public final class IndTestType implements TetradSerializable {
     private static int nextOrdinal = 0;
     private final int ordinal = nextOrdinal++;
     private static final IndTestType[] TYPES = {DEFAULT, CORRELATION_T, FISHER_Z,
-            LINEAR_REGRESSION, CONDITIONAL_CORRELATION, LOGISTIC_REGRESSION,
+            LINEAR_REGRESSION, CONDITIONAL_CORRELATION, BIC_BUMP, LOGISTIC_REGRESSION,
             MULTINOMIAL_LOGISTIC_REGRESSION, FISHER_ZD,
             FISHER_Z_BOOTSTRAP,
             G_SQUARE, CHI_SQUARE,

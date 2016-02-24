@@ -2067,8 +2067,8 @@ public final class BuildPureClusters {
             }
         }*/
 
-        //double oldSig = this.tetradTest.getAlpha();
-        //this.tetradTest.setAlpha(oldSig / 3.);
+        //double oldSig = this.tetradTest.getParameter1();
+        //this.tetradTest.setParameter1(oldSig / 3.);
 
 //        print(">> Stage 0");
 //        print(
@@ -2374,7 +2374,7 @@ public final class BuildPureClusters {
         }
 //        printlnMessage();
 
-        //this.tetradTest.setAlpha(oldSig);
+        //this.tetradTest.setParameter1(oldSig);
 
         return finalPureModel;
     }

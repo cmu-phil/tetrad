@@ -141,7 +141,7 @@ public final class IndTestRegression implements IndependenceTest {
 //        CorrelationMatrix newCorrMatrix = new CorrelationMatrix(vars, m,
 //                sampleSize);
 //
-//        double alphaNew = getAlpha();
+//        double alphaNew = getParameter1();
 //        IndependenceTest newIndTest = new IndTestCramerT(newCorrMatrix,
 //                alphaNew);
 //        return newIndTest;

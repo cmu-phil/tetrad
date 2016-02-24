@@ -31,7 +31,7 @@ import java.util.List;
 public interface FgsScore {
     double localScore(int node, int parents[]);
 
-    double localScoreDiff(int i, int[] parents, int extra);
+    double localScoreDiff(int x, int y, int[] z);
 
     double localScore(int node, int parent);
 
@@ -42,5 +42,11 @@ public interface FgsScore {
     boolean isEffectEdge(double bump);
 
     boolean isDiscrete();
+
+    double getParameter1();
+
+    void setParameter1(double alpha);
+
+    int getSampleSize();
 }
 
