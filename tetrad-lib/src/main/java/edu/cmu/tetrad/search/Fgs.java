@@ -126,6 +126,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
     // A utility map to help with orientation.
     private Map<Node, Set<Node>> neighbors = null;
+    private Map<NodePair, Set<Node>> tNeighbors = null;
+    private Map<NodePair, Set<Node>> naYX = null;
 
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
@@ -610,6 +612,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
+        tNeighbors = new ConcurrentHashMap<>();
+        naYX = new ConcurrentHashMap<>();
 
         // This takes most of the time and calculates all of the effect edges if faithfulness is assumed.
         sortUnconditionedEdges(getVariables());
@@ -642,6 +646,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
             boolean inserted = insert(x, y, T, bump);
             if (!inserted) continue;
+
+            this.tNeighbors.put(new NodePair(x, y), new HashSet<>(getTNeighbors(x, y)));
+            this.naYX.put(new NodePair(x, y), arrow.getNaYX());
 
             score += bump;
 
@@ -867,6 +874,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
         List<Node> TNeighbors = getTNeighbors(a, b);
 
         final int _depth = Math.min(TNeighbors.size(), depth == -1 ? 1000 : depth);
+        Set<Node> oldNayx = this.naYX.get(new NodePair(a, b));
+        Set<Node> oldTNeighbors = this.tNeighbors.get(new NodePair(a, b));
 
         for (int i = 0; i <= _depth; i++) {
             final ChoiceGenerator gen = new ChoiceGenerator(TNeighbors.size(), i);
@@ -878,6 +887,13 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                 Set<Node> union = new HashSet<>(naYX);
                 union.addAll(T);
+
+                // Combinations just involving the old TNeighbors can be skipped.
+                // The old NaYX has to be the same.
+
+                if (oldNayx != null && oldTNeighbors != null && oldNayx.equals(naYX) && oldTNeighbors.containsAll(T)) {
+                    continue;
+                }
 
                 if (!isClique(union)) continue;
                 found = true;

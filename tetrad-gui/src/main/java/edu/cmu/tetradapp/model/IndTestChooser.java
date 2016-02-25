@@ -178,7 +178,7 @@ public final class IndTestChooser {
         }
         if (IndTestType.BIC_BUMP == testType) {
 //            return new IndTestBicBump(new CovarianceMatrixOnTheFly(dataSet), indTestParams.getParameter1());
-            return new ScoreIndependenceTest(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)),
+            return new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)),
                     indTestParams.getAlpha());
         }
 
@@ -221,7 +221,7 @@ public final class IndTestChooser {
 //            return new IndTestBicBump(new CovarianceMatrixOnTheFly(dataSet), indTestParams.getParameter1());
             List<DataModel> dataModels = new ArrayList<>();
             for (DataSet dataSet : dataSets) dataModels.add(dataSet);
-            return new ScoreIndependenceTest(new SemBicScoreImages(dataModels), params.getIndTestParams().getAlpha());
+            return new IndTestScore(new SemBicScoreImages(dataModels), params.getIndTestParams().getAlpha());
         }
 
         {

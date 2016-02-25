@@ -39,14 +39,14 @@ import java.util.List;
  * @author Don Crimbchin (djc2@andrew.cmu.edu)
  * @author Joseph Ramsey
  */
-public class ScoreIndependenceTest implements IndependenceTest {
+public class IndTestScore implements IndependenceTest {
 
     private final FgsScore score;
     private final List<Node> variables;
     private final HashMap<Node, Integer> variablesHash;
     private double bump = Double.NaN;
 
-    public ScoreIndependenceTest(FgsScore score, double parameter1) {
+    public IndTestScore(FgsScore score, double parameter1) {
         if (score == null) throw new NullPointerException();
         this.score = score;
         this.variables = score.getVariables();
@@ -62,7 +62,7 @@ public class ScoreIndependenceTest implements IndependenceTest {
     /**
      * @return an Independence test for a subset of the variables.
      */
-    public ScoreIndependenceTest indTestSubset(List<Node> vars) {
+    public IndTestScore indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
