@@ -194,7 +194,9 @@ public final class IndTestChooser {
 //            return new IndTestFisherZConcatenateResiduals(dataSets, params.getIndTestParams().getParameter1());
             return new IndTestFisherZPercentIndependent(dataSets, params.getIndTestParams().getAlpha());
 //            return new IndTestFisherZConcatenateResiduals3(dataSets, params.getIndTestParams().getParameter1());
-        } else if (IndTestType.TIPPETT == testType) {
+        }
+
+        if (IndTestType.TIPPETT == testType) {
             List<IndependenceTest> independenceTests = new ArrayList<IndependenceTest>();
             for (DataModel dataModel : dataSets) {
                 DataSet dataSet = (DataSet) dataModel;
@@ -202,7 +204,9 @@ public final class IndTestChooser {
             }
 
             return new IndTestMulti(independenceTests, ResolveSepsets.Method.tippett);
-        } else if (IndTestType.FISHER == testType) {
+        }
+
+        if (IndTestType.FISHER == testType) {
 //            List<IndependenceTest> independenceTests = new ArrayList<IndependenceTest>();
 //            for (DataModel dataModel : dataSets) {
 //                DataSet dataSet = (DataSet) dataModel;
@@ -211,7 +215,16 @@ public final class IndTestChooser {
 //
 //            return new IndTestMulti(independenceTests, ResolveSepsets.Method.fisher2);
             return new IndTestFisherZFisherPValue(dataSets, params.getIndTestParams().getAlpha());
-        } else {
+        }
+
+        if (IndTestType.BIC_BUMP == testType) {
+//            return new IndTestBicBump(new CovarianceMatrixOnTheFly(dataSet), indTestParams.getParameter1());
+            List<DataModel> dataModels = new ArrayList<>();
+            for (DataSet dataSet : dataSets) dataModels.add(dataSet);
+            return new ScoreIndependenceTest(new SemBicScoreImages(dataModels), params.getIndTestParams().getAlpha());
+        }
+
+        {
             return new IndTestFisherZConcatenateResiduals(dataSets, params.getIndTestParams().getAlpha());
         }
     }

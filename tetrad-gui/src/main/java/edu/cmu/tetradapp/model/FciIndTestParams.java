@@ -93,9 +93,9 @@ public class FciIndTestParams implements IndTestParams {
     }
 
     public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Alpha out of range: " + alpha);
-        }
+//        if (alpha < 0.0 || alpha > 1.0) {
+//            throw new IllegalArgumentException("Alpha out of range: " + alpha);
+//        }
         this.alpha = alpha;
     }
 

@@ -161,59 +161,9 @@ public class CcdRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        if (dataModel instanceof Graph) {
-            return new IndTestDSep((Graph) dataModel);
-        }
-        else if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
-            BasicSearchParams params = (BasicSearchParams) getParams();
-            IndTestType testType = params.getIndTestType();
-            return new IndTestChooser().getTest(dataSet, params, testType);
-        }
-
-        throw new IllegalArgumentException("Expecting a graph, data set, or covariance matrix.");
-
-//        DataSet dataSet = (DataSet) dataModel;
-
-//        SingularValueDecomposition decomp = new SingularValueDecomposition(dataSet.getDoubleData().getRealMatrix());
-//        double[] singularValues = decomp.getSingularValues();
-//
-//        System.out.println();
-//
-//        for (int i = 0; i < singularValues.length; i++) {
-//            double s = singularValues[i];
-//            double eigenvalue = s * s;
-//            System.out.println(eigenvalue);
-//            if (eigenvalue >= 1) {
-//                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Eigenvalue > 1: " + eigenvalue);
-//                singularValues[i] = 0;
-//            }
-//        }
-//
-//        System.out.println(Arrays.toString(singularValues));
-//
-//        System.out.println("U = " + new TetradMatrix(decomp.getU()));
-//
-//        System.out.println("V = " + new TetradMatrix(decomp.getV()));
-//
-//        TetradVector s = new TetradVector(singularValues);
-//        RealMatrix diag = s.diag().getRealMatrix();
-//
-//        System.out.println("DIAG = " + new TetradMatrix(diag));
-//
-//        RealMatrix g = decomp.getU().multiply(diag).multiply(decomp.getV());
-//        TetradMatrix h = new TetradMatrix(g);
-//
-//        System.out.println("H = " + h);
-//
-//        DataSet dataSet2 = new BoxDataSet(new DoubleDataBox(h.toArray()), dataSet.getVariables());
-
-//        BasicSearchParams params = (BasicSearchParams) getParams();
-//        IndTestType testType = params.getIndTestType();
-//        return new IndTestChooser().getTest(dataSet, params, testType);
+        IndTestType testType = (getParams()).getIndTestType();
+        return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
-
-
 
     public Graph getGraph() {
         return getResultGraph();
