@@ -1019,7 +1019,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
                 if (bump > 0.0) {
-                    if (faithfulnessAssumed && !fgsScore.isEffectEdge(bump)) continue;
+//                    if (faithfulnessAssumed && !fgsScore.isEffectEdge(bump)) continue;
                     addArrow(a, b, naYX, T, bump);
                 }
             }
