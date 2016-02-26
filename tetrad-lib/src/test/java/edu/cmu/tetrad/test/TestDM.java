@@ -89,7 +89,8 @@ public class TestDM {
         trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X2"));
         trueGraph.addDirectedEdge(new GraphNode("L0"), new GraphNode("X3"));
 
-//        System.out.println(trueGraph);
+        System.out.println(trueGraph);
+        System.out.println(foundGraph);
 
         assertTrue(trueGraph.equals(foundGraph));
     }

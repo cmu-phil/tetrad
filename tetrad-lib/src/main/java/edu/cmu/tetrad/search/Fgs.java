@@ -232,16 +232,21 @@ public final class Fgs implements GraphSearch, GraphScorer {
     public Graph search() {
         lookupArrows = new ConcurrentHashMap<>();
         final List<Node> nodes = new ArrayList<>(variables);
-        topGraphs.clear();
+        effectEdgesGraph = new EdgeListGraphSingleConnections(getVariables());
 
         if (adjacencies != null) {
             adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
         }
 
-        // Do forward search.
         addRequiredEdges(graph);
 
-        if (graph.getEdges().isEmpty() && initialGraph != null) {
+        if (graph.getEdges().isEmpty() && initialGraph == null) {
+            graph = new EdgeListGraphSingleConnections(getVariables());
+            initializeForwardEdgesFromEmptyGraph(getVariables());
+
+            // Do forward search.
+            fes();
+        } else if (initialGraph != null){
             graph.clear();
             graph.transferNodesAndEdges(initialGraph);
             graph = new EdgeListGraphSingleConnections(initialGraph);
@@ -251,15 +256,19 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     effectEdgesGraph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
                 }
             }
+
+            initializeForwardEdgesFromExistingGraph(getVariables());
+
+            // Do forward search.
+            fes();
+        } else { // If required knowledge was provided.
+            initializeForwardEdgesFromExistingGraph(getVariables());
+
+            // Do forward search.
+            fes();
         }
 
-        // Do forward search. If the initial graph is non-null or the graph has required edges
-        // in it, initialize from the graph as a starting point.
-        if (graph.getEdges().isEmpty()) {
-            fes(true);
-        } else {
-            fes(false);
-        }
+        topGraphs.clear();
 
         long start = System.currentTimeMillis();
         score = 0.0;
@@ -610,17 +619,116 @@ public final class Fgs implements GraphSearch, GraphScorer {
         this.effectEdgesGraph = effectEdgesGraph;
     }
 
+    // Initiaizes the sorted arrows lists for the forward search from an existing graph
+    private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
+        sortedArrows = new ConcurrentSkipListSet<>();
+        lookupArrows = new ConcurrentHashMap<>();
+        neighbors = new ConcurrentHashMap<>();
+
+        long start = System.currentTimeMillis();
+//        final Graph effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
+        final Set<Node> emptySet = new HashSet<>(0);
+
+        final int[] count = new int[1];
+
+        class EffectTask extends RecursiveTask<Boolean> {
+            private int chunk;
+            private int from;
+            private int to;
+
+            public EffectTask(int chunk, int from, int to) {
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
+            }
+
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int i = from; i < to; i++) {
+                        if (verbose) {
+                            synchronized (count) {
+                                if (((count[0]++) + 1) % 1000 == 0)
+                                    out.println("Initializing effect edges: " + count[0]);
+                            }
+                        }
+
+                        Node y = nodes.get(i);
+                        neighbors.put(y, getNeighbors(y));
+
+                        for (int j = i + 1; j < nodes.size(); j++) {
+                            if (i == j) continue;
+                            Node x = nodes.get(j);
+
+                            if (existsKnowledge()) {
+                                if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
+                                    continue;
+                                }
+
+                                if (!validSetByKnowledge(y, emptySet)) {
+                                    continue;
+                                }
+                            }
+
+                            if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+                                continue;
+                            }
+
+//                            int _x = hashIndices.get(x);
+//                            int _y = hashIndices.get(y);
+
+                            calculateArrowsForward(x, y);
+                            calculateArrowsForward(y, x);
+
+//                            double bump = fgsScore.localScoreDiff(_x, _y, new int[]{});
+//
+//                            if (isFaithfulnessAssumed() && fgsScore.isEffectEdge(bump)) {
+//                                final Edge edge = Edges.undirectedEdge(x, y);
+//                                if (boundGraph != null && !boundGraph.isAdjacentTo(edge.getNode1(), edge.getNode2()))
+//                                    continue;
+//                                effectEdgesGraph.addEdge(edge);
+//                            }
+//
+//                            if (bump > 0.0) {
+//                                addArrow(x, y, emptySet, emptySet, bump);
+//                                addArrow(y, x, emptySet, emptySet, bump);
+//                            }
+                        }
+                    }
+
+                    return true;
+                } else {
+                    int mid = (to - from) / 2;
+
+                    List<EffectTask> tasks = new ArrayList<>();
+
+                    tasks.add(new EffectTask(chunk, from, from + mid));
+                    tasks.add(new EffectTask(chunk, from + mid, to));
+
+                    invokeAll(tasks);
+
+                    return true;
+                }
+            }
+        }
+
+        buildIndexing(nodes);
+        pool.invoke(new EffectTask(minChunk, 0, nodes.size()));
+
+        long stop = System.currentTimeMillis();
+
+        if (verbose) {
+            out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
+        }
+
+        this.effectEdgesGraph = effectEdgesGraph;
+    }
+
     /**
      * Forward equivalence search.
      */
-    private void fes(boolean fromEmptyGraph) {
+    private void fes() {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
-
-        if (fromEmptyGraph) {
-            initializeForwardEdgesFromEmptyGraph(getVariables());
-        } else {
-            initializeForwardEdgesFromExistingGraph(getVariables());
-        }
 
         while (!sortedArrows.isEmpty()) {
             Arrow arrow = sortedArrows.first();
@@ -763,109 +871,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
         return !knowledge.isEmpty();
     }
 
-    // Initiaizes the sorted arrows lists for the forward search from an existing graph
-    private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
-        sortedArrows = new ConcurrentSkipListSet<>();
-        lookupArrows = new ConcurrentHashMap<>();
-        neighbors = new ConcurrentHashMap<>();
-
-        long start = System.currentTimeMillis();
-        final Graph effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
-        final Set<Node> emptySet = new HashSet<>(0);
-
-        final int[] count = new int[1];
-
-        class EffectTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-
-            public EffectTask(int chunk, int from, int to) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        if (verbose) {
-                            synchronized (count) {
-                                if (((count[0]++) + 1) % 1000 == 0)
-                                    out.println("Initializing effect edges: " + count[0]);
-                            }
-                        }
-
-                        Node y = nodes.get(i);
-                        neighbors.put(y, getNeighbors(y));
-
-                        for (int j = i + 1; j < nodes.size(); j++) {
-                            if (i == j) continue;
-                            Node x = nodes.get(j);
-
-                            if (existsKnowledge()) {
-                                if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
-                                    continue;
-                                }
-
-                                if (!validSetByKnowledge(y, emptySet)) {
-                                    continue;
-                                }
-                            }
-
-                            if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
-                                continue;
-                            }
-
-//                            int _x = hashIndices.get(x);
-//                            int _y = hashIndices.get(y);
-
-                            calculateArrowsForward(x, y);
-
-//                            double bump = fgsScore.localScoreDiff(_x, _y, new int[]{});
-//
-//                            if (isFaithfulnessAssumed() && fgsScore.isEffectEdge(bump)) {
-//                                final Edge edge = Edges.undirectedEdge(x, y);
-//                                if (boundGraph != null && !boundGraph.isAdjacentTo(edge.getNode1(), edge.getNode2()))
-//                                    continue;
-//                                effectEdgesGraph.addEdge(edge);
-//                            }
-//
-//                            if (bump > 0.0) {
-//                                addArrow(x, y, emptySet, emptySet, bump);
-//                                addArrow(y, x, emptySet, emptySet, bump);
-//                            }
-                        }
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to - from) / 2;
-
-                    List<EffectTask> tasks = new ArrayList<>();
-
-                    tasks.add(new EffectTask(chunk, from, from + mid));
-                    tasks.add(new EffectTask(chunk, from + mid, to));
-
-                    invokeAll(tasks);
-
-                    return true;
-                }
-            }
-        }
-
-        buildIndexing(nodes);
-        pool.invoke(new EffectTask(minChunk, 0, nodes.size()));
-
-        long stop = System.currentTimeMillis();
-
-        if (verbose) {
-            out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
-        }
-
-        this.effectEdgesGraph = effectEdgesGraph;
-    }
 
     // Initiaizes the sorted arrows lists for the backward search.
     private void initializeArrowsBackward() {
