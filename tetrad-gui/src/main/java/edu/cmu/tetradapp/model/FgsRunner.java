@@ -51,7 +51,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     private List<ScoredGraph> topGraphs;
     private int index;
     private transient Fgs fgs;
-    private Graph graph;
+    private Graph initialGraph;
     private Type type;
 
     //============================CONSTRUCTORS============================//
@@ -66,15 +66,15 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params) {
+    public FgsRunner(DataWrapper dataWrapper, GraphSource graph, FgsParams params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
-        this.graph = graph.getGraph();
+        this.initialGraph = graph.getGraph();
         type = computeType();
     }
 
     public FgsRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
-        this.graph = graph.getGraph();
+        this.initialGraph = graph.getGraph();
         type = computeType();
     }
 
@@ -343,12 +343,12 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             for (DataModel dataModel : list) {
                 if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
                     throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
-                            "covariance matrices, or else all discrete data sets, or else a single graph.");
+                            "covariance matrices, or else all discrete data sets, or else a single initialGraph.");
                 }
             }
 
             if (list.size() != 1) {
-                throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or graph " +
+                throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or initialGraph " +
                         "as input. For multiple data sets as input, use IMaGES.");
             }
 
@@ -385,6 +385,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             System.out.println("No viable input.");
         }
 
+        if (initialGraph != null) fgs.setInitialGraph(initialGraph);
         fgs.setKnowledge(getParams().getKnowledge());
         fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
         fgs.setVerbose(true);

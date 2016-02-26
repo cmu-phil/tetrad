@@ -90,8 +90,20 @@ public class GraphScore implements FgsScore {
         Node _y = variables.get(y);
         Node _x = variables.get(x);
         List<Node> _z = getVariableList(z);
-        double score = dag.isDSeparatedFrom(_x, _y, _z) ? -1 : 1;
-        if (score == 1) score -= Math.tanh(z.length);
+        boolean dsep = dag.isDSeparatedFrom(_x, _y, _z);
+        int count = 0;
+
+        if (!dsep) count++;
+
+        for (Node z0 : _z) {
+            if (dag.isDSeparatedFrom(_x, z0, _z)) {
+                count += 1;
+            }
+        }
+
+        double score = dsep ? -1 - count : 1 + count;
+
+//        if (score == 1) score -= Math.tanh(z.length);
         return score;
     }
 
