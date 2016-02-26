@@ -74,12 +74,39 @@ public class GraphScore implements FgsScore {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        Node _y = variables.get(y);
-        Node _x = variables.get(x);
-        List<Node> scoreParents = getVariableList(z);
-        return dag.isDSeparatedFrom(_x, _y, scoreParents) ? -1.0 : 1.0;
+        return locallyConsistentScoringCriterion(x, y, z);
+//        return aBetterScore(x, y, z);
     }
 
+    private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
+        Node _y = variables.get(y);
+        Node _x = variables.get(x);
+        List<Node> _z = getVariableList(z);
+        return dag.isDSeparatedFrom(_x, _y, _z) ? -1.0 : 1.0;
+    }
+
+    private double aBetterScore(int x, int y, int[] z) {
+        Node _y = variables.get(y);
+        Node _x = variables.get(x);
+        List<Node> _z = getVariableList(z);
+        boolean dSeparated = dag.isDSeparatedFrom(_x, _y, _z);
+
+        double score = 0.0;
+
+        for (Node z0 : _z) {
+            if (dag.isDConnectedTo(_x, z0, _z)) {
+                score += 1;
+            }
+        }
+
+        if (dSeparated) {
+            score = -1 + Math.tanh(score);
+        } else {
+            score = +1 - Math.tanh(score);
+        }
+
+        return score;
+    }
 
     int[] append(int[] parents, int extra) {
         int[] all = new int[parents.length + 1];
