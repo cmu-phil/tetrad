@@ -335,16 +335,21 @@ public final class TestGraphUtils {
             }
 
             List<Graph> autisticGraphs = new ArrayList<>();
+            double penaltyDiscount = 4;
 
             for (DataSet dataSet : autisticDataSets) {
-                Jcpc fgs = new Jcpc(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), 1));
+                Fgs fgs = new Fgs(dataSet);
+                fgs.setPenaltyDiscount(penaltyDiscount);
+//                Jcpc fgs = new Jcpc(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), 1));
                 autisticGraphs.add(GraphUtils.undirectedGraph(fgs.search()));
             }
 
             List<Graph> neurotypicalGraphs = new ArrayList<>();
 
             for (DataSet dataSet : neurotypicalDataSets) {
-                Jcpc fgs = new Jcpc(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), 1));
+                Fgs fgs = new Fgs(dataSet);
+                fgs.setPenaltyDiscount(penaltyDiscount);
+//                Jcpc fgs = new Jcpc(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), 1));
                 neurotypicalGraphs.add(GraphUtils.undirectedGraph(fgs.search()));
             }
 
