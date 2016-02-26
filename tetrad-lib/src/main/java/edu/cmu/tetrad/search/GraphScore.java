@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 
 import java.util.*;
+import java.util.stream.Collector;
 
 /**
  * Implements Chickering and Meek's (2002) locally consistent score criterion.
@@ -91,21 +92,27 @@ public class GraphScore implements FgsScore {
         List<Node> _z = getVariableList(z);
         boolean dSeparated = dag.isDSeparatedFrom(_x, _y, _z);
 
-        double score = 0.0;
+        double score = dSeparated ? -1 : +1;
+        int count = 0;
 
         for (Node z0 : _z) {
             if (dag.isDConnectedTo(_x, z0, _z)) {
-                score += 1;
+                count++;
+            }
+            else if (dag.isDSeparatedFrom(_x, z0, Collections.EMPTY_LIST)) {
+                count++;
             }
         }
 
-        if (dSeparated) {
-            score = -1 + Math.tanh(score);
-        } else {
-            score = +1 - Math.tanh(score);
-        }
+        score += Math.tanh(count);
 
         return score;
+    }
+
+    private List<Node> minus(List<Node> z, Node z0) {
+        List<Node> diff = new ArrayList<>(z);
+        diff.remove(z0);
+        return diff;
     }
 
     int[] append(int[] parents, int extra) {
