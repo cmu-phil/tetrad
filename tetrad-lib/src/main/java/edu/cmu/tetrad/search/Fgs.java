@@ -868,6 +868,10 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
         final int _depth = Math.min(TNeighbors.size(), depth == -1 ? 1000 : depth);
 
+        Set<Set<Node>> previousCliques = new HashSet<>();
+        previousCliques.add(new HashSet<Node>());
+        Set<Set<Node>> newCliques = new HashSet<>();
+
         for (int i = 0; i <= _depth; i++) {
             final ChoiceGenerator gen = new ChoiceGenerator(TNeighbors.size(), i);
             int[] choice;
@@ -879,7 +883,21 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 Set<Node> union = new HashSet<>(naYX);
                 union.addAll(T);
 
+                boolean foundAPreviousClique = false;
+
+                for (Set<Node> clique : previousCliques) {
+                    if (union.containsAll(clique)) {
+                        foundAPreviousClique = true;
+                        break;
+                    }
+                }
+
+                if (!foundAPreviousClique) {
+                    continue;
+                }
+
                 if (!isClique(union)) continue;
+                newCliques.add(union);
                 found = true;
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
@@ -890,6 +908,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
             }
 
             if (!found) break;
+            previousCliques = newCliques;
+            newCliques = new HashSet<>();
         }
     }
 

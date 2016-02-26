@@ -75,8 +75,8 @@ public class GraphScore implements FgsScore {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return locallyConsistentScoringCriterion(x, y, z);
-//        return aBetterScore(x, y, z);
+//        return locallyConsistentScoringCriterion(x, y, z);
+        return aBetterScore(x, y, z);
     }
 
     private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
@@ -92,19 +92,7 @@ public class GraphScore implements FgsScore {
         List<Node> _z = getVariableList(z);
         boolean dSeparated = dag.isDSeparatedFrom(_x, _y, _z);
 
-        double score = dSeparated ? -1 : +1;
-        int count = 0;
-
-        for (Node z0 : _z) {
-            if (dag.isDConnectedTo(_x, z0, _z)) {
-                count++;
-            }
-            else if (dag.isDSeparatedFrom(_x, z0, Collections.EMPTY_LIST)) {
-                count++;
-            }
-        }
-
-        score += Math.tanh(count);
+        double score = dSeparated ? -1 - Math.tanh(z.length) : +1 - Math.tanh(z.length);
 
         return score;
     }

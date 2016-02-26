@@ -322,10 +322,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model),
                         params.getComplexityPenalty());
                 fgs = new Fgs(gesScore);
-                fgs.setKnowledge(getParams().getKnowledge());
-                fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-                fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
-                fgs.setVerbose(true);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = ((FgsParams) getParams()).getSamplePrior();
                 double structurePrior = ((FgsParams) getParams()).getStructurePrior();
@@ -333,10 +329,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
                 fgs = new Fgs(score);
-                fgs.setVerbose(true);
-                fgs.setKnowledge(getParams().getKnowledge());
-                fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-                fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
@@ -345,10 +337,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                     params.getComplexityPenalty());
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
             fgs = new Fgs(gesScore);
-            fgs.setKnowledge(getParams().getKnowledge());
-            fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-            fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
-            fgs.setVerbose(true);
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
@@ -397,6 +385,11 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             System.out.println("No viable input.");
         }
 
+        fgs.setKnowledge(getParams().getKnowledge());
+        fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+        fgs.setVerbose(true);
+        fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+        fgs.setDepth(params.getIndTestParams().getDepth());
         Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {
