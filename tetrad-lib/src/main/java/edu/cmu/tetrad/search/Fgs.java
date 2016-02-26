@@ -872,6 +872,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
         previousCliques.add(new HashSet<Node>());
         Set<Set<Node>> newCliques = new HashSet<>();
 
+        FOR:
         for (int i = 0; i <= _depth; i++) {
             final ChoiceGenerator gen = new ChoiceGenerator(TNeighbors.size(), i);
             int[] choice;
@@ -892,7 +893,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 }
 
                 if (!foundAPreviousClique) {
-                    continue;
+                    break FOR;
                 }
 
                 if (!isClique(union)) continue;
