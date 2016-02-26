@@ -142,7 +142,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private Graph effectEdgesGraph;
 
     // The minimum number of operations to do before parallelizing.
-    private final int minChunk = 10;
+    private final int minChunk = 100;
 
     // Where printed output is sent.
     private PrintStream out = System.out;
