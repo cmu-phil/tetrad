@@ -869,7 +869,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
         final int _depth = Math.min(TNeighbors.size(), depth == -1 ? 1000 : depth);
 
         Set<Set<Node>> previousCliques = new HashSet<>();
-        previousCliques.add(new HashSet<Node>())
+        previousCliques.add(new HashSet<Node>());
         Set<Set<Node>> newCliques = new HashSet<>();
 
         for (int i = 0; i <= _depth; i++) {
