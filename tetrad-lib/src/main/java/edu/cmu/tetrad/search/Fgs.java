@@ -615,7 +615,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (verbose) {
             out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
         }
-
         this.effectEdgesGraph = effectEdgesGraph;
     }
 
@@ -659,6 +658,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                         for (int j = i + 1; j < nodes.size(); j++) {
                             if (i == j) continue;
                             Node x = nodes.get(j);
+                            if (graph.isAdjacentTo(x, y)) continue;
 
                             if (existsKnowledge()) {
                                 if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
