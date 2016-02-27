@@ -216,10 +216,10 @@ public final class MimBuildPc {
 //            ges.setKnowledge(getKnowledge());
 //            Graph newStructuralModel = ges.search();
 
-            Jpc jpc = new Jpc(new IndTestFisherZ(newCovMatrix, getAlpha()));
-            jpc.setKnowledge(getKnowledge());
-            jpc.setAggressivelyPreventCycles(true);
-            Graph newStructuralModel = jpc.search();
+            Jcpc jcpc = new Jcpc(new IndTestFisherZ(newCovMatrix, getAlpha()));
+            jcpc.setKnowledge(getKnowledge());
+            jcpc.setAggressivelyPreventCycles(true);
+            Graph newStructuralModel = jcpc.search();
 
             this.structuralModel = newStructuralModel;
 

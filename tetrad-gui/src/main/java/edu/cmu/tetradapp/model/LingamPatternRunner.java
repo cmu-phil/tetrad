@@ -104,18 +104,6 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
         this.pattern = wrapper.getGraph();
     }
 
-    public LingamPatternRunner(JpcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, params, knowledgeBoxModel);
-        this.pattern = wrapper.getGraph();
-    }
-
-    public LingamPatternRunner(JpcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
-        super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
-    }
-
     public LingamPatternRunner(JcpcRunner wrapper, DataWrapper dataWrapper,
                                PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
@@ -171,43 +159,6 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
             graph = multiLingamPattern(list, pattern);
  
-//            if (!(source instanceof DataSet)) {
-//                throw new IllegalArgumentException(
-//                        "Expecting a rectangular data set.");
-//            }
-//
-//            DataSet dataSet = (DataSet) source;
-//
-//            if (!dataSet.isContinuous()) {
-//                throw new IllegalArgumentException(
-//                        "Expecting a continuous data set.");
-//            }
-//
-//            if (pattern == null) {
-//
-//                // Cpc search = new Cpc(getIndependenceTest(),
-//                // getParams().getKnowledge());
-//                Ges search = new Ges(dataSet);
-//                search.setKnowledge(getParams().getKnowledge());
-//                pattern = search.search();
-//                // Jpc search = new Jpc(getIndependenceTest());
-//                // PcdSearch search = new PcdSearch(getIndependenceTest(), new
-//                // Knowledge());
-//                // pattern = search.search();
-//            }
-//
-//            LingamPattern lingamPattern = new LingamPattern(pattern, dataSet);
-//            lingamPattern.setKnowledge(getParams().getKnowledge());
-//            lingamPattern.setParameter1(getParams().getIndTestParams().getParameter1());
-//            // lingamPattern.setNumSamples(200);
-//
-//            // Graph estPattern = new PcSearch(simulateData, new Knowledge2()).search();
-//            // Graph estPattern = new GesSearch(dataSet).search();
-//            // List<Graph> dags = SearchGraphUtils.getDagsInPatternMeek(pattern,
-//            // getParams().getKnowledge());
-//
-//            // LingamPattern.Result result = lingamPattern.search(dags, dataSet);
-//            graph = lingamPattern.search();
         }
 
 

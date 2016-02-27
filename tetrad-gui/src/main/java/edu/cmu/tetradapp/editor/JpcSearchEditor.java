@@ -68,10 +68,6 @@ public class JpcSearchEditor extends AbstractSearchEditor
 
     //=========================CONSTRUCTORS============================//
 
-    public JpcSearchEditor(JpcRunner runner) {
-        super(runner, "Result Pattern");
-    }
-
     public JpcSearchEditor(JcpcRunner runner) {
         super(runner, "Result Pattern");
     }

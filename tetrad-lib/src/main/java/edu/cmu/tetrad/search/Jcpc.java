@@ -68,7 +68,7 @@ public class Jcpc implements GraphSearch {
     //=============================CONSTRUCTORS==========================//
 
     /**
-     * Constructs a JPC search with the given independence oracle.
+     * Constructs a JCPC search with the given independence oracle.
      */
     public Jcpc(IndependenceTest independenceTest) {
         if (independenceTest == null) {

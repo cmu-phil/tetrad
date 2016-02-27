@@ -117,10 +117,6 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(JpcRunner wrapper) {
-        this(wrapper.getGraph(), null);
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
