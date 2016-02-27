@@ -240,13 +240,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
         addRequiredEdges(graph);
 
-        if (graph.getEdges().isEmpty() && initialGraph == null) {
-            graph = new EdgeListGraphSingleConnections(getVariables());
-            initializeForwardEdgesFromEmptyGraph(getVariables());
-
-            // Do forward search.
-            fes();
-        } else if (initialGraph != null){
+        if (initialGraph != null) {
             graph.clear();
             graph.transferNodesAndEdges(initialGraph);
             graph = new EdgeListGraphSingleConnections(initialGraph);
@@ -261,12 +255,50 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
             // Do forward search.
             fes();
-        } else { // If required knowledge was provided.
-            initializeForwardEdgesFromExistingGraph(getVariables());
+        } else {
+            addRequiredEdges(graph);
 
-            // Do forward search.
-            fes();
+            if (!graph.getEdges().isEmpty()) {
+                initializeForwardEdgesFromExistingGraph(getVariables());
+
+                // Do forward search.
+                fes();
+            } else {
+                graph = new EdgeListGraphSingleConnections(getVariables());
+                initializeForwardEdgesFromEmptyGraph(getVariables());
+
+                // Do forward search.
+                fes();
+            }
         }
+
+//        if (graph.getEdges().isEmpty() && initialGraph == null) {
+//            graph = new EdgeListGraphSingleConnections(getVariables());
+//            initializeForwardEdgesFromEmptyGraph(getVariables());
+//
+//            // Do forward search.
+//            fes();
+//        } else if (initialGraph != null){
+//            graph.clear();
+//            graph.transferNodesAndEdges(initialGraph);
+//            graph = new EdgeListGraphSingleConnections(initialGraph);
+//
+//            for (Edge edge : initialGraph.getEdges()) {
+//                if (!effectEdgesGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                    effectEdgesGraph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+//                }
+//            }
+//
+//            initializeForwardEdgesFromExistingGraph(getVariables());
+//
+//            // Do forward search.
+//            fes();
+//        } else { // If required knowledge was provided.
+//            initializeForwardEdgesFromExistingGraph(getVariables());
+//
+//            // Do forward search.
+//            fes();
+//        }
 
         topGraphs.clear();
 

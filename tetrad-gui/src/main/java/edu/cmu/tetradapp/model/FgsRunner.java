@@ -51,7 +51,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     private List<ScoredGraph> topGraphs;
     private int index;
     private transient Fgs fgs;
-    private Graph initialGraph;
+    private transient Graph initialGraph;
     private Type type;
 
     //============================CONSTRUCTORS============================//
@@ -68,11 +68,12 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
     public FgsRunner(DataWrapper dataWrapper, GraphSource graph, FgsParams params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
+        if (graph == dataWrapper) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner(DataWrapper dataWrapper, GraphSource graph, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
         this.initialGraph = graph.getGraph();
         type = computeType();
@@ -84,8 +85,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
-                        dataWrapper2
-                ),
+                        dataWrapper2),
                 params, null);
         type = computeType();
 
@@ -385,7 +385,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             System.out.println("No viable input.");
         }
 
-        if (initialGraph != null) fgs.setInitialGraph(initialGraph);
+        fgs.setInitialGraph(initialGraph);
         fgs.setKnowledge(getParams().getKnowledge());
         fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
         fgs.setVerbose(true);
