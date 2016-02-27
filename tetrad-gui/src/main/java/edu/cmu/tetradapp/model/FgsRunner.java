@@ -24,7 +24,9 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -38,7 +40,7 @@ import java.util.List;
  */
 
 public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
-        PropertyChangeListener, IGesRunner, Indexable {
+        PropertyChangeListener, IGesRunner, Indexable, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
     public Type getType() {
@@ -68,13 +70,15 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
     public FgsRunner(DataWrapper dataWrapper, GraphSource graph, FgsParams params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
-        if (graph == dataWrapper) throw new IllegalArgumentException();
+//        if (graph == dataWrapper) throw new IllegalArgumentException();
+        if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
         type = computeType();
     }
 
     public FgsRunner(DataWrapper dataWrapper, GraphSource graph, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
+        if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
         type = computeType();
     }
