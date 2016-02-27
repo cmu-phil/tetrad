@@ -674,25 +674,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
                                 continue;
                             }
 
-//                            int _x = hashIndices.get(x);
-//                            int _y = hashIndices.get(y);
-
                             calculateArrowsForward(x, y);
                             calculateArrowsForward(y, x);
-
-//                            double bump = fgsScore.localScoreDiff(_x, _y, new int[]{});
-//
-//                            if (isFaithfulnessAssumed() && fgsScore.isEffectEdge(bump)) {
-//                                final Edge edge = Edges.undirectedEdge(x, y);
-//                                if (boundGraph != null && !boundGraph.isAdjacentTo(edge.getNode1(), edge.getNode2()))
-//                                    continue;
-//                                effectEdgesGraph.addEdge(edge);
-//                            }
-//
-//                            if (bump > 0.0) {
-//                                addArrow(x, y, emptySet, emptySet, bump);
-//                                addArrow(y, x, emptySet, emptySet, bump);
-//                            }
                         }
                     }
 
@@ -1019,7 +1002,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
                 if (bump > 0.0) {
-//                    if (faithfulnessAssumed && !fgsScore.isEffectEdge(bump)) continue;
                     addArrow(a, b, naYX, T, bump);
                 }
             }
