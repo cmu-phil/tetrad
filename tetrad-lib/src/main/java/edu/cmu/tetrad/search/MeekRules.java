@@ -234,6 +234,14 @@ public class MeekRules implements ImpliedOrientation {
     }
 
     private void r2Helper(Node a, Node b, Node c, Graph graph, IKnowledge knowledge) {
+        if (!isUnshieldedNoncollider(a, b, c, graph)) {
+            return;
+        }
+
+        if (!isUnshieldedNoncollider(b, a, c, graph)) {
+            return;
+        }
+
         if (graph.isDirectedFromTo(a, b) &&
                 graph.isDirectedFromTo(b, c) &&
                 graph.isUndirectedFromTo(a, c)) {

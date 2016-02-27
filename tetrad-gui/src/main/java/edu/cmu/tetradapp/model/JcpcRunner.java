@@ -128,9 +128,6 @@ public class JcpcRunner extends AbstractAlgorithmRunner
 
         Jcpc search = new Jcpc(independenceTest);
 
-        search.setSoftmaxAdjacencies(testParams.getMaxAdjacencies());
-        search.setMaxIterations(testParams.getMaxIterations());
-        search.setStartFromEmptyGraph(testParams.isStartFromEmptyGraph());
         search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
 
         search.setKnowledge(knowledge);

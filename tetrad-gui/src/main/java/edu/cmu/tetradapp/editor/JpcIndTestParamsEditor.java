@@ -26,8 +26,6 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -55,16 +53,6 @@ class JpcIndTestParamsEditor extends JComponent {
      * generate.
      */
     private IntTextField depthField;
-
-    private IntTextField maxAdjacenciesField;
-
-    private IntTextField maxDescendantPathField;
-
-    private JCheckBox useCpcBox;
-
-    private JCheckBox startFromEmptyBox;
-
-    private IntTextField maxIterationsField;
 
 
     /**
@@ -103,77 +91,6 @@ class JpcIndTestParamsEditor extends JComponent {
             }
         });
 
-        maxAdjacenciesField = new IntTextField(indTestParams().getMaxAdjacencies(), 4);
-        maxAdjacenciesField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    indTestParams().setMaxAdjacencies(value);
-                    return value;
-                }
-                catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
-            }
-        });
-
-        maxDescendantPathField = new IntTextField(indTestParams().getMaxDescendantPath(), 4);
-        maxDescendantPathField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    indTestParams().setMaxDescendantPath(value);
-                    return value;
-                }
-                catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
-            }
-        });
-
-//
-//        skipSepsetBiggerThanField = new IntTextField(indTestParams().getSkipSepsetsBiggerThan(), 4);
-//        skipSepsetBiggerThanField.setFilter(new IntTextField.Filter() {
-//            public int filter(int value, int oldValue) {
-//                try {
-//                    indTestParams().setSkipSepsetsBiggerThan(value);
-//                    return value;
-//                }
-//                catch (IllegalArgumentException e) {
-//                    return oldValue;
-//                }
-//            }
-//        });
-
-        useCpcBox = new JCheckBox();
-        useCpcBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
-                indTestParams().setUseCpc(checkBox.isSelected());
-            }
-        });
-        useCpcBox.setSelected(indTestParams().isUseCpc());
-
-        startFromEmptyBox = new JCheckBox();
-        startFromEmptyBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
-                indTestParams().setStartFromEmptyGraph(checkBox.isSelected());
-            }
-        });
-        startFromEmptyBox.setSelected(indTestParams().isStartFromEmptyGraph());
-
-        maxIterationsField = new IntTextField(indTestParams().getMaxIterations(), 4);
-        maxIterationsField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    indTestParams().setMaxIterations(value);
-                    return value;
-                }
-                catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
-            }
-        });
-
         buildGui();
     }
 
@@ -193,46 +110,6 @@ class JpcIndTestParamsEditor extends JComponent {
             b1.add(alphaField);
             add(b1);
         }
-
-//        Box b2 = Box.createHorizontalBox();
-//        b2.add(new JLabel("Depth Limit:"));
-//        b2.add(Box.createHorizontalStrut(10));
-//        b2.add(Box.createHorizontalGlue());
-//        b2.add(depthField);
-//        add(b2);
-
-        Box b3 = Box.createHorizontalBox();
-        b3.add(new JLabel("Adjacencies Softmax:"));
-        b3.add(Box.createHorizontalStrut(10));
-        b3.add(Box.createHorizontalGlue());
-        b3.add(maxAdjacenciesField);
-        add(b3);
-
-//        Box b4 = Box.createHorizontalBox();
-//        b4.add(new JLabel("Max Descendant Path:"));
-//        b4.add(Box.createHorizontalStrut(10));
-//        b4.add(Box.createHorizontalGlue());
-//        b4.add(maxDescendantPathField);
-//        add(b4);
-
-//        Box b5 = Box.createHorizontalBox();
-//        b5.add(new JLabel("Use CPC"));
-//        b5.add(Box.createHorizontalGlue());
-//        b5.add(useCpcBox);
-//        add(b5);
-
-//        Box b6 = Box.createHorizontalBox();
-//        b6.add(new JLabel("Start from empty graph"));
-//        b6.add(Box.createHorizontalGlue());
-//        b6.add(startFromEmptyBox);
-//        add(b6);
-
-        Box b7 = Box.createHorizontalBox();
-        b7.add(new JLabel("Max Iterations:"));
-        b7.add(Box.createHorizontalStrut(10));
-        b7.add(Box.createHorizontalGlue());
-        b7.add(maxIterationsField);
-        add(b7);
 
         add(Box.createHorizontalGlue());
     }

@@ -36,15 +36,6 @@ import java.util.*;
  * @author Joseph Ramsey (this version).
  */
 public class Jcpc implements GraphSearch {
-    private int numAdded;
-    private int numRemoved;
-    private Map<Node, Set<Node>> adjacents = new HashMap();
-
-    public enum PathBlockingSet {
-        LARGE, SMALL
-    }
-
-    private PathBlockingSet pathBlockingSet = PathBlockingSet.LARGE;
 
     /**
      * The independence test used for the PC search.
@@ -63,27 +54,6 @@ public class Jcpc implements GraphSearch {
     private boolean aggressivelyPreventCycles = false;
 
     /**
-     * The maximum number of adjacencies that may ever be added to any node. (Note, the initial search may already have
-     * greater degree.)
-     */
-    private int softmaxAdjacencies = 8;
-
-    /**
-     * The maximum number of iterations of the algorithm, in the major loop.
-     */
-    private int maxIterations = 20;
-
-    /**
-     * True if the algorithm should be started from an empty graph.
-     */
-    private boolean startFromEmptyGraph = false;
-
-    /**
-     * An initial graph, if there is one.
-     */
-    private Graph initialGraph;
-
-    /**
      * The logger for this class. The config needs to be set.
      */
     private TetradLogger logger = TetradLogger.getInstance();
@@ -93,15 +63,7 @@ public class Jcpc implements GraphSearch {
      */
     private long elapsedTime;
 
-    /**
-     * The depth of the original CPC search.
-     */
-    private int cpcDepth = -1;
-
-    /**
-     * The depth of CPC orientation.
-     */
-    private int orientationDepth = -1;
+    Graph graph;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -147,44 +109,13 @@ public class Jcpc implements GraphSearch {
         return elapsedTime;
     }
 
-    public int getSoftmaxAdjacencies() {
-        return softmaxAdjacencies;
-    }
-
-    /**
-     * Sets the number of adjacencies beyond which aggressive edge removal is done for particular nodes.
-     */
-    public void setSoftmaxAdjacencies(int softmaxAdjacencies) {
-        if (softmaxAdjacencies < 0) {
-            throw new IllegalArgumentException("Adjacencies softmax must be at least 0.");
-        }
-
-        this.softmaxAdjacencies = softmaxAdjacencies;
-    }
-
-    public void setStartFromEmptyGraph(boolean startFromEmptyGraph) {
-        this.startFromEmptyGraph = startFromEmptyGraph;
-    }
-
-    public PathBlockingSet getPathBlockingSet() {
-        return pathBlockingSet;
-    }
-
-    public void setPathBlockingSet(PathBlockingSet pathBlockingSet) {
-        if (pathBlockingSet == null) throw new NullPointerException();
-        this.pathBlockingSet = pathBlockingSet;
-    }
-
     /**
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      */
     public Graph search() {
         long time1 = System.currentTimeMillis();
 
-        List<Graph> graphs = new ArrayList<Graph>();
-        IndependenceTest test = getIndependenceTest();
-
-        Graph graph = new EdgeListGraph(test.getVariables());
+        graph = new EdgeListGraph(getIndependenceTest().getVariables());
 
         // This is the list of all changed nodes from the last iteration
         List<Node> nodes = graph.getNodes();
@@ -202,31 +133,19 @@ public class Jcpc implements GraphSearch {
                     log("info", index + " of " + numEdges);
                 }
 
-                tryAddingEdge(test, graph, nodes, graph, i, j);
-
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
+                tryAddingEdge(x, y);
+
                 for (Node w : graph.getAdjacentNodes(x)) {
-                    tryRemovingEdge(test, graph, graph, graph.getEdge(w, x));
+                    tryRemovingEdge(w, x);
                 }
 
                 for (Node w : graph.getAdjacentNodes(y)) {
-                    tryRemovingEdge(test, graph, graph, graph.getEdge(w, y));
+                    tryRemovingEdge(w, y);
                 }
             }
-        }
-
-        index = 0;
-
-        for (Edge edge : graph.getEdges()) {
-            ++index;
-
-            if (index % 10 == 0) {
-                log("info", "Backwards " + index + " of " + numEdges);
-            }
-
-            tryRemovingEdge(test, graph, graph, edge);
         }
 
         outGraph = graph;
@@ -236,102 +155,8 @@ public class Jcpc implements GraphSearch {
         long time2 = System.currentTimeMillis();
         this.elapsedTime = time2 - time1;
 
-        orientCpc(outGraph, getKnowledge(), getOrientationDepth(), test);
-//        orientPcMax(graph);
-
         return outGraph;
     }
-
-    private void orientPcMax(Graph graph) {
-        SepsetsMaxScore sepsetProducer = new SepsetsMaxScore(graph, independenceTest, null, -1);
-
-        addColliders(graph, sepsetProducer, knowledge);
-
-        MeekRules rules = new MeekRules();
-        rules.setKnowledge(knowledge);
-        rules.orientImplied(graph);
-    }
-
-    private void addColliders(Graph graph, final SepsetProducer sepsetProducer, IKnowledge knowledge) {
-        final Map<Triple, Double> collidersPs = findCollidersUsingSepsets(sepsetProducer, graph, false);
-
-        List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
-
-        Collections.shuffle(colliders);
-
-        Collections.sort(colliders, new Comparator<Triple>() {
-            public int compare(Triple o1, Triple o2) {
-                return -Double.compare(collidersPs.get(o1), collidersPs.get(o2));
-            }
-        });
-
-        for (Triple collider : colliders) {
-//            if (collidersPs.get(collider) < 0.2) continue;
-
-            Node a = collider.getX();
-            Node b = collider.getY();
-            Node c = collider.getZ();
-
-            if (!(isArrowpointAllowed(a, b, knowledge) && isArrowpointAllowed(c, b, knowledge))) {
-                continue;
-            }
-
-            if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-            }
-        }
-    }
-
-    /**
-     * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-> y <-* z just in
-     * case y is in Sepset({x, z}).
-     */
-    public Map<Triple, Double> findCollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose) {
-        TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
-        Map<Triple, Double> colliders = new HashMap<>();
-
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                // Skip triples that are shielded.
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
-
-                List<Node> sepset = sepsetProducer.getSepset(a, c);
-
-                if (sepset == null) continue;
-
-                if (!sepset.contains(b)) {
-                    if (verbose) {
-                        System.out.println("\nCollider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
-                    }
-
-                    colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
-
-                    TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
-                }
-            }
-        }
-
-        TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
-        return colliders;
-    }
-
 
     private void log(String info, String message) {
         TetradLogger.getInstance().log(info, message);
@@ -340,90 +165,45 @@ public class Jcpc implements GraphSearch {
         }
     }
 
-    private Set<Node> reapplyOrientation(Node x, Node y, Set<Node> newArrows, Graph graph) {
-        Set<Node> toProcess = new HashSet<>();
-        toProcess.add(x);
-        toProcess.add(y);
-
-        if (newArrows != null) {
-            toProcess.addAll(newArrows);
-        }
-
-        return meekOrientRestricted(new ArrayList<>(toProcess), getKnowledge(), graph);
-    }
-
-    // Runs Meek rules on just the changed adj.
-    private Set<Node> meekOrientRestricted(List<Node> nodes, IKnowledge knowledge, Graph graph) {
-        MeekRules rules = new MeekRules();
-        rules.setKnowledge(knowledge);
-        rules.setUndirectUnforcedEdges(true);
-        rules.orientImplied(graph, nodes);
-        return rules.getVisited();
-    }
-
-    private Edge tryAddingEdge(IndependenceTest test, Graph graph, List<Node> _changedNodes, Graph oldGraph, int i, int j) {
-        Node x = _changedNodes.get(i);
-        Node y = _changedNodes.get(j);
-
+    private Edge tryAddingEdge(Node x, Node y) {
         if (graph.isAdjacentTo(x, y)) {
             return null;
         }
 
-        List<Node> sepsetX, sepsetY;
-        boolean existsSepset = false;
+        List<Node> sepset = sepset(x, y);
 
-        if (getPathBlockingSet() == PathBlockingSet.LARGE) {
-            sepsetX = pathBlockingSet(test, oldGraph, x, y);
-
-            if (sepsetX != null) {
-                existsSepset = true;
-            } else {
-                sepsetY = pathBlockingSet(test, oldGraph, y, x);
-
-                if (sepsetY != null) {
-                    existsSepset = true;
-                }
-            }
-        } else {
-            throw new IllegalStateException("Unrecognized sepset type.");
+        if (sepset == null) {
+            sepset = sepset(y, x);
         }
 
-
-        if (!existsSepset) {
+        if (sepset == null) {
             if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
                 return null;
             }
 
             Edge edge = Edges.undirectedEdge(x, y);
             graph.addEdge(edge);
-            numAdded++;
+            orientNewColliders(x, y);
             return edge;
         }
 
         return null;
     }
 
-    private Edge tryRemovingEdge(IndependenceTest test, Graph graph, Graph oldGraph, Edge edge) {
-        Node x = edge.getNode1();
-        Node y = edge.getNode2();
-
+    private Edge tryRemovingEdge(Node x, Node y) {
         List<Node> sepsetX, sepsetY;
         boolean existsSepset = false;
 
-        if (getPathBlockingSet() == PathBlockingSet.LARGE) {
-            sepsetX = pathBlockingSet(test, oldGraph, x, y);
+        sepsetX = sepset(x, y);
 
-            if (sepsetX != null) {
-                existsSepset = true;
-            } else {
-                sepsetY = pathBlockingSet(test, oldGraph, y, x);
-
-                if (sepsetY != null) {
-                    existsSepset = true;
-                }
-            }
+        if (sepsetX != null) {
+            existsSepset = true;
         } else {
-            throw new IllegalStateException("Unrecognized sepset type.");
+            sepsetY = sepset(y, x);
+
+            if (sepsetY != null) {
+                existsSepset = true;
+            }
         }
 
         if (existsSepset) {
@@ -432,7 +212,7 @@ public class Jcpc implements GraphSearch {
             }
 
             graph.removeEdges(x, y);
-            numRemoved++;
+            undirectUnforcedEdges(y);
             return Edges.undirectedEdge(x, y);
         }
 
@@ -441,141 +221,70 @@ public class Jcpc implements GraphSearch {
 
     //================================PRIVATE METHODS=======================//
 
-    private List<Node> pathBlockingSet(IndependenceTest test, Graph graph, Node x, Node y) {
-        List<Node> commonAdjacents = graph.getAdjacentNodes(x);
-        commonAdjacents.retainAll(graph.getAdjacentNodes(y));
+    private List<Node> sepset(Node x, Node y) {
+        List<Node> adj = graph.getAdjacentNodes(x);
+        adj.remove(y);
 
-        DepthChoiceGenerator generator = new DepthChoiceGenerator(commonAdjacents.size(), commonAdjacents.size());
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
         int[] choice;
 
-        while ((choice = generator.next()) != null) {
-            Set<Node> notConditioned = new HashSet<>(GraphUtils.asList(choice, commonAdjacents));
+        while ((choice = gen.next()) != null) {
+            List<Node> cond = GraphUtils.asList(choice, adj);
 
-            List<Node> _descendants = graph.getDescendants(new ArrayList<Node>(notConditioned));
-            Set<Node> descendants = new HashSet<>(_descendants);
-
-            Set<Node> sepset = pathBlockingSetExcluding(graph, x, y, notConditioned, descendants);
-            ArrayList<Node> _sepset = new ArrayList<>(sepset);
-
-            if (test.isIndependent(x, y, _sepset)) {
-                return _sepset;
+            if (getIndependenceTest().isIndependent(x, y, cond)) {
+                return cond;
             }
         }
 
         return null;
     }
 
-    private Set<Node> pathBlockingSetExcluding(Graph graph, Node x, Node y, Set<Node> notConditioned, Set<Node> descendants) {
-        Set<Node> condSet = new HashSet<Node>();
+    private void orientNewColliders(Node x, Node y) {
+        for (Node z : graph.getAdjacentNodes(y)) {
+            if (z == x) continue;
 
-        for (Node b : graph.getAdjacentNodes(x)) {
-            if (b == y) continue;
+            List<Node> cond = sepset(z, x);
+            if (cond == null) cond = sepset(x, z);
 
-            if (!notConditioned.contains(b) /*&& !descendants.contains(b)*/) {
-                if (graph.getAdjacentNodes(b).size() > 1) {
-                    condSet.add(b);
-                }
+            if (cond != null && !cond.contains(y)) {
+                graph.setEndpoint(x, y, Endpoint.ARROW);
+                graph.setEndpoint(z, y, Endpoint.ARROW);
             }
-
-//            if (!graph.isParentOf(b, x)) {
-//                for (Node c : graph.getParents(b)) {
-//                    if (!notConditioned.contains(c) /*&& !descendants.contains(c)*/) {
-//                        condSet.add(c);
-//                    }
-//                }
-//            }
         }
 
-//        for (Node c : graph.getParents(y)) {
-//            if (!notConditioned.contains(c) && !descendants.contains(c)) {
-//                condSet.add(c);
-//            }
-//        }
-
-        condSet.remove(x);
-        condSet.remove(y);
-
-        return condSet;
-    }
-
-    private void orientCpc(Graph graph, IKnowledge knowledge, int depth, IndependenceTest test) {
-        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
-        orientUnshieldedTriples(graph, test, depth, knowledge);
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         meekRules.setKnowledge(knowledge);
-        meekRules.orientImplied(graph);
+        meekRules.setUndirectUnforcedEdges(true);
+        meekRules.orientImplied(graph, Collections.singletonList(y));
     }
 
-    /**
-     * Assumes a graph with only required knowledge orientations.
-     */
-    private Set<Node> orientUnshieldedTriples(Graph graph, IndependenceTest test, int depth, IKnowledge knowledge) {
-        log("info", "Starting Collider Orientation:");
 
-        List<Node> nodes = graph.getNodes();
-        Set<Node> colliderNodes = new HashSet<Node>();
+    private void undirectUnforcedEdges(Node y) {
+        Set<Node> parentsToUndirect = new HashSet<>();
+        List<Node> parents = graph.getParents(y);
 
-
-        for (Node y : nodes) {
-            orientCollidersAboutNode(graph, test, depth, knowledge, colliderNodes, y);
-        }
-
-        log("info", "Finishing Collider Orientation.");
-
-        return colliderNodes;
-    }
-
-    private void orientCollidersAboutNode(Graph graph, IndependenceTest test, int depth, IKnowledge knowledge,
-                                          Set<Node> colliderNodes, Node y) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(y);
-
-        if (adjacentNodes.size() < 2) {
-            return;
-        }
-
-        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-        int[] combination;
-
-        while ((combination = cg.next()) != null) {
-            Node x = adjacentNodes.get(combination[0]);
-            Node z = adjacentNodes.get(combination[1]);
-
-            if (graph.isAdjacentTo(x, z)) {
-                continue;
+        NEXT_EDGE:
+        for (Node x : parents) {
+            for (Node parent : parents) {
+                if (parent != x) {
+                    if (!graph.isAdjacentTo(parent, x)) {
+                        continue NEXT_EDGE;
+                    }
+                }
             }
 
-            SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, graph);
-
-            if (type == SearchGraphUtils.CpcTripleType.COLLIDER &&
-                    isArrowpointAllowed(x, y, knowledge) &&
-                    isArrowpointAllowed(z, y, knowledge)) {
-                graph.setEndpoint(x, y, Endpoint.ARROW);
-                graph.setEndpoint(z, y, Endpoint.ARROW);
-
-                colliderNodes.add(y);
-                log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
-            } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
-                Triple triple = new Triple(x, y, z);
-                graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-            }
-        }
-    }
-
-    public void setMaxIterations(int maxIterations) {
-        if (maxIterations < 0) {
-            throw new IllegalArgumentException("Number of graph correction iterations must be >= 0: " + maxIterations);
+            parentsToUndirect.add(x);
         }
 
-        this.maxIterations = maxIterations;
-    }
-
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+        for (Node x : parentsToUndirect) {
+            graph.removeEdge(x, y);
+            graph.addUndirectedEdge(x, y);
+        }
     }
 
     public Set<Triple> getColliderTriples(Graph graph) {
-        Set<Triple> triples = new HashSet<Triple>();
+        Set<Triple> triples = new HashSet<>();
 
         for (Node node : graph.getNodes()) {
             List<Node> nodesInto = graph.getNodesInTo(node, Endpoint.ARROW);
@@ -591,22 +300,6 @@ public class Jcpc implements GraphSearch {
         }
 
         return triples;
-    }
-
-    public void setCpcDepth(int cpcDepth) {
-        if (cpcDepth < -1) {
-            throw new IllegalArgumentException();
-        }
-
-        this.cpcDepth = cpcDepth;
-    }
-
-    public int getCpcDepth() {
-        return cpcDepth;
-    }
-
-    public int getOrientationDepth() {
-        return orientationDepth;
     }
 
     /**
