@@ -32,7 +32,7 @@ import java.io.ObjectInputStream;
  *
  * @author Joseph Ramsey
  */
-public final class JpcIndTestParams implements IndTestParams {
+public final class PcLocalIndTestParams implements IndTestParams {
     static final long serialVersionUID = 23L;
 
     /**
@@ -65,7 +65,7 @@ public final class JpcIndTestParams implements IndTestParams {
 
     //============================CONSTRUCTORS=========================//
 
-    public JpcIndTestParams() {
+    public PcLocalIndTestParams() {
     }
 
     /**
@@ -73,8 +73,8 @@ public final class JpcIndTestParams implements IndTestParams {
      *
      * @see TetradSerializableUtils
      */
-    public static JpcIndTestParams serializableInstance() {
-        return new JpcIndTestParams();
+    public static PcLocalIndTestParams serializableInstance() {
+        return new PcLocalIndTestParams();
     }
 
     //============================PUBLIC METHODS=======================//

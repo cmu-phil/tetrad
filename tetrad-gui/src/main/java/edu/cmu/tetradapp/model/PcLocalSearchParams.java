@@ -40,7 +40,7 @@ import java.util.List;
  * @author Raul Salinas
  * @author Joseph Ramsey
  */
-public final class JpcSearchParams implements MeekSearchParams {
+public final class PcLocalSearchParams implements MeekSearchParams {
     static final long serialVersionUID = 23L;
 
     /**
@@ -62,7 +62,7 @@ public final class JpcSearchParams implements MeekSearchParams {
     /**
      * @serial Cannot be null.
      */
-    private JpcIndTestParams indTestParams2 = new JpcIndTestParams();
+    private PcLocalIndTestParams indTestParams2 = new PcLocalIndTestParams();
 
     /**
      * @serial Cannot be null.
@@ -85,7 +85,7 @@ public final class JpcSearchParams implements MeekSearchParams {
     /**
      * Constructs a new parameter object. Must have a blank constructor.
      */
-    public JpcSearchParams() {
+    public PcLocalSearchParams() {
         this.varNames = new ArrayList<String>();
     }
 
@@ -94,8 +94,8 @@ public final class JpcSearchParams implements MeekSearchParams {
      *
      * @see TetradSerializableUtils
      */
-    public static JpcSearchParams serializableInstance() {
-        return new JpcSearchParams();
+    public static PcLocalSearchParams serializableInstance() {
+        return new PcLocalSearchParams();
     }
 
     //=============================PUBLIC METHODS========================//
@@ -132,7 +132,7 @@ public final class JpcSearchParams implements MeekSearchParams {
         if (indTestParams2 == null) {
             throw new NullPointerException();
         }
-        this.indTestParams2 = (JpcIndTestParams) indTestParams2;
+        this.indTestParams2 = (PcLocalIndTestParams) indTestParams2;
     }
 
     public List<String> getVarNames() {
@@ -206,7 +206,7 @@ public final class JpcSearchParams implements MeekSearchParams {
         }
 
         if (indTestParams2 == null) {
-            indTestParams2 = new JpcIndTestParams();
+            indTestParams2 = new PcLocalIndTestParams();
 //            throw new NullPointerException();
         }
 

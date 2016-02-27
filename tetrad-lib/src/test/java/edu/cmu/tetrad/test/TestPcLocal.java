@@ -43,7 +43,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Joseph Ramsey
  */
-public class TestJpc {
+public class TestPcLocal {
 
     @Test
     public void testSearch4() {
@@ -66,7 +66,7 @@ public class TestJpc {
         DataSet dataSet = bayesIm.simulateData(sampleSize, false);
 
         IndependenceTest test = new IndTestFisherZ(dataSet, 0.001);
-        Jpc search = new Jpc(test);
+        PcLocal search = new PcLocal(test);
 
         // Run search
         Graph resultGraph = search.search();
@@ -89,7 +89,7 @@ public class TestJpc {
                 7, 5, 5, false));
 
         IndependenceTest test = new IndTestDSep(trueGraph);
-        Jpc search = new Jpc(test);
+        PcLocal search = new PcLocal(test);
 
         Graph resultGraph = search.search();
 

@@ -292,6 +292,8 @@ public final class GraphUtils {
 
         final List<Node> nodes2 = dag.getNodes(); // new ArrayList<Node>(nodes);
 
+//        Collections.shuffle(nodes2);
+
         int trials = 0;
         boolean added = false;
 

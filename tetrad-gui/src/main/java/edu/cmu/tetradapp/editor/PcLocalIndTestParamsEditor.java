@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.JpcIndTestParams;
+import edu.cmu.tetradapp.model.PcLocalIndTestParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -35,12 +35,12 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey
  */
-class JpcIndTestParamsEditor extends JComponent {
+class PcLocalIndTestParamsEditor extends JComponent {
 
     /**
      * The parameters object being edited.
      */
-    private JpcIndTestParams params = null;
+    private PcLocalIndTestParams params = null;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -58,7 +58,7 @@ class JpcIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public JpcIndTestParamsEditor(JpcIndTestParams params) {
+    public PcLocalIndTestParamsEditor(PcLocalIndTestParams params) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
@@ -118,7 +118,7 @@ class JpcIndTestParamsEditor extends JComponent {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private JpcIndTestParams indTestParams() {
+    private PcLocalIndTestParams indTestParams() {
         return params;
     }
 }

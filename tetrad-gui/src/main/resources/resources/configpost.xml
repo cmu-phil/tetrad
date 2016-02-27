@@ -1254,7 +1254,7 @@
             <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
             <!--</params-class>-->
             <!--</model>-->
-            <model name="JPC" acronym="JPC" help="jpc" category="Pattern Searches">
+            <model name="PC Local" acronym="PCLocal" help="pclocal" category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="graph" description="Graph" default="on"/>
@@ -1267,10 +1267,10 @@
                     <event id="dependencies" description="Dependencies"/>
                     <event id="details" description="Misc Fine Details"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.JcpcRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.JpcSearchEditor
+                <model-class>edu.cmu.tetradapp.model.PcLocalRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor
                 </editor-class>
-                <params-class>edu.cmu.tetradapp.model.JpcSearchParams
+                <params-class>edu.cmu.tetradapp.model.PcLocalSearchParams
                 </params-class>
             </model>
             <!--<model name="MMHC" acronym="MMHC" help="mmhc" category="Pattern Searches">-->

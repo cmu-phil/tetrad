@@ -104,13 +104,13 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
         this.pattern = wrapper.getGraph();
     }
 
-    public LingamPatternRunner(JcpcRunner wrapper, DataWrapper dataWrapper,
+    public LingamPatternRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
                                PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
-    public LingamPatternRunner(JcpcRunner wrapper, DataWrapper dataWrapper,
+    public LingamPatternRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
                                PcSearchParams params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
