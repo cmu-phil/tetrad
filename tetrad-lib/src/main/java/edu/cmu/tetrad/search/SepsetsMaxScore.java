@@ -110,7 +110,7 @@ public class SepsetsMaxScore implements SepsetProducer {
                     _v = v;
                 }
 
-                if (_p > cutoff) break D1;
+//                if (_p > cutoff) break D1;
             }
         }
 
@@ -133,7 +133,7 @@ public class SepsetsMaxScore implements SepsetProducer {
                         _v = v;
                     }
 
-                    if (_p > cutoff) break D2;
+//                    if (_p > cutoff) break D2;
                 }
             }
         }

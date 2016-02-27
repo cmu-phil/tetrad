@@ -89,6 +89,10 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * @param alpha   The alpha level of the test.
      */
     public IndTestFisherZGeneralizedInverse(DataSet dataSet, double alpha) {
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         this.dataSet = dataSet;
         this.data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
         this.variables = Collections.unmodifiableList(dataSet.getVariables());
@@ -126,7 +130,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 //        CorrelationMatrix newCorrMatrix = new CorrelationMatrix(vars, m,
 //                sampleSize);
 //
-//        double alphaNew = getAlpha();
+//        double alphaNew = getParameter1();
 //        IndependenceTest newIndTest = new IndTestCramerT(newCorrMatrix,
 //                alphaNew);
 //        return newIndTest;
@@ -417,7 +421,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 //                PersistentRandomUtil.getInstance().getEngine());
 //
 //        double p = chiSquare.cdf(sum);
-//        boolean determined = p < 1 - getAlpha();
+//        boolean determined = p < 1 - getParameter1();
 //
         boolean determined = variance < getAlpha();
 

@@ -96,6 +96,10 @@ public final class IndTestFisherZ implements IndependenceTest {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         this.covMatrix = new CovarianceMatrixOnTheFly(dataSet);
         List<Node> nodes = covMatrix.getVariables();
 

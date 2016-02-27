@@ -324,7 +324,7 @@ public final class Ccd implements GraphSearch {
 
                 if (sepset == null) continue;
 
-//                if (sepsetProducer.getScore() < test.getAlpha()) continue;
+//                if (sepsetProducer.getScore() < test.getParameter1()) continue;
 
                 if (sepset.contains(b)) {
                     if (verbose) {

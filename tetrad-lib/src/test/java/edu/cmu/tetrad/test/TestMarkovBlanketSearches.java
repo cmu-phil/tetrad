@@ -125,7 +125,7 @@ public class TestMarkovBlanketSearches {
 //            params.setNumTests(30);
 //            params.setMinMbSize(
 //                    8);
-//            params.setAlpha(0.05);
+//            params.setParameter1(0.05);
 //            params.setMinNumCategories(2);
 //            params.setMaxNumCategories(4);
 //            params.setAlgNames(Arrays.asList("PCMB", "CPCMB", "GS",
@@ -176,7 +176,7 @@ public class TestMarkovBlanketSearches {
 //            params.setDepth(2);
 //            params.setNumTests(30);
 //            params.setMinMbSize(8);
-//            params.setAlpha(0.01);
+//            params.setParameter1(0.01);
 //            params.setMinNumCategories(2);
 //            params.setMaxNumCategories(4);
 //            params.setAlgNames(Arrays.asList("HITON-MB", "MMMB", "MBFS"));
@@ -214,7 +214,7 @@ public class TestMarkovBlanketSearches {
 //            params.setDepth(3);
 //            params.setNumTests(30);
 //            params.setMinMbSize(6);
-//            params.setAlpha(0.05);
+//            params.setParameter1(0.05);
 //            params.setMinNumCategories(2);
 //            params.setMaxNumCategories(4);
 ////            params.setAlgNames(Arrays.asList("PCMB", "CPCMB", "GS",
@@ -241,7 +241,7 @@ public class TestMarkovBlanketSearches {
 //        int minNumCategories = params.getMinNumCategories();
 //        int maxNumCategories = params.getMaxNumCategories();
 //
-//        println(out, "Alpha = " + params.getAlpha());
+//        println(out, "Alpha = " + params.getParameter1());
 //        println(out, "# variables = " + params.getNumVars());
 //        println(out, "# edges = " + numEdges);
 //        println(out, "# samples = " + params.getSampleSize());
@@ -286,10 +286,10 @@ public class TestMarkovBlanketSearches {
 //                if (params.isDiscrete()) {
 //                    dataSet = simulateDiscrete(randomGraph, dataSet, params.getSampleSize(),
 //                            minNumCategories, maxNumCategories);
-//                    test = new IndTestGSquare(dataSet, params.getAlpha());
+//                    test = new IndTestGSquare(dataSet, params.getParameter1());
 //                } else {
 //                    dataSet = simulateContinuous(randomGraph, params.getSampleSize(), dataSet);
-//                    test = new IndTestFisherZ(dataSet, params.getAlpha());
+//                    test = new IndTestFisherZ(dataSet, params.getParameter1());
 //                }
 //
 //                algorithms.clear();
@@ -997,11 +997,11 @@ public class TestMarkovBlanketSearches {
 //            this.minMbSize = minMbSize;
 //        }
 //
-//        public double getAlpha() {
+//        public double getParameter1() {
 //            return alpha;
 //        }
 //
-//        public void setAlpha(double alpha) {
+//        public void setParameter1(double alpha) {
 //            this.alpha = alpha;
 //        }
 //

@@ -61,10 +61,14 @@ public class SemBicScore implements ISemBicScore {
     // True if verbose output should be sent to out.
     private boolean verbose = false;
 
+    public SemBicScore(ICovarianceMatrix covariances) {
+        this(covariances, 2.0);
+    }
+
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(ICovarianceMatrix covariances) {
+    public SemBicScore(ICovarianceMatrix covariances, double penaltyDiscount) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -72,6 +76,7 @@ public class SemBicScore implements ISemBicScore {
         this.setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
+        this.penaltyDiscount = penaltyDiscount;
     }
 
     /**
@@ -114,8 +119,8 @@ public class SemBicScore implements ISemBicScore {
     }
 
     @Override
-    public double localScoreDiff(int i, int[] parents, int extra) {
-        return localScore(i, append(parents, extra)) - localScore(i, parents);
+    public double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     int[] append(int[] parents, int extra) {
@@ -223,7 +228,6 @@ public class SemBicScore implements ISemBicScore {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
     @Override
     public List<Node> getVariables() {
         return variables;
@@ -232,6 +236,16 @@ public class SemBicScore implements ISemBicScore {
     @Override
     public boolean isDiscrete() {
         return false;
+    }
+
+    @Override
+    public double getParameter1() {
+        return penaltyDiscount;
+    }
+
+    @Override
+    public void setParameter1(double alpha) {
+        this.penaltyDiscount = alpha;
     }
 
     // Calculates the BIC score.

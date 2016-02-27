@@ -171,7 +171,7 @@ public class JpcRunner extends AbstractAlgorithmRunner
 //            double alpha = _p / (double) 100;
 //            System.out.println("_p = " + alpha);
 //
-//            independenceTest.setAlpha(alpha);
+//            independenceTest.setParameter1(alpha);
 ////            search.setAlgorithm((Jpc.AlgorithmType.CPC));
 //            Graph _graph = search.search();
 //

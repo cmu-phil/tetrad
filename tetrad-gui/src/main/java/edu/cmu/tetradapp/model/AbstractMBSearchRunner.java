@@ -186,7 +186,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
         IndTestType type = params.getIndTestType();
         if (this.source.isContinuous() || this.source.getNumColumns() == 0) {
 //            if (IndTestType.CORRELATION_T == type) {
-//                return new IndTestCramerT(this.source, params.getAlpha());
+//                return new IndTestCramerT(this.source, params.getParameter1());
 //            }
             if (IndTestType.FISHER_Z == type) {
                 return new IndTestFisherZ(this.source, params.getAlpha());

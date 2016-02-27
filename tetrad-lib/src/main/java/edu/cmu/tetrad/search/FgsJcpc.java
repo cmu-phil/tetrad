@@ -50,7 +50,7 @@ import java.util.concurrent.*;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class Fgs implements GraphSearch, GraphScorer {
+public final class FgsJcpc implements GraphSearch, GraphScorer {
 
     /**
      * Specification of forbidden and required edges.
@@ -140,7 +140,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private Graph effectEdgesGraph;
 
     // The minimum number of operations to do before parallelizing.
-    private final int minChunk = 100;
+    private final int minChunk = 10;
 
     // Where printed output is sent.
     private PrintStream out = System.out;
@@ -166,18 +166,16 @@ public final class Fgs implements GraphSearch, GraphScorer {
     /**
      * The data set must either be all continuous or all discrete.
      */
-    public Fgs(DataSet dataSet) {
+    public FgsJcpc(DataSet dataSet) {
         if (verbose) {
             out.println("GES constructor");
         }
 
         if (dataSet.isDiscrete()) {
-            setFgsScore(new BDeuScore(dataSet));
+            setFgsScore(new BDeScore(dataSet));
         } else {
             setFgsScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet), 2.0));
         }
-
-        this.graph = new EdgeListGraphSingleConnections(getVariables());
 
         if (verbose) {
             out.println("GES constructor done");
@@ -187,7 +185,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     /**
      * Continuous case--where a covariance matrix is already available.
      */
-    public Fgs(ICovarianceMatrix covMatrix) {
+    public FgsJcpc(ICovarianceMatrix covMatrix) {
         if (verbose) {
             out.println("GES constructor");
         }
@@ -201,7 +199,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
         }
     }
 
-    public Fgs(FgsScore fgsScore) {
+    public FgsJcpc(FgsScore fgsScore) {
         if (fgsScore == null) throw new NullPointerException();
         setFgsScore(fgsScore);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
@@ -232,21 +230,14 @@ public final class Fgs implements GraphSearch, GraphScorer {
     public Graph search() {
         lookupArrows = new ConcurrentHashMap<>();
         final List<Node> nodes = new ArrayList<>(variables);
-        effectEdgesGraph = new EdgeListGraphSingleConnections(getVariables());
 
         if (adjacencies != null) {
             adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
         }
 
-        addRequiredEdges(graph);
-
-        if (graph.getEdges().isEmpty() && initialGraph == null) {
+        if (initialGraph == null) {
             graph = new EdgeListGraphSingleConnections(getVariables());
-            initializeForwardEdgesFromEmptyGraph(getVariables());
-
-            // Do forward search.
-            fes();
-        } else if (initialGraph != null){
+        } else {
             graph.clear();
             graph.transferNodesAndEdges(initialGraph);
             graph = new EdgeListGraphSingleConnections(initialGraph);
@@ -256,22 +247,17 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     effectEdgesGraph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
                 }
             }
-
-            initializeForwardEdgesFromExistingGraph(getVariables());
-
-            // Do forward search.
-            fes();
-        } else { // If required knowledge was provided.
-            initializeForwardEdgesFromExistingGraph(getVariables());
-
-            // Do forward search.
-            fes();
         }
+
+        addRequiredEdges(graph);
 
         topGraphs.clear();
 
         long start = System.currentTimeMillis();
         score = 0.0;
+
+        // Do forward search.
+        fes();
 
         // Do backward search.
         bes();
@@ -519,11 +505,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
     // Simultaneously finds the first edge to add to an empty graph and finds all length 1 paths that are
     // not canceled by other paths (the "effect edges")
-    private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
-        sortedArrows = new ConcurrentSkipListSet<>();
-        lookupArrows = new ConcurrentHashMap<>();
-        neighbors = new ConcurrentHashMap<>();
-
+    private void sortUnconditionedEdges(final List<Node> nodes) {
         long start = System.currentTimeMillis();
         final Graph effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
         final Set<Node> emptySet = new HashSet<>(0);
@@ -613,95 +595,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
         long stop = System.currentTimeMillis();
 
         if (verbose) {
-            out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
-        }
-
-        this.effectEdgesGraph = effectEdgesGraph;
-    }
-
-    // Initiaizes the sorted arrows lists for the forward search from an existing graph
-    private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
-        sortedArrows = new ConcurrentSkipListSet<>();
-        lookupArrows = new ConcurrentHashMap<>();
-        neighbors = new ConcurrentHashMap<>();
-
-        long start = System.currentTimeMillis();
-//        final Graph effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
-        final Set<Node> emptySet = new HashSet<>(0);
-
-        final int[] count = new int[1];
-
-        class EffectTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-
-            public EffectTask(int chunk, int from, int to) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        if (verbose) {
-                            synchronized (count) {
-                                if (((count[0]++) + 1) % 1000 == 0)
-                                    out.println("Initializing effect edges: " + count[0]);
-                            }
-                        }
-
-                        Node y = nodes.get(i);
-                        neighbors.put(y, getNeighbors(y));
-
-                        for (int j = i + 1; j < nodes.size(); j++) {
-                            if (i == j) continue;
-                            Node x = nodes.get(j);
-
-                            if (existsKnowledge()) {
-                                if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
-                                    continue;
-                                }
-
-                                if (!validSetByKnowledge(y, emptySet)) {
-                                    continue;
-                                }
-                            }
-
-                            if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
-                                continue;
-                            }
-
-                            calculateArrowsForward(x, y);
-                            calculateArrowsForward(y, x);
-                        }
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to - from) / 2;
-
-                    List<EffectTask> tasks = new ArrayList<>();
-
-                    tasks.add(new EffectTask(chunk, from, from + mid));
-                    tasks.add(new EffectTask(chunk, from + mid, to));
-
-                    invokeAll(tasks);
-
-                    return true;
-                }
-            }
-        }
-
-        buildIndexing(nodes);
-        pool.invoke(new EffectTask(minChunk, 0, nodes.size()));
-
-        long stop = System.currentTimeMillis();
-
-        if (verbose) {
-            out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
+            out.println("Elapsed sortUnconditionedEdges = " + (stop - start) + " ms");
         }
 
         this.effectEdgesGraph = effectEdgesGraph;
@@ -712,6 +606,13 @@ public final class Fgs implements GraphSearch, GraphScorer {
      */
     private void fes() {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
+
+        sortedArrows = new ConcurrentSkipListSet<>();
+        lookupArrows = new ConcurrentHashMap<>();
+        neighbors = new ConcurrentHashMap<>();
+
+        // This takes most of the time and calculates all of the effect edges if faithfulness is assumed.
+        sortUnconditionedEdges(getVariables());
 
         while (!sortedArrows.isEmpty()) {
             Arrow arrow = sortedArrows.first();
@@ -808,9 +709,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
             clearArrow(x, y);
 
             Set<Node> visited = reapplyOrientation(x, y, H);
-
+//
             Set<Node> toProcess = new HashSet<>();
-
+//
             for (Node node : visited) {
                 final Set<Node> neighbors = getNeighbors(node);
                 final Set<Node> storedNeighbors = this.neighbors.get(node);
@@ -853,7 +754,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private boolean existsKnowledge() {
         return !knowledge.isEmpty();
     }
-
 
     // Initiaizes the sorted arrows lists for the backward search.
     private void initializeArrowsBackward() {
@@ -968,14 +868,10 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
         final int _depth = Math.min(TNeighbors.size(), depth == -1 ? 1000 : depth);
 
-        Set<Set<Node>> previousCliques = new HashSet<>();
-        previousCliques.add(new HashSet<Node>());
-        Set<Set<Node>> newCliques = new HashSet<>();
-
-        FOR:
         for (int i = 0; i <= _depth; i++) {
             final ChoiceGenerator gen = new ChoiceGenerator(TNeighbors.size(), i);
             int[] choice;
+            boolean found = false;
 
             while ((choice = gen.next()) != null) {
                 Set<Node> T = GraphUtils.asSet(choice, TNeighbors);
@@ -983,21 +879,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 Set<Node> union = new HashSet<>(naYX);
                 union.addAll(T);
 
-                boolean foundAPreviousClique = false;
-
-                for (Set<Node> clique : previousCliques) {
-                    if (union.containsAll(clique)) {
-                        foundAPreviousClique = true;
-                        break;
-                    }
-                }
-
-                if (!foundAPreviousClique) {
-                    break FOR;
-                }
-
                 if (!isClique(union)) continue;
-                newCliques.add(union);
+                found = true;
 
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
@@ -1006,8 +889,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 }
             }
 
-            previousCliques = newCliques;
-            newCliques = new HashSet<>();
+            if (!found) break;
         }
     }
 
@@ -1669,7 +1551,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                                     Node x, Map<Node, Integer> hashIndices) {
         int yIndex = hashIndices.get(y);
 
-        if (parents.contains(x)) return Double.NaN;//throw new IllegalArgumentException();
+        if (parents.contains(x)) throw new IllegalArgumentException();
 
         int[] parentIndices = new int[parents.size()];
 

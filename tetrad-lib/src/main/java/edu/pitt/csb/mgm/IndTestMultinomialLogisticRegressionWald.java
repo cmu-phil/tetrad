@@ -63,6 +63,10 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     private boolean preferLinear;
 
     public IndTestMultinomialLogisticRegressionWald(DataSet data, double alpha, boolean preferLinear) {
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha mut be in [0, 1]");
+        }
+
         this.searchVariables = data.getVariables();
         this.originalData = data.copy();
         DataSet internalData = data.copy();

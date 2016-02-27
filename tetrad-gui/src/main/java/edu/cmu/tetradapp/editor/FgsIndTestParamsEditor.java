@@ -46,6 +46,7 @@ class FgsIndTestParamsEditor extends JComponent {
     private JButton uniformStructurePrior;
     private DoubleTextField penaltyDiscount;
     private IntTextField numPatternsToSave;
+    private IntTextField depth;
 
     /**
      * A checkbox to allow the user to specify whether to use RFCI
@@ -139,6 +140,19 @@ class FgsIndTestParamsEditor extends JComponent {
             }
         });
 
+        this.depth = new IntTextField(getFgsIndTestParams().getDepth(), 4);
+        this.depth.setFilter(new IntTextField.Filter() {
+            public int filter(int value, int oldValue) {
+                try {
+                    getFgsIndTestParams().setDepth(value);
+                    return value;
+                }
+                catch (IllegalArgumentException e) {
+                    return oldValue;
+                }
+            }
+        });
+
         faithfulnessAssumed = new JCheckBox();
         faithfulnessAssumed.setSelected(getFgsIndTestParams().isFaithfulnessAssumed());
         faithfulnessAssumed.addActionListener(new ActionListener() {
@@ -176,11 +190,6 @@ class FgsIndTestParamsEditor extends JComponent {
             b3.add(this.structurePriorField);
             add(b3);
 
-//            Box b4 = Box.createHorizontalBox();
-//            b4.add(Box.createHorizontalGlue());
-//            b4.add(this.defaultStructurePrior);
-//            add(b4);
-
             Box b5 = Box.createHorizontalBox();
             b5.add(Box.createHorizontalGlue());
             b5.add(this.uniformStructurePrior);
@@ -195,14 +204,15 @@ class FgsIndTestParamsEditor extends JComponent {
 
             Box b4a = Box.createHorizontalBox();
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
+            b4a.add(Box.createHorizontalGlue());
             b4a.add(faithfulnessAssumed);
             add(b4a);
 
-            Box b9 = Box.createHorizontalBox();
-            b9.add(new JLabel("Num Patterns to Save"));
-            b9.add(Box.createHorizontalGlue());
-            b9.add(this.numPatternsToSave);
-            add(b9);
+            Box b4b = Box.createHorizontalBox();
+            b4b.add(new JLabel("Depth "));
+            b4b.add(Box.createHorizontalGlue());
+            b4b.add(depth);
+            add(b4b);
         } else if (type == FgsRunner.Type.CONTINUOUS){
             Box b7 = Box.createHorizontalBox();
             b7.add(new JLabel("Penalty Discount"));
@@ -221,6 +231,12 @@ class FgsIndTestParamsEditor extends JComponent {
             b8.add(Box.createHorizontalGlue());
             b8.add(this.numPatternsToSave);
             add(b8);
+
+            Box b4b = Box.createHorizontalBox();
+            b4b.add(new JLabel("Depth "));
+            b4b.add(Box.createHorizontalGlue());
+            b4b.add(depth);
+            add(b4b);
         } else if (type == FgsRunner.Type.GRAPH) {
             Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num Patterns to Save"));
@@ -232,6 +248,12 @@ class FgsIndTestParamsEditor extends JComponent {
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
             b4a.add(faithfulnessAssumed);
             add(b4a);
+
+            Box b4b = Box.createHorizontalBox();
+            b4b.add(new JLabel("Depth "));
+            b4b.add(Box.createHorizontalGlue());
+            b4b.add(depth);
+            add(b4b);
 
         } else {
             throw new IllegalStateException("Unrecognized type: " + type);

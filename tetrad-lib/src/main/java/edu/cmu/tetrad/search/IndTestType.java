@@ -41,6 +41,8 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Linear Regression");
     public static final IndTestType CONDITIONAL_CORRELATION =
             new IndTestType("Conditional Correlation Test");
+    public static final IndTestType BIC_BUMP =
+            new IndTestType("BIC Bump");
     public static final IndTestType LOGISTIC_REGRESSION =
             new IndTestType("Logistic Regression");
     public static final IndTestType MULTINOMIAL_LOGISTIC_REGRESSION =
@@ -92,7 +94,7 @@ public final class IndTestType implements TetradSerializable {
     private static int nextOrdinal = 0;
     private final int ordinal = nextOrdinal++;
     private static final IndTestType[] TYPES = {DEFAULT, CORRELATION_T, FISHER_Z,
-            LINEAR_REGRESSION, CONDITIONAL_CORRELATION, LOGISTIC_REGRESSION,
+            LINEAR_REGRESSION, CONDITIONAL_CORRELATION, BIC_BUMP, LOGISTIC_REGRESSION,
             MULTINOMIAL_LOGISTIC_REGRESSION, FISHER_ZD,
             FISHER_Z_BOOTSTRAP,
             G_SQUARE, CHI_SQUARE,

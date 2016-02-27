@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 
 import java.util.*;
+import java.util.stream.Collector;
 
 /**
  * Implements Chickering and Meek's (2002) locally consistent score criterion.
@@ -73,13 +74,44 @@ public class GraphScore implements FgsScore {
 
 
     @Override
-    public double localScoreDiff(int i, int[] parents, int extra) {
-        Node y = variables.get(i);
-        Node x = variables.get(extra);
-        List<Node> scoreParents = getVariableList(parents);
-        return dag.isDSeparatedFrom(x, y, scoreParents) ? -1.0 : 1.0;
+    public double localScoreDiff(int x, int y, int[] z) {
+//        return locallyConsistentScoringCriterion(x, y, z);
+        return aBetterScore(x, y, z);
     }
 
+    private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
+        Node _y = variables.get(y);
+        Node _x = variables.get(x);
+        List<Node> _z = getVariableList(z);
+        return dag.isDSeparatedFrom(_x, _y, _z) ? -1.0 : 1.0;
+    }
+
+    private double aBetterScore(int x, int y, int[] z) {
+        Node _y = variables.get(y);
+        Node _x = variables.get(x);
+        List<Node> _z = getVariableList(z);
+        boolean dsep = dag.isDSeparatedFrom(_x, _y, _z);
+        int count = 0;
+
+        if (!dsep) count++;
+
+        for (Node z0 : _z) {
+            if (dag.isDSeparatedFrom(_x, z0, _z)) {
+                count += 1;
+            }
+        }
+
+        double score = dsep ? -1 - count : 1 + count;
+
+//        if (score == 1) score -= Math.tanh(z.length);
+        return score;
+    }
+
+    private List<Node> minus(List<Node> z, Node z0) {
+        List<Node> diff = new ArrayList<>(z);
+        diff.remove(z0);
+        return diff;
+    }
 
     int[] append(int[] parents, int extra) {
         int[] all = new int[parents.length + 1];
@@ -132,6 +164,14 @@ public class GraphScore implements FgsScore {
     @Override
     public boolean isDiscrete() {
         return false;
+    }
+
+    public double getParameter1() {
+        throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
+    }
+
+    public void setParameter1(double alpha) {
+        throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
     }
 }
 

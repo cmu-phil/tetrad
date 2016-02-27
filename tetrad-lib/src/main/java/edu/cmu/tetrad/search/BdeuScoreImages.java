@@ -94,11 +94,11 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
 
-    public double localScoreDiff(int i, int[] parents, int extra) {
+    public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
 
         for (BDeuScore score : scores) {
-            sum += score.localScoreDiff(i, parents, extra);
+            sum += score.localScoreDiff(x, y, z);
         }
 
         return sum / scores.size();
@@ -188,6 +188,21 @@ public class BdeuScoreImages implements IBDeuScore {
     @Override
     public boolean isDiscrete() {
         return false;
+    }
+
+    @Override
+    public double getParameter1() {
+        return 0;
+    }
+
+    @Override
+    public void setParameter1(double alpha) {
+
+    }
+
+    @Override
+    public int getSampleSize() {
+        return scores.get(0).getSampleSize();
     }
 
     // Calculates the BIC score.

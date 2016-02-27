@@ -29,9 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the GES algorithm.
@@ -53,7 +51,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     private List<ScoredGraph> topGraphs;
     private int index;
     private transient Fgs fgs;
-    private Graph graph;
+    private Graph initialGraph;
     private Type type;
 
     //============================CONSTRUCTORS============================//
@@ -68,15 +66,15 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         type = computeType();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params) {
+    public FgsRunner(DataWrapper dataWrapper, GraphSource graph, FgsParams params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
-        this.graph = graph.getGraph();
+        this.initialGraph = graph.getGraph();
         type = computeType();
     }
 
     public FgsRunner(DataWrapper dataWrapper, GraphWrapper graph, FgsParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
-        this.graph = graph.getGraph();
+        this.initialGraph = graph.getGraph();
         type = computeType();
     }
 
@@ -321,13 +319,9 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
-                gesScore.setPenaltyDiscount(params.getComplexityPenalty());
+                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model),
+                        params.getComplexityPenalty());
                 fgs = new Fgs(gesScore);
-                fgs.setKnowledge(getParams().getKnowledge());
-                fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-                fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
-                fgs.setVerbose(true);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = ((FgsParams) getParams()).getSamplePrior();
                 double structurePrior = ((FgsParams) getParams()).getStructurePrior();
@@ -335,33 +329,26 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
                 fgs = new Fgs(score);
-                fgs.setVerbose(true);
-                fgs.setKnowledge(getParams().getKnowledge());
-                fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-                fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model,
+                    params.getComplexityPenalty());
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
             fgs = new Fgs(gesScore);
-            fgs.setKnowledge(getParams().getKnowledge());
-            fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-            fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
-            fgs.setVerbose(true);
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
             for (DataModel dataModel : list) {
                 if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
                     throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
-                            "covariance matrices, or else all discrete data sets, or else a single graph.");
+                            "covariance matrices, or else all discrete data sets, or else a single initialGraph.");
                 }
             }
 
             if (list.size() != 1) {
-                throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or graph " +
+                throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or initialGraph " +
                         "as input. For multiple data sets as input, use IMaGES.");
             }
 
@@ -398,6 +385,12 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             System.out.println("No viable input.");
         }
 
+        if (initialGraph != null) fgs.setInitialGraph(initialGraph);
+        fgs.setKnowledge(getParams().getKnowledge());
+        fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+        fgs.setVerbose(true);
+        fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+        fgs.setDepth(params.getIndTestParams().getDepth());
         Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {

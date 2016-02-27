@@ -81,6 +81,7 @@ public class IndTestMenuItems {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.FISHER_Z &&
                 testType != IndTestType.FISHER_ZD &&
+                testType != IndTestType.BIC_BUMP &&
                 testType != IndTestType.FISHER_Z_BOOTSTRAP &&
 //                testType != IndTestType.CORRELATION_T &&
                 testType != IndTestType.CONDITIONAL_CORRELATION &&
@@ -121,6 +122,10 @@ public class IndTestMenuItems {
         group.add(linRegrTest);
         test.add(linRegrTest);
 
+        JCheckBoxMenuItem bicBump = new JCheckBoxMenuItem("BIC Score Bump");
+        group.add(bicBump);
+        test.add(bicBump);
+
         logr.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setter.setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
@@ -142,6 +147,8 @@ public class IndTestMenuItems {
             linRegrTest.setSelected(true);
         } else if (testType == IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION) {
             logr.setSelected(true);
+        } else if (testType == IndTestType.BIC_BUMP) {
+            bicBump.setSelected(true);
         }
 
         fishersZ.addActionListener(new ActionListener() {
@@ -200,13 +207,22 @@ public class IndTestMenuItems {
             }
         });
 
+        bicBump.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setter.setTestType(IndTestType.BIC_BUMP);
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Using the BIC bump test.");
+            }
+        });
+
     }
 
     static void addMultiContinuousTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.POOL_RESIDUALS_FISHER_Z
                 && testType != IndTestType.TIPPETT
-                && testType != IndTestType.FISHER) {
+                && testType != IndTestType.FISHER
+                && testType != IndTestType.BIC_BUMP) {
             setter.setTestType(IndTestType.POOL_RESIDUALS_FISHER_Z);
         }
 
@@ -224,6 +240,10 @@ public class IndTestMenuItems {
         group.add(fisherZPoolResiduals);
         test.add(fisherZPoolResiduals);
 
+        JCheckBoxMenuItem bicBup = new JCheckBoxMenuItem("BIC Bump (IMaGES)");
+        group.add(bicBup);
+        test.add(bicBup);
+
         testType = setter.getTestType();
 
         if (testType == IndTestType.POOL_RESIDUALS_FISHER_Z) {
@@ -236,6 +256,10 @@ public class IndTestMenuItems {
 
         if (testType == IndTestType.TIPPETT) {
             tippett.setSelected(true);
+        }
+
+        if (testType == IndTestType.BIC_BUMP) {
+            bicBup.setSelected(true);
         }
 
         fisherZPoolResiduals.addActionListener(new ActionListener() {
@@ -259,6 +283,14 @@ public class IndTestMenuItems {
                 setter.setTestType(IndTestType.TIPPETT);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Tippett");
+            }
+        });
+
+        bicBup.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setter.setTestType(IndTestType.BIC_BUMP);
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Using BIC Bump (IMaGES)");
             }
         });
     }
