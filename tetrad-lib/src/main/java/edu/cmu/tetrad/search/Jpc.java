@@ -31,11 +31,11 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * Implements the JCPC algorithm.
+ * Implements the JPC algorithm.
  *
  * @author Joseph Ramsey (this version).
  */
-public class Jcpc implements GraphSearch {
+public class Jpc implements GraphSearch {
 
     /**
      * The independence test used for the PC search.
@@ -68,9 +68,9 @@ public class Jcpc implements GraphSearch {
     //=============================CONSTRUCTORS==========================//
 
     /**
-     * Constructs a JCPC search with the given independence oracle.
+     * Constructs a JPC search with the given independence oracle.
      */
-    public Jcpc(IndependenceTest independenceTest) {
+    public Jpc(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }

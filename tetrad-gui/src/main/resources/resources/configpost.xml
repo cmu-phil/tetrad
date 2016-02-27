@@ -1254,7 +1254,7 @@
             <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
             <!--</params-class>-->
             <!--</model>-->
-            <model name="JCPC" acronym="JCPC" help="jcpc" category="Pattern Searches">
+            <model name="JPC" acronym="JPC" help="jpc" category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="graph" description="Graph" default="on"/>

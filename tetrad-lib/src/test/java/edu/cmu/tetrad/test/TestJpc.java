@@ -66,7 +66,7 @@ public class TestJpc {
         DataSet dataSet = bayesIm.simulateData(sampleSize, false);
 
         IndependenceTest test = new IndTestFisherZ(dataSet, 0.001);
-        Jcpc search = new Jcpc(test);
+        Jpc search = new Jpc(test);
 
         // Run search
         Graph resultGraph = search.search();
@@ -89,7 +89,7 @@ public class TestJpc {
                 7, 5, 5, false));
 
         IndependenceTest test = new IndTestDSep(trueGraph);
-        Jcpc search = new Jcpc(test);
+        Jpc search = new Jpc(test);
 
         Graph resultGraph = search.search();
 

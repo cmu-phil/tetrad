@@ -126,7 +126,7 @@ public class JcpcRunner extends AbstractAlgorithmRunner
         IndependenceTest independenceTest = getIndependenceTest();
         JpcIndTestParams testParams = (JpcIndTestParams) getParams().getIndTestParams();
 
-        Jcpc search = new Jcpc(independenceTest);
+        Jpc search = new Jpc(independenceTest);
 
         search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
 

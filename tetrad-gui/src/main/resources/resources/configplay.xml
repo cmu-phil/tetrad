@@ -1437,7 +1437,7 @@
             <!--description="Collider Orientations"/>-->
             <!--<event id="details" description="Misc Fine Details"/>-->
             <!--</logger>-->
-            <model name="JCPC" acronym="JCPC" help="jcpc" category="Pattern Searches">
+            <model name="JPC" acronym="JPC" help="jpc" category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="graph" description="Graph" default="on"/>

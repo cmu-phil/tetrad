@@ -24,11 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.IndTestScore;
-import edu.cmu.tetrad.search.Jcpc;
-import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -340,7 +336,6 @@ public final class TestGraphUtils {
             for (DataSet dataSet : autisticDataSets) {
                 Fgs fgs = new Fgs(dataSet);
                 fgs.setPenaltyDiscount(penaltyDiscount);
-//                Jcpc fgs = new Jcpc(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), 1));
                 autisticGraphs.add(GraphUtils.undirectedGraph(fgs.search()));
             }
 
@@ -349,7 +344,6 @@ public final class TestGraphUtils {
             for (DataSet dataSet : neurotypicalDataSets) {
                 Fgs fgs = new Fgs(dataSet);
                 fgs.setPenaltyDiscount(penaltyDiscount);
-//                Jcpc fgs = new Jcpc(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), 1));
                 neurotypicalGraphs.add(GraphUtils.undirectedGraph(fgs.search()));
             }
 
