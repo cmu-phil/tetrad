@@ -1503,12 +1503,12 @@ public final class SearchGraphUtils {
     }
 
     /**
-     * @param initialNodes  The nodes that reachability undirectedPaths start from.
-     * @param legalPairs    Specifies initial edges (given initial nodes) and legal edge pairs.
-     * @param c             a set of vertices (intuitively, the set of variables to be conditioned on.
-     * @param d             a set of vertices (intuitively to be used in tests of legality, for example, the set of
-     *                      ancestors of c).
-     * @param graph         the graph with respect to which reachability is
+     * @param initialNodes The nodes that reachability undirectedPaths start from.
+     * @param legalPairs   Specifies initial edges (given initial nodes) and legal edge pairs.
+     * @param c            a set of vertices (intuitively, the set of variables to be conditioned on.
+     * @param d            a set of vertices (intuitively to be used in tests of legality, for example, the set of
+     *                     ancestors of c).
+     * @param graph        the graph with respect to which reachability is
      * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
      * criteria in the given legal pairs object.
      * <p>
@@ -1813,64 +1813,60 @@ public final class SearchGraphUtils {
         }
         _depth = Math.min(_depth, _nodes.size());
 
-        while (true) {
-            for (int d = 0; d <= _depth; d++) {
-                ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
-                int[] choice;
+        for (int d = 0; d <= _depth; d++) {
+            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
+            int[] choice;
 
-                while ((choice = cg.next()) != null) {
-                    List<Node> cond = GraphUtils.asList(choice, _nodes);
+            while ((choice = cg.next()) != null) {
+                List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                    if (test.isIndependent(x, z, cond)) {
-                        if (verbose) {
-                            System.out.println("Indep: " + x + " _||_ " + z + " | " + cond);
-                        }
-
-                        if (cond.contains(y)) {
-                            numSepsetsContainingY++;
-                        } else {
-                            numSepsetsNotContainingY++;
-                        }
+                if (test.isIndependent(x, z, cond)) {
+                    if (verbose) {
+                        System.out.println("Indep: " + x + " _||_ " + z + " | " + cond);
                     }
 
-                    if (numSepsetsContainingY > 0 && numSepsetsNotContainingY > 0) {
-                        return CpcTripleType.AMBIGUOUS;
+                    if (cond.contains(y)) {
+                        numSepsetsContainingY++;
+                    } else {
+                        numSepsetsNotContainingY++;
                     }
                 }
-            }
 
-            _nodes = graph.getAdjacentNodes(z);
-            _nodes.remove(x);
-            TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
-
-            _depth = depth;
-            if (_depth == -1) {
-                _depth = 1000;
-            }
-            _depth = Math.min(_depth, _nodes.size());
-
-            for (int d = 0; d <= _depth; d++) {
-                ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
-                int[] choice;
-
-                while ((choice = cg.next()) != null) {
-                    List<Node> cond = GraphUtils.asList(choice, _nodes);
-
-                    if (test.isIndependent(x, z, cond)) {
-                        if (cond.contains(y)) {
-                            numSepsetsContainingY++;
-                        } else {
-                            numSepsetsNotContainingY++;
-                        }
-                    }
-
-                    if (numSepsetsContainingY > 0 && numSepsetsNotContainingY > 0) {
-                        return CpcTripleType.AMBIGUOUS;
-                    }
+                if (numSepsetsContainingY > 0 && numSepsetsNotContainingY > 0) {
+                    return CpcTripleType.AMBIGUOUS;
                 }
             }
+        }
 
-            break;
+        _nodes = graph.getAdjacentNodes(z);
+        _nodes.remove(x);
+        TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
+
+        if (_depth == -1) {
+            _depth = 1000;
+        }
+
+        _depth = Math.min(_depth, _nodes.size());
+
+        for (int d = 0; d <= _depth; d++) {
+            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
+            int[] choice;
+
+            while ((choice = cg.next()) != null) {
+                List<Node> cond = GraphUtils.asList(choice, _nodes);
+
+                if (test.isIndependent(x, z, cond)) {
+                    if (cond.contains(y)) {
+                        numSepsetsContainingY++;
+                    } else {
+                        numSepsetsNotContainingY++;
+                    }
+                }
+
+                if (numSepsetsContainingY > 0 && numSepsetsNotContainingY > 0) {
+                    return CpcTripleType.AMBIGUOUS;
+                }
+            }
         }
 
         if (numSepsetsContainingY > 0) {

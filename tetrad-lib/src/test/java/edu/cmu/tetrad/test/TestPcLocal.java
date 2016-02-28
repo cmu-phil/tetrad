@@ -27,10 +27,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Jcpc;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -46,7 +43,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Joseph Ramsey
  */
-public class TestJcpc {
+public class TestPcLocal {
 
     @Test
     public void testSearch4() {
@@ -69,7 +66,7 @@ public class TestJcpc {
         DataSet dataSet = bayesIm.simulateData(sampleSize, false);
 
         IndependenceTest test = new IndTestFisherZ(dataSet, 0.001);
-        Jcpc search = new Jcpc(test);
+        PcLocal search = new PcLocal(test);
 
         // Run search
         Graph resultGraph = search.search();
@@ -79,11 +76,8 @@ public class TestJcpc {
 
     @Test
     public void testSearch5() {
-        RandomUtil.getInstance().setSeed(1450198679419L);
-
         int numVars = 10;
         int numEdges = 10;
-        int sampleSize = 1000;
 
         List<Node> nodes = new ArrayList<Node>();
 
@@ -94,12 +88,8 @@ public class TestJcpc {
         Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
                 7, 5, 5, false));
 
-        SemPm semPm = new SemPm(trueGraph);
-        SemIm bayesIm = new SemIm(semPm);
-        DataSet dataSet = bayesIm.simulateData(sampleSize, false);
-
-        IndependenceTest test = new IndTestFisherZ(dataSet, 0.001);
-        Jcpc search = new Jcpc(test);
+        IndependenceTest test = new IndTestDSep(trueGraph);
+        PcLocal search = new PcLocal(test);
 
         Graph resultGraph = search.search();
 

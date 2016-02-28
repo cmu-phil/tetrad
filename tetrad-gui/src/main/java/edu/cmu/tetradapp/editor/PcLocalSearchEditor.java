@@ -59,7 +59,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class JpcSearchEditor extends AbstractSearchEditor
+public class PcLocalSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, DoNotScroll {
 
     private JTextArea modelStatsText;
@@ -68,11 +68,7 @@ public class JpcSearchEditor extends AbstractSearchEditor
 
     //=========================CONSTRUCTORS============================//
 
-    public JpcSearchEditor(JpcRunner runner) {
-        super(runner, "Result Pattern");
-    }
-
-    public JpcSearchEditor(JcpcRunner runner) {
+    public PcLocalSearchEditor(PcLocalRunner runner) {
         super(runner, "Result Pattern");
     }
 
@@ -769,8 +765,8 @@ public class JpcSearchEditor extends AbstractSearchEditor
             return new PcIndTestParamsEditor((PcIndTestParams) indTestParams);
         }
 
-        if (indTestParams instanceof JpcIndTestParams) {
-            return new JpcIndTestParamsEditor((JpcIndTestParams) indTestParams);
+        if (indTestParams instanceof PcLocalIndTestParams) {
+            return new PcLocalIndTestParamsEditor((PcLocalIndTestParams) indTestParams);
         }
 
         return new IndTestParamsEditor(indTestParams);

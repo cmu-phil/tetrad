@@ -230,6 +230,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * @return the resulting Pattern.
      */
     public Graph search() {
+        topGraphs.clear();
+
         lookupArrows = new ConcurrentHashMap<>();
         final List<Node> nodes = new ArrayList<>(variables);
 
@@ -264,8 +266,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 fes();
             }
         }
-
-        topGraphs.clear();
 
         long start = System.currentTimeMillis();
         score = 0.0;

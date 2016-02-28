@@ -85,10 +85,6 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result Pattern");
     }
 
-    public PcGesSearchEditor(JpcRunner runner) {
-        super(runner, "Result Pattern");
-    }
-
     public PcGesSearchEditor(CpcRunner runner) {
         super(runner, "Result Pattern");
     }

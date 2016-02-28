@@ -35,7 +35,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class JcpcRunner extends AbstractAlgorithmRunner
+public class PcLocalRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
     private Graph trueGraph;
@@ -48,7 +48,7 @@ public class JcpcRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public JcpcRunner(DataWrapper dataWrapper, JpcSearchParams params) {
+    public PcLocalRunner(DataWrapper dataWrapper, PcLocalSearchParams params) {
         super(dataWrapper, params, null);
         this.sourceGraph = dataWrapper.getSourceGraph();
     }
@@ -58,21 +58,15 @@ public class JcpcRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public JcpcRunner(DataWrapper dataWrapper, JpcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcLocalRunner(DataWrapper dataWrapper, PcLocalSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.sourceGraph = dataWrapper.getSourceGraph();
     }
 
-//    public JcpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, JpcSearchParams params) {
-//        super(dataWrapper, params, null);
-//        this.trueGraph = graphWrapper.getGraph();
-//        this.sourceGraph = dataWrapper.getSourceGraph();
-//    }
-
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public JcpcRunner(Graph graph, JpcSearchParams params) {
+    public PcLocalRunner(Graph graph, PcLocalSearchParams params) {
         super(graph, params);
         this.sourceGraph = graph;
     }
@@ -80,24 +74,24 @@ public class JcpcRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public JcpcRunner(GraphWrapper graphWrapper, JpcSearchParams params) {
+    public PcLocalRunner(GraphWrapper graphWrapper, PcLocalSearchParams params) {
         super(graphWrapper.getGraph(), params);
         this.sourceGraph = graphWrapper.getGraph();
     }
 
-    public JcpcRunner(DagWrapper graphWrapper, JpcSearchParams params) {
+    public PcLocalRunner(DagWrapper graphWrapper, PcLocalSearchParams params) {
         super(graphWrapper.getDag(), params);
     }
 
-    public JcpcRunner(SemGraphWrapper graphWrapper, JpcSearchParams params) {
+    public PcLocalRunner(SemGraphWrapper graphWrapper, PcLocalSearchParams params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public JcpcRunner(IndependenceFactsModel model, JpcSearchParams params) {
+    public PcLocalRunner(IndependenceFactsModel model, PcLocalSearchParams params) {
         super(model, params, null);
     }
 
-    public JcpcRunner(IndependenceFactsModel model, JpcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcLocalRunner(IndependenceFactsModel model, PcLocalSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -106,9 +100,9 @@ public class JcpcRunner extends AbstractAlgorithmRunner
      *
      * @see TetradSerializableUtils
      */
-    public static JcpcRunner serializableInstance() {
-        return new JcpcRunner(Dag.serializableInstance(),
-                JpcSearchParams.serializableInstance());
+    public static PcLocalRunner serializableInstance() {
+        return new PcLocalRunner(Dag.serializableInstance(),
+                PcLocalSearchParams.serializableInstance());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -124,13 +118,10 @@ public class JcpcRunner extends AbstractAlgorithmRunner
         IKnowledge knowledge = getParams().getKnowledge();
 
         IndependenceTest independenceTest = getIndependenceTest();
-        JpcIndTestParams testParams = (JpcIndTestParams) getParams().getIndTestParams();
+        PcLocalIndTestParams testParams = (PcLocalIndTestParams) getParams().getIndTestParams();
 
-        Jcpc search = new Jcpc(independenceTest);
+        PcLocal search = new PcLocal(independenceTest);
 
-        search.setSoftmaxAdjacencies(testParams.getMaxAdjacencies());
-        search.setMaxIterations(testParams.getMaxIterations());
-        search.setStartFromEmptyGraph(testParams.isStartFromEmptyGraph());
         search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
 
         search.setKnowledge(knowledge);

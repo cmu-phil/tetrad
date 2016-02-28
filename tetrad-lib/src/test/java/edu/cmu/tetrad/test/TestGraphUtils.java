@@ -23,19 +23,13 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.IndTestScore;
-import edu.cmu.tetrad.search.Jcpc;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Assert;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.*;
+import java.text.DecimalFormat;
+import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -335,32 +329,177 @@ public final class TestGraphUtils {
             }
 
             List<Graph> autisticGraphs = new ArrayList<>();
-            double penaltyDiscount = 4;
+            double penaltyDiscount = 2;
 
             for (DataSet dataSet : autisticDataSets) {
-                Fgs fgs = new Fgs(dataSet);
-                fgs.setPenaltyDiscount(penaltyDiscount);
-//                Jcpc fgs = new Jcpc(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), 1));
-                autisticGraphs.add(GraphUtils.undirectedGraph(fgs.search()));
+                Fgs search = new Fgs(dataSet);
+                search.setVerbose(true);
+                search.setPenaltyDiscount(penaltyDiscount);
+//                PcLocal search = new PcLocal(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), penaltyDiscount));
+                autisticGraphs.add(GraphUtils.undirectedGraph(search.search()));
             }
 
             List<Graph> neurotypicalGraphs = new ArrayList<>();
 
             for (DataSet dataSet : neurotypicalDataSets) {
-                Fgs fgs = new Fgs(dataSet);
-                fgs.setPenaltyDiscount(penaltyDiscount);
-//                Jcpc fgs = new Jcpc(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), 1));
-                neurotypicalGraphs.add(GraphUtils.undirectedGraph(fgs.search()));
+                Fgs search = new Fgs(dataSet);
+                search.setVerbose(true);
+                search.setPenaltyDiscount(penaltyDiscount);
+//                PcLocal search = new PcLocal(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), penaltyDiscount));
+                neurotypicalGraphs.add(GraphUtils.undirectedGraph(search.search()));
             }
 
             List<List<Graph>> allGraphs = new ArrayList<>();
             allGraphs.add(autisticGraphs);
             allGraphs.add(neurotypicalGraphs);
 
-            GraphUtils.printEdgeDataSet(allGraphs, path, "edgedata");
+            printEdgeDataSet(allGraphs, path, "edgedata");
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Builds a data set with columns being the set of all edges in the supplied graphs
+     * plus a class label column for which group they belong to.
+     */
+    public static void printEdgeDataSet(List<List<Graph>> graphs, String path, String prefix) {
+        Set<Node> _nodes = new HashSet<>();
+
+        for (List<Graph> _graphs : graphs) {
+            for (Graph graph : _graphs) {
+                for (Node node : graph.getNodes()) {
+                    boolean found = false;
+
+                    for (Node _node : _nodes) {
+                        if (_node.getName().equals(node.getName())) {
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        _nodes.add(node);
+                    }
+                }
+            }
+        }
+
+        List<List<Graph>> graphs2 = new ArrayList<>();
+
+        for (List<Graph> _graphs : graphs) {
+            List<Graph> _graphs2 = new ArrayList<>();
+
+            for (Graph graph : _graphs) {
+                Graph graph2 = GraphUtils.replaceNodes(graph, new ArrayList<Node>(_nodes));
+                _graphs2.add(graph2);
+            }
+
+            graphs2.add(_graphs2);
+        }
+
+        Set<Edge> _edges = new HashSet<>();
+
+        for (List<Graph> _graphs : graphs) {
+            for (Graph graph : _graphs) {
+                _edges.addAll(graph.getEdges());
+            }
+        }
+
+        List<Edge> __edges = new ArrayList<>();
+        System.out.println("# edges = " + _edges.size());
+
+        for (Edge edge : _edges) {
+            int count = 0;
+            int total = 0;
+
+            for (List<Graph> _graphs : graphs) {
+                for (Graph graph : _graphs) {
+                    if (graph.containsEdge(edge)) {
+                        count++;
+                    }
+
+                    total++;
+                }
+            }
+
+            if (count >= 5 && count <= 15) {
+                __edges.add(edge);
+            }
+        }
+
+        printEdgeData(path, prefix, graphs2, __edges);
+    }
+
+    private static void printEdgeData(String path, String prefix, List<List<Graph>> graphs2, List<Edge> edges) {
+        System.out.println("# edges = " + edges.size());
+
+        File file1 = new File(path, prefix + ".data.txt");
+        File file2 = new File(path, prefix + ".edges.txt");
+        File dir = new File(path);
+
+        PrintStream out1 = null;
+        PrintStream out2 = null;
+        try {
+            out1 = new PrintStream(new FileOutputStream(file1));
+            out2 = new PrintStream(new FileOutputStream(file2));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+
+        List<Node> edgeVars = new ArrayList<>();
+
+        List<String> categories = new ArrayList<>();
+        categories.add("0");
+        categories.add("1");
+
+        for (int i = 0; i < edges.size(); i++) {
+            Node node = new ContinuousVariable("X" + (i + 1));
+            edgeVars.add(node);
+        }
+
+        edgeVars.add(new ContinuousVariable("Group"));
+
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(20, edges.size()), edgeVars);
+
+        int row = -1;
+
+        for (int i = 0; i < graphs2.size(); i++) {
+            List<Graph> graphs3 = graphs2.get(i);
+
+            for (int k = 0; k < graphs3.size(); k++) {
+                row++;
+
+                for (int j = 0; j < edges.size(); j++) {
+                    dataSet.setDouble(row, j, graphs3.get(k).containsEdge(edges.get(j)) ? 1 : 0);
+                }
+
+                dataSet.setDouble(row, edges.size(), i);
+            }
+        }
+
+//        Node group = dataSet.getVariable("Group");
+//
+////        Fgs search = new Fgs(dataSet);
+//        PcLocal search = new PcLocal(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), 2));
+//        Graph pattern = search.search();
+//        System.out.println(pattern);
+//        Graph dag = SearchGraphUtils.dagFromPattern(pattern);
+//        List<Node> edgeNodes = GraphUtils.markovBlanketDag(group, dag).getNodes();
+//
+//        dataSet = dataSet.subsetColumns(edgeNodes);
+
+        dataSet.setNumberFormat(new DecimalFormat("0"));
+        out1.println(dataSet);
+        out1.close();
+
+        for (int i = 0; i < edges.size(); i++) {
+            out2.println("X" + (i + 1) + "\t" + edges.get(i));
+        }
+
+        out2.println("Group");
+
+        out2.close();
     }
 
     public void test8() {
