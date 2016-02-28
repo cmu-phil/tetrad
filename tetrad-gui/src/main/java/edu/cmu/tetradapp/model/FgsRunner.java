@@ -413,12 +413,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
         }
 
-        this.topGraphs = new ArrayList<>(fgs.getTopGraphs());
-
-        if (this.topGraphs.isEmpty()) {
-            this.topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
-        }
-
         setIndex(topGraphs.size() - 1);
     }
 
