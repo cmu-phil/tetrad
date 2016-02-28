@@ -29,7 +29,7 @@ import java.util.List;
  * Interface for a score suitable for FGS
  */
 public interface FgsScore {
-    double localScore(int node, int parents[]);
+    double localScore(int node, int...parents);
 
     double localScoreDiff(int x, int y, int[] z);
 

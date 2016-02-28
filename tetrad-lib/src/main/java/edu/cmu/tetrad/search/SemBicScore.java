@@ -82,7 +82,7 @@ public class SemBicScore implements ISemBicScore {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(int i, int[] parents) {
+    public double localScore(int i, int...parents) {
         if (parents.length == 0) return localScore(i);
         else if (parents.length == 1) return localScore(i, parents[0]);
 
@@ -123,7 +123,7 @@ public class SemBicScore implements ISemBicScore {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    int[] append(int[] parents, int extra) {
+    private int[] append(int[] parents, int extra) {
         int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
