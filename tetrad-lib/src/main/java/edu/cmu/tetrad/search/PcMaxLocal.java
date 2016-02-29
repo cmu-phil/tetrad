@@ -118,13 +118,11 @@ public class PcMaxLocal implements GraphSearch {
         long time1 = System.currentTimeMillis();
 
         graph = new EdgeListGraph(getIndependenceTest().getVariables());
-        sepsetProducer = new SepsetsMaxScore(graph, independenceTest, null, -1);
-
         meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         meekRules.setKnowledge(knowledge);
-        meekRules.setUndirectUnforcedEdges(true);
+        meekRules.setUndirectUnforcedEdges(false);
 
+        sepsetProducer = new SepsetsMaxScore(graph, getIndependenceTest(), null, -1);
 
         // This is the list of all changed nodes from the last iteration
         List<Node> nodes = graph.getNodes();
@@ -136,18 +134,23 @@ public class PcMaxLocal implements GraphSearch {
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
-                ++index;
 
-                if (index % 1000 == 0) {
+                if (++index % 1000 == 0) {
                     log("info", index + " of " + numEdges);
                 }
 
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
-
-                tryAddingEdge(x, y);
+                tryAddingEdge(nodes.get(i), nodes.get(j));
             }
         }
+
+        addColliders(graph, sepsetProducer, knowledge);
+
+
+//        for (Node y : graph.getNodes()) {
+//            orientColliders(y);
+//        }
+
+        meekRules.orientImplied(graph);
 
         outGraph = graph;
 
@@ -180,7 +183,6 @@ public class PcMaxLocal implements GraphSearch {
 
             Edge edge = Edges.undirectedEdge(x, y);
             graph.addEdge(edge);
-            orientNewColliders(x, y);
 
             for (Node w : graph.getAdjacentNodes(x)) {
                 tryRemovingEdge(w, x);
@@ -203,32 +205,12 @@ public class PcMaxLocal implements GraphSearch {
             }
 
             graph.removeEdge(x, y);
-
-            List<Node> start = new ArrayList<>();
-            start.add(x);
-            start.add(y);
-
-            meekRules.orientImplied(graph, start);
-
-            renderUnambiguousWherePossible();
-        }
-    }
-
-    private void renderUnambiguousWherePossible() {
-        Set<Node> visited = meekRules.getVisited();
-
-        for (Node v : visited) {
-            List<Node> adj = graph.getAdjacentNodes(v);
-
-            for (int i = 0; i < adj.size(); i++) {
-                for (int j = i + 1; j < adj.size(); j++) {
-                    Node _x = adj.get(i);
-                    Node _z = adj.get(j);
-                    if (Edges.isDirectedEdge(graph.getEdge(_x, v)) && Edges.isDirectedEdge(graph.getEdge(v, _z))) {
-                        graph.removeAmbiguousTriple(_x, v, _z);
-                    }
-                }
-            }
+//
+//            List<Node> start = new ArrayList<>();
+//            start.add(x);
+//            start.add(y);
+//
+//            meekRules.orientImplied(graph, start);
         }
     }
 
@@ -265,51 +247,90 @@ public class PcMaxLocal implements GraphSearch {
         return null;
     }
 
-    private void orientNewColliders(Node x, Node y) {
-        boolean oriented = orientColliders(x, y);
-
-        if (!oriented) {
-            orientColliders(y, x);
-        }
-
+    private boolean orientColliders(Node y) {
+        boolean oriented = false;
         List<Node> start = new ArrayList<>();
         start.add(y);
-        start.addAll(graph.getAdjacentNodes(y));
+        List<Node> adjy = graph.getAdjacentNodes(y);
 
-        meekRules.orientImplied(graph, start);
+        for (int i = 0; i < adjy.size(); i++) {
+            for (int j = i + 1; j < adjy.size(); j++) {
+                Node x = adjy.get(i);
+                Node z = adjy.get(j);
+                if (graph.isAdjacentTo(x, z)) continue;
+                if (graph.isParentOf(y, x) || graph.isParentOf(y, z)) continue;
+
+                List<Node> sepset = sepsetProducer.getSepset(x, z);
+
+                if (sepset != null && !sepset.contains(y)) {
+                    graph.removeEdge(x, y);
+                    graph.removeEdge(z, y);
+                    graph.addDirectedEdge(x, y);
+                    graph.addDirectedEdge(z, y);
+                    oriented = true;
+                }
+            }
+        }
+
+        return oriented;
     }
+
+    private void addColliders(Graph graph, final SepsetProducer sepsetProducer, IKnowledge knowledge) {
+        final Map<Triple, Double> collidersPs = findCollidersUsingSepsets(sepsetProducer, graph, false);
+
+        List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
+
+        Collections.shuffle(colliders);
+
+        Collections.sort(colliders, new Comparator<Triple>() {
+            public int compare(Triple o1, Triple o2) {
+                return -Double.compare(collidersPs.get(o1), collidersPs.get(o2));
+            }
+        });
+
+        for (Triple collider : colliders) {
+//            if (collidersPs.get(collider) < 0.2) continue;
+
+            Node a = collider.getX();
+            Node b = collider.getY();
+            Node c = collider.getZ();
+
+            if (!(isArrowpointAllowed(a, b, knowledge) && isArrowpointAllowed(c, b, knowledge))) {
+                continue;
+            }
+
+            if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
+            }
+        }
+    }
+
 
     /**
      * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-> y <-* z just in
      * case y is in Sepset({x, z}).
      */
-    public boolean orientColliders(Node x, Node y) {
-        List<Node> start = new ArrayList<>();
-        start.add(y);
+    public Map<Triple, Double> findCollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose) {
+        TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
+        Map<Triple, Double> colliders = new HashMap<>();
 
-        boolean oriented = false;
+        List<Node> nodes = graph.getNodes();
 
-        if (orientCollidersPcMax(y)) {
-            oriented = true;
-
-            for (Node z : graph.getAdjacentNodes(y)) {
-                start.add(z);
-                orientCollidersPcMax(z);
-            }
+        for (Node b : nodes) {
+            findColliders(sepsetProducer, graph, verbose, colliders, b);
         }
 
-        meekRules.orientImplied(graph, start);
-        return oriented;
+        TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
+        return colliders;
     }
 
-    private boolean orientCollidersPcMax(Node b) {
+    private void findColliders(SepsetProducer sepsetProducer, Graph graph, boolean verbose, Map<Triple, Double> colliders, Node b) {
         List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
         if (adjacentNodes.size() < 2) {
-            return false;
+            return;
         }
-
-        boolean oriented = false;
 
         ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
         int[] combination;
@@ -328,15 +349,15 @@ public class PcMaxLocal implements GraphSearch {
             if (sepset == null) continue;
 
             if (!sepset.contains(b)) {
-                graph.removeEdge(a, b);
-                graph.removeEdge(c, b);
-                graph.addDirectedEdge(a, b);
-                graph.addDirectedEdge(c, b);
-                oriented = true;
+                if (verbose) {
+                    System.out.println("\nCollider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+                }
+
+                colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
+
+                TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
             }
         }
-
-        return oriented;
     }
 
     /**
