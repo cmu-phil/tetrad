@@ -204,6 +204,8 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GraphSelectionEditor
                 </editor-class>
+                <params-class>edu.cmu.tetradapp.model.GraphSelectionParams
+                </params-class>
             </model>
         </models>
         <display-component image="graphIcon.gif"/>

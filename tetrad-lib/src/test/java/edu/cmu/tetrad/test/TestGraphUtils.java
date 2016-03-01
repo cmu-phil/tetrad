@@ -352,7 +352,8 @@ public final class TestGraphUtils {
                 search.setVerbose(true);
                 search.setPenaltyDiscount(penaltyDiscount);
 //                PcLocal search = new PcLocal(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), penaltyDiscount));
-                autisticGraphs.add(GraphUtils.undirectedGraph(search.search()));
+//                autisticGraphs.add(GraphUtils.undirectedGraph(search.search()));
+                autisticGraphs.add(search.search());
             }
 
             List<Graph> neurotypicalGraphs = new ArrayList<>();
@@ -362,7 +363,8 @@ public final class TestGraphUtils {
                 search.setVerbose(true);
                 search.setPenaltyDiscount(penaltyDiscount);
 //                PcLocal search = new PcLocal(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), penaltyDiscount));
-                neurotypicalGraphs.add(GraphUtils.undirectedGraph(search.search()));
+//                neurotypicalGraphs.add(GraphUtils.undirectedGraph(search.search()));
+                neurotypicalGraphs.add(search.search());
             }
 
             List<List<Graph>> allGraphs = new ArrayList<>();

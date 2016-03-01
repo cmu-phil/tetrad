@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * Puts up a panel letting the user show undirectedPaths about some node in the graph.
@@ -63,11 +64,23 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         scroll.setPreferredSize(new Dimension(600, 600));
 
         List<Node> allNodes = graph.getNodes();
+        Collections.sort(allNodes, new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                return o1.compareTo(o2);
+            }
+        });
         allNodes.add(new GraphNode("SELECT_ALL"));
         Node[] array = allNodes.toArray(new Node[0]);
 
-        nodes1 = Collections.singletonList(graph.getNodes().get(0));
-        nodes2 = Collections.singletonList(graph.getNodes().get(0));
+        Node pathFrom = graph.getNode(Preferences.userRoot().get("pathFrom", ""));
+
+        if (pathFrom == null) {
+            nodes1 = Collections.singletonList(graph.getNodes().get(0));
+        }
+        else {
+            nodes1 = Collections.singletonList(pathFrom);
+        }
 
         JComboBox node1Box = new JComboBox(array);
 
@@ -84,12 +97,23 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     nodes1 = Collections.singletonList(node);
                 }
 
-                System.out.println("Nodes 1 = " + nodes1);
+                Preferences.userRoot().put("pathFrom", node.getName());
 
                 update(graph, textArea, nodes1, nodes2, method);
             }
 
         });
+
+        node1Box.setSelectedItem(nodes1.get(0));
+
+        Node pathTo = graph.getNode(Preferences.userRoot().get("pathTo", ""));
+
+        if (pathTo == null) {
+            nodes2 = Collections.singletonList(graph.getNodes().get(0));
+        }
+        else {
+            nodes2 = Collections.singletonList(pathTo);
+        }
 
         JComboBox node2Box = new JComboBox(array);
 
@@ -106,25 +130,29 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     nodes2 = Collections.singletonList(node);
                 }
 
-                System.out.println("Nodes 2 = " + nodes2);
+                Preferences.userRoot().put("pathTo", node.getName());
 
                 update(graph, textArea, nodes1, nodes2, method);
             }
 
         });
 
+        node2Box.setSelectedItem(nodes2.get(0));
 
         JComboBox methodBox = new JComboBox(new String[]{"Directed Paths", "Semidirected Paths", "Treks",
                 "Adjacents"});
-        this.method = "Directed Paths";
+        this.method = Preferences.userRoot().get("pathMethod", "Directed Paths");
 
         methodBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JComboBox box = (JComboBox) e.getSource();
                 method = (String) box.getSelectedItem();
+                Preferences.userRoot().put("pathMethod", method);
                 update(graph, textArea, nodes1, nodes2, method);
             }
         });
+
+        methodBox.setSelectedItem(this.method);
 
         IntTextField maxField = new IntTextField(8, 2);
 
@@ -170,6 +198,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Directed Paths", "Close", false, workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
+
+        update(graph, textArea, nodes1, nodes2, method);
     }
 
     private void update(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2, String method) {
