@@ -254,6 +254,7 @@ public final class TestGraphUtils {
         assertTrue(graph.isDConnectedTo(c, a, Collections.singletonList(b)));
     }
 
+    @Test
     public void printEdgeData() {
 
 //        String[] autistics = {
@@ -282,51 +283,66 @@ public final class TestGraphUtils {
 //                "typical_normal_ROI_data_spline_smooth_clean_010.txt"
 //        };
 
-        String[] autistics = {
-                "autistic_normal_ROI_data_spline_smooth_clean_001.txt",
-                "autistic_normal_ROI_data_spline_smooth_clean_002.txt",
-                "autistic_normal_ROI_data_spline_smooth_clean_003.txt",
-                "autistic_normal_ROI_data_spline_smooth_clean_004.txt",
-                "autistic_normal_ROI_data_spline_smooth_clean_005.txt",
-                "autistic_normal_ROI_data_spline_smooth_clean_006.txt",
-                "autistic_normal_ROI_data_spline_smooth_clean_007.txt",
-                "autistic_normal_ROI_data_spline_smooth_clean_008.txt",
-                "autistic_normal_ROI_data_spline_smooth_clean_009.txt",
-                "autistic_normal_ROI_data_spline_smooth_clean_010.txt"
-        };
+//        String[] autistics = {
+//                "autistic_normal_ROI_data_spline_smooth_clean_001.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_002.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_003.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_004.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_005.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_006.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_007.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_008.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_009.txt",
+//                "autistic_normal_ROI_data_spline_smooth_clean_010.txt"
+//        };
+//
+//        String[] neurotypicals = {
+//                "typical_normal_ROI_data_spline_smooth_clean_001.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_002.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_003.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_004.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_005.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_006.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_007.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_008.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_009.txt",
+//                "typical_normal_ROI_data_spline_smooth_clean_010.txt"
+//        };
 
-        String[] neurotypicals = {
-                "typical_normal_ROI_data_spline_smooth_clean_001.txt",
-                "typical_normal_ROI_data_spline_smooth_clean_002.txt",
-                "typical_normal_ROI_data_spline_smooth_clean_003.txt",
-                "typical_normal_ROI_data_spline_smooth_clean_004.txt",
-                "typical_normal_ROI_data_spline_smooth_clean_005.txt",
-                "typical_normal_ROI_data_spline_smooth_clean_006.txt",
-                "typical_normal_ROI_data_spline_smooth_clean_007.txt",
-                "typical_normal_ROI_data_spline_smooth_clean_008.txt",
-                "typical_normal_ROI_data_spline_smooth_clean_009.txt",
-                "typical_normal_ROI_data_spline_smooth_clean_010.txt"
-        };
 
-
-        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
+        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_90_Variable";
 
         try {
             List<DataSet> autisticDataSets = new ArrayList<>();
-
-            for (int i = 0; i < 10; i++) {
-                DataReader reader = new DataReader();
-                reader.setDelimiter(DelimiterType.TAB);
-                autisticDataSets.add(reader.parseTabular(new File(path, autistics[i])));
-            }
-
             List<DataSet> neurotypicalDataSets = new ArrayList<>();
 
-            for (int i = 0; i < 10; i++) {
-                DataReader reader = new DataReader();
-                reader.setDelimiter(DelimiterType.TAB);
-                neurotypicalDataSets.add(reader.parseTabular(new File(path, neurotypicals[i])));
+            File dir = new File(path);
+            File[] files = dir.listFiles();
+
+            for (File file : files) {
+                if (file.getName().startsWith("autistic")) {
+                    DataReader reader = new DataReader();
+                    reader.setDelimiter(DelimiterType.TAB);
+                    autisticDataSets.add(reader.parseTabular(file));
+                } else if (file.getName().startsWith("typical")) {
+                    DataReader reader = new DataReader();
+                    reader.setDelimiter(DelimiterType.TAB);
+                    neurotypicalDataSets.add(reader.parseTabular(file));
+                }
             }
+
+//            for (int i = 0; i < 10; i++) {
+//                DataReader reader = new DataReader();
+//                reader.setDelimiter(DelimiterType.TAB);
+//                autisticDataSets.add(reader.parseTabular(new File(path, autistics[i])));
+//            }
+//
+//
+//            for (int i = 0; i < 10; i++) {
+//                DataReader reader = new DataReader();
+//                reader.setDelimiter(DelimiterType.TAB);
+//                neurotypicalDataSets.add(reader.parseTabular(new File(path, neurotypicals[i])));
+//            }
 
             List<Graph> autisticGraphs = new ArrayList<>();
             double penaltyDiscount = 2;
@@ -365,9 +381,11 @@ public final class TestGraphUtils {
      */
     public static void printEdgeDataSet(List<List<Graph>> graphs, String path, String prefix) {
         Set<Node> _nodes = new HashSet<>();
+        int numGraphs = 0;
 
         for (List<Graph> _graphs : graphs) {
             for (Graph graph : _graphs) {
+                numGraphs++;
                 for (Node node : graph.getNodes()) {
                     boolean found = false;
 
@@ -422,7 +440,7 @@ public final class TestGraphUtils {
                 }
             }
 
-            if (count >= 5 && count <= 15) {
+            if (count >= numGraphs * 0.3 && count <= numGraphs * 0.7) {
                 __edges.add(edge);
             }
         }
@@ -477,17 +495,6 @@ public final class TestGraphUtils {
                 dataSet.setDouble(row, edges.size(), i);
             }
         }
-
-//        Node group = dataSet.getVariable("Group");
-//
-////        Fgs search = new Fgs(dataSet);
-//        PcLocal search = new PcLocal(new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)), 2));
-//        Graph pattern = search.search();
-//        System.out.println(pattern);
-//        Graph dag = SearchGraphUtils.dagFromPattern(pattern);
-//        List<Node> edgeNodes = GraphUtils.markovBlanketDag(group, dag).getNodes();
-//
-//        dataSet = dataSet.subsetColumns(edgeNodes);
 
         dataSet.setNumberFormat(new DecimalFormat("0"));
         out1.println(dataSet);
