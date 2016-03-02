@@ -47,6 +47,15 @@ import java.util.Set;
 public class GraphSelectionParams implements Params {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static GraphSelectionParams serializableInstance() {
+        return new GraphSelectionParams();
+    }
+
     public static long getSerialVersionUID() {
         return serialVersionUID;
     }
