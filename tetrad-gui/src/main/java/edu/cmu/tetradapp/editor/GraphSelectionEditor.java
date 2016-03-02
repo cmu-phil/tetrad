@@ -144,6 +144,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
         bar.add(createEditMenu());
 
+        bar.add(createGraphMenu());
+
         JMenu select = new JMenu("Select");
 
         JCheckBoxMenuItem subgraph = new JCheckBoxMenuItem("Subgraph");
@@ -467,6 +469,18 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         setName("Graph Selection Result:");
     }
 
+    private JMenu createGraphMenu() {
+        JMenu graph = new JMenu("Graph");
+
+        graph.add(new GraphPropertiesAction(getWorkbench()));
+        graph.add(new PathsAction(getWorkbench()));
+//        graph.add(new DirectedPathsAction(getWorkbench()));
+//        graph.add(new TreksAction(getWorkbench()));
+//        graph.add(new AllPathsAction(getWorkbench()));
+//        graph.add(new NeighborhoodsAction(getWorkbench()));
+
+        return graph;
+    }
 
     /**
      * Creates the "file" menu, which allows the user to load, save, and post
@@ -1200,6 +1214,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         public void lostOwnership(Clipboard clipboard, Transferable contents) {
         }
     }
+
 }
 
 

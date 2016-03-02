@@ -54,7 +54,6 @@ public final class Ccd implements GraphSearch {
      * Whether verbose output about independencies is output.
      */
     private boolean verbose = false;
-    private Graph initialGraph;
 
     /**
      * The arguments of the constructor are an oracle which answers conditional independence questions.  In the case of
@@ -98,32 +97,43 @@ public final class Ccd implements GraphSearch {
         //Step A
         TetradLogger.getInstance().log("info", "\nStep A");
 
-        IFas search = new Fas(test);
-        search.setDepth(depth);
-        search.setKnowledge(getKnowledge());
-        search.setVerbose(verbose);
-        search.setInitialGraph(initialGraph);
-        Graph psi = search.search();
-        SepsetMap sepsetsFromFas = search.getSepsets();
+        Fgs fgs = new Fgs(new ScoreIndTest(test));
+        Graph graph = fgs.search();
+        PcMaxLocal pcLocal = new PcMaxLocal(test, graph);
+        pcLocal.setRecordSepsets(true);
+        pcLocal.setUnderlingNoncolliders(true);
+        graph = pcLocal.search();
+        SepsetMap sepsetMap = pcLocal.getSepsets();
+        SepsetProducer sepsets = new SepsetsSet(sepsetMap, test);
 
-        SepsetProducer sepsets = new SepsetsMaxScore(psi, test, null, depth);
+        for (Node y : graph.getNodes()) {
+            SearchGraphUtils.basicPatternRestricted2(graph, y);
+        }
 
-        psi.reorientAllWith(Endpoint.CIRCLE);
-        SearchGraphUtils.pcOrientbk(knowledge, psi, nodes);
-        stepB(psi, sepsets);
-        stepC(psi, sepsets, sepsetsFromFas);
-        stepD(psi, sepsets, supSepsets, sepsetsFromFas);
-        if (stepE(supSepsets, psi)) return psi;
-        stepF(psi, sepsets, supSepsets);
-        ruleR1(psi);
+        for (Edge edge : graph.getEdges()) {
+            if (!Edges.isDirectedEdge(edge)) {
+                graph.removeEdge(edge);
+                graph.addNondirectedEdge(edge.getNode1(), edge.getNode2());
+            }
+        }
+
+//        graph.reorientAllWith(Endpoint.CIRCLE);
+
+        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
+        stepB(graph, sepsets);
+        stepC(graph, sepsets);
+        stepD(graph, sepsets, supSepsets);
+        if (stepE(supSepsets, graph)) return graph;
+        stepF(graph, sepsets, supSepsets);
+        ruleR1(graph);
 
 
         TetradLogger.getInstance().log("graph", "\nFinal Graph:");
-        TetradLogger.getInstance().log("graph", psi.toString());
+        TetradLogger.getInstance().log("graph", graph.toString());
 
-        this.logger.log("graph", "\nReturning this graph: " + psi);
+        this.logger.log("graph", "\nReturning this graph: " + graph);
 
-        return psi;
+        return graph;
     }
 
 
@@ -163,8 +173,8 @@ public final class Ccd implements GraphSearch {
 
 
     private void stepB(Graph psi, SepsetProducer sepsets) {
-        addColliders(psi, sepsets);
-        addNoncolliders(psi, sepsets);
+//        addColliders(psi, sepsets);
+//        addNoncolliders(psi, sepsets);
 
 //        List<Node> nodes1 = test.getVariables();
 //
@@ -344,7 +354,7 @@ public final class Ccd implements GraphSearch {
     }
 
 
-    private void stepC(Graph psi, SepsetProducer sepsets, SepsetMap sepsetsFromFas) {
+    private void stepC(Graph psi, SepsetProducer sepsets) {
         TetradLogger.getInstance().log("info", "\nStep C");
 
         EDGE:
@@ -377,7 +387,8 @@ public final class Ccd implements GraphSearch {
 
                 //...X is not in sepset<A, Y>...
                 List<Node> sepset = sepsets.getSepset(a, y);
-                if (sepset == null) sepset = sepsetsFromFas.get(a, y);
+//                if (sepset == null) sepset = sepsetsFromFas.get(a, y);
+                if (sepset == null) continue;
 
                 if (sepset.contains(x)) continue;
 
@@ -393,7 +404,7 @@ public final class Ccd implements GraphSearch {
         }
     }
 
-    private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, List<Node>> supSepsets, SepsetMap fasSepsets) {
+    private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, List<Node>> supSepsets) {
         TetradLogger.getInstance().log("info", "\nStep D");
 
         Map<Node, List<Node>> local = new HashMap<>();
@@ -465,7 +476,6 @@ public final class Ccd implements GraphSearch {
 
                         setT.add(b);
                         List<Node> sepset = sepsets.getSepset(a, c);
-                        if (sepset == null) sepset = fasSepsets.get(a, c);
                         setT.addAll(sepset);
 
                         List<Node> listT = new ArrayList<Node>(setT);
@@ -766,10 +776,9 @@ public final class Ccd implements GraphSearch {
         return false;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
+
 }
+
 
 
 

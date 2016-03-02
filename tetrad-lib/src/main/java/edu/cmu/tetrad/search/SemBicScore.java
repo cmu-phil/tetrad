@@ -30,7 +30,9 @@ import edu.cmu.tetrad.util.TetradVector;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implements the continuous BIC score for FGS.
@@ -60,6 +62,7 @@ public class SemBicScore implements ISemBicScore {
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;
+    private Set<Integer> forbidden = new HashSet<>();
 
     public SemBicScore(ICovarianceMatrix covariances) {
         this(covariances, 2.0);
@@ -82,7 +85,9 @@ public class SemBicScore implements ISemBicScore {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(int i, int[] parents) {
+    public double localScore(int i, int... parents) {
+        for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
+
         if (parents.length == 0) return localScore(i);
         else if (parents.length == 1) return localScore(i, parents[0]);
 
@@ -95,12 +100,12 @@ public class SemBicScore implements ISemBicScore {
         try {
             covxxInv = covxx.inverse();
         } catch (Exception e) {
-            if (isIgnoreLinearDependent()) {
-                return Double.NaN;
-            } else {
-                printMinimalLinearlyDependentSet(parents, getCovariances());
-                return Double.NaN;
-            }
+//            if (isIgnoreLinearDependent()) {
+//                return Double.NaN;
+//            } else {
+            printMinimalLinearlyDependentSet(parents, getCovariances());
+            return Double.NaN;
+//            }
         }
 
         TetradVector covxy = getSelection2(getCovariances(), parents, i);
@@ -123,7 +128,7 @@ public class SemBicScore implements ISemBicScore {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    int[] append(int[] parents, int extra) {
+    private int[] append(int[] parents, int extra) {
         int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
@@ -228,6 +233,7 @@ public class SemBicScore implements ISemBicScore {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
     @Override
     public List<Node> getVariables() {
         return variables;
@@ -282,7 +288,9 @@ public class SemBicScore implements ISemBicScore {
             try {
                 m.inverse();
             } catch (Exception e2) {
+                forbidden.add(sel[0]);
                 out.println("### Linear dependence among variables: " + _sel);
+                out.println("### Removing " + _sel.get(0));
             }
         }
     }
