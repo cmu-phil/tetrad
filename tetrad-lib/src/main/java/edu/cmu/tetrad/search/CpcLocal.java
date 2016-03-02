@@ -24,18 +24,19 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implements the PC Local algorithm.
  *
  * @author Joseph Ramsey (this version).
  */
-public class PcLocal implements GraphSearch {
+public class CpcLocal implements GraphSearch {
 
     /**
      * The independence test used for the PC search.
@@ -65,30 +66,18 @@ public class PcLocal implements GraphSearch {
 
     private Graph graph;
     private MeekRules meekRules;
-    private boolean recordSepsets;
-    private SepsetMap sepsetMap = new SepsetMap();
 
     //=============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a PC Local search with the given independence oracle.
      */
-    public PcLocal(IndependenceTest independenceTest, Graph graph) {
+    public CpcLocal(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
 
         this.independenceTest = independenceTest;
-        this.graph = GraphUtils.undirectedGraph(graph);
-    }
-
-    public PcLocal(IndependenceTest independenceTest) {
-        if (independenceTest == null) {
-            throw new NullPointerException();
-        }
-
-        this.independenceTest = independenceTest;
-        this.graph = null;
     }
 
     //==============================PUBLIC METHODS========================//
@@ -128,9 +117,7 @@ public class PcLocal implements GraphSearch {
     public Graph search() {
         long time1 = System.currentTimeMillis();
 
-        if (graph == null) {
-            graph = new EdgeListGraph(getIndependenceTest().getVariables());
-        }
+        graph = new EdgeListGraph(getIndependenceTest().getVariables());
         meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         meekRules.setKnowledge(knowledge);
@@ -145,9 +132,20 @@ public class PcLocal implements GraphSearch {
         int numEdges = nodes.size() * (nodes.size() - 1) / 2;
         int index = 0;
 
-        iteration(nodes, numEdges, index);
-//        iteration(nodes, numEdges, index);
-//        iteration(nodes, numEdges, index);
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                ++index;
+
+                if (index % 1000 == 0) {
+                    log("info", index + " of " + numEdges);
+                }
+
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                tryAddingEdge(x, y);
+            }
+        }
 
         outGraph = graph;
 
@@ -157,24 +155,6 @@ public class PcLocal implements GraphSearch {
         this.elapsedTime = time2 - time1;
 
         return outGraph;
-    }
-
-    private void iteration(List<Node> nodes, int numEdges, int index) {
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                ++index;
-
-                if (index % 100 == 0) {
-                    log("info", index + " of " + numEdges);
-                }
-
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
-
-                tryAddingEdge(x, y);
-
-            }
-        }
     }
 
     private void log(String info, String message) {
@@ -192,10 +172,6 @@ public class PcLocal implements GraphSearch {
         List<Node> sepset = sepset(x, y);
 
         if (sepset == null) {
-            sepset = sepset(y, x);
-        }
-
-        if (sepset == null) {
             if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
                 return;
             }
@@ -203,8 +179,6 @@ public class PcLocal implements GraphSearch {
             Edge edge = Edges.undirectedEdge(x, y);
             graph.addEdge(edge);
             orientNewColliders(x, y);
-//            orientNewColliders(y, x);
-
 
             for (Node w : graph.getAdjacentNodes(x)) {
                 tryRemovingEdge(w, x);
@@ -219,22 +193,9 @@ public class PcLocal implements GraphSearch {
     private void tryRemovingEdge(Node x, Node y) {
         if (!graph.isAdjacentTo(x, y)) return;
 
-        List<Node> sepsetX, sepsetY;
-        boolean existsSepset = false;
-
-        sepsetX = sepset(x, y);
+        List<Node> sepsetX = sepset(x, y);
 
         if (sepsetX != null) {
-            existsSepset = true;
-        } else {
-            sepsetY = sepset(y, x);
-
-            if (sepsetY != null) {
-                existsSepset = true;
-            }
-        }
-
-        if (existsSepset) {
             if (!getKnowledge().noEdgeRequired(x.getName(), y.getName())) {
                 return;
             }
@@ -246,6 +207,26 @@ public class PcLocal implements GraphSearch {
             start.add(y);
 
             meekRules.orientImplied(graph, start);
+
+            renderUnambiguousWherePossible();
+        }
+    }
+
+    private void renderUnambiguousWherePossible() {
+        Set<Node> visited = meekRules.getVisited();
+
+        for (Node v : visited) {
+            List<Node> adj = graph.getAdjacentNodes(v);
+
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node _x = adj.get(i);
+                    Node _z = adj.get(j);
+                    if (Edges.isDirectedEdge(graph.getEdge(_x, v)) && Edges.isDirectedEdge(graph.getEdge(v, _z))) {
+                        graph.removeAmbiguousTriple(_x, v, _z);
+                    }
+                }
+            }
         }
     }
 
@@ -262,7 +243,19 @@ public class PcLocal implements GraphSearch {
             List<Node> cond = GraphUtils.asList(choice, adj);
 
             if (getIndependenceTest().isIndependent(x, y, cond)) {
-                if (recordSepsets) sepsetMap.set(x, y, cond);
+                return cond;
+            }
+        }
+
+        adj = graph.getAdjacentNodes(y);
+        adj.remove(x);
+
+        gen = new DepthChoiceGenerator(adj.size(), adj.size());
+
+        while ((choice = gen.next()) != null) {
+            List<Node> cond = GraphUtils.asList(choice, adj);
+
+            if (getIndependenceTest().isIndependent(x, y, cond)) {
                 return cond;
             }
         }
@@ -271,15 +264,26 @@ public class PcLocal implements GraphSearch {
     }
 
     private void orientNewColliders(Node x, Node y) {
-//        if (graph.isParentOf(y, x)) return;
+        boolean oriented = orientColliders(x, y);
 
+        if (!oriented) {
+            orientColliders(y, x);
+        }
+
+        List<Node> start = new ArrayList<>();
+//        start.add(x);
+        start.add(y);
+
+        meekRules.orientImplied(graph, start);
+    }
+
+    private boolean orientCollider1(Node x, Node y) {
         boolean oriented = false;
 
         for (Node z : graph.getAdjacentNodes(y)) {
             if (z == x) continue;
 
             List<Node> cond = sepset(z, x);
-            if (cond == null) cond = sepset(x, z);
 
             if (cond != null && !cond.contains(y) && !graph.isParentOf(y, x) && !graph.isParentOf(y, z)) {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
@@ -288,130 +292,59 @@ public class PcLocal implements GraphSearch {
             }
         }
 
-        if (!oriented) {
-            for (Node z : graph.getAdjacentNodes(x)) {
-                if (z == y) continue;
-
-                List<Node> cond = sepset(z, y);
-                if (cond == null) cond = sepset(y, z);
-
-                if (cond != null && !cond.contains(x) && !graph.isParentOf(x, y) && !graph.isParentOf(x, z)) {
-                    graph.setEndpoint(y, x, Endpoint.ARROW);
-                    graph.setEndpoint(z, x, Endpoint.ARROW);
-                }
-            }
-        }
-
         List<Node> start = new ArrayList<>();
-        start.add(x);
         start.add(y);
 
-        MeekRules meekRules = new MeekRules();
-        meekRules.setKnowledge(knowledge);
-        meekRules.setUndirectUnforcedEdges(true);
         meekRules.orientImplied(graph, start);
+        return oriented;
     }
 
-    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
-    // length at most 'bound'. Cycle checker in other words.
-    private boolean existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, int bound) {
-        Queue<Node> Q = new LinkedList<>();
-        Set<Node> V = new HashSet<>();
-        Q.offer(from);
-        V.add(from);
-        Node e = null;
-        int distance = 0;
+    private boolean orientColliders(Node x, Node y) {
+        boolean oriented = false;
+        List<Node> start = new ArrayList<>();
+        start.add(y);
 
-        while (!Q.isEmpty()) {
-            Node t = Q.remove();
-            if (t == to) {
-                return true;
+        for (Node z : graph.getAdjacentNodes(y)) {
+            if (z == x) continue;
+
+            SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, getIndependenceTest(), -1, graph);
+
+            if (type == SearchGraphUtils.CpcTripleType.COLLIDER &&
+                    isArrowpointAllowed(x, y, knowledge) &&
+                    isArrowpointAllowed(z, y, knowledge)) {
+                graph.removeEdge(x, y);
+                graph.removeEdge(z, y);
+                graph.addDirectedEdge(x, y);
+                graph.addDirectedEdge(z, y);
+                oriented = true;
+            } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
+                graph.addAmbiguousTriple(x, y, z);
             }
 
-            if (e == t) {
-                e = null;
-                distance++;
-                if (distance > (bound == -1 ? 1000 : bound)) return false;
-            }
+            start.add(z);
 
-            for (Node u : graph.getAdjacentNodes(t)) {
-                Edge edge = graph.getEdge(t, u);
-                Node c = traverseSemiDirected(t, edge);
-                if (c == null) continue;
-                if (cond.contains(c)) continue;
+            for (Node w : graph.getAdjacentNodes(z)) {
+                if (w == y) continue;
 
-                if (c == to) {
-                    return true;
-                }
+                SearchGraphUtils.CpcTripleType _type = SearchGraphUtils.getCpcTripleType2(w, z, y, getIndependenceTest(), -1, graph);
 
-                if (!V.contains(c)) {
-                    V.add(c);
-                    Q.offer(c);
-
-                    if (e == null) {
-                        e = u;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-        return null;
-    }
-
-    private void undirectUnforcedEdges(Node y) {
-        Set<Node> parentsToUndirect = new HashSet<>();
-        List<Node> parents = graph.getParents(y);
-
-        NEXT_EDGE:
-        for (Node x : parents) {
-            for (Node parent : parents) {
-                if (parent != x) {
-                    if (!graph.isAdjacentTo(parent, x)) {
-                        continue NEXT_EDGE;
-                    }
+                if (_type == SearchGraphUtils.CpcTripleType.COLLIDER &&
+                        isArrowpointAllowed(x, y, knowledge) &&
+                        isArrowpointAllowed(z, y, knowledge)) {
+                    graph.removeEdge(w, z);
+                    graph.removeEdge(y, z);
+                    graph.addDirectedEdge(w, z);
+                    graph.addDirectedEdge(y, z);
+                    oriented = true;
+                } else if (_type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
+                    graph.addAmbiguousTriple(x, y, z);
                 }
             }
-
-            parentsToUndirect.add(x);
         }
 
-        for (Node x : parentsToUndirect) {
-            graph.removeEdge(x, y);
-            graph.addUndirectedEdge(x, y);
-        }
-    }
-
-    public Set<Triple> getColliderTriples(Graph graph) {
-        Set<Triple> triples = new HashSet<>();
-
-        for (Node node : graph.getNodes()) {
-            List<Node> nodesInto = graph.getNodesInTo(node, Endpoint.ARROW);
-
-            if (nodesInto.size() < 2) continue;
-
-            ChoiceGenerator gen = new ChoiceGenerator(nodesInto.size(), 2);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                triples.add(new Triple(nodesInto.get(choice[0]), node, nodesInto.get(choice[1])));
-            }
-        }
-
-        return triples;
+        meekRules.orientImplied(graph, start);
+        renderUnambiguousWherePossible();
+        return oriented;
     }
 
     /**
@@ -424,14 +357,6 @@ public class PcLocal implements GraphSearch {
         }
         return !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
-    }
-
-    public void setRecordSepsets(boolean recordSepsets) {
-        this.recordSepsets = recordSepsets;
-    }
-
-    public SepsetMap getSepsets() {
-        return sepsetMap;
     }
 }
 

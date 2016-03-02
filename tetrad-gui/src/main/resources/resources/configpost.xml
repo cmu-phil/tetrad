@@ -204,6 +204,8 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GraphSelectionEditor
                 </editor-class>
+                <params-class>edu.cmu.tetradapp.model.GraphSelectionParams
+                </params-class>
             </model>
         </models>
         <display-component image="graphIcon.gif"/>
@@ -1268,6 +1270,44 @@
                     <event id="details" description="Misc Fine Details"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.PcLocalRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.PcLocalSearchParams
+                </params-class>
+            </model>
+            <model name="CPCLocal" acronym="CPCLocal" help="cpclocal" category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                    <event id="edgeRemoved" description="Edge Removal"
+                           default="on"/>
+                    <event id="edgeOriented" description="Edge Orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="details" description="Misc Fine Details"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.CpcLocalRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.PcLocalSearchParams
+                </params-class>
+            </model>
+            <model name="PcMaxLocal" acronym="PcMaxLocal" help="pcmaxlocal" category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                    <event id="edgeRemoved" description="Edge Removal"
+                           default="on"/>
+                    <event id="edgeOriented" description="Edge Orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="details" description="Misc Fine Details"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.PcMaxLocalRunner</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.PcLocalSearchParams

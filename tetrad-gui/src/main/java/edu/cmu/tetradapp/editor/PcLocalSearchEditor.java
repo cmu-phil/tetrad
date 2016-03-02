@@ -72,6 +72,14 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
         super(runner, "Result Pattern");
     }
 
+    public PcLocalSearchEditor(CpcLocalRunner runner) {
+        super(runner, "Result E-Pattern");
+    }
+
+    public PcLocalSearchEditor(PcMaxLocalRunner runner) {
+        super(runner, "Result E-Pattern");
+    }
+
     //=============================== Public Methods ==================================//
 
     public Graph getGraph() {

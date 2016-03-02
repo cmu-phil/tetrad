@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -84,8 +85,8 @@ public class TreksAction extends AbstractAction implements ClipboardOwner {
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
-//        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), b,
-//                "Graph Properties", JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), b,
+                "Treks", JOptionPane.PLAIN_MESSAGE);
     }
 
     private boolean allTreks(Graph graph, JTextArea textArea) {

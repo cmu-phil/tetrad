@@ -22,19 +22,20 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 
-import java.util.*;
-import java.util.stream.Collector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implements Chickering and Meek's (2002) locally consistent score criterion.
  *
  * @author Joseph Ramsey
  */
-public class GraphScore implements FgsScore {
+public class ScoreIndTest implements FgsScore {
 
-    private final Graph dag;
+    private final IndependenceTest test;
 
     // The variables of the covariance matrix.
     private List<Node> variables;
@@ -45,16 +46,16 @@ public class GraphScore implements FgsScore {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public GraphScore(Graph dag) {
-        this.dag = dag;
-
+    public ScoreIndTest(IndependenceTest test) {
         this.variables = new ArrayList<>();
 
-        for (Node node : dag.getNodes()) {
+        for (Node node : test.getVariables()) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 this.variables.add(node);
             }
         }
+
+        this.test = test;
     }
 
     /**
@@ -75,28 +76,29 @@ public class GraphScore implements FgsScore {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return locallyConsistentScoringCriterion(x, y, z);
+        return pValueScore(x, y, z);
 //        return aBetterScore(x, y, z);
     }
 
-    private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
+    private double pValueScore(int x, int y, int[] z) {
         Node _y = variables.get(y);
         Node _x = variables.get(x);
         List<Node> _z = getVariableList(z);
-        return dag.isDSeparatedFrom(_x, _y, _z) ? -1.0 : 1.0;
+
+        return test.isIndependent(_x, _y, _z) ? -test.getScore() : test.getScore();
     }
 
     private double aBetterScore(int x, int y, int[] z) {
         Node _y = variables.get(y);
         Node _x = variables.get(x);
         List<Node> _z = getVariableList(z);
-        boolean dsep = dag.isDSeparatedFrom(_x, _y, _z);
+        boolean dsep = test.isIndependent(_x, _y, _z);
         int count = 0;
 
         if (!dsep) count++;
 
         for (Node z0 : _z) {
-            if (dag.isDSeparatedFrom(_x, z0, _z)) {
+            if (test.isIndependent(_x, z0, _z)) {
                 count += 1;
             }
         }

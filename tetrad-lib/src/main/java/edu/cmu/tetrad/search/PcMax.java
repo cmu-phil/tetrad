@@ -287,42 +287,46 @@ public class PcMax implements GraphSearch {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                // Skip triples that are shielded.
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
-
-                List<Node> sepset = sepsetProducer.getSepset(a, c);
-
-                if (sepset == null) continue;
-
-                if (!sepset.contains(b)) {
-                    if (verbose) {
-                        System.out.println("\nCollider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
-                    }
-
-                    colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
-
-                    TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
-                }
-            }
+            findColliders(sepsetProducer, graph, verbose, colliders, b);
         }
 
         TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
         return colliders;
+    }
+
+    private void findColliders(SepsetProducer sepsetProducer, Graph graph, boolean verbose, Map<Triple, Double> colliders, Node b) {
+        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+
+        if (adjacentNodes.size() < 2) {
+            return;
+        }
+
+        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+        int[] combination;
+
+        while ((combination = cg.next()) != null) {
+            Node a = adjacentNodes.get(combination[0]);
+            Node c = adjacentNodes.get(combination[1]);
+
+            // Skip triples that are shielded.
+            if (graph.isAdjacentTo(a, c)) {
+                continue;
+            }
+
+            List<Node> sepset = sepsetProducer.getSepset(a, c);
+
+            if (sepset == null) continue;
+
+            if (!sepset.contains(b)) {
+                if (verbose) {
+                    System.out.println("\nCollider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+                }
+
+                colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
+
+                TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
+            }
+        }
     }
 
 

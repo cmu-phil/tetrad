@@ -213,6 +213,8 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GraphSelectionEditor
                 </editor-class>
+                <params-class>edu.cmu.tetradapp.model.GraphSelectionParams
+                </params-class>
             </model>
         </models>
         <display-component image="graphIcon.gif"/>
@@ -1437,7 +1439,7 @@
             <!--description="Collider Orientations"/>-->
             <!--<event id="details" description="Misc Fine Details"/>-->
             <!--</logger>-->
-            <model name="PC Local" acronym="PCLocal" help="pclocal" category="Pattern Searches">
+            <model name="PCLocal" acronym="PCLocal" help="pclocal" category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="graph" description="Graph" default="on"/>
@@ -1451,6 +1453,44 @@
                     <event id="details" description="Misc Fine Details"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.PcLocalRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.PcLocalSearchParams
+                </params-class>
+            </model>
+            <model name="CPCLocal" acronym="CPCLocal" help="cpclocal" category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                    <event id="edgeRemoved" description="Edge Removal"
+                           default="on"/>
+                    <event id="edgeOriented" description="Edge Orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="details" description="Misc Fine Details"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.CpcLocalRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.PcLocalSearchParams
+                </params-class>
+            </model>
+            <model name="PcMaxLocal" acronym="PcMaxLocal" help="pcmaxlocal" category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                    <event id="edgeRemoved" description="Edge Removal"
+                           default="on"/>
+                    <event id="edgeOriented" description="Edge Orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="details" description="Misc Fine Details"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.PcMaxLocalRunner</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.PcLocalSearchEditor
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.PcLocalSearchParams
@@ -1634,6 +1674,23 @@
                     <event id="graph" description="Graph" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.FgsRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
+            </model>
+            <model name="FGSCyclic" acronym="FGSCyclic" help="fgs"
+                   category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="insertedEdges" description="Inserted Edges" default="on"/>
+                    <event id="deletedEdges" description="Deleted Edges" default="on"/>
+                    <event id="directedEdges" description="Directed Edges" default="on"/>
+                    <event id="edgeEvaluations" description="Edge Evaluations"/>
+                    <event id="impliedOrientations" description="Implied Orientations"/>
+                    <event id="rebuiltPatterns" description="Rebuilt Patterns"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.FgsRunnerCyclic</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
