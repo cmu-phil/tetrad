@@ -216,7 +216,7 @@ public final class MimBuildPc {
 //            ges.setKnowledge(getKnowledge());
 //            Graph newStructuralModel = ges.search();
 
-            PcLocal pcLocal = new PcLocal(new IndTestFisherZ(newCovMatrix, getAlpha()));
+            Pc pcLocal = new Pc(new IndTestFisherZ(newCovMatrix, getAlpha()));
             pcLocal.setKnowledge(getKnowledge());
             pcLocal.setAggressivelyPreventCycles(true);
             Graph newStructuralModel = pcLocal.search();

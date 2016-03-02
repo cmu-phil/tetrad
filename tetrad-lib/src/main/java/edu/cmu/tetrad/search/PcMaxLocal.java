@@ -66,6 +66,9 @@ public class PcMaxLocal implements GraphSearch {
     private Graph graph;
     private MeekRules meekRules;
     private SepsetsMaxScore sepsetProducer;
+    private boolean recordSepsets;
+    private SepsetMap sepsets = new SepsetMap();
+    private boolean underlingNoncolldiers;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -78,6 +81,15 @@ public class PcMaxLocal implements GraphSearch {
         }
 
         this.independenceTest = independenceTest;
+    }
+
+    public PcMaxLocal(IndependenceTest independenceTest, Graph graph) {
+        if (independenceTest == null) {
+            throw new NullPointerException();
+        }
+
+        this.independenceTest = independenceTest;
+        this.graph = graph;
     }
 
     //==============================PUBLIC METHODS========================//
@@ -227,6 +239,7 @@ public class PcMaxLocal implements GraphSearch {
             List<Node> cond = GraphUtils.asList(choice, adj);
 
             if (getIndependenceTest().isIndependent(x, y, cond)) {
+                if (recordSepsets) sepsets.set(x, y, cond);
                 return cond;
             }
         }
@@ -240,6 +253,7 @@ public class PcMaxLocal implements GraphSearch {
             List<Node> cond = GraphUtils.asList(choice, adj);
 
             if (getIndependenceTest().isIndependent(x, y, cond)) {
+                if (recordSepsets) sepsets.set(x, y, cond);
                 return cond;
             }
         }
@@ -356,6 +370,8 @@ public class PcMaxLocal implements GraphSearch {
                 colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
 
                 TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
+            } else {
+                graph.addUnderlineTriple(a, b, c);
             }
         }
     }
@@ -370,6 +386,18 @@ public class PcMaxLocal implements GraphSearch {
         }
         return !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
+    }
+
+    public void setRecordSepsets(boolean recordSepsets) {
+        this.recordSepsets = recordSepsets;
+    }
+
+    public SepsetMap getSepsets() {
+        return sepsets;
+    }
+
+    public void setUnderlingNoncolliders(boolean underlingNoncolldiers) {
+        this.underlingNoncolldiers = underlingNoncolldiers;
     }
 }
 

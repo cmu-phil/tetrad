@@ -65,18 +65,30 @@ public class PcLocal implements GraphSearch {
 
     private Graph graph;
     private MeekRules meekRules;
+    private boolean recordSepsets;
+    private SepsetMap sepsetMap = new SepsetMap();
 
     //=============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a PC Local search with the given independence oracle.
      */
+    public PcLocal(IndependenceTest independenceTest, Graph graph) {
+        if (independenceTest == null) {
+            throw new NullPointerException();
+        }
+
+        this.independenceTest = independenceTest;
+        this.graph = GraphUtils.undirectedGraph(graph);
+    }
+
     public PcLocal(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
 
         this.independenceTest = independenceTest;
+        this.graph = null;
     }
 
     //==============================PUBLIC METHODS========================//
@@ -116,7 +128,9 @@ public class PcLocal implements GraphSearch {
     public Graph search() {
         long time1 = System.currentTimeMillis();
 
-        graph = new EdgeListGraph(getIndependenceTest().getVariables());
+        if (graph == null) {
+            graph = new EdgeListGraph(getIndependenceTest().getVariables());
+        }
         meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         meekRules.setKnowledge(knowledge);
@@ -248,6 +262,7 @@ public class PcLocal implements GraphSearch {
             List<Node> cond = GraphUtils.asList(choice, adj);
 
             if (getIndependenceTest().isIndependent(x, y, cond)) {
+                if (recordSepsets) sepsetMap.set(x, y, cond);
                 return cond;
             }
         }
@@ -409,6 +424,14 @@ public class PcLocal implements GraphSearch {
         }
         return !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
+    }
+
+    public void setRecordSepsets(boolean recordSepsets) {
+        this.recordSepsets = recordSepsets;
+    }
+
+    public SepsetMap getSepsets() {
+        return sepsetMap;
     }
 }
 
