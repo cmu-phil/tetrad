@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2016 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,18 +18,21 @@
  */
 package edu.cmu.tetrad.cli.search;
 
-import edu.cmu.tetrad.cli.data.DatasetReader;
+import edu.cmu.tetrad.cli.data.ContinuousDataReader;
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
-import edu.cmu.tetrad.cli.data.TabularDatasetReader;
+import edu.cmu.tetrad.cli.data.TabularContinuousDataReader;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.cli.util.GraphmlSerializer;
+import edu.cmu.tetrad.cli.util.XmlPrint;
+import edu.cmu.tetrad.cli.validation.DataValidation;
+import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
+import edu.cmu.tetrad.cli.validation.UniqueVariables;
+import edu.cmu.tetrad.cli.validation.ZeroVariance;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.stat.RealVariance;
-import edu.cmu.tetrad.stat.RealVarianceVectorForkJoin;
 import edu.cmu.tetrad.util.DataUtility;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -40,9 +43,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -132,139 +135,107 @@ public class FgsCli {
         }
 
         try {
-            Path outputFile = Paths.get(dirOut.toString(), outputPrefix + ".txt");
-            try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-                writer.println("Runtime Parameters:");
-                writer.printf("number of threads = %,d\n", numOfThreads);
-                writer.printf("verbose = %s\n", verbose);
-                writer.println();
+            Set<String> variables = FileIO.extractUniqueLine(variableFile);
 
-                writer.println("Algorithm Parameters:");
-                writer.printf("penalty discount = %f\n", penaltyDiscount);
-                writer.printf("depth = %s\n", depth);
-                writer.printf("faithfulness = %s\n", faithfulness);
-                writer.printf("ignore linear dependence = %s\n", ignoreLinearDependence);
-                writer.println();
+            ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
+            DataSet dataSet = dataReader.readInData(variables);
 
-                File datasetFile = dataFile.toFile();
-                int numOfCases = DataUtility.countLine(datasetFile) - 1;
-                int numOfVars = DataUtility.countColumn(datasetFile, delimiter);
-                writer.println("Data File:");
-                writer.printf("file = %s\n", dataFile.getFileName());
-                writer.printf("cases = %,d\n", numOfCases);
-                writer.printf("variables = %,d\n", numOfVars);
-                writer.println();
+            if (isValid(dataSet, System.err)) {
+                Graph graph;
+                Path outputFile = Paths.get(dirOut.toString(), outputPrefix + ".txt");
+                try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+                    printInfo(dataSet, variables, writer);
 
-                if (knowledgeFile != null) {
-                    writer.println("Knowledge:");
-                    writer.printf("file = %s\n", knowledgeFile.getFileName());
+                    Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
+                    fgs.setOut(writer);
+                    fgs.setDepth(depth);
+                    fgs.setIgnoreLinearDependent(ignoreLinearDependence);
+                    fgs.setPenaltyDiscount(penaltyDiscount);
+                    fgs.setNumPatternsToStore(0);  // always set to zero
+                    fgs.setFaithfulnessAssumed(faithfulness);
+                    fgs.setParallelism(numOfThreads);
+                    fgs.setVerbose(verbose);
+                    if (knowledgeFile != null) {
+                        fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
+                    }
+                    writer.flush();
+
+                    graph = fgs.search();
                     writer.println();
+                    writer.println(graph.toString().trim());
+                    writer.flush();
                 }
-
-                Set<String> variables = FileIO.extractUniqueLine(variableFile);
-                if (variableFile != null) {
-                    writer.println("Variable Exclusion:");
-                    writer.printf("file = %s\n", variableFile.getFileName());
-                    writer.printf("variables to exclude = %,d\n", variables.size());
-                    writer.println();
-                }
-
-                DatasetReader datasetReader = new TabularDatasetReader(dataFile, delimiter);
-                DataSet dataSet = datasetReader.readInContinuousData(variables);
-                writer.println("Dataset Read In:");
-                writer.printf("cases = %,d\n", dataSet.getNumRows());
-                writer.printf("variables = %,d\n", dataSet.getNumColumns());
-                writer.println();
-
-                validate(dataSet, writer);
-
-                Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
-                fgs.setOut(writer);
-                fgs.setDepth(depth);
-                fgs.setIgnoreLinearDependent(ignoreLinearDependence);
-                fgs.setPenaltyDiscount(penaltyDiscount);
-                fgs.setNumPatternsToStore(0);  // always set to zero
-                fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setParallelism(numOfThreads);
-                fgs.setVerbose(verbose);
-                if (knowledgeFile != null) {
-                    fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
-                }
-                writer.flush();
-
-                Graph graph = fgs.search();
-                writer.println();
-                writer.println(graph.toString().trim());
-                writer.flush();
 
                 if (graphML) {
                     Path graphOutputFile = Paths.get(dirOut.toString(), outputPrefix + "_graph.txt");
                     try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
-                        graphWriter.println(GraphmlSerializer.serialize(graph, outputPrefix));
+                        XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
                     }
                 }
             }
-        } catch (Exception exception) {
-            System.err.println(exception.getMessage());
-            System.exit(-126);
-        }
-    }
-
-    private static void validate(DataSet dataSet, PrintStream writer) throws Exception {
-        double[][] data = dataSet.getDoubleData().toArray();
-        List<String> variables = dataSet.getVariableNames();
-
-        // check for non-unique variables
-        Set<String> vars = new HashSet<>();
-        Set<String> unique = new HashSet<>();
-        for (String var : variables) {
-            if (unique.contains(var)) {
-                vars.add(var);
-            } else {
-                unique.add(var);
-            }
-        }
-        int size = vars.size();
-        if (size > 0) {
-            writer.println("Error:");
-            writer.printf("non-unique variable = %d\n", size);
-            writer.println();
-            if (validationOutput) {
-                writeToFile(Paths.get(dirOut.toString(), outputPrefix + "_non-unique.txt"), vars);
-            }
-            throw new Exception("Non-unique variable(s) found.");
-        }
-
-        // check for zero-variance
-        RealVariance variance = new RealVarianceVectorForkJoin(data, numOfThreads);
-        double[] varianceVector = variance.compute(true);
-        int index = 0;
-        vars.clear();
-        for (String variable : variables) {
-            if (varianceVector[index++] == 0) {
-                vars.add(variable);
-            }
-        }
-        size = vars.size();
-        if (size > 0) {
-            writer.println("Error:");
-            writer.printf("zero-variance = %d\n", size);
-            writer.println();
-            if (validationOutput) {
-                writeToFile(Paths.get(dirOut.toString(), outputPrefix + "_zero-variance.txt"), vars);
-            }
-            throw new Exception("Zero-variance found.");
-        }
-    }
-
-    private static void writeToFile(Path outputFile, Set<String> set) {
-        try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-            for (String s : set) {
-                writer.println(s);
-            }
-        } catch (IOException exception) {
+        } catch (IOException | IllegalArgumentException | TransformerException | TransformerFactoryConfigurationError exception) {
             exception.printStackTrace(System.err);
         }
+    }
+
+    private static boolean isValid(DataSet dataSet, PrintStream writer) {
+        String dir = dirOut.toString();
+        DataValidation[] dataValidations = {
+            new UniqueVariableNames(dataSet, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_var_names.txt") : null),
+            new ZeroVariance(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_zero-variance.txt") : null),
+            new UniqueVariables(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_vars.txt") : null)
+        };
+
+        boolean isValid = true;
+        for (DataValidation dataValidation : dataValidations) {
+            isValid = dataValidation.validate(writer);
+            if (!isValid) {
+                break;
+            }
+        }
+
+        return isValid;
+    }
+
+    private static void printInfo(DataSet dataSet, Set<String> variables, PrintStream writer) throws IOException {
+        writer.println("Runtime Parameters:");
+        writer.printf("number of threads = %,d\n", numOfThreads);
+        writer.printf("verbose = %s\n", verbose);
+        writer.println();
+
+        writer.println("Algorithm Parameters:");
+        writer.printf("penalty discount = %f\n", penaltyDiscount);
+        writer.printf("depth = %s\n", depth);
+        writer.printf("faithfulness = %s\n", faithfulness);
+        writer.printf("ignore linear dependence = %s\n", ignoreLinearDependence);
+        writer.println();
+
+        if (variableFile != null) {
+            writer.println("Variable Exclusion:");
+            writer.printf("file = %s\n", variableFile.getFileName());
+            writer.printf("variables to exclude = %,d\n", variables.size());
+            writer.println();
+        }
+
+        if (knowledgeFile != null) {
+            writer.println("Knowledge:");
+            writer.printf("file = %s\n", knowledgeFile.getFileName());
+            writer.println();
+        }
+
+        File datasetFile = dataFile.toFile();
+        int numOfCases = DataUtility.countLine(datasetFile) - 1;
+        int numOfVars = DataUtility.countColumn(datasetFile, delimiter);
+        writer.println("Data File:");
+        writer.printf("file = %s\n", dataFile.getFileName());
+        writer.printf("cases = %,d\n", numOfCases);
+        writer.printf("variables = %,d\n", numOfVars);
+        writer.println();
+
+        writer.println("Dataset Read In:");
+        writer.printf("cases = %,d\n", dataSet.getNumRows());
+        writer.printf("variables = %,d\n", dataSet.getNumColumns());
+        writer.println();
     }
 
     private static void showHelp() {

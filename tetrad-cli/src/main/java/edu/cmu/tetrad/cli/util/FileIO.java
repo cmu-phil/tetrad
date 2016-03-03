@@ -19,10 +19,12 @@
 package edu.cmu.tetrad.cli.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +39,28 @@ import java.util.Set;
 public class FileIO {
 
     private FileIO() {
+    }
+
+    public static void writeLineByLine(Set<String> set, Path fileOut) throws IOException {
+        if (!(set == null || set.isEmpty())) {
+            try (BufferedWriter writer = Files.newBufferedWriter(fileOut, StandardOpenOption.CREATE)) {
+                for (String s : set) {
+                    writer.write(s);
+                    writer.newLine();
+                }
+            }
+        }
+    }
+
+    public static void writeLineByLine(List<String> list, Path fileOut) throws IOException {
+        if (!(list == null || list.isEmpty())) {
+            try (BufferedWriter writer = Files.newBufferedWriter(fileOut, StandardOpenOption.CREATE)) {
+                for (String s : list) {
+                    writer.write(s);
+                    writer.newLine();
+                }
+            }
+        }
     }
 
     public static List<String> extractLineByLine(Path file) throws IOException {
@@ -59,7 +83,10 @@ public class FileIO {
         if (file != null) {
             try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    lines.add(line);
+                    line = line.trim();
+                    if (line.length() > 0) {
+                        lines.add(line);
+                    }
                 }
             }
         }

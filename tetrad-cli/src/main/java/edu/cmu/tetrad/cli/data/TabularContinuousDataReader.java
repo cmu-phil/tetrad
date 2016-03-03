@@ -28,25 +28,24 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 /**
  *
- * Feb 3, 2016 11:46:22 AM
+ * Feb 29, 2016 1:34:57 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class TabularDatasetReader extends AbstractDatasetReader {
+public class TabularContinuousDataReader extends AbstractDataReader implements ContinuousDataReader {
 
-    public TabularDatasetReader(Path dataFile, char delimiter) {
+    public TabularContinuousDataReader(Path dataFile, char delimiter) {
         super(dataFile, delimiter);
     }
 
     @Override
-    public DataSet readInContinuousData() throws IOException {
+    public DataSet readInData() throws IOException {
         int numOfRows = countNumberOfLines() - 1;  // exclude the header
 
         double[][] data;
@@ -55,8 +54,9 @@ public class TabularDatasetReader extends AbstractDatasetReader {
             MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
             StringBuilder dataBuilder = new StringBuilder();
 
+            // read in variables
             int numOfCols = 0;
-            byte currentChar;
+            byte currentChar = -1;
             byte prevChar = NEW_LINE;
             while (buffer.hasRemaining()) {
                 currentChar = buffer.get();
@@ -65,7 +65,12 @@ public class TabularDatasetReader extends AbstractDatasetReader {
                 }
 
                 if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                    nodes.add(new ContinuousVariable(dataBuilder.toString().trim()));
+                    String value = dataBuilder.toString().trim();
+                    if (value.length() > 0) {
+                        nodes.add(new ContinuousVariable(value));
+                    } else {
+                        throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
+                    }
 
                     numOfCols++;
                     dataBuilder.delete(0, dataBuilder.length());
@@ -82,16 +87,24 @@ public class TabularDatasetReader extends AbstractDatasetReader {
 
                 prevChar = currentChar;
             }
-            // cases where the last column is empty
-            if (prevChar == delimiter) {
-                nodes.add(new ContinuousVariable(dataBuilder.toString().trim()));
-                numOfCols++;
-            }
-            // cases where there's no newline at the end of the file
-            String leftover = dataBuilder.toString().trim();
-            if (leftover.length() > 0) {
-                nodes.add(new ContinuousVariable(leftover));
-                numOfCols++;
+            if (currentChar == NEW_LINE) {
+                if (prevChar == delimiter) {
+                    throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
+                }
+            } else {
+                if (currentChar == delimiter) {
+                    throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
+                } else {
+                    String value = dataBuilder.toString().trim();
+                    if (value.length() > 0) {
+                        nodes.add(new ContinuousVariable(value));
+                    } else {
+                        throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
+                    }
+
+                    numOfCols++;
+                    dataBuilder.delete(0, dataBuilder.length());
+                }
             }
 
             // read in data
@@ -111,12 +124,14 @@ public class TabularDatasetReader extends AbstractDatasetReader {
                             data[row][col] = Double.parseDouble(value);
                         } catch (NumberFormatException exception) {
                             throw new IOException(
-                                    String.format("Unable to parse data at line %d column %d\n", row + 2, col),
+                                    String.format("Unable to parse data at line %d column %d.", row + 2, ++col),
                                     exception);
                         }
+                    } else {
+                        throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
                     }
-                    col++;
 
+                    col++;
                     dataBuilder.delete(0, dataBuilder.length());
                     if (currentChar == NEW_LINE) {
                         col = 0;
@@ -131,16 +146,29 @@ public class TabularDatasetReader extends AbstractDatasetReader {
 
                 prevChar = currentChar;
             }
+            if (currentChar == NEW_LINE) {
+                if (prevChar == delimiter) {
+                    throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
+                }
+            } else {
+                if (currentChar == delimiter) {
+                    throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
+                } else {
+                    String value = dataBuilder.toString().trim();
+                    if (value.length() > 0) {
+                        try {
+                            data[row][col] = Double.parseDouble(value);
+                        } catch (NumberFormatException exception) {
+                            throw new IOException(
+                                    String.format("Unable to parse data at line %d column %d.", row + 2, ++col),
+                                    exception);
+                        }
+                    } else {
+                        throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
+                    }
 
-            // cases where there's no newline at the end of the file
-            String value = dataBuilder.toString().trim();
-            if (value.length() > 0) {
-                try {
-                    data[row][col++] = Double.parseDouble(value);
-                } catch (NumberFormatException exception) {
-                    throw new IOException(
-                            String.format("Unable to parse data at line %d column %d\n", row + 2, col),
-                            exception);
+                    numOfCols++;
+                    dataBuilder.delete(0, dataBuilder.length());
                 }
             }
         }
@@ -149,9 +177,9 @@ public class TabularDatasetReader extends AbstractDatasetReader {
     }
 
     @Override
-    public DataSet readInContinuousData(Set<String> excludedVariables) throws IOException {
+    public DataSet readInData(Set<String> excludedVariables) throws IOException {
         if (excludedVariables == null || excludedVariables.isEmpty()) {
-            return readInContinuousData();
+            return readInData();
         }
 
         int numOfRows = countNumberOfLines() - 1;  // exclude the header
@@ -165,7 +193,7 @@ public class TabularDatasetReader extends AbstractDatasetReader {
             List<Integer> variablesToExclude = new LinkedList<>();
 
             int numOfCols = 0;
-            byte currentChar;
+            byte currentChar = -1;
             byte prevChar = NEW_LINE;
             while (buffer.hasRemaining()) {
                 currentChar = buffer.get();
@@ -175,13 +203,17 @@ public class TabularDatasetReader extends AbstractDatasetReader {
 
                 if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
                     String value = dataBuilder.toString().trim();
-                    if (excludedVariables.contains(value)) {
-                        variablesToExclude.add(numOfCols);
+                    if (value.length() > 0) {
+                        if (excludedVariables.contains(value)) {
+                            variablesToExclude.add(numOfCols);
+                        } else {
+                            nodes.add(new ContinuousVariable(value));
+                        }
                     } else {
-                        nodes.add(new ContinuousVariable(value));
+                        throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
                     }
-                    numOfCols++;
 
+                    numOfCols++;
                     dataBuilder.delete(0, dataBuilder.length());
                     if (currentChar == NEW_LINE) {
                         prevChar = currentChar;
@@ -196,29 +228,32 @@ public class TabularDatasetReader extends AbstractDatasetReader {
 
                 prevChar = currentChar;
             }
+            if (currentChar == NEW_LINE) {
+                if (prevChar == delimiter) {
+                    throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
+                }
+            } else {
+                if (currentChar == delimiter) {
+                    throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
+                } else {
+                    String value = dataBuilder.toString().trim();
+                    if (value.length() > 0) {
+                        if (excludedVariables.contains(value)) {
+                            variablesToExclude.add(numOfCols);
+                        } else {
+                            nodes.add(new ContinuousVariable(value));
+                        }
+                    } else {
+                        throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
+                    }
 
-            // cases where the last column is empty
-            if (prevChar == delimiter) {
-                String value = dataBuilder.toString().trim();
-                if (excludedVariables.contains(value)) {
-                    variablesToExclude.add(numOfCols);
-                } else {
-                    nodes.add(new ContinuousVariable(value));
+                    numOfCols++;
+                    dataBuilder.delete(0, dataBuilder.length());
                 }
-                numOfCols++;
-            }
-            // cases where there's no newline at the end of the file
-            String leftover = dataBuilder.toString().trim();
-            if (leftover.length() > 0) {
-                if (excludedVariables.contains(leftover)) {
-                    variablesToExclude.add(numOfCols);
-                } else {
-                    nodes.add(new ContinuousVariable(leftover));
-                }
-                numOfCols++;
             }
 
             if (variablesToExclude.isEmpty()) {
+                // read in data
                 data = new double[numOfRows][numOfCols];
                 int row = 0;
                 int col = 0;
@@ -235,12 +270,14 @@ public class TabularDatasetReader extends AbstractDatasetReader {
                                 data[row][col] = Double.parseDouble(value);
                             } catch (NumberFormatException exception) {
                                 throw new IOException(
-                                        String.format("Unable to parse data at line %d column %d\n", row + 2, col),
+                                        String.format("Unable to parse data at line %d column %d.", row + 2, ++col),
                                         exception);
                             }
+                        } else {
+                            throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
                         }
-                        col++;
 
+                        col++;
                         dataBuilder.delete(0, dataBuilder.length());
                         if (currentChar == NEW_LINE) {
                             col = 0;
@@ -255,16 +292,29 @@ public class TabularDatasetReader extends AbstractDatasetReader {
 
                     prevChar = currentChar;
                 }
+                if (currentChar == NEW_LINE) {
+                    if (prevChar == delimiter) {
+                        throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
+                    }
+                } else {
+                    if (currentChar == delimiter) {
+                        throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
+                    } else {
+                        String value = dataBuilder.toString().trim();
+                        if (value.length() > 0) {
+                            try {
+                                data[row][col] = Double.parseDouble(value);
+                            } catch (NumberFormatException exception) {
+                                throw new IOException(
+                                        String.format("Unable to parse data at line %d column %d.", row + 2, ++col),
+                                        exception);
+                            }
+                        } else {
+                            throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
+                        }
 
-                // cases where there's no newline at the end of the file
-                String value = dataBuilder.toString().trim();
-                if (value.length() > 0) {
-                    try {
-                        data[row][col++] = Double.parseDouble(value);
-                    } catch (NumberFormatException exception) {
-                        throw new IOException(
-                                String.format("Unable to parse data at line %d column %d\n", row + 2, col),
-                                exception);
+                        numOfCols++;
+                        dataBuilder.delete(0, dataBuilder.length());
                     }
                 }
             } else {
@@ -275,15 +325,15 @@ public class TabularDatasetReader extends AbstractDatasetReader {
                 for (Integer varIndex : variablesToExclude) {
                     exclusions[excludeIndex++] = varIndex;
                 }
-                Arrays.sort(exclusions);
+
                 excludeIndex = 0;
+                int excludeColumn = exclusions[excludeIndex];
 
                 // read in data
                 data = new double[numOfRows][numOfCols];
                 int row = 0;
                 int col = 0;
                 int dataCol = 0;
-                int excludeColumn = exclusions[excludeIndex];
                 while (buffer.hasRemaining()) {
                     currentChar = buffer.get();
                     if (currentChar == CARRIAGE_RETURN) {
@@ -303,10 +353,13 @@ public class TabularDatasetReader extends AbstractDatasetReader {
                                     data[row][dataCol] = Double.parseDouble(value);
                                 } catch (NumberFormatException exception) {
                                     throw new IOException(
-                                            String.format("Unable to parse data at line %d column %d\n", row + 2, col),
+                                            String.format("Unable to parse data at line %d column %d.", row + 2, col),
                                             exception);
                                 }
+                            } else {
+                                throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
                             }
+
                             dataCol++;
                         }
                         col++;
@@ -329,22 +382,31 @@ public class TabularDatasetReader extends AbstractDatasetReader {
 
                     prevChar = currentChar;
                 }
-
-                // cases where there's no newline at the end of the file
-                String value = dataBuilder.toString().trim();
-                if (value.length() > 0) {
-                    if (col != excludeColumn) {
-                        try {
-                            data[row][dataCol] = Double.parseDouble(value);
-                        } catch (NumberFormatException exception) {
-                            throw new IOException(
-                                    String.format("Unable to parse data at line %d column %d\n", row + 2, col),
-                                    exception);
+                if (col != excludeColumn) {
+                    if (currentChar == NEW_LINE) {
+                        if (prevChar == delimiter) {
+                            throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
+                        }
+                    } else {
+                        if (currentChar == delimiter) {
+                            throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
+                        } else {
+                            String value = dataBuilder.toString().trim();
+                            if (value.length() > 0) {
+                                try {
+                                    data[row][dataCol] = Double.parseDouble(value);
+                                } catch (NumberFormatException exception) {
+                                    throw new IOException(
+                                            String.format("Unable to parse data at line %d column %d.", row + 2, col),
+                                            exception);
+                                }
+                            } else {
+                                throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
+                            }
                         }
                     }
                 }
             }
-
         }
 
         return new BoxDataSet(new DoubleDataBox(data), nodes);
