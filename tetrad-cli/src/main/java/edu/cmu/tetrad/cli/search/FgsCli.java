@@ -44,8 +44,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Set;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -173,8 +171,9 @@ public class FgsCli {
                     }
                 }
             }
-        } catch (IOException | IllegalArgumentException | TransformerException | TransformerFactoryConfigurationError exception) {
-            exception.printStackTrace(System.err);
+        } catch (Exception exception) {
+            System.err.println(exception.getLocalizedMessage());
+            System.exit(-128);
         }
     }
 
