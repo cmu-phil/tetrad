@@ -78,7 +78,7 @@ public class UniqueVariables implements DataValidation {
         size = set.size();
         if (size > 0) {
             if (printStream != null) {
-                printStream.printf("Dataset contains non-unique variables (%d).", size);
+                printStream.printf("Dataset contains %d non-unique variable(s).", size);
                 printStream.println();
             }
 
