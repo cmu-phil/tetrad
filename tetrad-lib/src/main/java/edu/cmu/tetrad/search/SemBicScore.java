@@ -100,12 +100,18 @@ public class SemBicScore implements FgsScore {
         try {
             covxxInv = covxx.inverse();
         } catch (Exception e) {
-//            if (isIgnoreLinearDependent()) {
-//                return Double.NaN;
-//            } else {
-            printMinimalLinearlyDependentSet(parents, getCovariances());
+            boolean removedOne = true;
+
+            while (removedOne) {
+                List<Integer> _parents = new ArrayList<>();
+                for (int y = 0; y < parents.length; y++) _parents.add(parents[y]);
+                _parents.removeAll(forbidden);
+                parents = new int[_parents.size()];
+                for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
+                removedOne = printMinimalLinearlyDependentSet(parents, getCovariances());
+            }
+
             return Double.NaN;
-//            }
         }
 
         TetradVector covxy = getSelection2(getCovariances(), parents, i);
@@ -268,7 +274,7 @@ public class SemBicScore implements FgsScore {
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
-    private void printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
+    private boolean printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
         List<Node> _parents = new ArrayList<>();
         for (int p : parents) _parents.add(variables.get(p));
 
@@ -291,8 +297,11 @@ public class SemBicScore implements FgsScore {
                 forbidden.add(sel[0]);
                 out.println("### Linear dependence among variables: " + _sel);
                 out.println("### Removing " + _sel.get(0));
+                return true;
             }
         }
+
+        return false;
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {

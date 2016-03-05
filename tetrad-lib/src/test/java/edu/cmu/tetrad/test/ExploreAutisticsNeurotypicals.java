@@ -47,7 +47,7 @@ public final class ExploreAutisticsNeurotypicals {
         List<List<Graph>> graphs = reconcileNodes(allGraphs);
         List<Edge> _edges = getAllEdges(allGraphs);
         DataSet dataSet = createEdgeDataSet(graphs, _edges);
-        dataSet = restrictDataRange(dataSet, .3, .7);
+        dataSet = restrictDataRange(dataSet, 0, .5);
         printData(path, "edgedata", dataSet);
     }
 
