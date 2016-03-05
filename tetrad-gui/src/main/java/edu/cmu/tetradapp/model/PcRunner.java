@@ -40,22 +40,13 @@ import java.util.Set;
 public class PcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
-    private StandardizedSemIm semIm = null;
     private Graph initialGraph = null;
-//    private Pc pc = null;
-
     Set<Edge> pcAdjacent;
     Set<Edge> pcNonadjacent;
     List<Node> pcNodes;
 
 
     //============================CONSTRUCTORS============================//
-
-
-    public PcRunner(StandardizedSemImWrapper semImWrapper, PcSearchParams params) {
-        super(semImWrapper.getGraph(), params);
-        this.semIm = semImWrapper.getStandardizedSemIm();
-    }
 
 
     /**
@@ -100,13 +91,6 @@ public class PcRunner extends AbstractAlgorithmRunner
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-//    /**
-//     * Constucts a wrapper for the given EdgeListGraph.
-//     */
-//    public PcRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-//        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
-//    }
-
     public PcRunner(DagWrapper dagWrapper, PcSearchParams params) {
         super(dagWrapper.getDag(), params);
     }
@@ -149,23 +133,12 @@ public class PcRunner extends AbstractAlgorithmRunner
         Graph graph;
         Pc pc;
 
-        if (semIm != null) {
-            pc = new Pc(new IndTestDSepDiminishingPathStrengths(semIm, getParams().getIndTestParams().getAlpha()));
-            pc.setKnowledge(knowledge);
-            pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-            pc.setDepth(depth);
-            pc.setInitialGraph(initialGraph);
-            graph = pc.search();
-        }
-        else {
-            pc = new Pc(getIndependenceTest());
-//        PcMax pc = new PcMax(getIndependenceTest());
-            pc.setKnowledge(knowledge);
-            pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-            pc.setDepth(depth);
-            pc.setInitialGraph(initialGraph);
-            graph = pc.search();
-        }
+        pc = new Pc(getIndependenceTest());
+        pc.setKnowledge(knowledge);
+        pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+        pc.setDepth(depth);
+        pc.setInitialGraph(initialGraph);
+        graph = pc.search();
 
         System.out.println(graph);
 
