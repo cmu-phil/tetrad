@@ -124,7 +124,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result Pattern");
     }
 
-    public PcGesSearchEditor(FgsRunner runner) {
+    public PcGesSearchEditor(FgsRunner2 runner) {
         super(runner, "Result Pattern");
     }
 

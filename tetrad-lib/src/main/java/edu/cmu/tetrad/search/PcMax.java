@@ -225,7 +225,7 @@ public class PcMax implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-        SepsetsMaxScore sepsetProducer = new SepsetsMaxScore(graph, independenceTest, null, getDepth());
+        SepsetsMinScore sepsetProducer = new SepsetsMinScore(graph, independenceTest, null, getDepth());
 
         addColliders(graph, sepsetProducer, knowledge);
 

@@ -65,7 +65,7 @@ public class PcMaxLocal implements GraphSearch {
 
     private Graph graph;
     private MeekRules meekRules;
-    private SepsetsMaxScore sepsetProducer;
+    private SepsetsMinScore sepsetProducer;
     private boolean recordSepsets;
     private SepsetMap sepsets = new SepsetMap();
     private boolean underlingNoncolldiers;
@@ -134,7 +134,7 @@ public class PcMaxLocal implements GraphSearch {
         meekRules.setKnowledge(knowledge);
         meekRules.setUndirectUnforcedEdges(false);
 
-        sepsetProducer = new SepsetsMaxScore(graph, getIndependenceTest(), null, -1);
+        sepsetProducer = new SepsetsMinScore(graph, getIndependenceTest(), null, -1);
 
         // This is the list of all changed nodes from the last iteration
         List<Node> nodes = graph.getNodes();
