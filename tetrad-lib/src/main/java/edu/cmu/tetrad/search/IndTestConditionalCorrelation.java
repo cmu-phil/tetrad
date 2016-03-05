@@ -266,7 +266,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        throw new UnsupportedOperationException();
     }
 
     /**

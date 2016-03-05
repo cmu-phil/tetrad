@@ -398,7 +398,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return pValue;
+        return -(getPValue() - getAlpha());
     }
 
     public void startRecordingFacts() {

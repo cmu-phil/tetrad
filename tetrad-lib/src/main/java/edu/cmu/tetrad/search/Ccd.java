@@ -97,7 +97,7 @@ public final class Ccd implements GraphSearch {
         //Step A
         TetradLogger.getInstance().log("info", "\nStep A");
 
-        Fgs fgs = new Fgs(new ScoreIndTest(test));
+        Fgs fgs = new Fgs(new ScoredIndTest(test));
         Graph graph = fgs.search();
         PcMaxLocal pcLocal = new PcMaxLocal(test, graph);
         pcLocal.setRecordSepsets(true);

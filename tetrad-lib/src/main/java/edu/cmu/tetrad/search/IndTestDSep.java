@@ -297,7 +297,7 @@ public class IndTestDSep implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return getPValue() == 1 ? -1 : 1;
     }
 
     public void startRecordingFacts() {

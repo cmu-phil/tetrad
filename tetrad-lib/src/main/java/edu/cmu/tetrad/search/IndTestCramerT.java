@@ -384,7 +384,7 @@ public final class IndTestCramerT implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return -(getPValue() - getAlpha());
     }
 
     /**

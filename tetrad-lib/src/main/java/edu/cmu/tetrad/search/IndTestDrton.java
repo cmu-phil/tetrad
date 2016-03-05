@@ -331,7 +331,7 @@ public final class IndTestDrton implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return -(getPValue() - getAlpha());
     }
 
     public void shuffleVariables() {

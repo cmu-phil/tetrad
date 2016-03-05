@@ -39,7 +39,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScore implements ISemBicScore {
+public class SemBicScore implements FgsScore {
 
     // The covariance matrix.
     private ICovarianceMatrix covariances;
