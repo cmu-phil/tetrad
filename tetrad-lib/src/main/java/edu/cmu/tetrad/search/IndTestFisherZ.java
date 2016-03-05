@@ -282,8 +282,6 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         this.alpha = alpha;
         this.cutoff = StatUtils.getZForAlpha(alpha);
-
-        System.out.println("Cutoff = " + cutoff);
     }
 
     /**
