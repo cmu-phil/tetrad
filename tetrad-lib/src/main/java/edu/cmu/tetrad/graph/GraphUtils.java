@@ -3163,7 +3163,7 @@ public final class GraphUtils {
         }
     }
 
-    public static String getTextGraphString(Graph graph) {
+    public static String graphToText(Graph graph) {
         StringBuilder buf = new StringBuilder();
 
         buf.append("\nGraph Nodes:\n");
@@ -3227,19 +3227,19 @@ public final class GraphUtils {
 //            buf.append("\n" + node + ": (" + node.getCenterX() + ", " + node.getCenterY() + ")");
 //        }
 
-        buf.append("\nR selection:\n");
-
-        buf.append("\n\ndata<-data[c(\"");
-
-        for (int i = 0; i < nodes.size(); i++) {
-            buf.append(nodes.get(i));
-
-            if (i < nodes.size() - 1) {
-                buf.append("\",\"");
-            } else {
-                buf.append("\")]");
-            }
-        }
+//        buf.append("\nR selection:\n");
+//
+//        buf.append("\n\ndata<-data[c(\"");
+//
+//        for (int i = 0; i < nodes.size(); i++) {
+//            buf.append(nodes.get(i));
+//
+//            if (i < nodes.size() - 1) {
+//                buf.append("\",\"");
+//            } else {
+//                buf.append("\")]");
+//            }
+//        }
         return buf.toString();
     }
 
