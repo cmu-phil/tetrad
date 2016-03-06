@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestType;
 
@@ -38,6 +39,11 @@ import java.util.List;
  */
 public final class GesParams implements MeekSearchParams {
     static final long serialVersionUID = 23L;
+
+    public static PcRunner serializableInstance() {
+        return new PcRunner(Dag.serializableInstance(),
+                PcSearchParams.serializableInstance());
+    }
 
     /**
      * @serial Can't be null.

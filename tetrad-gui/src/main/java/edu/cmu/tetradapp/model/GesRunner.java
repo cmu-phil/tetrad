@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
@@ -39,6 +40,11 @@ public class GesRunner extends AbstractAlgorithmRunner
     static final long serialVersionUID = 23L;
     private Graph trueGraph;
     private Graph sourceGraph;
+
+    public static PcRunner serializableInstance() {
+        return new PcRunner(Dag.serializableInstance(),
+                PcSearchParams.serializableInstance());
+    }
 
     public GesRunner(DataWrapper dataWrapper, SearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);

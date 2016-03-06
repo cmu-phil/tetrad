@@ -40,6 +40,11 @@ public class JcpcRunner extends AbstractAlgorithmRunner
     private Graph trueGraph;
     private Graph sourceGraph;
 
+    public static PcRunner serializableInstance() {
+        return new PcRunner(Dag.serializableInstance(),
+                PcSearchParams.serializableInstance());
+    }
+
     public JcpcRunner(DataWrapper dataWrapper, SearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
