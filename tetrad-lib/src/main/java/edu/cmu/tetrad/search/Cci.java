@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -56,7 +57,7 @@ public final class Cci {
     /**
      * The q value of the most recent test.
      */
-    private double minP;
+    private double score;
 
     /**
      * Map from nodes to the indices.
@@ -71,7 +72,12 @@ public final class Cci {
     /**
      * the most recent list of P values, for calculating Q.
      */
-    private List<Double> p;
+    private List<Double> scores;
+
+    /**
+     * Z cutoff corresponding to the desired alpha.
+     */
+    private final double cutoff;
 
     //==================CONSTRUCTORS====================//
 
@@ -91,6 +97,7 @@ public final class Cci {
         }
 
         this.alpha = alpha;
+        this.cutoff = StatUtils.getZForAlpha(alpha);
         this.data = data;
 
         indices = new HashMap<String, Integer>();
@@ -118,11 +125,11 @@ public final class Cci {
     }
 
     /**
-     * @return the minimal p value calculated by the method for the most
+     * @return the minimal scores value calculated by the method for the most
      * recent independence check.
      */
-    public double getMinP() {
-        return minP;
+    public double getScore() {
+        return score;
     }
 
     /**
@@ -133,7 +140,7 @@ public final class Cci {
     }
 
     public double getQ() {
-        return getQ(p);
+        return getQ(scores);
     }
 
     /**
@@ -170,14 +177,14 @@ public final class Cci {
         }
 
         if (x.length < 10) {
-            minP = Double.NaN;
+            score = Double.NaN;
             return false; // For PC, should not remove the edge for this reason.
         }
 
         double[] _x = new double[x.length];
         double[] _y = new double[x.length];
 
-        List<Double> p = new ArrayList<Double>();
+        List<Double> scores = new ArrayList<Double>();
 
         for (int m = 0; m < getNumFunctions(); m++) {
             for (int n = 0; n < getNumFunctions(); n++) {
@@ -186,31 +193,27 @@ public final class Cci {
                     _y[i] = function(n, y[i]);
                 }
 
-                double _p = calcP(_x, _y);
-
-                if (!Double.isNaN(_p)) {
-                    p.add(_p);
-                }
+                scores.add(calcScore(_x, _y));
             }
         }
 
-        Collections.sort(p);
-        double cutoff = fdr(alpha, p, true);
-        double min = p.size() == 0 ? Double.NaN : p.get(0);
-        this.minP = min;
+        Collections.sort(scores);
+//        double cutoff = fdr(alpha, scores, true);
+        double max = scores.size() == 0 ? Double.NaN : scores.get(scores.size() - 1);
+        this.score = max;
 
-        this.p = p;
+        this.scores = scores;
 
-        if (Double.isNaN(min)) {
-            this.minP = Double.NaN;
-            return true; // No basis on which to remove an edge for PC.
-        }
+//        if (Double.isNaN(min)) {
+//            this.score = Double.NaN;
+//            return true; // No basis on which to remove an edge for PC.
+//        }
 
-        return minP > cutoff;
-//        return getQ(p) > alpha;
+        return score < 0;
+//        return getQ(scores) > alpha;
     }
 
-    private double calcP(double[] _x, double[] _y) {
+    private double calcScore(double[] _x, double[] _y) {
         double sigmaXY = covariance(_x, _y);
         double sigmaXX = covariance(_x, _x);
         double sigmaYY = covariance(_y, _y);
@@ -232,7 +235,8 @@ public final class Cci {
         double t2 = moment22(_x, _y);
 
         double t = sqrt(t2);
-        return 2.0 * (1.0 - normalCdf(0.0, t, abs(w)));
+        return abs(w / t) - cutoff;
+//        return 2.0 * (1.0 - normalCdf(0.0, t, abs));
     }
 
     /**
@@ -438,12 +442,12 @@ public final class Cci {
     }
 
     public double calculateFdrQ() {
-        return calculateFdrQ(p);
+        return calculateFdrQ(scores);
     }
 
     public synchronized double calculateFdrQ(List<Double> p) {
 
-        // If a legitimate p value is desired for this test, should estimate the FDR q value.
+        // If a legitimate scores value is desired for this test, should estimate the FDR q value.
         Collections.sort(p);
         double min = p.size() == 0 ? Double.NaN : p.get(0);
         double high = 1.0;

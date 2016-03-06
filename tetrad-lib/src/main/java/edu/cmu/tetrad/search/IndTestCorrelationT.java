@@ -462,7 +462,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return -(getPValue() - getAlpha());
     }
 
     public TDistribution gettDistribution() {

@@ -37,13 +37,10 @@ import java.util.Set;
  *
  * @author Joseph Ramsey
  */
-public class PcRunner extends AbstractAlgorithmRunner
+public class FgsRunner2 extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
     private Graph initialGraph = null;
-    Set<Edge> pcAdjacent;
-    Set<Edge> pcNonadjacent;
-    List<Node> pcNodes;
 
 
     //============================CONSTRUCTORS============================//
@@ -54,21 +51,21 @@ public class PcRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public FgsRunner2(DataWrapper dataWrapper, PcSearchParams params) {
         super(dataWrapper, params, null);
     }
 
-    public PcRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner2(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
+    public FgsRunner2(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
         super(dataWrapper, params, null);
         this.initialGraph = graphWrapper.getGraph();
     }
 
-    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner2(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.initialGraph = graphWrapper.getGraph();
     }
@@ -76,34 +73,34 @@ public class PcRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcRunner(Graph graph, PcSearchParams params) {
+    public FgsRunner2(Graph graph, PcSearchParams params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public FgsRunner2(GraphWrapper graphWrapper, PcSearchParams params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public PcRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, PcSearchParams params) {
+    public FgsRunner2(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, PcSearchParams params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public PcRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public FgsRunner2(DagWrapper dagWrapper, PcSearchParams params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public PcRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public FgsRunner2(SemGraphWrapper dagWrapper, PcSearchParams params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public PcRunner(GraphWrapper graphModel, IndependenceFactsModel facts, PcSearchParams params) {
+    public FgsRunner2(GraphWrapper graphModel, IndependenceFactsModel facts, PcSearchParams params) {
         super(graphModel.getGraph(), params, null, facts.getFacts());
     }
 
-    public PcRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner2(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -113,8 +110,8 @@ public class PcRunner extends AbstractAlgorithmRunner
      *
      * @see TetradSerializableUtils
      */
-    public static PcRunner serializableInstance() {
-        return new PcRunner(Dag.serializableInstance(),
+    public static FgsRunner2 serializableInstance() {
+        return new FgsRunner2(Dag.serializableInstance(),
                 PcSearchParams.serializableInstance());
     }
 
@@ -130,13 +127,11 @@ public class PcRunner extends AbstractAlgorithmRunner
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
         int depth = getParams().getIndTestParams().getDepth();
-        Graph graph;
-        Pc pc = new Pc(getIndependenceTest());
+        Fgs pc = new Fgs(new ScoredIndTest(getIndependenceTest()));
         pc.setKnowledge(knowledge);
-        pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         pc.setDepth(depth);
         pc.setInitialGraph(initialGraph);
-        graph = pc.search();
+        Graph graph = pc.search();
 
         System.out.println(graph);
 
@@ -149,7 +144,6 @@ public class PcRunner extends AbstractAlgorithmRunner
         }
 
         setResultGraph(graph);
-        setPcFields(pc);
     }
 
     public IndependenceTest getIndependenceTest() {
@@ -189,14 +183,6 @@ public class PcRunner extends AbstractAlgorithmRunner
         return triplesList;
     }
 
-    public Set<Edge> getAdj() {
-        return new HashSet<Edge>(pcAdjacent);
-    }
-
-    public Set<Edge> getNonAdj() {
-        return new HashSet<Edge>(pcNonadjacent);
-    }
-
     public boolean supportsKnowledge() {
         return true;
     }
@@ -209,12 +195,6 @@ public class PcRunner extends AbstractAlgorithmRunner
             return ((MeekSearchParams) params).isAggressivelyPreventCycles();
         }
         return false;
-    }
-
-    private void setPcFields(Pc pc) {
-        pcAdjacent = pc.getAdjacencies();
-        pcNonadjacent = pc.getNonadjacencies();
-        pcNodes = getGraph().getNodes();
     }
 }
 

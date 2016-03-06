@@ -347,7 +347,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     @Override
     public double getScore() {
-        return getPValue();
+        return -(getPValue() - getAlpha());
     }
 
 

@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class ScoreIndTest implements FgsScore {
+public class ScoredIndTest implements FgsScore {
 
     private final IndependenceTest test;
 
@@ -46,7 +46,7 @@ public class ScoreIndTest implements FgsScore {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ScoreIndTest(IndependenceTest test) {
+    public ScoredIndTest(IndependenceTest test) {
         this.variables = new ArrayList<>();
 
         for (Node node : test.getVariables()) {
@@ -76,43 +76,8 @@ public class ScoreIndTest implements FgsScore {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return pValueScore(x, y, z);
-//        return aBetterScore(x, y, z);
-    }
-
-    private double pValueScore(int x, int y, int[] z) {
-        Node _y = variables.get(y);
-        Node _x = variables.get(x);
-        List<Node> _z = getVariableList(z);
-
-        return test.isIndependent(_x, _y, _z) ? -test.getScore() : test.getScore();
-    }
-
-    private double aBetterScore(int x, int y, int[] z) {
-        Node _y = variables.get(y);
-        Node _x = variables.get(x);
-        List<Node> _z = getVariableList(z);
-        boolean dsep = test.isIndependent(_x, _y, _z);
-        int count = 0;
-
-        if (!dsep) count++;
-
-        for (Node z0 : _z) {
-            if (test.isIndependent(_x, z0, _z)) {
-                count += 1;
-            }
-        }
-
-        double score = dsep ? -1 - count : 1 + count;
-
-//        if (score == 1) score -= Math.tanh(z.length);
-        return score;
-    }
-
-    private List<Node> minus(List<Node> z, Node z0) {
-        List<Node> diff = new ArrayList<>(z);
-        diff.remove(z0);
-        return diff;
+        test.isIndependent(variables.get(x), variables.get(y), getVariableList(z));
+        return test.getScore();
     }
 
     int[] append(int[] parents, int extra) {

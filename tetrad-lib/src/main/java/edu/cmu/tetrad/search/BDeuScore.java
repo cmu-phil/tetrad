@@ -141,9 +141,8 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         //Finally, compute the score
         double score = 0.0;
 
-        score += r * q * FastMath.log(getStructurePrior());
-//
-//        score += getPriorForStructure(parents.length);
+//        score += r * q * FastMath.log(getStructurePrior());
+        score += getPriorForStructure(parents.length);
 
         final double cellPrior = getSamplePrior() / (r * q);
         final double rowPrior = getSamplePrior() / q;

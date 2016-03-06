@@ -1678,6 +1678,23 @@
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
             </model>
+            <model name="FGS2" acronym="FGS2" help="fgs2" category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations" default="on"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.FgsRunner2</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.PcSearchParams
+                </params-class>
+            </model>
             <model name="FGSCyclic" acronym="FGSCyclic" help="fgs"
                    category="Pattern Searches">
                 <logger>

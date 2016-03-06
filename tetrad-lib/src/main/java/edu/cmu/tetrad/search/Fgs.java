@@ -259,11 +259,25 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 // Do forward search.
                 fes();
             } else {
-                graph = new EdgeListGraphSingleConnections(getVariables());
-                initializeForwardEdgesFromEmptyGraph(getVariables());
+                if (isFaithfulnessAssumed()) {
+                    graph = new EdgeListGraphSingleConnections(getVariables());
+                    initializeForwardEdgesFromEmptyGraph(getVariables());
 
-                // Do forward search.
-                fes();
+                    // Do forward search.
+                    fes();
+                } else {
+                    graph = new EdgeListGraphSingleConnections(getVariables());
+
+                    setFaithfulnessAssumed(true);
+                    initializeForwardEdgesFromEmptyGraph(getVariables());
+
+                    // Do forward search.
+                    fes();
+
+                    setFaithfulnessAssumed(false);
+                    initializeForwardEdgesFromExistingGraph(getVariables());
+                    fes();
+                }
             }
         }
 

@@ -418,7 +418,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return -(getPValue() - getAlpha());
     }
 
     public void startRecordingFacts() {

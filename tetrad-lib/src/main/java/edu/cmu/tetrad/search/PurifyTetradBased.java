@@ -277,7 +277,6 @@ public class PurifyTetradBased implements IPurify {
                     break;
                 }
             }
-            System.out.println("cutoff = " + cutoff);
         }
 
         List<Double> pValues = listCrossConstructPValues(clustering, eliminated, cutoff);

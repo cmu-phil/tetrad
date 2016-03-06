@@ -3163,6 +3163,86 @@ public final class GraphUtils {
         }
     }
 
+    public static String getTextGraphString(Graph graph) {
+        StringBuilder buf = new StringBuilder();
+
+        buf.append("\nGraph Nodes:\n");
+
+        List<Node> nodes = graph.getNodes();
+
+        for (int i = 0; i < nodes.size(); i++) {
+//            buf.append("\n" + (i + 1) + ". " + nodes.get(i));
+            buf.append(nodes.get(i)).append(" ");
+            if ((i + 1) % 30 == 0) buf.append("\n");
+        }
+
+        buf.append("\n\nGraph Edges: ");
+
+        List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
+
+        Edges.sortEdges(edges);
+
+        for (int i = 0; i < edges.size(); i++) {
+            Edge edge = edges.get(i);
+            buf.append("\n").append(i + 1).append(". ").append(edge);
+        }
+
+        buf.append("\n");
+        buf.append("\n");
+
+        Set<Triple> ambiguousTriples = graph.getAmbiguousTriples();
+
+        if (!ambiguousTriples.isEmpty()) {
+            buf.append("Ambiguous triples (i.e. list of triples for which there is ambiguous data" +
+                    "\nabout whether they are colliders or not): \n");
+
+            for (Triple triple : ambiguousTriples) {
+                buf.append(triple).append("\n");
+            }
+        }
+
+        Set<Triple> underLineTriples = graph.getUnderLines();
+
+        if (!underLineTriples.isEmpty()) {
+            buf.append("Underline triples: \n");
+
+            for (Triple triple : underLineTriples) {
+                buf.append(triple).append("\n");
+            }
+        }
+
+        Set<Triple> dottedUnderLineTriples = graph.getDottedUnderlines();
+
+        if (!dottedUnderLineTriples.isEmpty()) {
+            buf.append("Dotted underline triples: \n");
+
+            for (Triple triple : dottedUnderLineTriples) {
+                buf.append(triple).append("\n");
+            }
+        }
+//
+//        buf.append("\nNode positions\n");
+//
+//        for (Node node : getNodes()) {
+//            buf.append("\n" + node + ": (" + node.getCenterX() + ", " + node.getCenterY() + ")");
+//        }
+
+        buf.append("\nR selection:\n");
+
+        buf.append("\n\ndata<-data[c(\"");
+
+        for (int i = 0; i < nodes.size(); i++) {
+            buf.append(nodes.get(i));
+
+            if (i < nodes.size() - 1) {
+                buf.append("\",\"");
+            } else {
+                buf.append("\")]");
+            }
+        }
+        return buf.toString();
+    }
+
     public static class GraphComparison {
         private int adjFn;
         private int adjFp;

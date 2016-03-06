@@ -131,13 +131,13 @@ public class TestFgs {
 
     @Test
     public void explore2() {
-        RandomUtil.getInstance().setSeed(1450956446672L);
+        RandomUtil.getInstance().setSeed(1457220623122L);
 
-        int numVars = 10;
+        int numVars = 20;
         double edgeFactor = 1.0;
         int numCases = 1000;
-        double structurePrior = .01;
-        double samplePrior = 10;
+        double structurePrior = 1;
+        double samplePrior = 1;
 
         List<Node> vars = new ArrayList<>();
 
@@ -171,11 +171,11 @@ public class TestFgs {
         int[][] counts = SearchGraphUtils.graphComparison(estPattern, truePattern, null);
 
         int[][] expectedCounts = {
-                {2, 0, 0, 0, 0, 0},
+                {2, 0, 0, 0, 0, 1},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 7, 0, 1},
+                {1, 0, 0, 13, 0, 3},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
@@ -187,7 +187,9 @@ public class TestFgs {
 //
 //        System.out.println(MatrixUtils.toString(expectedCounts));
 //        System.out.println(MatrixUtils.toString(counts));
+//        System.out.println(RandomUtil.getInstance().getSeed());
     }
+
 
     @Test
     public void testExplore3() {

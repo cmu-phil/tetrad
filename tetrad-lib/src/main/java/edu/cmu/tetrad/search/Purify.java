@@ -968,7 +968,6 @@ public class Purify {
                 break;
             }
         }
-        System.out.println("cutoff = " + cutoff);
 
         int numImpurities = countCrossConstructPValues(partition, eliminated, cutoff).size();
 
