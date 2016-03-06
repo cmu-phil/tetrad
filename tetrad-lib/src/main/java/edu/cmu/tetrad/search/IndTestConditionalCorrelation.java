@@ -76,7 +76,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     private Map<Node, Integer> indices;
     private boolean verbose = false;
-    private double cutoff = Double.NaN;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -191,7 +190,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         }
 
         this.alpha = alpha;
-        this.cutoff = StatUtils.getZForAlpha(alpha);
     }
 
     /**
