@@ -1552,7 +1552,7 @@ public class EdgeListGraph implements Graph {
      * @return a string representation of the graph.
      */
     public String toString() {
-        return GraphUtils.getTextGraphString(this).toString();
+        return GraphUtils.graphToText(this).toString();
     }
 
     public Graph subgraph(List<Node> nodes) {

@@ -197,9 +197,9 @@ public final class IndTestFisherZ implements IndependenceTest {
 //
 //        boolean independent = pValue > alpha;
 
-        boolean independent = getScore() < 0;
+        boolean independent = Math.abs(fisherZ) < cutoff;
 
-        this.pValue = pValue;
+//        this.pValue = pValue;
 
         if (verbose) {
             if (independent) {
@@ -223,32 +223,8 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) {
-        double r;
-
-//        if (z.isEmpty()) {
-//            Integer xi = indexMap.get(x);
-//            Integer yi = indexMap.get(y);
-//
-//            if (xi == null || yi == null) {
-//                xi = indexMap.get(nameMap.get(x.getName()));
-//                yi = indexMap.get(nameMap.get(y.getName()));
-//
-//                if (xi == null || yi == null) {
-//                    throw new IllegalArgumentException("Node not in map");
-//                }
-//            }
-//
-//            double a = covMatrix.getValue(xi, xi);
-//            double b = covMatrix.getValue(xi, yi);
-//            double d = covMatrix.getValue(yi, yi);
-//
-//            r = -b / sqrt(a * d);
-//        } else {
         TetradMatrix submatrix = DataUtils.subMatrix(covMatrix, indexMap, x, y, z);
-        r = StatUtils.partialCorrelation(submatrix);
-//        }
-
-        return r;
+        return StatUtils.partialCorrelation(submatrix);
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -440,11 +416,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     @Override
     public double getScore() {
-//        return getPValue() == 0 ? 1 : -1;
-
         return Math.abs(fisherZ) - cutoff;
-//
-//        return -(getPValue() - getAlpha());
     }
 
     public boolean isVerbose() {

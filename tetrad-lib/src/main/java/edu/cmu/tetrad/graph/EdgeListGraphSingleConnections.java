@@ -1497,7 +1497,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * @return a string representation of the graph.
      */
     public String toString() {
-        return GraphUtils.getTextGraphString(this);
+        return GraphUtils.graphToText(this);
     }
 
     public Graph subgraph(List<Node> nodes) {
