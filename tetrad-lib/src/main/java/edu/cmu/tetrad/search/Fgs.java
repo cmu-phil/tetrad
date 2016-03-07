@@ -230,6 +230,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * @return the resulting Pattern.
      */
     public Graph search() {
+        long start = System.currentTimeMillis();
+        score = 0.0;
+
         topGraphs.clear();
 
         lookupArrows = new ConcurrentHashMap<>();
@@ -280,9 +283,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 }
             }
         }
-
-        long start = System.currentTimeMillis();
-        score = 0.0;
 
         // Do backward search.
         bes();
