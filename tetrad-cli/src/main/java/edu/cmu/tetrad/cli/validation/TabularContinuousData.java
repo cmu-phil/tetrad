@@ -59,22 +59,23 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                     }
 
                     if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                        String value = dataBuilder.toString().trim();
+                        col++;
+                        String value = dataBuilder.toString();
+                        dataBuilder.delete(0, dataBuilder.length());
+
                         if (value.length() > 0) {
-                            variables[col] = value;
+                            variables[col - 1] = value;
                         } else {
                             printStream.printf("Missing variable name at column %d.", col);
                             printStream.println();
                         }
 
-                        col++;
-                        dataBuilder.delete(0, dataBuilder.length());
                         if (currentChar == NEW_LINE) {
                             prevChar = currentChar;
                             break;
                         }
                     } else {
-                        if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                        if (currentChar <= SPACE || currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
                             continue;
                         }
                         dataBuilder.append((char) currentChar);
@@ -82,26 +83,107 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
 
                     prevChar = currentChar;
                 }
-                if (currentChar == NEW_LINE) {
-                    if (prevChar == delimiter) {
-                        printStream.printf("Missing variable name at column %d.", col);
-                        printStream.println();
-                    }
-                } else {
+                if (currentChar != NEW_LINE) {
+                    col++;
                     if (currentChar == delimiter) {
                         printStream.printf("Missing variable name at column %d.", col);
                         printStream.println();
                     } else {
-                        String value = dataBuilder.toString().trim();
+                        String value = dataBuilder.toString();
+                        dataBuilder.delete(0, dataBuilder.length());
                         if (value.length() > 0) {
-                            variables[col] = value;
+                            variables[col - 1] = value;
                         } else {
                             printStream.printf("Missing variable name at column %d.", col);
                             printStream.println();
                         }
+                    }
+                }
 
+                col = 0;
+                int row = 1;
+                while (buffer.hasRemaining()) {
+                    currentChar = buffer.get();
+                    if (currentChar == CARRIAGE_RETURN) {
+                        currentChar = NEW_LINE;
+                    }
+
+                    if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
                         col++;
+                        String value = dataBuilder.toString();
                         dataBuilder.delete(0, dataBuilder.length());
+
+                        if (col > numOfCols) {
+                            printStream.printf("Column limit exceeded at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
+                            printStream.println();
+                        } else {
+                            if (value.length() > 0) {
+                                try {
+                                    Double.parseDouble(value);
+                                } catch (NumberFormatException exception) {
+                                    String var = variables[col - 1];
+                                    printStream.println((var == null)
+                                            ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
+                                            : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col));
+                                }
+                            } else {
+                                String var = variables[col - 1];
+                                printStream.println((var == null)
+                                        ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
+                                        : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col));
+                            }
+                        }
+
+                        if (currentChar == NEW_LINE) {
+                            if (col < numOfCols) {
+                                printStream.printf("Insufficient data at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
+                                printStream.println();
+                            }
+                            col = 0;
+                            row++;
+                        }
+                    } else {
+                        if (currentChar <= SPACE || currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+                            continue;
+                        }
+                        dataBuilder.append((char) currentChar);
+                    }
+
+                    prevChar = currentChar;
+                }
+                if (currentChar != NEW_LINE) {
+                    col++;
+                    if (col > numOfCols) {
+                        printStream.printf("Column limit exceeded at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
+                        printStream.println();
+                    } else if (col < numOfCols) {
+                        printStream.printf("Insufficient data at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
+                        printStream.println();
+                    } else {
+                        if (currentChar == delimiter) {
+                            String var = variables[col - 1];
+                            printStream.println((var == null)
+                                    ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
+                                    : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col));
+                        } else {
+                            String value = dataBuilder.toString();
+                            dataBuilder.delete(0, dataBuilder.length());
+                            if (value.length() > 0) {
+                                try {
+                                    Double.parseDouble(value);
+                                } catch (NumberFormatException exception) {
+                                    String var = variables[col - 1];
+                                    printStream.println((var == null)
+                                            ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
+                                            : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col));
+                                }
+                            } else {
+                                String var = variables[col - 1];
+                                printStream.println((var == null)
+                                        ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
+                                        : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col));
+                            }
+                        }
                     }
                 }
             }

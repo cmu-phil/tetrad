@@ -40,6 +40,8 @@ public abstract class AbstractDataReader {
 
     protected static final byte SINGLE_QUOTE = '\'';
 
+    protected static final byte SPACE = ' ';
+
     protected int lineCount;
     protected int columnCount;
 
