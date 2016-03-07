@@ -195,6 +195,24 @@ public final class Edges {
         return null;
     }
 
+    public static Node traverseReverseSemiDirected(Node node, Edge edge) {
+        if (edge == null) {
+            return null;
+        }
+
+        if (node == edge.getNode1()) {
+            if ((edge.getEndpoint2() == Endpoint.TAIL || edge.getEndpoint2() == Endpoint.CIRCLE)) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if ((edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE)) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
+    }
+
     /**
      * For A --* B or A o-* B, given A, returns B. For A <-* B, returns null.
      * Added by ekorber, 2004/06/12.
