@@ -66,8 +66,8 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                         if (value.length() > 0) {
                             variables[col - 1] = value;
                         } else {
-                            printStream.printf("Missing variable name at column %d.", col);
-                            printStream.println();
+                            printStream.println(String.format("Missing variable name at column %d.", col));
+                            valid = false;
                         }
 
                         if (currentChar == NEW_LINE) {
@@ -86,16 +86,16 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                 if (currentChar != NEW_LINE) {
                     col++;
                     if (currentChar == delimiter) {
-                        printStream.printf("Missing variable name at column %d.", col);
-                        printStream.println();
+                        printStream.println(String.format("Missing variable name at column %d.", col));
+                        valid = false;
                     } else {
                         String value = dataBuilder.toString();
                         dataBuilder.delete(0, dataBuilder.length());
                         if (value.length() > 0) {
                             variables[col - 1] = value;
                         } else {
-                            printStream.printf("Missing variable name at column %d.", col);
-                            printStream.println();
+                            printStream.println(String.format("Missing variable name at column %d.", col));
+                            valid = false;
                         }
                     }
                 }
@@ -114,8 +114,8 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                         dataBuilder.delete(0, dataBuilder.length());
 
                         if (col > numOfCols) {
-                            printStream.printf("Column limit exceeded at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
-                            printStream.println();
+                            printStream.println(String.format("Column limit exceeded at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col));
+                            valid = false;
                         } else {
                             if (value.length() > 0) {
                                 try {
@@ -125,19 +125,21 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                                     printStream.println((var == null)
                                             ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
                                             : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col));
+                                    valid = false;
                                 }
                             } else {
                                 String var = variables[col - 1];
                                 printStream.println((var == null)
                                         ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
                                         : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col));
+                                valid = false;
                             }
                         }
 
                         if (currentChar == NEW_LINE) {
                             if (col < numOfCols) {
-                                printStream.printf("Insufficient data at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
-                                printStream.println();
+                                printStream.println(String.format("Insufficient data at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col));
+                                valid = false;
                             }
                             col = 0;
                             row++;
@@ -154,17 +156,18 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                 if (currentChar != NEW_LINE) {
                     col++;
                     if (col > numOfCols) {
-                        printStream.printf("Column limit exceeded at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
-                        printStream.println();
+                        printStream.println(String.format("Column limit exceeded at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col));
+                        valid = false;
                     } else if (col < numOfCols) {
-                        printStream.printf("Insufficient data at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
-                        printStream.println();
+                        printStream.println(String.format("Insufficient data at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col));
+                        valid = false;
                     } else {
                         if (currentChar == delimiter) {
                             String var = variables[col - 1];
                             printStream.println((var == null)
                                     ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
                                     : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col));
+                            valid = false;
                         } else {
                             String value = dataBuilder.toString();
                             dataBuilder.delete(0, dataBuilder.length());
@@ -176,12 +179,14 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                                     printStream.println((var == null)
                                             ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
                                             : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col));
+                                    valid = false;
                                 }
                             } else {
                                 String var = variables[col - 1];
                                 printStream.println((var == null)
                                         ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
                                         : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col));
+                                valid = false;
                             }
                         }
                     }

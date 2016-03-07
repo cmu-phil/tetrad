@@ -21,6 +21,7 @@ package edu.cmu.tetrad.cli.validation;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -36,7 +37,8 @@ public class TabularContinuousDataTest {
     @ClassRule
     public static TemporaryFolder tmpDir = new TemporaryFolder();
 
-    private static final Path dataFile = Paths.get("test", "data", "missing_var_name_and_value", "sim_data_20vars_100cases.csv");
+    private static final Path goodFile = Paths.get("test", "data", "diff_delim", "sim_data_20vars_100cases.csv");
+    private static final Path badFile = Paths.get("test", "data", "missing_var_name_and_value", "sim_data_20vars_100cases.csv");
 
     public TabularContinuousDataTest() {
     }
@@ -54,10 +56,11 @@ public class TabularContinuousDataTest {
         System.out.println("validate: TabularContinuousDataTest");
 
         char delimiter = ',';
-        DataValidation dataValidation = new TabularContinuousData(dataFile, delimiter);
-        System.out.println("================================================================================");
-        dataValidation.validate(System.out);
-        System.out.println("================================================================================");
+        DataValidation dataValidation = new TabularContinuousData(badFile, delimiter);
+        Assert.assertTrue(!dataValidation.validate(System.out));
+
+        dataValidation = new TabularContinuousData(goodFile, delimiter);
+        Assert.assertTrue(dataValidation.validate(System.out));
     }
 
 }
