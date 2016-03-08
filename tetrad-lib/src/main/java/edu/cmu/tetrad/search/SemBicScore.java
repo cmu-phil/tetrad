@@ -221,7 +221,7 @@ public class SemBicScore implements FgsScore {
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > -0.25 * getPenaltyDiscount() * Math.log(sampleSize);
+        return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
     }
 
     public DataSet getDataSet() {
