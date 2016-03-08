@@ -26,6 +26,7 @@ import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.cli.util.GraphmlSerializer;
 import edu.cmu.tetrad.cli.util.XmlPrint;
 import edu.cmu.tetrad.cli.validation.DataValidation;
+import edu.cmu.tetrad.cli.validation.TabularContinuousData;
 import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
 import edu.cmu.tetrad.cli.validation.UniqueVariables;
 import edu.cmu.tetrad.cli.validation.ZeroVariance;
@@ -43,6 +44,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -72,17 +75,26 @@ public class FgsCli {
         MAIN_OPTIONS.addOption(null, "knowledge", true, "A file containing prior knowledge.");
         MAIN_OPTIONS.addOption(null, "exclude-variables", true, "A file containing variables to exclude.");
         MAIN_OPTIONS.addOption(null, "delimiter", true, "Data delimiter. Default is tab.");
-        MAIN_OPTIONS.addOption(null, "penalty-discount", true, "Penalty discount. Default is 4.0");
-        MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited). Default is -1.");
         MAIN_OPTIONS.addOption(null, "faithful", false, "Assume faithfulness.");
         MAIN_OPTIONS.addOption(null, "thread", true, "Number of threads.");
         MAIN_OPTIONS.addOption(null, "ignore-linear-dependence", false, "Ignore linear dependence.");
         MAIN_OPTIONS.addOption(null, "verbose", false, "Print additional information.");
         MAIN_OPTIONS.addOption(null, "graphml", false, "Create graphML output.");
-        MAIN_OPTIONS.addOption(null, "out", true, "Output directory.");
         MAIN_OPTIONS.addOption(null, "help", false, "Show help.");
-        MAIN_OPTIONS.addOption(null, "no-validation-output", false, "No validation output files created.");
+
+        // algorithm parameters
+        MAIN_OPTIONS.addOption(null, "penalty-discount", true, "Penalty discount. Default is 4.0");
+        MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited). Default is -1.");
+
+        // output
+        MAIN_OPTIONS.addOption(null, "out", true, "Output directory.");
         MAIN_OPTIONS.addOption(null, "output-prefix", true, "Prefix name of output files.");
+        MAIN_OPTIONS.addOption(null, "no-validation-output", false, "No validation output files created.");
+
+        // skip validation
+        MAIN_OPTIONS.addOption(null, "skip-unique-var-name", false, "Skip check for unique variable names.");
+        MAIN_OPTIONS.addOption(null, "skip-zero-variance", false, "Skip check for zero variance variables.");
+        MAIN_OPTIONS.addOption(null, "skip-unique-var", false, "Skip check for unique variabes.");
     }
 
     private static Path dataFile;
@@ -99,6 +111,10 @@ public class FgsCli {
     private static boolean validationOutput;
     private static Path dirOut;
     private static String outputPrefix;
+
+    private static boolean skipUniqueVarName;
+    private static boolean skipZeroVariance;
+    private static boolean skipUniqueVar;
 
     /**
      * @param args the command line arguments
@@ -126,10 +142,19 @@ public class FgsCli {
             dirOut = Args.getPathDir(cmd.getOptionValue("out", "."), false);
             outputPrefix = cmd.getOptionValue("output-prefix", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
             validationOutput = !cmd.hasOption("no-validation-output");
+
+            skipUniqueVarName = cmd.hasOption("skip-unique-var-name");
+            skipZeroVariance = cmd.hasOption("skip-zero-variance");
+            skipUniqueVar = cmd.hasOption("skip-unique-var");
         } catch (ParseException | FileNotFoundException exception) {
             System.err.println(exception.getLocalizedMessage());
             showHelp();
             System.exit(-127);
+        }
+
+        DataValidation dataValidation = new TabularContinuousData(dataFile, delimiter);
+        if (!dataValidation.validate(System.err)) {
+            System.exit(-128);
         }
 
         try {
@@ -137,60 +162,64 @@ public class FgsCli {
 
             ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
             DataSet dataSet = dataReader.readInData(variables);
+            if (!isValid(dataSet, System.err)) {
+                System.exit(-128);
+            }
 
-            if (isValid(dataSet, System.err)) {
-                Graph graph;
-                Path outputFile = Paths.get(dirOut.toString(), outputPrefix + ".txt");
-                try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-                    printInfo(dataSet, variables, writer);
+            Graph graph;
+            Path outputFile = Paths.get(dirOut.toString(), outputPrefix + ".txt");
+            try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+                printInfo(dataSet, variables, writer);
 
-                    Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
-                    fgs.setOut(writer);
-                    fgs.setDepth(depth);
-                    fgs.setIgnoreLinearDependent(ignoreLinearDependence);
-                    fgs.setPenaltyDiscount(penaltyDiscount);
-                    fgs.setNumPatternsToStore(0);  // always set to zero
-                    fgs.setFaithfulnessAssumed(faithfulness);
-                    fgs.setParallelism(numOfThreads);
-                    fgs.setVerbose(verbose);
-                    if (knowledgeFile != null) {
-                        fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
-                    }
-                    writer.flush();
-
-                    graph = fgs.search();
-                    writer.println();
-                    writer.println(graph.toString().trim());
-                    writer.flush();
+                Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
+                fgs.setOut(writer);
+                fgs.setDepth(depth);
+                fgs.setIgnoreLinearDependent(ignoreLinearDependence);
+                fgs.setPenaltyDiscount(penaltyDiscount);
+                fgs.setNumPatternsToStore(0);  // always set to zero
+                fgs.setFaithfulnessAssumed(faithfulness);
+                fgs.setParallelism(numOfThreads);
+                fgs.setVerbose(verbose);
+                if (knowledgeFile != null) {
+                    fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
                 }
+                writer.flush();
 
-                if (graphML) {
-                    Path graphOutputFile = Paths.get(dirOut.toString(), outputPrefix + "_graph.txt");
-                    try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
-                        XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
-                    }
+                graph = fgs.search();
+                writer.println();
+                writer.println(graph.toString().trim());
+                writer.flush();
+            }
+
+            if (graphML) {
+                Path graphOutputFile = Paths.get(dirOut.toString(), outputPrefix + "_graph.txt");
+                try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
+                    XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
                 }
             }
         } catch (Exception exception) {
-            System.err.println(exception.getLocalizedMessage());
+            exception.printStackTrace(System.err);
             System.exit(-128);
         }
     }
 
     private static boolean isValid(DataSet dataSet, PrintStream writer) {
-        String dir = dirOut.toString();
-        DataValidation[] dataValidations = {
-            new UniqueVariableNames(dataSet, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_var_names.txt") : null),
-            new ZeroVariance(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_zero-variance.txt") : null),
-            new UniqueVariables(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_vars.txt") : null)
-        };
-
         boolean isValid = true;
-        for (DataValidation dataValidation : dataValidations) {
-            isValid = dataValidation.validate(writer);
-            if (!isValid) {
-                break;
-            }
+
+        String dir = dirOut.toString();
+        List<DataValidation> validations = new LinkedList<>();
+        if (!skipUniqueVarName) {
+            validations.add(new UniqueVariableNames(dataSet, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_var_names.txt") : null));
+        }
+        if (!skipZeroVariance) {
+            validations.add(new ZeroVariance(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_zero-variance.txt") : null));
+        }
+        if (!skipUniqueVar) {
+            validations.add(new UniqueVariables(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_vars.txt") : null));
+        }
+
+        for (DataValidation dataValidation : validations) {
+            isValid = isValid && dataValidation.validate(writer);
         }
 
         return isValid;
