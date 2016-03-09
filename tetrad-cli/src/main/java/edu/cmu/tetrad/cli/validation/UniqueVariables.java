@@ -77,11 +77,6 @@ public class UniqueVariables implements DataValidation {
 
         size = set.size();
         if (size > 0) {
-            if (printStream != null) {
-                printStream.printf("Dataset contains %d non-unique variable(s).", size);
-                printStream.println();
-            }
-
             int[] indices = new int[set.size()];
             int index = 0;
             for (Integer i : set) {
@@ -104,7 +99,17 @@ public class UniqueVariables implements DataValidation {
                 count++;
             }
 
-            if (outputFile != null) {
+            if (outputFile == null) {
+                if (printStream != null) {
+                    printStream.printf("Dataset contains %d non-unique variable(s).", size);
+                    printStream.println();
+                }
+            } else {
+                if (printStream != null) {
+                    printStream.printf("Dataset contains %d non-unique variable(s). See %s file for variable names.", size, outputFile.getFileName().toString());
+                    printStream.println();
+                }
+
                 try {
                     FileIO.writeLineByLine(list, outputFile);
                 } catch (IOException exception) {

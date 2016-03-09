@@ -22,6 +22,7 @@ import edu.cmu.tetrad.cli.data.ContinuousDataReader;
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.data.TabularContinuousDataReader;
 import edu.cmu.tetrad.cli.util.Args;
+import edu.cmu.tetrad.cli.util.DateTime;
 import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.cli.util.GraphmlSerializer;
 import edu.cmu.tetrad.cli.util.XmlPrint;
@@ -74,7 +75,7 @@ public class FgsCli {
 
         MAIN_OPTIONS.addOption(null, "knowledge", true, "A file containing prior knowledge.");
         MAIN_OPTIONS.addOption(null, "exclude-variables", true, "A file containing variables to exclude.");
-        MAIN_OPTIONS.addOption(null, "delimiter", true, "Data delimiter. Default is tab.");
+        MAIN_OPTIONS.addOption(null, "delimiter", true, "Data delimiter either comma, semicolon, space, colon, or tab. Default is tab.");
         MAIN_OPTIONS.addOption(null, "faithful", false, "Assume faithfulness.");
         MAIN_OPTIONS.addOption(null, "thread", true, "Number of threads.");
         MAIN_OPTIONS.addOption(null, "ignore-linear-dependence", false, "Ignore linear dependence.");
@@ -131,7 +132,7 @@ public class FgsCli {
             dataFile = Args.getPathFile(cmd.getOptionValue("data"), true);
             knowledgeFile = Args.getPathFile(cmd.getOptionValue("knowledge", null), false);
             variableFile = Args.getPathFile(cmd.getOptionValue("exclude-variables", null), false);
-            delimiter = Args.getCharacter(cmd.getOptionValue("delimiter", "\t"));
+            delimiter = Args.getDelimiterForName(cmd.getOptionValue("delimiter", "tab"));
             penaltyDiscount = Args.getDouble(cmd.getOptionValue("penalty-discount", "4.0"));
             depth = Args.getIntegerMin(cmd.getOptionValue("depth", "-1"), -1);
             faithfulness = cmd.hasOption("faithful");
@@ -152,6 +153,8 @@ public class FgsCli {
             System.exit(-127);
         }
 
+        printArgs(System.out);
+
         DataValidation dataValidation = new TabularContinuousData(dataFile, delimiter);
         if (!dataValidation.validate(System.err)) {
             System.exit(-128);
@@ -161,7 +164,9 @@ public class FgsCli {
             Set<String> variables = FileIO.extractUniqueLine(variableFile);
 
             ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
+            System.out.printf("Start reading in data: %s\n", DateTime.printNow());
             DataSet dataSet = dataReader.readInData(variables);
+            System.out.printf("End reading in data: %s\n", DateTime.printNow());
             if (!isValid(dataSet, System.err)) {
                 System.exit(-128);
             }
@@ -185,7 +190,9 @@ public class FgsCli {
                 }
                 writer.flush();
 
+                System.out.printf("Start search: %s\n", DateTime.printNow());
                 graph = fgs.search();
+                System.out.printf("End search: %s\n", DateTime.printNow());
                 writer.println();
                 writer.println(graph.toString().trim());
                 writer.flush();
@@ -223,6 +230,29 @@ public class FgsCli {
         }
 
         return isValid;
+    }
+
+    private static void printArgs(PrintStream writer) {
+        writer.println("================================================================================");
+        writer.printf("FGS (%s)\n", DateTime.printNow());
+        writer.println("================================================================================");
+        if (dataFile != null) {
+            writer.printf("data = %s\n", dataFile.getFileName());
+        }
+        if (variableFile != null) {
+            writer.printf("variables = %s\n", variableFile.getFileName());
+        }
+        if (knowledgeFile != null) {
+            writer.printf("knowledge = %s\n", knowledgeFile.getFileName());
+        }
+        writer.printf("penalty discount = %f\n", penaltyDiscount);
+        writer.printf("depth = %s\n", depth);
+        writer.printf("faithfulness = %s\n", faithfulness);
+        writer.printf("ignore linear dependence = %s\n", ignoreLinearDependence);
+        writer.printf("number of threads = %,d\n", numOfThreads);
+        writer.printf("verbose = %s\n", verbose);
+        writer.printf("delimiter = %s\n", Args.getDelimiterName(delimiter));
+        writer.println();
     }
 
     private static void printInfo(DataSet dataSet, Set<String> variables, PrintStream writer) throws IOException {

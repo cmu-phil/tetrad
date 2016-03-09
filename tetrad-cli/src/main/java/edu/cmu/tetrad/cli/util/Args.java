@@ -72,6 +72,45 @@ public class Args {
         }
     }
 
+    public static String getDelimiterName(char delimiter) {
+        switch (delimiter) {
+            case ',':
+                return "comma";
+            case ';':
+                return "semicolon";
+            case ' ':
+                return "space";
+            case ':':
+                return "colon";
+            case '\t':
+                return "tab";
+            default:
+                return "unknown";
+        }
+    }
+
+    public static char getDelimiterForName(String delimiter) {
+        delimiter = (delimiter == null) ? "" : delimiter.toLowerCase();
+        switch (delimiter) {
+            case "comma":
+            case ",":
+                return ',';
+            case "semicolon":
+            case ";":
+                return ';';
+            case "space":
+            case " ":
+                return ' ';
+            case "colon":
+            case ":":
+                return ':';
+            case "tab":
+            case "\t":
+            default:
+                return '\t';
+        }
+    }
+
     public static List<Path> getFiles(String... files) throws FileNotFoundException {
         List<Path> fileList = new LinkedList<>();
 

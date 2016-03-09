@@ -72,12 +72,17 @@ public class ZeroVariance implements DataValidation {
 
         int size = zeroVarianceVariables.size();
         if (size > 0) {
-            if (printStream != null) {
-                printStream.printf("Dataset contains %d variable(s) with zero-variance.", size);
-                printStream.println();
-            }
+            if (outputFile == null) {
+                if (printStream != null) {
+                    printStream.printf("Dataset contains %d variable(s) with zero-variance.", size);
+                    printStream.println();
+                }
+            } else {
+                if (printStream != null) {
+                    printStream.printf("Dataset contains %d variable(s) with zero-variance. See %s file for variable names.", size, outputFile.getFileName().toString());
+                    printStream.println();
+                }
 
-            if (outputFile != null) {
                 try {
                     FileIO.writeLineByLine(zeroVarianceVariables, outputFile);
                 } catch (IOException exception) {
