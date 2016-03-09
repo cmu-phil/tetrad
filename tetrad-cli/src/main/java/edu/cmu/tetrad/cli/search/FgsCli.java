@@ -164,9 +164,9 @@ public class FgsCli {
             Set<String> variables = FileIO.extractUniqueLine(variableFile);
 
             ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
-            System.out.printf("Start reading in data: %s\n", DateTime.printNow());
+            System.out.printf("%s: Start reading in data.\n", DateTime.printNow());
             DataSet dataSet = dataReader.readInData(variables);
-            System.out.printf("End reading in data: %s\n", DateTime.printNow());
+            System.out.printf("%s: End reading in data.\n", DateTime.printNow());
             if (!isValid(dataSet, System.err)) {
                 System.exit(-128);
             }
@@ -190,9 +190,9 @@ public class FgsCli {
                 }
                 writer.flush();
 
-                System.out.printf("Start search: %s\n", DateTime.printNow());
+                System.out.printf("%s: Start search.\n", DateTime.printNow());
                 graph = fgs.search();
-                System.out.printf("End search: %s\n", DateTime.printNow());
+                System.out.printf("%s: End search.\n", DateTime.printNow());
                 writer.println();
                 writer.println(graph.toString().trim());
                 writer.flush();
@@ -200,10 +200,12 @@ public class FgsCli {
 
             if (graphML) {
                 Path graphOutputFile = Paths.get(dirOut.toString(), outputPrefix + "_graph.txt");
+                System.out.printf("%s: Writing GraphML file %s.\n", DateTime.printNow(), graphOutputFile.getFileName().toString());
                 try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
                     XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
                 }
             }
+            System.out.printf("%s: FGS finished!  See %s for details.\n", DateTime.printNow(), outputFile.getFileName().toString());
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
             System.exit(-128);
