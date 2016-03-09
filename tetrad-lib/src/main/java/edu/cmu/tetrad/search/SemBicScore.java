@@ -88,17 +88,30 @@ public class SemBicScore implements FgsScore {
     public double localScore(int i, int... parents) {
         for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
 
-        if (parents.length == 0) return localScore(i);
-        else if (parents.length == 1) return localScore(i, parents[0]);
+//        if (parents.length == 0) return localScore(i);
+//        else if (parents.length == 1) return localScore(i, parents[0]);
 
         double residualVariance = getCovariances().getValue(i, i);
         int n = getSampleSize();
         int p = parents.length;
         TetradMatrix covxx = getSelection1(getCovariances(), parents);
-        TetradMatrix covxxInv;
 
         try {
-            covxxInv = covxx.inverse();
+            TetradMatrix covxxInv = covxx.inverse();
+
+            TetradVector covxy = getSelection2(getCovariances(), parents, i);
+            TetradVector b = covxxInv.times(covxy);
+            residualVariance -= covxy.dotProduct(b);
+
+            if (residualVariance <= 0) {
+                if (isVerbose()) {
+                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
+                }
+                return Double.NaN;
+            }
+
+            double c = getPenaltyDiscount();
+            return score(residualVariance, n, p, c);
         } catch (Exception e) {
             boolean removedOne = true;
 
@@ -113,20 +126,6 @@ public class SemBicScore implements FgsScore {
 
             return Double.NaN;
         }
-
-        TetradVector covxy = getSelection2(getCovariances(), parents, i);
-        TetradVector b = covxxInv.times(covxy);
-        residualVariance -= covxy.dotProduct(b);
-
-        if (residualVariance <= 0) {
-            if (isVerbose()) {
-                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
-            }
-            return Double.NaN;
-        }
-
-        double c = getPenaltyDiscount();
-        return score(residualVariance, n, p, c);
     }
 
     @Override

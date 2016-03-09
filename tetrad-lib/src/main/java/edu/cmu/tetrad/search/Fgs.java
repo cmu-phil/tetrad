@@ -276,11 +276,10 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                     // Do forward search.
                     fes();
-                    fes();
 
-//                    setFaithfulnessAssumed(false);
-//                    initializeForwardEdgesFromExistingGraph(getVariables());
-//                    fes();
+                    setFaithfulnessAssumed(false);
+                    initializeForwardEdgesFromExistingGraph(getVariables());
+                    fes();
                 }
             }
         }
@@ -845,8 +844,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
             storeGraph();
             reevaluateBackward(toProcess);
         }
-
-        meekOrientRestricted(getVariables(), getKnowledge());
     }
 
     private Set<Node> getCommonAdjacents(Node x, Node y) {
@@ -927,7 +924,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                         if (isFaithfulnessAssumed()) {
                             adj = effectEdgesGraph.getAdjacentNodes(x);
-                            adj.addAll(getSemidirectedAncestors(Collections.singletonList(x)));
                         } else {
                             adj = getVariables();
                         }
@@ -970,7 +966,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
     // Calculates the new arrows for an a->b edge.
     private void calculateArrowsForward(Node a, Node b) {
-//        if (isFaithfulnessAssumed() && !effectEdgesGraph.isAdjacentTo(a, b)) return;
+        if (isFaithfulnessAssumed() && !effectEdgesGraph.isAdjacentTo(a, b)) return;
         if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) return;
         this.neighbors.put(b, getNeighbors(b));
 
@@ -1774,28 +1770,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
         return builder.toString();
     }
 
-    public List<Node> getSemidirectedAncestors(List<Node> nodes) {
-        Set<Node> ancestors = new HashSet<>();
-
-        for (Object node1 : nodes) {
-            Node node = (Node) node1;
-            semidirecedParentVisit(node, ancestors);
-        }
-
-        return new ArrayList<>(ancestors);
-    }
-
-    private void semidirecedParentVisit(Node node, Set<Node> closure) {
-        if (closure.contains(node)) return;
-        closure.add(node);
-
-        for (Edge edge : graph.getEdges(node)) {
-            Node sub = Edges.traverseReverseSemiDirected(node, edge);
-            if (sub != null) {
-                semidirecedParentVisit(sub, closure);
-            }
-        }
-    }
 }
 
 
