@@ -156,7 +156,7 @@ public class FgsCli {
         printArgs(System.out);
 
         DataValidation dataValidation = new TabularContinuousData(dataFile, delimiter);
-        if (!dataValidation.validate(System.err)) {
+        if (!dataValidation.validate(System.err, verbose)) {
             System.exit(-128);
         }
 
@@ -167,7 +167,7 @@ public class FgsCli {
             System.out.printf("%s: Start reading in data.\n", DateTime.printNow());
             DataSet dataSet = dataReader.readInData(variables);
             System.out.printf("%s: End reading in data.\n", DateTime.printNow());
-            if (!isValid(dataSet, System.err)) {
+            if (!isValid(dataSet, System.err, verbose)) {
                 System.exit(-128);
             }
 
@@ -212,7 +212,7 @@ public class FgsCli {
         }
     }
 
-    private static boolean isValid(DataSet dataSet, PrintStream writer) {
+    private static boolean isValid(DataSet dataSet, PrintStream writer, boolean verbose) {
         boolean isValid = true;
 
         String dir = dirOut.toString();
@@ -228,7 +228,7 @@ public class FgsCli {
         }
 
         for (DataValidation dataValidation : validations) {
-            isValid = isValid && dataValidation.validate(writer);
+            isValid = isValid && dataValidation.validate(writer, verbose);
         }
 
         return isValid;

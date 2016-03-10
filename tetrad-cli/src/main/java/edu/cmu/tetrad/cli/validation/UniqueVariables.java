@@ -59,7 +59,11 @@ public class UniqueVariables implements DataValidation {
     }
 
     @Override
-    public boolean validate(PrintStream printStream) {
+    public boolean validate(PrintStream stderr, boolean verbose) {
+        if (stderr == null) {
+            stderr = System.err;
+        }
+
         RealVariance variance = new RealVarianceVectorForkJoin(dataSet.getDoubleData().toArray(), numOfThreads);
         double[] varianceVector = variance.compute(true);
 
@@ -100,20 +104,20 @@ public class UniqueVariables implements DataValidation {
             }
 
             if (outputFile == null) {
-                if (printStream != null) {
-                    printStream.printf("Dataset contains %d non-unique variable(s).", size);
-                    printStream.println();
-                }
+                stderr.println(String.format("Dataset contains %d non-unique variables.", size));
             } else {
-                if (printStream != null) {
-                    printStream.printf("Dataset contains %d non-unique variable(s). See %s file for variable names.", size, outputFile.getFileName().toString());
-                    printStream.println();
-                }
-
+                stderr.println(String.format("Dataset contains %d non-unique variables. Variable names have been saved to file %s.", size, outputFile.getFileName().toString()));
                 try {
                     FileIO.writeLineByLine(list, outputFile);
                 } catch (IOException exception) {
                     exception.printStackTrace(System.err);
+                }
+            }
+
+            if (verbose) {
+                stderr.println("Non-uniqe variables:");
+                for (String s : list) {
+                    stderr.println(s);
                 }
             }
         }

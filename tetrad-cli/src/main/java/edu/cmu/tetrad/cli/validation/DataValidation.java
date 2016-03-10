@@ -28,6 +28,6 @@ import java.io.PrintStream;
  */
 public interface DataValidation {
 
-    public boolean validate(PrintStream printStream);
+    public boolean validate(PrintStream stderr, boolean verbose);
 
 }

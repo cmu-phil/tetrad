@@ -52,7 +52,11 @@ public class UniqueVariableNames implements DataValidation {
     }
 
     @Override
-    public boolean validate(PrintStream printStream) {
+    public boolean validate(PrintStream stderr, boolean verbose) {
+        if (stderr == null) {
+            stderr = System.err;
+        }
+
         Set<String> unique = new HashSet<>();
         Set<String> nonUnique = new HashSet<>();
         List<String> variableNames = dataSet.getVariableNames();
@@ -67,20 +71,20 @@ public class UniqueVariableNames implements DataValidation {
         int size = nonUnique.size();
         if (size > 0) {
             if (outputFile == null) {
-                if (printStream != null) {
-                    printStream.printf("Dataset contains %d variable(s) with non-unique name.", size);
-                    printStream.println();
-                }
+                stderr.println(String.format("Dataset contains %d non-unique variable names.", size));
             } else {
-                if (printStream != null) {
-                    printStream.printf("Dataset contains %d variable(s) with non-unique name. See %s file for variable names.", size, outputFile.getFileName().toString());
-                    printStream.println();
-                }
-
+                stderr.println(String.format("Dataset contains %d non-unique variable names. Variable names have been saved to file %s.", size, outputFile.getFileName().toString()));
                 try {
                     FileIO.writeLineByLine(nonUnique, outputFile);
                 } catch (IOException exception) {
                     exception.printStackTrace(System.err);
+                }
+            }
+
+            if (verbose) {
+                stderr.println("Non-unique variable names:");
+                for (String s : nonUnique) {
+                    stderr.println(s);
                 }
             }
         }

@@ -57,10 +57,10 @@ public class TabularContinuousDataTest {
 
         char delimiter = ',';
         DataValidation dataValidation = new TabularContinuousData(badFile, delimiter);
-        Assert.assertTrue(!dataValidation.validate(System.out));
+        Assert.assertTrue(!dataValidation.validate(System.out, true));
 
         dataValidation = new TabularContinuousData(goodFile, delimiter);
-        Assert.assertTrue(dataValidation.validate(System.out));
+        Assert.assertTrue(dataValidation.validate(System.out, true));
     }
 
 }
