@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.graph;
 
-import com.sun.xml.internal.messaging.saaj.util.CharReader;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -2234,7 +2233,7 @@ public final class GraphUtils {
     }
 
     public static Graph readerToGraphTxt(String graphString) throws IOException {
-       return readerToGraphTxt(new CharReader(graphString.toCharArray(), graphString.length()));
+       return readerToGraphTxt(new CharArrayReader(graphString.toCharArray()));
     }
 
     public static Graph readerToGraphTxt(Reader reader) throws IOException {
