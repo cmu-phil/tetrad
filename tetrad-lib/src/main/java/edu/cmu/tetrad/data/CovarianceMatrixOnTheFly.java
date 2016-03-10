@@ -173,7 +173,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
                         double[] v1 = vectors[i];
 
                         for (int k = 0; k < sampleSize; ++k) {
-                            if (!Double.isNaN(v1[i])) {
+                            if (!Double.isNaN(v1[k])) {
                                 d += v1[k] * v1[k];
                                 count++;
                             }
@@ -348,7 +348,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         int count = 0;
 
         for (int k = 0; k < sampleSize; ++k) {
-            if (!Double.isNaN(v1[i]) && !Double.isNaN(v2[k])) {
+            if (!Double.isNaN(v1[k]) && !Double.isNaN(v2[k])) {
                 d += v1[k] * v2[k];
                 count++;
             }

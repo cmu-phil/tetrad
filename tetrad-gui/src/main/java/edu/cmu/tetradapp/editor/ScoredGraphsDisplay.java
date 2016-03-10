@@ -163,7 +163,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
 
         final JSpinner spinner = new JSpinner();
         spinner.setModel(model);
-        final JLabel totalLabel = new JLabel(" of " + dags.size());
+        final JLabel totalLabel = new JLabel(" of " + dags.size() + " ");
 
         scoreLabel = new JLabel();
         setScore(dags.size() - 1);
@@ -179,7 +179,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         b1.add(spinner);
         b1.add(totalLabel);
         b1.add(Box.createHorizontalGlue());
-        b1.add(new JLabel("Score = "));
+        b1.add(new JLabel("Score =  "));
         b1.add(scoreLabel);
         b1.add(Box.createHorizontalStrut(10));
         b1.add(Box.createHorizontalGlue());
