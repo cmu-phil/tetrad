@@ -2222,74 +2222,83 @@ public final class GraphUtils {
 
     public static Graph loadGraphTxt(File file) {
         try {
-            BufferedReader in = new BufferedReader(new FileReader(file));
-
-            while (!in.readLine().trim().equals("Graph Nodes:")) ;
-
-            String line;
-            Graph graph = new EdgeListGraph();
-
-            while (!(line = in.readLine().trim()).equals("")) {
-                String[] tokens = line.split(" ");
-
-                for (String token : tokens) {
-                    graph.addNode(new GraphNode(token));
-                }
-            }
-
-            while (!in.readLine().trim().equals("Graph Edges:")) ;
-
-            while ((line = in.readLine()) != null) {
-                line = line.trim();
-                if (line.equals("")) break;
-//                System.out.println(line);
-
-                String[] tokens = line.split(" ");
-
-                String from = tokens[1];
-                String edge = tokens[2];
-                String to = tokens[3];
-
-                Node _from = graph.getNode(from);
-                Node _to = graph.getNode(to);
-
-                char end1 = edge.charAt(0);
-                char end2 = edge.charAt(2);
-
-                Endpoint _end1, _end2;
-
-                if (end1 == '<') {
-                    _end1 = Endpoint.ARROW;
-                } else if (end1 == 'o') {
-                    _end1 = Endpoint.CIRCLE;
-                } else if (end1 == '-') {
-                    _end1 = Endpoint.TAIL;
-                } else {
-                    throw new IllegalArgumentException();
-                }
-
-                if (end2 == '>') {
-                    _end2 = Endpoint.ARROW;
-                } else if (end2 == 'o') {
-                    _end2 = Endpoint.CIRCLE;
-                } else if (end2 == '-') {
-                    _end2 = Endpoint.TAIL;
-                } else {
-                    throw new IllegalArgumentException();
-                }
-
-                Edge _edge = new Edge(_from, _to, _end1, _end2);
-
-                graph.addEdge(_edge);
-            }
-
-            return graph;
+            Reader in1 = new FileReader(file);
+            return readerToGraphTxt(in1);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         throw new IllegalStateException();
+    }
+
+    public static Graph readerToGraphTxt(String graphString) throws IOException {
+       return readerToGraphTxt(new CharArrayReader(graphString.toCharArray()));
+    }
+
+    public static Graph readerToGraphTxt(Reader reader) throws IOException {
+        BufferedReader in = new BufferedReader(reader);
+
+        while (!in.readLine().trim().equals("Graph Nodes:")) ;
+
+        String line;
+        Graph graph = new EdgeListGraph();
+
+        while (!(line = in.readLine().trim()).equals("")) {
+            String[] tokens = line.split(" ");
+
+            for (String token : tokens) {
+                graph.addNode(new GraphNode(token));
+            }
+        }
+
+        while (!in.readLine().trim().equals("Graph Edges:")) ;
+
+        while ((line = in.readLine()) != null) {
+            line = line.trim();
+            if (line.equals("")) break;
+//                System.out.println(line);
+
+            String[] tokens = line.split(" ");
+
+            String from = tokens[1];
+            String edge = tokens[2];
+            String to = tokens[3];
+
+            Node _from = graph.getNode(from);
+            Node _to = graph.getNode(to);
+
+            char end1 = edge.charAt(0);
+            char end2 = edge.charAt(2);
+
+            Endpoint _end1, _end2;
+
+            if (end1 == '<') {
+                _end1 = Endpoint.ARROW;
+            } else if (end1 == 'o') {
+                _end1 = Endpoint.CIRCLE;
+            } else if (end1 == '-') {
+                _end1 = Endpoint.TAIL;
+            } else {
+                throw new IllegalArgumentException();
+            }
+
+            if (end2 == '>') {
+                _end2 = Endpoint.ARROW;
+            } else if (end2 == 'o') {
+                _end2 = Endpoint.CIRCLE;
+            } else if (end2 == '-') {
+                _end2 = Endpoint.TAIL;
+            } else {
+                throw new IllegalArgumentException();
+            }
+
+            Edge _edge = new Edge(_from, _to, _end1, _end2);
+
+            graph.addEdge(_edge);
+        }
+
+        return graph;
     }
 
     public static HashMap<String, PointXy> grabLayout(List<Node> nodes) {

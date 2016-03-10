@@ -146,8 +146,6 @@ public class PcLocal implements GraphSearch {
         int index = 0;
 
         iteration(nodes, numEdges, index);
-//        iteration(nodes, numEdges, index);
-//        iteration(nodes, numEdges, index);
 
         outGraph = graph;
 
@@ -203,8 +201,6 @@ public class PcLocal implements GraphSearch {
             Edge edge = Edges.undirectedEdge(x, y);
             graph.addEdge(edge);
             orientNewColliders(x, y);
-//            orientNewColliders(y, x);
-
 
             for (Node w : graph.getAdjacentNodes(x)) {
                 tryRemovingEdge(w, x);
@@ -271,9 +267,14 @@ public class PcLocal implements GraphSearch {
     }
 
     private void orientNewColliders(Node x, Node y) {
-//        if (graph.isParentOf(y, x)) return;
+        reorient(x, y);
+    }
 
-        boolean oriented = false;
+    private void reorient(Node x, Node y) {
+        for (Node z : graph.getAdjacentNodes(y)) {
+            graph.removeEdge(z, y);
+            graph.addUndirectedEdge(z, y);
+        }
 
         for (Node z : graph.getAdjacentNodes(y)) {
             if (z == x) continue;
@@ -284,115 +285,16 @@ public class PcLocal implements GraphSearch {
             if (cond != null && !cond.contains(y) && !graph.isParentOf(y, x) && !graph.isParentOf(y, z)) {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
                 graph.setEndpoint(z, y, Endpoint.ARROW);
-                oriented = true;
-            }
-        }
-
-        if (!oriented) {
-            for (Node z : graph.getAdjacentNodes(x)) {
-                if (z == y) continue;
-
-                List<Node> cond = sepset(z, y);
-                if (cond == null) cond = sepset(y, z);
-
-                if (cond != null && !cond.contains(x) && !graph.isParentOf(x, y) && !graph.isParentOf(x, z)) {
-                    graph.setEndpoint(y, x, Endpoint.ARROW);
-                    graph.setEndpoint(z, x, Endpoint.ARROW);
-                }
             }
         }
 
         List<Node> start = new ArrayList<>();
-        start.add(x);
         start.add(y);
 
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(knowledge);
         meekRules.setUndirectUnforcedEdges(true);
         meekRules.orientImplied(graph, start);
-    }
-
-    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
-    // length at most 'bound'. Cycle checker in other words.
-    private boolean existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, int bound) {
-        Queue<Node> Q = new LinkedList<>();
-        Set<Node> V = new HashSet<>();
-        Q.offer(from);
-        V.add(from);
-        Node e = null;
-        int distance = 0;
-
-        while (!Q.isEmpty()) {
-            Node t = Q.remove();
-            if (t == to) {
-                return true;
-            }
-
-            if (e == t) {
-                e = null;
-                distance++;
-                if (distance > (bound == -1 ? 1000 : bound)) return false;
-            }
-
-            for (Node u : graph.getAdjacentNodes(t)) {
-                Edge edge = graph.getEdge(t, u);
-                Node c = traverseSemiDirected(t, edge);
-                if (c == null) continue;
-                if (cond.contains(c)) continue;
-
-                if (c == to) {
-                    return true;
-                }
-
-                if (!V.contains(c)) {
-                    V.add(c);
-                    Q.offer(c);
-
-                    if (e == null) {
-                        e = u;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-        return null;
-    }
-
-    private void undirectUnforcedEdges(Node y) {
-        Set<Node> parentsToUndirect = new HashSet<>();
-        List<Node> parents = graph.getParents(y);
-
-        NEXT_EDGE:
-        for (Node x : parents) {
-            for (Node parent : parents) {
-                if (parent != x) {
-                    if (!graph.isAdjacentTo(parent, x)) {
-                        continue NEXT_EDGE;
-                    }
-                }
-            }
-
-            parentsToUndirect.add(x);
-        }
-
-        for (Node x : parentsToUndirect) {
-            graph.removeEdge(x, y);
-            graph.addUndirectedEdge(x, y);
-        }
     }
 
     public Set<Triple> getColliderTriples(Graph graph) {

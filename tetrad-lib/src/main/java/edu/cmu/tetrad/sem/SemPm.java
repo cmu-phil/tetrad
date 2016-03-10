@@ -549,8 +549,9 @@ public final class SemPm implements PM, TetradSerializable {
         // aren't error edges *and are into parameterizable node* (the last bit jdramsey 4/14/10).
         for (Edge edge : edges) {
             if (edge.getNode1() == edge.getNode2()) {
-                throw new IllegalStateException("There should not be any" +
-                        "edges from a node to itself in a SemGraph: " + edge);
+                continue;
+//                throw new IllegalStateException("There should not be any" +
+//                        "edges from a node to itself in a SemGraph: " + edge);
             }
 
             if (!SemGraph.isErrorEdge(edge) &&

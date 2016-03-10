@@ -1439,7 +1439,7 @@
             <!--description="Collider Orientations"/>-->
             <!--<event id="details" description="Misc Fine Details"/>-->
             <!--</logger>-->
-            <model name="PCLocal" acronym="PCLocal" help="pclocal" category="Pattern Searches">
+            <model name="PClocal" acronym="PCLocal" help="pclocal" category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="graph" description="Graph" default="on"/>
@@ -1496,7 +1496,7 @@
                 <params-class>edu.cmu.tetradapp.model.PcLocalSearchParams
                 </params-class>
             </model>
-            <!--<model name="MMHC" acronym="MMHC" help="mmhc" category="Pattern Searches">-->
+            <!--&lt;!&ndash;<model name="MMHC" acronym="MMHC" help="mmhc" category="Pattern Searches">&ndash;&gt;-->
             <!--<model-class>edu.cmu.tetradapp.model.MmhcRunner</model-class>-->
             <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor</editor-class>-->
             <!--<params-class>edu.cmu.tetradapp.model.BasicSearchParams</params-class>-->

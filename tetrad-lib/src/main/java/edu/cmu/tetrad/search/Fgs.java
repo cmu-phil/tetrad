@@ -230,6 +230,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
      * @return the resulting Pattern.
      */
     public Graph search() {
+        long start = System.currentTimeMillis();
+        score = 0.0;
+
         topGraphs.clear();
 
         lookupArrows = new ConcurrentHashMap<>();
@@ -238,8 +241,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (adjacencies != null) {
             adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
         }
-
-        addRequiredEdges(graph);
 
         if (initialGraph != null) {
             graph.clear();
@@ -280,9 +281,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 }
             }
         }
-
-        long start = System.currentTimeMillis();
-        score = 0.0;
 
         // Do backward search.
         bes();
@@ -844,8 +842,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
             storeGraph();
             reevaluateBackward(toProcess);
         }
-
-        meekOrientRestricted(getVariables(), getKnowledge());
     }
 
     private Set<Node> getCommonAdjacents(Node x, Node y) {
@@ -1610,14 +1606,10 @@ public final class Fgs implements GraphSearch, GraphScorer {
         return null;
     }
 
-    // Runs Meek rules on just the changed adj.
-    private Set<Node> reorientNode(List<Node> nodes) {
-        addRequiredEdges(graph);
-        return meekOrientRestricted(nodes, getKnowledge());
-    }
 
     // Runs Meek rules on just the changed adj.
     private Set<Node> meekOrientRestricted(List<Node> nodes, IKnowledge knowledge) {
+        addRequiredEdges(graph);
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
         rules.setUndirectUnforcedEdges(true);
