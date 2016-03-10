@@ -242,8 +242,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
             adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
         }
 
-        addRequiredEdges(graph);
-
         if (initialGraph != null) {
             graph.clear();
             graph.transferNodesAndEdges(initialGraph);
@@ -1608,14 +1606,10 @@ public final class Fgs implements GraphSearch, GraphScorer {
         return null;
     }
 
-    // Runs Meek rules on just the changed adj.
-    private Set<Node> reorientNode(List<Node> nodes) {
-        addRequiredEdges(graph);
-        return meekOrientRestricted(nodes, getKnowledge());
-    }
 
     // Runs Meek rules on just the changed adj.
     private Set<Node> meekOrientRestricted(List<Node> nodes, IKnowledge knowledge) {
+        addRequiredEdges(graph);
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
         rules.setUndirectUnforcedEdges(true);

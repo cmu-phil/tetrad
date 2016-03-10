@@ -160,13 +160,9 @@ public final class TestKnowledge {
         knowledge.addToTier(1, "X8*");
         knowledge.addToTier(2, "X9*");
 
-        long start = System.currentTimeMillis();
-
         for (int i = 0; i < numVars; i++) {
-            knowledge.isForbidden("X11", "X22");
+            assertTrue(knowledge.isForbidden("X11", "X22"));
         }
-
-        long stop = System.currentTimeMillis();
     }
 }
 
