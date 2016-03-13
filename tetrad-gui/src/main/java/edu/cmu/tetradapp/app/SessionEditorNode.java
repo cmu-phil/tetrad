@@ -755,7 +755,7 @@ public final class SessionEditorNode extends DisplayNode {
                         if (ret == JOptionPane.YES_OPTION) {
                             getSessionNode().destroyModel();
                             getSessionNode().createModel(modelClass, true);
-                            doDoubleClickAction(getSessionWrapper());
+//                            doDoubleClickAction(getSessionWrapper());
                         }
                     } catch (Exception e1) {
                         e1.printStackTrace();

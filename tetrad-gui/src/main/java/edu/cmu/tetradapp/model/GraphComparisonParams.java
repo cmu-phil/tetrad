@@ -77,7 +77,7 @@ public class GraphComparisonParams extends SessionAdapter
      */
     private String referenceGraphName;
 
-    
+
     /**
      * The name of the session model that has the true graph in it.
      *
@@ -113,8 +113,9 @@ public class GraphComparisonParams extends SessionAdapter
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     * <p>
+     * //     * @see edu.cmu.TestSerialization
      *
-//     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static GraphComparisonParams serializableInstance() {
@@ -124,8 +125,8 @@ public class GraphComparisonParams extends SessionAdapter
     //==========================PUBLIC METHODS===========================//
 
     public void addRecord(int adjCorrect, int adjFn, int adjFp,
-            int arrowptCorrect, int arrowptFn, int arrowptFp,
-            int twoCycleCorrect, int twoCycleFn, int twoCycleFp) {
+                          int arrowptCorrect, int arrowptFn, int arrowptFp,
+                          double adjPrec, double adjRec, double arrowptPrec, double arrowptRec) {
         int newRow = dataSet.getNumRows();
         dataSet.setDouble(newRow, 0, adjCorrect);
         dataSet.setDouble(newRow, 1, adjFn);
@@ -133,9 +134,13 @@ public class GraphComparisonParams extends SessionAdapter
         dataSet.setDouble(newRow, 3, arrowptCorrect);
         dataSet.setDouble(newRow, 4, arrowptFn);
         dataSet.setDouble(newRow, 5, arrowptFp);
-        dataSet.setDouble(newRow, 6, twoCycleCorrect);
-        dataSet.setDouble(newRow, 7, twoCycleFn);
-        dataSet.setDouble(newRow, 8, twoCycleFp);
+        dataSet.setDouble(newRow, 6, adjPrec);
+        dataSet.setDouble(newRow, 7, adjRec);
+        dataSet.setDouble(newRow, 8, arrowptPrec);
+        dataSet.setDouble(newRow, 9, arrowptRec);
+//        dataSet.setDouble(newRow, 6, twoCycleCorrect);
+//        dataSet.setDouble(newRow, 7, twoCycleFn);
+//        dataSet.setDouble(newRow, 8, twoCycleFp);
     }
 
     public DataSet getDataSet() {
@@ -143,42 +148,51 @@ public class GraphComparisonParams extends SessionAdapter
     }
 
     public final void newExecution() {
-        if (isResetTableOnExecute()) {
-            ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
-            ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
-            ContinuousVariable adjFp = new ContinuousVariable("ADJ_FP");
+//        if (isResetTableOnExecute()) {
+        ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
+        ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
+        ContinuousVariable adjFp = new ContinuousVariable("ADJ_FP");
 
-            ContinuousVariable arrowptCorrect = new ContinuousVariable("AHD_COR");
-            ContinuousVariable arrowptFn = new ContinuousVariable("AHD_FN");
-            ContinuousVariable arrowptFp = new ContinuousVariable("AHD_FP");
+        ContinuousVariable arrowptCorrect = new ContinuousVariable("AHD_COR");
+        ContinuousVariable arrowptFn = new ContinuousVariable("AHD_FN");
+        ContinuousVariable arrowptFp = new ContinuousVariable("AHD_FP");
 
-            ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
-            ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
-            ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
+        ContinuousVariable adjPrec = new ContinuousVariable("ADJ_PREC");
+        ContinuousVariable adjRec = new ContinuousVariable("ADJ_REC");
+        ContinuousVariable arrowptPrec = new ContinuousVariable("ARROWPT_PREC");
+        ContinuousVariable arrowptRec = new ContinuousVariable("ARROWPT_REC");
 
-            List<Node> variables = new LinkedList<Node>();
-            variables.add(adjCorrect);
-            variables.add(adjFn);
-            variables.add(adjFp);
-            variables.add(arrowptCorrect);
-            variables.add(arrowptFn);
-            variables.add(arrowptFp);
-            variables.add(twoCycleCorrect);
-            variables.add(twoCycleFn);
-            variables.add(twoCycleFp);
+//        ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
+//        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
+//        ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
 
-            dataSet = new ColtDataSet(0, variables);
-            dataSet.setNumberFormat(new DecimalFormat("0"));
+        List<Node> variables = new LinkedList<Node>();
+        variables.add(adjCorrect);
+        variables.add(adjFn);
+        variables.add(adjFp);
+        variables.add(arrowptCorrect);
+        variables.add(arrowptFn);
+        variables.add(arrowptFp);
+        variables.add(adjPrec);
+        variables.add(adjRec);
+        variables.add(arrowptPrec);
+        variables.add(arrowptRec);
+//        variables.add(twoCycleCorrect);
+//        variables.add(twoCycleFn);
+//        variables.add(twoCycleFp);
 
-            Map<String, String> columnToTooltip = new Hashtable<String, String>();
-        	columnToTooltip.put("ADJ_COR", "Adjacencies in the reference graph that are in the true graph.");
-        	columnToTooltip.put("ADJ_FN", "Adjacencies in the true graph that are not in the reference graph.");
-        	columnToTooltip.put("ADJ_FP", "Adjacencies in the reference graph that are not in the true graph.");
-        	columnToTooltip.put("AHD_COR", "Arrowpoints in the reference graph that are in the true graph.");
-        	columnToTooltip.put("AHD_FN", "Arrowpoints in the true graph that are not in the reference graph.");
-        	columnToTooltip.put("AHD_FP", "Arrowpoints in the reference graph that are not in the true graph.");
-        	dataSet.setColumnToTooltip(columnToTooltip);
-        }
+        dataSet = new ColtDataSet(0, variables);
+        dataSet.setNumberFormat(new DecimalFormat("0"));
+
+        Map<String, String> columnToTooltip = new Hashtable<String, String>();
+        columnToTooltip.put("ADJ_COR", "Adjacencies in the reference graph that are in the true graph.");
+        columnToTooltip.put("ADJ_FN", "Adjacencies in the true graph that are not in the reference graph.");
+        columnToTooltip.put("ADJ_FP", "Adjacencies in the reference graph that are not in the true graph.");
+        columnToTooltip.put("AHD_COR", "Arrowpoints in the reference graph that are in the true graph.");
+        columnToTooltip.put("AHD_FN", "Arrowpoints in the true graph that are not in the reference graph.");
+        columnToTooltip.put("AHD_FP", "Arrowpoints in the reference graph that are not in the true graph.");
+        dataSet.setColumnToTooltip(columnToTooltip);
+//        }
     }
 
     public boolean isResetTableOnExecute() {
@@ -223,13 +237,13 @@ public class GraphComparisonParams extends SessionAdapter
         s.defaultReadObject();
     }
 
-	public void setTargetGraphName(String targetGraphName) {
-		this.targetGraphName = targetGraphName;
-	}
+    public void setTargetGraphName(String targetGraphName) {
+        this.targetGraphName = targetGraphName;
+    }
 
-	public String getTargetGraphName() {
-		return targetGraphName;
-	}
+    public String getTargetGraphName() {
+        return targetGraphName;
+    }
 }
 
 

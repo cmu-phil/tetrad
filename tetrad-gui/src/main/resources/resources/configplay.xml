@@ -2183,7 +2183,8 @@
                 <model-class>edu.cmu.tetradapp.model.TabularComparison
                 </model-class>
                 <!--<editor-class>edu.cmu.tetradapp.editor.GraphComparisonEditor</editor-class>-->
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+                <editor-class>edu.cmu.tetradapp.editor.TabularComparisonEditor</editor-class>
                 <params-class>edu.cmu.tetradapp.model.GraphComparisonParams
                 </params-class>
                 <params-editor-class>
