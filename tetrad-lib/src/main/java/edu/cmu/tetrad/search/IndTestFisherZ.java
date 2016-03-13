@@ -101,7 +101,7 @@ public final class IndTestFisherZ implements IndependenceTest {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        this.covMatrix = new CovarianceMatrixOnTheFly(dataSet);
+        this.covMatrix = new CovarianceMatrix(dataSet);
         List<Node> nodes = covMatrix.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
@@ -113,7 +113,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     /**
-     * Constructs a new Fisher Z independence test with the listed arguments.
+     * Constructs a new Fisher Z independence test with  the listed arguments.
      *
      * @param data      A 2D continuous data set with no missing values.
      * @param variables A list of variables, a subset of the variables of <code>data</code>.

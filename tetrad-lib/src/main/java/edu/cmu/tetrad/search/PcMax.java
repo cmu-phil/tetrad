@@ -216,14 +216,16 @@ public class PcMax implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        IFas fas = new Fas(getIndependenceTest());
+        IFas fas = new FasStableConcurrent(getIndependenceTest());
         fas.setInitialGraph(initialGraph);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setVerbose(verbose);
+        fas.setVerbose(false);
         graph = fas.search();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
+
+//        independenceTest.setAlpha(0.6);
 
         SepsetsMinScore sepsetProducer = new SepsetsMinScore(graph, independenceTest, null, getDepth());
 
@@ -250,7 +252,7 @@ public class PcMax implements GraphSearch {
 
         List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
 
-        Collections.shuffle(colliders);
+//        Collections.shuffle(colliders);
 
         Collections.sort(colliders, new Comparator<Triple>() {
             public int compare(Triple o1, Triple o2) {
@@ -269,7 +271,8 @@ public class PcMax implements GraphSearch {
                 continue;
             }
 
-            if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
+            if (!graph.isAncestorOf(b, a) && !graph.isAncestorOf(b, c)) {
+//            if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
                 graph.setEndpoint(a, b, Endpoint.ARROW);
                 graph.setEndpoint(c, b, Endpoint.ARROW);
             }

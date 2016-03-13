@@ -3259,6 +3259,12 @@ public final class GraphUtils {
         private int arrowptFn;
         private int arrowptFp;
         private int arrowptCorrect;
+
+        private double adjPrec;
+        private double adjRec;
+        private double arrowptPrec;
+        private double arrowptRec;
+
         private int shd;
         private int twoCycleFn;
         private int twoCycleFp;
@@ -3271,6 +3277,7 @@ public final class GraphUtils {
 
         public GraphComparison(int adjFn, int adjFp, int adjCorrect,
                                int arrowptFn, int arrowptFp, int arrowptCorrect,
+                               double adjPrec, double adjRec, double arrowptPrec, double arrowptRec,
                                int shd,
                                int twoCycleCorrect, int twoCycleFn, int twoCycleFp,
                                List<Edge> edgesAdded, List<Edge> edgesRemoved,
@@ -3282,6 +3289,12 @@ public final class GraphUtils {
             this.arrowptFn = arrowptFn;
             this.arrowptFp = arrowptFp;
             this.arrowptCorrect = arrowptCorrect;
+
+            this.adjPrec = adjPrec;
+            this.adjRec = adjRec;
+            this.arrowptPrec = arrowptPrec;
+            this.arrowptRec = arrowptRec;
+
             this.shd = shd;
             this.twoCycleCorrect = twoCycleCorrect;
             this.twoCycleFn = twoCycleFn;
@@ -3346,6 +3359,22 @@ public final class GraphUtils {
 
         public List<Edge> getEdgesReorientedTo() {
             return edgesReorientedTo;
+        }
+
+        public double getAdjPrec() {
+            return adjPrec;
+        }
+
+        public double getAdjRec() {
+            return adjRec;
+        }
+
+        public double getArrowptPrec() {
+            return arrowptPrec;
+        }
+
+        public double getArrowptRec() {
+            return arrowptRec;
         }
     }
 

@@ -134,6 +134,11 @@ public final class TabularComparison implements SessionModel {
      */
     private int arrowptFn;
 
+    private double adjPrec;
+    private double adjRec;
+    private double arrowptPrec;
+    private double arrowptRec;
+
     private int twoCycleFn;
     private int twoCycleFp;
     private int twoCycleCorrect;
@@ -258,6 +263,11 @@ public final class TabularComparison implements SessionModel {
         this.twoCycleFn = comparison.getTwoCycleFn();
         this.twoCycleFp = comparison.getTwoCycleFp();
 
+        this.adjPrec = comparison.getAdjPrec();
+        this.adjRec = comparison.getAdjRec();
+        this.arrowptPrec = comparison.getArrowptPrec();
+        this.arrowptRec = comparison.getArrowptRec();
+
         this.edgesAdded = comparison.getEdgesAdded();
         this.edgesRemoved = comparison.getEdgesRemoved();
         this.edgesReorientedFrom = comparison.getEdgesReorientedFrom();
@@ -274,9 +284,9 @@ public final class TabularComparison implements SessionModel {
         }
 
         if (this.params != null) {
-            this.params.addRecord(adjCorrect, adjFn, adjFp,
+           this.params.addRecord(adjCorrect, adjFn, adjFp,
                     arrowptCorrect, arrowptFn, arrowptFp,
-                    twoCycleCorrect, twoCycleFn, twoCycleFp);
+                    adjPrec, adjRec, arrowptPrec, arrowptRec);
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
@@ -335,6 +345,11 @@ public final class TabularComparison implements SessionModel {
         this.arrowptFp = comparison.getArrowptFp();
         this.arrowptCorrect = comparison.getArrowptCorrect();
 
+        this.adjPrec = comparison.getAdjPrec();
+        this.adjRec = comparison.getAdjRec();
+        this.arrowptPrec = comparison.getArrowptPrec();
+        this.arrowptRec = comparison.getArrowptRec();
+
         this.edgesAdded = comparison.getEdgesAdded();
         this.edgesRemoved = comparison.getEdgesRemoved();
         this.edgesReorientedFrom = comparison.getEdgesReorientedFrom();
@@ -343,7 +358,7 @@ public final class TabularComparison implements SessionModel {
         if (params != null) {
             params.addRecord(getAdjCorrect(), getAdjFn(), getAdjFp(),
                     getArrowptCorrect(), getArrowptFn(), getArrowptFp(),
-                    getTwoCycleCorrect(), getTwoCycleFn(), getTwoCycleFp());
+                    getAdjPrec(), getAdjRec(), getArrowptPrec(), getArrowptCorrect());
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
@@ -384,10 +399,15 @@ public final class TabularComparison implements SessionModel {
         this.edgesReorientedFrom = comparison.getEdgesReorientedFrom();
         this.edgesReorientedTo = comparison.getEdgesReorientedTo();
 
+        this.adjPrec = comparison.getAdjPrec();
+        this.adjRec = comparison.getAdjRec();
+        this.arrowptPrec = comparison.getArrowptPrec();
+        this.arrowptRec = comparison.getArrowptRec();
+
         if (params != null) {
             params.addRecord(getAdjCorrect(), getAdjFn(), getAdjFp(),
                     getArrowptCorrect(), getArrowptFn(), getArrowptFp(),
-                    getTwoCycleCorrect(), getTwoCycleFn(), getTwoCycleFp());
+                    getAdjPrec(), getAdjRec(), getArrowptPrec(), getArrowptRec());
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
@@ -579,6 +599,38 @@ public final class TabularComparison implements SessionModel {
 
     public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
+    }
+
+    public double getAdjPrec() {
+        return adjPrec;
+    }
+
+    public void setAdjPrec(double adjPrec) {
+        this.adjPrec = adjPrec;
+    }
+
+    public double getAdjRec() {
+        return adjRec;
+    }
+
+    public void setAdjRec(double adjRec) {
+        this.adjRec = adjRec;
+    }
+
+    public double getArrowptPrec() {
+        return arrowptPrec;
+    }
+
+    public void setArrowptPrec(double arrowptPrec) {
+        this.arrowptPrec = arrowptPrec;
+    }
+
+    public double getArrowptRec() {
+        return arrowptRec;
+    }
+
+    public void setArrowptRec(double arrowptRec) {
+        this.arrowptRec = arrowptRec;
     }
 }
 

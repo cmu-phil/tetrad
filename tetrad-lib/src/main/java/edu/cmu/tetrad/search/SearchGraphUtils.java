@@ -2378,6 +2378,11 @@ public final class SearchGraphUtils {
         int arrowptFp = GraphUtils.countArrowptErrors(graph, trueGraph);
         int arrowptCorrect = GraphUtils.getNumCorrectArrowpts(trueGraph, graph);
 
+        double adjPrec = (double) adjCorrect / (adjCorrect + adjFp);
+        double adjRec = (double) adjCorrect / (adjCorrect + adjFn);
+        double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
+        double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
+
         int twoCycleCorrect = 0;
         int twoCycleFn = 0;
         int twoCycleFp = 0;
@@ -2418,7 +2423,8 @@ public final class SearchGraphUtils {
         int shd = structuralHammingDistance(trueGraph, graph);
 
         return new GraphUtils.GraphComparison(
-                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect, shd,
+                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
+                adjPrec, adjRec, arrowptPrec, arrowptRec, shd,
                 twoCycleCorrect, twoCycleFn, twoCycleFp,
                 edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo);
     }
@@ -2535,10 +2541,18 @@ public final class SearchGraphUtils {
             }
         }
 
+        double adjPrec = (double) adjCorrect / (adjCorrect + adjFp);
+        double adjRec = (double) adjCorrect / (adjCorrect + adjFn);
+        double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
+        double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
+
+
         int shd = structuralHammingDistance(trueGraph, graph);
 
         return new GraphUtils.GraphComparison(
-                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect, shd,
+                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
+                adjPrec, adjRec, arrowptPrec, arrowptRec,
+                shd,
                 twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
                 edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo);
     }
@@ -2657,8 +2671,16 @@ public final class SearchGraphUtils {
             }
         }
 
+        double adjPrec = (double) adjCorrect / (adjCorrect + adjFp);
+        double adjRec = (double) adjCorrect / (adjCorrect + adjFn);
+        double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
+        double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
+
+
         return new GraphUtils.GraphComparison(
-                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect, shd,
+                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
+                adjPrec, adjRec, arrowptPrec, arrowptRec,
+                shd,
                 twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
                 edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo);
     }
@@ -2777,8 +2799,16 @@ public final class SearchGraphUtils {
             }
         }
 
+        double adjPrec = (double) adjCorrect / (adjCorrect + adjFp);
+        double adjRec = (double) adjCorrect / (adjCorrect + adjFn);
+        double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
+        double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
+
+
         return new GraphUtils.GraphComparison(
-                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect, shd,
+                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
+                adjPrec, adjRec, arrowptPrec, arrowptRec,
+                shd,
                 twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
                 edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo);
     }

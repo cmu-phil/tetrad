@@ -1554,14 +1554,23 @@ public class SessionNode implements TetradSerializable {
             // Restart the getModel param object if necessary.
             Object model = getModel();
 
-            if (model != null) {
-                Object param = getParam(model.getClass());
+            for (Class clazz : modelClasses) {
+                Object param = getParam(clazz);
 
                 if (param instanceof ExecutionRestarter) {
                     ExecutionRestarter restarter = (ExecutionRestarter) param;
                     restarter.newExecution();
                 }
             }
+//
+//            if (model != null) {
+//                Object param = getParam(model.getClass());
+//
+//                if (param instanceof ExecutionRestarter) {
+//                    ExecutionRestarter restarter = (ExecutionRestarter) param;
+//                    restarter.newExecution();
+//                }
+//            }
 
             // Pass the message along.
             getSessionSupport().fireSessionEvent(event);

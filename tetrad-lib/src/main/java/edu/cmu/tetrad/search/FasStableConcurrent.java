@@ -495,7 +495,7 @@ public class FasStableConcurrent implements IFas {
             System.out.println("Done with depth");
         }
 
-        return freeDegree(nodes, adjacencies) > 0;
+        return freeDegree(nodes, adjacencies) > depth;
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
