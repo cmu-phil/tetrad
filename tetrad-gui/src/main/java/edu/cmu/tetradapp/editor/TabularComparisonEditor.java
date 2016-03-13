@@ -45,7 +45,7 @@ public class TabularComparisonEditor extends JPanel {
         b3.add(pane);
         b.add(b3);
 
-        setPreferredSize(new Dimension(700,400));
+//        setPreferredSize(new Dimension(700,400));
 
         add(b);
     }
@@ -56,7 +56,7 @@ public class TabularComparisonEditor extends JPanel {
         table.setToken(0, 0, "Run #");
 
         for (int j = 0; j < columns.length; j++) {
-            table.setToken(0, j + 1, dataSet.getVariable(j).getName());
+            table.setToken(0, j + 1, dataSet.getVariable(columns[j]).getName());
         }
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
