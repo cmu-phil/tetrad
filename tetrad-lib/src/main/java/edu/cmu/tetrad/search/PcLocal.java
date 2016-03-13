@@ -164,7 +164,7 @@ public class PcLocal implements GraphSearch {
 //            applyMeek(Collections.singletonList(node));
         }
 
-//        applyMeek(nodes);
+        applyMeek(nodes);
 
         this.logger.log("graph", "\nReturning this graph: " + graph);
 
