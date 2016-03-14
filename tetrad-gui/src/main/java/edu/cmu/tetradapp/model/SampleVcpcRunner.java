@@ -280,6 +280,11 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         return meekRules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "Sample-VCPC";
+    }
+
     public SemIm getSemIm() {
         return this.semIm;
     }

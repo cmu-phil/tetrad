@@ -5,10 +5,10 @@ import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.TabularComparison;
 
 import javax.swing.*;
-import javax.xml.soap.Text;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Map;
 
 public class TabularComparisonEditor extends JPanel {
 
@@ -25,9 +25,25 @@ public class TabularComparisonEditor extends JPanel {
         DataSet dataSet = comparison.getDataSet();
 
         TextTable table1 = getTextTable(dataSet, new int[]{0, 1, 2, 3, 4, 5}, new DecimalFormat("0"));
-        TextTable table2 = getTextTable(dataSet, new int[]{6, 7, 8, 9}, new DecimalFormat("0.00"));
+        TextTable table2 = getTextTable(dataSet, new int[]{6, 7, 8, 9, 10}, new DecimalFormat("0.00"));
+//        TextTable table3 = getTextTable(dataSet, new int[]{10}, new DecimalFormat("0.00"));
 
-        JTextArea area = new JTextArea("\n" + table1.toString() + "\n\n" + table2.toString());
+        StringBuilder builder = new StringBuilder();
+        Map<String, String> allParamsSettings = comparison.getAllParamSettings();
+
+        if (allParamsSettings != null) {
+            for (String key : allParamsSettings.keySet()) {
+                builder.append(key).append(" = ").append(allParamsSettings.get(key)).append("\n");
+            }
+        }
+
+        JTextArea area = new JTextArea(
+                "\n" + builder.toString()
+                + "\n" + table1.toString()
+                + "\n\n" + table2.toString()
+//                + "\n\n" + table3.toString()
+        );
+
         area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));
 //        area.setPreferredSize(area.getMaximumSize());
 

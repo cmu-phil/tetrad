@@ -199,6 +199,11 @@ public class FciRunner extends AbstractAlgorithmRunner
     public boolean supportsKnowledge() {
         return true;
     }
+
+    @Override
+    public String getAlgorithmName() {
+        return "FCI";
+    }
 }
 
 

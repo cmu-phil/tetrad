@@ -170,6 +170,11 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
         return true;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "Factor Analysis";
+    }
+
     public String getOutput() {
         return output;
     }

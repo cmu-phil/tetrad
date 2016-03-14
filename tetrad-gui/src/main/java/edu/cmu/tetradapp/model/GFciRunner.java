@@ -192,6 +192,10 @@ public class GFciRunner extends AbstractAlgorithmRunner
     }
 
 
+    @Override
+    public String getAlgorithmName() {
+        return "GFCI";
+    }
 }
 
 

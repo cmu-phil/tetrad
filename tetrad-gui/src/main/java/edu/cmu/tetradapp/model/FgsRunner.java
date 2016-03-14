@@ -25,13 +25,14 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the GES algorithm.
@@ -40,8 +41,9 @@ import java.util.List;
  */
 
 public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, GraphSource,
-        PropertyChangeListener, IGesRunner, Indexable, DoNotAddOldModel {
+        PropertyChangeListener, IGesRunner, Indexable, DoNotAddOldModel  {
     static final long serialVersionUID = 23L;
+    private LinkedHashMap<String, String> allParamSettings;
 
     public Type getType() {
         return type;
@@ -528,6 +530,22 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         return rules;
     }
 
+    @Override
+    public Map<String, String> getParamSettings() {
+        super.getParamSettings();
+        FgsParams params = (FgsParams) getParams();
+        NumberFormat nf = new DecimalFormat("0.0000");
+
+        paramSettings.put("Penalty Discount", nf.format(params.getComplexityPenalty()));
+
+        return paramSettings;
+    }
+
+    @Override
+    public String getAlgorithmName() {
+        return "FGS";
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }
@@ -564,7 +582,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     public GraphScorer getGraphScorer() {
         return fgs;
     }
-
 }
 
 

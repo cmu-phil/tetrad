@@ -102,6 +102,11 @@ public class KpcRunner extends AbstractAlgorithmRunner
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "KPC";
+    }
+
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {

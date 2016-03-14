@@ -125,7 +125,7 @@ public final class SimulationStudy {
 
         // Begin the execution, making sure that each node's children are
         // executed in the order of the given tier ordering.
-        LinkedList<SessionNode> tierOrdering = new LinkedList<SessionNode>(getTierOrdering(sessionNode));
+        LinkedList<SessionNode> tierOrdering = new LinkedList<>(getTierOrdering(sessionNode));
         notifyDownstreamOfStart(sessionNode);
 
         boolean doRepetition = true;
@@ -256,10 +256,21 @@ public final class SimulationStudy {
 
                 boolean created = sessionNode.createModel(simulation);
 
+                if (created) {
+                    SessionModel source = sessionNode.getModel();
+                    Map<String, String> paramSettings = new LinkedHashMap<>();
+                    collectParentParamSettings(sessionNode, paramSettings);
+
+                    if (source instanceof SimulationParamsSource) {
+                        ((SimulationParamsSource) source).setAllParamSettings(paramSettings);
+                    }
+                }
+
                 if (!created) {
                     return false;
                 }
             } catch (RuntimeException e) {
+                e.printStackTrace();
                 return false;
             }
 
@@ -274,6 +285,17 @@ public final class SimulationStudy {
         }
 
         return true;
+    }
+
+    private void collectParentParamSettings(SessionNode sessionNode,
+                                            Map<String, String> paramSettings) {
+        for (SessionNode parent : sessionNode.getParents()) {
+            collectParentParamSettings(parent, paramSettings);
+        }
+
+        if (sessionNode.getModel() instanceof SimulationParamsSource) {
+            paramSettings.putAll(((SimulationParamsSource) sessionNode.getModel()).getParamSettings());
+        }
     }
 
     /**

@@ -208,6 +208,11 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
     public boolean supportsKnowledge() {
         return true;
     }
+
+    @Override
+    public String getAlgorithmName() {
+        return "MB-Fan-Search";
+    }
 }
 
 

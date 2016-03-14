@@ -219,6 +219,11 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "LiNG";
+    }
+
     private boolean isAggressivelyPreventCycles() {
         SearchParams params = getParams();
         if (params instanceof MeekSearchParams) {

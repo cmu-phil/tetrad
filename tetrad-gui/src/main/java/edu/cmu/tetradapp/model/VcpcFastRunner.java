@@ -269,6 +269,11 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         return meekRules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "VCPC-Fast";
+    }
+
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {

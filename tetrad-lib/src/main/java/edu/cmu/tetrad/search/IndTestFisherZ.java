@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -347,7 +348,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher's Z, alpha = " + nf.format(getAlpha());
+        return "Fisher Z, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
     }
 
     public void setPValueLogger(PrintStream pValueLogger) {

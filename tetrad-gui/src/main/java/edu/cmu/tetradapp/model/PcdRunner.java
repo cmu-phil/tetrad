@@ -123,6 +123,11 @@ public class PcdRunner extends AbstractAlgorithmRunner
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "PCD";
+    }
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *

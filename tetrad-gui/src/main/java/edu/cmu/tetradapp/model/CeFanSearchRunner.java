@@ -158,6 +158,11 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
     public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<List<Triple>>();
     }
+
+    @Override
+    public String getAlgorithmName() {
+        return "CE-Fan-Search";
+    }
 }
 
 

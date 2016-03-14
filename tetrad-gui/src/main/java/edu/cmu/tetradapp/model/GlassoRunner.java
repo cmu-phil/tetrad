@@ -73,6 +73,11 @@ public class GlassoRunner extends AbstractAlgorithmRunner
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "GLASSO";
+    }
+
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {

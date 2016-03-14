@@ -21,18 +21,19 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.Simulator;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.rmi.MarshalledObject;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Wraps a data model so that a random sample will automatically be drawn on
@@ -40,13 +41,15 @@ import java.rmi.MarshalledObject;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class SemDataWrapper extends DataWrapper implements SessionModel {
+public class SemDataWrapper extends DataWrapper implements SessionModel,
+        SimulationParamsSource {
     static final long serialVersionUID = 23L;
     private SemDataParams params;
     private Simulator semIm = null;
     //    private DataModelList dataModelList;
     private long seed;
     private transient DataModelList dataModelList;
+    private LinkedHashMap<String, String> allParamSettings;
 
 
     //==============================CONSTRUCTORS=============================//
@@ -223,6 +226,40 @@ public class SemDataWrapper extends DataWrapper implements SessionModel {
 
     public void setParams(Params params) {
         this.params = (SemDataParams) params;
+    }
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+
+        if (dataModelList == null) {
+            System.out.println();
+        }
+
+        if (dataModelList.size() > 1) {
+            paramSettings.put("# Datasets", Integer.toString(dataModelList.size()));
+        } else {
+            DataModel dataModel = dataModelList.get(0);
+
+            if (dataModel instanceof CovarianceMatrix) {
+                if (!paramSettings.containsKey("# Nodes")) {
+                    paramSettings.put("# Vars", Integer.toString(((CovarianceMatrix) dataModel).getDimension()));
+                }
+                paramSettings.put("N", Integer.toString(((CovarianceMatrix) dataModel).getSampleSize()));
+            } else {
+                if (!paramSettings.containsKey("# Nodes")) {
+                    paramSettings.put("# Vars", Integer.toString(((DataSet) dataModel).getNumColumns()));
+                }
+                paramSettings.put("N", Integer.toString(((DataSet) dataModel).getNumRows()));
+            }
+        }
+
+        return paramSettings;
+    }
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = new LinkedHashMap<>(paramSettings);
     }
 }
 

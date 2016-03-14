@@ -31,14 +31,14 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
@@ -47,7 +47,8 @@ import java.util.prefs.Preferences;
  *
  * @author Joseph Ramsey
  */
-public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer {
+public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer,
+        SimulationParamsSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -59,7 +60,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * @serial Cannot be null.
      */
     private Graph graph;
-//    private Graph parentGraph = null;
+    private Map<String, String> allParamSettings;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -292,6 +293,25 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     public List<Node> getVariables() {
         return graph.getNodes();
+    }
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+        paramSettings.put("# Vars", Integer.toString(graph.getNumNodes()));
+        paramSettings.put("# Edges", Integer.toString(graph.getNumEdges()));
+        if (graph.existsDirectedCycle()) paramSettings.put("Cyclic", null);
+        return paramSettings;
+    }
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
+    }
+
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return allParamSettings;
     }
 }
 

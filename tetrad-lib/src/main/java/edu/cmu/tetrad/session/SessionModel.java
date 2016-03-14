@@ -45,6 +45,7 @@ public interface SessionModel extends TetradSerializable {
      */
     String getName();
 
+
 }
 
 

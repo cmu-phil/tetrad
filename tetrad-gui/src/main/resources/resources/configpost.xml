@@ -1908,7 +1908,6 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.TabularComparison
                 </model-class>
-                <!--<editor-class>edu.cmu.tetradapp.editor.GraphComparisonEditor</editor-clafss>-->
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-class>edu.cmu.tetradapp.model.GraphComparisonParams
                 </params-class>
@@ -1940,7 +1939,6 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.EdgeWeightComparison
                 </model-class>
-                <!--<editor-class>edu.cmu.tetradapp.editor.GraphComparisonEditor</editor-class>-->
                 <editor-class>edu.cmu.tetradapp.editor.EdgeWeightComparisonEditor</editor-class>
             </model>
             <model name="Independence Facts" acronym="Ind Facts"
@@ -1951,7 +1949,6 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.IndTestModel
                 </model-class>
-                <!--<editor-class>edu.cmu.tetradapp.editor.GraphComparisonEditor</editor-class>-->
                 <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsEditor</editor-class>
             </model>
         </models>

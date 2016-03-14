@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
@@ -119,6 +120,11 @@ public class PcStableRunner extends AbstractAlgorithmRunner
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "PC-Stable";
+    }
+
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
@@ -186,6 +192,13 @@ public class PcStableRunner extends AbstractAlgorithmRunner
 
     public boolean supportsKnowledge() {
         return true;
+    }
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        super.getParamSettings();
+        paramSettings.put("Test", getIndependenceTest().toString());
+        return paramSettings;
     }
 
     //========================== Private Methods ===============================//

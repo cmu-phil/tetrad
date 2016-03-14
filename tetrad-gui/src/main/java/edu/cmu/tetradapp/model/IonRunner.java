@@ -274,6 +274,11 @@ public class IonRunner extends AbstractAlgorithmRunner
         return true;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "ION";
+    }
+
     public List<Graph> getStoredGraphs() {
         if (graphs == null) {
             return new ArrayList<Graph>();

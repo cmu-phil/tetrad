@@ -528,6 +528,11 @@ public class FgsRunnerCyclic extends AbstractAlgorithmRunner implements IFgsRunn
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "FGS-Cyclic";
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }

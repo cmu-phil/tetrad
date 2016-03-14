@@ -283,6 +283,11 @@ public class FgsRunnerOld extends AbstractAlgorithmRunner implements GraphSource
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "FGS-Old";
+    }
+
     private boolean isAggressivelyPreventCycles() {
         SearchParams params = getParams();
         if (params instanceof MeekSearchParams) {

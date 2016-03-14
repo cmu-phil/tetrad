@@ -33,10 +33,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the Regression
@@ -85,6 +82,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
 
 
     private double[] coefficients;
+    private Map<String, String> allParamsSettings;
 
     //=========================CONSTRUCTORS===============================//
 
@@ -303,6 +301,11 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         return null;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "Logistic-Regression";
+    }
+
     public String getReport() {
         return report;
     }
@@ -380,6 +383,22 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         return new LinkedList<List<Triple>>();
     }
 
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+        paramSettings.put("Algorithm", "Regression");
+        return paramSettings;
+    }
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamsSettings = paramSettings;
+    }
+
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return null;
+    }
 }
 
 

@@ -141,6 +141,11 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "LiNGAM-Structure";
+    }
+
     private boolean isAggressivelyPreventCycles() {
         SearchParams params = getParams();
         if (params instanceof MeekSearchParams) {

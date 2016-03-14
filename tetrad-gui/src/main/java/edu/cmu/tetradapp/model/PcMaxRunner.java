@@ -26,10 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
@@ -127,6 +124,11 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "PC-Max";
+    }
+
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
@@ -202,6 +204,13 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
 
     public boolean supportsKnowledge() {
         return true;
+    }
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        super.getParamSettings();
+        paramSettings.put("Test", getIndependenceTest().toString());
+        return paramSettings;
     }
 
     //========================== Private Methods ===============================//
