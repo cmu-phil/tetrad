@@ -76,19 +76,31 @@ public class ZeroVariance implements DataValidation {
 
         int size = list.size();
         if (size > 0) {
-            if (outputFile == null) {
-                stderr.println(String.format("Dataset contains %d variables with zero-variance.", size));
+            if (size == 1) {
+                stderr.printf("Dataset contains %d variable with zero-variance.", size);
             } else {
-                stderr.println(String.format("Dataset contains %d variables with zero-variance. Variable names have been saved to %s.", size, outputFile.getFileName().toString()));
+                stderr.printf("Dataset contains %d variables with zero-variance.", size);
+            }
+            if (outputFile != null) {
                 try {
                     FileIO.writeLineByLine(list, outputFile);
+                    if (size == 1) {
+                        stderr.printf("  Variable name has been saved to file %s.", outputFile.getFileName().toString());
+                    } else {
+                        stderr.printf("  Variable names have been saved to file %s.", outputFile.getFileName().toString());
+                    }
                 } catch (IOException exception) {
                     exception.printStackTrace(System.err);
                 }
             }
+            stderr.println();
 
             if (verbose) {
-                stderr.println("Zero-variance variables:");
+                if (size == 1) {
+                    stderr.println("Variable with zero-variance:");
+                } else {
+                    stderr.println("Variables with zero-variance:");
+                }
                 for (String s : list) {
                     stderr.println(s);
                 }

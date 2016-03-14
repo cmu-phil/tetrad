@@ -103,19 +103,31 @@ public class UniqueVariables implements DataValidation {
                 count++;
             }
 
-            if (outputFile == null) {
-                stderr.println(String.format("Dataset contains %d non-unique variables.", size));
+            if (size == 1) {
+                stderr.printf("Dataset contains %d non-unique variable.", size);
             } else {
-                stderr.println(String.format("Dataset contains %d non-unique variables. Variable names have been saved to file %s.", size, outputFile.getFileName().toString()));
+                stderr.printf("Dataset contains %d non-unique variables.", size);
+            }
+            if (outputFile != null) {
                 try {
                     FileIO.writeLineByLine(list, outputFile);
+                    if (size == 1) {
+                        stderr.printf("  Variable name has been saved to file %s.", outputFile.getFileName().toString());
+                    } else {
+                        stderr.printf("  Variable names have been saved to file %s.", outputFile.getFileName().toString());
+                    }
                 } catch (IOException exception) {
                     exception.printStackTrace(System.err);
                 }
             }
+            stderr.println();
 
             if (verbose) {
-                stderr.println("Non-uniqe variables:");
+                if (size == 1) {
+                    stderr.println("Non-unique variable:");
+                } else {
+                    stderr.println("Non-unique variables:");
+                }
                 for (String s : list) {
                     stderr.println(s);
                 }

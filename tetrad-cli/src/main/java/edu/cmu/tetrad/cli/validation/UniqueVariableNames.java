@@ -70,19 +70,31 @@ public class UniqueVariableNames implements DataValidation {
 
         int size = nonUnique.size();
         if (size > 0) {
-            if (outputFile == null) {
-                stderr.println(String.format("Dataset contains %d non-unique variable names.", size));
+            if (size == 1) {
+                stderr.printf("Dataset contains %d non-unique variable name.", size);
             } else {
-                stderr.println(String.format("Dataset contains %d non-unique variable names. Variable names have been saved to file %s.", size, outputFile.getFileName().toString()));
+                stderr.printf("Dataset contains %d non-unique variable names.", size);
+            }
+            if (outputFile != null) {
                 try {
                     FileIO.writeLineByLine(nonUnique, outputFile);
+                    if (size == 1) {
+                        stderr.printf("  Variable name has been saved to file %s.", outputFile.getFileName().toString());
+                    } else {
+                        stderr.printf("  Variable names have been saved to file %s.", outputFile.getFileName().toString());
+                    }
                 } catch (IOException exception) {
                     exception.printStackTrace(System.err);
                 }
             }
+            stderr.println();
 
             if (verbose) {
-                stderr.println("Non-unique variable names:");
+                if (size == 1) {
+                    stderr.println("Non-unique variable name:");
+                } else {
+                    stderr.println("Non-unique variable names:");
+                }
                 for (String s : nonUnique) {
                     stderr.println(s);
                 }

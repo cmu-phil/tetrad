@@ -218,17 +218,17 @@ public class FgsCli {
         String dir = dirOut.toString();
         List<DataValidation> validations = new LinkedList<>();
         if (!skipUniqueVarName) {
-            validations.add(new UniqueVariableNames(dataSet, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_var_names.txt") : null));
+            validations.add(new UniqueVariableNames(dataSet, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_var_name.txt") : null));
         }
         if (!skipZeroVariance) {
             validations.add(new ZeroVariance(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_zero-variance.txt") : null));
         }
         if (!skipUniqueVar) {
-            validations.add(new UniqueVariables(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_vars.txt") : null));
+            validations.add(new UniqueVariables(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_var.txt") : null));
         }
 
         for (DataValidation dataValidation : validations) {
-            isValid = isValid && dataValidation.validate(writer, verbose);
+            isValid = dataValidation.validate(writer, verbose) && isValid;
         }
 
         return isValid;
