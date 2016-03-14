@@ -36,46 +36,6 @@ public class Args {
     private Args() {
     }
 
-    @Deprecated
-    public static int parseInteger(String value) {
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException exception) {
-            throw new IllegalArgumentException(String.format("'%s' is not an integer.", value));
-        }
-    }
-
-    @Deprecated
-    public static int parseInteger(String value, int min) {
-        int intValue = parseInteger(value);
-        if (min > intValue) {
-            throw new IllegalArgumentException(
-                    String.format("Value (%d) must be greater than or equal to %d.", intValue, min));
-        }
-
-        return intValue;
-    }
-
-    @Deprecated
-    public static int parseInteger(String value, int min, int max) {
-        int intValue = parseInteger(value);
-        if (min <= intValue && intValue <= max) {
-            return intValue;
-        } else {
-            throw new IllegalArgumentException(
-                    String.format("Value (%d) must be between %d and %d.", intValue, min, max));
-        }
-    }
-
-    @Deprecated
-    public static double parseDouble(String value) {
-        try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException exception) {
-            throw new IllegalArgumentException(String.format("'%s' is not a double.", value));
-        }
-    }
-
     public static double getDouble(String value) {
         try {
             return Double.parseDouble(value);
@@ -109,6 +69,45 @@ public class Args {
         } else {
             throw new IllegalArgumentException(
                     String.format("Value (%d) must be between %d and %d.", intValue, minValue, maxValue));
+        }
+    }
+
+    public static String getDelimiterName(char delimiter) {
+        switch (delimiter) {
+            case ',':
+                return "comma";
+            case ';':
+                return "semicolon";
+            case ' ':
+                return "space";
+            case ':':
+                return "colon";
+            case '\t':
+                return "tab";
+            default:
+                return "unknown";
+        }
+    }
+
+    public static char getDelimiterForName(String delimiter) {
+        delimiter = (delimiter == null) ? "" : delimiter.toLowerCase();
+        switch (delimiter) {
+            case "comma":
+            case ",":
+                return ',';
+            case "semicolon":
+            case ";":
+                return ';';
+            case "space":
+            case " ":
+                return ' ';
+            case "colon":
+            case ":":
+                return ':';
+            case "tab":
+            case "\t":
+            default:
+                return '\t';
         }
     }
 

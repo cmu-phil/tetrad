@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2016 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,15 +26,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * File utility for testing purposes.
  *
- * Dec 4, 2015 2:33:50 PM
+ * Mar 2, 2016 12:38:11 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FileIO {
+public class FilePrint {
 
-    private FileIO() {
+    private FilePrint() {
     }
 
     /**
