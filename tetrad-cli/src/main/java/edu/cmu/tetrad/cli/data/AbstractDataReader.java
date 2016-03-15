@@ -26,11 +26,11 @@ import java.nio.file.Path;
 
 /**
  *
- * Feb 3, 2016 11:52:42 AM
+ * Feb 29, 2016 1:32:34 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public abstract class AbstractDatasetReader implements DatasetReader {
+public abstract class AbstractDataReader {
 
     protected static final byte NEW_LINE = '\n';
 
@@ -40,20 +40,21 @@ public abstract class AbstractDatasetReader implements DatasetReader {
 
     protected static final byte SINGLE_QUOTE = '\'';
 
-    protected Path dataFile;
-    protected char delimiter;
+    protected static final byte SPACE = ' ';
 
     protected int lineCount;
     protected int columnCount;
 
-    public AbstractDatasetReader(Path dataFile, char delimiter) {
+    protected final Path dataFile;
+    protected final char delimiter;
+
+    public AbstractDataReader(Path dataFile, char delimiter) {
         this.dataFile = dataFile;
         this.delimiter = delimiter;
         this.lineCount = -1;
         this.columnCount = -1;
     }
 
-    @Override
     public int countNumberOfColumns() throws IOException {
         if (columnCount == -1) {
             int count = 0;
@@ -88,7 +89,6 @@ public abstract class AbstractDatasetReader implements DatasetReader {
         return columnCount;
     }
 
-    @Override
     public int countNumberOfLines() throws IOException {
         if (lineCount == -1) {
             int count = 0;

@@ -23,33 +23,30 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * Dataset reader.
+ * Interface for reading in continuous dataset.
  *
- * Feb 3, 2016 12:33:56 PM
+ * Feb 29, 2016 1:32:03 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public interface DatasetReader {
-
-    public DataSet readInContinuousData() throws IOException;
-
-    public DataSet readInContinuousData(Set<String> excludedVariables) throws IOException;
+public interface ContinuousDataReader {
 
     /**
-     * Counts the number of lines containing data. Ignores empty lines.
+     * Read in dataset containing continuous values.
      *
-     * @return the number of lines containing data
-     * @throws IOException whenever an I/O exception of some sort has occurred
+     * @return
+     * @throws IOException
      */
-    public int countNumberOfLines() throws IOException;
+    public DataSet readInData() throws IOException;
 
     /**
-     * Counts the number of columns on the first line. The rest of the lines
-     * will be not be counted.
+     * Read in dataset containing continuous values. Excludes any variables from
+     * the given set.
      *
-     * @return the number of columns on the first line
-     * @throws IOException whenever an I/O exception of some sort has occurred
+     * @param excludedVariables set of variables to exclude
+     * @return
+     * @throws IOException
      */
-    public int countNumberOfColumns() throws IOException;
+    public DataSet readInData(Set<String> excludedVariables) throws IOException;
 
 }

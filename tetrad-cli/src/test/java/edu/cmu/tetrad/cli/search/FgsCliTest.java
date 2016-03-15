@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Pittsburgh.
+ * Copyright (C) 2016 University of Pittsburgh.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,14 +18,13 @@
  */
 package edu.cmu.tetrad.cli.search;
 
-import edu.cmu.tetrad.cli.FileIO;
-import edu.cmu.tetrad.cli.SimulatedDatasets;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,18 +32,14 @@ import org.junit.rules.TemporaryFolder;
 
 /**
  *
- * Nov 30, 2015 9:20:03 AM
+ * Mar 2, 2016 12:26:54 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgsCliTest implements SimulatedDatasets {
+public class FgsCliTest {
 
     @ClassRule
     public static TemporaryFolder tmpDir = new TemporaryFolder();
-
-    private static final Path DATA_FILE = Paths.get("test", "data", "sim_data_20vars_100cases.csv");
-    private static final Path ZERO_VARIANCE_DATA_FILE = Paths.get("test", "data", "zero_variance_sim_data_20vars_100cases.csv");
-    private static final Path NON_UNIQUE_DATA_FILE = Paths.get("test", "data", "non_unique_sim_data_21vars_100cases.csv");
 
     public FgsCliTest() {
     }
@@ -57,15 +52,17 @@ public class FgsCliTest implements SimulatedDatasets {
     /**
      * Test of main method, of class FgsCli.
      *
-     * @throws IOException whenever unable to read or right to file
+     * @throws IOException
      */
     @Ignore
     @Test
     public void testMain() throws IOException {
         System.out.println("main");
 
-        String data = ZERO_VARIANCE_DATA_FILE.toAbsolutePath().toString();
-        String delimiter = ",";
+        Path dataFile = Paths.get("test", "data", "diff_delim", "sim_data_20vars_100cases.txt");
+
+        String data = dataFile.toAbsolutePath().toString();
+        String delimiter = "\t";
         String dirOut = tmpDir.newFolder("fgs").toString();
         String outputPrefix = "fgs";
         String[] args = {
@@ -73,23 +70,44 @@ public class FgsCliTest implements SimulatedDatasets {
             "--delimiter", delimiter,
             "--out", dirOut,
             "--verbose",
+            "--graphml",
             "--output-prefix", outputPrefix
         };
         FgsCli.main(args);
 
         Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
-        Path zeroVarOutFile = Paths.get(dirOut, outputPrefix + "_zero-variance.txt");
-        Path nonUnique = Paths.get(dirOut, outputPrefix + "_non-unique.txt");
-        System.out.println("================================================================================");
-        FileIO.printFile(outFile);
-        System.out.println("--------------------------------------------------------------------------------");
-        if (Files.exists(nonUnique, LinkOption.NOFOLLOW_LINKS)) {
-            FileIO.printFile(nonUnique);
-        }
-        if (Files.exists(zeroVarOutFile, LinkOption.NOFOLLOW_LINKS)) {
-            FileIO.printFile(zeroVarOutFile);
-        }
-        System.out.println("================================================================================");
+        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
+
+        Path graphmlOutFile = Paths.get(dirOut, outputPrefix + "_graph.txt");
+        errMsg = graphmlOutFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(graphmlOutFile, LinkOption.NOFOLLOW_LINKS));
+    }
+
+    @Ignore
+    @Test
+    public void testMainExcludeVariables() throws IOException {
+        System.out.println("main");
+
+        Path dataFile = Paths.get("test", "data", "diff_delim", "sim_data_20vars_100cases.csv");
+        Path variableFile = Paths.get("test", "data", "variables.txt");
+
+        String delimiter = ",";
+        String dirOut = tmpDir.newFolder("fgs_exclude_variables").toString();
+        String outputPrefix = "fgs";
+        String[] args = {
+            "--data", dataFile.toAbsolutePath().toString(),
+            "--delimiter", delimiter,
+            "--exclude-variables", variableFile.toAbsolutePath().toString(),
+            "--out", dirOut,
+            "--verbose",
+            "--output-prefix", outputPrefix
+        };
+        FgsCli.main(args);
+
+        Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
+        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
     }
 
 }

@@ -16,45 +16,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.cli.graph;
+package edu.cmu.tetrad.cli.util;
 
-import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
- * Dec 7, 2015 3:56:51 PM
+ * Mar 9, 2016 2:19:49 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class SimulateGraphCliTest {
+public class DateTime {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    private static final DateFormat DF = new SimpleDateFormat("EEE, MMMM dd, yyyy hh:mm:ss a");
 
-    public SimulateGraphCliTest() {
+    private DateTime() {
     }
 
-    /**
-     * Test of main method, of class SimulateGraphCli.
-     *
-     * @throws IOException
-     */
-    @Test
-    public void testMain() throws IOException {
-        System.out.println("main");
+    public static String printNow() {
+        return print(new Date(System.currentTimeMillis()));
+    }
 
-        String variables = "15";
-        String dirOut = tempFolder.newFolder("simulate_graph").toString();
-        String fileName = String.format("sim_data_%svars", variables);
-        String[] args = {
-            "-v", variables,
-            "-o", dirOut,
-            "-n", fileName
-        };
-        SimulateGraphCli.main(args);
+    public static String print(Date date) {
+        return DF.format(date);
     }
 
 }
