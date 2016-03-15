@@ -166,8 +166,8 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
     // Greg's structure prior
     private double getPriorForStructure(int numParents) {
         double e = getStructurePrior();
-        double k = numParents;
-        double n = data.length;
+        double k = numParents + 1;  // # variables in the table
+        double n = data.length; // # variables
         return k * Math.log(e / n) + (n - k) * Math.log(1.0 - (e / n));
     }
 

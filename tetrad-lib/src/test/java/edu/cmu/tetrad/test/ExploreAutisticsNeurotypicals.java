@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -41,14 +42,15 @@ import java.util.Set;
 public final class ExploreAutisticsNeurotypicals {
 
     public void printEdgeData() {
-        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_90_Variable";
-        List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
+//        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_90_Variable";
+        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets";
+        List<List<DataSet>> allDatasets = loadData(path, "ROI_data_autistic", "ROI_data_typical");
         List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, true);
         List<List<Graph>> graphs = reconcileNodes(allGraphs);
         List<Edge> _edges = getAllEdges(allGraphs);
         DataSet dataSet = createEdgeDataSet(graphs, _edges);
-        dataSet = restrictDataRange(dataSet, 0, .5);
-        printData(path, "edgedata", dataSet);
+        dataSet = restrictDataRange(dataSet, .2, .8);
+        printDataTranspose(path, "edgedata", dataSet);
     }
 
     public void printTrekNodeData() {
@@ -432,6 +434,57 @@ public final class ExploreAutisticsNeurotypicals {
             throw new RuntimeException();
         }
     }
+
+    private static void printDataTranspose(String path, String prefix, DataSet dataSet) {
+        List<Node> nodes = dataSet.getVariables();
+        Node group = dataSet.getVariable("Group");
+
+        List<Node> _nodes = new ArrayList<>();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i) == group) {
+                _nodes.add(group);
+            } else {
+                _nodes.add(new ContinuousVariable("X" + (i + 1)));
+            }
+        }
+
+        TetradMatrix m = dataSet.getDoubleData();
+
+        TetradMatrix mt = m.transpose();
+
+        List<Node> tvars = new ArrayList<>();
+
+        for (int i = 0; i < mt.columns(); i++) tvars.add(new ContinuousVariable("S" + (i + 1)));
+
+        dataSet = new BoxDataSet(new DoubleDataBox(mt.toArray()), tvars);
+
+//        dataSet = new BoxDataSet(new DoubleDataBox(dataSet.getDoubleData().toArray()), _nodes);
+        dataSet.setNumberFormat(new DecimalFormat("0"));
+
+        File file1 = new File(path, prefix + ".data.txt");
+        File file2 = new File(path, prefix + ".dict.txt");
+
+        try {
+            PrintStream out1 = new PrintStream(new FileOutputStream(file1));
+            PrintStream out2 = new PrintStream(new FileOutputStream(file2));
+
+            out1.println(dataSet);
+            out1.close();
+
+            for (int i = 0; i < nodes.size(); i++) {
+                out2.println(_nodes.get(i) + "\t" + nodes.get(i));
+            }
+
+            out2.println("Group");
+
+            out2.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
+
 
     public static void main(String... args) {
         new ExploreAutisticsNeurotypicals().printEdgeData();

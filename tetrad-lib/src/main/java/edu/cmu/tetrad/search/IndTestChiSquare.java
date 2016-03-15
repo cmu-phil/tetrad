@@ -367,7 +367,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     private double getDeterminationP() {
         return determinationP;
     }
-
+    
     public void setDeterminationP(double determinationP) {
         this.determinationP = determinationP;
     }

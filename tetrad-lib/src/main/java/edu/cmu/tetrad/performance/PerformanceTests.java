@@ -638,7 +638,6 @@ public class PerformanceTests {
 //        dag = DataGraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
         Graph dag = makeDag(numVars, edgesPerNode);
 
-
         List<Node> vars = dag.getNodes();
 
         int[] causalOrdering = new int[vars.size()];
@@ -683,7 +682,9 @@ public class PerformanceTests {
 //        Collections.shuffle(names);
 //        cov = cov.getSubmatrix(names);
 
-        Fgs fgs = new Fgs(cov);
+        SemBicScore score = new SemBicScore(cov, penaltyDiscount);
+
+        Fgs fgs = new Fgs(score);
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
         fgs.setPenaltyDiscount(penaltyDiscount);
@@ -711,10 +712,10 @@ public class PerformanceTests {
 
         out.println(new Date());
 
-//        out.println("# Vars = " + numVars);
-//        out.println("# Edges = " + numEdges);
+        out.println("# Vars = " + numVars);
+        out.println("# Edges = " + numEdges);
         out.println("# Cases = " + numCases);
-        out.println("Penalty discount = " + (double) numEdges);
+        out.println("Penalty discount = " + penaltyDiscount);
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
@@ -2086,10 +2087,11 @@ public class PerformanceTests {
             } else {
                 throw new IllegalArgumentException("Not a configuration!");
             }
-        } else {
-            new PerformanceTests().printStuffForKlea();
-//            throw new IllegalArgumentException("Not a configuration!");
         }
+//        else {
+//            new PerformanceTests().printStuffForKlea();
+//            throw new IllegalArgumentException("Not a configuration!");
+//        }
 
         System.out.println("Finish");
     }

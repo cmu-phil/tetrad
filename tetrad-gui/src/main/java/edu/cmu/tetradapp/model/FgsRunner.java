@@ -365,10 +365,14 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 double penalty = ((FgsParams) getParams()).getComplexityPenalty();
 
                 if (indTestParams.isFirstNontriangular()) {
-                    fgs = new Fgs(new SemBicScoreImages(list));
+                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                    fgsScore.setPenaltyDiscount(penalty);
+                    fgs = new Fgs(fgsScore);
                     fgs.setPenaltyDiscount(penalty);
                 } else {
-                    fgs = new Fgs(new SemBicScoreImages(list));
+                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                    fgsScore.setPenaltyDiscount(penalty);
+                    fgs = new Fgs(fgsScore);
                     fgs.setPenaltyDiscount(penalty);
                 }
             } else if (allDiscrete(list)) {
@@ -534,10 +538,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
         FgsParams params = (FgsParams) getParams();
-        NumberFormat nf = new DecimalFormat("0.0000");
-
-        paramSettings.put("Penalty Discount", nf.format(params.getComplexityPenalty()));
-
+        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getComplexityPenalty()));
         return paramSettings;
     }
 
