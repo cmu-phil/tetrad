@@ -89,13 +89,13 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         return (DiscreteVariable) variables.get(i);
     }
 
-    Map<List<Integer>, Double> all = new HashMap<>();
+//    Map<List<Integer>, Double> all = new HashMap<>();
 
     @Override
     public double localScore(int node, int parents[]) {
 
-        Double _score = all.get(asList(node, parents));
-        if (_score != null) return _score;
+//        Double _score = all.get(asList(node, parents));
+//        if (_score != null) return _score;
 
         // Number of categories for node.
         int r = numCategories[node];
@@ -166,9 +166,9 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         score += q * Gamma.logGamma(rowPrior);
         score -= r * q * Gamma.logGamma(cellPrior);
 
-        if (parents.length <= 0) {
-            all.put(asList(node, parents), score);
-        }
+//        if (parents.length <= 1) {
+//            all.put(asList(node, parents), score);
+//        }
 
         return score;
     }
