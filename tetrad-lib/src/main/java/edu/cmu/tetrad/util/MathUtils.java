@@ -45,6 +45,34 @@ public class MathUtils {
 
         return i;
     }
+
+    public static double logFactorial(int n) {
+        double i = 0;
+
+        for (int j = 1; j <= n; j++) {
+            i += Math.log(j);
+        }
+
+        return i;
+    }
+
+    public static int choose(int a, int b) {
+        if (a == 0 && b == 0) {
+            return 1;
+        } else if (a == 0 && b > 0) {
+            return (int) Math.round(Math.exp(1 - (logFactorial(b) + logFactorial(a - b))));
+        } else if (a > 0 && b == 0) {
+            return (int) Math.round(Math.exp(logFactorial(a) - (1 + logFactorial(a - b))));
+        } else if (a > 0 && b > 0) {
+            return (int) Math.round(Math.exp(logFactorial(a) - (logFactorial(b) + logFactorial(a - b))));
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    public static double logChoose(int a, int b) {
+        return logFactorial(a) - (logFactorial(b) + logFactorial(a - b));
+    }
 }
 
 

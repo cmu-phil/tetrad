@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphConverter;
+import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -56,6 +57,25 @@ public final class TestBayesBicScorer  {
         BayesProperties scorer = new BayesProperties(dataSet2Discrete, graph1);
         double likelihoodRatioP = scorer.getLikelihoodRatioP();
         assertEquals(.000, likelihoodRatioP, 0.001);
+    }
+
+    @Test
+    public void testGregsBdeuStructurePrior() {
+        for (int i = 100; i >= 1; i--) {
+            double e = .0001 / i;
+            System.out.println("e = " + e + "\t" + prior(e, 1, 10));
+        }
+    }
+
+    private double prior(double e, int k, int v) {
+        double choose = Math.exp(MathUtils.choose(v - 1, k));
+        return choose * Math.pow(e / (v - 1), k) * Math.pow(1.0 - e / (v - 1), (v - k - 1));
+    }
+
+    // Greg's structure prior
+    private double prior2(double e, int k, int v) {
+        double choose = Math.exp(MathUtils.choose(v - 1, k));
+        return 1.0 / choose;//k * Math.log(e / (v - 1)) + (v - k - 1) * Math.log(1.0 - (e / (v - 1)));
     }
 }
 
