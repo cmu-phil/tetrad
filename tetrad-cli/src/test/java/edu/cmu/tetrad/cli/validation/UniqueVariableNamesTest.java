@@ -70,7 +70,7 @@ public class UniqueVariableNamesTest {
         Path outputFile = Paths.get(dirOut, "output.txt");
 
         DataValidation dataValidation = new UniqueVariableNames(dataSet, outputFile);
-        dataValidation.validate(System.err, true);
+        dataValidation.validate(System.err, false);
 
         String errMsg = outputFile.getFileName().toString() + " does not exist.";
         Assert.assertTrue(errMsg, Files.exists(outputFile, LinkOption.NOFOLLOW_LINKS));

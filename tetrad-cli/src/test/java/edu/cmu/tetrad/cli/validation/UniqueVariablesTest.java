@@ -71,7 +71,7 @@ public class UniqueVariablesTest {
 
         int numOfThreads = 2;
         DataValidation dataValidation = new UniqueVariables(dataSet, numOfThreads, outputFile);
-        dataValidation.validate(System.err, true);
+        dataValidation.validate(System.err, false);
 
         String errMsg = outputFile.getFileName().toString() + " does not exist.";
         Assert.assertTrue(errMsg, Files.exists(outputFile, LinkOption.NOFOLLOW_LINKS));
