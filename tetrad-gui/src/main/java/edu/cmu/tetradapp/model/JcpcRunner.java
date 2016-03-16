@@ -50,6 +50,11 @@ public class JcpcRunner extends AbstractAlgorithmRunner
     }
 
     @Override
+    public String getAlgorithmName() {
+        return "JCPC";
+    }
+
+    @Override
     public void execute() {
 
     }

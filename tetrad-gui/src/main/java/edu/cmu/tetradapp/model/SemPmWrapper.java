@@ -34,7 +34,9 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
@@ -221,8 +223,6 @@ public class SemPmWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 	public List<Node> getVariables() {
 		return getGraph().getNodes();
 	}
-
-
 }
 
 

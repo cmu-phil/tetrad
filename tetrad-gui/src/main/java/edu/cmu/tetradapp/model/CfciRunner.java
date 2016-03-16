@@ -177,6 +177,10 @@ public class CfciRunner extends AbstractAlgorithmRunner
     }
 
 
+    @Override
+    public String getAlgorithmName() {
+        return "CFCI";
+    }
 }
 
 

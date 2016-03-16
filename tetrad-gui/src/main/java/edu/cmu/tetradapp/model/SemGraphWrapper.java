@@ -25,12 +25,16 @@ import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
@@ -40,7 +44,7 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 public class SemGraphWrapper implements SessionModel, GraphSource,
-        KnowledgeBoxInput {
+        KnowledgeBoxInput, SimulationParamsSource {
 	static final long serialVersionUID = 23L;
 
 	/**
@@ -52,8 +56,9 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	 * @serial Cannot be null.
 	 */
 	private SemGraph semGraph;
+    private Map<String, String> allParamSettings;
 
-	// =============================CONSTRUCTORS==========================//
+    // =============================CONSTRUCTORS==========================//
 
 	public SemGraphWrapper(SemGraph graph) {
 		if (graph == null) {
@@ -249,6 +254,27 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	public List<Node> getVariables() {
 		return getGraph().getNodes();
 	}
+
+	@Override
+	public Map<String, String> getParamSettings() {
+		Map<String, String> paramSettings = new HashMap<>();
+        if (!paramSettings.containsKey("# Vars")) {
+            paramSettings.put("# Nodes", Integer.toString(semGraph.getNumNodes()));
+        }
+		paramSettings.put("# Edges", Integer.toString(semGraph.getNumEdges()));
+		if (semGraph.existsDirectedCycle()) paramSettings.put("Cyclic", null);
+		return paramSettings;
+	}
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
+    }
+
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return allParamSettings;
+    }
 }
 
 

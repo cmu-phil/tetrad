@@ -239,6 +239,11 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	public boolean supportsKnowledge() {
 		return true;
 	}
+
+	@Override
+	public String getAlgorithmName() {
+		return "MBFS";
+	}
 }
 
 

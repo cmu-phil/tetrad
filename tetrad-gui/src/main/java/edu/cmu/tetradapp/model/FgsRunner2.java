@@ -27,10 +27,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
@@ -120,6 +117,11 @@ public class FgsRunner2 extends AbstractAlgorithmRunner
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         rules.setKnowledge(getParams().getKnowledge());
         return rules;
+    }
+
+    @Override
+    public String getAlgorithmName() {
+        return "FGS2";
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

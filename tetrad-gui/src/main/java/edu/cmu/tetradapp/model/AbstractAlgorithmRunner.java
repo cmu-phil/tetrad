@@ -32,9 +32,9 @@ import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
 
 /**
  * Implements a stub that basic algorithm wrappers can extend if they take
@@ -99,6 +99,8 @@ public abstract class AbstractAlgorithmRunner
      * it's that kind of algorithm.
      */
     private List<Graph> graphs = null;
+    private Map<String, String> allParamSettings;
+    protected Map<String, String> paramSettings = new LinkedHashMap<>();
 
     //===========================CONSTRUCTORS===========================//
 
@@ -299,6 +301,9 @@ public abstract class AbstractAlgorithmRunner
         return this.initialGraph;
     }
 
+    @Override
+    public abstract String getAlgorithmName();
+
     public final Graph getSourceGraph() {
         return this.sourceGraph;
     }
@@ -428,6 +433,21 @@ public abstract class AbstractAlgorithmRunner
 
     public List<Graph> getGraphs() {
         return graphs;
+    }
+
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        paramSettings.put("Algorithm", getAlgorithmName());
+        return paramSettings;
+    }
+
+    public Map<String, String> getAllParamSettings() {
+        return allParamSettings;
+    }
+
+    public void setAllParamSettings(Map<String, String> allParamSettings) {
+        this.allParamSettings = allParamSettings;
     }
 }
 

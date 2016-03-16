@@ -72,122 +72,6 @@ public final class GraphComparison implements SessionModel {
      */
     private Graph trueGraph;
 
-    /**
-     * @serial
-     * @deprecated
-     */
-    private int numMissingEdges;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-    private int numCorrectEdges;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-    private int commissionErrors;
-
-    /**
-     * The number of correct edges the last time they were counted.
-     *
-     * @serial Range greater than or equal to 0.
-     */
-    private int adjCorrect;
-
-    /**
-     * The number of errors of commission that last time they were counted.
-     *
-     * @serial Range greater than or equal to 0.
-     */
-    private int adjFp;
-
-    /**
-     * The number of errors of omission the last time they were counted.
-     *
-     * @serial Range greater than or equal to 0.                                   GraphParams param
-     */
-    private int adjFn;
-
-    /**
-     * The number of correct edges the last time they were counted.
-     *
-     * @serial Range greater than or equal to 0.
-     */
-    private int arrowptCorrect;
-
-    /**
-     * The number of errors of commission that last time they were counted.
-     *
-     * @serial Range greater than or equal to 0.
-     */
-    private int arrowptFp;
-
-    /**
-     * The number of errors of omission the last time they were counted.
-     *
-     * @serial Range greater than or equal to 0.
-     */
-    private int arrowptFn;
-
-    private double arrowptRec;
-    private double arrowptPrec;
-    private double adjRec;
-    private double adjPrec;
-
-
-
-    private int twoCycleCorrect;
-    private int twoCycleFp;
-    private int twoCycleFn;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-    private int arrowptAfp;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-    private int arrowptAfn;
-
-    /**
-     * The list of edges that were added to the target graph. These are
-     * new adjacencies.
-     */
-    private List<Edge> edgesAdded;
-
-    /**
-     * The list of edges that were removed from the reference graphs. These
-     * are missing adjacencies.
-     */
-    private List<Edge> edgesRemoved;
-
-    /**
-     * The list of edges that were reoriented from the reference to the
-     * target graph, as they were in the reference graph. This list
-     * coordinates with <code>edgesReorientedTo</code>, in that
-     * the i'th element of <code>edgesReorientedFrom</code> and the ith
-     * element of <code>edgesReorientedTo</code> represent the same
-     * adjacency.
-     */
-    private List<Edge> edgesReorientedFrom;
-
-    /**
-     * The list of edges that were reoriented from the reference to the
-     * target graph, as they are in the target graph. This list
-     * coordinates with <code>edgesReorientedFrom</code>, in that
-     * the i'th element of <code>edgesReorientedFrom</code> and the ith
-     * element of <code>edgesReorientedTo</code> represent the same
-     * adjacency.
-     */
-    private List<Edge> edgesReorientedTo;
-    private boolean printStars = true;
-
     //=============================CONSTRUCTORS==========================//
 
     /**
@@ -251,30 +135,8 @@ public final class GraphComparison implements SessionModel {
         GraphUtils.GraphComparison comparison = SearchGraphUtils.
                 getGraphComparison(targetGraph, alteredRefGraph);
 
-        this.adjFn = comparison.getAdjFn();
-        this.adjFp = comparison.getAdjFp();
-        this.adjCorrect = comparison.getAdjCorrect();
-        this.arrowptFn = comparison.getArrowptFn();
-        this.arrowptFp = comparison.getArrowptFp();
-        this.arrowptCorrect = comparison.getArrowptCorrect();
-        this.twoCycleFn = comparison.getTwoCycleFn();
-        this.twoCycleFp = comparison.getTwoCycleFp();
-        this.twoCycleCorrect = comparison.getTwoCycleCorrect();
-
-        this.edgesAdded = comparison.getEdgesAdded();
-        this.edgesRemoved = comparison.getEdgesRemoved();
-        this.edgesReorientedFrom = comparison.getEdgesReorientedFrom();
-        this.edgesReorientedTo = comparison.getEdgesReorientedTo();
-
-        this.adjPrec = (double) this.adjCorrect / (this.adjCorrect + this.adjFp);
-        this.adjRec = (double) this.adjCorrect / (this.adjCorrect + this.adjFn);
-        this.arrowptPrec = (double) this.arrowptCorrect / (this.arrowptCorrect + this.arrowptFp);
-        this.arrowptRec = (double) this.arrowptCorrect / (this.arrowptFn + this.arrowptFn);
-
         if (this.params != null) {
-            this.params.addRecord(getAdjCorrect(), getAdjFn(), getAdjFp(),
-                    getArrowptCorrect(), getArrowptFn(), getArrowptFp(),
-                    getAdjPrec(), getAdjRec(), getArrowptPrec(), getArrowptRec());
+            this.params.addRecord(comparison);
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
@@ -307,96 +169,6 @@ public final class GraphComparison implements SessionModel {
                 params);
     }
 
-    public GraphComparison(Graph referenceGraph, Graph targetGraph) {
-        this.referenceGraph = referenceGraph;
-        this.targetGraph = targetGraph;
-        Graph alteredRefGraph;
-
-        //Normally, one's target graph won't have latents, so we'll want to
-        // remove them from the ref graph to compare, but algorithms like
-        // MimBuild might not want to do this.
-        if (params != null && params.isKeepLatents()) {
-            alteredRefGraph = this.referenceGraph;
-        } else {
-            alteredRefGraph = removeLatent(this.targetGraph);
-        }
-
-        GraphUtils.GraphComparison comparison = SearchGraphUtils.
-                getGraphComparison(this.targetGraph, alteredRefGraph);
-
-        this.adjFn = comparison.getAdjFn();
-        this.adjFp = comparison.getAdjFp();
-        this.adjCorrect = comparison.getAdjCorrect();
-        this.arrowptFn = comparison.getArrowptFn();
-        this.arrowptFp = comparison.getArrowptFp();
-        this.arrowptCorrect = comparison.getArrowptCorrect();
-
-        this.edgesAdded = comparison.getEdgesAdded();
-        this.edgesRemoved = comparison.getEdgesRemoved();
-        this.edgesReorientedFrom = comparison.getEdgesReorientedFrom();
-        this.edgesReorientedTo = comparison.getEdgesReorientedTo();
-
-        this.adjPrec = (double) this.adjCorrect / (this.adjCorrect + this.adjFp);
-        this.adjRec = (double) this.adjCorrect / (this.adjCorrect + this.adjFn);
-        this.arrowptPrec = (double) this.arrowptCorrect / (this.arrowptCorrect + this.arrowptFp);
-        this.arrowptRec = (double) this.arrowptCorrect / (this.arrowptFn + this.arrowptFn);
-
-        if (params != null) {
-            params.addRecord(getAdjCorrect(), getAdjFn(), getAdjFp(),
-                    getArrowptCorrect(), getArrowptFn(), getArrowptFp(),
-                    getAdjPrec(), getAdjRec(), getArrowptPrec(), getArrowptRec());
-        }
-
-        TetradLogger.getInstance().log("info", "Graph Comparison");
-        TetradLogger.getInstance().log("comparison", getComparisonString());
-    }
-
-    public GraphComparison(Graph referenceGraph, Graph targetGraph,
-                           Graph trueGraph) {
-        this.referenceGraph = referenceGraph;
-        this.targetGraph = targetGraph;
-        this.trueGraph = trueGraph;
-        Graph alteredRefGraph;
-
-        //Normally, one's target graph won't have latents, so we'll want to
-        // remove them from the ref graph to compare, but algorithms like
-        // MimBuild might not want to do this.
-        if (params != null && params.isKeepLatents()) {
-            alteredRefGraph = this.referenceGraph;
-        } else {
-            alteredRefGraph = removeLatent(this.targetGraph);
-        }
-
-        GraphUtils.GraphComparison comparison = SearchGraphUtils.
-                getGraphComparison(this.targetGraph, alteredRefGraph);
-
-        this.adjFn = comparison.getAdjFn();
-        this.adjFp = comparison.getAdjFp();
-        this.adjCorrect = comparison.getAdjCorrect();
-        this.arrowptFn = comparison.getArrowptFn();
-        this.arrowptFp = comparison.getArrowptFp();
-        this.arrowptCorrect = comparison.getArrowptCorrect();
-
-        this.edgesAdded = comparison.getEdgesAdded();
-        this.edgesRemoved = comparison.getEdgesRemoved();
-        this.edgesReorientedFrom = comparison.getEdgesReorientedFrom();
-        this.edgesReorientedTo = comparison.getEdgesReorientedTo();
-
-        this.adjPrec = (double) this.adjCorrect / (this.adjCorrect + this.adjFp);
-        this.adjRec = (double) this.adjCorrect / (this.adjCorrect + this.adjFn);
-        this.arrowptPrec = (double) this.arrowptCorrect / (this.arrowptCorrect + this.arrowptFp);
-        this.arrowptRec = (double) this.arrowptCorrect / (this.arrowptFn + this.arrowptFn);
-
-        if (params != null) {
-            params.addRecord(getAdjCorrect(), getAdjFn(), getAdjFp(),
-                    getArrowptCorrect(), getArrowptFn(), getArrowptFp(),
-                   getAdjPrec(), getAdjRec(), getArrowptPrec(), getArrowptRec());
-        }
-
-        TetradLogger.getInstance().log("info", "Graph Comparison");
-        TetradLogger.getInstance().log("comparison", getComparisonString());
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -425,140 +197,11 @@ public final class GraphComparison implements SessionModel {
         this.name = name;
     }
 
-    public List<Edge> getEdgesAdded() {
-        return edgesAdded;
-    }
-
-    public List<Edge> getEdgesRemoved() {
-        return edgesRemoved;
-    }
-
-    public List<Edge> getEdgesReorientedFrom() {
-        return edgesReorientedFrom;
-    }
-
-    public List<Edge> getEdgesReorientedTo() {
-        return edgesReorientedTo;
-    }
-
-    public String toString() {
-        return "Errors of omission = " + getAdjFn() +
-                ", Errors of commission = " + getAdjFp();
-    }
-
     public String getComparisonString() {
         return SearchGraphUtils.graphComparisonString(getParams().getTargetGraphName(), targetGraph,
                 getParams().getReferenceGraphName(), referenceGraph, false);
     }
 
-//    public String graphComparisonString() {
-//        StringBuilder builder = new StringBuilder();
-//
-//        if (params != null) {
-//            String trueGraphAndTarget = "Comparing " +
-//                    getParams().getTargetGraphName() + " to " + getParams().getReferenceGraphName();
-//            builder.append(trueGraphAndTarget + "\n");
-//        }
-//        builder.append("\nEdges added:");
-//
-//        if (this.getEdgesAdded().isEmpty()) {
-//            builder.append("\n  --NONE--");
-//        } else {
-//            List<Edge> edgesAdded = getEdgesAdded();
-//
-//            for (int i = 0; i < edgesAdded.size(); i++) {
-//                Edge edge = edgesAdded.get(i);
-//                boolean directedInReference = false;
-//
-//                Node node1 = referenceGraph.getNode(edge.getNode1().getName());
-//                Node node2 = referenceGraph.getNode(edge.getNode2().getName());
-//
-//                if (Edges.isDirectedEdge(edge) && DataGraphUtils.existsSemidirectedPathFromTo(referenceGraph, node1, node2)) {
-//                    directedInReference = true;
-//                } else if ((Edges.isDirectedEdge(edge) || Edges.isBidirectedEdge(edge)) &&
-//                        (DataGraphUtils.existsSemidirectedPathFromTo(referenceGraph, node1, node2) ||
-//                        DataGraphUtils.existsSemidirectedPathFromTo(referenceGraph, node2, node1))) {
-//                    directedInReference = true;
-//                }
-//
-////                Graph graph = comparison.getTargetGraph();
-////                builder.append("\n").append(i + 1).append(". <> ====> ").append(edge);
-//                builder.append("\n").append(i + 1).append(". ").append(edge);
-//
-//                if (printStars && directedInReference) {
-//                    builder.append(" *");
-//                }
-//
-//            }
-//        }
-//
-//        builder.append("\n\nEdge removed:");
-//
-//        if (this.getEdgesRemoved().isEmpty()) {
-//            builder.append("\n  --NONE--");
-//        } else {
-//            List<Edge> edgesRemoved = getEdgesRemoved();
-//
-//            for (int i = 0; i < edgesRemoved.size(); i++) {
-//                Edge edge = edgesRemoved.get(i);
-//                boolean directedInTarget = false;
-//
-//                Node node1 = targetGraph.getNode(edge.getNode1().getName());
-//                Node node2 = targetGraph.getNode(edge.getNode2().getName());
-//
-//                if (Edges.isDirectedEdge(edge) && DataGraphUtils.existsSemidirectedPathFromTo(targetGraph, node1, node2)) {
-//                    directedInTarget = true;
-//                } else if ((Edges.isDirectedEdge(edge) || Edges.isBidirectedEdge(edge)) &&
-//                        (DataGraphUtils.existsSemidirectedPathFromTo(targetGraph, node1, node2) ||
-//                        DataGraphUtils.existsSemidirectedPathFromTo(targetGraph, node2, node1))) {
-//                    directedInTarget = true;
-//                }
-//
-////                Graph graph = comparison.getTargetGraph();
-////                builder.append("\n").append(i + 1).append(". <> ====> ").append(edge);
-//                builder.append("\n").append(i + 1).append(". ").append(edge);
-//
-//                if (printStars && directedInTarget) {
-//                    builder.append(" *");
-//                }
-//            }
-//        }
-//
-//        builder.append("\n\nEdges reoriented:");
-//
-//        if (this.getEdgesReorientedFrom().isEmpty()) {
-//            builder.append("\n  --NONE--");
-//        } else {
-//            List<Edge> edgesReorientedFrom = this.getEdgesReorientedFrom();
-//            List<Edge> edgesReorientedTo = this.getEdgesReorientedTo();
-//
-//            for (int i = 0; i < this.getEdgesReorientedFrom().size(); i++) {
-//                Edge from = edgesReorientedFrom.get(i);
-//                Edge to = edgesReorientedTo.get(i);
-////                Graph graph = comparison.getTargetGraph();
-//                builder.append("\n").append(i + 1).append(". ").append(from)
-//                        .append(" ====> ").append(to);
-//            }
-//        }
-//
-//        String compareString = builder.toString();
-//        return compareString;
-//    }
-
-
-    //============================PRIVATE METHODS=========================//
-
-
-    public Graph getTargetGraph() {
-        return new EdgeListGraph(targetGraph);
-    }
-
-
-    public Graph getReferenceGraph() {
-        return new EdgeListGraph(referenceGraph);
-    }
-
-    //This removes the latent nodes in G and connects nodes that were formerly
     //adjacent to the latent node with an undirected edge (edge type doesnt matter).
     private static Graph removeLatent(Graph g) {
         Graph result = new EdgeListGraph(g);
@@ -591,49 +234,6 @@ public final class GraphComparison implements SessionModel {
     }
 
     /**
-     * @return the number of correct edges last time they were counted.
-     */
-    private int getAdjCorrect() {
-        return adjCorrect;
-    }
-
-    /**
-     * @return the number of errors of omission (in the reference workbench but
-     * not in the target workbench) the last time they were counted.
-     */
-    private int getAdjFn() {
-        return adjFn;
-    }
-
-    private int getAdjFp() {
-        return adjFp;
-    }
-
-    private int getArrowptCorrect() {
-        return arrowptCorrect;
-    }
-
-    private int getArrowptFn() {
-        return arrowptFn;
-    }
-
-    private int getArrowptFp() {
-        return arrowptFp;
-    }
-
-    private int getTwoCycleCorrect() {
-        return twoCycleCorrect;
-    }
-
-    private int getTwoCycleFn() {
-        return twoCycleFn;
-    }
-
-    private int getTwoCycleFp() {
-        return twoCycleFp;
-    }
-
-    /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
      * the method must begin with "s.defaultReadObject();". Other than that, any
@@ -661,18 +261,6 @@ public final class GraphComparison implements SessionModel {
         if (referenceGraph == null) {
             throw new NullPointerException();
         }
-
-        if (getAdjCorrect() < 0) {
-            throw new IllegalArgumentException();
-        }
-
-        if (getAdjFn() < 0) {
-            throw new IllegalArgumentException();
-        }
-
-        if (getAdjFp() < 0) {
-            throw new IllegalArgumentException();
-        }
     }
 
     public Graph getTrueGraph() {
@@ -685,39 +273,6 @@ public final class GraphComparison implements SessionModel {
 
     public GraphComparisonParams getParams() {
         return params;
-    }
-
-
-    public double getArrowptRec() {
-        return arrowptRec;
-    }
-
-    public void setArrowptRec(double arrowptRec) {
-        this.arrowptRec = arrowptRec;
-    }
-
-    public double getArrowptPrec() {
-        return arrowptPrec;
-    }
-
-    public void setArrowptPrec(double arrowptPrec) {
-        this.arrowptPrec = arrowptPrec;
-    }
-
-    public double getAdjRec() {
-        return adjRec;
-    }
-
-    public void setAdjRec(double adjRec) {
-        this.adjRec = adjRec;
-    }
-
-    public double getAdjPrec() {
-        return adjPrec;
-    }
-
-    public void setAdjPrec(double adjPrec) {
-        this.adjPrec = adjPrec;
     }
 }
 

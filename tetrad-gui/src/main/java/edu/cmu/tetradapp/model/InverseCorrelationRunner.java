@@ -95,6 +95,11 @@ public class InverseCorrelationRunner extends AbstractAlgorithmRunner
     public IndependenceTest getIndependenceTest() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    @Override
+    public String getAlgorithmName() {
+        return "Inverse-Correlation";
+    }
 }
 
 

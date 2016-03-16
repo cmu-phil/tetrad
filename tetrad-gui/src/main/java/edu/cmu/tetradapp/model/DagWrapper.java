@@ -27,12 +27,16 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
@@ -41,7 +45,8 @@ import java.util.prefs.Preferences;
  *
  * @author Joseph Ramsey
  */
-public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IndTestProducer {
+public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IndTestProducer,
+        SimulationParamsSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -53,6 +58,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
      * @serial Cannot be null.
      */
     private Dag dag;
+    private Map<String, String> allParamSettings;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -268,6 +274,24 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 	public List<Node> getVariables() {
 		return getGraph().getNodes();
 	}
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+        paramSettings.put("# Nodes", Integer.toString(dag.getNumNodes()));
+        paramSettings.put("# Edges", Integer.toString(dag.getNumEdges()));
+        return paramSettings;
+    }
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
+    }
+
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return allParamSettings;
+    }
 }
 
 

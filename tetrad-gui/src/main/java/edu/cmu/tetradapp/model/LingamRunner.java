@@ -170,6 +170,11 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "LiNGAM";
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }

@@ -295,6 +295,9 @@ public final class GraphEditor extends JPanel
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
+        graph.add(new GraphPropertiesAction(getWorkbench()));
+        graph.add(new PathsAction(getWorkbench()));
+
         graph.addSeparator();
 
         JMenuItem correlateExogenous =

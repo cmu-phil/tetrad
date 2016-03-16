@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -42,7 +43,8 @@ import java.util.*;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBoxInput, DoNotAddOldModel {
+public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBoxInput,
+        DoNotAddOldModel, SimulationParamsSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -79,6 +81,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * The params being edited.
      */
     private Params params = null;
+    private Map<String, String> allParamSettings;
 
     //==============================CONSTRUCTORS===========================//
 
@@ -288,6 +291,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     public void setDataModelList(DataModelList dataModelList) {
+        if (dataModelList == null) throw new NullPointerException("Data model list not provided.");
         this.dataModelList = dataModelList;
     }
 
@@ -431,6 +435,45 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 		}
 		return variableNames;
 	}
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+
+        if (dataModelList == null) {
+            System.out.println();
+        }
+
+        if (dataModelList.size() > 1) {
+            paramSettings.put("# Datasets", Integer.toString(dataModelList.size()));
+        } else {
+            DataModel dataModel = dataModelList.get(0);
+
+            if (dataModel instanceof CovarianceMatrix) {
+                if (!paramSettings.containsKey("# Nodes")) {
+                    paramSettings.put("# Vars", Integer.toString(((CovarianceMatrix) dataModel).getDimension()));
+                }
+                paramSettings.put("N", Integer.toString(((CovarianceMatrix) dataModel).getSampleSize()));
+            } else {
+                if (!paramSettings.containsKey("# Nodes")) {
+                    paramSettings.put("# Vars", Integer.toString(((DataSet) dataModel).getNumColumns()));
+                }
+                paramSettings.put("N", Integer.toString(((DataSet) dataModel).getNumRows()));
+            }
+        }
+
+        return paramSettings;
+    }
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
+    }
+
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return allParamSettings;
+    }
 }
 
 

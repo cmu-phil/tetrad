@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.TripleClassifier;
 import edu.cmu.tetrad.session.Executable;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.session.SimulationParamsSource;
 
 /**
  * Specifies the methods that all algorithm runners must implement. All
@@ -36,7 +37,8 @@ import edu.cmu.tetrad.session.SessionModel;
  *
  * @author Joseph Ramsey
  */
-public interface AlgorithmRunner extends SessionModel, Executable, GraphSource, TripleClassifier {
+public interface AlgorithmRunner extends SessionModel, Executable, GraphSource, TripleClassifier,
+        SimulationParamsSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -86,6 +88,8 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource, 
      * @return the initial graph, if there is one, or null if not.
      */
     Graph getInitialGraph();
+
+    String getAlgorithmName();
 }
 
 

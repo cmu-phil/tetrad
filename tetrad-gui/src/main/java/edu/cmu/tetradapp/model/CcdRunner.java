@@ -190,6 +190,11 @@ public class CcdRunner extends AbstractAlgorithmRunner
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
         return triplesList;
     }
+
+    @Override
+    public String getAlgorithmName() {
+        return "CCD";
+    }
 }
 
 

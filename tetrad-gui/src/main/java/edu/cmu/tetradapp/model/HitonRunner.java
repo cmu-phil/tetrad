@@ -178,6 +178,11 @@ public class HitonRunner extends AbstractAlgorithmRunner
     public boolean supportsKnowledge() {
         return true;
     }
+
+    @Override
+    public String getAlgorithmName() {
+        return "HITON";
+    }
 }
 
 

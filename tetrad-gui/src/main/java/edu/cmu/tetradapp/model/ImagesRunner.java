@@ -532,6 +532,11 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "IMaGES";
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }

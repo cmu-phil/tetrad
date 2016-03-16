@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -110,6 +111,11 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
         rules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         rules.setKnowledge(getParams().getKnowledge());
         return rules;
+    }
+
+    @Override
+    public String getAlgorithmName() {
+        return "PC-Max-Local";
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -219,6 +225,13 @@ public class PcMaxLocalRunner extends AbstractAlgorithmRunner
 
     public boolean supportsKnowledge() {
         return true;
+    }
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        super.getParamSettings();
+        paramSettings.put("Test", getIndependenceTest().toString());
+        return paramSettings;
     }
 
     //========================== Private Methods ===============================//

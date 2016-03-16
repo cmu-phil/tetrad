@@ -51,6 +51,11 @@ public class GesRunner extends AbstractAlgorithmRunner
     }
 
     @Override
+    public String getAlgorithmName() {
+        return "GES";
+    }
+
+    @Override
     public void execute() {
 
     }

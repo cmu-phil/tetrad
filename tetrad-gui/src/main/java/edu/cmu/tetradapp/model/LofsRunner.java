@@ -344,6 +344,11 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "LOFS";
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }

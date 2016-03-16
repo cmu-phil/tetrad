@@ -286,6 +286,11 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "BFF";
+    }
+
     public void setAlgorithmType(AlgorithmType algorithmType) {
         this.algorithmType = algorithmType;
     }

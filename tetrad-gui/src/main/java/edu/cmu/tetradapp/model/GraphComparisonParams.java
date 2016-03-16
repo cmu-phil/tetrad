@@ -24,7 +24,9 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.ExecutionRestarter;
 import edu.cmu.tetrad.session.SessionAdapter;
 import edu.cmu.tetrad.util.Params;
@@ -84,23 +86,6 @@ public class GraphComparisonParams extends SessionAdapter
      * @serial Can be null.
      */
     private String targetGraphName;
-    /**
-     * @serial
-     * @deprecated
-     */
-    private ContinuousVariable missingEdgesVar;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-    private ContinuousVariable correctEdgesVar;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-    private ContinuousVariable extraEdgesVar;
 
     //===========================CONSTRUCTORS============================//
 
@@ -124,31 +109,7 @@ public class GraphComparisonParams extends SessionAdapter
 
     //==========================PUBLIC METHODS===========================//
 
-    public void addRecord(int adjCorrect, int adjFn, int adjFp,
-                          int arrowptCorrect, int arrowptFn, int arrowptFp,
-                          double adjPrec, double adjRec, double arrowptPrec, double arrowptRec) {
-        int newRow = dataSet.getNumRows();
-        dataSet.setDouble(newRow, 0, adjCorrect);
-        dataSet.setDouble(newRow, 1, adjFn);
-        dataSet.setDouble(newRow, 2, adjFp);
-        dataSet.setDouble(newRow, 3, arrowptCorrect);
-        dataSet.setDouble(newRow, 4, arrowptFn);
-        dataSet.setDouble(newRow, 5, arrowptFp);
-        dataSet.setDouble(newRow, 6, adjPrec);
-        dataSet.setDouble(newRow, 7, adjRec);
-        dataSet.setDouble(newRow, 8, arrowptPrec);
-        dataSet.setDouble(newRow, 9, arrowptRec);
-//        dataSet.setDouble(newRow, 6, twoCycleCorrect);
-//        dataSet.setDouble(newRow, 7, twoCycleFn);
-//        dataSet.setDouble(newRow, 8, twoCycleFp);
-    }
-
-    public DataSet getDataSet() {
-        return dataSet;
-    }
-
     public final void newExecution() {
-//        if (isResetTableOnExecute()) {
         ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
         ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
         ContinuousVariable adjFp = new ContinuousVariable("ADJ_FP");
@@ -161,6 +122,7 @@ public class GraphComparisonParams extends SessionAdapter
         ContinuousVariable adjRec = new ContinuousVariable("ADJ_REC");
         ContinuousVariable arrowptPrec = new ContinuousVariable("ARROWPT_PREC");
         ContinuousVariable arrowptRec = new ContinuousVariable("ARROWPT_REC");
+        ContinuousVariable shd = new ContinuousVariable("SHD");
 
 //        ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
 //        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
@@ -177,23 +139,34 @@ public class GraphComparisonParams extends SessionAdapter
         variables.add(adjRec);
         variables.add(arrowptPrec);
         variables.add(arrowptRec);
+        variables.add(shd);
 //        variables.add(twoCycleCorrect);
 //        variables.add(twoCycleFn);
 //        variables.add(twoCycleFp);
 
         dataSet = new ColtDataSet(0, variables);
         dataSet.setNumberFormat(new DecimalFormat("0"));
-
-        Map<String, String> columnToTooltip = new Hashtable<String, String>();
-        columnToTooltip.put("ADJ_COR", "Adjacencies in the reference graph that are in the true graph.");
-        columnToTooltip.put("ADJ_FN", "Adjacencies in the true graph that are not in the reference graph.");
-        columnToTooltip.put("ADJ_FP", "Adjacencies in the reference graph that are not in the true graph.");
-        columnToTooltip.put("AHD_COR", "Arrowpoints in the reference graph that are in the true graph.");
-        columnToTooltip.put("AHD_FN", "Arrowpoints in the true graph that are not in the reference graph.");
-        columnToTooltip.put("AHD_FP", "Arrowpoints in the reference graph that are not in the true graph.");
-        dataSet.setColumnToTooltip(columnToTooltip);
-//        }
     }
+
+    public void addRecord(GraphUtils.GraphComparison comparison) {
+        int newRow = dataSet.getNumRows();
+        dataSet.setDouble(newRow, 0, comparison.getAdjCorrect());
+        dataSet.setDouble(newRow, 1, comparison.getAdjFn());
+        dataSet.setDouble(newRow, 2, comparison.getAdjFp());
+        dataSet.setDouble(newRow, 3, comparison.getArrowptCorrect());
+        dataSet.setDouble(newRow, 4, comparison.getArrowptFn());
+        dataSet.setDouble(newRow, 5, comparison.getArrowptFp());
+        dataSet.setDouble(newRow, 6, comparison.getAdjPrec());
+        dataSet.setDouble(newRow, 7, comparison.getAdjRec());
+        dataSet.setDouble(newRow, 8, comparison.getArrowptPrec());
+        dataSet.setDouble(newRow, 9, comparison.getArrowptRec());
+        dataSet.setDouble(newRow, 10, comparison.getShd());
+    }
+
+    public DataSet getDataSet() {
+        return dataSet;
+    }
+
 
     public boolean isResetTableOnExecute() {
         return resetTableOnExecute;

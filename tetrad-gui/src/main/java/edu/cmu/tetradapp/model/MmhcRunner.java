@@ -119,6 +119,11 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "MMHC";
+    }
+
     public IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
 

@@ -22,18 +22,18 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.Simulator;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.rmi.MarshalledObject;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Wraps a data model so that a random sample will automatically be drawn on
@@ -41,7 +41,8 @@ import java.rmi.MarshalledObject;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class BayesDataWrapper extends DataWrapper implements SessionModel {
+public class BayesDataWrapper extends DataWrapper implements SessionModel,
+        SimulationParamsSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -257,8 +258,27 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel {
         this.seed = RandomUtil.getInstance().getSeed();
     }
 
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
 
+        if (dataModelList == null) {
+            System.out.println();
+        }
 
+        if (dataModelList.size() > 1) {
+            paramSettings.put("# Datasets", Integer.toString(dataModelList.size()));
+        } else {
+            DataModel dataModel = dataModelList.get(0);
+
+            if (!paramSettings.containsKey("# Nodes")) {
+                paramSettings.put("# Vars", Integer.toString(((DataSet) dataModel).getNumColumns()));
+            }
+            paramSettings.put("N", Integer.toString(((DataSet) dataModel).getNumRows()));
+        }
+
+        return paramSettings;
+    }
 }
 
 

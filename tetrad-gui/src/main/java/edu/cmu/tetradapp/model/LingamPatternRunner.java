@@ -275,6 +275,11 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "LiNGAM-Pattern";
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }
