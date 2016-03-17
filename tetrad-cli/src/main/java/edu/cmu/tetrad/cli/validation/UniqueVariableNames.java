@@ -23,8 +23,10 @@ import edu.cmu.tetrad.data.DataSet;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -57,46 +59,39 @@ public class UniqueVariableNames implements DataValidation {
             stderr = System.err;
         }
 
-        Set<String> unique = new HashSet<>();
-        Set<String> nonUnique = new HashSet<>();
+        Map<String, Integer> nonuniqueNames = new HashMap<>();
+        Set<String> uniqueNames = new HashSet<>();
         List<String> variableNames = dataSet.getVariableNames();
-        for (String variableName : variableNames) {
-            if (unique.contains(variableName)) {
-                nonUnique.add(variableName);
+        for (String name : variableNames) {
+            if (uniqueNames.contains(name)) {
+                Integer count = nonuniqueNames.get(name);
+                if (count == null) {
+                    count = 2;
+                } else {
+                    count++;
+                }
+                nonuniqueNames.put(name, count);
             } else {
-                unique.add(variableName);
+                uniqueNames.add(name);
             }
         }
 
-        int size = nonUnique.size();
+        int size = nonuniqueNames.size();
         if (size > 0) {
-            if (size == 1) {
-                stderr.printf("Dataset contains %d non-unique variable name.", size);
-            } else {
-                stderr.printf("Dataset contains %d non-unique variable names.", size);
-            }
+            stderr.println("Dataset contains variables with duplicate names.  Please make sure all variable names are unique.");
             if (outputFile != null) {
                 try {
-                    FileIO.writeLineByLine(nonUnique, outputFile);
-                    if (size == 1) {
-                        stderr.printf("  Variable name has been saved to file %s.", outputFile.getFileName().toString());
-                    } else {
-                        stderr.printf("  Variable names have been saved to file %s.", outputFile.getFileName().toString());
-                    }
+                    FileIO.writeLineByLine(nonuniqueNames.keySet(), outputFile);
+                    stderr.println("Duplicate variable names have been saved to file " + outputFile.getFileName().toString() + ".");
                 } catch (IOException exception) {
                     exception.printStackTrace(System.err);
                 }
             }
-            stderr.println();
-
             if (verbose) {
-                if (size == 1) {
-                    stderr.println("Non-unique variable name:");
-                } else {
-                    stderr.println("Non-unique variable names:");
-                }
-                for (String s : nonUnique) {
-                    stderr.println(s);
+                Set<String> names = nonuniqueNames.keySet();
+                for (String name : names) {
+                    stderr.printf("There are %d variables with name '%s'.", nonuniqueNames.get(name), name);
+                    stderr.println();
                 }
             }
         }

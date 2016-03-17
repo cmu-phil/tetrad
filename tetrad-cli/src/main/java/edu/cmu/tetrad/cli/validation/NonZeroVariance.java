@@ -29,12 +29,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * Ensure all the variances are non-zero value.
  *
- * Mar 3, 2016 1:11:45 PM
+ * Mar 17, 2016 3:12:02 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class ZeroVariance implements DataValidation {
+public class NonZeroVariance implements DataValidation {
 
     private final DataSet dataSet;
 
@@ -49,7 +50,7 @@ public class ZeroVariance implements DataValidation {
      * @param numOfThreads
      * @param outputFile file to write out zero-variance variables
      */
-    public ZeroVariance(DataSet dataSet, int numOfThreads, Path outputFile) {
+    public NonZeroVariance(DataSet dataSet, int numOfThreads, Path outputFile) {
         this.dataSet = dataSet;
         this.numOfThreads = numOfThreads;
         this.outputFile = outputFile;
@@ -61,12 +62,11 @@ public class ZeroVariance implements DataValidation {
             stderr = System.err;
         }
 
-        List<String> variables = dataSet.getVariableNames();
-
         RealVariance variance = new RealVarianceVectorForkJoin(dataSet.getDoubleData().toArray(), numOfThreads);
         double[] varianceVector = variance.compute(true);
 
         List<String> list = new LinkedList<>();
+        List<String> variables = dataSet.getVariableNames();
         int index = 0;
         for (String variable : variables) {
             if (varianceVector[index++] == 0) {
@@ -77,29 +77,29 @@ public class ZeroVariance implements DataValidation {
         int size = list.size();
         if (size > 0) {
             if (size == 1) {
-                stderr.printf("Dataset contains %d variable with zero-variance.", size);
+                stderr.println("Dataset contains " + size + " variable with zero variance.  Please remove the variable from the dataset or save it to a file and use the option '--exclude-variables'.");
             } else {
-                stderr.printf("Dataset contains %d variables with zero-variance.", size);
+                stderr.println("Dataset contains " + size + " variables with zero variance.  Please remove the variables from the dataset or save them to a file and use the option '--exclude-variables'.");
             }
+
             if (outputFile != null) {
                 try {
                     FileIO.writeLineByLine(list, outputFile);
                     if (size == 1) {
-                        stderr.printf("  Variable name has been saved to file %s.", outputFile.getFileName().toString());
+                        stderr.println("The name of the variable with zero variance has been saved to file " + outputFile.getFileName().toString() + ".");
                     } else {
-                        stderr.printf("  Variable names have been saved to file %s.", outputFile.getFileName().toString());
+                        stderr.println("The names of the variables with zero variance have been saved to file " + outputFile.getFileName().toString() + ".");
                     }
                 } catch (IOException exception) {
                     exception.printStackTrace(System.err);
                 }
             }
-            stderr.println();
 
             if (verbose) {
                 if (size == 1) {
-                    stderr.println("Variable with zero-variance:");
+                    stderr.println("Variable with zero variance:");
                 } else {
-                    stderr.println("Variables with zero-variance:");
+                    stderr.println("Variables with zero variance:");
                 }
                 for (String s : list) {
                     stderr.println(s);
