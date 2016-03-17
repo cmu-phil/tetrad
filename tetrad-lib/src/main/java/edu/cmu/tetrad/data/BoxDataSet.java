@@ -1025,7 +1025,12 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 
         for (int i = 0; i < dataBox.numRows(); i++) {
             for (int j = 0; j < dataBox.numCols(); j++) {
-                copy.set(i, j, dataBox.get(i, j).doubleValue());
+                Number number = dataBox.get(i, j);
+                if (number == null) {
+                    copy.set(i, j, Double.NaN);
+                } else {
+                    copy.set(i, j, number.doubleValue());
+                }
             }
         }
 
