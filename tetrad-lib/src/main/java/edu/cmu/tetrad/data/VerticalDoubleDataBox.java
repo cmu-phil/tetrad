@@ -101,13 +101,7 @@ public class VerticalDoubleDataBox implements DataBox {
      * is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
-        double datum = data[col][row];
-
-        if (Double.isNaN(datum)) {
-            return null;
-        } else {
-            return datum;
-        }
+        return data[col][row];
     }
 
     public double[][] getVariableVectors() {

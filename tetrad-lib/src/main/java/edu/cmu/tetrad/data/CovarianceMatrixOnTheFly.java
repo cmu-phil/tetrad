@@ -173,10 +173,12 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
                         double[] v1 = vectors[i];
 
                         for (int k = 0; k < sampleSize; ++k) {
-                            if (!Double.isNaN(v1[k])) {
-                                d += v1[k] * v1[k];
-                                count++;
+                            if (Double.isNaN(v1[k])) {
+                                continue;
                             }
+
+                            d += v1[k] * v1[k];
+                            count++;
                         }
 
                         double v = d;
@@ -185,7 +187,9 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
                         variances[i] = v;
 
-                        if (v == 0) System.out.println("Zero variance! " + variables.get(i));
+                        if (v == 0) {
+                            System.out.println("Zero variance! " + variables.get(i));
+                        }
                     }
 
                     return true;
@@ -318,7 +322,23 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
-        throw new UnsupportedOperationException();
+        List<Node> submatrixVars = new LinkedList<>();
+
+        for (int indice : indices) {
+            submatrixVars.add(variables.get(indice));
+        }
+
+        TetradMatrix cov = new TetradMatrix(indices.length, indices.length);
+
+        for (int i = 0; i < indices.length; i++) {
+            for (int j = i; j < indices.length; j++) {
+                double d = getValue(indices[i], indices[j]);
+                cov.set(i, j, d);
+                cov.set(j, i, d);
+            }
+        }
+
+        return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
     public final ICovarianceMatrix getSubmatrix(List<String> submatrixVarNames) {
@@ -347,11 +367,12 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         double[] v2 = vectors[j];
         int count = 0;
 
-        for (int k = 0; k < sampleSize; ++k) {
-            if (!Double.isNaN(v1[k]) && !Double.isNaN(v2[k])) {
-                d += v1[k] * v2[k];
-                count++;
-            }
+        for (int k = 0; k < sampleSize; k++) {
+            if (Double.isNaN(v1[k])) continue;
+            if (Double.isNaN(v2[k])) continue;
+
+            d += v1[k] * v2[k];
+            count++;
         }
 
         double v = d;

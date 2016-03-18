@@ -102,6 +102,7 @@ public final class ExploreAutisticsNeurotypicals {
 
             allGraphs.add(graphs);
         }
+
         return allGraphs;
     }
 
