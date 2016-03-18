@@ -32,12 +32,16 @@ import org.apache.commons.cli.Options;
  */
 public class TetradCliApp {
 
+    private static final String VERSION = "5.3.0-20160318";
+
     private static final Options MAIN_OPTIONS = new Options();
 
     static {
-        Option requiredOption = new Option(null, "algorithm", true, "Algorithm name.");
+        Option requiredOption = new Option(null, "algorithm", true, "Choose one of the following: fgs.");
         requiredOption.setRequired(true);
         MAIN_OPTIONS.addOption(requiredOption);
+
+        MAIN_OPTIONS.addOption(null, "version", false, "Version.");
     }
 
     private static String algorithm;
@@ -51,27 +55,33 @@ public class TetradCliApp {
             return;
         }
 
-        algorithm = Args.getOptionValue(args, "algorithm");
-        if (algorithm == null) {
-            showHelp();
+        if (Args.hasOption(args, "version") || Args.hasOption(args, "v")) {
+            showVersion();
         } else {
-            switch (algorithm) {
-                case "fgs":
-                    FgsCli.main(Args.removeOption(args, "algorithm"));
-                    break;
-                default:
-                    System.err.printf("Unknow algorithm: %s\n", algorithm);
-                    showHelp();
+            algorithm = Args.getOptionValue(args, "algorithm");
+            if (algorithm == null) {
+                showHelp();
+            } else {
+                switch (algorithm) {
+                    case "fgs":
+                        FgsCli.main(Args.removeOption(args, "algorithm"));
+                        break;
+                    default:
+                        System.err.printf("Unknow algorithm: %s\n", algorithm);
+                        showHelp();
+                }
             }
         }
     }
 
+    private static void showVersion() {
+        System.out.println("Tetrad Command-line Interface (CLI) version " + VERSION);
+    }
+
     private static void showHelp() {
         String cmdLineSyntax = "java -jar tetrad-cli.jar";
-        String header = "";
-        String footer = "algorithm: fgs";
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(cmdLineSyntax, header, MAIN_OPTIONS, footer);
+        formatter.printHelp(cmdLineSyntax, MAIN_OPTIONS, true);
     }
 
 }

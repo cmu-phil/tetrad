@@ -294,7 +294,7 @@ public class FgsCli {
     private static void showHelp() {
         String cmdLineSyntax = "java -jar tetrad-cli.jar --algorithm fgs";
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(cmdLineSyntax, MAIN_OPTIONS);
+        formatter.printHelp(cmdLineSyntax, MAIN_OPTIONS, true);
     }
 
 }
