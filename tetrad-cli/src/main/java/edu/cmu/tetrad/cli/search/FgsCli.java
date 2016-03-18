@@ -27,10 +27,9 @@ import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.cli.util.GraphmlSerializer;
 import edu.cmu.tetrad.cli.util.XmlPrint;
 import edu.cmu.tetrad.cli.validation.DataValidation;
+import edu.cmu.tetrad.cli.validation.NonZeroVariance;
 import edu.cmu.tetrad.cli.validation.TabularContinuousData;
 import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
-import edu.cmu.tetrad.cli.validation.UniqueVariables;
-import edu.cmu.tetrad.cli.validation.ZeroVariance;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -94,8 +93,7 @@ public class FgsCli {
 
         // skip validation
         MAIN_OPTIONS.addOption(null, "skip-unique-var-name", false, "Skip check for unique variable names.");
-        MAIN_OPTIONS.addOption(null, "skip-zero-variance", false, "Skip check for zero variance variables.");
-        MAIN_OPTIONS.addOption(null, "skip-unique-var", false, "Skip check for unique variabes.");
+        MAIN_OPTIONS.addOption(null, "skip-non-zero-variance", false, "Skip check for zero variance variables.");
     }
 
     private static Path dataFile;
@@ -115,7 +113,6 @@ public class FgsCli {
 
     private static boolean skipUniqueVarName;
     private static boolean skipZeroVariance;
-    private static boolean skipUniqueVar;
 
     /**
      * @param args the command line arguments
@@ -145,8 +142,7 @@ public class FgsCli {
             validationOutput = !cmd.hasOption("no-validation-output");
 
             skipUniqueVarName = cmd.hasOption("skip-unique-var-name");
-            skipZeroVariance = cmd.hasOption("skip-zero-variance");
-            skipUniqueVar = cmd.hasOption("skip-unique-var");
+            skipZeroVariance = cmd.hasOption("skip-non-zero-variance");
         } catch (ParseException | FileNotFoundException exception) {
             System.err.println(exception.getLocalizedMessage());
             showHelp();
@@ -218,13 +214,10 @@ public class FgsCli {
         String dir = dirOut.toString();
         List<DataValidation> validations = new LinkedList<>();
         if (!skipUniqueVarName) {
-            validations.add(new UniqueVariableNames(dataSet, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_var_name.txt") : null));
+            validations.add(new UniqueVariableNames(dataSet, validationOutput ? Paths.get(dir, outputPrefix + "_duplicate_var_name.txt") : null));
         }
         if (!skipZeroVariance) {
-            validations.add(new ZeroVariance(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_zero-variance.txt") : null));
-        }
-        if (!skipUniqueVar) {
-            validations.add(new UniqueVariables(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_non-unique_var.txt") : null));
+            validations.add(new NonZeroVariance(dataSet, numOfThreads, validationOutput ? Paths.get(dir, outputPrefix + "_zero_variance.txt") : null));
         }
 
         for (DataValidation dataValidation : validations) {
@@ -301,7 +294,7 @@ public class FgsCli {
     private static void showHelp() {
         String cmdLineSyntax = "java -jar tetrad-cli.jar --algorithm fgs";
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(cmdLineSyntax, MAIN_OPTIONS);
+        formatter.printHelp(cmdLineSyntax, MAIN_OPTIONS, true);
     }
 
 }

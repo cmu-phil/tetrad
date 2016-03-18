@@ -34,18 +34,16 @@ import org.junit.rules.TemporaryFolder;
 
 /**
  *
- * Mar 3, 2016 3:21:07 PM
+ * Mar 18, 2016 11:44:11 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class UniqueVariablesTest {
+public class NonZeroVarianceTest {
 
     @ClassRule
     public static TemporaryFolder tmpDir = new TemporaryFolder();
 
-    private static final Path dataFile = Paths.get("test", "data", "non_unique_vars", "sim_data_20vars_100cases.csv");
-
-    public UniqueVariablesTest() {
+    public NonZeroVarianceTest() {
     }
 
     @AfterClass
@@ -54,23 +52,24 @@ public class UniqueVariablesTest {
     }
 
     /**
-     * Test of validate method, of class CovarianceValidation.
+     * Test of validate method, of class NonZeroVariance.
      *
      * @throws IOException
      */
     @Test
     public void testValidate() throws IOException {
-        System.out.println("validate: UniqueVariablesTest");
+        System.out.println("validate");
+
+        Path dataFile = Paths.get("test", "data", "zero_variance_vars", "sim_data_20vars_100cases.csv");
 
         char delimiter = ',';
         ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
         DataSet dataSet = dataReader.readInData();
 
-        String dirOut = tmpDir.newFolder("validation_non-unique_vars").toString();
-        Path outputFile = Paths.get(dirOut, "output.txt");
-
         int numOfThreads = 2;
-        DataValidation dataValidation = new UniqueVariables(dataSet, numOfThreads, outputFile);
+        String dirOut = tmpDir.newFolder("validation_zero_variance").toString();
+        Path outputFile = Paths.get(dirOut, "output.txt");
+        DataValidation dataValidation = new NonZeroVariance(dataSet, numOfThreads, outputFile);
         dataValidation.validate(System.err, false);
 
         String errMsg = outputFile.getFileName().toString() + " does not exist.";
