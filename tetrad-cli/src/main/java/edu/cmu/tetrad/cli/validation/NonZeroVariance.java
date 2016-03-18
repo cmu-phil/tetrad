@@ -77,9 +77,9 @@ public class NonZeroVariance implements DataValidation {
         int size = list.size();
         if (size > 0) {
             if (size == 1) {
-                stderr.println("Dataset contains " + size + " variable with zero variance.  Please remove the variable from the dataset or save it to a file and use the option '--exclude-variables'.");
+                stderr.println("Dataset contains " + size + " variable with zero variance.  Please remove the variable from the dataset or use the '--exclude-variables' option to exclude it.");
             } else {
-                stderr.println("Dataset contains " + size + " variables with zero variance.  Please remove the variables from the dataset or save them to a file and use the option '--exclude-variables'.");
+                stderr.println("Dataset contains " + size + " variables with zero variance.  Please remove the variables from the dataset or use the '--exclude-variables' option to exclude them.");
             }
 
             if (outputFile != null) {
