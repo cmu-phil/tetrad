@@ -78,11 +78,11 @@ public class UniqueVariableNames implements DataValidation {
 
         int size = nonuniqueNames.size();
         if (size > 0) {
-            stderr.println("Dataset contains variables with duplicate names.  Please make sure all variable names are unique.");
+            stderr.println("Dataset contains variables with duplicated names.  Please make sure all variable names are unique.");
             if (outputFile != null) {
                 try {
                     FileIO.writeLineByLine(nonuniqueNames.keySet(), outputFile);
-                    stderr.println("Duplicate variable names have been saved to file " + outputFile.getFileName().toString() + ".");
+                    stderr.println("Duplicated variable names have been saved to file " + outputFile.getFileName().toString() + ".");
                 } catch (IOException exception) {
                     exception.printStackTrace(System.err);
                 }
