@@ -957,6 +957,141 @@ public class PerformanceTests {
         }
     }
 
+    public void testFgsComparison(int numVars, double edgesPerNode, int numCases, int numRuns) {
+        double penaltyDiscount = 4.0;
+        int depth = 3;
+
+        init(new File("fgs.comparison" + numVars + "." + (int) (edgesPerNode * numVars) +
+                "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+        out.println("Num vars = " + numVars);
+        out.println("Num edges = " + (int) (numVars * edgesPerNode));
+        out.println("Num cases = " + numCases);
+        out.println("Penalty discount = " + penaltyDiscount);
+        out.println("Depth = " + depth);
+        out.println();
+
+        List<int[][]> counts = new ArrayList<int[][]>();
+        List<double[]> arrowStats = new ArrayList<>();
+        List<double[]> tailStats = new ArrayList<>();
+        List<Double> degrees = new ArrayList<>();
+        List<Long> elapsedTimes = new ArrayList<Long>();
+
+        for (int run = 0; run < numRuns; run++) {
+
+            out.println("\n\n\n******************************** RUN " + (run + 1) + " ********************************\n\n");
+
+            System.out.println("Making dag");
+
+            Graph dag = makeDag(numVars, edgesPerNode);
+
+            Graph pattern = SearchGraphUtils.patternForDag(dag);
+
+            List<Node> vars = dag.getNodes();
+
+            int[] causalOrdering = new int[vars.size()];
+
+            for (int i = 0; i < vars.size(); i++) {
+                causalOrdering[i] = i;
+            }
+
+            System.out.println("Graph done");
+
+            long time1 = System.currentTimeMillis();
+
+            out.println("Graph done");
+
+            System.out.println("Starting simulation");
+
+            LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, causalOrdering);
+            simulator.setOut(out);
+
+            DataSet data = simulator.simulateDataAcyclic(numCases);
+
+            System.out.println("Finishing simulation");
+
+            long time2 = System.currentTimeMillis();
+
+            out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+
+            System.out.println("Making covariance matrix");
+
+            ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+
+            System.out.println("Covariance matrix done");
+
+
+            long time3 = System.currentTimeMillis();
+
+            out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
+
+            SemBicScore score = new SemBicScore(cov, penaltyDiscount);
+
+            Fgs fgs = new Fgs(score);
+            fgs.setVerbose(false);
+            fgs.setNumPatternsToStore(0);
+            fgs.setPenaltyDiscount(penaltyDiscount);
+            fgs.setOut(System.out);
+            fgs.setFaithfulnessAssumed(true);
+            fgs.setDepth(-1);
+            fgs.setCycleBound(5);
+
+            System.out.println("\nStarting FGS");
+
+            Graph estPattern = fgs.search();
+
+            System.out.println("Done with FGS");
+
+            long time4 = System.currentTimeMillis();
+
+            out.println(new Date());
+
+            System.out.println("Making list of vars");
+
+            estPattern = GraphUtils.replaceNodes(estPattern, dag.getNodes());
+
+            double degree = GraphUtils.degree(estPattern);
+            degrees.add(degree);
+
+            System.out.println("Degree out output graph = " + degree);
+
+            arrowStats.add(printCorrectArrows(dag, estPattern, pattern));
+            tailStats.add(printCorrectTails(dag, estPattern, pattern));
+
+            counts.add(SearchGraphUtils.graphComparison(estPattern, pattern, out));
+
+            long elapsed = time4 - time3;
+            elapsedTimes.add(elapsed);
+            out.println("\nElapsed: " + elapsed + " ms");
+
+            directedComparison(dag, pattern, estPattern);
+
+            try {
+                PrintStream out2 = new PrintStream(new File("dag." + run + ".txt"));
+                out2.println(dag);
+
+                PrintStream out3 = new PrintStream(new File("estpag." + run + ".txt"));
+                out3.println(estPattern);
+
+                PrintStream out4 = new PrintStream(new File("truepag." + run + ".txt"));
+                out4.println(pattern);
+
+                out2.close();
+                out3.close();
+                out4.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        }
+
+        printAverageConfusion("Average", counts);
+        printAverageStatistics("Average", arrowStats, tailStats, elapsedTimes, degrees);
+
+        out.close();
+
+    }
+
+
     public void testGFciComparison(int numVars, double edgesPerNode, int numCases, int numLatents) {
         numVars = 1000;
         edgesPerNode = 1.0;
@@ -1100,7 +1235,7 @@ public class PerformanceTests {
         }
 
         printAverageConfusion("Average", ffciCounts);
-        printAverageStatistics("Average", ffciArrowStats, ffciTailStats, ffciElapsedTimes);
+        printAverageStatistics("Average", ffciArrowStats, ffciTailStats, ffciElapsedTimes, new ArrayList<Double>());
 
         out.close();
 
@@ -1689,7 +1824,7 @@ public class PerformanceTests {
     }
 
     private void printAverageStatistics(String name, List<double[]> arrowStats, List<double[]> tailStats,
-                                        List<Long> elapsedTimes) {
+                                        List<Long> elapsedTimes, List<Double> degrees) {
         NumberFormat nf =
                 new DecimalFormat("0");
         NumberFormat nf2 = new DecimalFormat("0.00");
@@ -1729,6 +1864,14 @@ public class PerformanceTests {
             avgTailStats[i] = sum / (double) tailStats.size();
         }
 
+        double sumDegrees = 0;
+
+        for (int i = 0; i < degrees.size(); i++) {
+            sumDegrees += degrees.get(i);
+        }
+
+        double avgDegree = sumDegrees / degrees.size();
+
         out.println();
         out.println("Avg Correct Tails = " + nf.format(avgTailStats[0]));
         out.println("Avg Estimated Tails = " + nf.format(avgTailStats[1]));
@@ -1736,6 +1879,7 @@ public class PerformanceTests {
         out.println("Avg Tail Precision = " + nf2.format(avgTailStats[3]));
         out.println("Avg Tail Recall = " + nf2.format(avgTailStats[4]));
         out.println("Avg Proportion Correct Ancestor Relationships = " + nf2.format(avgTailStats[5]));
+        out.println("Avg Max Degree of Output Pattern = " + nf2.format(avgDegree));
 
         double sumElapsed = 0;
 
@@ -2058,6 +2202,15 @@ public class PerformanceTests {
                     final double penaltyDiscount = Double.parseDouble(args[4]);
 
                     performanceTests.testFgs(numVars, edgeFactor, numCases, penaltyDiscount);
+                    break;
+                }
+                case "TestFgsComparison": {
+                    final int numVars = Integer.parseInt(args[1]);
+                    final double edgeFactor = Double.parseDouble(args[2]);
+                    final int numCases = Integer.parseInt(args[3]);
+                    final int numRuns = Integer.parseInt(args[4]);
+
+                    performanceTests.testFgsComparison(numVars, edgeFactor, numCases, numRuns);
                     break;
                 }
                 default:
