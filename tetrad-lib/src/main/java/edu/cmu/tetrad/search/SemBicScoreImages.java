@@ -117,12 +117,17 @@ public class SemBicScoreImages implements ISemBicScore {
      */
     public double localScore(int i, int[] parents) {
         double sum = 0.0;
+        int count = 0;
 
         for (SemBicScore score : semBicScores) {
-            sum += score.localScore(i, parents);
+            double _score = score.localScore(i, parents);
+
+            if (!Double.isNaN(_score)) {
+                sum += _score;
+            }
         }
 
-        return sum / semBicScores.size();
+        return sum / count;
     }
 
     public double localScore(int i, int[] parents, int index) {

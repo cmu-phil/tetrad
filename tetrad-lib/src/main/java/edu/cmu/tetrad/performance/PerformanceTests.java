@@ -177,8 +177,7 @@ public class PerformanceTests {
 
             out1.close();
             out2.close();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 
         }
 
@@ -738,7 +737,10 @@ public class PerformanceTests {
 
     public void testFgsDiscrete(int numVars, double edgeFactor, int numCases,
                                 double structurePrior, double samplePrior) {
-        init(new File("long.FGSDiscrete." + numVars + ".txt"), "Tests performance of the FGS algorithm");
+        init(new File("long.FGSDiscrete:" + numVars + ":" +
+                (int) (numVars * edgeFactor) + ":" +
+                structurePrior + ":" +
+                samplePrior + ".txt"), "Tests performance of the FGS algorithm");
 
         long time1 = System.currentTimeMillis();
 
@@ -911,7 +913,8 @@ public class PerformanceTests {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numVars, 30, 15, 15, false);;
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numVars, 30, 15, 15, false);
+        ;
 
         out.println("Graph generated.");
 //        Graph graph = new EndpointMatrixGraph(DataGraphUtils.randomDagQuick(vars, 0, numVars));
