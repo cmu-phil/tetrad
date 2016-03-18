@@ -22,8 +22,11 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -192,6 +195,32 @@ public class Args {
         return arguments;
     }
 
+    public static String[] removeFlags(String[] args, String... flags) {
+        String[] arguments = new String[args.length - 2];
+
+        Set<String> options = new HashSet<>();
+        Collections.addAll(options, flags);
+
+        int index = 0;
+        for (String arg : args) {
+            if (arg.startsWith("--")) {
+                arg = arg.substring(2, arg.length());
+                if (options.contains(arg)) {
+                    continue;
+                }
+            } else if (arg.startsWith("-")) {
+                arg = arg.substring(1, arg.length());
+                if (options.contains(arg)) {
+                    continue;
+                }
+            }
+
+            arguments[index++] = arg;
+        }
+
+        return arguments;
+    }
+
     public static String getOptionValue(String[] args, String option) {
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -223,6 +252,28 @@ public class Args {
         for (String arg : args) {
             if (arg.startsWith("--")) {
                 arg = arg.substring(2, arg.length());
+                if (arg.equals(option)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean hasOption(String[] args, String option) {
+        if (args == null || args.length == 0 || option == null) {
+            return false;
+        }
+
+        for (String arg : args) {
+            if (arg.startsWith("--")) {
+                arg = arg.substring(2, arg.length());
+                if (arg.equals(option)) {
+                    return true;
+                }
+            } else if (arg.startsWith("-")) {
+                arg = arg.substring(1, arg.length());
                 if (arg.equals(option)) {
                     return true;
                 }
