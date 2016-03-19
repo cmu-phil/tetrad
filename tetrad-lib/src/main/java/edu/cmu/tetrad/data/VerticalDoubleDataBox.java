@@ -32,7 +32,7 @@ public class VerticalDoubleDataBox implements DataBox {
     /**
      * The stored double data.
      */
-    private double[][] data;
+    private final double[][] data;
 
     /**
      * Constructs an 2D double array consisting entirely of missing values
@@ -90,9 +90,13 @@ public class VerticalDoubleDataBox implements DataBox {
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
-            data[col][row] = Double.NaN;
+            synchronized (data[col]) {
+                data[col][row] = Double.NaN;
+            }
         } else {
-            data[col][row] = value.doubleValue();
+            synchronized (data[col]) {
+                data[col][row] = value.doubleValue();
+            }
         }
     }
 

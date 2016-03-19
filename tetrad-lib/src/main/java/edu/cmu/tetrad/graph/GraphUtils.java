@@ -28,6 +28,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 
@@ -2850,7 +2851,6 @@ public final class GraphUtils {
     }
 
 
-
     private static StringBuilder directedEdges(List<Graph> directedGraphs) {
         Set<Edge> directedEdgesSet = new HashSet<>();
 
@@ -3021,139 +3021,162 @@ public final class GraphUtils {
         return builder.toString();
     }
 
-    public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
+    public static int[][] edgeMisclassificationCounts1(Graph leftGraph, Graph topGraph, boolean print) {
         topGraph = replaceNodes(topGraph, leftGraph.getNodes());
-
-        class CountTask1 extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-            private final List<Edge> edges;
-            private final Graph leftGraph;
-            private final Graph topGraph;
-            private final int[][] counts;
-
-            public CountTask1(int chunk, int from, int to, List<Edge> edges, Graph leftGraph, Graph topGraph,
-                              int[][] counts) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-                this.edges = edges;
-                this.leftGraph = leftGraph;
-                this.topGraph = topGraph;
-                this.counts = counts;
-
-                for (int i = from; i < to; i++) {
-                    Edge est = edges.get(i);
-
-                    Node x = est.getNode1();
-                    Node y = est.getNode2();
-
-                    Edge left = leftGraph.getEdge(x, y);
-
-                    Edge top = topGraph.getEdge(x, y);
-
-                    int m = getTypeLeft(left, top);
-                    int n = getTypeTop(top);
-
-                    counts[m][n]++;
-                }
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to - from) / 2;
-
-                    List<CountTask1> tasks = new ArrayList<>();
-
-                    tasks.add(new CountTask1(chunk, from, from + mid, edges, leftGraph, topGraph, counts));
-                    tasks.add(new CountTask1(chunk, from + mid, to, edges, leftGraph, topGraph, counts));
-
-                    invokeAll(tasks);
-
-                    return true;
-                }
-            }
-        }
-
-        class CountTask2 extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-            private final List<Edge> edges;
-            private final Graph leftGraph;
-            private final Graph topGraph;
-            private final int[][] counts;
-
-            public CountTask2(int chunk, int from, int to, List<Edge> leftEdges, Graph leftGraph, Graph topGraph,
-                              int[][] counts) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-                this.edges = leftEdges;
-                this.leftGraph = leftGraph;
-                this.topGraph = topGraph;
-                this.counts = counts;
-
-                for (int i = 0; i <  leftEdges.size(); i++) {
-                    Edge edgeLeft = leftEdges.get(i);
-                    final Edge edgeTop = topGraph.getEdge(edgeLeft.getNode1(), edgeLeft.getNode2());
-                    if (edgeTop == null) {
-                        int m = getTypeLeft(edgeLeft, edgeLeft);
-                        counts[m][5]++;
-                    }
-                }
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to - from) / 2;
-
-                    List<CountTask2> tasks = new ArrayList<>();
-
-                    tasks.add(new CountTask2(chunk, from, from + mid, edges, leftGraph, topGraph, counts));
-                    tasks.add(new CountTask2(chunk, from + mid, to, edges, leftGraph, topGraph, counts));
-
-                    invokeAll(tasks);
-
-                    return true;
-                }
-            }
-        }
-
 
         int[][] counts = new int[8][6];
 
-        List<Edge> topEdges = new ArrayList<>(topGraph.getEdges());
-        List<Edge> leftEdges = new ArrayList<>(leftGraph.getEdges());
+        for (Edge est : topGraph.getEdges()) {
+            Node x = est.getNode1();
+            Node y = est.getNode2();
 
-        ForkJoinPoolInstance.getInstance().getPool().invoke(new CountTask1(100, 0, topEdges.size(),
-                topEdges, leftGraph, topGraph, counts));
-        ForkJoinPoolInstance.getInstance().getPool().invoke(new CountTask2(100, 0, leftEdges.size(),
-                leftEdges, leftGraph, topGraph, counts));
+            Edge left = leftGraph.getEdge(x, y);
+
+            Edge top = topGraph.getEdge(x, y);
+
+            int m = getTypeLeft(left, top);
+            int n = getTypeTop(top);
+
+            counts[m][n]++;
+        }
 
         if (print) {
             System.out.println("# edges in true graph = " + leftGraph.getNumEdges());
             System.out.println("# edges in est graph = " + topGraph.getNumEdges());
         }
 
-
+        for (Edge edgeLeft : leftGraph.getEdges()) {
+            final Edge edgeTop = topGraph.getEdge(edgeLeft.getNode1(), edgeLeft.getNode2());
+            if (edgeTop == null) {
+                int m = getTypeLeft(edgeLeft, edgeLeft);
+                counts[m][5]++;
+            }
+        }
 
         return counts;
+    }
+
+
+    private static class Counts {
+        private int[][] counts;
+
+        public Counts() {
+            this.counts = new int[8][6];
+        }
+
+        public void increment(int m, int n) {
+            this.counts[m][n]++;
+        }
+
+        public int getCount(int m, int n) {
+            return this.counts[m][n];
+        }
+
+        public void addAll(Counts counts2) {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0 ; j < 6; j++) {
+                    counts[i][j] += counts2.getCount(i, j);
+                }
+            }
+        }
+
+        public int[][] countArray() {
+            return counts;
+        }
+    }
+
+    public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
+//        topGraph = replaceNodes(topGraph, leftGraph.getNodes());
+
+        class CountTask extends RecursiveTask<Counts> {
+            private int chunk;
+            private int from;
+            private int to;
+            private final List<Edge> edges;
+            private final Graph leftGraph;
+            private final Graph topGraph;
+            private final Counts counts;
+
+            public CountTask(int chunk, int from, int to, List<Edge> edges, Graph leftGraph, Graph topGraph) {
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
+                this.edges = edges;
+                this.leftGraph = leftGraph;
+                this.topGraph = topGraph;
+                this.counts = new Counts();
+            }
+
+            @Override
+            protected Counts compute() {
+                int range = to - from;
+
+                if (range >= 1 && range <= chunk) {
+                    for (int i = from; i < to; i++) {
+                        Edge edge = edges.get(i);
+
+                        Node x = edge.getNode1();
+                        Node y = edge.getNode2();
+
+                        Edge left = leftGraph.getEdge(x, y);
+                        Edge top = topGraph.getEdge(x, y);
+
+                        int m = getTypeLeft(left, top);
+                        int n = getTypeTop(top);
+
+                        counts.increment(m, n);
+                    }
+
+                    return counts;
+                } else {
+
+                    int low = from;
+                    int high = to;
+
+                    int mid = low + (high - low) / 2;
+                    CountTask left  = new CountTask(chunk, from, mid, edges, leftGraph, topGraph);
+                    CountTask right  = new CountTask(chunk, mid, to, edges, leftGraph, topGraph);
+
+                    left.fork();
+                    Counts rightAnswer = right.compute();
+                    Counts leftAnswer = left.join();
+
+                    leftAnswer.addAll(rightAnswer);
+                    return leftAnswer;
+                }
+            }
+
+            public Counts getCounts() {
+                return counts;
+            }
+        }
+
+
+//        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
+
+//        int[][] counts = new int[8][6];
+        Set<Edge> edgeSet = new HashSet<>();
+        edgeSet.addAll(topGraph.getEdges());
+        edgeSet.addAll(leftGraph.getEdges());
+
+        if (true) {
+            System.out.println("Top graph " + topGraph.getEdges().size());
+            System.out.println("Left graph " + leftGraph.getEdges().size());
+            System.out.println("All edges " + edgeSet.size());
+        }
+
+        List<Edge> edges = new ArrayList<>(edgeSet);
+
+        ForkJoinPoolInstance pool = ForkJoinPoolInstance.getInstance();
+        CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph);
+        Counts counts = pool.getPool().invoke(task);
+        return counts.countArray();
+    }
+
+    private static Set<Edge> complement(Set<Edge> edgeSet, Graph topGraph) {
+        Set<Edge> complement = new HashSet<>(edgeSet);
+        complement.removeAll(topGraph.getEdges());
+        return complement;
     }
 
     private static int getTypeTop(Edge edgeTop) {
@@ -3189,8 +3212,50 @@ public final class GraphUtils {
             return 7;
         }
 
+        if (edgeTop == null) {
+            edgeTop = edgeLeft;
+        }
+
+        if (Edges.isUndirectedEdge(edgeLeft)) {
+            return 0;
+        }
+
+        if (Edges.isNondirectedEdge(edgeLeft)) {
+            return 1;
+        }
+
         Node x = edgeLeft.getNode1();
         Node y = edgeLeft.getNode2();
+
+        if (Edges.isPartiallyOrientedEdge(edgeLeft)) {
+            if ((edgeLeft.pointsTowards(x) && edgeTop.pointsTowards(y)) ||
+                    (edgeLeft.pointsTowards(y) && edgeTop.pointsTowards(x))) {
+                return 3;
+            } else {
+                return 2;
+            }
+        }
+
+        if (Edges.isDirectedEdge(edgeLeft)) {
+            if ((edgeLeft.pointsTowards(x) && edgeTop.pointsTowards(y)) ||
+                    (edgeLeft.pointsTowards(y) && edgeTop.pointsTowards(x))) {
+                return 5;
+            } else {
+                return 4;
+            }
+        }
+
+        if (Edges.isBidirectedEdge(edgeLeft)) {
+            return 6;
+        }
+
+        throw new IllegalArgumentException("Unsupported edge type : " + edgeLeft);
+    }
+
+    private static int getTypeLeft2(Edge edgeLeft) {
+        if (edgeLeft == null) {
+            return 7;
+        }
 
         if (Edges.isUndirectedEdge(edgeLeft)) {
             return 0;
@@ -3201,35 +3266,11 @@ public final class GraphUtils {
         }
 
         if (Edges.isPartiallyOrientedEdge(edgeLeft)) {
-            if ((edgeLeft.pointsTowards(x) && edgeTop.pointsTowards(y)) ||
-                    edgeLeft.pointsTowards(y) && edgeTop.pointsTowards(x)) {
-                return 3;
-            } else {
-                return 2;
-            }
-
-//            if (edgeTop.equals(edgeLeft.reverse())) {
-//                return 3;
-//            }
-//            else {
-//                return 2;
-//            }
+            return 2;
         }
 
         if (Edges.isDirectedEdge(edgeLeft)) {
-            if ((edgeLeft.pointsTowards(x) && edgeTop.pointsTowards(y)) ||
-                    edgeLeft.pointsTowards(y) && edgeTop.pointsTowards(x)) {
-                return 5;
-            } else {
-                return 4;
-            }
-
-//            if (edgeTop.equals(edgeLeft.reverse())) {
-//                return 5;
-//            }
-//            else {
-//                return 4;
-//            }
+            return 4;
         }
 
         if (Edges.isBidirectedEdge(edgeLeft)) {
@@ -3238,6 +3279,7 @@ public final class GraphUtils {
 
         throw new IllegalArgumentException("Unsupported edge type : " + edgeLeft);
     }
+
 
     public static Set<Set<Node>> maximalCliques(Graph graph, List<Node> nodes) {
         Set<Set<Node>> report = new HashSet<>();

@@ -1065,23 +1065,23 @@ public class PerformanceTests {
 
             directedComparison(dag, pattern, estPattern);
 
-            try {
-                PrintStream out2 = new PrintStream(new File("dag." + run + ".txt"));
-                out2.println(dag);
-
-                PrintStream out3 = new PrintStream(new File("estpag." + run + ".txt"));
-                out3.println(estPattern);
-
-                PrintStream out4 = new PrintStream(new File("truepag." + run + ".txt"));
-                out4.println(pattern);
-
-                out2.close();
-                out3.close();
-                out4.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
+//            try {
+//                PrintStream out2 = new PrintStream(new File("dag." + run + ".txt"));
+//                out2.println(dag);
+//
+//                PrintStream out3 = new PrintStream(new File("estpag." + run + ".txt"));
+//                out3.println(estPattern);
+//
+//                PrintStream out4 = new PrintStream(new File("truepag." + run + ".txt"));
+//                out4.println(pattern);
+//
+//                out2.close();
+//                out3.close();
+//                out4.close();
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//                throw new RuntimeException(e);
+//            }
         }
 
         printAverageConfusion("Average", counts);

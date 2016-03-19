@@ -31,7 +31,7 @@ public class ShortDataBox implements DataBox {
     /**
      * The stored short data.
      */
-    private short[][] data;
+    private final short[][] data;
 
     /**
      * Constructs an 2D short array consisting entirely of missing values (-99).
@@ -88,9 +88,13 @@ public class ShortDataBox implements DataBox {
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
-            data[row][col] = -99;
+            synchronized (data) {
+                data[row][col] = -99;
+            }
         } else {
-            data[row][col] = value.shortValue();
+            synchronized (data) {
+                data[row][col] = value.shortValue();
+            }
         }
     }
 
