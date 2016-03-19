@@ -21,16 +21,14 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.PointXy;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
 import nu.xom.*;
 
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 
 /**
@@ -2233,7 +2231,7 @@ public final class GraphUtils {
     }
 
     public static Graph readerToGraphTxt(String graphString) throws IOException {
-       return readerToGraphTxt(new CharArrayReader(graphString.toCharArray()));
+        return readerToGraphTxt(new CharArrayReader(graphString.toCharArray()));
     }
 
     public static Graph readerToGraphTxt(Reader reader) throws IOException {
@@ -3026,34 +3024,134 @@ public final class GraphUtils {
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
         topGraph = replaceNodes(topGraph, leftGraph.getNodes());
 
+        class CountTask1 extends RecursiveTask<Boolean> {
+            private int chunk;
+            private int from;
+            private int to;
+            private final List<Edge> edges;
+            private final Graph leftGraph;
+            private final Graph topGraph;
+            private final int[][] counts;
+
+            public CountTask1(int chunk, int from, int to, List<Edge> edges, Graph leftGraph, Graph topGraph,
+                              int[][] counts) {
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
+                this.edges = edges;
+                this.leftGraph = leftGraph;
+                this.topGraph = topGraph;
+                this.counts = counts;
+
+                for (int i = from; i < to; i++) {
+                    Edge est = edges.get(i);
+
+                    Node x = est.getNode1();
+                    Node y = est.getNode2();
+
+                    Edge left = leftGraph.getEdge(x, y);
+
+                    Edge top = topGraph.getEdge(x, y);
+
+                    int m = getTypeLeft(left, top);
+                    int n = getTypeTop(top);
+
+                    counts[m][n]++;
+                }
+            }
+
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int i = from; i < to; i++) {
+
+                    }
+
+                    return true;
+                } else {
+                    int mid = (to - from) / 2;
+
+                    List<CountTask1> tasks = new ArrayList<>();
+
+                    tasks.add(new CountTask1(chunk, from, from + mid, edges, leftGraph, topGraph, counts));
+                    tasks.add(new CountTask1(chunk, from + mid, to, edges, leftGraph, topGraph, counts));
+
+                    invokeAll(tasks);
+
+                    return true;
+                }
+            }
+        }
+
+        class CountTask2 extends RecursiveTask<Boolean> {
+            private int chunk;
+            private int from;
+            private int to;
+            private final List<Edge> edges;
+            private final Graph leftGraph;
+            private final Graph topGraph;
+            private final int[][] counts;
+
+            public CountTask2(int chunk, int from, int to, List<Edge> leftEdges, Graph leftGraph, Graph topGraph,
+                              int[][] counts) {
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
+                this.edges = leftEdges;
+                this.leftGraph = leftGraph;
+                this.topGraph = topGraph;
+                this.counts = counts;
+
+                for (int i = 0; i <  leftEdges.size(); i++) {
+                    Edge edgeLeft = leftEdges.get(i);
+                    final Edge edgeTop = topGraph.getEdge(edgeLeft.getNode1(), edgeLeft.getNode2());
+                    if (edgeTop == null) {
+                        int m = getTypeLeft(edgeLeft, edgeLeft);
+                        counts[m][5]++;
+                    }
+                }
+            }
+
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int i = from; i < to; i++) {
+
+                    }
+
+                    return true;
+                } else {
+                    int mid = (to - from) / 2;
+
+                    List<CountTask2> tasks = new ArrayList<>();
+
+                    tasks.add(new CountTask2(chunk, from, from + mid, edges, leftGraph, topGraph, counts));
+                    tasks.add(new CountTask2(chunk, from + mid, to, edges, leftGraph, topGraph, counts));
+
+                    invokeAll(tasks);
+
+                    return true;
+                }
+            }
+        }
+
+
         int[][] counts = new int[8][6];
 
-        for (Edge est : topGraph.getEdges()) {
-            Node x = est.getNode1();
-            Node y = est.getNode2();
+        List<Edge> topEdges = new ArrayList<>(topGraph.getEdges());
+        List<Edge> leftEdges = new ArrayList<>(leftGraph.getEdges());
 
-            Edge left = leftGraph.getEdge(x, y);
-
-            Edge top = topGraph.getEdge(x, y);
-
-            int m = getTypeLeft(left, top);
-            int n = getTypeTop(top);
-
-            counts[m][n]++;
-        }
+        ForkJoinPoolInstance.getInstance().getPool().invoke(new CountTask1(100, 0, topEdges.size(),
+                topEdges, leftGraph, topGraph, counts));
+        ForkJoinPoolInstance.getInstance().getPool().invoke(new CountTask2(100, 0, leftEdges.size(),
+                leftEdges, leftGraph, topGraph, counts));
 
         if (print) {
             System.out.println("# edges in true graph = " + leftGraph.getNumEdges());
             System.out.println("# edges in est graph = " + topGraph.getNumEdges());
         }
 
-        for (Edge edgeLeft : leftGraph.getEdges()) {
-            final Edge edgeTop = topGraph.getEdge(edgeLeft.getNode1(), edgeLeft.getNode2());
-            if (edgeTop == null) {
-                int m = getTypeLeft(edgeLeft, edgeLeft);
-                counts[m][5]++;
-            }
-        }
+
 
         return counts;
     }
