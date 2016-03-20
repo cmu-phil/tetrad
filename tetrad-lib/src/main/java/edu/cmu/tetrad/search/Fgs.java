@@ -608,9 +608,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     InitializeFromEmptyGraphTask right = new InitializeFromEmptyGraphTask(chunk, from + mid, to);
 
                     left.fork();
-                    right.fork();
+                    right.compute();
                     left.join();
-                    right.join();
 
                     return true;
                 }
@@ -705,9 +704,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(chunk, from + mid, to);
 
                     left.fork();
-                    right.fork();
+                    right.compute();
                     left.join();
-                    right.join();
 
                     return true;
                 }
@@ -950,9 +948,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     AdjTask right = new AdjTask(chunk, nodes, from + mid, to);
 
                     left.fork();
-                    right.fork();
+                    right.compute();
                     left.join();
-                    right.join();
 
                     return true;
                 }
@@ -1089,9 +1086,8 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     BackwardTask right = new BackwardTask(r, adj, chunk, from + mid, to, hashIndices);
 
                     left.fork();
-                    right.fork();
+                    right.compute();
                     left.join();
-                    right.join();
 
                     return true;
                 }
