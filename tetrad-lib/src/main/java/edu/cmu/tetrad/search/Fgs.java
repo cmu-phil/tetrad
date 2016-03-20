@@ -604,12 +604,12 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 } else {
                     int mid = (to - from) / 2;
 
-                    List<InitializeFromEmptyGraphTask> tasks = new ArrayList<>();
+                    InitializeFromEmptyGraphTask left = new InitializeFromEmptyGraphTask(chunk, from, from + mid);
+                    InitializeFromEmptyGraphTask right = new InitializeFromEmptyGraphTask(chunk, from + mid, to);
 
-                    tasks.add(new InitializeFromEmptyGraphTask(chunk, from, from + mid));
-                    tasks.add(new InitializeFromEmptyGraphTask(chunk, from + mid, to));
-
-                    invokeAll(tasks);
+                    left.fork();
+                    right.compute();
+                    left.join();
 
                     return true;
                 }
@@ -700,12 +700,12 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 } else {
                     int mid = (to - from) / 2;
 
-                    List<InitializeFromExistingGraphTask> tasks = new ArrayList<>();
+                    InitializeFromExistingGraphTask left = new InitializeFromExistingGraphTask(chunk, from, from + mid);
+                    InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(chunk, from + mid, to);
 
-                    tasks.add(new InitializeFromExistingGraphTask(chunk, from, from + mid));
-                    tasks.add(new InitializeFromExistingGraphTask(chunk, from + mid, to));
-
-                    invokeAll(tasks);
+                    left.fork();
+                    right.compute();
+                    left.join();
 
                     return true;
                 }
@@ -944,12 +944,12 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 } else {
                     int mid = (to - from) / 2;
 
-                    List<AdjTask> tasks = new ArrayList<>();
+                    AdjTask left = new AdjTask(chunk, nodes, from, from + mid);
+                    AdjTask right = new AdjTask(chunk, nodes, from + mid, to);
 
-                    tasks.add(new AdjTask(chunk, nodes, from, from + mid));
-                    tasks.add(new AdjTask(chunk, nodes, from + mid, to));
-
-                    invokeAll(tasks);
+                    left.fork();
+                    right.compute();
+                    left.join();
 
                     return true;
                 }
@@ -1082,12 +1082,12 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 } else {
                     int mid = (to - from) / 2;
 
-                    List<BackwardTask> tasks = new ArrayList<>();
+                    BackwardTask left = new BackwardTask(r, adj, chunk, from, from + mid, hashIndices);
+                    BackwardTask right = new BackwardTask(r, adj, chunk, from + mid, to, hashIndices);
 
-                    tasks.add(new BackwardTask(r, adj, chunk, from, from + mid, hashIndices));
-                    tasks.add(new BackwardTask(r, adj, chunk, from + mid, to, hashIndices));
-
-                    invokeAll(tasks);
+                    left.fork();
+                    right.compute();
+                    left.join();
 
                     return true;
                 }

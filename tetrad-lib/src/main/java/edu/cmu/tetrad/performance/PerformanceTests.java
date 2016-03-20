@@ -49,7 +49,7 @@ public class PerformanceTests {
     private PrintStream out = System.out;
     private boolean writeToFile = true;
 
-    public void testPc(int numVars, double edgesPerNode, int numCases, double alpha) {
+    public void testPc(int numVars, double edgeFactor, int numCases, double alpha) {
         int depth = -1;
 
         init(new File("long.pc." + numVars + ".txt"), "Tests performance of the FGS algorithm");
@@ -68,7 +68,7 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false);
 
         System.out.println("Graph done");
@@ -123,7 +123,7 @@ public class PerformanceTests {
         long time4 = System.currentTimeMillis();
 
         out.println("# Vars = " + numVars);
-        out.println("# Edges = " + (int) (numVars * edgesPerNode));
+        out.println("# Edges = " + (int) (numVars * edgeFactor));
         out.println("# Cases = " + numCases);
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
@@ -155,10 +155,10 @@ public class PerformanceTests {
                 vars.add(new ContinuousVariable("X" + (i + 1)));
             }
 
-            double edgesPerNode = 1.0;
+            double edgeFactor = 1.0;
             int numCases = 1000;
 
-            Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+            Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                     30, 15, 15, false);
 
             out2.println(graph);
@@ -184,14 +184,14 @@ public class PerformanceTests {
 
     }
 
-    public void testPcStable(int numVars, double edgesPerNode, int numCases, double alpha) {
+    public void testPcStable(int numVars, double edgeFactor, int numCases, double alpha) {
         int depth = -1;
 
         init(new File("long.pcstable." + numVars + ".txt"), "Tests performance of the PC Stable algorithm");
 
         long time1 = System.currentTimeMillis();
 
-        Graph dag = makeDag(numVars, edgesPerNode);
+        Graph dag = makeDag(numVars, edgeFactor);
 
         System.out.println("Graph done");
 
@@ -241,7 +241,7 @@ public class PerformanceTests {
         long time4 = System.currentTimeMillis();
 
 //        out.println("# Vars = " + numVars);
-//        out.println("# Edges = " + (int) (numVars * edgesPerNode));
+//        out.println("# Edges = " + (int) (numVars * edgeFactor));
         out.println("# Cases = " + numCases);
         out.println("alpha = " + alpha);
         out.println("depth = " + depth);
@@ -264,7 +264,7 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testCpc(int numVars, double edgesPerNode, int numCases) {
+    public void testCpc(int numVars, double edgeFactor, int numCases) {
         double alpha = 0.0001;
         int depth = -1;
 
@@ -284,7 +284,7 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false);
 
         System.out.println("Graph done");
@@ -339,7 +339,7 @@ public class PerformanceTests {
         long time4 = System.currentTimeMillis();
 
         out.println("# Vars = " + numVars);
-        out.println("# Edges = " + (int) (numVars * edgesPerNode));
+        out.println("# Edges = " + (int) (numVars * edgeFactor));
         out.println("# Cases = " + numCases);
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
@@ -353,7 +353,7 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testCpcStable(int numVars, double edgesPerNode, int numCases, double alpha) {
+    public void testCpcStable(int numVars, double edgeFactor, int numCases, double alpha) {
         int depth = 3;
 
         init(new File("long.cpcstable." + numVars + ".txt"), "Tests performance of the CPC algorithm");
@@ -366,9 +366,9 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-//        Graph graph = DataGraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode));
-//        Graph graph = DataGraphUtils.randomGraphUniform(vars, 0, (int) (numVars * edgesPerNode), 5, 5, 5, false);
-        Graph graph = makeDag(numVars, edgesPerNode);
+//        Graph graph = DataGraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor));
+//        Graph graph = DataGraphUtils.randomGraphUniform(vars, 0, (int) (numVars * edgeFactor), 5, 5, 5, false);
+        Graph graph = makeDag(numVars, edgeFactor);
 
 
         System.out.println("Graph done");
@@ -420,7 +420,7 @@ public class PerformanceTests {
         long time4 = System.currentTimeMillis();
 
 //        out.println("# Vars = " + numVars);
-//        out.println("# Edges = " + (int) (numVars * edgesPerNode));
+//        out.println("# Edges = " + (int) (numVars * edgeFactor));
         out.println("# Cases = " + numCases);
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
@@ -438,7 +438,7 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testFci(int numVars, double edgesPerNode, int numCases) {
+    public void testFci(int numVars, double edgeFactor, int numCases) {
         double alpha = 0.001;
         int depth = 3;
 
@@ -458,7 +458,7 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false);
 
         System.out.println("Graph done");
@@ -511,7 +511,7 @@ public class PerformanceTests {
         long time4 = System.currentTimeMillis();
 
         out.println("# Vars = " + numVars);
-        out.println("# Edges = " + (int) (numVars * edgesPerNode));
+        out.println("# Edges = " + (int) (numVars * edgeFactor));
         out.println("# Cases = " + numCases);
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
@@ -521,7 +521,7 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testGfci(int numVars, double edgesPerNode, int numCases) {
+    public void testGfci(int numVars, double edgeFactor, int numCases) {
         double alpha = 0.001;
         int depth = 3;
 
@@ -543,7 +543,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = getLatentGraph(vars, edgesPerNode, 20);
+        Graph dag = getLatentGraph(vars, edgeFactor, 20);
 
         System.out.println("Graph done");
 
@@ -613,7 +613,7 @@ public class PerformanceTests {
         long time4 = System.currentTimeMillis();
 
         out.println("# Vars = " + numVars);
-        out.println("# Edges = " + (int) (numVars * edgesPerNode));
+        out.println("# Edges = " + (int) (numVars * edgeFactor));
         out.println("# Cases = " + numCases);
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
@@ -623,8 +623,8 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testFgsContinuous(int numVars, double edgesPerNode, int numCases, double penaltyDiscount) {
-        final int numEdges = (int) (numVars * edgesPerNode);
+    public void testFgsContinuous(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
+        final int numEdges = (int) (numVars * edgeFactor);
 
         init(new File("long.FGS." + numVars + "." + numEdges + "." + penaltyDiscount + ".txt"), "Tests performance of the FGS algorithm");
 
@@ -635,7 +635,7 @@ public class PerformanceTests {
         System.out.println("Making dag");
 //        Graph dag;
 //        dag = DataGraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
-        Graph dag = makeDag(numVars, edgesPerNode);
+        Graph dag = makeDag(numVars, edgeFactor);
 
         List<Node> vars = dag.getNodes();
 
@@ -735,8 +735,8 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testFgsDiscrete(int numVars, double edgesPerNode, int numCases, double penaltyDiscount) {
-        final int numEdges = (int) (numVars * edgesPerNode);
+    public void testFgsDiscrete(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
+        final int numEdges = (int) (numVars * edgeFactor);
 
         init(new File("long.FGS." + numVars + "." + numEdges + "." + penaltyDiscount + ".txt"), "Tests performance of the FGS algorithm");
 
@@ -747,7 +747,7 @@ public class PerformanceTests {
         System.out.println("Making dag");
 //        Graph dag;
 //        dag = DataGraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
-        Graph dag = makeDag(numVars, edgesPerNode);
+        Graph dag = makeDag(numVars, edgeFactor);
 
         List<Node> vars = dag.getNodes();
 
@@ -1070,16 +1070,16 @@ public class PerformanceTests {
         }
     }
 
-    public void testFgsComparisonContinuous(int numVars, double edgesPerNode, int numCases, int numRuns) {
+    public void testFgsComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
 
 
         double penaltyDiscount = 4.0;
         int depth = 3;
 
-        init(new File("fgs.comparison" + numVars + "." + (int) (edgesPerNode * numVars) +
+        init(new File("fgs.comparison" + numVars + "." + (int) (edgeFactor * numVars) +
                 "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
         out.println("Num vars = " + numVars);
-        out.println("Num edges = " + (int) (numVars * edgesPerNode));
+        out.println("Num edges = " + (int) (numVars * edgeFactor));
         out.println("Num cases = " + numCases);
         out.println("Penalty discount = " + penaltyDiscount);
         out.println("Depth = " + depth);
@@ -1097,7 +1097,7 @@ public class PerformanceTests {
 
             System.out.println("Making dag");
 
-            Graph dag = makeDag(numVars, edgesPerNode);
+            Graph dag = makeDag(numVars, edgeFactor);
 
             Graph pattern = SearchGraphUtils.patternForDag(dag);
 
@@ -1240,6 +1240,12 @@ public class PerformanceTests {
 
             List<Node> vars = dag.getNodes();
 
+            int[] tiers = new int[vars.size()];
+
+            for (int i = 0; i < vars.size(); i++) {
+                tiers[i] = i;
+            }
+
             System.out.println("Graph done");
 
             long time1 = System.currentTimeMillis();
@@ -1249,9 +1255,9 @@ public class PerformanceTests {
             System.out.println("Starting simulation");
 
             BayesPm pm = new BayesPm(dag, 3, 3);
-            BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+            MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
-            DataSet data = im.simulateData(numCases, false);
+            DataSet data = im.simulateData(numCases, false, tiers);
 
             System.out.println("Finishing simulation");
 
@@ -1327,9 +1333,9 @@ public class PerformanceTests {
 
     }
 
-    public void testGFciComparison(int numVars, double edgesPerNode, int numCases, int numLatents) {
+    public void testGFciComparison(int numVars, double edgeFactor, int numCases, int numLatents) {
         numVars = 1000;
-        edgesPerNode = 1.0;
+        edgeFactor = 1.0;
         numLatents = 100;
         numCases = 1000;
         int numRuns = 5;
@@ -1341,10 +1347,10 @@ public class PerformanceTests {
         boolean completeRuleSetUsed = false;
         boolean faithfulnessAssumed = true;
 
-        init(new File("fci.algorithms.comparison" + numVars + "." + (int) (edgesPerNode * numVars) +
+        init(new File("fci.algorithms.comparison" + numVars + "." + (int) (edgeFactor * numVars) +
                 "." + numCases + ".txt"), "Num runs = " + numRuns);
         out.println("Num vars = " + numVars);
-        out.println("Num edges = " + (int) (numVars * edgesPerNode));
+        out.println("Num edges = " + (int) (numVars * edgeFactor));
         out.println("Num cases = " + numCases);
         out.println("Alpha = " + alpha);
         out.println("Penalty discount = " + penaltyDiscount);
@@ -1373,7 +1379,7 @@ public class PerformanceTests {
             }
 
             System.out.println("Finishing list of vars");
-            Graph dag = getLatentGraph(vars, edgesPerNode, numLatents);
+            Graph dag = getLatentGraph(vars, edgeFactor, numLatents);
 
             System.out.println("Graph done");
 
@@ -1477,12 +1483,12 @@ public class PerformanceTests {
     }
 
     // Compares two different ways of calculating a PAG from a DAG, to see if they match up
-    public void testCompareDagToPattern(int numVars, double edgesPerNode, int numLatents) {
+    public void testCompareDagToPattern(int numVars, double edgeFactor, int numLatents) {
         System.out.println("Making list of vars");
 
         numVars = 20;
-        edgesPerNode = 2.0;
-        int numEdges = (int) (numVars * edgesPerNode);
+        edgeFactor = 2.0;
+        int numEdges = (int) (numVars * edgeFactor);
 
         List<Node> vars = new ArrayList<>();
 
@@ -1543,7 +1549,7 @@ public class PerformanceTests {
     }
 
     // Fas is calibrated; we need to calibrate other FAS versions to it.
-    public void testCompareFasVersions(int numVars, double edgesPerNode, int numLatents) {
+    public void testCompareFasVersions(int numVars, double edgeFactor, int numLatents) {
         System.out.println("Making list of vars");
 
 //        RandomUtil.getInstance().setSeed(1429287088750L);
@@ -1562,7 +1568,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgesPerNode),
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgeFactor),
                 30, 15, 15, false);
 
         System.out.println("DAG = " + dag);
@@ -1600,7 +1606,7 @@ public class PerformanceTests {
     }
 
     // Fas is calibrated; we need to calibrate other FAS versions to it.
-    public void testComparePcVersions(int numVars, double edgesPerNode, int numLatents) {
+    public void testComparePcVersions(int numVars, double edgeFactor, int numLatents) {
         System.out.println("Making list of vars");
 
 //        RandomUtil.getInstance().setSeed(1429287088750L);
@@ -1619,7 +1625,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgesPerNode),
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgeFactor),
                 30, 15, 15, false);
 
         System.out.println("DAG = " + dag);
@@ -1654,7 +1660,7 @@ public class PerformanceTests {
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
 
-    public void testDagToPagOnly(int numVars, double edgesPerNode, int numLatents) {
+    public void testDagToPagOnly(int numVars, double edgeFactor, int numLatents) {
         System.out.println("Making list of vars");
 
         List<Node> vars = new ArrayList<Node>();
@@ -1669,8 +1675,8 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-//        Graph dag = DataGraphUtils.randomDagQuick2(vars, 0, (int) (vars.size() * edgesPerNode));
-        Dag dag = new Dag(getLatentGraph(vars, edgesPerNode, numLatents));
+//        Graph dag = DataGraphUtils.randomDagQuick2(vars, 0, (int) (vars.size() * edgeFactor));
+        Dag dag = new Dag(getLatentGraph(vars, edgeFactor, numLatents));
 
         System.out.println(dag);
 
@@ -1705,7 +1711,7 @@ public class PerformanceTests {
 //            int maxPathLength = 3;
 //
 //            final int numVars = 15;
-//            final double edgesPerNode = 1.0;
+//            final double edgeFactor = 1.0;
 //            final int numCases = 1000;
 //            final int numLatents = RandomUtil.getInstance().nextInt(3) + 1;
 //
@@ -1751,7 +1757,7 @@ public class PerformanceTests {
 //            }
 //
 //            out1.println("Num _vars = " + numVars);
-//            out1.println("Num edges = " + (int) (numVars * edgesPerNode));
+//            out1.println("Num edges = " + (int) (numVars * edgeFactor));
 //            out1.println("Num cases = " + numCases);
 //            out1.println("Alpha for PC = " + alphaPc);
 //            out1.println("Alpha for FFCI = " + alphaGFci);
@@ -1762,13 +1768,13 @@ public class PerformanceTests {
 //            List<Node> vars = new ArrayList<Node>();
 //            for (int i = 0; i < numVars; i++) vars.add(new GraphNode("X" + (i + 1)));
 //
-////        Graph dag = DataGraphUtils.randomDagQuick2(varsWithLatents, 0, (int) (varsWithLatents.size() * edgesPerNode));
-//            Graph dag = GraphUtils.randomGraph(vars, 0, (int) (vars.size() * edgesPerNode), 5, 5, 5, false);
+////        Graph dag = DataGraphUtils.randomDagQuick2(varsWithLatents, 0, (int) (varsWithLatents.size() * edgeFactor));
+//            Graph dag = GraphUtils.randomGraph(vars, 0, (int) (vars.size() * edgeFactor), 5, 5, 5, false);
 //
 //            GraphUtils.fixLatents1(numLatents, dag);
 ////        List<Node> varsWithLatents = new ArrayList<Node>();
 ////
-////        Graph dag = getLatentGraph(_vars, varsWithLatents, edgesPerNode, numLatents);
+////        Graph dag = getLatentGraph(_vars, varsWithLatents, edgeFactor, numLatents);
 //
 //
 //            out3.println(dag);
@@ -1912,7 +1918,7 @@ public class PerformanceTests {
         out.println(x);
     }
 
-    private Graph makeDag(int numVars, double edgesPerNode) {
+    private Graph makeDag(int numVars, double edgeFactor) {
         System.out.println("Making list of vars");
 
         List<Node> vars = new ArrayList<Node>();
@@ -1926,7 +1932,7 @@ public class PerformanceTests {
         System.out.println("Making dag");
 
         //        printDegreeDistribution(dag, out);
-        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode),
+        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false);
     }
 
@@ -2372,8 +2378,8 @@ public class PerformanceTests {
         throw new IllegalArgumentException();
     }
 
-    private Graph getLatentGraph(List<Node> vars, double edgesPerNode, int numLatents) {
-        final int numEdges = (int) (vars.size() * edgesPerNode);
+    private Graph getLatentGraph(List<Node> vars, double edgeFactor, int numLatents) {
+        final int numEdges = (int) (vars.size() * edgeFactor);
 
         Graph dag = GraphUtils.randomGraph(vars,
                 numLatents, numEdges, 3, 3, 3, false);

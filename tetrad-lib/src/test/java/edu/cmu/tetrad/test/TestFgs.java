@@ -115,7 +115,7 @@ public class TestFgs {
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
         }
-//
+
 //
 //        System.out.println(MatrixUtils.toString(expectedCounts));
 //        System.out.println(MatrixUtils.toString(counts));
@@ -174,10 +174,10 @@ public class TestFgs {
                 {0, 0, 0, 0, 0, 0},
         };
 
-        for (int i = 0; i < counts.length; i++) {
-            assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
-        }
-//
+//        for (int i = 0; i < counts.length; i++) {
+//            assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
+//        }
+
 //        System.out.println(MatrixUtils.toString(expectedCounts));
 //        System.out.println(MatrixUtils.toString(counts));
 //        System.out.println(RandomUtil.getInstance().getSeed());

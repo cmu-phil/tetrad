@@ -3086,7 +3086,8 @@ public final class GraphUtils {
     }
 
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
-//        topGraph = replaceNodes(topGraph, leftGraph.getNodes());
+        System.out.println("Correcting nodes");
+        topGraph = replaceNodes(topGraph, leftGraph.getNodes());
 
         class CountTask extends RecursiveTask<Counts> {
             private int chunk;
@@ -3129,11 +3130,7 @@ public final class GraphUtils {
 
                     return counts;
                 } else {
-
-                    int low = from;
-                    int high = to;
-
-                    int mid = low + (high - low) / 2;
+                    int mid = from + (to - from) / 2;
                     CountTask left  = new CountTask(chunk, from, mid, edges, leftGraph, topGraph);
                     CountTask right  = new CountTask(chunk, mid, to, edges, leftGraph, topGraph);
 
@@ -3152,7 +3149,8 @@ public final class GraphUtils {
         }
 
 
-        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
+        System.out.println("Forming edge union");
+//        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
 
 //        int[][] counts = new int[8][6];
         Set<Edge> edgeSet = new HashSet<>();
@@ -3167,9 +3165,14 @@ public final class GraphUtils {
 
         List<Edge> edges = new ArrayList<>(edgeSet);
 
+        System.out.println("Finding pool");
         ForkJoinPoolInstance pool = ForkJoinPoolInstance.getInstance();
+
+        System.out.println("Starting count task");
         CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph);
         Counts counts = pool.getPool().invoke(task);
+
+        System.out.println("Finishing count task");
         return counts.countArray();
     }
 
