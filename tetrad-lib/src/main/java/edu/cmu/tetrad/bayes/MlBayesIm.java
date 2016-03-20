@@ -1146,97 +1146,97 @@ public final class MlBayesIm implements BayesIm {
         }
 
         //Do the simulation.
-        class SimulationTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-            private int[] tiers;
-            private DataSet dataSet;
-            private int[] map;
-
-            public SimulationTask(int chunk, int from, int to, int[] tiers, DataSet dataSet, int[] map) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-                this.tiers = tiers;
-                this.dataSet = dataSet;
-                this.map = map;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int row = from; row < to; row++) {
-                        for (int t : tiers) {
-                            int[] parentValues = new int[parents[t].length];
-
-                            for (int k = 0; k < parentValues.length; k++) {
-                                parentValues[k] = dataSet.getInt(row, parents[t][k]);
-                            }
-
-                            int rowIndex = getRowIndex(t, parentValues);
-                            double sum = 0.0;
-
-                            double r = RandomUtil.getInstance().nextDouble();
-
-                            for (int k = 0; k < getNumColumns(t); k++) {
-                                double probability = getProbability(t, rowIndex, k);
-                                sum += probability;
-
-                                if (sum >= r) {
-                                    dataSet.setInt(row, map[t], k);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    return true;
-                } else {
-                    List<SimulationTask> simulationTasks = new ArrayList<>();
-
-                    int mid = (to - from) / 2;
-
-                    simulationTasks.add(new SimulationTask(chunk, from, from + mid, tiers, dataSet, map));
-                    simulationTasks.add(new SimulationTask(chunk, from + mid, to, tiers, dataSet, map));
-
-                    invokeAll(simulationTasks);
-
-                    return true;
-                }
-            }
-        }
-
-        int chunk = 25;
-
-        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-        pool.invoke(new SimulationTask(chunk, 0, sampleSize, tiers, dataSet, map));
-
-//        // Construct the sample.
-//        for (int i = 0; i < sampleSize; i++) {
-//            for (int t : tiers) {
-//                int[] parentValues = new int[parents[t].length];
+//        class SimulationTask extends RecursiveTask<Boolean> {
+//            private int chunk;
+//            private int from;
+//            private int to;
+//            private int[] tiers;
+//            private DataSet dataSet;
+//            private int[] map;
 //
-//                for (int k = 0; k < parentValues.length; k++) {
-//                    parentValues[k] = dataSet.getInt(i, parents[t][k]);
-//                }
+//            public SimulationTask(int chunk, int from, int to, int[] tiers, DataSet dataSet, int[] map) {
+//                this.chunk = chunk;
+//                this.from = from;
+//                this.to = to;
+//                this.tiers = tiers;
+//                this.dataSet = dataSet;
+//                this.map = map;
+//            }
 //
-//                int rowIndex = getRowIndex(t, parentValues);
-//                double sum = 0.0;
+//            @Override
+//            protected Boolean compute() {
+//                if (to - from <= chunk) {
+//                    for (int row = from; row < to; row++) {
+//                        for (int t : tiers) {
+//                            int[] parentValues = new int[parents[t].length];
 //
-//                double r = RandomUtil.getInstance().nextDouble();
+//                            for (int k = 0; k < parentValues.length; k++) {
+//                                parentValues[k] = dataSet.getInt(row, parents[t][k]);
+//                            }
 //
-//                for (int k = 0; k < getNumColumns(t); k++) {
-//                    double probability = getProbability(t, rowIndex, k);
-//                    sum += probability;
+//                            int rowIndex = getRowIndex(t, parentValues);
+//                            double sum = 0.0;
 //
-//                    if (sum >= r) {
-//                        dataSet.setInt(i, map[t], k);
-//                        break;
+//                            double r = RandomUtil.getInstance().nextDouble();
+//
+//                            for (int k = 0; k < getNumColumns(t); k++) {
+//                                double probability = getProbability(t, rowIndex, k);
+//                                sum += probability;
+//
+//                                if (sum >= r) {
+//                                    dataSet.setInt(row, map[t], k);
+//                                    break;
+//                                }
+//                            }
+//                        }
 //                    }
+//
+//                    return true;
+//                } else {
+//                    List<SimulationTask> simulationTasks = new ArrayList<>();
+//
+//                    int mid = (to - from) / 2;
+//
+//                    simulationTasks.add(new SimulationTask(chunk, from, from + mid, tiers, dataSet, map));
+//                    simulationTasks.add(new SimulationTask(chunk, from + mid, to, tiers, dataSet, map));
+//
+//                    invokeAll(simulationTasks);
+//
+//                    return true;
 //                }
 //            }
 //        }
+//
+//        int chunk = 25;
+//
+//        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+//        pool.invoke(new SimulationTask(chunk, 0, sampleSize, tiers, dataSet, map));
+
+        // Construct the sample.
+        for (int i = 0; i < sampleSize; i++) {
+            for (int t : tiers) {
+                int[] parentValues = new int[parents[t].length];
+
+                for (int k = 0; k < parentValues.length; k++) {
+                    parentValues[k] = dataSet.getInt(i, parents[t][k]);
+                }
+
+                int rowIndex = getRowIndex(t, parentValues);
+                double sum = 0.0;
+
+                double r = RandomUtil.getInstance().nextDouble();
+
+                for (int k = 0; k < getNumColumns(t); k++) {
+                    double probability = getProbability(t, rowIndex, k);
+                    sum += probability;
+
+                    if (sum >= r) {
+                        dataSet.setInt(i, map[t], k);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public boolean equals(Object o) {

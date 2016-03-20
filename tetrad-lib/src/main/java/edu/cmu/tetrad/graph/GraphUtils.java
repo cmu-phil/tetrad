@@ -3152,14 +3152,14 @@ public final class GraphUtils {
         }
 
 
-//        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
+        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
 
 //        int[][] counts = new int[8][6];
         Set<Edge> edgeSet = new HashSet<>();
         edgeSet.addAll(topGraph.getEdges());
         edgeSet.addAll(leftGraph.getEdges());
 
-        if (true) {
+        if (print) {
             System.out.println("Top graph " + topGraph.getEdges().size());
             System.out.println("Left graph " + leftGraph.getEdges().size());
             System.out.println("All edges " + edgeSet.size());
