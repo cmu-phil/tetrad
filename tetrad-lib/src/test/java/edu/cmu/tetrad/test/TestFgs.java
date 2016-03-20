@@ -25,12 +25,14 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphConverter;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.junit.Test;
@@ -223,8 +225,8 @@ public class TestFgs {
 
     @Test
     public void testFromGraph() {
-        int numNodes = 6;
-        int numIterations = 1;
+        int numNodes = 10;
+        int numIterations = 5;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
@@ -435,10 +437,10 @@ public class TestFgs {
         Graph answer = GraphConverter.convert(answerGraph);
 //        Graph answer = new Pc(new IndTestDSep(input)).search();
 
-        System.out.println("Input = " + input);
-        System.out.println("Knowledge = " + knowledge);
-        System.out.println("Answer = " + answer);
-        System.out.println("Result graph = " + result);
+//        System.out.println("Input = " + input);
+//        System.out.println("Knowledge = " + knowledge);
+//        System.out.println("Answer = " + answer);
+//        System.out.println("Result graph = " + result);
 
         // Do test.
         assertEquals(answer, result);

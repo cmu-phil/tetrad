@@ -1270,7 +1270,7 @@ public class PerformanceTests {
             score.setSamplePrior(1);
 
             Fgs fgs = new Fgs(score);
-            fgs.setVerbose(false);
+            fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
             fgs.setFaithfulnessAssumed(true);
@@ -1294,7 +1294,7 @@ public class PerformanceTests {
             double degree = GraphUtils.degree(estPattern);
             degrees.add(degree);
 
-            System.out.println("Degree out output graph = " + degree);
+            System.out.println("Degree of output graph = " + degree);
 
             arrowStats.add(printCorrectArrows(dag, estPattern, pattern));
             tailStats.add(printCorrectTails(dag, estPattern, pattern));

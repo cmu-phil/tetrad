@@ -608,8 +608,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     InitializeFromEmptyGraphTask right = new InitializeFromEmptyGraphTask(chunk, from + mid, to);
 
                     left.fork();
-                    right.compute();
+                    right.fork();
                     left.join();
+                    right.join();
 
                     return true;
                 }
@@ -704,8 +705,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(chunk, from + mid, to);
 
                     left.fork();
-                    right.compute();
+                    right.fork();
                     left.join();
+                    right.join();
 
                     return true;
                 }
@@ -948,15 +950,16 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     AdjTask right = new AdjTask(chunk, nodes, from + mid, to);
 
                     left.fork();
-                    right.compute();
+                    right.fork();
                     left.join();
+                    right.join();
 
                     return true;
                 }
             }
         }
 
-        final AdjTask task = new AdjTask(minChunk, new ArrayList<>(nodes), 0, nodes.size());
+        final AdjTask task = new AdjTask(10, new ArrayList<>(nodes), 0, nodes.size());
 
         pool.invoke(task);
 
@@ -1086,8 +1089,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     BackwardTask right = new BackwardTask(r, adj, chunk, from + mid, to, hashIndices);
 
                     left.fork();
-                    right.compute();
+                    right.fork();
                     left.join();
+                    right.join();
 
                     return true;
                 }
@@ -1097,7 +1101,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
         for (Node r : toProcess) {
             this.neighbors.put(r, getNeighbors(r));
             List<Node> adjacentNodes = graph.getAdjacentNodes(r);
-            pool.invoke(new BackwardTask(r, adjacentNodes, minChunk, 0, adjacentNodes.size(), hashIndices));
+            pool.invoke(new BackwardTask(r, adjacentNodes, 10, 0, adjacentNodes.size(), hashIndices));
         }
     }
 
