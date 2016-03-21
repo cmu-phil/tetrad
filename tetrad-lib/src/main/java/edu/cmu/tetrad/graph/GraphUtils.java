@@ -3074,7 +3074,7 @@ public final class GraphUtils {
 
         public void addAll(Counts counts2) {
             for (int i = 0; i < 8; i++) {
-                for (int j = 0 ; j < 6; j++) {
+                for (int j = 0; j < 6; j++) {
                     counts[i][j] += counts2.getCount(i, j);
                 }
             }
@@ -3131,8 +3131,8 @@ public final class GraphUtils {
                     return counts;
                 } else {
                     int mid = from + (to - from) / 2;
-                    CountTask left  = new CountTask(chunk, from, mid, edges, leftGraph, topGraph);
-                    CountTask right  = new CountTask(chunk, mid, to, edges, leftGraph, topGraph);
+                    CountTask left = new CountTask(chunk, from, mid, edges, leftGraph, topGraph);
+                    CountTask right = new CountTask(chunk, mid, to, edges, leftGraph, topGraph);
 
                     left.fork();
                     Counts rightAnswer = right.compute();
@@ -3708,6 +3708,65 @@ public final class GraphUtils {
         }
 
         return false;
+    }
+
+    public static Set<Node> getDconnectedVars(Node x, List<Node> z, Graph graph) {
+        Set<Node> Y = new HashSet<>();
+
+        class EdgeNode {
+            private Edge edge;
+            private Node node;
+
+            public EdgeNode(Edge edge, Node node) {
+                this.edge = edge;
+                this.node = node;
+            }
+
+            public int hashCode() {
+                return edge.hashCode() + node.hashCode();
+            }
+
+            public boolean equals(Object o) {
+                if (!(o instanceof EdgeNode)) throw new IllegalArgumentException();
+                EdgeNode _o = (EdgeNode) o;
+                return _o.edge == edge && _o.node == node;
+            }
+        }
+
+        Queue<EdgeNode> Q = new ArrayDeque<>();
+        Set<EdgeNode> V = new HashSet<>();
+
+        for (Edge edge : graph.getEdges(x)) {
+            EdgeNode edgeNode = new EdgeNode(edge, x);
+            Q.offer(edgeNode);
+            V.add(edgeNode);
+            Y.add(edge.getDistalNode(x));
+        }
+
+        while (!Q.isEmpty()) {
+            EdgeNode t = Q.poll();
+
+            Edge edge1 = t.edge;
+            Node a = t.node;
+            Node b = edge1.getDistalNode(a);
+
+            for (Edge edge2 : graph.getEdges(b)) {
+                Node c = edge2.getDistalNode(b);
+                if (c == a) continue;
+
+                if (reachable(edge1, edge2, a, z, graph)) {
+                    EdgeNode u = new EdgeNode(edge2, b);
+
+                    if (!V.contains(u)) {
+                        V.add(u);
+                        Q.offer(u);
+                        Y.add(c);
+                    }
+                }
+            }
+        }
+
+        return Y;
     }
 
     // Depth first.

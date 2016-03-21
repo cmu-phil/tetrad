@@ -226,12 +226,12 @@ public class TestFgs {
     @Test
     public void testFromGraph() {
         int numNodes = 10;
-        int numIterations = 5;
+        int numIterations = 20;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
-            Fgs fgs = new Fgs(new GraphScore(dag));
+            Fgs2 fgs = new Fgs2(new GraphScore(dag));
             Graph pattern1 = fgs.search();
             Fgs pc = new Fgs(new GraphScore(dag));
             Graph pattern2 = pc.search();
