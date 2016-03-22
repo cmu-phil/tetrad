@@ -28,5 +28,12 @@
                 <include>*-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>${project.basedir}${file.separator}test${file.separator}data</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>Retention.txt</include>
+            </includes>
+        </fileSet>
     </fileSets>
 </assembly>
