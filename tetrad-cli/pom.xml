@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>edu.cmu</groupId>
@@ -14,6 +15,58 @@
     </properties>
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                     <execution>
+                        <id>copy-resources</id>
+                        <!-- here the phase you need -->
+                        <phase>validate</phase>
+                        <goals>
+                           <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                           <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                           <resources>
+                                <resource>
+                                    <directory>${project.basedir}/dist</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                           </resources>
+                        </configuration>
+                    </execution>
+                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <basedir>${project.build.directory}/dist</basedir>
+                    <includes>
+                        <include>*</include>
+                    </includes>
+                    <replacements>
+                        <replacement>
+                            <token>@ARTIFACT_ID@</token>
+                            <value>${project.artifactId}</value>
+                        </replacement>
+                        <replacement>
+                            <token>@VERSION@</token>
+                            <value>${project.version}</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -38,7 +91,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                     <!--required to override vendor standard-->
+                    <!--required to override vendor standard-->
                     <extension>true</extension>
                     <!--<schemaFiles>graphml.xsd</schemaFiles>-->
                 </configuration>
@@ -56,6 +109,12 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <filters>
+                        <filter>src/assembly/filter.properties</filter>
+                    </filters>
+                    <descriptors>
+                        <descriptor>src/assembly/distribution.xml</descriptor>
+                    </descriptors>
                     <archive>
                         <manifest>
                             <mainClass>edu.cmu.tetrad.cli.TetradCliApp</mainClass>
