@@ -1,0 +1,1 @@
+java -jar @ARTIFACT_ID@-@VERSION@-jar-with-dependencies.jar --algorithm fgs $@
