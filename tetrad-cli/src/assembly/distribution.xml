@@ -15,7 +15,7 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}/dist</directory>
+            <directory>${project.build.directory}${file.separator}dist</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>*.sh</include>
@@ -23,7 +23,7 @@
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}/dist</directory>
+            <directory>${project.build.directory}${file.separator}dist</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>*</include>
