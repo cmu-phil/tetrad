@@ -19,24 +19,24 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>2.6</version>
                 <executions>
-                     <execution>
+                    <execution>
                         <id>copy-resources</id>
                         <!-- here the phase you need -->
                         <phase>validate</phase>
                         <goals>
-                           <goal>copy-resources</goal>
+                            <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                           <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                           <resources>
+                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <resources>
                                 <resource>
                                     <directory>${project.basedir}/dist</directory>
                                     <filtering>true</filtering>
                                 </resource>
-                           </resources>
+                            </resources>
                         </configuration>
                     </execution>
-                 </executions>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
@@ -106,24 +106,35 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>edu.cmu.tetrad.cli.TetradCliApp</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>dist</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>src/assembly/filter.properties</filter>
+                            </filters>
+                            <descriptors>
+                                <descriptor>src/assembly/distribution.xml</descriptor>
+                            </descriptors>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <filters>
-                        <filter>src/assembly/filter.properties</filter>
-                    </filters>
-                    <descriptors>
-                        <descriptor>src/assembly/distribution.xml</descriptor>
-                    </descriptors>
-                    <archive>
-                        <manifest>
-                            <mainClass>edu.cmu.tetrad.cli.TetradCliApp</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
+
             </plugin>
         </plugins>
     </build>

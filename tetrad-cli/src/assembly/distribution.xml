@@ -18,8 +18,19 @@
             <directory>${project.build.directory}/dist</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
+                <include>*.sh</include>
+            </includes>
+            <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/dist</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
                 <include>*</include>
             </includes>
+            <excludes>
+                <exclude>*.sh</exclude>
+            </excludes>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}</directory>

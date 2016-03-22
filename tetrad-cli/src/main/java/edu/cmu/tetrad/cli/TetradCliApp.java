@@ -67,7 +67,7 @@ public class TetradCliApp {
                         FgsCli.main(Args.removeOption(args, "algorithm"));
                         break;
                     default:
-                        System.err.printf("Unknow algorithm: %s\n", algorithm);
+                        System.err.printf("Unknown algorithm: %s\n", algorithm);
                         showHelp();
                 }
             }
