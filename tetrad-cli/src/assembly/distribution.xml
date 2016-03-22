@@ -8,7 +8,7 @@
     <fileSets>
         <fileSet>
             <directory>${project.basedir}${file.separator}..</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>${file.separator}</outputDirectory>
             <includes>
                 <include>LICENSE*</include>
                 <include>COPYRIGHT*</include>
@@ -16,7 +16,7 @@
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}${file.separator}dist</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>${file.separator}</outputDirectory>
             <includes>
                 <include>*.sh</include>
             </includes>
@@ -24,7 +24,7 @@
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}${file.separator}dist</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>${file.separator}</outputDirectory>
             <includes>
                 <include>*</include>
             </includes>
@@ -34,9 +34,9 @@
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>${file.separator}</outputDirectory>
             <includes>
-                <include>*-jar-with-dependencies.jar</include>
+                <include>${project.artifactId}-${version}-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
     </fileSets>
