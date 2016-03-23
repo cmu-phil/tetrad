@@ -3149,7 +3149,7 @@ public class Purify {
                 for (int p = 0; p < solution.size(); p++) {
                     int cluster[] = (int[]) solution.get(p);
                     latentsArray[p] =
-                            new GraphNode(MimBuild.LATENT_PREFIX + (p + 1));
+                            new GraphNode(ClusterUtils.LATENT_PREFIX + (p + 1));
                     latentsArray[p].setNodeType(NodeType.LATENT);
                     graph2.addNode(latentsArray[p]);
                     for (int q = 0; q < cluster.length; q++) {

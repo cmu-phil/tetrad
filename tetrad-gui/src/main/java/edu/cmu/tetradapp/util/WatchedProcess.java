@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TaskManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -82,6 +83,8 @@ public abstract class WatchedProcess {
      * The object on which the watch dialog should be centered.
      */
     private Component centeringComp;
+
+    private boolean isCanceled = false;
 
     /**
      * Constructs a new watched process.
@@ -209,7 +212,9 @@ public abstract class WatchedProcess {
                         public void actionPerformed(ActionEvent e) {
                             if (getThread() != null) {
                                 while (getThread().isAlive()) {
+                                    TaskManager.getInstance().setCanceled(true);
                                     getThread().stop();
+
                                     try {
                                         sleep(500);
                                     } catch (InterruptedException e1) {
@@ -317,6 +322,14 @@ public abstract class WatchedProcess {
         }
 
         return false;
+    }
+
+    /**
+     * True if the thread is canceled. Implements of the watch() method should
+     * check for this periodically and respond gracefully.
+     */
+    public boolean isCanceled() {
+        return isCanceled;
     }
 }
 

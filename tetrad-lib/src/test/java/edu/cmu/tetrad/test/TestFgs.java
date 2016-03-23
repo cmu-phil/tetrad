@@ -33,6 +33,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class TestFgs {
     private PrintStream out = System.out;
 //    private OutputStream out =
 
-    @Test
+//    @Test
     public void explore1() {
         RandomUtil.getInstance().setSeed(1450184147770L);
 
@@ -117,8 +118,8 @@ public class TestFgs {
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
         }
-
 //
+
 //        System.out.println(MatrixUtils.toString(expectedCounts));
 //        System.out.println(MatrixUtils.toString(counts));
 

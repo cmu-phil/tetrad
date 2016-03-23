@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -289,6 +290,7 @@ public class MimSearchEditor2 extends JPanel {
                     public void actionPerformed(ActionEvent e) {
                         if (thread() != null) {
                             thread().stop();
+                            TaskManager.getInstance().setCanceled(true);
 
                             JOptionPane.showMessageDialog(
                                     JOptionUtils.centeringComp(),

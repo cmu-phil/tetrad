@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ShiftSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.datamanip.ShiftDataParams;
@@ -161,6 +162,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (search != null) {
                     search.stop();
+                    TaskManager.getInstance().setCanceled(true);
                 }
             }
         });

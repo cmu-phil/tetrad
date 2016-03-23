@@ -95,19 +95,7 @@ public class TestMimbuild2 {
             Graph mimbuildStructure;
 
             for (int mimbuildMethod : new int[]{2}) {
-                if (mimbuildMethod == 1) {
-//                    System.out.println("Mimbuild 1\n");
-                    Clusters measurements = ClusterUtils.mimClusters(searchGraph);
-                    IndTestMimBuild test = new IndTestMimBuild(data, 0.001, measurements);
-                    MimBuild mimbuild = new MimBuild(test, new Knowledge2());
-                    Graph full = mimbuild.search();
-                    full = changeLatentNames(full, measurements, latentVarList);
-                    mimbuildStructure = structure(full);
-//                    System.out.println("SHD = " + SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure));
-//                    System.out.println("Estimated\n" + mimbuildStructure);
-//                    System.out.println();
-                }
-                else if (mimbuildMethod == 2) {
+                if (mimbuildMethod == 2) {
 //                    System.out.println("Mimbuild 2\n");
                     Mimbuild2 mimbuild = new Mimbuild2();
                     mimbuild.setAlpha(0.001);

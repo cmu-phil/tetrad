@@ -26,9 +26,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.io.IOException;
@@ -1237,7 +1235,9 @@ public final class MlBayesIm implements BayesIm {
         int chunk = 25;
 
         ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-        pool.invoke(new SimulationTask(chunk, 0, sampleSize, tiers, dataSet, map));
+        SimulationTask task = new SimulationTask(chunk, 0, sampleSize, tiers, dataSet, map);
+        pool.invoke(task);
+
 
 //        // Construct the sample.
 //        for (int i = 0; i < sampleSize; i++) {

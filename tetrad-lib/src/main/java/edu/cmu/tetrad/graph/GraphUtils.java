@@ -1059,6 +1059,8 @@ public final class GraphUtils {
      */
     private static void collectComponentVisit(Node node, Set<Node> component,
                                               Graph graph, List<Node> unsortedNodes) {
+        if (TaskManager.getInstance().isCanceled()) return;
+
         component.add(node);
         unsortedNodes.remove(node);
         List<Node> adj = graph.getAdjacentNodes(node);

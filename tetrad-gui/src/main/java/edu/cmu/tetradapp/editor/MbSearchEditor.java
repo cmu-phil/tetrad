@@ -59,6 +59,9 @@ public class MbSearchEditor extends AbstractSearchEditor
     public MbSearchEditor(MbfsRunner runner) {
         super(runner, "Result MB Pattern");
     }
+    public MbSearchEditor(FgsMbRunner runner) {
+        super(runner, "Result MB Pattern");
+    }
 
     public MbSearchEditor(MbFanSearchRunner runner) {
         super(runner, "Result MB Pattern");

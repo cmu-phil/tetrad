@@ -115,7 +115,7 @@ public class SessionNode implements TetradSerializable {
 
     /**
      * Stores a clone of the model being edited, in case the user wants to
-     * cancel.
+     * cancelAll.
      */
     private transient SessionModel savedModel;
 
@@ -313,7 +313,7 @@ public class SessionNode implements TetradSerializable {
     /**
      * Same as addParent except tests if this has already been created. If so
      * the user is asked whether to add parent and update parent's desendents or
-     * to cancel the operation.
+     * to cancelAll the operation.
      */
     public boolean addParent2(SessionNode parent) {
         if (this.parents.contains(parent)) {

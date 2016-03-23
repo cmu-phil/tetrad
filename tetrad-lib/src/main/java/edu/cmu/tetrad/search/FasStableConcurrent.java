@@ -24,9 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -325,12 +323,14 @@ public class FasStableConcurrent implements IFas {
 
                     return true;
                 } else {
-                    List<Depth0Task> tasks = new ArrayList<Depth0Task>();
+                    List<Depth0Task> tasks = new ArrayList<>();
 
                     final int mid = (to - from) / 2;
 
-                    tasks.add(new Depth0Task(chunk, from, from + mid));
-                    tasks.add(new Depth0Task(chunk, from + mid, to));
+                    Depth0Task left = new Depth0Task(chunk, from, from + mid);
+                    tasks.add(left);
+                    Depth0Task right = new Depth0Task(chunk, from + mid, to);
+                    tasks.add(right);
 
                     invokeAll(tasks);
 
@@ -479,8 +479,10 @@ public class FasStableConcurrent implements IFas {
 
                     final int mid = (to - from) / 2;
 
-                    tasks.add(new DepthTask(chunk, from, from + mid));
-                    tasks.add(new DepthTask(chunk, from + mid, to));
+                    DepthTask left = new DepthTask(chunk, from, from + mid);
+                    tasks.add(left);
+                    DepthTask right = new DepthTask(chunk, from + mid, to);
+                    tasks.add(right);
 
                     invokeAll(tasks);
 

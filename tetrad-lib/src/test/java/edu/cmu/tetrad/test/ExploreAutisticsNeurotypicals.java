@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.io.*;
@@ -486,9 +487,45 @@ public final class ExploreAutisticsNeurotypicals {
         }
     }
 
+    public void makeDataSpecial() {
+        try {
+            String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets";
+            File file = new File(path, "concat_usm_dataset_madelyn.txt");
+            DataReader reader = new DataReader();
+            reader.setDelimiter(DelimiterType.TAB);
+            reader.setMaxIntegralDiscrete(0);
+            DataSet data = reader.parseTabular(file);
+
+            ContinuousVariable avg = new ContinuousVariable("Avg");
+            data.addVariable(avg);
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                double sum = 0.0;
+
+                for (int j = 0; j < data.getNumColumns() - 2; j++) {
+                    sum += data.getDouble(i, j);
+                }
+
+                sum = data.getDouble(i, data.getNumColumns() - 2) == 1 ? 10 + RandomUtil.getInstance().nextUniform(-1, 1)
+                        : -10 + RandomUtil.getInstance().nextUniform(-1, 1);
+
+                double _avg = sum / data.getNumColumns() - 2;
+
+                data.setDouble(i, data.getNumColumns() - 1, _avg);
+            }
+
+            File file2 = new File(path, "concat_usm_dataset_madelynB.txt");
+
+            PrintStream out = new PrintStream(new FileOutputStream(file2));
+            out.println(data);
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void main(String... args) {
-        new ExploreAutisticsNeurotypicals().printEdgeData();
+        new ExploreAutisticsNeurotypicals().makeDataSpecial();
         ;
     }
 }

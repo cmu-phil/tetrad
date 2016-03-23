@@ -26,10 +26,8 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
-import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.*;
@@ -269,7 +267,7 @@ public final class IndTestMimBuild implements IndependenceTest {
             for (Object aListRelated : listRelated) {
                 int cluster_id = (Integer) aListRelated;
                 String latent_string =
-                        MimBuild.LATENT_PREFIX + (cluster_id + 1);
+                        ClusterUtils.LATENT_PREFIX + (cluster_id + 1);
                 if (included_latents[cluster_id] == null) {
                     included_latents[cluster_id] = new GraphNode(latent_string);
                     Node tetradNode = included_latents[cluster_id];

@@ -26,16 +26,12 @@ import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.RandomSampler;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TetradMatrix;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
-import org.apache.commons.math3.util.CombinatoricsUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -44,7 +40,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.RecursiveTask;
 
 /**
  * Runs a search algorithm over a N subsamples of size b to asses stability
