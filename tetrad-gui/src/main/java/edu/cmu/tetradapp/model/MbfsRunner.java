@@ -160,7 +160,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(getParams().getIndTestParams().getAlpha());
-		FgsMb search = new FgsMb(score, dataSet.getVariable(targetName));
+		FgsMb2 search = new FgsMb2(score, dataSet.getVariable(targetName));
         search.setFaithfulnessAssumed(true);
 		Graph searchGraph = search.search();
 
