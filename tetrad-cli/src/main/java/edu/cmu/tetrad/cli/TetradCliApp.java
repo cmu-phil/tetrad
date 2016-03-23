@@ -32,7 +32,7 @@ import org.apache.commons.cli.Options;
  */
 public class TetradCliApp {
 
-    private static final String VERSION = "5.3.0-20160318";
+    private static final String VERSION = "@ARTIFACT_ID@-@VERSION@";
 
     private static final Options MAIN_OPTIONS = new Options();
 

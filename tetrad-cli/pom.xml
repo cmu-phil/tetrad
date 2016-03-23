@@ -20,7 +20,7 @@
                 <version>2.6</version>
                 <executions>
                     <execution>
-                        <id>copy-resources</id>
+                        <id>copy-dist-resources</id>
                         <!-- here the phase you need -->
                         <phase>validate</phase>
                         <goals>
@@ -44,16 +44,18 @@
                 <version>1.5.3</version>
                 <executions>
                     <execution>
-                        <phase>prepare-package</phase>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>replace</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <basedir>${project.build.directory}/dist</basedir>
+                    <basedir>${project.basedir}</basedir>
                     <includes>
-                        <include>*</include>
+                        <include>target/dist/tetrad-cli.cmd</include>
+                        <include>target/dist/tetrad-cli.sh</include>
+                        <include>src/main/java/edu/cmu/tetrad/cli/TetradCliApp.java</include>
                     </includes>
                     <replacements>
                         <replacement>
