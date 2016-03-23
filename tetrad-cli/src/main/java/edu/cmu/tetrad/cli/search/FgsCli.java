@@ -54,6 +54,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Fast Greedy Search (FGS) Command-line Interface.
@@ -63,6 +65,8 @@ import org.apache.commons.cli.ParseException;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class FgsCli {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FgsCli.class);
 
     private static final Options MAIN_OPTIONS = new Options();
 
@@ -149,7 +153,9 @@ public class FgsCli {
             System.exit(-127);
         }
 
-        printArgs(System.out);
+        String header = createHeader();
+        System.out.println(header);
+        LOGGER.info(String.format("%n%s", header));
 
         DataValidation dataValidation = new TabularContinuousData(dataFile, delimiter);
         if (!dataValidation.validate(System.err, verbose)) {
@@ -160,9 +166,11 @@ public class FgsCli {
             Set<String> variables = FileIO.extractUniqueLine(variableFile);
 
             ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
-            System.out.printf("%s: Start reading in data.\n", DateTime.printNow());
+            System.out.printf("%s: Start reading in data.%n", DateTime.printNow());
+            LOGGER.info("Start reading in data.");
             DataSet dataSet = dataReader.readInData(variables);
-            System.out.printf("%s: End reading in data.\n", DateTime.printNow());
+            System.out.printf("%s: End reading in data.%n", DateTime.printNow());
+            LOGGER.info("End reading in data.");
             if (!isValid(dataSet, System.err, verbose)) {
                 System.exit(-128);
             }
@@ -186,9 +194,11 @@ public class FgsCli {
                 }
                 writer.flush();
 
-                System.out.printf("%s: Start search.\n", DateTime.printNow());
+                System.out.printf("%s: Start search.%n", DateTime.printNow());
+                LOGGER.info("Start search.");
                 graph = fgs.search();
-                System.out.printf("%s: End search.\n", DateTime.printNow());
+                System.out.printf("%s: End search.%n", DateTime.printNow());
+                LOGGER.info("End search.");
                 writer.println();
                 writer.println(graph.toString().trim());
                 writer.flush();
@@ -201,9 +211,11 @@ public class FgsCli {
                     XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
                 }
             }
-            System.out.printf("%s: FGS finished!  See %s for details.\n", DateTime.printNow(), outputFile.getFileName().toString());
+            System.out.printf("%s: FGS finished!  Please see %s for details.%n", DateTime.printNow(), outputFile.getFileName().toString());
+            LOGGER.info(String.format("FGS finished!  Please see %s for details.%n", outputFile.getFileName().toString()));
         } catch (Exception exception) {
-            exception.printStackTrace(System.err);
+            LOGGER.error("FGS failed.", exception);
+            System.err.printf("%s: FGS failed.  Please see log file for more information.%n", DateTime.printNow());
             System.exit(-128);
         }
     }
@@ -227,27 +239,32 @@ public class FgsCli {
         return isValid;
     }
 
-    private static void printArgs(PrintStream writer) {
-        writer.println("================================================================================");
-        writer.printf("FGS (%s)\n", DateTime.printNow());
-        writer.println("================================================================================");
+    private static String createHeader() {
+        String newLine = System.lineSeparator();
+        StringBuilder sb = new StringBuilder();
+        sb.append("================================================================================");
+        sb.append(newLine);
+        sb.append(String.format("FGS (%s)%n", DateTime.printNow()));
+        sb.append("================================================================================");
+        sb.append(newLine);
         if (dataFile != null) {
-            writer.printf("data = %s\n", dataFile.getFileName());
+            sb.append(String.format("data = %s%n", dataFile.getFileName()));
         }
         if (variableFile != null) {
-            writer.printf("variables = %s\n", variableFile.getFileName());
+            sb.append(String.format("variables = %s%n", variableFile.getFileName()));
         }
         if (knowledgeFile != null) {
-            writer.printf("knowledge = %s\n", knowledgeFile.getFileName());
+            sb.append(String.format("knowledge = %s%n", knowledgeFile.getFileName()));
         }
-        writer.printf("penalty discount = %f\n", penaltyDiscount);
-        writer.printf("depth = %s\n", depth);
-        writer.printf("faithfulness = %s\n", faithfulness);
-        writer.printf("ignore linear dependence = %s\n", ignoreLinearDependence);
-        writer.printf("number of threads = %,d\n", numOfThreads);
-        writer.printf("verbose = %s\n", verbose);
-        writer.printf("delimiter = %s\n", Args.getDelimiterName(delimiter));
-        writer.println();
+        sb.append(String.format("penalty discount = %f%n", penaltyDiscount));
+        sb.append(String.format("depth = %s%n", depth));
+        sb.append(String.format("faithfulness = %s%n", faithfulness));
+        sb.append(String.format("ignore linear dependence = %s%n", ignoreLinearDependence));
+        sb.append(String.format("number of threads = %,d%n", numOfThreads));
+        sb.append(String.format("verbose = %s%n", verbose));
+        sb.append(String.format("delimiter = %s%n", Args.getDelimiterName(delimiter)));
+
+        return sb.toString();
     }
 
     private static void printInfo(DataSet dataSet, Set<String> variables, PrintStream writer) throws IOException {
