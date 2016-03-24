@@ -1,1 +1,1 @@
-java -jar @ARTIFACT_ID@-@VERSION@-jar-with-dependencies.jar --algorithm fgs $@
+java -jar ${project.artifactId}-${project.version}-jar-with-dependencies.jar --algorithm fgs $@

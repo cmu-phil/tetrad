@@ -14,6 +14,7 @@
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
     <build>
+        <sourceDirectory>${project.build.directory}/java</sourceDirectory>
         <plugins>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -36,39 +37,76 @@
                             </resources>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <version>1.5.3</version>
-                <executions>
                     <execution>
-                        <phase>process-resources</phase>
+                        <id>copy-cli-resources</id>
+                        <!-- here the phase you need -->
+                        <phase>validate</phase>
                         <goals>
-                            <goal>replace</goal>
+                            <goal>copy-resources</goal>
                         </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/java</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/java</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <basedir>${project.basedir}</basedir>
-                    <includes>
-                        <include>target/dist/tetrad-cli.cmd</include>
-                        <include>target/dist/tetrad-cli.sh</include>
-                        <include>src/main/java/edu/cmu/tetrad/cli/TetradCliApp.java</include>
-                    </includes>
-                    <replacements>
-                        <replacement>
-                            <token>@ARTIFACT_ID@</token>
-                            <value>${project.artifactId}</value>
-                        </replacement>
-                        <replacement>
-                            <token>@VERSION@</token>
-                            <value>${project.version}</value>
-                        </replacement>
-                    </replacements>
-                </configuration>
             </plugin>
+            <!--<plugin>-->
+                    <!--<groupId>org.codehaus.mojo</groupId>-->
+                    <!--<artifactId>build-helper-maven-plugin</artifactId>-->
+                    <!--<version>1.10</version>-->
+                    <!--<executions>-->
+                      <!--<execution>-->
+                        <!--<id>add-source</id>-->
+                        <!--<phase>generate-sources</phase>-->
+                        <!--<goals>-->
+                          <!--<goal>add-source</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                          <!--<sources>-->
+                            <!--<source>${project.basedir}/src/main/java</source>-->
+                          <!--</sources>-->
+                        <!--</configuration>-->
+                      <!--</execution>-->
+                    <!--</executions>-->
+                  <!--</plugin>-->
+            <!--<plugin>-->
+                <!--<groupId>com.google.code.maven-replacer-plugin</groupId>-->
+                <!--<artifactId>replacer</artifactId>-->
+                <!--<version>1.5.3</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>process-resources</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>replace</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+                <!--<configuration>-->
+                    <!--<basedir>${project.basedir}</basedir>-->
+                    <!--<includes>-->
+                        <!--<include>target/dist/tetrad-cli.cmd</include>-->
+                        <!--<include>target/dist/tetrad-cli.sh</include>-->
+                        <!--<include>src/main/java/edu/cmu/tetrad/cli/TetradCliApp.java</include>-->
+                    <!--</includes>-->
+                    <!--<replacements>-->
+                        <!--<replacement>-->
+                            <!--<token>@ARTIFACT_ID@</token>-->
+                            <!--<value>${project.artifactId}</value>-->
+                        <!--</replacement>-->
+                        <!--<replacement>-->
+                            <!--<token>@VERSION@</token>-->
+                            <!--<value>${project.version}</value>-->
+                        <!--</replacement>-->
+                    <!--</replacements>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
