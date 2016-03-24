@@ -100,6 +100,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>edu.cmu.tetrad.cli.TetradCliApp</mainClass>
+                                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
@@ -128,13 +129,13 @@
     </build>
 
     <profiles>
-            <profile>
-                <id>release</id>
-                <properties>
-                    <src.dir>${project.build.directory}/java</src.dir>
-                </properties>
-            </profile>
-        </profiles>
+        <profile>
+            <id>release</id>
+            <properties>
+                <src.dir>${project.build.directory}/java</src.dir>
+            </properties>
+        </profile>
+    </profiles>
 
     <dependencies>
         <dependency>

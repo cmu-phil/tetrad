@@ -20,6 +20,10 @@ package edu.cmu.tetrad.cli;
 
 import edu.cmu.tetrad.cli.search.FgsCli;
 import edu.cmu.tetrad.cli.util.Args;
+import java.io.IOException;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -75,7 +79,15 @@ public class TetradCliApp {
     }
 
     private static void showVersion() {
-        System.out.println("Tetrad Command-line Interface (CLI) version " + VERSION);
+        try {
+            JarFile jarFile = new JarFile(TetradCliApp.class.getProtectionDomain().getCodeSource().getLocation().getPath(), true);
+            Manifest manifest = jarFile.getManifest();
+            Attributes attributes = manifest.getMainAttributes();
+            String version = attributes.getValue("Implementation-Version");
+            System.out.printf("Tetrad Command-line Interface (CLI) version %s%n", version);
+        } catch (IOException exception) {
+            System.err.println("Unable to retrieve version number.");
+        }
     }
 
     private static void showHelp() {
