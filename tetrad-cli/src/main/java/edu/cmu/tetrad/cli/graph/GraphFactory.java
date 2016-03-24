@@ -35,8 +35,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -45,8 +43,6 @@ import org.slf4j.LoggerFactory;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class GraphFactory {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GraphFactory.class);
 
     private GraphFactory() {
     }
@@ -64,7 +60,7 @@ public class GraphFactory {
         return GraphUtils.loadGraphTxt(graphFile.toFile());
     }
 
-    public static Graph loadGraphAsContinuousVariables(Path graphFile) {
+    public static Graph loadGraphAsContinuousVariables(Path graphFile) throws IOException, IllegalArgumentException {
         List<Node> nodes = getGraphContinuousNodes(graphFile);
         Graph graph = new EdgeListGraph(nodes);
 
@@ -117,16 +113,12 @@ public class GraphFactory {
                     edges = delimiter.equals(line);
                 }
             }
-        } catch (IOException exception) {
-            String errMsg = String.format("Failed when reading graph file '%s'.", graphFile.getFileName().toString());
-            System.err.println(errMsg);
-            LOGGER.error(errMsg, exception);
         }
 
         return graph;
     }
 
-    public static List<Node> getGraphContinuousNodes(Path graphFile) {
+    public static List<Node> getGraphContinuousNodes(Path graphFile) throws IOException {
         List<Node> nodes = new LinkedList<>();
 
         String delimiter = "Graph Nodes:";
@@ -144,10 +136,6 @@ public class GraphFactory {
                     }
                 }
             }
-        } catch (IOException exception) {
-            String errMsg = String.format("Failed when reading graph file '%s'.", graphFile.getFileName().toString());
-            System.err.println(errMsg);
-            LOGGER.error(errMsg, exception);
         }
 
         return nodes;

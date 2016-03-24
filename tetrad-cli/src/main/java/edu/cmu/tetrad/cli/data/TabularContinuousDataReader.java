@@ -31,8 +31,6 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -41,8 +39,6 @@ import org.slf4j.LoggerFactory;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class TabularContinuousDataReader extends AbstractDataReader implements ContinuousDataReader {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TabularContinuousDataReader.class);
 
     public TabularContinuousDataReader(Path dataFile, char delimiter) {
         super(dataFile, delimiter);

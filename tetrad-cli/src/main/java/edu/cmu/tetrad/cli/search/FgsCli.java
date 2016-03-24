@@ -205,9 +205,15 @@ public class FgsCli {
 
             if (graphML) {
                 Path graphOutputFile = Paths.get(dirOut.toString(), outputPrefix + "_graph.txt");
-                System.out.printf("%s: Writing GraphML file %s.\n", DateTime.printNow(), graphOutputFile.getFileName().toString());
+                String infoMsg = String.format("%s: Writing out GraphML file '%s'.", DateTime.printNow(), graphOutputFile.getFileName().toString());
+                System.out.println(infoMsg);
+                LOGGER.info(infoMsg);
                 try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
                     XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
+                } catch (Throwable throwable) {
+                    String errMsg = String.format("Failed when writting out GraphML file '%s'.", graphOutputFile.getFileName().toString());
+                    System.err.println(errMsg);
+                    LOGGER.error(errMsg, throwable);
                 }
             }
             System.out.printf("%s: FGS finished!  Please see %s for details.%n", DateTime.printNow(), outputFile.getFileName().toString());
