@@ -12,9 +12,10 @@
     <properties>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
+        <src.dir>src/main/java</src.dir>
     </properties>
     <build>
-        <sourceDirectory>${project.build.directory}/java</sourceDirectory>
+        <sourceDirectory>${src.dir}</sourceDirectory>
         <plugins>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -125,6 +126,16 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+            <profile>
+                <id>release</id>
+                <properties>
+                    <src.dir>${project.build.directory}/java</src.dir>
+                </properties>
+            </profile>
+        </profiles>
+
     <dependencies>
         <dependency>
             <groupId>edu.cmu</groupId>
