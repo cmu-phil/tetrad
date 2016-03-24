@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.PatternAlgorithm;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey (this version).
  */
-public final class Cpc implements GraphSearch {
+public final class Cpc implements GraphSearch, PatternAlgorithm {
 
 //    private int NTHREDS = Runtime.getRuntime().availableProcessors() * 5;
 

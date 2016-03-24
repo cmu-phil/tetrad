@@ -161,8 +161,8 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                             getParams().getIndTestParams().getAlpha());
                     fgs = new FgsMb(gesScore, target);
                 } else if (dataSet.isDiscrete()) {
-                    double samplePrior = 1;
-                    double structurePrior = getParams().getIndTestParams().getAlpha();
+                    double structurePrior = 1;
+                    double samplePrior = getParams().getIndTestParams().getAlpha();
                     BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);

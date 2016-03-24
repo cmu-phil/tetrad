@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.PatternAlgorithm;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
@@ -37,7 +38,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey.
  */
-public class Pc implements GraphSearch {
+public class Pc implements GraphSearch, PatternAlgorithm {
 
     /**
      * The independence test used for the PC search.
@@ -218,6 +219,7 @@ public class Pc implements GraphSearch {
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      */
+    @Override
     public Graph search() {
         return search(independenceTest.getVariables());
     }

@@ -232,9 +232,10 @@ public final class FgsMb implements GraphSearch, GraphScorer {
             int child = hashIndices.get(target);
             int parent = hashIndices.get(x);
             double bump = fgsScore.localScoreDiff(parent, child, new int[]{});
-            if (bump > 0) {
-                System.out.println(target + " " + x);
 
+            System.out.println(bump);
+
+            if (bump > 0) {
                 if (!boundGraph.containsNode(x)) {
                     boundGraph.addNode(x);
 
@@ -253,6 +254,7 @@ public final class FgsMb implements GraphSearch, GraphScorer {
                 int child = hashIndices.get(x);
                 int parent = hashIndices.get(w);
                 double bump = fgsScore.localScoreDiff(parent, child, new int[]{});
+
                 if (bump > 0) {
                     System.out.println(x + " " + w);
 
@@ -267,6 +269,15 @@ public final class FgsMb implements GraphSearch, GraphScorer {
                     if (!boundGraph.isAdjacentTo(w, x)) {
                         boundGraph.addUndirectedEdge(w, x);
                     }
+                }
+            }
+        }
+
+        // Need these in case there are parents of children.
+        for (Node x : new ArrayList<>(boundGraph.getNodes())) {
+            for (Node w : boundGraph.getAdjacentNodes(x)) {
+                if (!boundGraph.isAdjacentTo(target, w)) {
+                    boundGraph.addUndirectedEdge(target, w);
                 }
             }
         }
@@ -355,7 +366,7 @@ public final class FgsMb implements GraphSearch, GraphScorer {
         graph = graph.subgraph(new ArrayList<>(mb));
 
         long endTime = System.currentTimeMillis();
-        this.elapsedTime = endTime   - start;
+        this.elapsedTime = endTime - start;
         this.logger.log("graph", "\nReturning this graph: " + graph);
 
         this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
@@ -898,11 +909,11 @@ public final class FgsMb implements GraphSearch, GraphScorer {
         protected Boolean compute() {
             List<Node> adj;
 
-            if (isFaithfulnessAssumed()) {
-                adj = effectEdgesGraph.getAdjacentNodes(x);
-            } else {
-                adj = getVariables();
-            }
+//            if (isFaithfulnessAssumed()) {
+            adj = boundGraph.getAdjacentNodes(x);
+//            } else {
+//                adj = getVariables();
+//            }
 
             for (Node w : adj) {
                 if (adjacencies != null && !(adjacencies.isAdjacentTo(w, x))) {
@@ -911,11 +922,12 @@ public final class FgsMb implements GraphSearch, GraphScorer {
 
                 if (w == x) continue;
 
-                if (!graph.isAdjacentTo(w, x)) {
-                    clearArrow(w, x);
-                    calculateArrowsForward(w, x);
-                }
+//                if (!graph.isAdjacentTo(w, x)) {
+                clearArrow(w, x);
+                calculateArrowsForward(w, x);
+//                }
             }
+
 
             return true;
         }

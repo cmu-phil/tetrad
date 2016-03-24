@@ -72,9 +72,6 @@ public class FgsSearchEditor extends AbstractSearchEditor
     public FgsSearchEditor(FgsRunner runner) {
         super(runner, "Result Pattern");
     }
-    public FgsSearchEditor(FgsRunnerCyclic runner) {
-        super(runner, "Result Pattern");
-    }
 
     public FgsSearchEditor(ImagesRunner runner) {
         super(runner, "Result Pattern");

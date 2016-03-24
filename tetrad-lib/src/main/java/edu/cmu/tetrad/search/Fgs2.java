@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TaskManager;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -51,7 +48,7 @@ import java.util.concurrent.*;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class Fgs2 implements GraphSearch, GraphScorer {
+public final class Fgs2 implements GraphSearch, GraphScorer, PatternAlgorithm {
 
     /**
      * Specification of forbidden and required edges.
