@@ -36,8 +36,6 @@ import org.apache.commons.cli.Options;
  */
 public class TetradCliApp {
 
-    private static final String VERSION = "${project.artifactId}-${project.version}";
-
     private static final Options MAIN_OPTIONS = new Options();
 
     static {
@@ -91,7 +89,18 @@ public class TetradCliApp {
     }
 
     private static void showHelp() {
-        String cmdLineSyntax = "java -jar tetrad-cli.jar";
+        String cmdLineSyntax = "java -jar ";
+        try {
+            JarFile jarFile = new JarFile(TetradCliApp.class.getProtectionDomain().getCodeSource().getLocation().getPath(), true);
+            Manifest manifest = jarFile.getManifest();
+            Attributes attributes = manifest.getMainAttributes();
+            String artifactId = attributes.getValue("Implementation-Title");
+            String version = attributes.getValue("Implementation-Version");
+            cmdLineSyntax += String.format("%s-%s.jar", artifactId, version);
+        } catch (IOException exception) {
+            cmdLineSyntax += "tetrad-cli.jar";
+        }
+
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(cmdLineSyntax, MAIN_OPTIONS, true);
     }
