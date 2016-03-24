@@ -48,6 +48,9 @@ import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -319,9 +322,21 @@ public class FgsCli {
     }
 
     private static void showHelp() {
-        String cmdLineSyntax = "java -jar tetrad-cli.jar --algorithm fgs";
+        StringBuilder sb = new StringBuilder("java -jar");
+        try {
+            JarFile jarFile = new JarFile(FgsCli.class.getProtectionDomain().getCodeSource().getLocation().getPath(), true);
+            Manifest manifest = jarFile.getManifest();
+            Attributes attributes = manifest.getMainAttributes();
+            String artifactId = attributes.getValue("Implementation-Title");
+            String version = attributes.getValue("Implementation-Version");
+            sb.append(String.format(" %s-%s.jar", artifactId, version));
+        } catch (IOException exception) {
+            sb.append(" tetrad-cli.jar");
+        }
+        sb.append(" --algorithm fgs");
+
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(cmdLineSyntax, MAIN_OPTIONS, true);
+        formatter.printHelp(sb.toString(), MAIN_OPTIONS, true);
     }
 
 }
