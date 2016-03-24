@@ -683,12 +683,12 @@ public class PerformanceTests {
 
         SemBicScore score = new SemBicScore(cov, penaltyDiscount);
 
-        Fgs fgs = new Fgs(score);
-        fgs.setVerbose(false);
+        Fgs2 fgs = new Fgs2(score);
+        fgs.setVerbose(true);
         fgs.setNumPatternsToStore(0);
         fgs.setPenaltyDiscount(penaltyDiscount);
         fgs.setOut(System.out);
-        fgs.setFaithfulnessAssumed(true);
+        fgs.setFaithfulnessAssumed(false);
         fgs.setDepth(-1);
         fgs.setCycleBound(5);
 

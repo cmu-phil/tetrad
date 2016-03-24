@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -274,6 +275,8 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
                     // Do forward search.
                     fes();
+
+                    System.out.println("TURNING FAITHFULNESS OFF");
 
                     setFaithfulnessAssumed(false);
                     initializeForwardEdgesFromExistingGraph(getVariables());
@@ -660,6 +663,8 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
             @Override
             protected Boolean compute() {
+                if (TaskManager.getInstance().isCanceled()) return false;
+
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
                         if (verbose) {
@@ -670,16 +675,22 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                         }
 
                         Node y = nodes.get(i);
-                        Set<Node> D = GraphUtils.getDconnectedVars(y, Collections.EMPTY_LIST, graph);
-                        neighbors.put(y, getNeighbors(y));
+                        Set<Node> D = new HashSet<>();// GraphUtils.getDconnectedVars(y, Collections.EMPTY_LIST, graph);
 
-                        for (Node a : getNeighbors(y)) {
+                        Set<Node> neighbors = getNeighbors(y);
+                        for (Node a :  graph.getAdjacentNodes(y)) {
+                            if (graph.isChildOf(a, y)) continue;
                             D.addAll(GraphUtils.getDconnectedVars(a, Collections.EMPTY_LIST, graph));
                         }
 
                         D.remove(y);
+                        Fgs2.this.neighbors.put(y, neighbors);
 
                         for (Node x : D) {
+                            if (effectEdgesGraph.isAdjacentTo(x, y)) {
+                                continue;
+                            }
+
                             if (existsKnowledge()) {
                                 if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
                                     continue;
@@ -715,7 +726,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         }
 //
         buildIndexing(nodes);
-        pool.invoke(new InitializeFromExistingGraphTask(minChunk, 0, nodes.size()));
+        pool.invoke(new InitializeFromExistingGraphTask(10, 0, nodes.size()));
 
         long stop = System.currentTimeMillis();
 

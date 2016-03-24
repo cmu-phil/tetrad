@@ -48,7 +48,7 @@ import java.util.concurrent.*;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class FgsMb2 implements GraphSearch, GraphScorer {
+public final class FgsMb implements GraphSearch, GraphScorer {
 
     /**
      * Specification of forbidden and required edges.
@@ -165,7 +165,7 @@ public final class FgsMb2 implements GraphSearch, GraphScorer {
     /**
      * The data set must either be all continuous or all discrete.
      */
-    public FgsMb2(DataSet dataSet, Node target) {
+    public FgsMb(DataSet dataSet, Node target) {
         if (verbose) {
             out.println("GES constructor");
         }
@@ -191,7 +191,7 @@ public final class FgsMb2 implements GraphSearch, GraphScorer {
     /**
      * Continuous case--where a covariance matrix is already available.
      */
-    public FgsMb2(ICovarianceMatrix covMatrix, Node target) {
+    public FgsMb(ICovarianceMatrix covMatrix, Node target) {
         if (verbose) {
             out.println("GES constructor");
         }
@@ -209,7 +209,7 @@ public final class FgsMb2 implements GraphSearch, GraphScorer {
         this.target = target;
     }
 
-    public FgsMb2(FgsScore fgsScore, Node target) {
+    public FgsMb(FgsScore fgsScore, Node target) {
         if (fgsScore == null) throw new NullPointerException();
         setFgsScore(fgsScore);
         this.variables = fgsScore.getVariables();

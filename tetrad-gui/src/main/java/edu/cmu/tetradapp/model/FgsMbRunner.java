@@ -150,7 +150,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
             DataModel dataModel = getDataModelList().getSelectedModel();
             ICovarianceMatrix cov;
             Node target;
-            FgsMb2 fgs;
+            FgsMb fgs;
 
             if (dataModel instanceof DataSet) {
                 DataSet dataSet = (DataSet) dataModel;
@@ -159,14 +159,14 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 if (dataSet.isContinuous()) {
                     SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataModel),
                             getParams().getIndTestParams().getAlpha());
-                    fgs = new FgsMb2(gesScore, target);
+                    fgs = new FgsMb(gesScore, target);
                 } else if (dataSet.isDiscrete()) {
                     double samplePrior = 1;
                     double structurePrior = getParams().getIndTestParams().getAlpha();
                     BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
-                    fgs = new FgsMb2(score, target);
+                    fgs = new FgsMb(score, target);
                 } else {
                     throw new IllegalStateException("Data set must either be continuous or discrete.");
                 }
@@ -175,7 +175,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 SemBicScore score = new SemBicScore(cov,
                         getParams().getIndTestParams().getAlpha());
                 target = cov.getVariable(targetName);
-                fgs = new FgsMb2(score, target);
+                fgs = new FgsMb(score, target);
             } else {
                 throw new IllegalArgumentException("Expecting a data set or a covariance matrix.");
             }
@@ -191,7 +191,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 
             ScoredIndTest fgsScore = new ScoredIndTest(getIndependenceTest());
             fgsScore.setParameter1(getParams().getIndTestParams().getAlpha());
-            FgsMb2 search = new FgsMb2(fgsScore, target);
+            FgsMb search = new FgsMb(fgsScore, target);
             search.setKnowledge(knowledge);
             search.setDepth(depth);
             search.setVerbose(true);
