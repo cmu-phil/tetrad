@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Ensure that all variable names are unique.
@@ -37,6 +39,8 @@ import java.util.Set;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class UniqueVariableNames implements DataValidation {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UniqueVariableNames.class);
 
     private final DataSet dataSet;
 
@@ -78,20 +82,27 @@ public class UniqueVariableNames implements DataValidation {
 
         int size = nonuniqueNames.size();
         if (size > 0) {
-            stderr.println("Dataset contains variables with duplicated names.  Please make sure all variable names are unique.");
+            String errMsg = "Dataset contains variables with duplicated names.  Please make sure all variable names are unique.";
+            stderr.println(errMsg);
+            LOGGER.error(errMsg);
             if (outputFile != null) {
                 try {
                     FileIO.writeLineByLine(nonuniqueNames.keySet(), outputFile);
-                    stderr.println("Duplicated variable names have been saved to file " + outputFile.getFileName().toString() + ".");
+                    errMsg = "Duplicated variable names have been saved to file " + outputFile.getFileName().toString() + ".";
+                    stderr.println(errMsg);
+                    LOGGER.error(errMsg);
                 } catch (IOException exception) {
-                    exception.printStackTrace(System.err);
+                    errMsg = String.format("Unable to write variable names to file %s.", outputFile.getFileName().toString());
+                    System.err.println(errMsg);
+                    LOGGER.error(errMsg, exception);
                 }
             }
             if (verbose) {
                 Set<String> names = nonuniqueNames.keySet();
                 for (String name : names) {
-                    stderr.printf("There are %d variables with name '%s'.", nonuniqueNames.get(name), name);
-                    stderr.println();
+                    errMsg = String.format("There are %d variables with name '%s'.%n", nonuniqueNames.get(name), name);
+                    stderr.println(errMsg);
+                    LOGGER.error(errMsg);
                 }
             }
         }

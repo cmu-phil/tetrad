@@ -44,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -153,9 +154,7 @@ public class FgsCli {
             System.exit(-127);
         }
 
-        String header = createHeader();
-        System.out.println(header);
-        LOGGER.info(String.format("%n%s", header));
+        printArgs(System.out);
 
         DataValidation dataValidation = new TabularContinuousData(dataFile, delimiter);
         if (!dataValidation.validate(System.err, verbose)) {
@@ -239,73 +238,78 @@ public class FgsCli {
         return isValid;
     }
 
-    private static String createHeader() {
-        String newLine = System.lineSeparator();
-        StringBuilder sb = new StringBuilder();
-        sb.append("================================================================================");
-        sb.append(newLine);
-        sb.append(String.format("FGS (%s)%n", DateTime.printNow()));
-        sb.append("================================================================================");
-        sb.append(newLine);
+    private static void printArgs(PrintStream writer) {
+        writer.println("================================================================================");
+        writer.printf("FGS (%s)\n", DateTime.printNow());
+        writer.println("================================================================================");
+
+        Formatter formatter = new Formatter();
+        formatter.format("%nFGS: ");
         if (dataFile != null) {
-            sb.append(String.format("data = %s%n", dataFile.getFileName()));
+            writer.printf("data = %s%n", dataFile.getFileName());
+            formatter.format("data=%s,", dataFile.getFileName());
         }
         if (variableFile != null) {
-            sb.append(String.format("variables = %s%n", variableFile.getFileName()));
+            writer.printf("variables = %s%n", variableFile.getFileName());
+            formatter.format("variables=%s,", variableFile.getFileName());
         }
         if (knowledgeFile != null) {
-            sb.append(String.format("knowledge = %s%n", knowledgeFile.getFileName()));
+            writer.printf("knowledge = %s%n", knowledgeFile.getFileName());
+            formatter.format("knowledge=%s,", knowledgeFile.getFileName());
         }
-        sb.append(String.format("penalty discount = %f%n", penaltyDiscount));
-        sb.append(String.format("depth = %s%n", depth));
-        sb.append(String.format("faithfulness = %s%n", faithfulness));
-        sb.append(String.format("ignore linear dependence = %s%n", ignoreLinearDependence));
-        sb.append(String.format("number of threads = %,d%n", numOfThreads));
-        sb.append(String.format("verbose = %s%n", verbose));
-        sb.append(String.format("delimiter = %s%n", Args.getDelimiterName(delimiter)));
+        writer.printf("penalty discount = %f%n", penaltyDiscount);
+        writer.printf("depth = %s%n", depth);
+        writer.printf("faithfulness = %s%n", faithfulness);
+        writer.printf("ignore linear dependence = %s%n", ignoreLinearDependence);
+        writer.printf("number of threads = %,d%n", numOfThreads);
+        writer.printf("verbose = %s%n", verbose);
+        writer.printf("delimiter = %s%n", Args.getDelimiterName(delimiter));
+        writer.println();
 
-        return sb.toString();
+        formatter.format("penalty discount=%f,depth=%s,faithfulness=%s,ignore linear dependence=%s,number of threads=%d,verbose=%s,delimiter=%s",
+                penaltyDiscount, depth, faithfulness, ignoreLinearDependence, numOfThreads, verbose, Args.getDelimiterName(delimiter));
+        LOGGER.info(formatter.toString());
     }
 
     private static void printInfo(DataSet dataSet, Set<String> variables, PrintStream writer) throws IOException {
         writer.println("Runtime Parameters:");
-        writer.printf("number of threads = %,d\n", numOfThreads);
-        writer.printf("verbose = %s\n", verbose);
+        writer.printf("number of threads = %,d%n", numOfThreads);
+        writer.printf("verbose = %s%n", verbose);
         writer.println();
+        LOGGER.info(String.format("Runtime Parameters: number of threads=%,d,verbose=%s", numOfThreads, verbose));
 
         writer.println("Algorithm Parameters:");
-        writer.printf("penalty discount = %f\n", penaltyDiscount);
-        writer.printf("depth = %s\n", depth);
-        writer.printf("faithfulness = %s\n", faithfulness);
-        writer.printf("ignore linear dependence = %s\n", ignoreLinearDependence);
+        writer.printf("penalty discount = %f%n", penaltyDiscount);
+        writer.printf("depth = %s%n", depth);
+        writer.printf("faithfulness = %s%n", faithfulness);
+        writer.printf("ignore linear dependence = %s%n", ignoreLinearDependence);
         writer.println();
+        LOGGER.info(String.format("Algorithm Parameters: penalty discount=%f,depth=%s,faithfulness=%s,ignore linear dependence=%s", penaltyDiscount, depth, faithfulness, ignoreLinearDependence));
 
         if (variableFile != null) {
             writer.println("Variable Exclusion:");
-            writer.printf("file = %s\n", variableFile.getFileName());
-            writer.printf("variables to exclude = %,d\n", variables.size());
+            writer.printf("file = %s%n", variableFile.getFileName());
+            writer.printf("variables to exclude = %,d%n", variables.size());
             writer.println();
+            LOGGER.info(String.format("Variable Exclusion: file=%s,variables to exclude=%d", variableFile.getFileName(), variables.size()));
         }
 
         if (knowledgeFile != null) {
             writer.println("Knowledge:");
-            writer.printf("file = %s\n", knowledgeFile.getFileName());
+            writer.printf("file = %s%n", knowledgeFile.getFileName());
             writer.println();
+            LOGGER.info(String.format("Knowledge: file=%s", knowledgeFile.getFileName()));
         }
 
         File datasetFile = dataFile.toFile();
         int numOfCases = DataUtility.countLine(datasetFile) - 1;
         int numOfVars = DataUtility.countColumn(datasetFile, delimiter);
         writer.println("Data File:");
-        writer.printf("file = %s\n", dataFile.getFileName());
-        writer.printf("cases = %,d\n", numOfCases);
-        writer.printf("variables = %,d\n", numOfVars);
+        writer.printf("file = %s%n", dataFile.getFileName());
+        writer.printf("cases = %,d%n", numOfCases);
+        writer.printf("variables = %,d%n", numOfVars);
         writer.println();
-
-        writer.println("Dataset Read In:");
-        writer.printf("cases = %,d\n", dataSet.getNumRows());
-        writer.printf("variables = %,d\n", dataSet.getNumColumns());
-        writer.println();
+        LOGGER.info(String.format("Data File: file=%s,cases=%d,variables=%d", dataFile.getFileName(), numOfCases, numOfVars));
     }
 
     private static void showHelp() {

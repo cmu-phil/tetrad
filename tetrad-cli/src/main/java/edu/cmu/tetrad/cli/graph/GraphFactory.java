@@ -35,6 +35,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -43,6 +45,8 @@ import java.util.regex.Pattern;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class GraphFactory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphFactory.class);
 
     private GraphFactory() {
     }
@@ -114,7 +118,9 @@ public class GraphFactory {
                 }
             }
         } catch (IOException exception) {
-            exception.printStackTrace(System.err);
+            String errMsg = String.format("Failed when reading graph file '%s'.", graphFile.getFileName().toString());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, exception);
         }
 
         return graph;
@@ -139,7 +145,9 @@ public class GraphFactory {
                 }
             }
         } catch (IOException exception) {
-            exception.printStackTrace(System.err);
+            String errMsg = String.format("Failed when reading graph file '%s'.", graphFile.getFileName().toString());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, exception);
         }
 
         return nodes;
