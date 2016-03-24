@@ -12,10 +12,8 @@
     <properties>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <src.dir>src/main/java</src.dir>
     </properties>
     <build>
-        <sourceDirectory>${src.dir}</sourceDirectory>
         <plugins>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -23,7 +21,6 @@
                 <executions>
                     <execution>
                         <id>copy-dist-resources</id>
-                        <!-- here the phase you need -->
                         <phase>validate</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -33,23 +30,6 @@
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}/dist</directory>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-cli-resources</id>
-                        <!-- here the phase you need -->
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/java</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}/src/main/java</directory>
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
@@ -127,15 +107,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <properties>
-                <src.dir>${project.build.directory}/java</src.dir>
-            </properties>
-        </profile>
-    </profiles>
 
     <dependencies>
         <dependency>
