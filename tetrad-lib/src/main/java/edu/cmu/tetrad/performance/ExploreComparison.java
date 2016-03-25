@@ -12,10 +12,10 @@ public class ExploreComparison {
 
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
-        params.setDataType(ComparisonParameters.DataType.Continuous);
-        params.setAlgorithm(ComparisonParameters.Algorithm.PC);
-        params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
-//        params.setScore(ComparisonParameters.ScoreType.SemBic);
+        params.setDataType(ComparisonParameters.DataType.Discrete);
+        params.setAlgorithm(ComparisonParameters.Algorithm.FGS);
+//        params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
+        params.setScore(ComparisonParameters.ScoreType.BDeu);
 
         List<ComparisonResult> results = new ArrayList<>();
 
