@@ -3458,7 +3458,7 @@ public final class GraphUtils {
             return adjFp;
         }
 
-        public int getAdjCorrect() {
+        public int getAdjCor() {
             return adjCorrect;
         }
 
@@ -3470,7 +3470,7 @@ public final class GraphUtils {
             return arrowptFp;
         }
 
-        public int getAhdCorrect() {
+        public int getAhdCor() {
             return arrowptCorrect;
         }
 

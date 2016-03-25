@@ -147,10 +147,10 @@ public class GraphComparisonParams extends SessionAdapter
 
     public void addRecord(GraphUtils.GraphComparison comparison) {
         int newRow = dataSet.getNumRows();
-        dataSet.setDouble(newRow, 0, comparison.getAdjCorrect());
+        dataSet.setDouble(newRow, 0, comparison.getAdjCor());
         dataSet.setDouble(newRow, 1, comparison.getAdjFn());
         dataSet.setDouble(newRow, 2, comparison.getAdjFp());
-        dataSet.setDouble(newRow, 3, comparison.getAhdCorrect());
+        dataSet.setDouble(newRow, 3, comparison.getAhdCor());
         dataSet.setDouble(newRow, 4, comparison.getAhdFn());
         dataSet.setDouble(newRow, 5, comparison.getAhdFp());
         dataSet.setDouble(newRow, 6, comparison.getAdjPrec());

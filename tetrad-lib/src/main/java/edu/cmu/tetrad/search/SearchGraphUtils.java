@@ -2974,11 +2974,11 @@ public final class SearchGraphUtils {
             out.println("Adjacencies:");
         }
 
-        int adjTp = comparison.getAdjCorrect();
+        int adjTp = comparison.getAdjCor();
         int adjFp = comparison.getAdjFp();
         int adjFn = comparison.getAdjFn();
 
-        int arrowptTp = comparison.getAhdCorrect();
+        int arrowptTp = comparison.getAhdCor();
         int arrowptFp = comparison.getAhdFp();
         int arrowptFn = comparison.getAhdFn();
 

@@ -12,9 +12,9 @@ public class ExploreComparison {
 
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
-        params.setDataType(ComparisonParameters.DataType.Discrete);
-        params.setAlgorithm(ComparisonParameters.Algorithm.GFCI);
-        params.setIndependenceTest(ComparisonParameters.IndependenceTestType.ChiSquare);
+        params.setDataType(ComparisonParameters.DataType.Continuous);
+        params.setAlgorithm(ComparisonParameters.Algorithm.PC);
+        params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
 //        params.setScore(ComparisonParameters.ScoreType.SemBic);
 
         List<ComparisonResult> results = new ArrayList<>();
@@ -24,13 +24,13 @@ public class ExploreComparison {
             results.add(Comparison.compare(params));
         }
 
-        ArrayList<Comparison.TableColumns> tableColumns= new ArrayList<>();
-        tableColumns.add(Comparison.TableColumns.AdjPrec);
-        tableColumns.add(Comparison.TableColumns.AdjRec);
-        tableColumns.add(Comparison.TableColumns.AhdPrec);
-        tableColumns.add(Comparison.TableColumns.AdjRec);
-        tableColumns.add(Comparison.TableColumns.SHD);
-        tableColumns.add(Comparison.TableColumns.Elapsed);
+        ArrayList<Comparison.TableColumn> tableColumns= new ArrayList<>();
+        tableColumns.add(Comparison.TableColumn.AdjPrec);
+        tableColumns.add(Comparison.TableColumn.AdjRec);
+        tableColumns.add(Comparison.TableColumn.AhdPrec);
+        tableColumns.add(Comparison.TableColumn.AhdRec);
+        tableColumns.add(Comparison.TableColumn.SHD);
+        tableColumns.add(Comparison.TableColumn.Elapsed);
 
         System.out.println(Comparison.summarize(results, tableColumns));
     }

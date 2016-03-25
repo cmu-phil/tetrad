@@ -235,42 +235,12 @@ public class Comparison {
         return null;
     }
 
-    public static String summarize(List<ComparisonResult> results, List<TableColumns> tableColumns) {
-        ContinuousVariable adjCorrect = new ContinuousVariable("AdjCor");
-        ContinuousVariable adjFn = new ContinuousVariable("AdjFn");
-        ContinuousVariable adjFp = new ContinuousVariable("AdjFp");
+    public static String summarize(List<ComparisonResult> results, List<TableColumn> tableColumns) {
 
-        ContinuousVariable arrowptCorrect = new ContinuousVariable("AhdCor");
-        ContinuousVariable arrowptFn = new ContinuousVariable("AhdFn");
-        ContinuousVariable arrowptFp = new ContinuousVariable("AhdFp");
-
-        ContinuousVariable adjPrec = new ContinuousVariable("AdjPrec");
-        ContinuousVariable adjRec = new ContinuousVariable("AdjRec");
-        ContinuousVariable arrowptPrec = new ContinuousVariable("AhdPrec");
-        ContinuousVariable arrowptRec = new ContinuousVariable("AhdRec");
-        ContinuousVariable shd = new ContinuousVariable("SHD");
-        ContinuousVariable elapsed = new ContinuousVariable("Elapsed");
-
-//        ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
-//        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
-//        ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
-
-        List<Node> variables = new LinkedList<Node>();
-        variables.add(adjCorrect);
-        variables.add(adjFn);
-        variables.add(adjFp);
-        variables.add(arrowptCorrect);
-        variables.add(arrowptFn);
-        variables.add(arrowptFp);
-        variables.add(adjPrec);
-        variables.add(adjRec);
-        variables.add(arrowptPrec);
-        variables.add(arrowptRec);
-        variables.add(shd);
-        variables.add(elapsed);
-//        variables.add(twoCycleCorrect);
-//        variables.add(twoCycleFn);
-//        variables.add(twoCycleFp);
+        List<Node> variables = new ArrayList<>();
+        for (TableColumn column : tableColumns) {
+            variables.add(new ContinuousVariable(column.toString()));
+        }
 
         DataSet dataSet = new ColtDataSet(0, variables);
         dataSet.setNumberFormat(new DecimalFormat("0"));
@@ -288,69 +258,64 @@ public class Comparison {
             GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison2(correctGraph, resultGraph);
 
             int newRow = dataSet.getNumRows();
-            dataSet.setDouble(newRow, 0, comparison.getAdjCorrect());
-            dataSet.setDouble(newRow, 1, comparison.getAdjFn());
-            dataSet.setDouble(newRow, 2, comparison.getAdjFp());
-            dataSet.setDouble(newRow, 3, comparison.getAhdCorrect());
-            dataSet.setDouble(newRow, 4, comparison.getAhdFn());
-            dataSet.setDouble(newRow, 5, comparison.getAhdFp());
-            dataSet.setDouble(newRow, 6, comparison.getAdjPrec());
-            dataSet.setDouble(newRow, 7, comparison.getAdjRec());
-            dataSet.setDouble(newRow, 8, comparison.getAhdPrec());
-            dataSet.setDouble(newRow, 9, comparison.getAhdRec());
-            dataSet.setDouble(newRow, 10, comparison.getShd());
-            dataSet.setDouble(newRow, 11, _result.getElapsed());
+
+            if (tableColumns.contains(TableColumn.AdjCor)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AdjCor), comparison.getAdjCor());
+            }
+
+            if (tableColumns.contains(TableColumn.AdjFn)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AdjFn), comparison.getAdjFn());
+            }
+
+            if (tableColumns.contains(TableColumn.AdjFp)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AdjFp), comparison.getAdjFp());
+            }
+
+            if (tableColumns.contains(TableColumn.AhdCor)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AhdCor), comparison.getAhdCor());
+            }
+
+            if (tableColumns.contains(TableColumn.AhdFn)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AhdFn), comparison.getAhdFn());
+            }
+
+            if (tableColumns.contains(TableColumn.AhdFp)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AhdFp), comparison.getAhdFp());
+            }
+
+            if (tableColumns.contains(TableColumn.AdjPrec)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AdjPrec), comparison.getAdjPrec());
+            }
+
+            if (tableColumns.contains(TableColumn.AdjRec)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AdjRec), comparison.getAdjRec());
+            }
+
+            if (tableColumns.contains(TableColumn.AhdPrec)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AhdPrec), comparison.getAhdPrec());
+            }
+
+            if (tableColumns.contains(TableColumn.AhdRec)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AhdRec), comparison.getAhdRec());
+            }
+
+            if (tableColumns.contains(TableColumn.Elapsed)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.Elapsed), _result.getElapsed());
+            }
+
+            if (tableColumns.contains(TableColumn.SHD)) {
+                dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.SHD), comparison.getShd());
+            }
         }
 
         int[] cols = new int[tableColumns.size()];
-
-        for (int i = 0; i < tableColumns.size(); i++) {
-            switch (tableColumns.get(i)) {
-                case AdjCor:
-                    cols[i] = 0;
-                    break;
-                case AdjFn:
-                    cols[i] = 1;
-                    break;
-                case AdjFp:
-                    cols[i] = 2;
-                    break;
-                case AhdCor:
-                    cols[i] = 3;
-                    break;
-                case AhdFn:
-                    cols[i] = 4;
-                    break;
-                case AhdFp:
-                    cols[i] = 5;
-                    break;
-                case SHD:
-                    cols[i] = 10;
-                    break;
-                case AdjPrec:
-                    cols[i] = 7;
-                    break;
-                case AdjRec:
-                    cols[i] = 7;
-                    break;
-                case AhdPrec:
-                    cols[i] = 8;
-                    break;
-                case AhdRec:
-                    cols[i] = 9;
-                    break;
-                case Elapsed:
-                    cols[i] = 11;
-                    break;
-                default:
-                    throw new IllegalStateException("That column has not yet been programmed in the " +
-                            "tables. Bug the programmer.");
-
-            }
+        for (int i = 0; i < cols.length; i++) {
+            cols[i] = i;
         }
 
         return getTextTable(dataSet, cols, new DecimalFormat("0.00")).toString();
     }
+
 
     private static TextTable getTextTable(DataSet dataSet, int[] columns, NumberFormat nf) {
         TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
@@ -390,6 +355,6 @@ public class Comparison {
         return table;
     }
 
-    public enum TableColumns {AdjCor, AdjFp, AdjFn, AhdCor, AhdFn, AhdFp, SHD,
+    public enum TableColumn {AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
         AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed}
 }
