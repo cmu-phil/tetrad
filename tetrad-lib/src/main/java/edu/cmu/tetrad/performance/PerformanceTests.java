@@ -1372,7 +1372,7 @@ public class PerformanceTests {
 
             long ta1 = System.currentTimeMillis();
 
-//            Fci fci = new Fci(independenceTest);
+//            FCI fci = new FCI(independenceTest);
             GFci fci = new GFci(independenceTest);
 //            TFci fci = new TFci(independenceTest);
 //            fci.setVerbose(false);
@@ -1791,7 +1791,7 @@ public class PerformanceTests {
 //
 //            final IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
 //
-//            Pc pc = new Pc(independencePc);
+//            PC pc = new PC(independencePc);
 //            pc.setVerbose(false);
 //            pc.setDepth(depth);
 //

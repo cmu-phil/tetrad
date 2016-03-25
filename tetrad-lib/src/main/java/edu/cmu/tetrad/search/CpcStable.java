@@ -35,7 +35,7 @@ import java.util.Set;
 
 /**
  * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
- * locally. Uses the Pc-Stable adjacency search.
+ * locally. Uses the PC-Stable adjacency search.
  *
  * @author Joseph Ramsey (this version).
  */

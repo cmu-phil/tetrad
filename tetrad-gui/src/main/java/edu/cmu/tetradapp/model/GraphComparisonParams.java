@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.ExecutionRestarter;
 import edu.cmu.tetrad.session.SessionAdapter;
 import edu.cmu.tetrad.util.Params;
@@ -35,10 +34,8 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.DecimalFormat;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Stores a reference to a file to which records can be appended.
@@ -153,13 +150,13 @@ public class GraphComparisonParams extends SessionAdapter
         dataSet.setDouble(newRow, 0, comparison.getAdjCorrect());
         dataSet.setDouble(newRow, 1, comparison.getAdjFn());
         dataSet.setDouble(newRow, 2, comparison.getAdjFp());
-        dataSet.setDouble(newRow, 3, comparison.getArrowptCorrect());
-        dataSet.setDouble(newRow, 4, comparison.getArrowptFn());
-        dataSet.setDouble(newRow, 5, comparison.getArrowptFp());
+        dataSet.setDouble(newRow, 3, comparison.getAhdCorrect());
+        dataSet.setDouble(newRow, 4, comparison.getAhdFn());
+        dataSet.setDouble(newRow, 5, comparison.getAhdFp());
         dataSet.setDouble(newRow, 6, comparison.getAdjPrec());
         dataSet.setDouble(newRow, 7, comparison.getAdjRec());
-        dataSet.setDouble(newRow, 8, comparison.getArrowptPrec());
-        dataSet.setDouble(newRow, 9, comparison.getArrowptRec());
+        dataSet.setDouble(newRow, 8, comparison.getAhdPrec());
+        dataSet.setDouble(newRow, 9, comparison.getAhdRec());
         dataSet.setDouble(newRow, 10, comparison.getShd());
     }
 

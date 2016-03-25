@@ -3462,15 +3462,15 @@ public final class GraphUtils {
             return adjCorrect;
         }
 
-        public int getArrowptFn() {
+        public int getAhdFn() {
             return arrowptFn;
         }
 
-        public int getArrowptFp() {
+        public int getAhdFp() {
             return arrowptFp;
         }
 
-        public int getArrowptCorrect() {
+        public int getAhdCorrect() {
             return arrowptCorrect;
         }
 
@@ -3514,11 +3514,11 @@ public final class GraphUtils {
             return adjRec;
         }
 
-        public double getArrowptPrec() {
+        public double getAhdPrec() {
             return arrowptPrec;
         }
 
-        public double getArrowptRec() {
+        public double getAhdRec() {
             return arrowptRec;
         }
     }

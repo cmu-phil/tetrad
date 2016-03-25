@@ -385,7 +385,7 @@ public class TestFgs {
     }
 
     /**
-     * Presents the input graph to Fci and checks to make sure the output of Fci is equivalent to the given output
+     * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
     private void checkSearch(String inputGraph, String outputGraph) {
@@ -417,7 +417,7 @@ public class TestFgs {
     }
 
     /**
-     * Presents the input graph to Fci and checks to make sure the output of Fci is equivalent to the given output
+     * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
     private void checkWithKnowledge(String inputGraph, String answerGraph,
@@ -436,7 +436,7 @@ public class TestFgs {
 
         // Build comparison graph.
         Graph answer = GraphConverter.convert(answerGraph);
-//        Graph answer = new Pc(new IndTestDSep(input)).search();
+//        Graph answer = new PC(new IndTestDSep(input)).search();
 
 //        System.out.println("Input = " + input);
 //        System.out.println("Knowledge = " + knowledge);

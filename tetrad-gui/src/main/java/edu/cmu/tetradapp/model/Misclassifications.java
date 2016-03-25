@@ -116,7 +116,7 @@ public final class Misclassifications implements SessionModel {
     //=============================CONSTRUCTORS==========================//
 
     /**
-     * Compares the results of a Pc to a reference workbench by counting errors
+     * Compares the results of a PC to a reference workbench by counting errors
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */

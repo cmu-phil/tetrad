@@ -37,7 +37,7 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
     private Graph initialGraph = null;
-//    private Pc pc = null;
+//    private PC pc = null;
 
     Set<Edge> pcAdjacent;
     Set<Edge> pcNonadjacent;
@@ -135,7 +135,7 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
         IKnowledge knowledge = getParams().getKnowledge();
         int depth = getParams().getIndTestParams().getDepth();
 
-//        Pc pc = new Pc(getIndependenceTest());
+//        PC pc = new PC(getIndependenceTest());
         PcMax pc = new PcMax(getIndependenceTest());
         pc.setKnowledge(knowledge);
         pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());

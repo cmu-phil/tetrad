@@ -154,7 +154,7 @@ public class Mimbuild2 {
 //            graph = search.search();
 //        } catch (Exception e) {
 ////            e.printStackTrace();
-//            Cpc search = new Cpc(new IndTestFisherZ(latentscov, alpha));
+//            CPC search = new CPC(new IndTestFisherZ(latentscov, alpha));
 //            search.setKnowledge(knowledge);
 //            graph = search.search();
 //        }

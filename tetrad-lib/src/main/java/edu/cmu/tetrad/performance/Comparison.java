@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.performance;
 
-import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
@@ -95,9 +94,15 @@ public class Comparison {
                     throw new IllegalArgumentException("Sample size not set.");
                 }
 
-                BayesPm pm = new BayesPm(trueDag);
-                BayesIm im = new MlBayesIm(pm);
-                dataSet = im.simulateData(params.getSampleSize(), false);
+                int[] tiers = new int[nodes.size()];
+
+                for (int i = 0; i < nodes.size(); i++) {
+                    tiers[i] = i;
+                }
+
+                BayesPm pm = new BayesPm(trueDag, 3, 3);
+                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                dataSet = im.simulateData(params.getSampleSize(), false, tiers);
             } else {
                 throw new IllegalArgumentException("Unrecognized data type.");
             }
@@ -134,11 +139,36 @@ public class Comparison {
         }
 
         if (params.getScore() == ComparisonParameters.ScoreType.SemBic) {
+            if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Continuous) {
+                throw new IllegalArgumentException("Data type previously set to something other than continuous.");
+            }
+
             if (Double.isNaN(params.getPenaltyDiscount())) {
                 throw new IllegalArgumentException("Penalty discount not set.");
             }
 
             score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet), params.getPenaltyDiscount());
+
+            params.setDataType(ComparisonParameters.DataType.Continuous);
+        }
+        else if (params.getScore() == ComparisonParameters.ScoreType.BDeu) {
+            if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
+                throw new IllegalArgumentException("Data type previously set to something other than discrete.");
+            }
+
+            if (Double.isNaN(params.getSamplePrior())) {
+                throw new IllegalArgumentException("Sample prior not set.");
+            }
+
+            if (Double.isNaN(params.getStructurePrior())) {
+                throw new IllegalArgumentException("Structure prior not set.");
+            }
+
+            score = new BDeuScore(dataSet);
+            ((BDeuScore) score).setSamplePrior(params.getSamplePrior());
+            ((BDeuScore) score).setStructurePrior(params.getStructurePrior());
+
+            params.setDataType(ComparisonParameters.DataType.Discrete);
         }
 
         if (params.getAlgorithm() == null) {
@@ -147,37 +177,37 @@ public class Comparison {
 
         long time1 = System.currentTimeMillis();
 
-        if (params.getAlgorithm() == ComparisonParameters.Algorithm.Pc) {
+        if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Pc search = new Pc(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(trueDag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.Cpc) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(trueDag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PcLocal) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCLocal) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             PcLocal search = new PcLocal(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(trueDag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PcMax) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCMax) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             PcMax search = new PcMax(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(trueDag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.Fgs) {
-            if (score == null) throw new IllegalArgumentException("Test not set.");
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGS) {
+            if (score == null) throw new IllegalArgumentException("Score not set.");
             Fgs search = new Fgs(score);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(trueDag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.Fci) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(new DagToPag(trueDag).convert());
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.Gfci) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             GFci search = new GFci(test);
             result.setResultGraph(search.search());
@@ -205,20 +235,21 @@ public class Comparison {
         return null;
     }
 
-    public static String summarize(List<ComparisonResult> results) {
-        ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
-        ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
-        ContinuousVariable adjFp = new ContinuousVariable("ADJ_FP");
+    public static String summarize(List<ComparisonResult> results, List<TableColumns> tableColumns) {
+        ContinuousVariable adjCorrect = new ContinuousVariable("AdjCor");
+        ContinuousVariable adjFn = new ContinuousVariable("AdjFn");
+        ContinuousVariable adjFp = new ContinuousVariable("AdjFp");
 
-        ContinuousVariable arrowptCorrect = new ContinuousVariable("AHD_COR");
-        ContinuousVariable arrowptFn = new ContinuousVariable("AHD_FN");
-        ContinuousVariable arrowptFp = new ContinuousVariable("AHD_FP");
+        ContinuousVariable arrowptCorrect = new ContinuousVariable("AhdCor");
+        ContinuousVariable arrowptFn = new ContinuousVariable("AhdFn");
+        ContinuousVariable arrowptFp = new ContinuousVariable("AhdFp");
 
-        ContinuousVariable adjPrec = new ContinuousVariable("ADJ_PREC");
-        ContinuousVariable adjRec = new ContinuousVariable("ADJ_REC");
-        ContinuousVariable arrowptPrec = new ContinuousVariable("ARROWPT_PREC");
-        ContinuousVariable arrowptRec = new ContinuousVariable("ARROWPT_REC");
+        ContinuousVariable adjPrec = new ContinuousVariable("AdjPrec");
+        ContinuousVariable adjRec = new ContinuousVariable("AdjRec");
+        ContinuousVariable arrowptPrec = new ContinuousVariable("AhdPrec");
+        ContinuousVariable arrowptRec = new ContinuousVariable("AhdRec");
         ContinuousVariable shd = new ContinuousVariable("SHD");
+        ContinuousVariable elapsed = new ContinuousVariable("Elapsed");
 
 //        ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
 //        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
@@ -236,6 +267,7 @@ public class Comparison {
         variables.add(arrowptPrec);
         variables.add(arrowptRec);
         variables.add(shd);
+        variables.add(elapsed);
 //        variables.add(twoCycleCorrect);
 //        variables.add(twoCycleFn);
 //        variables.add(twoCycleFp);
@@ -247,6 +279,8 @@ public class Comparison {
             System.out.println("\nRun " + (i + 1) + "\n" + results.get(i));
         }
 
+        System.out.println();
+
         for (ComparisonResult _result : results) {
             Graph correctGraph = _result.getCorrectResult();
             Graph resultGraph = _result.getResultGraph();
@@ -257,21 +291,65 @@ public class Comparison {
             dataSet.setDouble(newRow, 0, comparison.getAdjCorrect());
             dataSet.setDouble(newRow, 1, comparison.getAdjFn());
             dataSet.setDouble(newRow, 2, comparison.getAdjFp());
-            dataSet.setDouble(newRow, 3, comparison.getArrowptCorrect());
-            dataSet.setDouble(newRow, 4, comparison.getArrowptFn());
-            dataSet.setDouble(newRow, 5, comparison.getArrowptFp());
+            dataSet.setDouble(newRow, 3, comparison.getAhdCorrect());
+            dataSet.setDouble(newRow, 4, comparison.getAhdFn());
+            dataSet.setDouble(newRow, 5, comparison.getAhdFp());
             dataSet.setDouble(newRow, 6, comparison.getAdjPrec());
             dataSet.setDouble(newRow, 7, comparison.getAdjRec());
-            dataSet.setDouble(newRow, 8, comparison.getArrowptPrec());
-            dataSet.setDouble(newRow, 9, comparison.getArrowptRec());
+            dataSet.setDouble(newRow, 8, comparison.getAhdPrec());
+            dataSet.setDouble(newRow, 9, comparison.getAhdRec());
             dataSet.setDouble(newRow, 10, comparison.getShd());
+            dataSet.setDouble(newRow, 11, _result.getElapsed());
         }
 
-        TextTable table1 = getTextTable(dataSet, new int[]{0, 1, 2, 3, 4, 5}, new DecimalFormat("0"));
-        TextTable table2 = getTextTable(dataSet, new int[]{6, 7, 8, 9, 10}, new DecimalFormat("0.00"));
-//        TextTable table3 = getTextTable(dataSet, new int[]{10}, new DecimalFormat("0.00"));
+        int[] cols = new int[tableColumns.size()];
 
-        return /*"\n" + table1.toString() +*/ "\n" + table2.toString();
+        for (int i = 0; i < tableColumns.size(); i++) {
+            switch (tableColumns.get(i)) {
+                case AdjCor:
+                    cols[i] = 0;
+                    break;
+                case AdjFn:
+                    cols[i] = 1;
+                    break;
+                case AdjFp:
+                    cols[i] = 2;
+                    break;
+                case AhdCor:
+                    cols[i] = 3;
+                    break;
+                case AhdFn:
+                    cols[i] = 4;
+                    break;
+                case AhdFp:
+                    cols[i] = 5;
+                    break;
+                case SHD:
+                    cols[i] = 10;
+                    break;
+                case AdjPrec:
+                    cols[i] = 7;
+                    break;
+                case AdjRec:
+                    cols[i] = 7;
+                    break;
+                case AhdPrec:
+                    cols[i] = 8;
+                    break;
+                case AhdRec:
+                    cols[i] = 9;
+                    break;
+                case Elapsed:
+                    cols[i] = 11;
+                    break;
+                default:
+                    throw new IllegalStateException("That column has not yet been programmed in the " +
+                            "tables. Bug the programmer.");
+
+            }
+        }
+
+        return getTextTable(dataSet, cols, new DecimalFormat("0.00")).toString();
     }
 
     private static TextTable getTextTable(DataSet dataSet, int[] columns, NumberFormat nf) {
@@ -311,4 +389,7 @@ public class Comparison {
 
         return table;
     }
+
+    public enum TableColumns {AdjCor, AdjFp, AdjFn, AhdCor, AhdFn, AhdFp, SHD,
+        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed}
 }

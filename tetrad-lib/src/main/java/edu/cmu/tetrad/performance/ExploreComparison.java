@@ -13,13 +13,9 @@ public class ExploreComparison {
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Discrete);
-        params.setAlgorithm(ComparisonParameters.Algorithm.Pc);
-        params.setNumVars(100);
-        params.setNumEdges(100);
+        params.setAlgorithm(ComparisonParameters.Algorithm.GFCI);
         params.setIndependenceTest(ComparisonParameters.IndependenceTestType.ChiSquare);
-        params.setAlpha(0.001);
-//        params.setScore(ComparisonParameters.ScoreType.Bdeu);
-//        params.setPenaltyDiscount(4);
+//        params.setScore(ComparisonParameters.ScoreType.SemBic);
 
         List<ComparisonResult> results = new ArrayList<>();
 
@@ -28,11 +24,18 @@ public class ExploreComparison {
             results.add(Comparison.compare(params));
         }
 
-        System.out.println(Comparison.summarize(results));
+        ArrayList<Comparison.TableColumns> tableColumns= new ArrayList<>();
+        tableColumns.add(Comparison.TableColumns.AdjPrec);
+        tableColumns.add(Comparison.TableColumns.AdjRec);
+        tableColumns.add(Comparison.TableColumns.AhdPrec);
+        tableColumns.add(Comparison.TableColumns.AdjRec);
+        tableColumns.add(Comparison.TableColumns.SHD);
+        tableColumns.add(Comparison.TableColumns.Elapsed);
+
+        System.out.println(Comparison.summarize(results, tableColumns));
     }
 
     public static void main(String... args) {
         new ExploreComparison().runFromSimulation();
     }
-
 }

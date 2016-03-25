@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Kernelized PC algorithm. This is the same as the Pc class, the nonparametric kernel-based HSIC test is used for
+ * Kernelized PC algorithm. This is the same as the PC class, the nonparametric kernel-based HSIC test is used for
  * independence testing and the parameters for this test can be set directly when Kpc is initialized.
  *
  * @author Robert Tillman.

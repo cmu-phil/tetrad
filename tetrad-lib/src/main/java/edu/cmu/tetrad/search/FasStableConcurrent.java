@@ -43,7 +43,7 @@ import java.util.concurrent.RecursiveTask;
  * search is different for different algorithms, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
  * </p>
- * This variant uses the Pc-Stable modification, calculating independencies in parallel within each depth.
+ * This variant uses the PC-Stable modification, calculating independencies in parallel within each depth.
  * It uses a slightly different algorithm from FasStableConcurrent, probably better.
  *
  * @author Joseph Ramsey.

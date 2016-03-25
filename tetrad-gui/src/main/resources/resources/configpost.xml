@@ -1162,7 +1162,7 @@
                 <params-class>edu.cmu.tetradapp.model.PcSearchParams
                 </params-class>
             </model>
-            <!--<model name="PcMax" acronym="PcMax" help="pcmax" category="Pattern Searches">-->
+            <!--<model name="PCMax" acronym="PCMax" help="pcmax" category="Pattern Searches">-->
                 <!--<logger>-->
                     <!--<event id="info" description="Information" default="on"/>-->
                     <!--<event id="independencies" description="Independencies" default="on"/>-->

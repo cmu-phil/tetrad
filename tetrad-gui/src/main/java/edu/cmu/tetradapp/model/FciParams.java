@@ -33,7 +33,7 @@ import java.io.ObjectInputStream;
 import java.util.List;
 
 /**
- * Stores the parameters needed for the Fci search and wizard.
+ * Stores the parameters needed for the FCI search and wizard.
  *
  * @author Raul Salinas
  */

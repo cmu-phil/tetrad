@@ -115,7 +115,7 @@ public class GraphChange {
 
 
     /**
-     * Outputs a new Pag, a copy of the input excepting the applied changes of this object. Will return null if some
+     * Outputs a new PAG, a copy of the input excepting the applied changes of this object. Will return null if some
      * change fails (ie an obscure inconsistensy).
      */
     public Graph applyTo(Graph graph) {

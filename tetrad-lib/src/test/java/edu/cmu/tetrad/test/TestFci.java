@@ -225,7 +225,7 @@ public class TestFci {
     }
 
     /**
-     * Presents the input graph to Fci and checks to make sure the output of Fci is equivalent to the given output
+     * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
     private void checkSearch(String inputGraph, String outputGraph, IKnowledge knowledge) {

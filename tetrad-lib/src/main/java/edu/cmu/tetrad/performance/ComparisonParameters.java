@@ -6,13 +6,15 @@ package edu.cmu.tetrad.performance;
 public class ComparisonParameters {
     private DataType dataType = null;
     private ResultType resultType = null;
-    private int numVars = -1;
-    private int numEdges = -1;
-    private int sampleSize = -1;
+    private int numVars = 100;
+    private int numEdges = 100;
+    private int sampleSize = 1000;
     private IndependenceTestType independenceTest = null;
-    private double alpha = Double.NaN;
-    private double penaltyDiscount = Double.NaN;
+    private double alpha = 0.001;
+    private double penaltyDiscount = 4;
     private ScoreType score = null;
+    private double samplePrior = 1;
+    private double structurePrior = 1;
     private Algorithm algorithm = null;
     private String dataFile = null;
     private String graphFile;
@@ -101,7 +103,7 @@ public class ComparisonParameters {
 
         if (score == ScoreType.SemBic) {
             dataType = DataType.Continuous;
-        } else if (score == ScoreType.Bdeu) {
+        } else if (score == ScoreType.BDeu) {
             dataType = DataType.Discrete;
         }
 
@@ -117,20 +119,20 @@ public class ComparisonParameters {
 
         ResultType resultType = null;
 
-        if (algorithm == Algorithm.Pc) {
+        if (algorithm == Algorithm.PC) {
             resultType = ResultType.Pattern;
-        } else if (algorithm == Algorithm.Cpc) {
+        } else if (algorithm == Algorithm.CPC) {
             resultType = ResultType.Pattern;
-        } else if (algorithm == Algorithm.Fgs) {
+        } else if (algorithm == Algorithm.FGS) {
             resultType = ResultType.Pattern;
-        } else if (algorithm == Algorithm.PcLocal) {
+        } else if (algorithm == Algorithm.PCLocal) {
             resultType = ResultType.Pattern;
-        } else if (algorithm == Algorithm.PcMax) {
+        } else if (algorithm == Algorithm.PCMax) {
             resultType = ResultType.Pattern;
-        } else if (algorithm == Algorithm.Fci) {
-            resultType = ResultType.Pag;
-        } else if (algorithm == Algorithm.Gfci) {
-            resultType = ResultType.Pag;
+        } else if (algorithm == Algorithm.FCI) {
+            resultType = ResultType.PAG;
+        } else if (algorithm == Algorithm.GFCI) {
+            resultType = ResultType.PAG;
         } else {
             throw new IllegalArgumentException("Result type of algorithm not set.");
         }
@@ -244,10 +246,26 @@ public class ComparisonParameters {
         return b.toString();
     }
 
+    public double getSamplePrior() {
+        return samplePrior;
+    }
+
+    public void setSamplePrior(double samplePrior) {
+        this.samplePrior = samplePrior;
+    }
+
+    public double getStructurePrior() {
+        return structurePrior;
+    }
+
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
+    }
+
 
     public enum DataType {Continuous, Discrete}
-    public enum ResultType {Pattern, Pag}
-    public enum IndependenceTestType {FisherZ, ChiSquare, }
-    public enum ScoreType {SemBic, Bdeu}
-    public enum Algorithm {Pc, Cpc, Fgs, PcLocal, PcMax, Fci, Gfci}
+    public enum ResultType {Pattern, PAG}
+    public enum IndependenceTestType {FisherZ, ChiSquare}
+    public enum ScoreType {SemBic, BDeu}
+    public enum Algorithm {PC, CPC, FGS, PCLocal, PCMax, FCI, GFCI}
 }

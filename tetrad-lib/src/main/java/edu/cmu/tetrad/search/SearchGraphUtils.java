@@ -1372,7 +1372,7 @@ public final class SearchGraphUtils {
      */
     public static Graph patternFromDag(Graph dag) {
 //        IndTestDSep test = new IndTestDSep(dag);
-//        return new Pc(test).search();
+//        return new PC(test).search();
 //
         Graph graph = new EdgeListGraph(dag);
         SearchGraphUtils.basicPattern(graph, false);
@@ -2133,7 +2133,7 @@ public final class SearchGraphUtils {
 
     public static Graph patternForDag(final Graph dag) {
 //        IndTestDSep test = new IndTestDSep(dag);
-//        return new Pc(test).search();
+//        return new PC(test).search();
 //
         Graph pattern = new EdgeListGraph(dag);
         SearchGraphUtils.basicPattern(pattern, false);
@@ -2978,9 +2978,9 @@ public final class SearchGraphUtils {
         int adjFp = comparison.getAdjFp();
         int adjFn = comparison.getAdjFn();
 
-        int arrowptTp = comparison.getArrowptCorrect();
-        int arrowptFp = comparison.getArrowptFp();
-        int arrowptFn = comparison.getArrowptFn();
+        int arrowptTp = comparison.getAhdCorrect();
+        int arrowptFp = comparison.getAhdFp();
+        int arrowptFn = comparison.getAhdFn();
 
         if (out != null) {
             out.println("TP " + adjTp + " FP = " + adjFp + " FN = " + adjFn);
