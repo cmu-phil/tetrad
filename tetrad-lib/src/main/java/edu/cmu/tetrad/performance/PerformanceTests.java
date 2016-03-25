@@ -111,7 +111,7 @@ public class PerformanceTests {
 
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
-        PcGes pc = new PcGes(test);
+        Pc pc = new Pc(test);
         pc.setVerbose(true);
         pc.setDepth(depth);
 //        pcStable.setOut(out);

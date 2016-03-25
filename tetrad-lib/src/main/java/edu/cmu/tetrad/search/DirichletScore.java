@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * Calculates the BDeu score.
  */
-public class DirichletScore implements LocalDiscreteScore, FgsScore {
+public class DirichletScore implements LocalDiscreteScore, Score {
     private List<Node> variables;
     private int[][] data;
     private int sampleSize;

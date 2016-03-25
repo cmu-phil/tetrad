@@ -94,7 +94,7 @@ public final class FgsMb implements GraphSearch, GraphScorer {
     /**
      * The score for discrete searches.
      */
-    private FgsScore fgsScore;
+    private Score fgsScore;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -209,7 +209,7 @@ public final class FgsMb implements GraphSearch, GraphScorer {
         this.target = target;
     }
 
-    public FgsMb(FgsScore fgsScore, Node target) {
+    public FgsMb(Score fgsScore, Node target) {
         if (fgsScore == null) throw new NullPointerException();
         setFgsScore(fgsScore);
         this.variables = fgsScore.getVariables();
@@ -593,7 +593,7 @@ public final class FgsMb implements GraphSearch, GraphScorer {
     //===========================PRIVATE METHODS========================//
 
     //Sets the discrete scoring function to use.
-    private void setFgsScore(FgsScore fgsScore) {
+    private void setFgsScore(Score fgsScore) {
         this.fgsScore = fgsScore;
 
         this.variables = new ArrayList<>();

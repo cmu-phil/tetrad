@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.PatternAlgorithm;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
@@ -38,7 +37,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey.
  */
-public class Pc implements GraphSearch, PatternAlgorithm {
+public class Pc implements GraphSearch {
 
     /**
      * The independence test used for the PC search.

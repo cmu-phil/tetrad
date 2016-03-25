@@ -48,7 +48,7 @@ import java.util.concurrent.*;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class Fgs2 implements GraphSearch, GraphScorer, PatternAlgorithm {
+public final class Fgs2 implements GraphSearch, GraphScorer {
 
     /**
      * Specification of forbidden and required edges.
@@ -94,7 +94,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer, PatternAlgorithm {
     /**
      * The score for discrete searches.
      */
-    private FgsScore fgsScore;
+    private Score fgsScore;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -199,7 +199,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer, PatternAlgorithm {
         }
     }
 
-    public Fgs2(FgsScore fgsScore) {
+    public Fgs2(Score fgsScore) {
         if (fgsScore == null) throw new NullPointerException();
         setFgsScore(fgsScore);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
@@ -513,7 +513,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer, PatternAlgorithm {
     //===========================PRIVATE METHODS========================//
 
     //Sets the discrete scoring function to use.
-    private void setFgsScore(FgsScore fgsScore) {
+    private void setFgsScore(Score fgsScore) {
         this.fgsScore = fgsScore;
 
         this.variables = new ArrayList<>();

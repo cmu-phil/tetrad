@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GraphScore implements FgsScore {
+public class GraphScore implements Score {
 
     private final Graph dag;
 

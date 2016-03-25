@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IndTestMimBuild;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -78,7 +77,7 @@ public final class MimBuildParams implements MimParams {
 
     public MimBuildParams() {
         indTestParams = new MimBuildIndTestParams(0.0001, 1,
-                IndTestMimBuild.MIMBUILD_MLE, this);
+                this);
     }
 
     /**
@@ -155,18 +154,6 @@ public final class MimBuildParams implements MimParams {
         indTestParams.setAlpha(alpha);
     }
 
-    public int getAlgorithmType() {
-        return indTestParams.getAlgorithmType();
-    }
-
-    public void setAlgorithmType(int tt) {
-        if (tt == IndTestMimBuild.MIMBUILD_GES_ABIC ||
-                tt == IndTestMimBuild.MIMBUILD_GES_SBIC ||
-                tt == IndTestMimBuild.MIMBUILD_PC) {
-            indTestParams.setAlgorithmType(tt);
-        }
-    }
-
     @Override
     public double getMaxP() {
         return this.maxP;
@@ -227,11 +214,6 @@ public final class MimBuildParams implements MimParams {
     @Override
     public Clusters getMaxClusters() {
         return this.maxClusters;
-    }
-
-    @Override
-    public double getMaxAlpha() {
-        return this.maxAlpha;
     }
 
     public TestType getTetradTestType() {

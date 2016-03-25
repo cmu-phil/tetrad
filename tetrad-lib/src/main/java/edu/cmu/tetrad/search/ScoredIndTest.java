@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class ScoredIndTest implements FgsScore {
+public class ScoredIndTest implements Score {
 
     private final IndependenceTest test;
 

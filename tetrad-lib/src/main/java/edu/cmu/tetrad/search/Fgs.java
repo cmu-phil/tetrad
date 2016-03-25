@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.PatternAlgorithm;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -51,7 +50,7 @@ import java.util.concurrent.*;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class Fgs implements GraphSearch, GraphScorer, PatternAlgorithm {
+public final class Fgs implements GraphSearch, GraphScorer {
 
     /**
      * Specification of forbidden and required edges.
@@ -97,7 +96,7 @@ public final class Fgs implements GraphSearch, GraphScorer, PatternAlgorithm {
     /**
      * The score for discrete searches.
      */
-    private FgsScore fgsScore;
+    private Score fgsScore;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -202,7 +201,7 @@ public final class Fgs implements GraphSearch, GraphScorer, PatternAlgorithm {
         }
     }
 
-    public Fgs(FgsScore fgsScore) {
+    public Fgs(Score fgsScore) {
         if (fgsScore == null) throw new NullPointerException();
         setFgsScore(fgsScore);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
@@ -514,7 +513,7 @@ public final class Fgs implements GraphSearch, GraphScorer, PatternAlgorithm {
     //===========================PRIVATE METHODS========================//
 
     //Sets the discrete scoring function to use.
-    private void setFgsScore(FgsScore fgsScore) {
+    private void setFgsScore(Score fgsScore) {
         this.fgsScore = fgsScore;
 
         this.variables = new ArrayList<>();
