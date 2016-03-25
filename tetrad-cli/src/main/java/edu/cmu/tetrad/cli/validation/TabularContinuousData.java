@@ -25,6 +25,10 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -34,8 +38,17 @@ import java.nio.file.Path;
  */
 public class TabularContinuousData extends AbstractDataReader implements DataValidation {
 
-    public TabularContinuousData(Path dataFile, char delimiter) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TabularContinuousData.class);
+
+    private final Set<String> excludeVariables;
+
+    public TabularContinuousData(Set<String> excludeVariables, Path dataFile, char delimiter) {
         super(dataFile, delimiter);
+        this.excludeVariables = (excludeVariables == null) ? new HashSet<String>() : excludeVariables;
+    }
+
+    public TabularContinuousData(Path dataFile, char delimiter) {
+        this(null, dataFile, delimiter);
     }
 
     @Override
@@ -66,7 +79,9 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                         if (value.length() > 0) {
                             variables[col - 1] = value;
                         } else {
-                            stderr.println(String.format("Missing variable name at column %d.", col));
+                            String errMsg = String.format("Missing variable name at column %d.", col);
+                            stderr.println(errMsg);
+                            LOGGER.error(errMsg);
                             valid = false;
                         }
 
@@ -86,7 +101,9 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                 if (currentChar != NEW_LINE) {
                     col++;
                     if (currentChar == delimiter) {
-                        stderr.println(String.format("Missing variable name at column %d.", col));
+                        String errMsg = String.format("Missing variable name at column %d.", col);
+                        stderr.println(errMsg);
+                        LOGGER.error(errMsg);
                         valid = false;
                     } else {
                         String value = dataBuilder.toString();
@@ -94,7 +111,9 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                         if (value.length() > 0) {
                             variables[col - 1] = value;
                         } else {
-                            stderr.println(String.format("Missing variable name at column %d.", col));
+                            String errMsg = String.format("Missing variable name at column %d.", col);
+                            stderr.println(errMsg);
+                            LOGGER.error(errMsg);
                             valid = false;
                         }
                     }
@@ -114,31 +133,41 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                         dataBuilder.delete(0, dataBuilder.length());
 
                         if (col > numOfCols) {
-                            stderr.println(String.format("Column limit exceeded at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col));
+                            String errMsg = String.format("Column limit exceeded at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
+                            stderr.println(errMsg);
+                            LOGGER.error(errMsg);
                             valid = false;
                         } else {
-                            if (value.length() > 0) {
-                                try {
-                                    Double.parseDouble(value);
-                                } catch (NumberFormatException exception) {
-                                    String var = variables[col - 1];
-                                    stderr.println((var == null)
-                                            ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
-                                            : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col));
+                            String var = variables[col - 1];
+                            if (!excludeVariables.contains(var)) {
+                                if (value.length() > 0) {
+                                    try {
+                                        Double.parseDouble(value);
+                                    } catch (NumberFormatException exception) {
+
+                                        String errMsg = (var == null)
+                                                ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
+                                                : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col);
+                                        stderr.println(errMsg);
+                                        LOGGER.error(errMsg);
+                                        valid = false;
+                                    }
+                                } else {
+                                    String errMsg = (var == null)
+                                            ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
+                                            : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col);
+                                    stderr.println(errMsg);
+                                    LOGGER.error(errMsg);
                                     valid = false;
                                 }
-                            } else {
-                                String var = variables[col - 1];
-                                stderr.println((var == null)
-                                        ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
-                                        : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col));
-                                valid = false;
                             }
                         }
 
                         if (currentChar == NEW_LINE) {
                             if (col < numOfCols) {
-                                stderr.println(String.format("Insufficient data at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col));
+                                String errMsg = String.format("Insufficient data at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
+                                stderr.println(errMsg);
+                                LOGGER.error(errMsg);
                                 valid = false;
                             }
                             col = 0;
@@ -156,44 +185,56 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                 if (currentChar != NEW_LINE) {
                     col++;
                     if (col > numOfCols) {
-                        stderr.println(String.format("Column limit exceeded at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col));
+                        String errMsg = String.format("Column limit exceeded at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
+                        stderr.println(errMsg);
+                        LOGGER.error(errMsg);
                         valid = false;
                     } else if (col < numOfCols) {
-                        stderr.println(String.format("Insufficient data at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col));
+                        String errMsg = String.format("Insufficient data at row %d. Expect %d column(s) but found %d.", row + 1, numOfCols, col);
+                        stderr.println(errMsg);
+                        LOGGER.error(errMsg);
                         valid = false;
                     } else {
-                        if (currentChar == delimiter) {
-                            String var = variables[col - 1];
-                            stderr.println((var == null)
-                                    ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
-                                    : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col));
-                            valid = false;
-                        } else {
-                            String value = dataBuilder.toString();
-                            dataBuilder.delete(0, dataBuilder.length());
-                            if (value.length() > 0) {
-                                try {
-                                    Double.parseDouble(value);
-                                } catch (NumberFormatException exception) {
-                                    String var = variables[col - 1];
-                                    stderr.println((var == null)
-                                            ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
-                                            : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col));
+                        String var = variables[col - 1];
+                        if (!excludeVariables.contains(var)) {
+                            if (currentChar == delimiter) {
+                                String errMsg = (var == null)
+                                        ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
+                                        : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col);
+                                stderr.println(errMsg);
+                                LOGGER.error(errMsg);
+                                valid = false;
+                            } else {
+                                String value = dataBuilder.toString();
+                                dataBuilder.delete(0, dataBuilder.length());
+                                if (value.length() > 0) {
+                                    try {
+                                        Double.parseDouble(value);
+                                    } catch (NumberFormatException exception) {
+                                        String errMsg = (var == null)
+                                                ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
+                                                : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col);
+                                        stderr.println(errMsg);
+                                        LOGGER.error(errMsg);
+                                        valid = false;
+                                    }
+                                } else {
+                                    String errMsg = (var == null)
+                                            ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
+                                            : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col);
+                                    stderr.println(errMsg);
+                                    LOGGER.error(errMsg);
                                     valid = false;
                                 }
-                            } else {
-                                String var = variables[col - 1];
-                                stderr.println((var == null)
-                                        ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
-                                        : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col));
-                                valid = false;
                             }
                         }
                     }
                 }
             }
         } catch (IOException exception) {
-            stderr.println(exception.getMessage());
+            String errMsg = String.format("Unable to read dataset file '%s'.", dataFile.getFileName().toString());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, exception);
             valid = false;
         }
 

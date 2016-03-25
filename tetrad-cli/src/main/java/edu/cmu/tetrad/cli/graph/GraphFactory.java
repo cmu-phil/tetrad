@@ -60,7 +60,7 @@ public class GraphFactory {
         return GraphUtils.loadGraphTxt(graphFile.toFile());
     }
 
-    public static Graph loadGraphAsContinuousVariables(Path graphFile) {
+    public static Graph loadGraphAsContinuousVariables(Path graphFile) throws IOException, IllegalArgumentException {
         List<Node> nodes = getGraphContinuousNodes(graphFile);
         Graph graph = new EdgeListGraph(nodes);
 
@@ -113,14 +113,12 @@ public class GraphFactory {
                     edges = delimiter.equals(line);
                 }
             }
-        } catch (IOException exception) {
-            exception.printStackTrace(System.err);
         }
 
         return graph;
     }
 
-    public static List<Node> getGraphContinuousNodes(Path graphFile) {
+    public static List<Node> getGraphContinuousNodes(Path graphFile) throws IOException {
         List<Node> nodes = new LinkedList<>();
 
         String delimiter = "Graph Nodes:";
@@ -138,8 +136,6 @@ public class GraphFactory {
                     }
                 }
             }
-        } catch (IOException exception) {
-            exception.printStackTrace(System.err);
         }
 
         return nodes;

@@ -20,6 +20,10 @@ package edu.cmu.tetrad.cli;
 
 import edu.cmu.tetrad.cli.search.FgsCli;
 import edu.cmu.tetrad.cli.util.Args;
+import java.io.IOException;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -31,8 +35,6 @@ import org.apache.commons.cli.Options;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class TetradCliApp {
-
-    private static final String VERSION = "5.3.0-20160318";
 
     private static final Options MAIN_OPTIONS = new Options();
 
@@ -67,7 +69,7 @@ public class TetradCliApp {
                         FgsCli.main(Args.removeOption(args, "algorithm"));
                         break;
                     default:
-                        System.err.printf("Unknow algorithm: %s\n", algorithm);
+                        System.err.printf("Unknown algorithm: %s\n", algorithm);
                         showHelp();
                 }
             }
@@ -75,11 +77,30 @@ public class TetradCliApp {
     }
 
     private static void showVersion() {
-        System.out.println("Tetrad Command-line Interface (CLI) version " + VERSION);
+        try {
+            JarFile jarFile = new JarFile(TetradCliApp.class.getProtectionDomain().getCodeSource().getLocation().getPath(), true);
+            Manifest manifest = jarFile.getManifest();
+            Attributes attributes = manifest.getMainAttributes();
+            String version = attributes.getValue("Implementation-Version");
+            System.out.printf("Tetrad Command-line Interface (CLI) version %s%n", version);
+        } catch (IOException exception) {
+            System.err.println("Unable to retrieve version number.");
+        }
     }
 
     private static void showHelp() {
-        String cmdLineSyntax = "java -jar tetrad-cli.jar";
+        String cmdLineSyntax = "java -jar ";
+        try {
+            JarFile jarFile = new JarFile(TetradCliApp.class.getProtectionDomain().getCodeSource().getLocation().getPath(), true);
+            Manifest manifest = jarFile.getManifest();
+            Attributes attributes = manifest.getMainAttributes();
+            String artifactId = attributes.getValue("Implementation-Title");
+            String version = attributes.getValue("Implementation-Version");
+            cmdLineSyntax += String.format("%s-%s.jar", artifactId, version);
+        } catch (IOException exception) {
+            cmdLineSyntax += "tetrad-cli.jar";
+        }
+
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(cmdLineSyntax, MAIN_OPTIONS, true);
     }

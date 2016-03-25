@@ -44,9 +44,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Formatter;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -54,6 +59,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Fast Greedy Search (FGS) Command-line Interface.
@@ -63,6 +70,8 @@ import org.apache.commons.cli.ParseException;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class FgsCli {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FgsCli.class);
 
     private static final Options MAIN_OPTIONS = new Options();
 
@@ -151,18 +160,28 @@ public class FgsCli {
 
         printArgs(System.out);
 
-        DataValidation dataValidation = new TabularContinuousData(dataFile, delimiter);
+        Set<String> variables = new HashSet<>();
+        try {
+            variables.addAll(FileIO.extractUniqueLine(variableFile));
+        } catch (IOException exception) {
+            String errMsg = String.format("Failed to read variable file '%s'.", variableFile.getFileName());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, exception);
+            System.exit(-128);
+        }
+
+        DataValidation dataValidation = new TabularContinuousData(variables, dataFile, delimiter);
         if (!dataValidation.validate(System.err, verbose)) {
             System.exit(-128);
         }
 
         try {
-            Set<String> variables = FileIO.extractUniqueLine(variableFile);
-
             ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
-            System.out.printf("%s: Start reading in data.\n", DateTime.printNow());
+            System.out.printf("%s: Start reading in data.%n", DateTime.printNow());
+            LOGGER.info("Start reading in data.");
             DataSet dataSet = dataReader.readInData(variables);
-            System.out.printf("%s: End reading in data.\n", DateTime.printNow());
+            System.out.printf("%s: End reading in data.%n", DateTime.printNow());
+            LOGGER.info("End reading in data.");
             if (!isValid(dataSet, System.err, verbose)) {
                 System.exit(-128);
             }
@@ -186,9 +205,11 @@ public class FgsCli {
                 }
                 writer.flush();
 
-                System.out.printf("%s: Start search.\n", DateTime.printNow());
+                System.out.printf("%s: Start search.%n", DateTime.printNow());
+                LOGGER.info("Start search.");
                 graph = fgs.search();
-                System.out.printf("%s: End search.\n", DateTime.printNow());
+                System.out.printf("%s: End search.%n", DateTime.printNow());
+                LOGGER.info("End search.");
                 writer.println();
                 writer.println(graph.toString().trim());
                 writer.flush();
@@ -196,14 +217,22 @@ public class FgsCli {
 
             if (graphML) {
                 Path graphOutputFile = Paths.get(dirOut.toString(), outputPrefix + "_graph.txt");
-                System.out.printf("%s: Writing GraphML file %s.\n", DateTime.printNow(), graphOutputFile.getFileName().toString());
+                String infoMsg = String.format("%s: Writing out GraphML file '%s'.", DateTime.printNow(), graphOutputFile.getFileName().toString());
+                System.out.println(infoMsg);
+                LOGGER.info(infoMsg);
                 try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
                     XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
+                } catch (Throwable throwable) {
+                    String errMsg = String.format("Failed when writting out GraphML file '%s'.", graphOutputFile.getFileName().toString());
+                    System.err.println(errMsg);
+                    LOGGER.error(errMsg, throwable);
                 }
             }
-            System.out.printf("%s: FGS finished!  See %s for details.\n", DateTime.printNow(), outputFile.getFileName().toString());
+            System.out.printf("%s: FGS finished!  Please see %s for details.%n", DateTime.printNow(), outputFile.getFileName().toString());
+            LOGGER.info(String.format("FGS finished!  Please see %s for details.%n", outputFile.getFileName().toString()));
         } catch (Exception exception) {
-            exception.printStackTrace(System.err);
+            LOGGER.error("FGS failed.", exception);
+            System.err.printf("%s: FGS failed.  Please see log file for more information.%n", DateTime.printNow());
             System.exit(-128);
         }
     }
@@ -231,70 +260,92 @@ public class FgsCli {
         writer.println("================================================================================");
         writer.printf("FGS (%s)\n", DateTime.printNow());
         writer.println("================================================================================");
+
+        Formatter formatter = new Formatter();
+        formatter.format("=== Starting FGS: ");
         if (dataFile != null) {
-            writer.printf("data = %s\n", dataFile.getFileName());
+            writer.printf("data = %s%n", dataFile.getFileName());
+            formatter.format("data=%s,", dataFile.getFileName());
         }
         if (variableFile != null) {
-            writer.printf("variables = %s\n", variableFile.getFileName());
+            writer.printf("variables = %s%n", variableFile.getFileName());
+            formatter.format("variables=%s,", variableFile.getFileName());
         }
         if (knowledgeFile != null) {
-            writer.printf("knowledge = %s\n", knowledgeFile.getFileName());
+            writer.printf("knowledge = %s%n", knowledgeFile.getFileName());
+            formatter.format("knowledge=%s,", knowledgeFile.getFileName());
         }
-        writer.printf("penalty discount = %f\n", penaltyDiscount);
-        writer.printf("depth = %s\n", depth);
-        writer.printf("faithfulness = %s\n", faithfulness);
-        writer.printf("ignore linear dependence = %s\n", ignoreLinearDependence);
-        writer.printf("number of threads = %,d\n", numOfThreads);
-        writer.printf("verbose = %s\n", verbose);
-        writer.printf("delimiter = %s\n", Args.getDelimiterName(delimiter));
+        writer.printf("penalty discount = %f%n", penaltyDiscount);
+        writer.printf("depth = %s%n", depth);
+        writer.printf("faithfulness = %s%n", faithfulness);
+        writer.printf("ignore linear dependence = %s%n", ignoreLinearDependence);
+        writer.printf("number of threads = %,d%n", numOfThreads);
+        writer.printf("verbose = %s%n", verbose);
+        writer.printf("delimiter = %s%n", Args.getDelimiterName(delimiter));
         writer.println();
+
+        formatter.format("penalty discount=%f,depth=%s,faithfulness=%s,ignore linear dependence=%s,number of threads=%d,verbose=%s,delimiter=%s",
+                penaltyDiscount, depth, faithfulness, ignoreLinearDependence, numOfThreads, verbose, Args.getDelimiterName(delimiter));
+        LOGGER.info(formatter.toString());
     }
 
     private static void printInfo(DataSet dataSet, Set<String> variables, PrintStream writer) throws IOException {
         writer.println("Runtime Parameters:");
-        writer.printf("number of threads = %,d\n", numOfThreads);
-        writer.printf("verbose = %s\n", verbose);
+        writer.printf("number of threads = %,d%n", numOfThreads);
+        writer.printf("verbose = %s%n", verbose);
         writer.println();
+        LOGGER.info(String.format("Runtime Parameters: number of threads=%,d,verbose=%s", numOfThreads, verbose));
 
         writer.println("Algorithm Parameters:");
-        writer.printf("penalty discount = %f\n", penaltyDiscount);
-        writer.printf("depth = %s\n", depth);
-        writer.printf("faithfulness = %s\n", faithfulness);
-        writer.printf("ignore linear dependence = %s\n", ignoreLinearDependence);
+        writer.printf("penalty discount = %f%n", penaltyDiscount);
+        writer.printf("depth = %s%n", depth);
+        writer.printf("faithfulness = %s%n", faithfulness);
+        writer.printf("ignore linear dependence = %s%n", ignoreLinearDependence);
         writer.println();
+        LOGGER.info(String.format("Algorithm Parameters: penalty discount=%f,depth=%s,faithfulness=%s,ignore linear dependence=%s", penaltyDiscount, depth, faithfulness, ignoreLinearDependence));
 
         if (variableFile != null) {
             writer.println("Variable Exclusion:");
-            writer.printf("file = %s\n", variableFile.getFileName());
-            writer.printf("variables to exclude = %,d\n", variables.size());
+            writer.printf("file = %s%n", variableFile.getFileName());
+            writer.printf("variables to exclude = %,d%n", variables.size());
             writer.println();
+            LOGGER.info(String.format("Variable Exclusion: file=%s,variables to exclude=%d", variableFile.getFileName(), variables.size()));
         }
 
         if (knowledgeFile != null) {
             writer.println("Knowledge:");
-            writer.printf("file = %s\n", knowledgeFile.getFileName());
+            writer.printf("file = %s%n", knowledgeFile.getFileName());
             writer.println();
+            LOGGER.info(String.format("Knowledge: file=%s", knowledgeFile.getFileName()));
         }
 
         File datasetFile = dataFile.toFile();
         int numOfCases = DataUtility.countLine(datasetFile) - 1;
         int numOfVars = DataUtility.countColumn(datasetFile, delimiter);
         writer.println("Data File:");
-        writer.printf("file = %s\n", dataFile.getFileName());
-        writer.printf("cases = %,d\n", numOfCases);
-        writer.printf("variables = %,d\n", numOfVars);
+        writer.printf("file = %s%n", dataFile.getFileName());
+        writer.printf("cases = %,d%n", numOfCases);
+        writer.printf("variables = %,d%n", numOfVars);
         writer.println();
-
-        writer.println("Dataset Read In:");
-        writer.printf("cases = %,d\n", dataSet.getNumRows());
-        writer.printf("variables = %,d\n", dataSet.getNumColumns());
-        writer.println();
+        LOGGER.info(String.format("Data File: file=%s,cases=%d,variables=%d", dataFile.getFileName(), numOfCases, numOfVars));
     }
 
     private static void showHelp() {
-        String cmdLineSyntax = "java -jar tetrad-cli.jar --algorithm fgs";
+        StringBuilder sb = new StringBuilder("java -jar");
+        try {
+            JarFile jarFile = new JarFile(FgsCli.class.getProtectionDomain().getCodeSource().getLocation().getPath(), true);
+            Manifest manifest = jarFile.getManifest();
+            Attributes attributes = manifest.getMainAttributes();
+            String artifactId = attributes.getValue("Implementation-Title");
+            String version = attributes.getValue("Implementation-Version");
+            sb.append(String.format(" %s-%s.jar", artifactId, version));
+        } catch (IOException exception) {
+            sb.append(" tetrad-cli.jar");
+        }
+        sb.append(" --algorithm fgs");
+
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(cmdLineSyntax, MAIN_OPTIONS, true);
+        formatter.printHelp(sb.toString(), MAIN_OPTIONS, true);
     }
 
 }

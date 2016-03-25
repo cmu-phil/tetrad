@@ -27,6 +27,8 @@ import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Ensure all the variances are non-zero value.
@@ -36,6 +38,8 @@ import java.util.List;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class NonZeroVariance implements DataValidation {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NonZeroVariance.class);
 
     private final DataSet dataSet;
 
@@ -76,34 +80,39 @@ public class NonZeroVariance implements DataValidation {
 
         int size = list.size();
         if (size > 0) {
-            if (size == 1) {
-                stderr.println("Dataset contains " + size + " variable with zero variance.  Please remove the variable from the dataset or use the '--exclude-variables' option to exclude it.");
-            } else {
-                stderr.println("Dataset contains " + size + " variables with zero variance.  Please remove the variables from the dataset or use the '--exclude-variables' option to exclude them.");
-            }
+            String errMsg = (size == 1)
+                    ? String.format("Dataset contains %d variable with zero variance.  Please remove the variable from the dataset or use the '--exclude-variables' option to exclude it.", size)
+                    : String.format("Dataset contains %d variables with zero variance.  Please remove the variables from the dataset or use the '--exclude-variables' option to exclude them.", size);
+            stderr.println(errMsg);
+            LOGGER.error(errMsg);
 
             if (outputFile != null) {
                 try {
                     FileIO.writeLineByLine(list, outputFile);
-                    if (size == 1) {
-                        stderr.println("The name of the variable with zero variance has been saved to file " + outputFile.getFileName().toString() + ".");
-                    } else {
-                        stderr.println("The names of the variables with zero variance have been saved to file " + outputFile.getFileName().toString() + ".");
-                    }
+                    errMsg = (size == 1)
+                            ? String.format("The name of the variable with zero variance has been saved to file %s.", outputFile.getFileName().toString())
+                            : String.format("The names of the variables with zero variance have been saved to file %s.", outputFile.getFileName().toString());
+                    stderr.println(errMsg);
+                    LOGGER.error(errMsg);
                 } catch (IOException exception) {
-                    exception.printStackTrace(System.err);
+                    errMsg = String.format("Unable to write variable names to file %s.", outputFile.getFileName().toString());
+                    System.err.println(errMsg);
+                    LOGGER.error(errMsg, exception);
                 }
             }
 
             if (verbose) {
-                if (size == 1) {
-                    stderr.println("Variable with zero variance:");
-                } else {
-                    stderr.println("Variables with zero variance:");
-                }
+                errMsg = (size == 1) ? "Variable with zero variance:" : "Variables with zero variance:";
+                stderr.println(errMsg);
+
+                StringBuilder sb = new StringBuilder(errMsg);
+                sb.append(" ");
                 for (String s : list) {
                     stderr.println(s);
+                    sb.append(s);
+                    sb.append(",");
                 }
+                LOGGER.error(sb.deleteCharAt(sb.length() - 1).toString());
             }
         }
 
