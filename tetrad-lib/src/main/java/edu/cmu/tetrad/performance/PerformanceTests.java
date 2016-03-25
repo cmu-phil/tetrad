@@ -38,6 +38,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static java.lang.Math.copySign;
 import static java.lang.Math.round;
 
 /**
@@ -1085,7 +1086,7 @@ public class PerformanceTests {
         out.println("Depth = " + depth);
         out.println();
 
-        List<int[][]> counts = new ArrayList<int[][]>();
+        List<GraphUtils.GraphComparison> comparisons = new ArrayList<>();
         List<Double> degrees = new ArrayList<>();
         List<Long> elapsedTimes = new ArrayList<Long>();
 
@@ -1139,12 +1140,12 @@ public class PerformanceTests {
 
             SemBicScore score = new SemBicScore(cov, penaltyDiscount);
 
-            Fgs2 fgs = new Fgs2(score);
-            fgs.setVerbose(true);
+            Fgs fgs = new Fgs(score);
+//            fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setPenaltyDiscount(penaltyDiscount);
             fgs.setOut(System.out);
-            fgs.setFaithfulnessAssumed(false);
+            fgs.setFaithfulnessAssumed(true);
             fgs.setDepth(-1);
             fgs.setCycleBound(5);
 
@@ -1165,23 +1166,150 @@ public class PerformanceTests {
             double degree = GraphUtils.degree(estPattern);
             degrees.add(degree);
 
-            System.out.println("Degree out output graph = " + degree);
+            out.println("Degree out output graph = " + degree);
 
-            counts.add(SearchGraphUtils.graphComparison(estPattern, pattern, out));
+            GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison4(estPattern, pattern);
+            comparisons.add(comparison);
+
+            out.println(GraphUtils.edgeMisclassifications(comparison.getCounts()));
+            out.println(precisionRecall(comparison));
 
             long elapsed = time4 - time3;
             elapsedTimes.add(elapsed);
             out.println("\nElapsed: " + elapsed + " ms");
         }
 
-        printAverageConfusion("Average", counts);
-        printAverageStatistics("Average", elapsedTimes, degrees);
+
+        printAverageConfusion("Average", comparisons);
+        printAveragePrecisionRecall(comparisons);
+        printAverageStatistics(elapsedTimes, degrees);
 
         out.close();
 
     }
 
+    private String precisionRecall(GraphUtils.GraphComparison comparison) {
+        StringBuilder b = new StringBuilder();
+        NumberFormat nf = new DecimalFormat("0.00");
+
+        b.append("\n");
+        b.append("APRE\tAREC\tOPRE\tOREC\n");
+        b.append(nf.format(comparison.getAdjPrec() * 100) + "%\t" + nf.format(comparison.getAdjRec() * 100)
+                + "%\t" + nf.format(comparison.getAhdPrec() * 100) + "%\t" + nf.format(comparison.getAhdRec() * 100) + "%");
+        return b.toString();
+    }
+
     public void testFgsComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
+
+
+        double penaltyDiscount = 4.0;
+        int depth = 3;
+
+        init(new File("fgs.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
+                "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+        out.println("Num vars = " + numVars);
+        out.println("Num edges = " + (int) (numVars * edgeFactor));
+        out.println("Num cases = " + numCases);
+        out.println("Penalty discount = " + penaltyDiscount);
+        out.println("Depth = " + depth);
+        out.println();
+
+        List<GraphUtils.GraphComparison> comparisons = new ArrayList<>();
+        List<Double> degrees = new ArrayList<>();
+        List<Long> elapsedTimes = new ArrayList<Long>();
+
+        for (int run = 0; run < numRuns; run++) {
+
+            out.println("\n\n\n******************************** RUN " + (run + 1) + " ********************************\n\n");
+
+            System.out.println("Making dag");
+
+            Graph dag = makeDag(numVars, edgeFactor);
+
+            Graph pattern = SearchGraphUtils.patternForDag(dag);
+
+            List<Node> vars = dag.getNodes();
+
+            int[] tiers = new int[vars.size()];
+
+            for (int i = 0; i < vars.size(); i++) {
+                tiers[i] = i;
+            }
+
+            System.out.println("Graph done");
+
+            long time1 = System.currentTimeMillis();
+
+            out.println("Graph done");
+
+            System.out.println("Starting simulation");
+
+            BayesPm pm = new BayesPm(dag, 3, 3);
+            MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+
+            DataSet data = im.simulateData(numCases, false, tiers);
+
+            System.out.println("Finishing simulation");
+
+            long time2 = System.currentTimeMillis();
+
+            out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+
+            long time3 = System.currentTimeMillis();
+
+            BDeuScore score = new BDeuScore(data);
+            score.setStructurePrior(1);
+            score.setSamplePrior(1);
+
+            Fgs fgs = new Fgs(score);
+            fgs.setVerbose(false);
+            fgs.setNumPatternsToStore(0);
+            fgs.setOut(System.out);
+            fgs.setFaithfulnessAssumed(true);
+            fgs.setDepth(-1);
+            fgs.setCycleBound(5);
+
+            System.out.println("\nStarting FGS");
+
+            Graph estPattern = fgs.search();
+
+            System.out.println("Done with FGS");
+
+            long time4 = System.currentTimeMillis();
+
+            out.println(new Date());
+
+            System.out.println("Making list of vars");
+
+            estPattern = GraphUtils.replaceNodes(estPattern, dag.getNodes());
+
+            double degree = GraphUtils.degree(estPattern);
+            degrees.add(degree);
+
+            out.println("Degree out output graph = " + degree);
+
+            GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison4(estPattern, pattern);
+            comparisons.add(comparison);
+
+            out.println(GraphUtils.edgeMisclassifications(comparison.getCounts()));
+            out.println(precisionRecall(comparison));
+
+            long elapsed = time4 - time3;
+            elapsedTimes.add(elapsed);
+            out.println("\nElapsed: " + elapsed + " ms");
+        }
+
+
+        printAverageConfusion("Average", comparisons);
+        printAveragePrecisionRecall(comparisons);
+        printAverageStatistics(elapsedTimes, degrees);
+
+        out.close();
+
+    }
+
+
+    public void testFgsComparisonDiscreteOld(int numVars, double edgeFactor, int numCases, int numRuns) {
         int structurePrior = 1;
         int samplePrior = 1;
 
@@ -1197,7 +1325,7 @@ public class PerformanceTests {
         out.println("Sample prior = " + samplePrior);
         out.println();
 
-        List<int[][]> counts = new ArrayList<int[][]>();
+        List<GraphUtils.GraphComparison> comparisons = new ArrayList<>();
         List<double[]> arrowStats = new ArrayList<>();
         List<double[]> tailStats = new ArrayList<>();
         List<Double> degrees = new ArrayList<>();
@@ -1271,15 +1399,15 @@ public class PerformanceTests {
 
             System.out.println("Degree of output graph = " + degree);
 
-            counts.add(SearchGraphUtils.graphComparison(estPattern, pattern, out));
+            comparisons.add(SearchGraphUtils.getGraphComparison2(estPattern, pattern));
 
             long elapsed = time4 - time2;
             elapsedTimes.add(elapsed);
             out.println("\nElapsed: " + elapsed + " ms");
         }
 
-        printAverageConfusion("Average", counts);
-        printAverageStatistics("Average", elapsedTimes, degrees);
+        printAverageConfusion("Average", comparisons);
+        printAverageStatistics(elapsedTimes, degrees);
 
         out.close();
 
@@ -1313,7 +1441,7 @@ public class PerformanceTests {
         out.println("Complete Rule Set Used = " + completeRuleSetUsed);
         out.println();
 
-        List<int[][]> ffciCounts = new ArrayList<int[][]>();
+        List<GraphUtils.GraphComparison> ffciCounts = new ArrayList<>();
         List<double[]> ffciArrowStats = new ArrayList<double[]>();
         List<double[]> ffciTailStats = new ArrayList<double[]>();
         List<Long> ffciElapsedTimes = new ArrayList<Long>();
@@ -1399,7 +1527,7 @@ public class PerformanceTests {
             ffciArrowStats.add(printCorrectArrows(dag, estPag, truePag));
             ffciTailStats.add(printCorrectTails(dag, estPag, truePag));
 
-            ffciCounts.add(SearchGraphUtils.graphComparison(estPag, truePag, out));
+            ffciCounts.add(SearchGraphUtils.getGraphComparison2(estPag, truePag));
 
             elapsed = ta2 - ta1;
             ffciElapsedTimes.add(elapsed);
@@ -1425,7 +1553,7 @@ public class PerformanceTests {
         }
 
         printAverageConfusion("Average", ffciCounts);
-        printAverageStatistics("Average", ffciElapsedTimes, new ArrayList<Double>());
+        printAverageStatistics(ffciElapsedTimes, new ArrayList<Double>());
 
         out.close();
 
@@ -1882,7 +2010,7 @@ public class PerformanceTests {
 
         //        printDegreeDistribution(dag, out);
         return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
-                30, 15, 15, false);
+                30, 12, 15, false);
     }
 
     private void printDegreeDistribution(Graph dag, PrintStream out) {
@@ -1993,13 +2121,10 @@ public class PerformanceTests {
         System.out.println();
     }
 
-    private void printAverageStatistics(String name, List<Long> elapsedTimes, List<Double> degrees) {
+    private void printAverageStatistics(List<Long> elapsedTimes, List<Double> degrees) {
         NumberFormat nf =
                 new DecimalFormat("0");
         NumberFormat nf2 = new DecimalFormat("0.00");
-
-        out.println();
-        out.println(name);
 
         out.println();
 
@@ -2025,9 +2150,11 @@ public class PerformanceTests {
         out.println();
     }
 
-    private void printAverageConfusion(String name, List<int[][]> countsList) {
-        final int rows = countsList.get(0).length;
-        final int cols = countsList.get(0)[0].length;
+    private void printAverageConfusion(String name, List<GraphUtils.GraphComparison> comparisons) {
+
+
+        final int rows = comparisons.get(0).getCounts().length;
+        final int cols = comparisons.get(0).getCounts()[0].length;
 
         int[][] average = new int[rows][cols];
 
@@ -2035,11 +2162,11 @@ public class PerformanceTests {
             for (int j = 0; j < cols; j++) {
                 int sum = 0;
 
-                for (int[][] counts : countsList) {
-                    sum += counts[i][j];
+                for (GraphUtils.GraphComparison comparison : comparisons) {
+                    sum += comparison.getCounts()[i][j];
                 }
 
-                average[i][j] = (int) round((sum / (double) countsList.size()));
+                average[i][j] = (int) round((sum / (double) comparisons.size()));
             }
         }
 
@@ -2047,6 +2174,35 @@ public class PerformanceTests {
         out.println(name);
         out.println(GraphUtils.edgeMisclassifications(average));
 
+    }
+
+    private void printAveragePrecisionRecall(List<GraphUtils.GraphComparison> comparisons) {
+        double sum1 = 0;
+        double sum2 = 0;
+        double sum3 = 0;
+        double sum4 = 0;
+
+        for (GraphUtils.GraphComparison comparison : comparisons) {
+            sum1 += comparison.getAdjPrec();
+            sum2 += comparison.getAdjRec();
+            sum3 += comparison.getAhdPrec();
+            sum4 += comparison.getAhdRec();
+        }
+
+        double avg1 = sum1 / comparisons.size();
+        double avg2 = sum2 / comparisons.size();
+        double avg3 = sum3 / comparisons.size();
+        double avg4 = sum4 / comparisons.size();
+
+        StringBuilder b = new StringBuilder();
+        NumberFormat nf = new DecimalFormat("0.00");
+
+        b.append("\n");
+        b.append("APRE\tAREC\tOPRE\tOREC\n");
+        b.append(nf.format(avg1 * 100) + "%\t" + nf.format(avg2 * 100)
+                + "%\t" + nf.format(avg3 * 100) + "%\t" + nf.format(avg4 * 100) + "%");
+
+        out.println(b.toString());
     }
 
     private double[] printCorrectArrows(Graph dag, Graph outGraph, Graph truePag) {

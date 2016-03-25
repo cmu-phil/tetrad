@@ -3114,7 +3114,7 @@ public final class GraphUtils {
             protected Counts compute() {
                 int range = to - from;
 
-                if (range >= 1 && range <= chunk) {
+                if (range <= chunk) {
                     for (int i = from; i < to; i++) {
                         Edge edge = edges.get(i);
 
@@ -3398,6 +3398,7 @@ public final class GraphUtils {
     }
 
     public static class GraphComparison {
+        private final int[][] counts;
         private int adjFn;
         private int adjFp;
         private int adjCorrect;
@@ -3427,7 +3428,8 @@ public final class GraphUtils {
                                int twoCycleCorrect, int twoCycleFn, int twoCycleFp,
                                List<Edge> edgesAdded, List<Edge> edgesRemoved,
                                List<Edge> edgesReorientedFrom,
-                               List<Edge> edgesReorientedTo) {
+                               List<Edge> edgesReorientedTo,
+                               int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;
@@ -3448,6 +3450,8 @@ public final class GraphUtils {
             this.edgesRemoved = edgesRemoved;
             this.edgesReorientedFrom = edgesReorientedFrom;
             this.edgesReorientedTo = edgesReorientedTo;
+
+            this.counts = counts;
         }
 
         public int getAdjFn() {
@@ -3520,6 +3524,10 @@ public final class GraphUtils {
 
         public double getAhdRec() {
             return arrowptRec;
+        }
+
+        public int[][] getCounts() {
+            return counts;
         }
     }
 
@@ -3864,7 +3872,6 @@ public final class GraphUtils {
 
         return R;
     }
-
 
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
     public static List<Node> getSepset(Node x, Node y, Graph graph) {
