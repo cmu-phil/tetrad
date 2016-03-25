@@ -45,6 +45,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Formatter;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -159,14 +160,22 @@ public class FgsCli {
 
         printArgs(System.out);
 
-        DataValidation dataValidation = new TabularContinuousData(dataFile, delimiter);
+        Set<String> variables = new HashSet<>();
+        try {
+            variables.addAll(FileIO.extractUniqueLine(variableFile));
+        } catch (IOException exception) {
+            String errMsg = String.format("Failed to read variable file '%s'.", variableFile.getFileName());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, exception);
+            System.exit(-128);
+        }
+
+        DataValidation dataValidation = new TabularContinuousData(variables, dataFile, delimiter);
         if (!dataValidation.validate(System.err, verbose)) {
             System.exit(-128);
         }
 
         try {
-            Set<String> variables = FileIO.extractUniqueLine(variableFile);
-
             ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
             System.out.printf("%s: Start reading in data.%n", DateTime.printNow());
             LOGGER.info("Start reading in data.");
@@ -253,7 +262,7 @@ public class FgsCli {
         writer.println("================================================================================");
 
         Formatter formatter = new Formatter();
-        formatter.format("%nFGS: ");
+        formatter.format("=== Starting FGS: ");
         if (dataFile != null) {
             writer.printf("data = %s%n", dataFile.getFileName());
             formatter.format("data=%s,", dataFile.getFileName());

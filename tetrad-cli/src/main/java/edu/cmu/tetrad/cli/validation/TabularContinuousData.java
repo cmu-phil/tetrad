@@ -25,6 +25,8 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +40,15 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TabularContinuousData.class);
 
-    public TabularContinuousData(Path dataFile, char delimiter) {
+    private final Set<String> excludeVariables;
+
+    public TabularContinuousData(Set<String> excludeVariables, Path dataFile, char delimiter) {
         super(dataFile, delimiter);
+        this.excludeVariables = (excludeVariables == null) ? new HashSet<String>() : excludeVariables;
+    }
+
+    public TabularContinuousData(Path dataFile, char delimiter) {
+        this(null, dataFile, delimiter);
     }
 
     @Override
@@ -129,26 +138,28 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                             LOGGER.error(errMsg);
                             valid = false;
                         } else {
-                            if (value.length() > 0) {
-                                try {
-                                    Double.parseDouble(value);
-                                } catch (NumberFormatException exception) {
-                                    String var = variables[col - 1];
+                            String var = variables[col - 1];
+                            if (!excludeVariables.contains(var)) {
+                                if (value.length() > 0) {
+                                    try {
+                                        Double.parseDouble(value);
+                                    } catch (NumberFormatException exception) {
+
+                                        String errMsg = (var == null)
+                                                ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
+                                                : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col);
+                                        stderr.println(errMsg);
+                                        LOGGER.error(errMsg);
+                                        valid = false;
+                                    }
+                                } else {
                                     String errMsg = (var == null)
-                                            ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
-                                            : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col);
+                                            ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
+                                            : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col);
                                     stderr.println(errMsg);
                                     LOGGER.error(errMsg);
                                     valid = false;
                                 }
-                            } else {
-                                String var = variables[col - 1];
-                                String errMsg = (var == null)
-                                        ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
-                                        : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col);
-                                stderr.println(errMsg);
-                                LOGGER.error(errMsg);
-                                valid = false;
                             }
                         }
 
@@ -184,37 +195,37 @@ public class TabularContinuousData extends AbstractDataReader implements DataVal
                         LOGGER.error(errMsg);
                         valid = false;
                     } else {
-                        if (currentChar == delimiter) {
-                            String var = variables[col - 1];
-                            String errMsg = (var == null)
-                                    ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
-                                    : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col);
-                            stderr.println(errMsg);
-                            LOGGER.error(errMsg);
-                            valid = false;
-                        } else {
-                            String value = dataBuilder.toString();
-                            dataBuilder.delete(0, dataBuilder.length());
-                            if (value.length() > 0) {
-                                try {
-                                    Double.parseDouble(value);
-                                } catch (NumberFormatException exception) {
-                                    String var = variables[col - 1];
-                                    String errMsg = (var == null)
-                                            ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
-                                            : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col);
-                                    stderr.println(errMsg);
-                                    LOGGER.error(errMsg);
-                                    valid = false;
-                                }
-                            } else {
-                                String var = variables[col - 1];
+                        String var = variables[col - 1];
+                        if (!excludeVariables.contains(var)) {
+                            if (currentChar == delimiter) {
                                 String errMsg = (var == null)
                                         ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
                                         : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col);
                                 stderr.println(errMsg);
                                 LOGGER.error(errMsg);
                                 valid = false;
+                            } else {
+                                String value = dataBuilder.toString();
+                                dataBuilder.delete(0, dataBuilder.length());
+                                if (value.length() > 0) {
+                                    try {
+                                        Double.parseDouble(value);
+                                    } catch (NumberFormatException exception) {
+                                        String errMsg = (var == null)
+                                                ? String.format("Unable to parse data '%s' for unknown variable at row %d column %d.", value, row + 1, col)
+                                                : String.format("Unable to parse data '%s' for variable '%s' at row %d column %d.", value, var, row + 1, col);
+                                        stderr.println(errMsg);
+                                        LOGGER.error(errMsg);
+                                        valid = false;
+                                    }
+                                } else {
+                                    String errMsg = (var == null)
+                                            ? String.format("Missing data for unknown variable at row %d column %d.", row + 1, col)
+                                            : String.format("Missing data for variable '%s' at row %d column %d.", var, row + 1, col);
+                                    stderr.println(errMsg);
+                                    LOGGER.error(errMsg);
+                                    valid = false;
+                                }
                             }
                         }
                     }
