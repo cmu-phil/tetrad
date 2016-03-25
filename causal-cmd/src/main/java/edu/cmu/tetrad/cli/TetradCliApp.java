@@ -27,6 +27,8 @@ import java.util.jar.Manifest;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -35,6 +37,8 @@ import org.apache.commons.cli.Options;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class TetradCliApp {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TetradCliApp.class);
 
     private static final Options MAIN_OPTIONS = new Options();
 
@@ -81,10 +85,13 @@ public class TetradCliApp {
             JarFile jarFile = new JarFile(TetradCliApp.class.getProtectionDomain().getCodeSource().getLocation().getPath(), true);
             Manifest manifest = jarFile.getManifest();
             Attributes attributes = manifest.getMainAttributes();
+            String artifactId = attributes.getValue("Implementation-Title");
             String version = attributes.getValue("Implementation-Version");
-            System.out.printf("Tetrad Command-line Interface (CLI) version %s%n", version);
+            System.out.printf("%s version: %s%n", artifactId, version);
         } catch (IOException exception) {
-            System.err.println("Unable to retrieve version number.");
+            String errMsg = "Unable to retrieve version number.";
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, exception);
         }
     }
 
@@ -98,7 +105,7 @@ public class TetradCliApp {
             String version = attributes.getValue("Implementation-Version");
             cmdLineSyntax += String.format("%s-%s.jar", artifactId, version);
         } catch (IOException exception) {
-            cmdLineSyntax += "tetrad-cli.jar";
+            cmdLineSyntax += "causal-cmd.jar";
         }
 
         HelpFormatter formatter = new HelpFormatter();

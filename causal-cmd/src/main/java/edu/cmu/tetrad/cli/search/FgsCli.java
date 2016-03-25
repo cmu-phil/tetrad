@@ -268,8 +268,8 @@ public class FgsCli {
             formatter.format("data=%s,", dataFile.getFileName());
         }
         if (variableFile != null) {
-            writer.printf("variables = %s%n", variableFile.getFileName());
-            formatter.format("variables=%s,", variableFile.getFileName());
+            writer.printf("excluded variables = %s%n", variableFile.getFileName());
+            formatter.format("excluded variables=%s,", variableFile.getFileName());
         }
         if (knowledgeFile != null) {
             writer.printf("knowledge = %s%n", knowledgeFile.getFileName());
