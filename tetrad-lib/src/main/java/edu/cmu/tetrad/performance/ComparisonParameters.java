@@ -18,6 +18,7 @@ public class ComparisonParameters {
     private Algorithm algorithm = null;
     private String dataFile = null;
     private String graphFile;
+    private boolean oneEdgeFaithfulnessAssumed = false;
 
     public ComparisonParameters() {
 
@@ -35,6 +36,7 @@ public class ComparisonParameters {
         this.algorithm = params.algorithm;
         this.dataFile = params.dataFile;
         this.graphFile = params.graphFile;
+        this.oneEdgeFaithfulnessAssumed = params.oneEdgeFaithfulnessAssumed;
     }
 
     public void setDataType(DataType dataType) {
@@ -124,6 +126,8 @@ public class ComparisonParameters {
         } else if (algorithm == Algorithm.CPC) {
             resultType = ResultType.Pattern;
         } else if (algorithm == Algorithm.FGS) {
+            resultType = ResultType.Pattern;
+        } else if (algorithm == Algorithm.FGS2) {
             resultType = ResultType.Pattern;
         } else if (algorithm == Algorithm.PCLocal) {
             resultType = ResultType.Pattern;
@@ -243,6 +247,10 @@ public class ComparisonParameters {
             b.append("\nGraph File = " + graphFile);
         }
 
+        if (oneEdgeFaithfulnessAssumed) {
+            b.append("\nOne Edge Faithfulnes = true");
+        }
+
         return b.toString();
     }
 
@@ -262,10 +270,18 @@ public class ComparisonParameters {
         this.structurePrior = structurePrior;
     }
 
+    public void setOneEdgeFaithfulnessAssumed(boolean oneEdgeFaithfulnessAssumed) {
+        this.oneEdgeFaithfulnessAssumed = oneEdgeFaithfulnessAssumed;
+    }
+
+    public boolean isOneEdgeFaithfulnessAssumed() {
+        return oneEdgeFaithfulnessAssumed;
+    }
+
 
     public enum DataType {Continuous, Discrete}
     public enum ResultType {Pattern, PAG}
     public enum IndependenceTestType {FisherZ, ChiSquare}
     public enum ScoreType {SemBic, BDeu}
-    public enum Algorithm {PC, CPC, FGS, PCLocal, PCMax, FCI, GFCI}
+    public enum Algorithm {PC, CPC, FGS, FGS2, PCLocal, PCMax, FCI, GFCI}
 }

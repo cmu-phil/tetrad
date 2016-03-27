@@ -273,8 +273,6 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                     // Do forward search.
                     fes();
 
-                    System.out.println("TURNING FAITHFULNESS OFF");
-
                     setFaithfulnessAssumed(false);
                     initializeForwardEdgesFromExistingGraph(getVariables());
                     fes();

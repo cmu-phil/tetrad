@@ -289,8 +289,6 @@ public final class GraphUtils {
 
         final Graph dag = new EdgeListGraphSingleConnections(nodes);
 
-        System.out.println("Constructed empty graph.");
-
         final List<Node> nodes2 = dag.getNodes(); // new ArrayList<Node>(nodes);
 
 //        Collections.shuffle(nodes2);
@@ -3156,7 +3154,7 @@ public final class GraphUtils {
         }
 
 
-        System.out.println("Forming edge union");
+//        System.out.println("Forming edge union");
 //        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
 
 //        int[][] counts = new int[8][6];
@@ -3164,7 +3162,7 @@ public final class GraphUtils {
         edgeSet.addAll(topGraph.getEdges());
         edgeSet.addAll(leftGraph.getEdges());
 
-        System.out.println("Union formed");
+//        System.out.println("Union formed");
 
         if (print) {
             System.out.println("Top graph " + topGraph.getEdges().size());
@@ -3174,14 +3172,14 @@ public final class GraphUtils {
 
         List<Edge> edges = new ArrayList<>(edgeSet);
 
-        System.out.println("Finding pool");
+//        System.out.println("Finding pool");
         ForkJoinPoolInstance pool = ForkJoinPoolInstance.getInstance();
 
-        System.out.println("Starting count task");
+//        System.out.println("Starting count task");
         CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph);
         Counts counts = pool.getPool().invoke(task);
 
-        System.out.println("Finishing count task");
+//        System.out.println("Finishing count task");
         return counts.countArray();
     }
 

@@ -369,7 +369,10 @@ public class MeekRules implements ImpliedOrientation {
         graph.addEdge(after);
 
         oriented.add(after);
-        directStack.addLast(c);
+
+        if (!directStack.contains(c)) {
+            directStack.addFirst(c);
+        }
     }
 
     private static boolean isUnshieldedNoncollider(Node a, Node b, Node c,

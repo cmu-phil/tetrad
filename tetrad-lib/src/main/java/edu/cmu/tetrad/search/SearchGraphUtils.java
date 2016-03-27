@@ -2420,7 +2420,7 @@ public final class SearchGraphUtils {
 
         int shd = structuralHammingDistance(trueGraph, graph);
 
-        int[][] counts = graphComparison(graph, trueGraph, System.out);
+        int[][] counts = graphComparison(graph, trueGraph, null);
 
         return new GraphUtils.GraphComparison(
                 adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
@@ -2682,7 +2682,7 @@ public final class SearchGraphUtils {
         double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
         double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
 
-        int[][] counts = graphComparison(graph, trueGraph, System.out);
+        int[][] counts = graphComparison(graph, trueGraph, null);
 
         return new GraphUtils.GraphComparison(
                 adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
@@ -2811,7 +2811,7 @@ public final class SearchGraphUtils {
         double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
         double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
 
-        int[][] counts = graphComparison(graph, trueGraph, System.out);
+        int[][] counts = graphComparison(graph, trueGraph, null);
 
         return new GraphUtils.GraphComparison(
                 adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
