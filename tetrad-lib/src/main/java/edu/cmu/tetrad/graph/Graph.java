@@ -33,7 +33,7 @@ import java.util.Set;
  * # are endpoints of type Endpoint.</p> <p>We stipulate by extending
  * TetradSerializable that all graphs implementing this interface are
  * serializable. This is because for Tetrad they must be serializable. (For
- * randomUtil, in order to be able to cancel operations, they must be
+ * randomUtil, in order to be able to cancelAll operations, they must be
  * serializable.)</p>
  *
  * @author Joseph Ramsey

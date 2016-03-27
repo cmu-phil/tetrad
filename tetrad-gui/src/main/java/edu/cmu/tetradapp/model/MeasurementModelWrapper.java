@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.ClusterUtils;
-import edu.cmu.tetrad.search.MimBuild;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
 
@@ -196,7 +195,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     public List<String> getVariableNames() {
         List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
                 getData().getVariables());
-        return MimBuild.generateLatentNames(partition.size());
+        return ClusterUtils.generateLatentNames(partition.size());
     }
 }
 

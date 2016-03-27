@@ -214,7 +214,7 @@ final class QList {
                         // (It does not matter what value is set as long as
                         // the value is consistent across all cases.
                         // The probabilities with uninstantiated variables
-                        // should cancel out in the end.)
+                        // should cancelAll out in the end.)
                         if (loopVarValues[i] == -1) {
                             pValues[pIndex] = 0;
                         } else {

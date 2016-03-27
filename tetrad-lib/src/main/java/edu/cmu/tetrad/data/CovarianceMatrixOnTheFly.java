@@ -201,7 +201,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
                     List<VarianceTask> tasks = new ArrayList<>();
 
                     for (int i = 0; i < numIntervals; i++) {
-                        tasks.add(new VarianceTask(chunk, from + i * step, Math.min(from + (i + 1) * step, to)));
+                        VarianceTask task = new VarianceTask(chunk, from + i * step, Math.min(from + (i + 1) * step, to));
+                        tasks.add(task);
                     }
 
                     invokeAll(tasks);
@@ -216,7 +217,9 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         int minChunk = 100;
         final int chunk = _chunk < minChunk ? minChunk : _chunk;
 
-        ForkJoinPoolInstance.getInstance().getPool().invoke(new VarianceTask(chunk, 0, variables.size()));
+        VarianceTask task = new VarianceTask(chunk, 0, variables.size());
+        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+
 
 //        System.out.println("Done with variances.");
 

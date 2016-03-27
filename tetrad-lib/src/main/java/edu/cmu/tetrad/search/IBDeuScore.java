@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search;
 /**
  * Created by jdramsey on 2/21/16.
  */
-public interface IBDeuScore extends FgsScore {
+public interface IBDeuScore extends Score {
     double getStructurePrior();
 
     double getSamplePrior();

@@ -31,7 +31,7 @@ public class LongDataBox implements DataBox {
     /**
      * The stored long data.
      */
-    private long[][] data;
+    private final long[][] data;
 
     /**
      * Constructs an 2D long array consisting entirely of missing values (-99).
@@ -88,9 +88,13 @@ public class LongDataBox implements DataBox {
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
-            data[row][col] = -99L;
+            synchronized (data) {
+                data[row][col] = -99L;
+            }
         } else {
-            data[row][col] = value.longValue();
+            synchronized (data) {
+                data[row][col] = value.longValue();
+            }
         }
     }
 

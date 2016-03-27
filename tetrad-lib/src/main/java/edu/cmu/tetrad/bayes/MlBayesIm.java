@@ -26,8 +26,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.io.IOException;
@@ -37,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
@@ -932,19 +933,49 @@ public final class MlBayesIm implements BayesIm {
     /**
      * Simulates a sample with the given sample size.
      *
-     * @param sampleSize      the sample size.
+     * @param sampleSize the sample size.
      * @return the simulated sample as a DataSet.
      */
+    public DataSet simulateData(int sampleSize, boolean latentDataSaved, int[] tiers) {
+        if (getBayesPm().getDag().isTimeLagModel()) {
+            return simulateTimeSeries(sampleSize);
+        }
+
+        return simulateDataHelper(sampleSize, latentDataSaved, tiers);
+    }
+
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         if (getBayesPm().getDag().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize);
         }
 
-        return simulateDataHelper(sampleSize, latentDataSaved);
+        // Get a tier ordering and convert it to an int array.
+        Graph graph = getBayesPm().getDag();
+        List<Node> tierOrdering = graph.getCausalOrdering();
+        int[] tiers = new int[tierOrdering.size()];
+
+        for (int i = 0; i < tierOrdering.size(); i++) {
+            tiers[i] = getNodeIndex(tierOrdering.get(i));
+        }
+
+        return simulateDataHelper(sampleSize, latentDataSaved, tiers);
+    }
+
+    public DataSet simulateData(DataSet dataSet, boolean latentDataSaved, int[] tiers) {
+        return simulateDataHelper(dataSet, latentDataSaved, tiers);
     }
 
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
-        return simulateDataHelper(dataSet, latentDataSaved);
+        // Get a tier ordering and convert it to an int array.
+        Graph graph = getBayesPm().getDag();
+        List<Node> tierOrdering = graph.getCausalOrdering();
+        int[] tiers = new int[tierOrdering.size()];
+
+        for (int i = 0; i < tierOrdering.size(); i++) {
+            tiers[i] = getNodeIndex(tierOrdering.get(i));
+        }
+
+        return simulateDataHelper(dataSet, latentDataSaved, tiers);
     }
 
     private DataSet simulateTimeSeries(int sampleSize) {
@@ -1013,10 +1044,10 @@ public final class MlBayesIm implements BayesIm {
     /**
      * Simulates a sample with the given sample size.
      *
-     * @param sampleSize      the sample size.
-     * @param seed            the random number generator seed allows you
-     *                        recreate the simulated data by passing in the same
-     *                        seed (so you don't have to store the sample data
+     * @param sampleSize the sample size.
+     * @param seed       the random number generator seed allows you
+     *                   recreate the simulated data by passing in the same
+     *                   seed (so you don't have to store the sample data
      * @return the simulated sample as a DataSet.
      */
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
@@ -1030,16 +1061,26 @@ public final class MlBayesIm implements BayesIm {
 
     public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
         RandomUtil.getInstance().setSeed(seed);
-        return simulateDataHelper(dataSet, latentDataSaved);
+
+        // Get a tier ordering and convert it to an int array.
+        Graph graph = getBayesPm().getDag();
+        List<Node> tierOrdering = graph.getCausalOrdering();
+        int[] tiers = new int[tierOrdering.size()];
+
+        for (int i = 0; i < tierOrdering.size(); i++) {
+            tiers[i] = getNodeIndex(tierOrdering.get(i));
+        }
+
+        return simulateDataHelper(dataSet, latentDataSaved, tiers);
     }
 
     /**
      * Simulates a sample with the given sample size.
      *
-     * @param sampleSize      the sample size.
+     * @param sampleSize the sample size.
      * @return the simulated sample as a DataSet.
      */
-    private DataSet simulateDataHelper(int sampleSize, boolean latentDataSaved) {
+    private DataSet simulateDataHelper(int sampleSize, boolean latentDataSaved, int[] tiers) {
         int numMeasured = 0;
         int[] map = new int[nodes.length];
         List<Node> variables = new LinkedList<>();
@@ -1064,8 +1105,9 @@ public final class MlBayesIm implements BayesIm {
             map[index] = j;
         }
 
+
         DataSet dataSet = new BoxDataSet(new VerticalIntDataBox(sampleSize, variables.size()), variables);
-        constructSample(sampleSize, dataSet, map);
+        constructSample(sampleSize, dataSet, map, tiers);
 
         if (!latentDataSaved) {
             dataSet = DataUtils.restrictToMeasured(dataSet);
@@ -1078,7 +1120,7 @@ public final class MlBayesIm implements BayesIm {
      * Constructs a random sample using the given already allocated data set, to
      * avoid allocating more memory.
      */
-    private DataSet simulateDataHelper(DataSet dataSet, boolean latentDataSaved) {
+    private DataSet simulateDataHelper(DataSet dataSet, boolean latentDataSaved, int[] tiers) {
         if (dataSet.getNumColumns() != nodes.length) {
             throw new IllegalArgumentException("When rewriting the old data set, " +
                     "number of variables in data set must equal number of variables " +
@@ -1117,7 +1159,7 @@ public final class MlBayesIm implements BayesIm {
             dataSet.changeVariable(node, _node);
         }
 
-        constructSample(sampleSize, dataSet, map);
+        constructSample(sampleSize, dataSet, map, tiers);
 
         if (latentDataSaved) {
             return dataSet;
@@ -1126,43 +1168,104 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
-    private void constructSample(int sampleSize, DataSet dataSet, int[] map) {
+    private void constructSample(int sampleSize, DataSet dataSet, int[] map, int[] tiers) {
 
-        // Get a tier ordering and convert it to an int array.
-        Graph graph = getBayesPm().getDag();
-        Dag dag = (Dag) graph;
-        List<Node> tierOrdering = dag.getCausalOrdering();
-        int[] tiers = new int[tierOrdering.size()];
+        //Do the simulation.
+        class SimulationTask extends RecursiveTask<Boolean> {
+            private int chunk;
+            private int from;
+            private int to;
+            private int[] tiers;
+            private DataSet dataSet;
+            private int[] map;
 
-        for (int i = 0; i < tierOrdering.size(); i++) {
-            tiers[i] = getNodeIndex(tierOrdering.get(i));
-        }
+            public SimulationTask(int chunk, int from, int to, int[] tiers, DataSet dataSet, int[] map) {
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
+                this.tiers = tiers;
+                this.dataSet = dataSet;
+                this.map = map;
+            }
 
-        // Construct the sample.
-        for (int i = 0; i < sampleSize; i++) {
-            for (int t : tiers) {
-                int[] parentValues = new int[parents[t].length];
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int row = from; row < to; row++) {
+                        for (int t : tiers) {
+                            int[] parentValues = new int[parents[t].length];
 
-                for (int k = 0; k < parentValues.length; k++) {
-                    parentValues[k] = dataSet.getInt(i, parents[t][k]);
-                }
+                            for (int k = 0; k < parentValues.length; k++) {
+                                parentValues[k] = dataSet.getInt(row, parents[t][k]);
+                            }
 
-                int rowIndex = getRowIndex(t, parentValues);
-                double sum = 0.0;
+                            int rowIndex = getRowIndex(t, parentValues);
+                            double sum = 0.0;
+                            double r;
 
-                double r = RandomUtil.getInstance().nextDouble();
+                            r = RandomUtil.getInstance().nextDouble();
 
-                for (int k = 0; k < getNumColumns(t); k++) {
-                    double probability = getProbability(t, rowIndex, k);
-                    sum += probability;
+                            for (int k = 0; k < getNumColumns(t); k++) {
+                                double probability = getProbability(t, rowIndex, k);
+                                sum += probability;
 
-                    if (sum >= r) {
-                        dataSet.setInt(i, map[t], k);
-                        break;
+                                if (sum >= r) {
+                                    dataSet.setInt(row, map[t], k);
+                                    break;
+                                }
+                            }
+                        }
                     }
+
+                    return true;
+                } else {
+                    int mid = from + (to - from) / 2;
+                    SimulationTask left = new SimulationTask(chunk, from, mid, tiers, dataSet, map);
+                    SimulationTask right = new SimulationTask(chunk, mid, to, tiers, dataSet, map);
+
+                    left.fork();
+                    right.compute();
+                    left.join();
+
+                    return true;
                 }
             }
         }
+
+        int chunk = 25;
+
+        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+        SimulationTask task = new SimulationTask(chunk, 0, sampleSize, tiers, dataSet, map);
+        pool.invoke(task);
+
+
+//        // Construct the sample.
+//        for (int i = 0; i < sampleSize; i++) {
+//            for (int t : tiers) {
+//                int[] parentValues = new int[parents[t].length];
+//
+//                for (int k = 0; k < parentValues.length; k++) {
+//                    parentValues[k] = dataSet.getInt(i, parents[t][k]);
+//                }
+//
+//                int rowIndex = getRowIndex(t, parentValues);
+//                double sum = 0.0;
+//
+//                double r = RandomUtil.getInstance().nextDouble();
+//
+//                for (int k = 0; k < getNumColumns(t); k++) {
+//                    double probability = getProbability(t, rowIndex, k);
+//                    sum += probability;
+//
+//                    if (sum >= r) {
+//                        dataSet.setInt(i, map[t], k);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+
+//        System.out.println(dataSet);
     }
 
     public boolean equals(Object o) {

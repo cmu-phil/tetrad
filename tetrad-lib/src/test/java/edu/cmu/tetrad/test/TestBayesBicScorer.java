@@ -59,7 +59,6 @@ public final class TestBayesBicScorer  {
         assertEquals(.000, likelihoodRatioP, 0.001);
     }
 
-    @Test
     public void testGregsBdeuStructurePrior() {
         for (int i = 100; i >= 1; i--) {
             double e = .0001 / i;

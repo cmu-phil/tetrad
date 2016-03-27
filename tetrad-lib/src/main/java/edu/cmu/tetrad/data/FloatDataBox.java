@@ -31,7 +31,7 @@ public class FloatDataBox implements DataBox {
     /**
      * The stored float data.
      */
-    private float[][] data;
+    private final float[][] data;
 
     /**
      * Constructs an 2D float array consisting entirely of missing values (-99).
@@ -88,9 +88,13 @@ public class FloatDataBox implements DataBox {
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
-            data[row][col] = Float.NaN;
+            synchronized (data) {
+                data[row][col] = Float.NaN;
+            }
         } else {
-            data[row][col] = value.floatValue();
+            synchronized (data) {
+                data[row][col] = value.floatValue();
+            }
         }
     }
 

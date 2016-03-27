@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class ScoredIndTest implements FgsScore {
+public class ScoredIndTest implements Score {
 
     private final IndependenceTest test;
 
@@ -134,11 +134,11 @@ public class ScoredIndTest implements FgsScore {
     }
 
     public double getParameter1() {
-        throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
+        return test.getAlpha();
     }
 
     public void setParameter1(double alpha) {
-        throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
+        test.setAlpha(alpha);
     }
 }
 

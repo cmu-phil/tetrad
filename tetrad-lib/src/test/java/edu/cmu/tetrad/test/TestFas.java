@@ -49,7 +49,7 @@ public class TestFas {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode), 30, 15, 15, false);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode), 30, 15, 15, false, true);
 
         IndependenceTest test = new IndTestDSep(graph);
 

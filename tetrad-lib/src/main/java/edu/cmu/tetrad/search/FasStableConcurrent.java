@@ -24,9 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -45,7 +43,7 @@ import java.util.concurrent.RecursiveTask;
  * search is different for different algorithms, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
  * </p>
- * This variant uses the Pc-Stable modification, calculating independencies in parallel within each depth.
+ * This variant uses the PC-Stable modification, calculating independencies in parallel within each depth.
  * It uses a slightly different algorithm from FasStableConcurrent, probably better.
  *
  * @author Joseph Ramsey.
@@ -325,12 +323,14 @@ public class FasStableConcurrent implements IFas {
 
                     return true;
                 } else {
-                    List<Depth0Task> tasks = new ArrayList<Depth0Task>();
+                    List<Depth0Task> tasks = new ArrayList<>();
 
                     final int mid = (to - from) / 2;
 
-                    tasks.add(new Depth0Task(chunk, from, from + mid));
-                    tasks.add(new Depth0Task(chunk, from + mid, to));
+                    Depth0Task left = new Depth0Task(chunk, from, from + mid);
+                    tasks.add(left);
+                    Depth0Task right = new Depth0Task(chunk, from + mid, to);
+                    tasks.add(right);
 
                     invokeAll(tasks);
 
@@ -479,8 +479,10 @@ public class FasStableConcurrent implements IFas {
 
                     final int mid = (to - from) / 2;
 
-                    tasks.add(new DepthTask(chunk, from, from + mid));
-                    tasks.add(new DepthTask(chunk, from + mid, to));
+                    DepthTask left = new DepthTask(chunk, from, from + mid);
+                    tasks.add(left);
+                    DepthTask right = new DepthTask(chunk, from + mid, to);
+                    tasks.add(right);
 
                     invokeAll(tasks);
 

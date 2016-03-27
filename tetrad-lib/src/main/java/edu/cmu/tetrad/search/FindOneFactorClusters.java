@@ -1106,7 +1106,7 @@ public class FindOneFactorClusters {
 
         List<Node> latents = new ArrayList<Node>();
         for (int i = 0; i < clusters.size(); i++) {
-            Node latent = new GraphNode(MimBuild.LATENT_PREFIX + (i + 1));
+            Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
             graph.addNode(latent);
@@ -1155,7 +1155,7 @@ public class FindOneFactorClusters {
             TetradLogger.getInstance().log("info", s);
         }
 
-        System.out.println(s);
+//        System.out.println(s);
     }
 
     public boolean isSignificanceCalculated() {

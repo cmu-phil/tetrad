@@ -167,7 +167,7 @@ public class DMSearch {
             pattern = recursiveFgs(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
         } else {
             this.cov = new CovarianceMatrixOnTheFly(data);
-//            Pc pc = new Pc(new IndTestFisherZ(cov, this.alphaPC));
+//            PC pc = new PC(new IndTestFisherZ(cov, this.alphaPC));
 //            pc.setKnowledge(knowledge);
 //            pc.setDepth(0);
             if (verbose) {

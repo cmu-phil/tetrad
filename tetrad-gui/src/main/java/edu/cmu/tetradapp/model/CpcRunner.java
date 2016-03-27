@@ -37,7 +37,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
     private Graph trueGraph;
-//    private Cpc cpc = null;
+//    private CPC cpc = null;
 
     Set<Edge> pcAdjacent;
     Set<Edge> pcNonadjacent;
@@ -285,7 +285,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
         pcNodes = getGraph().getNodes();
     }
 
-//    public Cpc getCpc() { return cpc; }
+//    public CPC getCpc() { return cpc; }
 }
 
 

@@ -236,7 +236,7 @@ public final class Cci {
 
         double t = sqrt(t2);
         return abs(w / t) - cutoff;
-//        return 2.0 * (1.0 - normalCdf(0.0, t, abs));
+//        return 2.0 * (1.0 - normalCdf(0.0 , t, abs));
     }
 
     /**

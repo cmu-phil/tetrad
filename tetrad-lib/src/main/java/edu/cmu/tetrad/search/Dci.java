@@ -1894,7 +1894,7 @@ public class Dci {
         SepsetMapDci combinedSepset = combineSepsets(sepsetMaps);
         Pc pc = new Pc(new IndTestSepset(combinedSepset, variables));
         Graph allInd = pc.search();
-        System.out.println("Pc finished...");
+        System.out.println("PC finished...");
         List<Node> overlap = new ArrayList<Node>(marginalVars.get(0));
         System.out.println(marginalVars.get(0).size());
         for (int k = 1; k < marginalVars.size(); k++) {
@@ -1914,7 +1914,7 @@ public class Dci {
         for (int k = 0; k < marginalVars.size(); k++) {
             Pc mpc = new Pc(independenceTests.get(k));
             marginals.add(mpc.search());
-            System.out.println("Pc finished " + (k + 1) + " of " + marginalVars.size());
+            System.out.println("PC finished " + (k + 1) + " of " + marginalVars.size());
         }
         List<NodePair> pairs = allNodePairs(variables);
         //List<NodePair> pairs  = allNodePairs(overlap);

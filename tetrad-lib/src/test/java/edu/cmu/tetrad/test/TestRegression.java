@@ -58,7 +58,7 @@ public class TestRegression {
 
         RandomUtil.getInstance().setSeed(342233L);
         Graph graph = new Dag(GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 5, 3,
-                3, 3, false));
+                3, 3, false, true));
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);

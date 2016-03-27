@@ -110,15 +110,15 @@ public final class LargeSemSimulator {
      * large numbers of variables (probably due to the heavyweight lookups of
      * various values--could be improved).
      */
-    public DataSet simulateDataAcyclic(int sampleSize) {
+    public DataSet simulateDataAcyclic1(int sampleSize) {
         int size = variableNodes.size();
         setupModel(size);
 
 //        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
         final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variableNodes);
 
-        for (int col : tierIndices) {
-            for (int row = 0; row < sampleSize; row++) {
+        for (int row = 0; row < sampleSize; row++) {
+            for (int col : tierIndices) {
                 double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
 
                 for (int j = 0; j < parents[col].length; j++) {
@@ -129,6 +129,75 @@ public final class LargeSemSimulator {
                 dataSet.setDouble(row, col, value);
             }
         }
+
+        return dataSet;
+    }
+
+    // Trying again to parallelize simulateDataAcyclic.
+    public DataSet simulateDataAcyclic(int sampleSize) {
+        int size = variableNodes.size();
+        setupModel(size);
+
+//        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
+        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variableNodes);
+
+        class SimulateTask extends RecursiveTask<Boolean> {
+            private int chunk;
+            private int from;
+            private int to;
+            private int[] tierIndices;
+            private int[][] parents;
+            private double[] errorVars;
+            private double[][] coefs;
+
+            public SimulateTask(int chunk, int from, int to, int[] tierIndices, int[][] parents, double[] errorVars,
+                                double[][] coefs) {
+                this.chunk = chunk;
+                this.from = from;
+                this.to = to;
+                this.tierIndices = tierIndices;
+                this.parents = parents;
+                this.errorVars = errorVars;
+                this.coefs = coefs;
+            }
+
+            @Override
+            protected Boolean compute() {
+                if (to - from <= chunk) {
+                    for (int row = from; row < to; row++) {
+//                        if ((row + 1) % 100 == 0) System.out.println("Row " + (row + 1));
+
+                        for (int col : tierIndices) {
+                            double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
+
+                            for (int j = 0; j < parents[col].length; j++) {
+                                value += dataSet.getDouble(row, parents[col][j]) * coefs[col][j];
+                            }
+
+                            value += means[col];
+
+                            dataSet.setDouble(row, col, value);
+                        }
+                    }
+
+                    return true;
+                } else {
+                    int mid = (to - from) / 2;
+
+                    List<SimulateTask> tasks = new ArrayList<>();
+
+                    tasks.add(new SimulateTask(chunk, from, from + mid, tierIndices, parents, errorVars, coefs));
+                    tasks.add(new SimulateTask(chunk, from + mid, to, tierIndices, parents, errorVars, coefs));
+
+                    invokeAll(tasks);
+
+                    return true;
+                }
+            }
+        }
+
+        ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(100, 0, dataSet.getNumRows(),
+                tierIndices, parents, errorVars, coefs));
 
         return dataSet;
     }

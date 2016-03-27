@@ -23,16 +23,14 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.CombinationGenerator;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.collections4.map.MultiKeyMap;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 
 /**
  * Graph utilities for search algorithms. Lots of orientation method, for instance.
@@ -1372,7 +1370,7 @@ public final class SearchGraphUtils {
      */
     public static Graph patternFromDag(Graph dag) {
 //        IndTestDSep test = new IndTestDSep(dag);
-//        return new Pc(test).search();
+//        return new PC(test).search();
 //
         Graph graph = new EdgeListGraph(dag);
         SearchGraphUtils.basicPattern(graph, false);
@@ -2133,13 +2131,13 @@ public final class SearchGraphUtils {
 
     public static Graph patternForDag(final Graph dag) {
 //        IndTestDSep test = new IndTestDSep(dag);
-//        return new Pc(test).search();
+//        return new PC(test).search();
 //
         Graph pattern = new EdgeListGraph(dag);
         SearchGraphUtils.basicPattern(pattern, false);
         MeekRules rules = new MeekRules();
         rules.orientImplied(pattern);
-        GraphUtils.replaceNodes(pattern, dag.getNodes());
+//        GraphUtils.replaceNodes(pattern, dag.getNodes());
         return pattern;
     }
 
@@ -2278,7 +2276,7 @@ public final class SearchGraphUtils {
         List<Node> estLatents = estGraph.getNodes();
 
 //        List<Node> trueLatents = GraphUtils.getLatents(trueGraph);
-//        List<Node> estLatents = GraphUtils.getLatents(estGraph);
+//        List<Node> estLatents = GraphUtils.getLatents(graph);
 
         Graph u = trueGraph.subgraph(trueLatents);
         Graph t = estGraph.subgraph(estLatents);
@@ -2422,11 +2420,14 @@ public final class SearchGraphUtils {
 
         int shd = structuralHammingDistance(trueGraph, graph);
 
+        int[][] counts = graphComparison(graph, trueGraph, null);
+
         return new GraphUtils.GraphComparison(
                 adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
                 adjPrec, adjRec, arrowptPrec, arrowptRec, shd,
                 twoCycleCorrect, twoCycleFn, twoCycleFp,
-                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo);
+                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo,
+                counts);
     }
 
     /**
@@ -2549,12 +2550,17 @@ public final class SearchGraphUtils {
 
         int shd = structuralHammingDistance(trueGraph, graph);
 
+        graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
+
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(trueGraph, graph, false);
+
         return new GraphUtils.GraphComparison(
                 adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
                 adjPrec, adjRec, arrowptPrec, arrowptRec,
                 shd,
                 twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
-                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo);
+                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo,
+                counts);
     }
 
     /**
@@ -2676,13 +2682,14 @@ public final class SearchGraphUtils {
         double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
         double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
 
+        int[][] counts = graphComparison(graph, trueGraph, null);
 
         return new GraphUtils.GraphComparison(
                 adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
                 adjPrec, adjRec, arrowptPrec, arrowptRec,
                 shd,
                 twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
-                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo);
+                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo, counts);
     }
 
     /**
@@ -2804,13 +2811,14 @@ public final class SearchGraphUtils {
         double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
         double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
 
+        int[][] counts = graphComparison(graph, trueGraph, null);
 
         return new GraphUtils.GraphComparison(
                 adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
                 adjPrec, adjRec, arrowptPrec, arrowptRec,
                 shd,
                 twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
-                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo);
+                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo, counts);
     }
 
     public static int structuralHammingDistance3(Graph trueGraph, Graph estGraph) {
@@ -2835,6 +2843,218 @@ public final class SearchGraphUtils {
             }
         }
         return error;
+    }
+
+
+    private static class AhdCounts {
+        private int ahdFp = 0;
+        private int ahdFn = 0;
+        private int ahdCorrect = 0;
+
+        public void incrementFp() {
+            ahdFp++;
+        }
+
+        public void incrementFn() {
+            ahdFn++;
+        }
+
+        public void incrementCorrect() {
+            ahdCorrect++;
+        }
+
+        public void addAll(AhdCounts ahdCounts2) {
+            ahdFp += ahdCounts2.getAhdFp();
+            ahdFn += ahdCounts2.getAhdFn();
+            ahdCorrect += ahdCounts2.getAhdCorrect();
+        }
+
+        public int getAhdFp() {
+            return ahdFp;
+        }
+
+        public int getAhdFn() {
+            return ahdFn;
+        }
+
+        public int getAhdCorrect() {
+            return ahdCorrect;
+        }
+    }
+
+    public static GraphUtils.GraphComparison getGraphComparison4(Graph graph, Graph trueGraph) {
+        System.out.println("Graph comparison 4");
+
+        System.out.println("Counting adjacency errors");
+
+        int adjFn = GraphUtils.countAdjErrors(trueGraph, graph);
+        int adjFp = GraphUtils.countAdjErrors(graph, trueGraph);
+
+        int adjCorrect = graph.getNumEdges() - adjFp;
+
+
+//        class AhdCountTask extends RecursiveTask<AhdCounts> {
+//            private int chunk;
+//            private int from;
+//            private int to;
+//            private final List<Node> nodes;
+//            private final Graph trueGraph;
+//            private final Graph graph;
+//            private final AhdCounts counts;
+//
+//            public AhdCountTask(int chunk, int from, int to, List<Node> nodes, Graph trueGraph, Graph graph) {
+//                this.chunk = chunk;
+//                this.from = from;
+//                this.to = to;
+//                this.nodes = nodes;
+//                this.trueGraph = trueGraph;
+//                this.graph = graph;
+//                this.counts = new AhdCounts();
+//            }
+//
+//            @Override
+//            protected AhdCounts compute() {
+//                int range = to - from;
+//
+//                if (range <= chunk) {
+//
+//                    for (int i = from; i < to; i++) {
+//                        for (int j = i + 1; j < nodes.size(); j++) {
+//                            if (i == j) continue;
+//
+//                            Node x = nodes.get(i);
+//                            Node y = nodes.get(j);
+//
+//                            Edge edge = trueGraph.getEdge(x, y);
+//                            Edge _edge = graph.getEdge(x, y);
+//
+//                            boolean existsArrow = edge != null && edge.getProximalEndpoint(y) == Endpoint.ARROW;
+//                            boolean _existsArrow = _edge != null && _edge.getProximalEndpoint(y) == Endpoint.ARROW;
+//
+//                            if (existsArrow && !_existsArrow) {
+//                                counts.incrementFn();
+//                            }
+//
+//                            if (!existsArrow && _existsArrow) {
+//                                counts.incrementFp();
+//                            }
+//
+//                            if (existsArrow && _existsArrow) {
+//                                counts.incrementCorrect();
+//                            }
+//                        }
+//                    }
+//
+//                    return counts;
+//                } else {
+//                    int mid = from + (to - from) / 2;
+//                    AhdCountTask left = new AhdCountTask(chunk, from, mid, nodes, trueGraph, graph);
+//                    AhdCountTask right = new AhdCountTask(chunk, mid, to, nodes, trueGraph, graph);
+//
+//                    left.fork();
+//                    AhdCounts rightAnswer = right.compute();
+//                    AhdCounts leftAnswer = left.join();
+//
+//                    leftAnswer.addAll(rightAnswer);
+//                    return leftAnswer;
+//                }
+//            }
+//
+//            public AhdCounts getCounts() {
+//                return counts;
+//            }
+//        }
+
+        ForkJoinPoolInstance pool = ForkJoinPoolInstance.getInstance();
+
+        System.out.println("Starting to count ahd fp");
+
+
+        List<Node> nodes = trueGraph.getNodes();
+
+//        AhdCountTask task = new AhdCountTask(500, 0, nodes.size(), nodes, trueGraph, graph);
+//        AhdCounts ahdCounts = pool.getPool().invoke(task);
+//
+//        int andFn = ahdCounts.getAhdFn();
+//        int ahdFp = ahdCounts.getAhdFp();
+//        int ahdCorrect = ahdCounts.getAhdCorrect();
+
+        System.out.println("Done counting ahd fp");
+
+//        for (int i = 0; i < nodes.size(); i++) {
+//            for (int j = i + 1; j < nodes.size(); j++) {
+//                if (i == j) continue;
+//
+//                Node x = nodes.get(i);
+//                Node y = nodes.get(j);
+//
+//                Edge edge = trueGraph.getEdge(x, y);
+//                Edge _edge = graph.getEdge(x, y);
+//
+//                boolean existsArrow = edge != null && edge.getProximalEndpoint(y) == Endpoint.ARROW;
+//                boolean _existsArrow = _edge != null && _edge.getProximalEndpoint(y) == Endpoint.ARROW;
+//
+//                if (existsArrow && !_existsArrow) {
+//                    andFn++;
+//                }
+//
+//                if (!existsArrow && _existsArrow) {
+//                    ahdFp++;
+//                }
+//
+//                if (existsArrow && _existsArrow) {
+//                    ahdCorrect++;
+//                }
+//            }
+//        }
+//
+//        for (int i = 0; i < nodes.size(); i++) {
+//            for (int j = i + 1; j < nodes.size(); j++) {
+//                if (i == j) continue;
+//
+//                Node x = nodes.get(i);
+//                Node y = nodes.get(j);
+//
+//                Node _x = graph.getNode(x.getName());
+//                Node _y = graph.getNode(y.getName());
+//
+//                Edge edge = trueGraph.getEdge(x, y);
+//                Edge _edge = graph.getEdge(_x, _y);
+//
+//                boolean existsArrow = edge != null && edge.getDistalEndpoint(y) == Endpoint.ARROW;
+//                boolean _existsArrow = _edge != null && _edge.getDistalEndpoint(_y) == Endpoint.ARROW;
+//
+//                if (existsArrow && !_existsArrow) {
+//                    andFn++;
+//                }
+//
+//                if (!existsArrow && _existsArrow) {
+//                    ahdFp++;
+//                }
+//
+//                if (existsArrow && _existsArrow) {
+//                    ahdCorrect++;
+//                }
+//            }
+//        }
+
+
+        double adjPrec = (double) adjCorrect / (adjCorrect + adjFp);
+        double adjRec = (double) adjCorrect / (adjCorrect + adjFn);
+//        double ahdPrec = (double) ahdCorrect / (ahdCorrect + ahdFp);
+//        double ahdRec = (double) ahdCorrect / (ahdCorrect + andFn);
+
+//        graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
+
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(trueGraph, graph, false);
+
+        return new GraphUtils.GraphComparison(
+                adjFn, adjFp, adjCorrect, 0, 0, 0,
+                adjPrec, adjRec, 0, 0,
+                0,
+                0, 0, 0,
+                null, null, null, null,
+                counts);
     }
 
     private static int structuralHammingDistanceOneEdge3(Edge e1, Edge e2) {
@@ -2968,25 +3188,27 @@ public final class SearchGraphUtils {
     }
 
     public static int[][] graphComparison(Graph estPattern, Graph truePattern, PrintStream out) {
-        GraphUtils.GraphComparison comparison = getGraphComparison(estPattern, truePattern);
+        GraphUtils.GraphComparison comparison = getGraphComparison2(estPattern, truePattern);
 
         if (out != null) {
             out.println("Adjacencies:");
         }
 
-        int adjTp = comparison.getAdjCorrect();
+        int adjTp = comparison.getAdjCor();
         int adjFp = comparison.getAdjFp();
         int adjFn = comparison.getAdjFn();
 
-        int arrowptTp = comparison.getArrowptCorrect();
-        int arrowptFp = comparison.getArrowptFp();
-        int arrowptFn = comparison.getArrowptFn();
+        int arrowptTp = comparison.getAhdCor();
+        int arrowptFp = comparison.getAhdFp();
+        int arrowptFn = comparison.getAhdFn();
 
         if (out != null) {
             out.println("TP " + adjTp + " FP = " + adjFp + " FN = " + adjFn);
             out.println("Arrow Orientations:");
             out.println("TP " + arrowptTp + " FP = " + arrowptFp + " FN = " + arrowptFn);
         }
+
+        estPattern = GraphUtils.replaceNodes(estPattern, truePattern.getNodes());
 
         int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern, false);
 
@@ -3005,9 +3227,9 @@ public final class SearchGraphUtils {
 
         if (out != null) {
             out.println();
-            out.println("AREC\tAPRE\tOREC\tOPRE");
-            out.println(nf.format(adjRecall * 100) + "%\t" + nf.format(adjPrecision * 100)
-                    + "%\t" + nf.format(arrowRecall * 100) + "%\t" + nf.format(arrowPrecision * 100) + "%");
+            out.println("APRE\tAREC\tOPRE\tOREC");
+            out.println(nf.format(adjPrecision * 100) + "%\t" + nf.format(adjRecall * 100)
+                    + "%\t" + nf.format(arrowPrecision * 100) + "%\t" + nf.format(arrowRecall * 100) + "%");
             out.println();
         }
 

@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -85,8 +86,11 @@ public class AllPathsAction extends AbstractAction implements ClipboardOwner {
 
         new WatchedProcess(owner) {
             public void watch() {
+                if (isCanceled()) return;
+
                 for (int i = 0; i < graph.getNodes().size(); i++) {
                     for (int j = 0; j < graph.getNodes().size(); j++) {
+
                         Node node1 = graph.getNodes().get(i);
                         Node node2 = graph.getNodes().get(j);
 

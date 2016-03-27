@@ -71,6 +71,7 @@ public class PcLocal implements GraphSearch {
     private SepsetsMinScore sepsetProducer;
     private SemBicScore score;
     private ConcurrentMap<Node, Integer> hashIndices;
+    private boolean verbose = false;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -148,7 +149,7 @@ public class PcLocal implements GraphSearch {
             for (int j = i + 1; j < nodes.size(); j++) {
                 ++index;
 
-                if (index % 100 == 0) {
+                if (verbose && index % 100 == 0) {
                     log("info", index + " of " + numEdges);
                 }
 
@@ -456,6 +457,13 @@ public class PcLocal implements GraphSearch {
         return null;
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 }
 
 

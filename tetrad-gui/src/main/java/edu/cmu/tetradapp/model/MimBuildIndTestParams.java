@@ -47,11 +47,6 @@ public class MimBuildIndTestParams implements MimIndTestParams {
     private double alpha = 0.001;
 
     /**
-     * @serial No constraint.
-     */
-    private int algorithmType;
-
-    /**
      * @serial Can be null.
      */
     private MimParams originalParams;
@@ -64,11 +59,10 @@ public class MimBuildIndTestParams implements MimIndTestParams {
 
     //=========================CONSTRUCTORS=============================//
 
-    public MimBuildIndTestParams(double alpha, int numClusters, int type,
-            MimParams originalParams) {
+    public MimBuildIndTestParams(double alpha, int numClusters,
+                                 MimParams originalParams) {
         setAlpha(alpha);
         setNumClusters(numClusters);
-        setAlgorithmType(type);
         this.originalParams = originalParams;
     }
 
@@ -78,7 +72,7 @@ public class MimBuildIndTestParams implements MimIndTestParams {
      * @see TetradSerializableUtils
      */
     public static MimBuildIndTestParams serializableInstance() {
-        return new MimBuildIndTestParams(0.05, 1, 1, null);
+        return new MimBuildIndTestParams(0.05, 1, null);
     }
 
     //========================PUBLIC METHODS===========================//
@@ -93,14 +87,6 @@ public class MimBuildIndTestParams implements MimIndTestParams {
                     "Number of clusters should be >= 1!");
         }
         this.numClusters = numClusters;
-    }
-
-    public int getAlgorithmType() {
-        return algorithmType;
-    }
-
-    public void setAlgorithmType(int type) {
-        algorithmType = type;
     }
 
     public IKnowledge getKnowledge() {

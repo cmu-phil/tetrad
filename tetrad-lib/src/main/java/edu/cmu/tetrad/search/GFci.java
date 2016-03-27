@@ -43,11 +43,11 @@ import java.util.concurrent.ConcurrentMap;
  * utilize unshielded colliders found by GES. 5/31/2015
  * <p>
  * Previous:
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
+ * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
  * <p>
- * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
+ * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  *
@@ -129,7 +129,7 @@ public final class GFci {
     private double samplePrior = 10;
 
     /**
-     * The structure prior for the Bdeu score (discrete data).
+     * The structure prior for the BDeu score (discrete data).
      */
     private double structurePrior = 1;
 

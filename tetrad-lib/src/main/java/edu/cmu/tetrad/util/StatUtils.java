@@ -23,6 +23,7 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.util.ArrayList;
@@ -1957,6 +1958,25 @@ public final class StatUtils {
         double high = 20.0;
         double mid = 5.0;
         NormalDistribution dist = new NormalDistribution(0, 1);
+
+        while (high - low > 1e-4) {
+            mid = (high + low) / 2.0;
+            double _alpha = 2.0 * (1.0 - dist.cumulativeProbability(Math.abs(mid)));
+
+            if (_alpha > alpha) {
+                low = mid;
+            } else {
+                high = mid;
+            }
+        }
+        return mid;
+    }
+
+    public static double getChiSquareCutoff(double alpha, int df) {
+        double low = 0.0;
+        double high = 50.0;
+        double mid = 25.0;
+        ChiSquaredDistribution dist = new ChiSquaredDistribution(df);
 
         while (high - low > 1e-4) {
             mid = (high + low) / 2.0;

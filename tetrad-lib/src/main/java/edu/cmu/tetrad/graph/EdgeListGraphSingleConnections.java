@@ -533,7 +533,7 @@ public class EdgeListGraphSingleConnections implements Graph {
         List<Node> parents = new ArrayList<>();
         List<Edge> edges = edgeLists.get(node);
 
-        for (Edge edge : edges) {
+        for (Edge edge : new ArrayList<>(edges)) {
 //            if (edge == null) continue;
 
             Endpoint endpoint1 = edge.getDistalEndpoint(node);
@@ -581,17 +581,17 @@ public class EdgeListGraphSingleConnections implements Graph {
      * Determines whether one node is an ancestor of another.
      */
     public boolean isAncestorOf(Node node1, Node node2) {
-        if (ancestors != null) {
-            return ancestors.get(node2).contains(node1);
-        } else {
+        if (ancestors == null) {
             ancestors = new HashMap<>();
+        }
 
-            for (Node node : nodes) {
-                ancestors.put(node, new HashSet<>(getAncestors(Collections.singletonList(node))));
-            }
-
+        if (ancestors.get(node2) != null) {
             return ancestors.get(node2).contains(node1);
         }
+
+        ancestors.put(node2, new HashSet<>(getAncestors(Collections.singletonList(node2))));
+
+        return ancestors.get(node2).contains(node1);
     }
 
     public boolean possibleAncestor(Node node1, Node node2) {
@@ -1118,8 +1118,15 @@ public class EdgeListGraphSingleConnections implements Graph {
                     "nodes are in the graph: " + edge);
         }
 
+        edgeList1 = new ArrayList<>(edgeList1);
+        edgeList2 = new ArrayList<>(edgeList2);
+
         edgeList1.add(edge);
         edgeList2.add(edge);
+
+        edgeLists.put(edge.getNode1(), edgeList1);
+        edgeLists.put(edge.getNode2(), edgeList2);
+
         edgesSet.add(edge);
 
         ancestors = null;
@@ -1189,8 +1196,7 @@ public class EdgeListGraphSingleConnections implements Graph {
      * ordering of the edges in the list is guaranteed.
      */
     public synchronized List<Edge> getEdges(Node node) {
-        List<Edge> list = edgeLists.get(node);
-        return new ArrayList<>(list);
+        return edgeLists.get(node);
     }
 
     public int hashCode() {
@@ -1389,11 +1395,17 @@ public class EdgeListGraphSingleConnections implements Graph {
         List<Edge> edgeList1 = edgeLists.get(edge.getNode1());
         List<Edge> edgeList2 = edgeLists.get(edge.getNode2());
 
+        edgeList1 = new ArrayList<>(edgeList1);
+        edgeList2 = new ArrayList<>(edgeList2);
+
         edgesSet.remove(edge);
         edgeList1.remove(edge);
         edgeList2.remove(edge);
         highlightedEdges.remove(edge);
         stuffRemovedSinceLastTripleAccess = true;
+
+        edgeLists.put(edge.getNode1(), edgeList1);
+        edgeLists.put(edge.getNode2(), edgeList2);
 
         ancestors = null;
         getPcs().firePropertyChange("edgeRemoved", edge, null);

@@ -218,6 +218,7 @@ public class Pc implements GraphSearch {
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      */
+    @Override
     public Graph search() {
         return search(independenceTest.getVariables());
     }

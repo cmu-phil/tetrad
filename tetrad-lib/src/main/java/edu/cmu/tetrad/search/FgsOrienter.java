@@ -244,14 +244,14 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
     }
 
     /**
-     * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
+     * Set to true if it is assumed that all path pairs with one length 1 path do not cancelAll.
      */
     public void setFaithfulnessAssumed(boolean faithfulness) {
         this.faithfulnessAssumed = faithfulness;
     }
 
     /**
-     * @return true if it is assumed that all path pairs with one length 1 path do not cancel.
+     * @return true if it is assumed that all path pairs with one length 1 path do not cancelAll.
      */
     public boolean isFaithfulnessAssumed() {
         return this.faithfulnessAssumed;

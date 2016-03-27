@@ -48,7 +48,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
-    private transient Fgs fgs;
+    private transient Fgs2 fgs;
     private transient Graph initialGraph;
 
     //============================CONSTRUCTORS============================//
@@ -295,7 +295,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
-            fgs = new Fgs(gesScore);
+            fgs = new Fgs2(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
             fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
             fgs.setVerbose(true);
@@ -305,14 +305,14 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             if (dataSet.isContinuous()) {
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model),
                         params.getComplexityPenalty());
-                fgs = new Fgs(gesScore);
+                fgs = new Fgs2(gesScore);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = ((FgsParams) getParams()).getSamplePrior();
                 double structurePrior = ((FgsParams) getParams()).getStructurePrior();
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
-                fgs = new Fgs(score);
+                fgs = new Fgs2(score);
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
@@ -320,7 +320,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model,
                     params.getComplexityPenalty());
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
-            fgs = new Fgs(gesScore);
+            fgs = new Fgs2(gesScore);
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
@@ -345,12 +345,12 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 if (indTestParams.isFirstNontriangular()) {
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
-                    fgs = new Fgs(fgsScore);
+                    fgs = new Fgs2(fgsScore);
                     fgs.setPenaltyDiscount(penalty);
                 } else {
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
-                    fgs = new Fgs(fgsScore);
+                    fgs = new Fgs2(fgsScore);
                     fgs.setPenaltyDiscount(penalty);
                 }
             } else if (allDiscrete(list)) {
@@ -358,11 +358,11 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 double samplePrior = ((FgsParams) getParams()).getSamplePrior();
 
                 if (indTestParams.isFirstNontriangular()) {
-                    fgs = new Fgs(new BdeuScoreImages(list));
+                    fgs = new Fgs2(new BdeuScoreImages(list));
                     fgs.setSamplePrior(samplePrior);
                     fgs.setStructurePrior(structurePrior);
                 } else {
-                    fgs = new Fgs(new BdeuScoreImages(list));
+                    fgs = new Fgs2(new BdeuScoreImages(list));
                     fgs.setSamplePrior(samplePrior);
                     fgs.setStructurePrior(structurePrior);
                 }

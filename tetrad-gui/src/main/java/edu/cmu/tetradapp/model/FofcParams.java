@@ -254,11 +254,6 @@ public final class FofcParams implements MimParams {
     public Clusters getMaxClusters() {
         return this.maxClusters;
     }
-
-    @Override
-    public double getMaxAlpha() {
-        return this.maxAlpha;
-    }
 }
 
 

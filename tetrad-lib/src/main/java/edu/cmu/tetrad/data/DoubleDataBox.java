@@ -31,7 +31,7 @@ public class DoubleDataBox implements DataBox {
     /**
      * The stored double data.
      */
-    private double[][] data;
+    private final double[][] data;
 
     /**
      * Constructs an 2D double array consisting entirely of missing values
@@ -89,9 +89,13 @@ public class DoubleDataBox implements DataBox {
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
-            data[row][col] = Double.NaN;
+            synchronized (data) {
+                data[row][col] = Double.NaN;
+            }
         } else {
-            data[row][col] = value.doubleValue();
+            synchronized (data) {
+                data[row][col] = value.doubleValue();
+            }
         }
     }
 
