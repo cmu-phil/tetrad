@@ -28,7 +28,6 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 
@@ -164,7 +163,7 @@ public final class GraphUtils {
         // It is still unclear whether we should use the random forward edges method or the
         // random uniform method to create random DAGs, hence this method.
         // jdramsey 12/8/2015
-        return randomGraphRandomForwardEdges(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
+        return randomGraphRandomForwardEdges(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected, true);
 //        return randomGraphUniform(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
     }
 
@@ -265,7 +264,8 @@ public final class GraphUtils {
 
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders,
                                                       int numEdges, int maxDegree,
-                                                      int maxIndegree, int maxOutdegree, boolean connected) {
+                                                      int maxIndegree, int maxOutdegree, boolean connected,
+                                                      boolean layoutAsCircle) {
         if (nodes.size() <= 0) {
             throw new IllegalArgumentException(
                     "NumNodes most be > 0: " + nodes.size());
@@ -289,6 +289,8 @@ public final class GraphUtils {
 
         final Graph dag = new EdgeListGraphSingleConnections(nodes);
 
+        System.out.println("Constructed empty graph.");
+
         final List<Node> nodes2 = dag.getNodes(); // new ArrayList<Node>(nodes);
 
 //        Collections.shuffle(nodes2);
@@ -297,6 +299,9 @@ public final class GraphUtils {
         boolean added = false;
 
         for (int i = 0; i < numEdges; i++) {
+
+            if ((i + 1) % 1000 == 0) System.out.println("# edges = " + (i + 1));
+
             int c1 = RandomUtil.getInstance().nextInt(nodes2.size());
             int c2 = RandomUtil.getInstance().nextInt(nodes2.size());
 
@@ -355,7 +360,9 @@ public final class GraphUtils {
 
         fixLatents4(numLatentConfounders, dag);
 
-        GraphUtils.circleLayout(dag, 200, 200, 150);
+        if (layoutAsCircle) {
+            GraphUtils.circleLayout(dag, 200, 200, 150);
+        }
 
         return dag;
     }
@@ -2721,7 +2728,7 @@ public final class GraphUtils {
         int maxDegree = 0;
 
         for (Node node : graph.getNodes()) {
-            int n = graph.getAdjacentNodes(node).size();
+            int n = graph.getEdges(node).size();
             if (n > maxDegree) maxDegree = n;
         }
 
@@ -3088,8 +3095,6 @@ public final class GraphUtils {
     }
 
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
-        System.out.println("Correcting nodes");
-        topGraph = replaceNodes(topGraph, leftGraph.getNodes());
 
         class CountTask extends RecursiveTask<Counts> {
             private int chunk;
@@ -3158,6 +3163,8 @@ public final class GraphUtils {
         Set<Edge> edgeSet = new HashSet<>();
         edgeSet.addAll(topGraph.getEdges());
         edgeSet.addAll(leftGraph.getEdges());
+
+        System.out.println("Union formed");
 
         if (print) {
             System.out.println("Top graph " + topGraph.getEdges().size());

@@ -554,12 +554,12 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        if (verbose) {
-                            synchronized (count) {
-                                if (((count[0]++) + 1) % 1000 == 0)
-                                    out.println("Initializing effect edges: " + count[0]);
-                            }
-                        }
+//                        if (verbose) {
+//                            synchronized (count) {
+                        if (((count[0]++) + 1) % 1000 == 0)
+                            out.println("Initializing effect edges: " + count[0]);
+//                            }
+//                        }
 
                         Node y = nodes.get(i);
                         neighbors.put(y, getNeighbors(y));
@@ -664,18 +664,18 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        if (verbose) {
-                            synchronized (count) {
-                                if (((count[0]++) + 1) % 1000 == 0)
-                                    out.println("Initializing effect edges: " + count[0]);
-                            }
-                        }
+//                        if (verbose) {
+//                            synchronized (count) {
+                        if (((count[0]++) + 1) % 1000 == 0)
+                            out.println("Initializing effect edges: " + count[0]);
+//                            }
+//                        }
 
                         Node y = nodes.get(i);
                         Set<Node> D = new HashSet<>();// GraphUtils.getDconnectedVars(y, Collections.EMPTY_LIST, graph);
 
                         Set<Node> neighbors = getNeighbors(y);
-                        for (Node a :  graph.getAdjacentNodes(y)) {
+                        for (Node a : graph.getAdjacentNodes(y)) {
                             if (graph.isChildOf(a, y)) continue;
                             D.addAll(GraphUtils.getDconnectedVars(a, Collections.EMPTY_LIST, graph));
                         }
@@ -1321,9 +1321,9 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
         int numEdges = graph.getNumEdges();
 
-        if (verbose) {
-            if (numEdges % 1000 == 0) out.println("Num edges added: " + numEdges);
-        }
+//        if (verbose) {
+        if (numEdges % 1000 == 0) out.println("Num edges added: " + numEdges);
+//        }
 
         if (verbose) {
             String label = trueGraph != null && trueEdge != null ? "*" : "";

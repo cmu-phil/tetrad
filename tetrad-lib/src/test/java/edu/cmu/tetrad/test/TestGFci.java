@@ -33,6 +33,7 @@ import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -48,7 +49,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestGFci {
 
-    @Test
     public void test1() {
         RandomUtil.getInstance().setSeed(1450189593459L);
 
@@ -127,6 +127,9 @@ public class TestGFci {
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
         }
+
+//        System.out.println(MatrixUtils.toString(counts));
+//        System.out.println(MatrixUtils.toString(expectedCounts));
     }
 }
 

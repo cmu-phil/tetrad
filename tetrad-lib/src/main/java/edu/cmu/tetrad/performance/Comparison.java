@@ -13,7 +13,6 @@ import edu.cmu.tetrad.util.TextTable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -64,7 +63,7 @@ public class Comparison {
                 }
 
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
                 if (params.getDataType() == null) {
                     throw new IllegalArgumentException("Data type not set or inferred.");
@@ -84,7 +83,7 @@ public class Comparison {
                 }
 
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
                 if (params.getDataType() == null) {
                     throw new IllegalArgumentException("Data type not set or inferred.");

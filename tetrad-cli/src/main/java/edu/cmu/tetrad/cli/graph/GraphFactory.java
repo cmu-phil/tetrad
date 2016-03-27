@@ -53,7 +53,7 @@ public class GraphFactory {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numofVars * edgesPerNode), 30, 15, 15, false);
+        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numofVars * edgesPerNode), 30, 15, 15, false, true);
     }
 
     public static Graph loadGraph(Path graphFile) {

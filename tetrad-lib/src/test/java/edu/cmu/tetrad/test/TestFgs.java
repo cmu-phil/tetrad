@@ -33,7 +33,6 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.junit.Test;
@@ -71,7 +70,7 @@ public class TestFgs {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false);
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
 //        printDegreeDistribution(dag, System.out);
 
         int[] causalOrdering = new int[vars.size()];
@@ -142,7 +141,7 @@ public class TestFgs {
         }
 
         Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
-                30, 15, 15, false);
+                30, 15, 15, false, true);
 //        printDegreeDistribution(dag, out);
 
         BayesPm pm = new BayesPm(dag, 2, 3);

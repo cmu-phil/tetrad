@@ -165,6 +165,8 @@ public final class LargeSemSimulator {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int row = from; row < to; row++) {
+                        if ((row + 1) % 100 == 0) System.out.println("Row " + (row + 1));
+
                         for (int col : tierIndices) {
                             double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
 
