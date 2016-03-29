@@ -48,7 +48,7 @@ public class TestLargeSemSimulator {
         Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 5, 5, 5, false);
 
         LargeSemSimulator simulator = new LargeSemSimulator(graph);
-        DataSet dataset = simulator.simulateDataAcyclicConcurrent(1000);
+        DataSet dataset = simulator.simulateDataAcyclic(1000);
 
         assertEquals(1000, dataset.getNumRows());
     }

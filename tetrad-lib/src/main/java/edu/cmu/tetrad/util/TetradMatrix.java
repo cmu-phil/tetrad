@@ -136,12 +136,6 @@ public class TetradMatrix implements TetradSerializable {
             return new TetradMatrix(rows.length, cols.length);
         }
 
-        for (int col : cols) {
-            if (col == -1) {
-                System.out.println();
-            }
-        }
-
         RealMatrix subMatrix = apacheData.getSubMatrix(rows, cols);
         return new TetradMatrix(subMatrix, rows.length, cols.length);
     }

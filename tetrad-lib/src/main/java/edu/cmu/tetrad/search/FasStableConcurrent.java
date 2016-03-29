@@ -325,11 +325,11 @@ public class FasStableConcurrent implements IFas {
                 } else {
                     List<Depth0Task> tasks = new ArrayList<>();
 
-                    final int mid = (to - from) / 2;
+                    final int mid = (to + from) / 2;
 
-                    Depth0Task left = new Depth0Task(chunk, from, from + mid);
+                    Depth0Task left = new Depth0Task(chunk, from, mid);
                     tasks.add(left);
-                    Depth0Task right = new Depth0Task(chunk, from + mid, to);
+                    Depth0Task right = new Depth0Task(chunk, mid, to);
                     tasks.add(right);
 
                     invokeAll(tasks);
@@ -477,11 +477,11 @@ public class FasStableConcurrent implements IFas {
                 } else {
                     List<DepthTask> tasks = new ArrayList<DepthTask>();
 
-                    final int mid = (to - from) / 2;
+                    final int mid = (to + from) / 2;
 
-                    DepthTask left = new DepthTask(chunk, from, from + mid);
+                    DepthTask left = new DepthTask(chunk, from, mid);
                     tasks.add(left);
-                    DepthTask right = new DepthTask(chunk, from + mid, to);
+                    DepthTask right = new DepthTask(chunk, mid, to);
                     tasks.add(right);
 
                     invokeAll(tasks);

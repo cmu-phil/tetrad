@@ -3093,6 +3093,7 @@ public final class GraphUtils {
     }
 
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
+        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
 
         class CountTask extends RecursiveTask<Counts> {
             private int chunk;
@@ -3119,6 +3120,8 @@ public final class GraphUtils {
 
                 if (range <= chunk) {
                     for (int i = from; i < to; i++) {
+                        if ((i + 1) % 1000 == 0) System.out.println("Counted " + (i + 1));
+
                         Edge edge = edges.get(i);
 
                         Node x = edge.getNode1();
@@ -3135,7 +3138,7 @@ public final class GraphUtils {
 
                     return counts;
                 } else {
-                    int mid = from + (to - from) / 2;
+                    int mid = (to + from) / 2;
                     CountTask left = new CountTask(chunk, from, mid, edges, leftGraph, topGraph);
                     CountTask right = new CountTask(chunk, mid, to, edges, leftGraph, topGraph);
 

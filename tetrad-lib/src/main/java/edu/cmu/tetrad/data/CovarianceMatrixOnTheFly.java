@@ -145,8 +145,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
             for (int i = 0; i < variables.size(); i++) {
                 vectors[i] = realMatrix.getColumnVector(i).toArray();
             }
-
-//            DataUtils.remean(doubleData, means);
         }
 
         this.variances = new double[variables.size()];

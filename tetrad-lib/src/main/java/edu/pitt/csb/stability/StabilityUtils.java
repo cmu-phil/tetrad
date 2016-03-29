@@ -113,10 +113,10 @@ public class StabilityUtils {
                 } else {
                     List<StabilityAction> tasks = new ArrayList<StabilityAction>();
 
-                    final int mid = (to - from) / 2;
+                    final int mid = (to + from) / 2;
 
-                    tasks.add(new StabilityAction(chunk, from, from + mid));
-                    tasks.add(new StabilityAction(chunk, from + mid, to));
+                    tasks.add(new StabilityAction(chunk, from, mid));
+                    tasks.add(new StabilityAction(chunk, mid, to));
 
                     invokeAll(tasks);
 

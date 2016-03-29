@@ -31,6 +31,7 @@ import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
+import org.apache.commons.lang3.RandomUtils;
 
 import javax.swing.*;
 import java.io.*;
@@ -1083,6 +1084,8 @@ public class PerformanceTests {
         double penaltyDiscount = 4.0;
         int depth = 3;
 
+        RandomUtil.getInstance().setSeed(50304050454L);
+
         init(new File("fgs.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
                 "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
         out.println("Num vars = " + numVars);
@@ -1141,18 +1144,18 @@ public class PerformanceTests {
 
                 System.out.println("Making covariance matrix");
 
+                long time3 = System.currentTimeMillis();
+
                 ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
 
                 System.out.println("Covariance matrix done");
-
-                long time3 = System.currentTimeMillis();
 
                 out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
 
                 SemBicScore score = new SemBicScore(cov, penaltyDiscount);
 
                 Fgs2 fgs = new Fgs2(score);
-//            fgs.setVerbose(true);
+                fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setPenaltyDiscount(penaltyDiscount);
                 fgs.setOut(System.out);
@@ -1185,7 +1188,7 @@ public class PerformanceTests {
                 score.setSamplePrior(1);
 
                 Fgs2 fgs = new Fgs2(score);
-//                fgs.setVerbose(false);
+                fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(true);
@@ -1201,7 +1204,6 @@ public class PerformanceTests {
             }
 
             System.out.println("Done with FGS");
-
 
             out.println(new Date());
 
@@ -1231,6 +1233,29 @@ public class PerformanceTests {
             int sumRow = counts[4][0] + counts[4][3] + counts[4][5];
             int sumCol = counts[0][3] + counts[4][3] + counts[5][3] + counts[7][3];
             int trueArrow = counts[4][3];
+
+            int sumTrueAdjacencies = 0;
+
+            for (int i = 0; i < 7; i++) {
+                for (int j = 0; j < 5; j++) {
+                    sumTrueAdjacencies += counts[i][j];
+                }
+            }
+
+            int falsePositiveAdjacencies = 0;
+
+            for (int j = 0; j < 5; j++) {
+                falsePositiveAdjacencies += counts[7][j];
+            }
+
+            int falseNegativeAdjacencies = 0;
+
+            for (int i = 0; i < 5; i++) {
+                falseNegativeAdjacencies += counts[i][5];
+            }
+
+            comparison[0] = sumTrueAdjacencies / (double) (sumTrueAdjacencies + falsePositiveAdjacencies);
+            comparison[1] = sumTrueAdjacencies / (double) (sumTrueAdjacencies + falseNegativeAdjacencies);
 
             comparison[2] = trueArrow / (double) sumCol;
             comparison[3] = trueArrow / (double) sumRow;
