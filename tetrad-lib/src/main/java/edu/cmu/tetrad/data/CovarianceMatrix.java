@@ -24,15 +24,15 @@ package edu.cmu.tetrad.data;
 //import cern.colt.matrix.DoubleMatrix2D;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.stat.Variance;
-import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.linear.RealMatrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.TetradAlgebra;
+import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
 
 /**
  * Stores a covariance matrix together with variable names and sample size,
@@ -92,9 +92,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      */
     private IKnowledge knowledge = new Knowledge2();
 
-    private double[][] vectors = null;
-
-
     //=============================CONSTRUCTORS=========================//
 
     /**
@@ -107,169 +104,18 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             throw new IllegalArgumentException("Not a continuous data set.");
         }
 
-        this.matrix = new TetradMatrix(dataSet.getNumColumns(), dataSet.getNumColumns());
+        dataSet = dataSet.copy();
 
         this.variables = Collections.unmodifiableList(dataSet.getVariables());
         this.sampleSize = dataSet.getNumRows();
 
-        if (dataSet instanceof BoxDataSet) {
+        final TetradMatrix data = dataSet.getDoubleData();
 
-            DataBox box = ((BoxDataSet) dataSet).getDataBox().copy();
+        TetradVector means = DataUtils.means(data);
+        DataUtils.demean(data, means);
+        this.matrix = DataUtils.covDemeaned(data);
 
-            if (box instanceof VerticalDoubleDataBox) {
-                if (!dataSet.getVariables().equals(variables)) throw new IllegalArgumentException();
-
-                vectors = ((VerticalDoubleDataBox) box).getVariableVectors();
-
-//                final TetradMatrix doubleData = dataSet.getDoubleData();
-                TetradVector means = DataUtils.means(vectors);
-                DataUtils.demean(vectors, means);
-
-//                DataUtils.remean(doubleData, means);
-            }
-
-        }
-
-        if (vectors == null) {
-            final TetradMatrix doubleData = dataSet.getDoubleData().copy();
-            TetradVector means = DataUtils.means(doubleData);
-            DataUtils.demean(doubleData, means);
-
-            final RealMatrix realMatrix = doubleData.getRealMatrix();
-
-            vectors = new double[variables.size()][];
-
-            for (int i = 0; i < variables.size(); i++) {
-                vectors[i] = realMatrix.getColumnVector(i).toArray();
-            }
-
-            class VarianceTask extends RecursiveTask<Boolean> {
-                private int chunk;
-                private int from;
-                private int to;
-
-                public VarianceTask(int chunk, int from, int to) {
-                    this.chunk = chunk;
-                    this.from = from;
-                    this.to = to;
-                }
-
-                @Override
-                protected Boolean compute() {
-                    if (to - from <= chunk) {
-                        for (int i = from; i < to; i++) {
-                            double d = 0.0D;
-
-                            int count = 0;
-
-                            double[] v1 = vectors[i];
-
-                            for (int k = 0; k < sampleSize; ++k) {
-                                if (Double.isNaN(v1[k])) {
-                                    continue;
-                                }
-
-                                d += v1[k] * v1[k];
-                                count++;
-                            }
-
-                            double v = d;
-                            v /= (count - 1);
-
-                            matrix.set(i, i, v);
-
-                            if (v == 0) {
-                                System.out.println("Zero variance! " + variables.get(i));
-                            }
-                        }
-
-                        return true;
-                    } else {
-                        int mid = (to + from) / 2;
-
-                        VarianceTask left = new VarianceTask(chunk, from, mid);
-                        VarianceTask right = new VarianceTask(chunk, mid, to);
-
-                        left.fork();
-                        right.compute();
-                        left.join();
-
-                        return true;
-                    }
-                }
-            }
-
-            class RestOfThemTask extends RecursiveTask<Boolean> {
-                private int chunk;
-                private int from;
-                private int to;
-
-                public RestOfThemTask(int chunk, int from, int to) {
-
-                    this.chunk = chunk;
-                    this.from = from;
-                    this.to = to;
-                }
-
-                @Override
-                protected Boolean compute() {
-                    if (to - from <= chunk) {
-                        for (int i = from; i < to; i++) {
-                            for (int j = i + 1; j < to; j++) {
-                                double d = 0.0D;
-
-                                double[] v1 = vectors[i];
-                                double[] v2 = vectors[j];
-                                int count = 0;
-
-                                for (int k = 0; k < sampleSize; k++) {
-                                    if (Double.isNaN(v1[k])) continue;
-                                    if (Double.isNaN(v2[k])) continue;
-
-                                    d += v1[k] * v2[k];
-                                    count++;
-                                }
-
-                                double v = d;
-                                v /= (count - 1);
-
-                                matrix.set(i, j, v);
-                                matrix.set(j, i, v);
-                            }
-                        }
-
-                        return true;
-                    } else {
-                        int mid = (to + from) / 2;
-
-                        RestOfThemTask left = new RestOfThemTask(chunk, from, mid);
-                        RestOfThemTask right = new RestOfThemTask(chunk, mid, to);
-
-                        left.fork();
-                        right.compute();
-                        left.join();
-
-                        return true;
-                    }
-                }
-            }
-
-            int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
-            int _chunk = variables.size() / NTHREADS + 1;
-            int minChunk = 100;
-            final int chunk = _chunk < minChunk ? minChunk : _chunk;
-
-            VarianceTask task = new VarianceTask(chunk, 0, variables.size());
-            ForkJoinPoolInstance.getInstance().getPool().invoke(task);
-
-            RestOfThemTask task2 = new RestOfThemTask(chunk, 0, variables.size());
-            ForkJoinPoolInstance.getInstance().getPool().invoke(task2);
-
-            DataUtils.remean(doubleData, means);
-        }
-
-        this.variables = Collections.unmodifiableList(dataSet.getVariables());
-        this.sampleSize = dataSet.getNumRows();
+        DataUtils.remean(data, means);
     }
 
     /**
