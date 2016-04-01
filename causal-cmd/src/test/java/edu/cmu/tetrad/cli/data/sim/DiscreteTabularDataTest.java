@@ -16,37 +16,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.cli.data;
+package edu.cmu.tetrad.cli.data.sim;
 
-import edu.cmu.tetrad.data.DataSet;
-import java.io.IOException;
-import java.util.Set;
+import org.junit.Test;
 
 /**
- * Interface for reading in continuous dataset.
  *
- * Feb 29, 2016 1:32:03 PM
+ * Mar 29, 2016 1:23:52 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public interface ContinuousDataReader {
+public class DiscreteTabularDataTest {
+
+    public DiscreteTabularDataTest() {
+    }
 
     /**
-     * Read in dataset containing continuous values.
-     *
-     * @return
-     * @throws IOException
+     * Test of main method, of class DiscreteTabularData.
      */
-    public DataSet readInData() throws IOException;
+    @Test
+    public void testMain() {
+        System.out.println("main");
 
-    /**
-     * Read in dataset containing continuous values. Excludes any variables from
-     * the given set.
-     *
-     * @param excludedVariables set of variables to exclude
-     * @return
-     * @throws IOException
-     */
-    public DataSet readInData(Set<String> excludedVariables) throws IOException;
+        String[] args = {
+            "--variable", "20",
+            "--case", "100",
+            "--edge", "1.0"
+        };
+        DiscreteTabularData.main(args);
+    }
 
 }
