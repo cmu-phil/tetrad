@@ -162,6 +162,9 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
     // The final score after search.
     private double modelScore;
 
+    final int maxThreads = Runtime.getRuntime().availableProcessors() * 5;
+
+
     //===========================CONSTRUCTORS=============================//
 
     /**
@@ -263,7 +266,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
             } else {
                 if (isFaithfulnessAssumed()) {
                     graph = new EdgeListGraphSingleConnections(getVariables());
-                    initializeForwardEdgesFromEmptyGraph2(getVariables());
+                    initializeForwardEdgesFromEmptyGraph(getVariables());
 
                     // Do forward search.
                     fes();
@@ -271,7 +274,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                     graph = new EdgeListGraphSingleConnections(getVariables());
 
                     setFaithfulnessAssumed(true);
-                    initializeForwardEdgesFromEmptyGraph2(getVariables());
+                    initializeForwardEdgesFromEmptyGraph(getVariables());
 
                     // Do forward search.
                     fes();
@@ -520,150 +523,157 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
     }
 
 
-    // Simultaneously finds the first edge to add to an empty graph and finds all length 1 paths that are
-    // not canceled by other paths (the "effect edges")
-    private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
-        sortedArrows = new ConcurrentSkipListSet<>();
-        lookupArrows = new ConcurrentHashMap<>();
-        neighbors = new ConcurrentHashMap<>();
-
-        long start = System.currentTimeMillis();
-        this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
-        final Set<Node> emptySet = new HashSet<>(0);
-
-        final int[] count = new int[1];
-
-        class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-
-            public InitializeFromEmptyGraphTask(int chunk, int from, int to) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        if (((count[0]++) + 1) % 1000 == 0)
-                            out.println("Initializing effect edges: " + count[0]);
-
-                        Node y = nodes.get(i);
-                        neighbors.put(y, getNeighbors(y));
-
-                        for (int j = i + 1; j < nodes.size(); j++) {
-                            if (i == j) continue;
-                            Node x = nodes.get(j);
-
-                            if (existsKnowledge()) {
-                                if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
-                                    continue;
-                                }
-
-                                if (!validSetByKnowledge(y, emptySet)) {
-                                    continue;
-                                }
-                            }
-
-                            if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
-                                continue;
-                            }
-
-                            int child = hashIndices.get(y);
-                            int parent = hashIndices.get(x);
-                            double bump = fgsScore.localScoreDiff(parent, child, new int[]{});
-
-                            if (isFaithfulnessAssumed() && fgsScore.isEffectEdge(bump)) {
-                                final Edge edge = Edges.undirectedEdge(x, y);
-                                if (boundGraph != null && !boundGraph.isAdjacentTo(edge.getNode1(), edge.getNode2()))
-                                    continue;
-                                effectEdgesGraph.addEdge(edge);
-                            }
-
-                            if (bump > 0.0) {
-                                addArrow(x, y, emptySet, emptySet, bump);
-                                addArrow(y, x, emptySet, emptySet, bump);
-                            }
-                        }
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to + from) / 2;
-
-                    InitializeFromEmptyGraphTask left = new InitializeFromEmptyGraphTask(chunk, from, mid);
-                    InitializeFromEmptyGraphTask right = new InitializeFromEmptyGraphTask(chunk, mid, to);
-
-                    left.fork();
-                    right.compute();
-                    left.join();
-
-                    return true;
-                }
-            }
-        }
-
-        buildIndexing(nodes);
-        int maxThreads = Runtime.getRuntime().availableProcessors() * 10;
-        pool.invoke(new InitializeFromEmptyGraphTask(nodes.size() / maxThreads + 1, 0, nodes.size()));
-
-        long stop = System.currentTimeMillis();
-
-        if (verbose) {
-            out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
-        }
-    }
+//    // Simultaneously finds the first edge to add to an empty graph and finds all length 1 paths that are
+//    // not canceled by other paths (the "effect edges")
+//    private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
+//        sortedArrows = new ConcurrentSkipListSet<>();
+//        lookupArrows = new ConcurrentHashMap<>();
+//        neighbors = new ConcurrentHashMap<>();
+//
+//        long start = System.currentTimeMillis();
+//        this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
+//        final Set<Node> emptySet = new HashSet<>(0);
+//
+//        final int[] count = new int[1];
+//
+//        class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
+//            private int chunk;
+//            private int from;
+//            private int to;
+//
+//            public InitializeFromEmptyGraphTask(int chunk, int from, int to) {
+//                this.chunk = chunk;
+//                this.from = from;
+//                this.to = to;
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                if (to - from <= chunk) {
+//                    for (int i = from; i < to; i++) {
+//                        if (((count[0]++) + 1) % 1000 == 0)
+//                            out.println("Initializing effect edges: " + count[0]);
+//
+//                        Node y = nodes.get(i);
+//                        neighbors.put(y, getNeighbors(y));
+//
+//                        for (int j = i + 1; j < nodes.size(); j++) {
+//                            if (i == j) continue;
+//                            Node x = nodes.get(j);
+//
+//                            if (existsKnowledge()) {
+//                                if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
+//                                    continue;
+//                                }
+//
+//                                if (!validSetByKnowledge(y, emptySet)) {
+//                                    continue;
+//                                }
+//                            }
+//
+//                            if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+//                                continue;
+//                            }
+//
+//                            int child = hashIndices.get(y);
+//                            int parent = hashIndices.get(x);
+//                            double bump = fgsScore.localScoreDiff(parent, child, new int[]{});
+//
+//                            if (isFaithfulnessAssumed() && fgsScore.isEffectEdge(bump)) {
+//                                final Edge edge = Edges.undirectedEdge(x, y);
+//                                if (boundGraph != null && !boundGraph.isAdjacentTo(edge.getNode1(), edge.getNode2()))
+//                                    continue;
+//                                effectEdgesGraph.addEdge(edge);
+//                            }
+//
+//                            if (bump > 0.0) {
+//                                addArrow(x, y, emptySet, emptySet, bump);
+//                                addArrow(y, x, emptySet, emptySet, bump);
+//                            }
+//                        }
+//                    }
+//
+//                    return true;
+//                } else {
+//                    int mid = (to + from) / 2;
+//
+//                    InitializeFromEmptyGraphTask left = new InitializeFromEmptyGraphTask(chunk, from, mid);
+//                    InitializeFromEmptyGraphTask right = new InitializeFromEmptyGraphTask(chunk, mid, to);
+//
+//                    left.fork();
+//                    right.compute();
+//                    left.join();
+//
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        buildIndexing(nodes);
+//        pool.invoke(new InitializeFromEmptyGraphTask(nodes.size() / maxThreads + 1, 0, nodes.size()));
+//
+//        long stop = System.currentTimeMillis();
+//
+//        if (verbose) {
+//            out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
+//        }
+//    }
 
     class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
-        private final int i;
+        private final int from;
+        private final int to;
         private final List<Node> nodes;
         private final Set<Node> emptySet;
 
-        public NodeTaskEmptyGraph(int i, List<Node> nodes, Set<Node> emptySet) {
-            this.i = i;
+        public NodeTaskEmptyGraph(int from, int to, List<Node> nodes, Set<Node> emptySet) {
+            this.from = from;
+            this.to = to;
             this.nodes = nodes;
             this.emptySet = emptySet;
         }
 
         @Override
         protected Boolean compute() {
-            Node y = nodes.get(i);
-            neighbors.put(y, getNeighbors(y));
+            for (int i = from; i < to; i++) {
+                if ((i + 1) % 1000 == 0)
+                    out.println("Initializing effect edges: " + (i + 1));
 
-            for (int j = i + 1; j < nodes.size(); j++) {
-                Node x = nodes.get(j);
 
-                if (existsKnowledge()) {
-                    if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
+                Node y = nodes.get(i);
+                neighbors.put(y, emptySet);
+
+                for (int j = i + 1; j < nodes.size(); j++) {
+                    Node x = nodes.get(j);
+
+                    if (existsKnowledge()) {
+                        if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
+                            continue;
+                        }
+
+                        if (!validSetByKnowledge(y, emptySet)) {
+                            continue;
+                        }
+                    }
+
+                    if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
                         continue;
                     }
 
-                    if (!validSetByKnowledge(y, emptySet)) {
-                        continue;
+                    int child = hashIndices.get(y);
+                    int parent = hashIndices.get(x);
+                    double bump = fgsScore.localScoreDiff(parent, child);
+
+                    if (isFaithfulnessAssumed() && fgsScore.isEffectEdge(bump)) {
+                        final Edge edge = Edges.undirectedEdge(x, y);
+                        if (boundGraph != null && !boundGraph.isAdjacentTo(edge.getNode1(), edge.getNode2()))
+                            continue;
+                        effectEdgesGraph.addEdge(edge);
                     }
-                }
 
-                if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
-                    continue;
-                }
-
-                int child = hashIndices.get(y);
-                int parent = hashIndices.get(x);
-                double bump = fgsScore.localScoreDiff(parent, child, new int[]{});
-
-                if (isFaithfulnessAssumed() && fgsScore.isEffectEdge(bump)) {
-                    final Edge edge = Edges.undirectedEdge(x, y);
-                    if (boundGraph != null && !boundGraph.isAdjacentTo(edge.getNode1(), edge.getNode2()))
-                        continue;
-                    effectEdgesGraph.addEdge(edge);
-                }
-
-                if (bump > 0.0) {
-                    addArrow(x, y, emptySet, emptySet, bump);
-                    addArrow(y, x, emptySet, emptySet, bump);
+                    if (bump > 0.0) {
+                        addArrow(x, y, emptySet, emptySet, bump);
+                        addArrow(y, x, emptySet, emptySet, bump);
+                    }
                 }
             }
 
@@ -671,18 +681,14 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         }
     }
 
-    private void initializeForwardEdgesFromEmptyGraph2(final List<Node> nodes) {
+    private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
+        final Set<Node> emptySet = new HashSet<>();
 
         long start = System.currentTimeMillis();
         this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
-        final Set<Node> emptySet = new HashSet<>();
-
-        final int[] count = new int[1];
-
-        final int maxThreads = Runtime.getRuntime().availableProcessors() * 10;
 
         class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
 
@@ -693,15 +699,22 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
-                for (int i = 0; i < nodes.size(); i++) {
-                    if (((count[0]++) + 1) % 1000 == 0)
-                        out.println("Initializing effect edges: " + count[0]);
+                int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
 
-                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, nodes, emptySet);
+                for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
+                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
+                            nodes, emptySet);
                     tasks.add(task);
                     task.fork();
 
-                    if (tasks.size() > maxThreads) {
+                    for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
+                        if (_task.isDone()) {
+                            _task.join();
+                            tasks.remove(_task);
+                        }
+                    }
+
+                    while (tasks.size() > maxThreads) {
                         NodeTaskEmptyGraph _task = tasks.poll();
                         _task.join();
                     }
@@ -819,7 +832,6 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         }
 //
         buildIndexing(nodes);
-        int maxThreads = Runtime.getRuntime().availableProcessors() * 10;
         pool.invoke(new InitializeFromExistingGraphTask(nodes.size() / maxThreads + 1, 0, nodes.size()));
 
         long stop = System.currentTimeMillis();
@@ -842,8 +854,6 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 //        setVerbose(!isFaithfulnessAssumed());
 
         class FesTask extends RecursiveTask<Boolean> {
-            int maxThreads = Runtime.getRuntime().availableProcessors() * 10;
-
             private Queue<NodeTaskForward> tasks = new ArrayDeque<>();
 
             @Override
@@ -1742,9 +1752,14 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
     // Maps adj to their indices for quick lookup.
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
-        for (Node node : nodes) {
-            this.hashIndices.put(node, variables.indexOf(node));
+
+        for (int i = 0; i < variables.size(); i++) {
+            this.hashIndices.put(variables.get(i), i);
         }
+
+//        for (Node node : nodes) {
+//            this.hashIndices.put(node, variables.indexOf(node));
+//        }
     }
 
     // Removes information associated with an edge x->y.

@@ -233,8 +233,6 @@ public final class FgsMb implements GraphSearch, GraphScorer {
             int parent = hashIndices.get(x);
             double bump = fgsScore.localScoreDiff(parent, child, new int[]{});
 
-            System.out.println(bump);
-
             if (bump > 0) {
                 if (!boundGraph.containsNode(x)) {
                     boundGraph.addNode(x);
@@ -256,8 +254,6 @@ public final class FgsMb implements GraphSearch, GraphScorer {
                 double bump = fgsScore.localScoreDiff(parent, child, new int[]{});
 
                 if (bump > 0) {
-                    System.out.println(x + " " + w);
-
                     if (!boundGraph.containsNode(x)) {
                         boundGraph.addNode(x);
                     }
@@ -281,8 +277,6 @@ public final class FgsMb implements GraphSearch, GraphScorer {
                 }
             }
         }
-
-        System.out.println(boundGraph);
 
         this.target = target;
 
@@ -318,9 +312,6 @@ public final class FgsMb implements GraphSearch, GraphScorer {
 
         calculateBoundGraph(target);
 //        if (true) return boundGraph;
-
-        System.out.println(boundGraph);
-
 
         lookupArrows = new ConcurrentHashMap<>();
         final List<Node> nodes = new ArrayList<>(variables);
@@ -644,7 +635,7 @@ public final class FgsMb implements GraphSearch, GraphScorer {
                         Node y = nodes.get(i);
                         neighbors.put(y, getNeighbors(y));
 
-                        for (int j = i + 1; j < nodes.size(); j++) {
+                        for (int j = 0; j < i; j++) {
                             if (i == j) continue;
                             Node x = nodes.get(j);
 

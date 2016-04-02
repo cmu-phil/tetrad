@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Runs several algorithms from the moves line. Documentation is available
+ * Runs several algorithms from Tetrad. Documentation is available
  * in the wiki of the Tetrad project on GitHub. This will be replaced by
  * the package tetrad-cli.
  *
@@ -502,8 +502,8 @@ public final class TetradCmd {
             runCfci();
         } else if ("ccd".equalsIgnoreCase(algorithmName)) {
             runCcd();
-        } else if ("ges".equalsIgnoreCase(algorithmName)) {
-            runGes();
+        } else if ("fgs".equalsIgnoreCase(algorithmName)) {
+            runFgs();
         } else if ("bayes_est".equalsIgnoreCase(algorithmName)) {
             runBayesEst();
         } else if ("fofc".equalsIgnoreCase(algorithmName)) {
@@ -635,13 +635,13 @@ public final class TetradCmd {
         writeGraph(resultGraph);
     }
 
-    private void runGes() {
+    private void runFgs() {
         if (this.data == null && this.covarianceMatrix == null) {
             throw new IllegalStateException("Data did not load correctly.");
         }
 
         if (verbose) {
-            systemPrint("GES");
+            systemPrint("FGS");
             systemPrint(getKnowledge().toString());
             systemPrint(getVariables().toString());
 
@@ -659,7 +659,18 @@ public final class TetradCmd {
         if (useCovariance) {
             fgs = new Fgs(new SemBicScore(covarianceMatrix, penaltyDiscount));
         } else {
-            fgs = new Fgs(new SemBicScore(new CovarianceMatrixOnTheFly(data), penaltyDiscount));
+            if (data.isDiscrete()) {
+                BDeScore score = new BDeScore(data);
+                score.setSamplePrior(samplePrior);
+                score.setStructurePrior(structurePrior);
+
+                fgs = new Fgs(score);
+            } else if (data.isContinuous()) {
+                SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data), penaltyDiscount);
+                fgs = new Fgs(score);
+            } else {
+                throw new IllegalArgumentException();
+            }
         }
 
         if (initialGraph != null) {

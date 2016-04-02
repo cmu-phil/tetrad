@@ -239,6 +239,31 @@ public class TestFgs {
         }
     }
 
+    @Test
+    public void testFgsMbFromGraph() {
+        int numNodes = 10;
+        int numIterations = 1;
+
+        for (int i = 0; i < numIterations; i++) {
+//            System.out.println("Iteration " + (i + 1));
+            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            GraphScore fgsScore = new GraphScore(dag);
+
+            Fgs2 fgs = new Fgs2(fgsScore);
+            Graph pattern1 = fgs.search();
+
+            Node x1 = dag.getNode("X1");
+
+            Graph graphMb = GraphUtils.markovBlanketDag(x1, pattern1);
+
+            FgsMb fgsMb = new FgsMb(fgsScore, x1);
+            Graph fgsMbGraph = fgsMb.search();
+//
+//            assertEquals(graphMb, fgsMbGraph);
+        }
+    }
+
+
     private void printDegreeDistribution(Graph dag, PrintStream out) {
         int max = 0;
 

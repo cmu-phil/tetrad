@@ -271,7 +271,7 @@ public class FasStableConcurrent implements IFas {
 
                         final Node x = nodes.get(i);
 
-                        for (int j = i + 1; j < nodes.size(); j++) {
+                        for (int j = 0; j < i; j++) {
                             final Node y = nodes.get(j);
 
                             if (initialGraph != null) {

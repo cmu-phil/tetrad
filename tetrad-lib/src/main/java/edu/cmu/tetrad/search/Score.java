@@ -33,6 +33,8 @@ public interface Score {
 
     double localScoreDiff(int x, int y, int[] z);
 
+    double localScoreDiff(int x, int y);
+
     double localScore(int node, int parent);
 
     double localScore(int node);

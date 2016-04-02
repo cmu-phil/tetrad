@@ -129,7 +129,7 @@ public class FgsRunner2 extends AbstractAlgorithmRunner
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
         int depth = getParams().getIndTestParams().getDepth();
-        Fgs pc = new Fgs(new ScoredIndTest(getIndependenceTest()));
+        Fgs2 pc = new Fgs2(new ScoredIndTest(getIndependenceTest()));
         pc.setKnowledge(knowledge);
         pc.setDepth(depth);
         pc.setInitialGraph(initialGraph);

@@ -2133,7 +2133,7 @@ public final class SearchGraphUtils {
 //        IndTestDSep test = new IndTestDSep(dag);
 //        return new PC(test).search();
 //
-        Graph pattern = new EdgeListGraph(dag);
+        Graph pattern = new EdgeListGraphSingleConnections(dag);
         SearchGraphUtils.basicPattern(pattern, false);
         MeekRules rules = new MeekRules();
         rules.orientImplied(pattern);

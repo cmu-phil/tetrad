@@ -619,6 +619,8 @@ public final class GraphUtils {
 
     // JMO's method for fixing latents
     private static void fixLatents4(int numLatentConfounders, Graph graph) {
+        if (numLatentConfounders == 0) return;
+
         List<Node> commonCausesAndEffects = getCommonCausesAndEffects(graph);
         int index = 0;
 
@@ -3093,7 +3095,7 @@ public final class GraphUtils {
     }
 
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
-        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
+//        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
 
         class CountTask extends RecursiveTask<Counts> {
             private int chunk;

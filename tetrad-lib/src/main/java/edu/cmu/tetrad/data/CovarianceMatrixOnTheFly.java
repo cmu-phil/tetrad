@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.data;
 
+import EDU.oswego.cs.dl.util.concurrent.SyncMap;
 import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
@@ -487,13 +488,45 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         }
     }
 
+    private class IntPair {
+        private final int x;
+        private final int y;
+
+        public IntPair(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public int hashCode() {
+            return x + y;
+        }
+
+        public boolean equals(Object o) {
+            if (o == null) return false;
+//            if (!(o instanceof IntPair)) return false;
+            IntPair pair = (IntPair) o;
+            return pair == this || (this.x == pair.x && this.y == pair.y);
+        }
+    }
+
     @Override
     public TetradMatrix getSelection(int[] rows, int[] cols) {
         TetradMatrix m = new TetradMatrix(rows.length, cols.length);
 
-        for (int i = 0; i < rows.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
-                m.set(i, j, getValue(rows[i], cols[j]));
+        if (Arrays.equals(rows, cols)) {
+            for (int i = 0; i < rows.length; i++) {
+                for (int j = i; j < cols.length; j++) {
+                    double value = getValue(rows[i], cols[j]);
+                    m.set(i, j, value);
+                    m.set(j, i, value);
+                }
+            }
+        } else {
+            for (int i = 0; i < rows.length; i++) {
+                for (int j = 0; j < cols.length; j++) {
+                    double value = getValue(rows[i], cols[j]);
+                    m.set(i, j, value);
+                }
             }
         }
 

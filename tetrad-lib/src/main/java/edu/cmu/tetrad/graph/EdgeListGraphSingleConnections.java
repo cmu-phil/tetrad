@@ -131,10 +131,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         this.edgeLists = new ConcurrentHashMap<>();
         this.nodes = new ArrayList<>();
         this.edgesSet = new HashSet<>();
-
-        for (Node node : nodes) {
-            namesHash.put(node.getName(), node);
-        }
     }
 
     /**
@@ -199,11 +195,10 @@ public class EdgeListGraphSingleConnections implements Graph {
             throw new NullPointerException();
         }
 
-        for (Node variable : nodes) {
-            addNode(variable);
-        }
+        this.nodes = new ArrayList<>(nodes);
 
         for (Node node : nodes) {
+            edgeLists.put(node, new ArrayList<Edge>());
             namesHash.put(node.getName(), node);
         }
     }

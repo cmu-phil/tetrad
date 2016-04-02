@@ -225,6 +225,9 @@ public final class GFci {
             throw new IllegalArgumentException("Mixed data not supported.");
         }
 
+        System.out.println("BBB " + gesGraph);
+
+
         if (verbose) {
             System.out.println("GES done " + gesGraph.getNumEdges() + " edges in graph");
         }
@@ -259,22 +262,22 @@ public final class GFci {
 //            System.out.println("Possible Dsep finished");
 //        } else {
 
-        // Look in triangles
-        for (Edge edge : gesGraph.getEdges()) {
-            Node i = edge.getNode1();
-            Node k = edge.getNode2();
-
-            List<Node> j = gesGraph.getAdjacentNodes(i);
-            j.retainAll(gesGraph.getAdjacentNodes(k));
-
-            if (!j.isEmpty()) {
-                sepsets.getSepset(i, k);
-
-                if (sepsets.getScore() > getIndependenceTest().getAlpha()) {
-                    graph.removeEdge(edge);
-                }
-            }
-        }
+//        // Look in triangles
+//        for (Edge edge : gesGraph.getEdges()) {
+//            Node i = edge.getNode1();
+//            Node k = edge.getNode2();
+//
+//            List<Node> j = gesGraph.getAdjacentNodes(i);
+//            j.retainAll(gesGraph.getAdjacentNodes(k));
+//
+//            if (!j.isEmpty()) {
+//                sepsets.getSepset(i, k);
+//
+//                if (sepsets.getScore() > getIndependenceTest().getAlpha()) {
+//                    graph.removeEdge(edge);
+//                }
+//            }
+//        }
 //        }
 
         // Orientation phase.
@@ -320,7 +323,9 @@ public final class GFci {
     }
 
     public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets, Fgs ges) {
-        SepsetsMaxScore sepsetProducer = new SepsetsMaxScore(graph, independenceTest, null, getDepth());
+//        SepsetsMaxScore sepsetProducer = new SepsetsMaxScore(graph, independenceTest, null, getDepth());
+
+        System.out.println("AAA " + graph + " " + gesGraph  );
 
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
@@ -341,15 +346,10 @@ public final class GFci {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                // Skip triples that are shielded.
-                if (graph.isAdjacentTo(a, c)) {
+                // Skip triples already oriented as colliders
+                if (graph.isDefCollider(a, b, c)) {
                     continue;
                 }
-
-                // Skip triples already oriented as colliders
-//                if (graph.isDefCollider(a, b, c)) {
-//                    continue;
-//                }
 
                 // Skip triple where collider orientations are forbidden by background knowledge
                 if (!isArrowpointAllowed(a, b, graph)) {
@@ -370,9 +370,12 @@ public final class GFci {
 //                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
 //                    }
 
-                    if (sepsetProducer.isCollider(a, b, c)) {
+                    if (sepsets.isCollider(a, b, c)) {
+                        System.out.println("Collider " + a + " " + b + " " + c);
+
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
+                        graph.removeEdge(a, c);
 
                         if (verbose) {
                             logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
@@ -380,6 +383,12 @@ public final class GFci {
                         }
                     }
                 } else {
+
+                    // Skip triples that are shielded.
+                    if (graph.isAdjacentTo(a, c)) {
+                        continue;
+                    }
+
                     if (gesGraph.isDefCollider(a, b, c)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);

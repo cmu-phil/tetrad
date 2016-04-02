@@ -564,8 +564,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                         Node y = nodes.get(i);
                         neighbors.put(y, getNeighbors(y));
 
-                        for (int j = i + 1; j < nodes.size(); j++) {
-                            if (i == j) continue;
+                        for (int j = 0; j < i; j++) {
                             Node x = nodes.get(j);
 
                             if (existsKnowledge()) {
@@ -672,8 +671,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                         Node y = nodes.get(i);
                         neighbors.put(y, getNeighbors(y));
 
-                        for (int j = i + 1; j < nodes.size(); j++) {
-                            if (i == j) continue;
+                        for (int j = 0; j < i; j++) {
                             Node x = nodes.get(j);
                             if (graph.isAdjacentTo(x, y)) continue;
 

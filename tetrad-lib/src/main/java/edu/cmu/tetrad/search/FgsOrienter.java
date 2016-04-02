@@ -564,7 +564,7 @@ public final class FgsOrienter implements GraphSearch, GraphScorer, Reorienter {
 
                         Node y = nodes.get(i);
 
-                        for (int j = i + 1; j < nodes.size(); j++) {
+                        for (int j = 0; j < i; j++) {
                             Node x = nodes.get(j);
 //
                             if (!graphToOrient.isAdjacentTo(x, y)) {

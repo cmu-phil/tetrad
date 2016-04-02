@@ -81,6 +81,12 @@ public class GraphScore implements Score {
 //        return aBetterScore(x, y, z);
     }
 
+    @Override
+    public double localScoreDiff(int x, int y) {
+        return localScoreDiff(x, y, new int[0]);
+//        return localScore(y, x) - localScore(y);
+    }
+
     private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
         Node _y = variables.get(y);
         Node _x = variables.get(x);

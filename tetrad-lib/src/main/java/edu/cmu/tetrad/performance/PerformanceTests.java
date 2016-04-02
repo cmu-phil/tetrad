@@ -31,7 +31,6 @@ import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
-import org.apache.commons.lang3.RandomUtils;
 
 import javax.swing.*;
 import java.io.*;
@@ -39,7 +38,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.copySign;
 import static java.lang.Math.round;
 
 /**
@@ -1081,8 +1079,10 @@ public class PerformanceTests {
     }
 
     private void testFgs(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
+        out.println(new Date());
+
         double penaltyDiscount = 4.0;
-        int depth = 3;
+        int depth = -1;
 
         RandomUtil.getInstance().setSeed(50304050454L);
 
@@ -1106,7 +1106,11 @@ public class PerformanceTests {
 
             System.out.println("Making dag");
 
+            out.println(new Date());
+
             Graph dag = makeDag(numVars, edgeFactor);
+
+            System.out.println(new Date());
 
             System.out.println("Calculating pattern for DAG");
 
@@ -1126,6 +1130,8 @@ public class PerformanceTests {
 
             out.println("Graph done");
 
+            System.out.println(new Date());
+
             System.out.println("Starting simulation");
             Graph estPattern;
             long elapsed;
@@ -1138,9 +1144,12 @@ public class PerformanceTests {
 
                 System.out.println("Finishing simulation");
 
+                System.out.println(new Date());
+
                 long time2 = System.currentTimeMillis();
 
                 out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+                System.out.println(new Date());
 
                 System.out.println("Making covariance matrix");
 
@@ -1154,18 +1163,22 @@ public class PerformanceTests {
 
                 SemBicScore score = new SemBicScore(cov, penaltyDiscount);
 
+                System.out.println(new Date());
+
                 Fgs2 fgs = new Fgs2(score);
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setPenaltyDiscount(penaltyDiscount);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(true);
-                fgs.setDepth(-1);
-                fgs.setCycleBound(5);
+                fgs.setDepth(depth);
+                fgs.setCycleBound(-1);
 
                 System.out.println("\nStarting FGS");
 
                 estPattern = fgs.search();
+
+                System.out.println(new Date());
 
                 long time4 = System.currentTimeMillis();
                 elapsed = time4 - time3;
@@ -1205,7 +1218,7 @@ public class PerformanceTests {
 
             System.out.println("Done with FGS");
 
-            out.println(new Date());
+            System.out.println(new Date());
 
 //            System.out.println("Replacing nodes");
 //
@@ -1220,15 +1233,19 @@ public class PerformanceTests {
 
             double[] comparison = new double[4];
 
-            int adjFn = GraphUtils.countAdjErrors(pattern, estPattern);
-            int adjFp = GraphUtils.countAdjErrors(estPattern, pattern);
-            int trueAdj = pattern.getNumEdges();
+//            int adjFn = GraphUtils.countAdjErrors(pattern, estPattern);
+//            int adjFp = GraphUtils.countAdjErrors(estPattern, pattern);
+//            int trueAdj = pattern.getNumEdges();
+//
+//            comparison[0] = trueAdj / (double) (trueAdj + adjFp);
+//            comparison[1] = trueAdj / (double) (trueAdj + adjFn);
 
-            comparison[0] = trueAdj / (double) (trueAdj + adjFp);
-            comparison[1] = trueAdj / (double) (trueAdj + adjFn);
+            System.out.println("Counting misclassifications.");
 
             int[][] counts = GraphUtils.edgeMisclassificationCounts(pattern, estPattern, false);
             allCounts.add(counts);
+
+            System.out.println(new Date());
 
             int sumRow = counts[4][0] + counts[4][3] + counts[4][5];
             int sumCol = counts[0][3] + counts[4][3] + counts[5][3] + counts[7][3];
