@@ -151,7 +151,6 @@ public class FgsDiscrete {
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
 
-                System.out.println("Here I am!");
                 Fgs fgs = new Fgs(score);
                 fgs.setVerbose(verbose);
                 fgs.setNumPatternsToStore(0);

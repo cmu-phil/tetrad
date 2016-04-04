@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -53,6 +54,7 @@ public class FgsDiscreteTest {
      *
      * @throws IOException
      */
+    @Ignore
     @Test
     public void testMain() throws IOException {
         System.out.println("main");
