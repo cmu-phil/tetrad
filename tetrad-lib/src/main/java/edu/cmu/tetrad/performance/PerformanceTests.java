@@ -1086,14 +1086,6 @@ public class PerformanceTests {
 
         RandomUtil.getInstance().setSeed(50304050454L);
 
-        init(new File("fgs.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
-                "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
-        out.println("Num vars = " + numVars);
-        out.println("Num edges = " + (int) (numVars * edgeFactor));
-        out.println("Num cases = " + numCases);
-        out.println("Penalty discount = " + penaltyDiscount);
-        out.println("Depth = " + depth);
-        out.println();
 
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();
@@ -1101,7 +1093,14 @@ public class PerformanceTests {
         List<Long> elapsedTimes = new ArrayList<Long>();
 
         for (int run = 0; run < numRuns; run++) {
-
+            init(new File("fgs.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
+                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+            out.println("Num vars = " + numVars);
+            out.println("Num edges = " + (int) (numVars * edgeFactor));
+            out.println("Num cases = " + numCases);
+            out.println("Penalty discount = " + penaltyDiscount);
+            out.println("Depth = " + depth);
+            out.println();
             out.println("\n\n\n******************************** RUN " + (run + 1) + " ********************************\n\n");
 
             System.out.println("Making dag");
@@ -1183,6 +1182,16 @@ public class PerformanceTests {
                 long time4 = System.currentTimeMillis();
                 elapsed = time4 - time3;
             } else {
+                init(new File("fgs.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
+                        "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                out.println("Num vars = " + numVars);
+                out.println("Num edges = " + (int) (numVars * edgeFactor));
+                out.println("Num cases = " + numCases);
+                out.println("Sample prior = " + 1);
+                out.println("Structure prior = " + 1);
+                out.println("Depth = " + 1);
+                out.println();
+
                 BayesPm pm = new BayesPm(dag, 3, 3);
                 MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
@@ -1205,8 +1214,8 @@ public class PerformanceTests {
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(true);
-                fgs.setDepth(-1);
-                fgs.setCycleBound(5);
+                fgs.setDepth(depth);
+                fgs.setCycleBound(-1);
 
                 System.out.println("\nStarting FGS");
 
@@ -1241,6 +1250,8 @@ public class PerformanceTests {
 //            comparison[1] = trueAdj / (double) (trueAdj + adjFn);
 
             System.out.println("Counting misclassifications.");
+
+            estPattern = GraphUtils.replaceNodes(estPattern, pattern.getNodes());
 
             int[][] counts = GraphUtils.edgeMisclassificationCounts(pattern, estPattern, false);
             allCounts.add(counts);

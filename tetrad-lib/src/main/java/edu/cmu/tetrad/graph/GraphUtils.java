@@ -3097,7 +3097,7 @@ public final class GraphUtils {
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
 //        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
 
-        class CountTask extends RecursiveTask<Counts> {
+         class CountTask extends RecursiveTask<Counts> {
             private int chunk;
             private int from;
             private int to;

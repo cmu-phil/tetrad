@@ -64,7 +64,7 @@ public final class TetradCmd {
     private IKnowledge knowledge = new Knowledge2();
     private boolean whitespace = false;
     private boolean verbose = false;
-    private double samplePrior = 10.0;
+    private double samplePrior = 1.0;
     private double structurePrior = 1.0;
     private double penaltyDiscount = 1.0;
     private TestType testType = TestType.TETRAD_DELTA;
@@ -660,7 +660,7 @@ public final class TetradCmd {
             fgs = new Fgs(new SemBicScore(covarianceMatrix, penaltyDiscount));
         } else {
             if (data.isDiscrete()) {
-                BDeScore score = new BDeScore(data);
+                BDeuScore score = new BDeuScore(data);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
 

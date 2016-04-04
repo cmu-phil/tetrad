@@ -213,7 +213,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
     //==========================PUBLIC METHODS==========================//
 
-    /**
+    /**f
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancelAll.
      */
     public void setFaithfulnessAssumed(boolean faithfulness) {

@@ -225,13 +225,10 @@ public final class GFci {
             throw new IllegalArgumentException("Mixed data not supported.");
         }
 
-        System.out.println("BBB " + gesGraph);
-
-
         if (verbose) {
             System.out.println("GES done " + gesGraph.getNumEdges() + " edges in graph");
         }
-        SepsetProducer sepsets = new SepsetsConservative(gesGraph, getIndependenceTest(), null, depth);
+        SepsetProducer sepsets = new SepsetsMinScore(gesGraph, getIndependenceTest(), null, depth);
 
 //        if (possibleDsepSearchDone) {
 //            sepsets = new SepsetsPossibleDsep(gesGraph, getIndependenceTest(), knowledge, depth,
@@ -262,36 +259,35 @@ public final class GFci {
 //            System.out.println("Possible Dsep finished");
 //        } else {
 
-//        // Look in triangles
-//        for (Edge edge : gesGraph.getEdges()) {
-//            Node i = edge.getNode1();
-//            Node k = edge.getNode2();
-//
-//            List<Node> j = gesGraph.getAdjacentNodes(i);
-//            j.retainAll(gesGraph.getAdjacentNodes(k));
-//
-//            if (!j.isEmpty()) {
-//                sepsets.getSepset(i, k);
-//
-//                if (sepsets.getScore() > getIndependenceTest().getAlpha()) {
-//                    graph.removeEdge(edge);
-//                }
-//            }
-//        }
-//        }
+        // Look in triangles
+        for (Edge edge : gesGraph.getEdges()) {
+            Node i = edge.getNode1();
+            Node k = edge.getNode2();
+
+            List<Node> j = gesGraph.getAdjacentNodes(i);
+            j.retainAll(gesGraph.getAdjacentNodes(k));
+
+            if (!j.isEmpty()) {
+                sepsets.getSepset(i, k);
+
+                if (sepsets.getScore() < 0) {
+                    graph.removeEdge(edge);
+                }
+            }
+        }
 
         // Orientation phase.
 
-        // Step CI C, modified collider orientation step for FCI-GES due to Spirtes.
+//        // Step CI C, modified collider orientation step for FCI-GES due to Spirtes.
         ruleR0Special(graph, gesGraph, sepsets, ges);
-
+//
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.doFinalOrientation(graph);
-
-        GraphUtils.replaceNodes(graph, independenceTest.getVariables());
+//
+//        GraphUtils.replaceNodes(graph, independenceTest.getVariables());
 
         //end.
 
@@ -346,6 +342,10 @@ public final class GFci {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
+                if (graph.isAdjacentTo(a, c)) {
+                    continue;
+                }
+
                 // Skip triples already oriented as colliders
                 if (graph.isDefCollider(a, b, c)) {
                     continue;
@@ -375,7 +375,7 @@ public final class GFci {
 
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
-                        graph.removeEdge(a, c);
+//                        graph.removeEdge(a, c);
 
                         if (verbose) {
                             logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
