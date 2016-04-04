@@ -44,7 +44,7 @@ public class TetradCliApp {
     private static final Options MAIN_OPTIONS = new Options();
 
     static {
-        Option requiredOption = new Option(null, "algorithm", true, "Choose one of the following: fgs or fgs-continuous.");
+        Option requiredOption = new Option(null, "algorithm", true, "Choose one of the following: fgs or fgs-discrete.");
         requiredOption.setRequired(true);
         MAIN_OPTIONS.addOption(requiredOption);
 
@@ -74,7 +74,7 @@ public class TetradCliApp {
                     case "fgs":
                         FgsCli.main(args);
                         break;
-                    case "fgs-continuous":
+                    case "fgs-discrete":
                         FgsDiscrete.main(args);
                         break;
                     default:

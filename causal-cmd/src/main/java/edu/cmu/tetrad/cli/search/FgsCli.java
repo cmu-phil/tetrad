@@ -189,7 +189,7 @@ public class FgsCli {
             Graph graph;
             Path outputFile = Paths.get(dirOut.toString(), outputPrefix + ".txt");
             try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-                printInfo(dataSet, variables, writer);
+                printInfo(variables, writer);
 
                 Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
                 fgs.setOut(writer);
@@ -289,7 +289,7 @@ public class FgsCli {
         LOGGER.info(formatter.toString());
     }
 
-    private static void printInfo(DataSet dataSet, Set<String> variables, PrintStream writer) throws IOException {
+    private static void printInfo(Set<String> variables, PrintStream writer) throws IOException {
         writer.println("Runtime Parameters:");
         writer.printf("number of threads = %,d%n", numOfThreads);
         writer.printf("verbose = %s%n", verbose);

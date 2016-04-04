@@ -22,14 +22,18 @@ import edu.cmu.tetrad.cli.data.DataReader;
 import edu.cmu.tetrad.cli.data.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.util.DateTime;
+import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.cli.util.GraphmlSerializer;
 import edu.cmu.tetrad.cli.util.XmlPrint;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.util.DataUtility;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,7 +74,6 @@ public class FgsDiscrete {
         MAIN_OPTIONS.addOption(null, "delimiter", true, "Data delimiter either comma, semicolon, space, colon, or tab. Default is tab.");
         MAIN_OPTIONS.addOption(null, "faithful", false, "Assume faithfulness.");
         MAIN_OPTIONS.addOption(null, "thread", true, "Number of threads.");
-        MAIN_OPTIONS.addOption(null, "ignore-linear-dependence", false, "Ignore linear dependence.");
         MAIN_OPTIONS.addOption(null, "verbose", false, "Print additional information.");
         MAIN_OPTIONS.addOption(null, "graphml", false, "Create graphML output.");
         MAIN_OPTIONS.addOption(null, "help", false, "Show help.");
@@ -93,7 +96,6 @@ public class FgsDiscrete {
     private static double samplePrior;
     private static int depth;
     private static boolean faithfulness;
-    private static boolean ignoreLinearDependence;
     private static boolean graphML;
     private static boolean verbose;
     private static int numOfThreads;
@@ -105,7 +107,7 @@ public class FgsDiscrete {
      */
     public static void main(String[] args) {
         if (args == null || args.length == 0 || Args.hasLongOption(args, "help")) {
-            Args.showHelp("fgs-continuous", MAIN_OPTIONS);
+            Args.showHelp("fgs-discrete", MAIN_OPTIONS);
             return;
         }
 
@@ -120,7 +122,6 @@ public class FgsDiscrete {
             samplePrior = Args.getDouble(cmd.getOptionValue("sample-prior", "1.0"));
             depth = Args.getIntegerMin(cmd.getOptionValue("depth", "-1"), -1);
             faithfulness = cmd.hasOption("faithful");
-            ignoreLinearDependence = cmd.hasOption("ignore-linear-dependence");
             graphML = cmd.hasOption("graphml");
             verbose = cmd.hasOption("verbose");
             numOfThreads = Args.getInteger(cmd.getOptionValue("thread", Integer.toString(Runtime.getRuntime().availableProcessors())));
@@ -128,13 +129,21 @@ public class FgsDiscrete {
             outputPrefix = cmd.getOptionValue("output-prefix", String.format("fgs_%s_%d", dataFile.getFileName(), System.currentTimeMillis()));
         } catch (ParseException | FileNotFoundException exception) {
             System.err.println(exception.getLocalizedMessage());
-            Args.showHelp("fgs-continuous", MAIN_OPTIONS);
+            Args.showHelp("fgs-discrete", MAIN_OPTIONS);
             System.exit(-127);
         }
 
         printArgs(System.out);
 
         Set<String> variables = new HashSet<>();
+        try {
+            variables.addAll(FileIO.extractUniqueLine(variableFile));
+        } catch (IOException exception) {
+            String errMsg = String.format("Failed to read variable file '%s'.", variableFile.getFileName());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, exception);
+            System.exit(-128);
+        }
 
         try {
             DataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, delimiter);
@@ -147,11 +156,14 @@ public class FgsDiscrete {
             Graph graph;
             Path outputFile = Paths.get(dirOut.toString(), outputPrefix + ".txt");
             try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+                printInfo(variables, writer);
+
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
 
                 Fgs fgs = new Fgs(score);
+                fgs.setParallelism(numOfThreads);
                 fgs.setVerbose(verbose);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(writer);
@@ -212,13 +224,56 @@ public class FgsDiscrete {
         writer.printf("structure prior = %f%n", structurePrior);
         writer.printf("sample prior = %f%n", samplePrior);
         writer.printf("depth = %d%n", depth);
+        writer.printf("faithfulness = %s%n", faithfulness);
         writer.printf("verbose = %s%n", verbose);
         writer.printf("delimiter = %s%n", Args.getDelimiterName(delimiter));
         writer.println();
 
-        formatter.format("depth=%s,faithfulness=%s,ignore linear dependence=%s,number of threads=%d,verbose=%s,delimiter=%s",
-                depth, faithfulness, ignoreLinearDependence, numOfThreads, verbose, Args.getDelimiterName(delimiter));
+        formatter.format("structure prior=%f,sample prior=%f,depth=%s,faithfulness=%s,number of threads=%d,verbose=%s,delimiter=%s",
+                structurePrior, samplePrior, depth, faithfulness, numOfThreads, verbose, Args.getDelimiterName(delimiter));
         LOGGER.info(formatter.toString());
+    }
+
+    private static void printInfo(Set<String> variables, PrintStream writer) throws IOException {
+        writer.println("Runtime Parameters:");
+        writer.printf("number of threads = %,d%n", numOfThreads);
+        writer.printf("verbose = %s%n", verbose);
+        writer.println();
+        LOGGER.info(String.format("Runtime Parameters: number of threads=%,d,verbose=%s", numOfThreads, verbose));
+
+        writer.println("Algorithm Parameters:");
+        writer.printf("structure prior = %f%n", structurePrior);
+        writer.printf("sample prior = %f%n", samplePrior);
+        writer.printf("depth = %s%n", depth);
+        writer.printf("faithfulness = %s%n", faithfulness);
+        writer.println();
+        LOGGER.info(String.format("Algorithm Parameters: structure prior=%f,sample prior=%f,depth=%s,faithfulness=%s",
+                structurePrior, samplePrior, depth, faithfulness));
+
+        if (variableFile != null) {
+            writer.println("Variable Exclusion:");
+            writer.printf("file = %s%n", variableFile.getFileName());
+            writer.printf("variables to exclude = %,d%n", variables.size());
+            writer.println();
+            LOGGER.info(String.format("Variable Exclusion: file=%s,variables to exclude=%d", variableFile.getFileName(), variables.size()));
+        }
+
+        if (knowledgeFile != null) {
+            writer.println("Knowledge:");
+            writer.printf("file = %s%n", knowledgeFile.getFileName());
+            writer.println();
+            LOGGER.info(String.format("Knowledge: file=%s", knowledgeFile.getFileName()));
+        }
+
+        File datasetFile = dataFile.toFile();
+        int numOfCases = DataUtility.countLine(datasetFile) - 1;
+        int numOfVars = DataUtility.countColumn(datasetFile, delimiter);
+        writer.println("Data File:");
+        writer.printf("file = %s%n", dataFile.getFileName());
+        writer.printf("cases = %,d%n", numOfCases);
+        writer.printf("variables = %,d%n", numOfVars);
+        writer.println();
+        LOGGER.info(String.format("Data File: file=%s,cases=%d,variables=%d", dataFile.getFileName(), numOfCases, numOfVars));
     }
 
 }
