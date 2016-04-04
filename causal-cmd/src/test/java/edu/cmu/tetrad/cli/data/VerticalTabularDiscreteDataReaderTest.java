@@ -73,6 +73,7 @@ public class VerticalTabularDiscreteDataReaderTest {
 
         Path variableFile = Paths.get("test", "data", "variables.txt");
         Set<String> excludedVariables = FileIO.extractUniqueLine(variableFile);
+
         DataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, delimiter);
         DataSet dataSet = dataReader.readInData(excludedVariables);
         int numOfColumns = dataSet.getNumColumns();
