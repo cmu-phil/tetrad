@@ -252,11 +252,11 @@ public class TestFgs {
             Fgs2 fgs = new Fgs2(fgsScore);
             Graph pattern1 = fgs.search();
 
-            Node x1 = dag.getNode("X1");
+            Node x1 = fgsScore.getVariable("X1");
 
             Graph graphMb = GraphUtils.markovBlanketDag(x1, pattern1);
 
-            FgsMb fgsMb = new FgsMb(fgsScore, x1);
+            Fgs2Mb fgsMb = new Fgs2Mb(fgsScore, x1);
             Graph fgsMbGraph = fgsMb.search();
 //
 //            assertEquals(graphMb, fgsMbGraph);

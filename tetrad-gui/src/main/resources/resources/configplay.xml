@@ -1860,13 +1860,13 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.FgsMbRunner
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.MbSearchEditor
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
                 </editor-class>
-                <params-class>edu.cmu.tetradapp.model.MbSearchParams
+                <params-class>edu.cmu.tetradapp.model.FgsParams
                 </params-class>
-                <params-editor-class>
-                    edu.cmu.tetradapp.editor.MbSearchParamEditor
-                </params-editor-class>
+                <!--<params-editor-class>-->
+                    <!--edu.cmu.tetradapp.editor.MbSearchParamEditor-->
+                <!--</params-editor-class>-->
             </model>
             <model name="CEFS" acronym="CEFS" help="cef"
                    category="Feature selection searches">
