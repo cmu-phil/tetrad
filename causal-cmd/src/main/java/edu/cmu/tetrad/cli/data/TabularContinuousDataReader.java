@@ -38,7 +38,7 @@ import java.util.Set;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class TabularContinuousDataReader extends AbstractDataReader implements ContinuousDataReader {
+public class TabularContinuousDataReader extends AbstractDataReader implements DataReader {
 
     public TabularContinuousDataReader(Path dataFile, char delimiter) {
         super(dataFile, delimiter);

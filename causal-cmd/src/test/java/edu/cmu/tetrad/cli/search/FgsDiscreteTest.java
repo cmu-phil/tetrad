@@ -16,11 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.cli.validation;
+package edu.cmu.tetrad.cli.search;
 
-import edu.cmu.tetrad.cli.data.DataReader;
-import edu.cmu.tetrad.cli.data.TabularContinuousDataReader;
-import edu.cmu.tetrad.data.DataSet;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -29,21 +26,22 @@ import java.nio.file.Paths;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /**
  *
- * Mar 18, 2016 11:44:11 AM
+ * Mar 29, 2016 6:21:45 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class NonZeroVarianceTest {
+public class FgsDiscreteTest {
 
     @ClassRule
     public static TemporaryFolder tmpDir = new TemporaryFolder();
 
-    public NonZeroVarianceTest() {
+    public FgsDiscreteTest() {
     }
 
     @AfterClass
@@ -52,28 +50,33 @@ public class NonZeroVarianceTest {
     }
 
     /**
-     * Test of validate method, of class NonZeroVariance.
+     * Test of main method, of class FgsDiscrete.
      *
      * @throws IOException
      */
+    @Ignore
     @Test
-    public void testValidate() throws IOException {
-        System.out.println("validate");
+    public void testMain() throws IOException {
+        System.out.println("main");
 
-        Path dataFile = Paths.get("test", "data", "zero_variance_vars", "sim_data_20vars_100cases.csv");
+        Path dataFile = Paths.get("test", "data", "diff_delim", "sim_discrete_data_20vars_100cases.csv");
 
-        char delimiter = ',';
-        DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
-        DataSet dataSet = dataReader.readInData();
+        String data = dataFile.toAbsolutePath().toString();
+        String delimiter = ",";
+        String dirOut = tmpDir.newFolder("fgs").toString();
+        String outputPrefix = "fgs";
+        String[] args = {
+            "--data", data,
+            "--delimiter", delimiter,
+            "--out", dirOut,
+            "--verbose",
+            "--output-prefix", outputPrefix
+        };
+        FgsDiscrete.main(args);
 
-        int numOfThreads = 2;
-        String dirOut = tmpDir.newFolder("validation_zero_variance").toString();
-        Path outputFile = Paths.get(dirOut, "output.txt");
-        DataValidation dataValidation = new NonZeroVariance(dataSet, numOfThreads, outputFile);
-        dataValidation.validate(System.err, false);
-
-        String errMsg = outputFile.getFileName().toString() + " does not exist.";
-        Assert.assertTrue(errMsg, Files.exists(outputFile, LinkOption.NOFOLLOW_LINKS));
+        Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
+        String errMsg = outFile.getFileName().toString() + " does not exist.";
+        Assert.assertTrue(errMsg, Files.exists(outFile, LinkOption.NOFOLLOW_LINKS));
     }
 
 }

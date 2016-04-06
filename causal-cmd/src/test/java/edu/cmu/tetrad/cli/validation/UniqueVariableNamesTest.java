@@ -18,7 +18,7 @@
  */
 package edu.cmu.tetrad.cli.validation;
 
-import edu.cmu.tetrad.cli.data.ContinuousDataReader;
+import edu.cmu.tetrad.cli.data.DataReader;
 import edu.cmu.tetrad.cli.data.TabularContinuousDataReader;
 import edu.cmu.tetrad.data.DataSet;
 import java.io.IOException;
@@ -63,7 +63,7 @@ public class UniqueVariableNamesTest {
         System.out.println("validate: UniqueVariableNamesTest");
 
         char delimiter = ',';
-        ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
+        DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
         DataSet dataSet = dataReader.readInData();
 
         String dirOut = tmpDir.newFolder("validation_non-unique_var_names").toString();

@@ -19,6 +19,7 @@
 package edu.cmu.tetrad.cli.util;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,6 +28,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
 
 /**
  *
@@ -45,6 +51,16 @@ public class Args {
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(String.format("'%s' is not a double.", value));
         }
+    }
+
+    public static double getDoubleMin(String value, double minValue) {
+        double doubleValue = getDouble(value);
+        if (minValue > doubleValue) {
+            throw new IllegalArgumentException(
+                    String.format("Value (%f) must be greater than or equal to %f.", doubleValue, minValue));
+        }
+
+        return doubleValue;
     }
 
     public static int getInteger(String value) {
@@ -281,6 +297,25 @@ public class Args {
         }
 
         return false;
+    }
+
+    public static void showHelp(String algorithmName, Options options) {
+        StringBuilder sb = new StringBuilder("java -jar");
+        try {
+            JarFile jarFile = new JarFile(Args.class.getProtectionDomain().getCodeSource().getLocation().getPath(), true);
+            Manifest manifest = jarFile.getManifest();
+            Attributes attributes = manifest.getMainAttributes();
+            String artifactId = attributes.getValue("Implementation-Title");
+            String version = attributes.getValue("Implementation-Version");
+            sb.append(String.format(" %s-%s.jar", artifactId, version));
+        } catch (IOException exception) {
+            sb.append(" causal-cmd.jar");
+        }
+        sb.append(" --algorithm ");
+        sb.append(algorithmName);
+
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp(sb.toString(), options, true);
     }
 
 }

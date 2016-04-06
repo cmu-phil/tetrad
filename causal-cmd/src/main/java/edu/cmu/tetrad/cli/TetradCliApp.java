@@ -19,6 +19,7 @@
 package edu.cmu.tetrad.cli;
 
 import edu.cmu.tetrad.cli.search.FgsCli;
+import edu.cmu.tetrad.cli.search.FgsDiscrete;
 import edu.cmu.tetrad.cli.util.Args;
 import java.io.IOException;
 import java.util.jar.Attributes;
@@ -43,7 +44,7 @@ public class TetradCliApp {
     private static final Options MAIN_OPTIONS = new Options();
 
     static {
-        Option requiredOption = new Option(null, "algorithm", true, "Choose one of the following: fgs.");
+        Option requiredOption = new Option(null, "algorithm", true, "Choose one of the following: fgs or fgs-discrete.");
         requiredOption.setRequired(true);
         MAIN_OPTIONS.addOption(requiredOption);
 
@@ -68,9 +69,13 @@ public class TetradCliApp {
             if (algorithm == null) {
                 showHelp();
             } else {
+                args = Args.removeOption(args, "algorithm");
                 switch (algorithm) {
                     case "fgs":
-                        FgsCli.main(Args.removeOption(args, "algorithm"));
+                        FgsCli.main(args);
+                        break;
+                    case "fgs-discrete":
+                        FgsDiscrete.main(args);
                         break;
                     default:
                         System.err.printf("Unknown algorithm: %s\n", algorithm);
