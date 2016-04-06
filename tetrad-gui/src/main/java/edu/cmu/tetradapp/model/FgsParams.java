@@ -215,7 +215,7 @@ public final class FgsParams implements MeekSearchParams {
     }
 
     public String getTargetName() {
-        return "X1";
+        return "X8";
     }
 }
 

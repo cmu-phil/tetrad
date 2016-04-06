@@ -93,11 +93,11 @@ public class GraphScore implements Score {
         List<Node> _z = getVariableList(z);
         boolean dSeparatedFrom = dag.isDSeparatedFrom(_x, _y, _z);
 
-        if (dSeparatedFrom) {
-            System.out.println(SearchLogUtils.independenceFact(_x, _y, _z));
-        } else {
-            System.out.println("\t NOT " + SearchLogUtils.independenceFact(_x, _y, _z));
-        }
+//        if (dSeparatedFrom) {
+//            System.out.println(SearchLogUtils.independenceFact(_x, _y, _z));
+//        } else {
+//            System.out.println("\t NOT " + SearchLogUtils.independenceFact(_x, _y, _z));
+//        }
 
         return dSeparatedFrom ? -1.0 : 1.0;
     }

@@ -268,6 +268,7 @@ public final class GFci {
             j.retainAll(gesGraph.getAdjacentNodes(k));
 
             if (!j.isEmpty()) {
+//            if (true){
                 sepsets.getSepset(i, k);
 
                 if (sepsets.getScore() < 0) {

@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import javax.tools.ToolProvider;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -174,7 +173,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 
             if (dataSet.isContinuous()) {
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model),
-                        params.getIndTestParams().getAlpha());
+                        params.getComplexityPenalty());
                 fgs = new FgsMb(gesScore, target);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = 1;//((FgsParams) getParams()).getSamplePrior();
@@ -189,7 +188,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         } else if (model instanceof ICovarianceMatrix) {
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model,
                     params.getIndTestParams().getAlpha());
-            gesScore.setPenaltyDiscount(params.getIndTestParams().getAlpha());
+            gesScore.setPenaltyDiscount(params.getComplexityPenalty());
             target = ((ICovarianceMatrix) model).getVariable(targetName);
             fgs = new FgsMb(gesScore, target);
         }
@@ -334,7 +333,6 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         }
 
         setIndex(topGraphs.size() - 1);
-
 
         setResultGraph(graph);
     }

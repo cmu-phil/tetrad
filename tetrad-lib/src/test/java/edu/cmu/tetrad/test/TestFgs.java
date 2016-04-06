@@ -256,7 +256,7 @@ public class TestFgs {
 
             Graph graphMb = GraphUtils.markovBlanketDag(x1, pattern1);
 
-            Fgs2Mb fgsMb = new Fgs2Mb(fgsScore, x1);
+            FgsMb fgsMb = new FgsMb(fgsScore, x1);
             Graph fgsMbGraph = fgsMb.search();
 //
 //            assertEquals(graphMb, fgsMbGraph);
