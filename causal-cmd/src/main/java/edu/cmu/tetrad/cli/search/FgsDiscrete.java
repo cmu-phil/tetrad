@@ -211,11 +211,11 @@ public class FgsDiscrete {
                     LOGGER.error(errMsg, throwable);
                 }
             }
-            System.out.printf("%s: FGS finished!  Please see %s for details.%n", DateTime.printNow(), outputFile.getFileName().toString());
-            LOGGER.info(String.format("FGS finished!  Please see %s for details.%n", outputFile.getFileName().toString()));
+            System.out.printf("%s: FGS Discrete finished!  Please see %s for details.%n", DateTime.printNow(), outputFile.getFileName().toString());
+            LOGGER.info(String.format("FGS Discrete finished!  Please see %s for details.%n", outputFile.getFileName().toString()));
         } catch (Exception exception) {
-            LOGGER.error("FGS failed.", exception);
-            System.err.printf("%s: FGS failed.  Please see log file for more information.%n", DateTime.printNow());
+            LOGGER.error("FGS Discrete failed.", exception);
+            System.err.printf("%s: FGS Discrete failed.  Please see log file for more information.%n", DateTime.printNow());
             System.exit(-128);
         }
     }
