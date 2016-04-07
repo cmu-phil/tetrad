@@ -18,6 +18,8 @@
  */
 package edu.cmu.tetrad.cli.data;
 
+import edu.cmu.tetrad.io.DataReader;
+import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.data.DataSet;
 import java.io.IOException;

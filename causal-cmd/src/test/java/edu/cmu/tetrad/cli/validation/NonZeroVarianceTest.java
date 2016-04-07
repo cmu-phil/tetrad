@@ -18,8 +18,8 @@
  */
 package edu.cmu.tetrad.cli.validation;
 
-import edu.cmu.tetrad.cli.data.DataReader;
-import edu.cmu.tetrad.cli.data.TabularContinuousDataReader;
+import edu.cmu.tetrad.io.DataReader;
+import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.data.DataSet;
 import java.io.IOException;
 import java.nio.file.Files;

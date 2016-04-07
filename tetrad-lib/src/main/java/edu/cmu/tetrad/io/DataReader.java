@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.cli.data;
+package edu.cmu.tetrad.io;
 
 import edu.cmu.tetrad.data.DataSet;
 import java.io.IOException;

@@ -18,8 +18,8 @@
  */
 package edu.cmu.tetrad.cli.search;
 
-import edu.cmu.tetrad.cli.data.DataReader;
-import edu.cmu.tetrad.cli.data.VerticalTabularDiscreteDataReader;
+import edu.cmu.tetrad.io.DataReader;
+import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.util.DateTime;
 import edu.cmu.tetrad.cli.util.FileIO;

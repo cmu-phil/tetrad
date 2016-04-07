@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.cli.search;
 
-import edu.cmu.tetrad.cli.data.DataReader;
-import edu.cmu.tetrad.cli.data.TabularContinuousDataReader;
+import edu.cmu.tetrad.io.DataReader;
+import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.TabularContinuousData;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
