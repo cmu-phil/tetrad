@@ -18,8 +18,8 @@
  */
 package edu.cmu.tetrad.cli.validation;
 
-import edu.cmu.tetrad.cli.data.ContinuousDataReader;
-import edu.cmu.tetrad.cli.data.TabularContinuousDataReader;
+import edu.cmu.tetrad.io.DataReader;
+import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.data.DataSet;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -63,7 +63,7 @@ public class NonZeroVarianceTest {
         Path dataFile = Paths.get("test", "data", "zero_variance_vars", "sim_data_20vars_100cases.csv");
 
         char delimiter = ',';
-        ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
+        DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
         DataSet dataSet = dataReader.readInData();
 
         int numOfThreads = 2;

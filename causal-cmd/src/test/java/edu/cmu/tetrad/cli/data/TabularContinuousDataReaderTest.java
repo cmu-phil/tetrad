@@ -18,6 +18,8 @@
  */
 package edu.cmu.tetrad.cli.data;
 
+import edu.cmu.tetrad.io.TabularContinuousDataReader;
+import edu.cmu.tetrad.io.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -49,7 +51,7 @@ public class TabularContinuousDataReaderTest {
 
         Path dataFile = Paths.get("test", "data", "diff_delim", "sim_data_20vars_100cases.txt");
         char delimiter = '\t';
-        ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
+        DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
         DataSet dataSet = dataReader.readInData();
 
         Assert.assertEquals(20, dataSet.getNumColumns());
@@ -62,7 +64,7 @@ public class TabularContinuousDataReaderTest {
 
         Path dataFile = Paths.get("test", "data", "missing_values", "sim_data_20vars_100cases.txt");
         char delimiter = '\t';
-        ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
+        DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
         dataReader.readInData();
     }
 
@@ -83,7 +85,7 @@ public class TabularContinuousDataReaderTest {
         excludedVariables.add("X9");
         excludedVariables.add("X0");
 
-        ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
+        DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
         DataSet dataSet = dataReader.readInData(excludedVariables);
 
         Assert.assertEquals(17, dataSet.getNumColumns());

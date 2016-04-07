@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.cli.data;
+package edu.cmu.tetrad.io;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -38,7 +38,7 @@ import java.util.Set;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class TabularContinuousDataReader extends AbstractDataReader implements ContinuousDataReader {
+public class TabularContinuousDataReader extends AbstractDataReader implements DataReader {
 
     public TabularContinuousDataReader(Path dataFile, char delimiter) {
         super(dataFile, delimiter);

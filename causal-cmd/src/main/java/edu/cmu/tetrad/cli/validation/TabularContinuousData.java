@@ -18,7 +18,7 @@
  */
 package edu.cmu.tetrad.cli.validation;
 
-import edu.cmu.tetrad.cli.data.AbstractDataReader;
+import edu.cmu.tetrad.io.AbstractDataReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;

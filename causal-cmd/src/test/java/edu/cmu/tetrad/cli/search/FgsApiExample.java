@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.cli.search;
 
-import edu.cmu.tetrad.cli.data.ContinuousDataReader;
-import edu.cmu.tetrad.cli.data.TabularContinuousDataReader;
+import edu.cmu.tetrad.io.DataReader;
+import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.TabularContinuousData;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
@@ -31,7 +31,7 @@ public class FgsApiExample {
             System.exit(-128);
         }
 
-        ContinuousDataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
+        DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
         DataSet dataSet = dataReader.readInData();
 
         Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
