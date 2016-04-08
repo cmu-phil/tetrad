@@ -272,7 +272,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     setFaithfulnessAssumed(true);
                     initializeForwardEdgesFromEmptyGraph(getVariables());
 
-                    // Do forward search.
+//                     Do forward search.
                     fes();
 
                     setFaithfulnessAssumed(false);
@@ -754,6 +754,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
             boolean inserted = insert(x, y, T, bump);
             if (!inserted) continue;
+            storeGraph();
 
             score += bump;
 
@@ -772,7 +773,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
             toProcess.add(x);
             toProcess.add(y);
 
-            storeGraph();
             reevaluateForward(toProcess);
         }
     }
@@ -815,6 +815,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
             boolean deleted = delete(x, y, H, bump, arrow.getNaYX());
             if (!deleted) continue;
+            storeGraph();
 
             score += bump;
 
@@ -837,7 +838,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
             toProcess.add(y);
             toProcess.addAll(getCommonAdjacents(x, y));
 
-            storeGraph();
             reevaluateBackward(toProcess);
         }
     }
