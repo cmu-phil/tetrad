@@ -1164,7 +1164,7 @@ public class PerformanceTests {
 
                 System.out.println(new Date());
 
-                Fgs3 fgs = new Fgs3(score);
+                Fgs2 fgs = new Fgs2(score);
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setPenaltyDiscount(penaltyDiscount);
@@ -1209,7 +1209,7 @@ public class PerformanceTests {
                 score.setStructurePrior(1);
                 score.setSamplePrior(1);
 
-                Fgs3 fgs = new Fgs3(score);
+                Fgs2 fgs = new Fgs2(score);
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
