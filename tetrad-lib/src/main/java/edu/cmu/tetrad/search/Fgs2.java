@@ -599,6 +599,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
     final int maxThreads = Runtime.getRuntime().availableProcessors() * 5;
 
+
     private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
         if (verbose) {
             System.out.println("Faithfulness = true");
@@ -711,7 +712,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                         Set<Node> D = new HashSet<>();
 
                         List<Node> cond = new ArrayList<>(graph.getParents(y));
-                        cond.addAll(graph.getChildren(y));
+//                        cond.addAll(graph.getChildren(y));
 
                         D.addAll(GraphUtils.getDconnectedVars(y, cond, graph));
 
@@ -811,6 +812,44 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         }
     }
 
+    class NodeTaskForward extends RecursiveTask<Boolean> {
+        private final Node x;
+
+        public NodeTaskForward(Node node) {
+            this.x = node;
+        }
+
+        @Override
+        protected Boolean compute() {
+            List<Node> adj;
+
+            if (isFaithfulnessAssumed()) {
+                adj = effectEdgesGraph.getAdjacentNodes(x);
+            } else {
+                adj = getVariables();
+            }
+
+            for (Node w : adj) {
+                if (adjacencies != null && !(adjacencies.isAdjacentTo(w, x))) {
+                    continue;
+                }
+
+                if (w == x) continue;
+
+                if (!graph.isAdjacentTo(w, x)) {
+                    clearArrow(w, x);
+                    calculateArrowsForward(w, x);
+                }
+            }
+
+            return true;
+        }
+    }
+
+    private Set<Node> storedNeighbors(Node node) {
+        return neighbors.get(node);
+    }
+
     private void bes() {
         TetradLogger.getInstance().log("info", "** BACKWARD EQUIVALENCE SEARCH");
 
@@ -874,6 +913,39 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
         meekOrientRestricted(getVariables(), getKnowledge());
     }
+
+    class NodeTaskBackward extends RecursiveTask<Boolean> {
+        private final Node r;
+
+        public NodeTaskBackward(Node node) {
+            this.r = node;
+        }
+
+        @Override
+        protected Boolean compute() {
+            for (Node w : graph.getAdjacentNodes(r)) {
+                Edge e = graph.getEdge(w, r);
+
+                if (e != null) {
+                    if (e.pointsTowards(r)) {
+                        clearArrow(w, r);
+                        clearArrow(r, w);
+
+                        calculateArrowsBackward(w, r);
+                    } else if (Edges.isUndirectedEdge(graph.getEdge(w, r))) {
+                        clearArrow(w, r);
+                        clearArrow(r, w);
+
+                        calculateArrowsBackward(w, r);
+                        calculateArrowsBackward(r, w);
+                    }
+                }
+            }
+
+            return true;
+        }
+    }
+
 
     private Set<Node> getCommonAdjacents(Node x, Node y) {
         Set<Node> commonChildren = new HashSet<>(graph.getAdjacentNodes(x));
