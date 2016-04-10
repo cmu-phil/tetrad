@@ -3097,7 +3097,7 @@ public final class GraphUtils {
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
 //        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
 
-         class CountTask extends RecursiveTask<Counts> {
+        class CountTask extends RecursiveTask<Counts> {
             private int chunk;
             private int from;
             private int to;
@@ -3105,8 +3105,9 @@ public final class GraphUtils {
             private final Graph leftGraph;
             private final Graph topGraph;
             private final Counts counts;
+            private final int[] count;
 
-            public CountTask(int chunk, int from, int to, List<Edge> edges, Graph leftGraph, Graph topGraph) {
+            public CountTask(int chunk, int from, int to, List<Edge> edges, Graph leftGraph, Graph topGraph, int[] count) {
                 this.chunk = chunk;
                 this.from = from;
                 this.to = to;
@@ -3114,6 +3115,7 @@ public final class GraphUtils {
                 this.leftGraph = leftGraph;
                 this.topGraph = topGraph;
                 this.counts = new Counts();
+                this.count = count;
             }
 
             @Override
@@ -3122,7 +3124,8 @@ public final class GraphUtils {
 
                 if (range <= chunk) {
                     for (int i = from; i < to; i++) {
-                        if ((i + 1) % 1000 == 0) System.out.println("Counted " + (i + 1));
+                        int j = ++count[0];
+                        if (j % 1000 == 0) System.out.println("Counted " + (count[0]));
 
                         Edge edge = edges.get(i);
 
@@ -3141,8 +3144,8 @@ public final class GraphUtils {
                     return counts;
                 } else {
                     int mid = (to + from) / 2;
-                    CountTask left = new CountTask(chunk, from, mid, edges, leftGraph, topGraph);
-                    CountTask right = new CountTask(chunk, mid, to, edges, leftGraph, topGraph);
+                    CountTask left = new CountTask(chunk, from, mid, edges, leftGraph, topGraph, count);
+                    CountTask right = new CountTask(chunk, mid, to, edges, leftGraph, topGraph, count);
 
                     left.fork();
                     Counts rightAnswer = right.compute();
@@ -3181,7 +3184,7 @@ public final class GraphUtils {
         ForkJoinPoolInstance pool = ForkJoinPoolInstance.getInstance();
 
 //        System.out.println("Starting count task");
-        CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph);
+        CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph, new int[1]);
         Counts counts = pool.getPool().invoke(task);
 
 //        System.out.println("Finishing count task");
@@ -4025,7 +4028,7 @@ public final class GraphUtils {
 
 
         boolean ancestor = zAncestors(z, graph).contains(b);
-        boolean ancestor2 = isAncestor(b, z, graph);
+//        boolean ancestor2 = isAncestor(b, z, graph);
 
 //        if (ancestor != ancestor2) {
 //            System.out.println("Ancestors of " + z + " are " + zAncestors(z, graph));

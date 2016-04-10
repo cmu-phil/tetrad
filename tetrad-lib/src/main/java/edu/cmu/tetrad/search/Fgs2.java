@@ -270,7 +270,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                     setFaithfulnessAssumed(true);
                     initializeForwardEdgesFromEmptyGraph(getVariables());
 
-                    System.out.println("Effect edges graph = " + effectEdgesGraph);
+//                    System.out.println("Effect edges graph = " + effectEdgesGraph);
 
                     // Do forward search.
                     fes();
@@ -573,8 +573,8 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                     }
 
                     if (bump > 0.0) {
-                        addArrow(x, y, emptySet, emptySet, emptySet, bump);
-                        addArrow(y, x, emptySet, emptySet, emptySet, bump);
+                        addArrow(x, y, emptySet, emptySet, bump);
+                        addArrow(y, x, emptySet, emptySet, bump);
                     }
                 }
             }
@@ -1038,7 +1038,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                 double bump = insertEval(a, b, T, naYX, hashIndices);
 
                 if (bump > 0.0) {
-                    addArrow(a, b, naYX, T, parents, bump);
+                    addArrow(a, b, naYX, T, bump);
                 }
 
                 if (isFaithfulnessAssumed() && union.isEmpty() && fgsScore.isEffectEdge(bump) &&
@@ -1052,7 +1052,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         }
     }
 
-    private void addArrow(Node a, Node b, Set<Node> naYX, Set<Node> hOrT, Set<Node> parents, double bump) {
+    private void addArrow(Node a, Node b, Set<Node> naYX, Set<Node> hOrT, double bump) {
         Arrow arrow = new Arrow(bump, a, b, hOrT, naYX, arrowIndex++);
         sortedArrows.add(arrow);
         addLookupArrow(a, b, arrow);
@@ -1118,7 +1118,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                 double bump = deleteEval(a, b, diff, naYX, hashIndices);
 
                 if (bump > 0.0) {
-                    addArrow(a, b, naYX, h, parents, bump);
+                    addArrow(a, b, naYX, h, bump);
                 }
             }
         }

@@ -1084,7 +1084,7 @@ public class PerformanceTests {
         double penaltyDiscount = 4.0;
         int depth = -1;
 
-        RandomUtil.getInstance().setSeed(50304050454L);
+//        RandomUtil.getInstance().setSeed(50304050454L);
 
 
         List<int[][]> allCounts = new ArrayList<>();
@@ -1164,7 +1164,7 @@ public class PerformanceTests {
 
                 System.out.println(new Date());
 
-                Fgs2 fgs = new Fgs2(score);
+                Fgs3 fgs = new Fgs3(score);
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setPenaltyDiscount(penaltyDiscount);
@@ -1209,7 +1209,7 @@ public class PerformanceTests {
                 score.setStructurePrior(1);
                 score.setSamplePrior(1);
 
-                Fgs2 fgs = new Fgs2(score);
+                Fgs3 fgs = new Fgs3(score);
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);

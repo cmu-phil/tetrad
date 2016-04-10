@@ -25,10 +25,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphConverter;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.sem.SemIm;
@@ -226,17 +223,47 @@ public class TestFgs {
     @Test
     public void testFromGraph() {
         int numNodes = 10;
-        int numIterations = 5;
+        int numIterations = 1000;
 
         for (int i = 0; i < numIterations; i++) {
-//            System.out.println("Iteration " + (i + 1));
+            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             Fgs2 fgs = new Fgs2(new GraphScore(dag));
+            fgs.setFaithfulnessAssumed(false);
             Graph pattern1 = fgs.search();
-            Fgs pc = new Fgs(new GraphScore(dag));
-            Graph pattern2 = pc.search();
-            assertEquals(pattern2, pattern1);
+            Graph pattern2 = new Pc(new IndTestDSep(dag)).search();
+//            System.out.println(pattern2);
+            assertEquals(pattern1, pattern2);
         }
+    }
+
+    @Test
+    public void testFromGraph2() {
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+
+        Graph g = new EdgeListGraph();
+        g.addNode(x1);
+        g.addNode(x2);
+        g.addNode(x3);
+        g.addNode(x4);
+
+        g.addDirectedEdge(x1, x2);
+        g.addDirectedEdge(x1, x3);
+        g.addDirectedEdge(x4, x2);
+        g.addDirectedEdge(x4, x3);
+
+        Graph pattern1 = new Pc(new IndTestDSep(g)).search();
+        Fgs2 fgs = new Fgs2(new GraphScore(g));
+        fgs.setFaithfulnessAssumed(false);
+        Graph pattern2 = fgs.search();
+
+        System.out.println(pattern1);
+        System.out.println(pattern2);
+
+        assertEquals(pattern1, pattern2);
     }
 
     @Test

@@ -32,6 +32,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.*;
@@ -87,6 +88,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
             this.graph = new EdgeListGraph();
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.RANDOM) {
+            RandomUtil.getInstance().setSeed(new Date().getTime());
             Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
 
             boolean addCycles = Preferences.userRoot().getBoolean("randomGraphAddCycles", false);
@@ -108,6 +110,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
             this.graph = new EdgeListGraph(getGraph());
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode",
                 GraphParams.MANUAL) == GraphParams.RANDOM) {
+            RandomUtil.getInstance().setSeed(new Date().getTime());
             edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
         }
 

@@ -217,12 +217,12 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //                if (indTestParams.isFirstNontriangular()) {
 //                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
 //                    fgsScore.setPenaltyDiscount(penalty);
-//                    fgs = new FgsMb(fgsScore, target);
+//                    fgs = new Fgs2Mb(fgsScore, target);
 //                    fgs.setPenaltyDiscount(penalty);
 //                } else {
 //                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
 //                    fgsScore.setPenaltyDiscount(penalty);
-//                    fgs = new FgsMb(fgsScore, target);
+//                    fgs = new Fgs2Mb(fgsScore, target);
 //                    fgs.setPenaltyDiscount(penalty);
 //                }
 //            } else if (allDiscrete(list)) {
@@ -230,11 +230,11 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //                double samplePrior = ((FgsParams) getParams()).getSamplePrior();
 //
 //                if (indTestParams.isFirstNontriangular()) {
-//                    fgs = new FgsMb(new BdeuScoreImages(list), target);
+//                    fgs = new Fgs2Mb(new BdeuScoreImages(list), target);
 //                    fgs.setSamplePrior(samplePrior);
 //                    fgs.setStructurePrior(structurePrior);
 //                } else {
-//                    fgs = new FgsMb(new BdeuScoreImages(list), target);
+//                    fgs = new Fgs2Mb(new BdeuScoreImages(list), target);
 //                    fgs.setSamplePrior(samplePrior);
 //                    fgs.setStructurePrior(structurePrior);
 //                }
@@ -253,7 +253,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            DataModel dataModel = getDataModelList().getSelectedModel();
 //            ICovarianceMatrix cov;
 //            Node target;
-//            FgsMb fgs;
+//            Fgs2Mb fgs;
 //
 //            if (dataModel instanceof DataSet) {
 //                DataSet dataSet = (DataSet) dataModel;
@@ -262,14 +262,14 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //                if (dataSet.isContinuous()) {
 //                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataModel),
 //                            getParams().getIndTestParams().getAlpha());
-//                    fgs = new FgsMb(gesScore, target);
+//                    fgs = new Fgs2Mb(gesScore, target);
 //                } else if (dataSet.isDiscrete()) {
 //                    double structurePrior = 1;
 //                    double samplePrior = getParams().getIndTestParams().getAlpha();
 //                    BDeuScore score = new BDeuScore(dataSet);
 //                    score.setSamplePrior(samplePrior);
 //                    score.setStructurePrior(structurePrior);
-//                    fgs = new FgsMb(score, target);
+//                    fgs = new Fgs2Mb(score, target);
 //                } else {
 //                    throw new IllegalStateException("Data set must either be continuous or discrete.");
 //                }
@@ -278,7 +278,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //                SemBicScore score = new SemBicScore(cov,
 //                        getParams().getIndTestParams().getAlpha());
 //                target = cov.getVariable(targetName);
-//                fgs = new FgsMb(score, target);
+//                fgs = new Fgs2Mb(score, target);
 //            } else {
 //                throw new IllegalArgumentException("Expecting a data set or a covariance matrix.");
 //            }
@@ -294,7 +294,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //
 //            ScoredIndTest fgsScore = new ScoredIndTest(getIndependenceTest());
 //            fgsScore.setParameter1(getParams().getIndTestParams().getAlpha());
-//            FgsMb search = new FgsMb(fgsScore, target);
+//            Fgs2Mb search = new Fgs2Mb(fgsScore, target);
 //            search.setKnowledge(knowledge);
 //            search.setDepth(depth);
 //            search.setVerbose(true);

@@ -34,6 +34,7 @@ import java.io.ObjectInputStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -140,7 +141,13 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         }
 
         if (this.params != null) {
-           this.params.addRecord(SearchGraphUtils.getGraphComparison2(targetGraph, alteredRefGraph));
+            GraphUtils.GraphComparison graphComparison = SearchGraphUtils.getGraphComparison2(targetGraph, alteredRefGraph);
+            this.params.addRecord(graphComparison);
+
+            if (graphComparison.getAdjFn() != 0 || graphComparison.getAdjFp() != 0 ||
+                    graphComparison.getAhdFn() != 0 || graphComparison.getAhdFp() != 0) {
+                Preferences.userRoot().putBoolean("errorFound", true);
+            }
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");

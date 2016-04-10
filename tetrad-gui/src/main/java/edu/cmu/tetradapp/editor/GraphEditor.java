@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.CompletedPatternWrapper;
 import edu.cmu.tetradapp.model.DagInPatternWrapper;
@@ -337,6 +338,8 @@ public final class GraphEditor extends JPanel
                         JOptionPane.PLAIN_MESSAGE);
 
                 if (ret == JOptionPane.OK_OPTION) {
+                    RandomUtil.getInstance().setSeed(new Date().getTime());
+
                     Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
 
                     boolean addCycles = editor.isAddCycles();
