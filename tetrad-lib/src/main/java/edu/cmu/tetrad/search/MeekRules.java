@@ -373,7 +373,7 @@ public class MeekRules implements ImpliedOrientation {
         // Adding last works, checking for c or not. Adding first works, but when it is
         // checked whether directStack already contains it it seems to produce one in
         // 3000 trial error for FGS. Do not understand this yet.
-        directStack.addFirst(c);
+        directStack.addLast(c);
     }
 
     private static boolean isUnshieldedNoncollider(Node a, Node b, Node c,

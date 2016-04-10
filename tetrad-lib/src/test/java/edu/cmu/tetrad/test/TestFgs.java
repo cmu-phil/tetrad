@@ -222,7 +222,7 @@ public class TestFgs {
 
     @Test
     public void testFromGraph() {
-        int numNodes = 10;
+        int numNodes = 6;
         int numIterations = 1000;
 
         for (int i = 0; i < numIterations; i++) {
