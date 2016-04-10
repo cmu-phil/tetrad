@@ -686,7 +686,6 @@ public class PerformanceTests {
         Fgs2 fgs = new Fgs2(score);
         fgs.setVerbose(true);
         fgs.setNumPatternsToStore(0);
-        fgs.setPenaltyDiscount(penaltyDiscount);
         fgs.setOut(System.out);
         fgs.setFaithfulnessAssumed(false);
         fgs.setDepth(-1);
@@ -798,7 +797,6 @@ public class PerformanceTests {
         Fgs fgs = new Fgs(score);
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
-        fgs.setPenaltyDiscount(penaltyDiscount);
         fgs.setOut(System.out);
         fgs.setFaithfulnessAssumed(true);
         fgs.setDepth(-1);
@@ -960,15 +958,16 @@ public class PerformanceTests {
 
             long time2 = System.currentTimeMillis();
 
+            BDeuScore score = new BDeuScore(dataSet);
+            score.setSamplePrior(samplePrior);
+            score.setStructurePrior(structurePrior);
+
             Fgs fgs = new Fgs(dataSet);
             fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
-            fgs.setPenaltyDiscount(4);
             fgs.setOut(out);
             fgs.setFaithfulnessAssumed(true);
             fgs.setDepth(2);
-            fgs.setStructurePrior(structurePrior);
-            fgs.setSamplePrior(samplePrior);
 
             Graph graph = fgs.search();
 
@@ -1167,7 +1166,6 @@ public class PerformanceTests {
                 Fgs2 fgs = new Fgs2(score);
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
-                fgs.setPenaltyDiscount(penaltyDiscount);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(false);
                 fgs.setDepth(depth);

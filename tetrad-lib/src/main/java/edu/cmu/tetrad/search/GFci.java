@@ -194,14 +194,14 @@ public final class GFci {
         // Adjacency phase
 
         // Run GES to get an initial graph.
-        Fgs ges;
+        Fgs2 ges;
         Graph gesGraph;
 
         if (dataSet == null || dataSet.isContinuous()) {
             covarianceMatrix = independenceTest.getCov();
-            ges = new Fgs(covarianceMatrix);
+            Score score = new SemBicScore(covarianceMatrix, penaltyDiscount);
+            ges = new Fgs2(score);
             ges.setKnowledge(getKnowledge());
-            ges.setPenaltyDiscount(penaltyDiscount);
             ges.setVerbose(verbose);
             ges.setDepth(getDepth());
             ges.setNumPatternsToStore(0);
@@ -209,12 +209,11 @@ public final class GFci {
             graph = ges.search();
             gesGraph = new EdgeListGraphSingleConnections(graph);
         } else if (dataSet.isDiscrete()) {
-            ges = new Fgs(dataSet);
+            BDeuScore score = new BDeuScore(dataSet);
+            score.setSamplePrior(samplePrior);
+            score.setStructurePrior(structurePrior);
+            ges = new Fgs2(dataSet);
             ges.setKnowledge(getKnowledge());
-            ges.setPenaltyDiscount(penaltyDiscount);
-            ges.setSamplePrior(samplePrior);
-            ges.setStructurePrior(structurePrior);
-            ges.setStructurePrior(1);
             ges.setVerbose(false);
             ges.setDepth(getDepth());
             ges.setNumPatternsToStore(0);
@@ -268,7 +267,6 @@ public final class GFci {
             j.retainAll(gesGraph.getAdjacentNodes(k));
 
             if (!j.isEmpty()) {
-//            if (true){
                 sepsets.getSepset(i, k);
 
                 if (sepsets.getScore() < 0) {
@@ -280,7 +278,7 @@ public final class GFci {
         // Orientation phase.
 
 //        // Step CI C, modified collider orientation step for FCI-GES due to Spirtes.
-        ruleR0Special(graph, gesGraph, sepsets, ges);
+        ruleR0Special(graph, gesGraph, sepsets);
 //
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setKnowledge(getKnowledge());
@@ -319,7 +317,7 @@ public final class GFci {
         return false;
     }
 
-    public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets, Fgs ges) {
+    public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets) {
 //        SepsetsMaxScore sepsetProducer = new SepsetsMaxScore(graph, independenceTest, null, getDepth());
 
         System.out.println("AAA " + graph + " " + gesGraph  );

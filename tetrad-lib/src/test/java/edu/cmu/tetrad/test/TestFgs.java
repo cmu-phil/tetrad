@@ -82,11 +82,11 @@ public class TestFgs {
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
         ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        SemBicScore score = new SemBicScore(cov, penaltyDiscount);
 
-        Fgs fgs = new Fgs(cov);
+        Fgs fgs = new Fgs(score);
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
-        fgs.setPenaltyDiscount(penaltyDiscount);
         fgs.setOut(out);
         fgs.setFaithfulnessAssumed(true);
         fgs.setDepth(1);
@@ -147,14 +147,14 @@ public class TestFgs {
 
 //        out.println("Finishing simulation");
 
-        Fgs ges = new Fgs(data);
+        BDeScore score = new BDeScore(data);
+        score.setSamplePrior(samplePrior);
+        score.setStructurePrior(structurePrior);
+
+        Fgs ges = new Fgs(score);
         ges.setVerbose(false);
         ges.setNumPatternsToStore(0);
         ges.setFaithfulnessAssumed(false);
-//        ges.setDepth(3);
-
-        ges.setStructurePrior(structurePrior);
-        ges.setSamplePrior(samplePrior);
 
         Graph estPattern = ges.search();
 
@@ -187,7 +187,6 @@ public class TestFgs {
     public void testExplore3() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
         Fgs fgs = new Fgs(new GraphScore(graph));
-        fgs.setPenaltyDiscount(2);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
@@ -196,7 +195,6 @@ public class TestFgs {
     public void testExplore4() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
         Fgs fgs = new Fgs(new GraphScore(graph));
-        fgs.setPenaltyDiscount(2);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
@@ -206,27 +204,17 @@ public class TestFgs {
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
         Fgs fgs = new Fgs(new GraphScore(graph));
         fgs.setFaithfulnessAssumed(false);
-        fgs.setPenaltyDiscount(2);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
 
     @Test
-    public void testExplore6() {
-        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
-        Fgs fgs = new Fgs(new GraphScore(graph));
-        fgs.setFaithfulnessAssumed(false);
-        fgs.setPenaltyDiscount(1);
-        Graph pattern = fgs.search();
-    }
-
-    @Test
     public void testFromGraph() {
         int numNodes = 6;
-        int numIterations = 1000;
+        int numIterations = 100;
 
         for (int i = 0; i < numIterations; i++) {
-            System.out.println("Iteration " + (i + 1));
+//            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             Fgs2 fgs = new Fgs2(new GraphScore(dag));
             fgs.setFaithfulnessAssumed(false);
@@ -239,6 +227,9 @@ public class TestFgs {
 
     @Test
     public void testFromGraph2() {
+
+        // This may fail if faithfulness is assumed but should pass if not.
+
         Node x1 = new GraphNode("X1");
         Node x2 = new GraphNode("X2");
         Node x3 = new GraphNode("X3");
@@ -266,7 +257,6 @@ public class TestFgs {
         assertEquals(pattern1, pattern2);
     }
 
-    @Test
     public void testFgsMbFromGraph() {
         int numNodes = 10;
         int numIterations = 1;

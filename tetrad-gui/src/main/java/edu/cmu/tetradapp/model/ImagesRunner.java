@@ -367,24 +367,26 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                 double penalty = ((FgsParams) getParams()).getComplexityPenalty();
 
                 if (indTestParams.isFirstNontriangular()) {
-                    fgs = new Fgs(new SemBicScoreImages(list));
-                    fgs.setPenaltyDiscount(penalty);
+                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                    fgsScore.setPenaltyDiscount(penalty);
+                    fgs = new Fgs(fgsScore);
                 } else {
-                    fgs = new Fgs(new SemBicScoreImages(list));
-                    fgs.setPenaltyDiscount(penalty);
+                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                    fgsScore.setPenaltyDiscount(penalty);
+                    fgs = new Fgs(fgsScore);
                 }
             } else if (allDiscrete(list)) {
                 double structurePrior = ((FgsParams) getParams()).getStructurePrior();
                 double samplePrior = ((FgsParams) getParams()).getSamplePrior();
 
+                BdeuScoreImages fgsScore = new BdeuScoreImages(list);
+                fgsScore.setSamplePrior(samplePrior);
+                fgsScore.setStructurePrior(structurePrior);
+
                 if (indTestParams.isFirstNontriangular()) {
-                    fgs = new Fgs(new BdeuScoreImages(list));
-                    fgs.setSamplePrior(samplePrior);
-                    fgs.setStructurePrior(structurePrior);
+                    fgs = new Fgs(fgsScore);
                 } else {
-                    fgs = new Fgs(new BdeuScoreImages(list));
-                    fgs.setSamplePrior(samplePrior);
-                    fgs.setStructurePrior(structurePrior);
+                    fgs = new Fgs(fgsScore);
                 }
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");

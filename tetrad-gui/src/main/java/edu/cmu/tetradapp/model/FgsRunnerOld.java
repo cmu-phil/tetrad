@@ -122,12 +122,11 @@ public class FgsRunnerOld extends AbstractAlgorithmRunner implements GraphSource
         if (source instanceof ICovarianceMatrix) {
             List<DataModel> dataModels = new ArrayList<>();
             dataModels.add((DataModel) source);
-//            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) source);
-            SemBicScoreImages gesScore = new SemBicScoreImages(dataModels);
-            gesScore.setPenaltyDiscount(penalty);
-            fgs = new Fgs(gesScore);
+//            SemBicScore score = new SemBicScore((ICovarianceMatrix) source);
+            SemBicScoreImages score = new SemBicScoreImages(dataModels);
+            score.setPenaltyDiscount(penalty);
+            fgs = new Fgs(score);
             fgs.setKnowledge(getParams().getKnowledge());
-            fgs.setPenaltyDiscount(penalty);
             fgs.setDepth(2);
             fgs.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
             fgs.setFaithfulnessAssumed(faithfulnessAssumed);
@@ -139,12 +138,11 @@ public class FgsRunnerOld extends AbstractAlgorithmRunner implements GraphSource
             if (dataSet.isContinuous()) {
                 List<DataModel> dataModels = new ArrayList<>();
                 dataModels.add((DataModel) source);
-                SemBicScoreImages gesScore = new SemBicScoreImages(dataModels);
-//                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) source));
-                gesScore.setPenaltyDiscount(penalty);
-                fgs = new Fgs(gesScore);
+                SemBicScoreImages score = new SemBicScoreImages(dataModels);
+//                SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) source));
+                score.setPenaltyDiscount(penalty);
+                fgs = new Fgs(score);
                 fgs.setKnowledge(getParams().getKnowledge());
-                fgs.setPenaltyDiscount(penalty);
 //                fgs.setDepth(2);
                 fgs.setNumPatternsToStore(indTestParams.getNumPatternsToSave());
 //                fgs.setFaithfulnessAssumed(faithfulnessAssumed);
@@ -166,13 +164,10 @@ public class FgsRunnerOld extends AbstractAlgorithmRunner implements GraphSource
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (source instanceof Graph) {
-            GraphScore gesScore = new GraphScore((Graph) source);
-            fgs = new Fgs(gesScore);
+            GraphScore score = new GraphScore((Graph) source);
+            fgs = new Fgs(score);
             fgs.setKnowledge(getParams().getKnowledge());
-            fgs.setPenaltyDiscount(penalty);
-//                fgs.setDepth(2);
             fgs.setNumPatternsToStore(50);
-//                fgs.setFaithfulnessAssumed(faithfulnessAssumed);
             fgs.setVerbose(true);
         } else {
             throw new RuntimeException(

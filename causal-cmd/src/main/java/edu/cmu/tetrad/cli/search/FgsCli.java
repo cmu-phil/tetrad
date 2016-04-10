@@ -34,6 +34,7 @@ import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.DataUtility;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -191,11 +192,13 @@ public class FgsCli {
             try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
                 printInfo(variables, writer);
 
-                Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
+                SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+                score.setPenaltyDiscount(penaltyDiscount);
+
+                Fgs fgs = new Fgs(score);
                 fgs.setOut(writer);
                 fgs.setDepth(depth);
                 fgs.setIgnoreLinearDependent(ignoreLinearDependence);
-                fgs.setPenaltyDiscount(penaltyDiscount);
                 fgs.setNumPatternsToStore(0);  // always set to zero
                 fgs.setFaithfulnessAssumed(faithfulness);
                 fgs.setParallelism(numOfThreads);

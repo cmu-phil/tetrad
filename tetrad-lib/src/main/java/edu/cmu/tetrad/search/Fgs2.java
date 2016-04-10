@@ -333,15 +333,6 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
     }
 
     /**
-     * For BIC score, a multiplier on the penalty term. For continuous searches.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        if (fgsScore instanceof ISemBicScore) {
-            ((ISemBicScore) fgsScore).setPenaltyDiscount(penaltyDiscount);
-        }
-    }
-
-    /**
      * If the true graph is set, askterisks will be printed in log output for the true edges.
      */
     public void setTrueGraph(Graph trueGraph) {
@@ -1300,18 +1291,6 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                     addArrow(a, b, naYX, h, bump);
                 }
             }
-        }
-    }
-
-    public void setSamplePrior(double samplePrior) {
-        if (fgsScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) fgsScore).setSamplePrior(samplePrior);
-        }
-    }
-
-    public void setStructurePrior(double expectedNumParents) {
-        if (fgsScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) fgsScore).setStructurePrior(expectedNumParents);
         }
     }
 

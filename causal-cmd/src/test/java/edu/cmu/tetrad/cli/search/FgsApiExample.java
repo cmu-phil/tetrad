@@ -8,6 +8,8 @@ import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.SemBicScore;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -34,11 +36,13 @@ public class FgsApiExample {
         DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
         DataSet dataSet = dataReader.readInData();
 
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        score.setPenaltyDiscount(4.0);
+
         Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
         fgs.setOut(System.out);
         fgs.setDepth(-1);
         fgs.setIgnoreLinearDependent(false);
-        fgs.setPenaltyDiscount(4.0);
         fgs.setNumPatternsToStore(0);  // always set to zero
         fgs.setFaithfulnessAssumed(true);
         fgs.setVerbose(true);

@@ -320,25 +320,25 @@ public final class Fgs implements GraphSearch, GraphScorer {
         return elapsedTime;
     }
 
-    /**
-     * For BIC score, a multiplier on the penalty term. For continuous searches.
-     */
-    public double getPenaltyDiscount() {
-        if (fgsScore instanceof ISemBicScore) {
-            return ((ISemBicScore) fgsScore).getPenaltyDiscount();
-        } else {
-            return 2.0;
-        }
-    }
-
-    /**
-     * For BIC score, a multiplier on the penalty term. For continuous searches.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        if (fgsScore instanceof ISemBicScore) {
-            ((ISemBicScore) fgsScore).setPenaltyDiscount(penaltyDiscount);
-        }
-    }
+//    /**
+//     * For BIC score, a multiplier on the penalty term. For continuous searches.
+//     */
+//    public double getPenaltyDiscount() {
+//        if (fgsScore instanceof ISemBicScore) {
+//            return ((ISemBicScore) fgsScore).getPenaltyDiscount();
+//        } else {
+//            return 2.0;
+//        }
+//    }
+//
+//    /**
+//     * For BIC score, a multiplier on the penalty term. For continuous searches.
+//     */
+//    public void setPenaltyDiscount(double penaltyDiscount) {
+//        if (fgsScore instanceof ISemBicScore) {
+//            ((ISemBicScore) fgsScore).setPenaltyDiscount(penaltyDiscount);
+//        }
+//
 
     /**
      * If the true graph is set, askterisks will be printed in log output for the true edges.
@@ -1144,17 +1144,17 @@ public final class Fgs implements GraphSearch, GraphScorer {
         }
     }
 
-    public void setSamplePrior(double samplePrior) {
-        if (fgsScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) fgsScore).setSamplePrior(samplePrior);
-        }
-    }
-
-    public void setStructurePrior(double expectedNumParents) {
-        if (fgsScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) fgsScore).setStructurePrior(expectedNumParents);
-        }
-    }
+//    public void setSamplePrior(double samplePrior) {
+//        if (fgsScore instanceof LocalDiscreteScore) {
+//            ((LocalDiscreteScore) fgsScore).setSamplePrior(samplePrior);
+//        }
+//    }
+//
+//    public void setStructurePrior(double expectedNumParents) {
+//        if (fgsScore instanceof LocalDiscreteScore) {
+//            ((LocalDiscreteScore) fgsScore).setStructurePrior(expectedNumParents);
+//        }
+//    }
 
     public double getModelScore() {
         return modelScore;

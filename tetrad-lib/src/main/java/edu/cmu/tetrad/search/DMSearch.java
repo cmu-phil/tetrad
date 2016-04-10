@@ -632,22 +632,15 @@ public class DMSearch {
             knowledge.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
         }
 
-        previousGES = null;
-
         this.cov = new CovarianceMatrixOnTheFly(data);
 
-
-        Fgs fgs = new Fgs((ICovarianceMatrix) cov);
-
+        SemBicScore score = new SemBicScore(cov, penalty);
+        Fgs fgs = new Fgs(score);
         fgs.setKnowledge(knowledge);
         fgs.setDepth(this.gesDepth);
-        fgs.setPenaltyDiscount(penalty);
-
         fgs.setIgnoreLinearDependent(true);
 
-
         Graph pattern = fgs.search();
-
 
         //Saves GES output in case is needed.
         File file = new File("src/edu/cmu/tetradproj/amurrayw/ges_output_" + penalty + "_.txt");

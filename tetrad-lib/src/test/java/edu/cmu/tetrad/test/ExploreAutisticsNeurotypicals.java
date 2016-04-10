@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.Fgs2;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 
@@ -92,9 +93,10 @@ public final class ExploreAutisticsNeurotypicals {
                 File file = new File(path, name);
 
                 if (true) {
-                    Fgs2 search = new Fgs2(dataSet);
+                    SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+                    score.setPenaltyDiscount(10);
+                    Fgs2 search = new Fgs2(score);
                     search.setVerbose(true);
-                    search.setPenaltyDiscount(10000);
                     Graph graph = search.search();
                     GraphUtils.saveGraph(graph, file, false);
                 }

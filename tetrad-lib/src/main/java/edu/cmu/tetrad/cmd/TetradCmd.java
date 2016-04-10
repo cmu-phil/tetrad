@@ -677,10 +677,6 @@ public final class TetradCmd {
             fgs.setInitialGraph(initialGraph);
         }
 
-        fgs.setPenaltyDiscount(penaltyDiscount);
-        fgs.setSamplePrior(samplePrior);
-        fgs.setStructurePrior(structurePrior);
-
         fgs.setKnowledge(getKnowledge());
 
         // Convert back to Graph..
