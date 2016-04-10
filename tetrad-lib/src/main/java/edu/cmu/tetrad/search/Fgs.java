@@ -203,6 +203,12 @@ public final class Fgs implements GraphSearch, GraphScorer {
         }
     }
 
+    /**
+     * Construct a Score and pass it in here. The score should return a
+     * positive value in case of conditional dependence and a negative
+     * values in case of conditional independence. See Chickering (2002),
+     * locally consistent scoring criterion.
+     */
     public Fgs(Score fgsScore) {
         if (fgsScore == null) throw new NullPointerException();
         setFgsScore(fgsScore);
