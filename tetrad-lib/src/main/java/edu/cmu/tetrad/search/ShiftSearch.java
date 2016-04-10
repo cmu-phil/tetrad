@@ -182,7 +182,7 @@ public class ShiftSearch {
     private double getAvgBic(List<DataModel> dataSets) {
         SemBicScoreImages fgsScore = new SemBicScoreImages(dataSets);
         fgsScore.setPenaltyDiscount(c);
-        Fgs images = new Fgs(fgsScore);
+        Fgs2 images = new Fgs2(fgsScore);
         images.setKnowledge(knowledge);
         images.search();
         return -images.getModelScore() / dataSets.size();

@@ -84,7 +84,7 @@ public class TestFgs {
         ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
         SemBicScore score = new SemBicScore(cov, penaltyDiscount);
 
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
         fgs.setOut(out);
@@ -151,7 +151,7 @@ public class TestFgs {
         score.setSamplePrior(samplePrior);
         score.setStructurePrior(structurePrior);
 
-        Fgs ges = new Fgs(score);
+        Fgs2 ges = new Fgs2(score);
         ges.setVerbose(false);
         ges.setNumPatternsToStore(0);
         ges.setFaithfulnessAssumed(false);
@@ -186,7 +186,7 @@ public class TestFgs {
     @Test
     public void testExplore3() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
-        Fgs fgs = new Fgs(new GraphScore(graph));
+        Fgs2 fgs = new Fgs2(new GraphScore(graph));
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
@@ -194,7 +194,7 @@ public class TestFgs {
     @Test
     public void testExplore4() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
-        Fgs fgs = new Fgs(new GraphScore(graph));
+        Fgs2 fgs = new Fgs2(new GraphScore(graph));
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
@@ -202,7 +202,7 @@ public class TestFgs {
     @Test
     public void testExplore5() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
-        Fgs fgs = new Fgs(new GraphScore(graph));
+        Fgs2 fgs = new Fgs2(new GraphScore(graph));
         fgs.setFaithfulnessAssumed(false);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
@@ -393,7 +393,7 @@ public class TestFgs {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        Fgs fgs = new Fgs(new SemBicScore(dataSet, 1));
+        Fgs2 fgs = new Fgs2(new SemBicScore(dataSet, 1));
         fgs.setKnowledge(knowledge);
 
         Graph pattern = fgs.search();
@@ -435,7 +435,7 @@ public class TestFgs {
         Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        Fgs fgs = new Fgs(new GraphScore(graph));
+        Fgs2 fgs = new Fgs2(new GraphScore(graph));
 
         // Run search
         Graph resultGraph = fgs.search();
@@ -467,7 +467,7 @@ public class TestFgs {
         Graph input = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        Fgs fgs = new Fgs(new GraphScore(input));
+        Fgs2 fgs = new Fgs2(new GraphScore(input));
 
         // Set up search.
         fgs.setKnowledge(knowledge);
@@ -517,23 +517,6 @@ public class TestFgs {
             Graph pattern2 = pc2.search();
             assertTrue(pattern.equals(pattern2));
         }
-    }
-
-    @Test
-    public void test22() {
-        Graph graph = GraphUtils.randomGraph(100, 0, 200, 10, 10, 10, false);
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
-        Fgs fgs = new Fgs(data);
-        Graph fgsGraph = fgs.search();
-        Graph dag = SearchGraphUtils.dagFromPattern(fgsGraph);
-
-//        System.out.println("score1 = " + fgs.scoreDag(dag));
-
-        graph = GraphUtils.replaceNodes(graph, dag.getNodes());
-
-//        System.out.println("Score2 = " + fgs.scoreDag(graph));
     }
 }
 

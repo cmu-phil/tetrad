@@ -72,7 +72,7 @@ public class SearchWrappers {
             double penaltyDiscount = searchParams[0];
             Score score = new SemBicScore(new CovarianceMatrixOnTheFly(MixedUtils.makeContinuousData(ds)),
                     penaltyDiscount);
-            Fgs fg = new Fgs(score);
+            Fgs2 fg = new Fgs2(score);
             return fg.search();
         }
     }

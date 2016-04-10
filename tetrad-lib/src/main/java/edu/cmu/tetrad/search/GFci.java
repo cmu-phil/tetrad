@@ -212,7 +212,7 @@ public final class GFci {
             BDeuScore score = new BDeuScore(dataSet);
             score.setSamplePrior(samplePrior);
             score.setStructurePrior(structurePrior);
-            ges = new Fgs2(dataSet);
+            ges = new Fgs2(score);
             ges.setKnowledge(getKnowledge());
             ges.setVerbose(false);
             ges.setDepth(getDepth());

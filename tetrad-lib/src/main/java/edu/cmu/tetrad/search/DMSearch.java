@@ -162,7 +162,8 @@ public class DMSearch {
         Graph pattern = new EdgeListGraph();
 
         if (useFgs) {
-            Fgs fgs = new Fgs(cov);
+            Score score = new SemBicScore(cov);
+            Fgs2 fgs = new Fgs2(score);
 
             pattern = recursiveFgs(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
         } else {
@@ -635,7 +636,7 @@ public class DMSearch {
         this.cov = new CovarianceMatrixOnTheFly(data);
 
         SemBicScore score = new SemBicScore(cov, penalty);
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setKnowledge(knowledge);
         fgs.setDepth(this.gesDepth);
         fgs.setIgnoreLinearDependent(true);

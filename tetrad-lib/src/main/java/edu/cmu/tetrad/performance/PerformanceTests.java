@@ -794,7 +794,7 @@ public class PerformanceTests {
 
         SemBicScore score = new SemBicScore(cov, penaltyDiscount);
 
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
         fgs.setOut(System.out);
@@ -883,7 +883,7 @@ public class PerformanceTests {
 
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
 
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
         fgs.setOut(out);
@@ -962,7 +962,7 @@ public class PerformanceTests {
             score.setSamplePrior(samplePrior);
             score.setStructurePrior(structurePrior);
 
-            Fgs fgs = new Fgs(dataSet);
+            Fgs2 fgs = new Fgs2(score);
             fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(out);

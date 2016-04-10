@@ -166,6 +166,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
     /**
      * The data set must either be all continuous or all discrete.
+     * @deprecated Construct a Score and pass it in instead.
      */
     public Fgs2(DataSet dataSet) {
         if (verbose) {
@@ -187,6 +188,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
     /**
      * Continuous case--where a covariance matrix is already available.
+     * @deprecated Construct a Score and pass it in instead.
      */
     public Fgs2(ICovarianceMatrix covMatrix) {
         if (verbose) {
@@ -319,17 +321,6 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
     public long getElapsedTime() {
         return elapsedTime;
-    }
-
-    /**
-     * For BIC score, a multiplier on the penalty term. For continuous searches.
-     */
-    public double getPenaltyDiscount() {
-        if (fgsScore instanceof ISemBicScore) {
-            return ((ISemBicScore) fgsScore).getPenaltyDiscount();
-        } else {
-            return 2.0;
-        }
     }
 
     /**
@@ -502,6 +493,46 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
      */
     public void setBoundGraph(Graph boundGraph) {
         this.boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
+    }
+
+    /**
+     * For BIC score, a multiplier on the penalty term. For continuous searches.
+     * @deprecated Use the getters on the individual scores instead.
+     */
+    public double getPenaltyDiscount() {
+        if (fgsScore instanceof ISemBicScore) {
+            return ((ISemBicScore) fgsScore).getPenaltyDiscount();
+        } else {
+            return 2.0;
+        }
+    }
+
+    /**
+     * @deprecated Use the setters on the individual scores instead.
+     */
+    public void setSamplePrior(double samplePrior) {
+        if (fgsScore instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) fgsScore).setSamplePrior(samplePrior);
+        }
+    }
+
+    /**
+     * @deprecated Use the setters on the individual scores instead.
+     */
+    public void setStructurePrior(double expectedNumParents) {
+        if (fgsScore instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) fgsScore).setStructurePrior(expectedNumParents);
+        }
+    }
+
+    /**
+     * For BIC score, a multiplier on the penalty term. For continuous searches.
+     * @deprecated Use the setters on the individual scores instead.
+     */
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        if (fgsScore instanceof ISemBicScore) {
+            ((ISemBicScore) fgsScore).setPenaltyDiscount(penaltyDiscount);
+        }
     }
 
     //===========================PRIVATE METHODS========================//

@@ -8,6 +8,7 @@ import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.Fgs2;
 import edu.cmu.tetrad.search.SemBicScore;
 
 import java.nio.file.Path;
@@ -39,7 +40,7 @@ public class FgsApiExample {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(4.0);
 
-        Fgs fgs = new Fgs(new CovarianceMatrixOnTheFly(dataSet));
+        Fgs fgs = new Fgs(score);
         fgs.setOut(System.out);
         fgs.setDepth(-1);
         fgs.setIgnoreLinearDependent(false);

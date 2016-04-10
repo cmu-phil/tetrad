@@ -165,6 +165,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
     /**
      * The data set must either be all continuous or all discrete.
+     * @deprecated Construct a Score and pass it in instead.
      */
     public Fgs(DataSet dataSet) {
         if (verbose) {
@@ -186,6 +187,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
     /**
      * Continuous case--where a covariance matrix is already available.
+     * @deprecated Construct a Score and pass it in instead.
      */
     public Fgs(ICovarianceMatrix covMatrix) {
         if (verbose) {
@@ -320,25 +322,27 @@ public final class Fgs implements GraphSearch, GraphScorer {
         return elapsedTime;
     }
 
-//    /**
-//     * For BIC score, a multiplier on the penalty term. For continuous searches.
-//     */
-//    public double getPenaltyDiscount() {
-//        if (fgsScore instanceof ISemBicScore) {
-//            return ((ISemBicScore) fgsScore).getPenaltyDiscount();
-//        } else {
-//            return 2.0;
-//        }
-//    }
-//
-//    /**
-//     * For BIC score, a multiplier on the penalty term. For continuous searches.
-//     */
-//    public void setPenaltyDiscount(double penaltyDiscount) {
-//        if (fgsScore instanceof ISemBicScore) {
-//            ((ISemBicScore) fgsScore).setPenaltyDiscount(penaltyDiscount);
-//        }
-//
+    /**
+     * For BIC score, a multiplier on the penalty term. For continuous searches.
+     * @deprecated Use the getters on the individual scores instead.
+     */
+    public double getPenaltyDiscount() {
+        if (fgsScore instanceof ISemBicScore) {
+            return ((ISemBicScore) fgsScore).getPenaltyDiscount();
+        } else {
+            return 2.0;
+        }
+    }
+
+    /**
+     * For BIC score, a multiplier on the penalty term. For continuous searches.
+     * @deprecated Use the setters on the individual scores instead.
+     */
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        if (fgsScore instanceof ISemBicScore) {
+            ((ISemBicScore) fgsScore).setPenaltyDiscount(penaltyDiscount);
+        }
+    }
 
     /**
      * If the true graph is set, askterisks will be printed in log output for the true edges.
@@ -1144,17 +1148,23 @@ public final class Fgs implements GraphSearch, GraphScorer {
         }
     }
 
-//    public void setSamplePrior(double samplePrior) {
-//        if (fgsScore instanceof LocalDiscreteScore) {
-//            ((LocalDiscreteScore) fgsScore).setSamplePrior(samplePrior);
-//        }
-//    }
-//
-//    public void setStructurePrior(double expectedNumParents) {
-//        if (fgsScore instanceof LocalDiscreteScore) {
-//            ((LocalDiscreteScore) fgsScore).setStructurePrior(expectedNumParents);
-//        }
-//    }
+    /**
+     * @deprecated Use the setters on the individual scores instead.
+     */
+    public void setSamplePrior(double samplePrior) {
+        if (fgsScore instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) fgsScore).setSamplePrior(samplePrior);
+        }
+    }
+
+    /**
+     * @deprecated Use the setters on the individual scores instead.
+     */
+    public void setStructurePrior(double expectedNumParents) {
+        if (fgsScore instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) fgsScore).setStructurePrior(expectedNumParents);
+        }
+    }
 
     public double getModelScore() {
         return modelScore;

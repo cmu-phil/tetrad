@@ -3114,10 +3114,10 @@ public final class SearchGraphUtils {
 
 
             for (DataModel _dataModel : list) {
-                dataSets.add((DataSet) _dataModel);
+                dataSets.add(_dataModel);
             }
 
-            Fgs images = new Fgs(new SemBicScoreImages(dataSets));
+            Fgs2 images = new Fgs2(new SemBicScoreImages(dataSets));
 
             images.setBoundGraph(graph);
             images.setKnowledge(knowledge);
@@ -3125,15 +3125,26 @@ public final class SearchGraphUtils {
         } else if (dataModel instanceof DataSet) {
             DataSet dataSet = (DataSet) dataModel;
 
-            Fgs ges = new Fgs(dataSet);
+            Score score;
+
+            if (((DataSet) dataModel).isContinuous()) {
+                score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            } else if (dataSet.isDiscrete()) {
+                score = new BDeuScore(dataSet);
+            } else {
+                throw new NullPointerException();
+            }
+
+            Fgs2 ges = new Fgs2(score);
 
             ges.setBoundGraph(graph);
             ges.setKnowledge(knowledge);
             return ges.search();
         } else if (dataModel instanceof CovarianceMatrix) {
             ICovarianceMatrix cov = (CovarianceMatrix) dataModel;
+            Score score = new SemBicScore(cov);
 
-            Fgs ges = new Fgs(cov);
+            Fgs2 ges = new Fgs2(score);
 
             ges.setBoundGraph(graph);
             ges.setKnowledge(knowledge);
