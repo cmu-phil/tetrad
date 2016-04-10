@@ -48,7 +48,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
-    private transient Fgs fgs;
+    private transient Fgs2 fgs;
     private Graph graph;
     private FgsRunner.Type type;
 
@@ -309,7 +309,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
-            fgs = new Fgs(gesScore);
+            fgs = new Fgs2(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
             fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
             fgs.setVerbose(true);
@@ -319,7 +319,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
             if (dataSet.isContinuous()) {
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model),
                         params.getComplexityPenalty());
-                fgs = new Fgs(gesScore);
+                fgs = new Fgs2(gesScore);
                 fgs.setKnowledge(getParams().getKnowledge());
                 fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
                 fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
@@ -330,7 +330,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
-                fgs = new Fgs(score);
+                fgs = new Fgs2(score);
                 fgs.setVerbose(true);
                 fgs.setKnowledge(getParams().getKnowledge());
                 fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
@@ -340,7 +340,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
             }
         } else if (model instanceof ICovarianceMatrix) {
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model, params.getComplexityPenalty());
-            fgs = new Fgs(gesScore);
+            fgs = new Fgs2(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
             fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
             fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
@@ -367,24 +367,26 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                 double penalty = ((FgsParams) getParams()).getComplexityPenalty();
 
                 if (indTestParams.isFirstNontriangular()) {
-                    fgs = new Fgs(new SemBicScoreImages(list));
-                    fgs.setPenaltyDiscount(penalty);
+                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                    fgsScore.setPenaltyDiscount(penalty);
+                    fgs = new Fgs2(fgsScore);
                 } else {
-                    fgs = new Fgs(new SemBicScoreImages(list));
-                    fgs.setPenaltyDiscount(penalty);
+                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                    fgsScore.setPenaltyDiscount(penalty);
+                    fgs = new Fgs2(fgsScore);
                 }
             } else if (allDiscrete(list)) {
                 double structurePrior = ((FgsParams) getParams()).getStructurePrior();
                 double samplePrior = ((FgsParams) getParams()).getSamplePrior();
 
+                BdeuScoreImages fgsScore = new BdeuScoreImages(list);
+                fgsScore.setSamplePrior(samplePrior);
+                fgsScore.setStructurePrior(structurePrior);
+
                 if (indTestParams.isFirstNontriangular()) {
-                    fgs = new Fgs(new BdeuScoreImages(list));
-                    fgs.setSamplePrior(samplePrior);
-                    fgs.setStructurePrior(structurePrior);
+                    fgs = new Fgs2(fgsScore);
                 } else {
-                    fgs = new Fgs(new BdeuScoreImages(list));
-                    fgs.setSamplePrior(samplePrior);
-                    fgs.setStructurePrior(structurePrior);
+                    fgs = new Fgs2(fgsScore);
                 }
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");

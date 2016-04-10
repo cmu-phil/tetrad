@@ -104,6 +104,11 @@ public class BdeuScoreImages implements IBDeuScore {
         return sum / scores.size();
     }
 
+    @Override
+    public double localScoreDiff(int x, int y) {
+        return localScoreDiff(x, y, new int[0]);
+    }
+
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */

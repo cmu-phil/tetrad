@@ -1219,7 +1219,7 @@ public final class MlBayesIm implements BayesIm {
 
                     return true;
                 } else {
-                    int mid = from + (to - from) / 2;
+                    int mid = (to + from) / 2;
                     SimulationTask left = new SimulationTask(chunk, from, mid, tiers, dataSet, map);
                     SimulationTask right = new SimulationTask(chunk, mid, to, tiers, dataSet, map);
 

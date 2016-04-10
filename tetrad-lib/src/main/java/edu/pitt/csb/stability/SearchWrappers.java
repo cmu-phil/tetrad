@@ -21,11 +21,10 @@
 
 package edu.pitt.csb.stability;
 
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.IndTestMultinomialLogisticRegression;
-import edu.cmu.tetrad.search.PcStable;
+import edu.cmu.tetrad.search.*;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
 
@@ -70,8 +69,10 @@ public class SearchWrappers {
         public FgsWrapper copy() {return new FgsWrapper(searchParams);}
 
         public Graph search(DataSet ds){
-            Fgs fg = new Fgs(MixedUtils.makeContinuousData(ds));
-            fg.setPenaltyDiscount(searchParams[0]);
+            double penaltyDiscount = searchParams[0];
+            Score score = new SemBicScore(new CovarianceMatrixOnTheFly(MixedUtils.makeContinuousData(ds)),
+                    penaltyDiscount);
+            Fgs2 fg = new Fgs2(score);
             return fg.search();
         }
     }

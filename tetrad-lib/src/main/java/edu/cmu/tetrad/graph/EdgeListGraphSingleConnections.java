@@ -131,10 +131,6 @@ public class EdgeListGraphSingleConnections implements Graph {
         this.edgeLists = new ConcurrentHashMap<>();
         this.nodes = new ArrayList<>();
         this.edgesSet = new HashSet<>();
-
-        for (Node node : nodes) {
-            namesHash.put(node.getName(), node);
-        }
     }
 
     /**
@@ -199,11 +195,10 @@ public class EdgeListGraphSingleConnections implements Graph {
             throw new NullPointerException();
         }
 
-        for (Node variable : nodes) {
-            addNode(variable);
-        }
+        this.nodes = new ArrayList<>(nodes);
 
         for (Node node : nodes) {
+            edgeLists.put(node, new ArrayList<Edge>());
             namesHash.put(node.getName(), node);
         }
     }
@@ -452,10 +447,9 @@ public class EdgeListGraphSingleConnections implements Graph {
      * @return the list of children for a node.
      */
     public List<Node> getChildren(Node node) {
-        List<Node> children = new ArrayList<>(2);
+        List<Node> children = new ArrayList<>();
 
-        for (Object o : getEdges(node)) {
-            Edge edge = (Edge) (o);
+        for (Edge edge : getEdges(node)) {
             Node sub = Edges.traverseDirected(node, edge);
 
             if (sub != null) {
@@ -1516,9 +1510,7 @@ public class EdgeListGraphSingleConnections implements Graph {
         Graph graph = new EdgeListGraphSingleConnections(nodes);
         Set<Edge> edges = getEdges();
 
-        for (Object edge1 : edges) {
-            Edge edge = (Edge) edge1;
-
+        for (Edge edge : edges) {
             if (nodes.contains(edge.getNode1()) &&
                     nodes.contains(edge.getNode2())) {
                 graph.addEdge(edge);

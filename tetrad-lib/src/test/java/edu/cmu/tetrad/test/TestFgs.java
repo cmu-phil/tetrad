@@ -25,10 +25,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphConverter;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.sem.SemIm;
@@ -85,11 +82,11 @@ public class TestFgs {
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
         ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        SemBicScore score = new SemBicScore(cov, penaltyDiscount);
 
-        Fgs fgs = new Fgs(cov);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
-        fgs.setPenaltyDiscount(penaltyDiscount);
         fgs.setOut(out);
         fgs.setFaithfulnessAssumed(true);
         fgs.setDepth(1);
@@ -150,14 +147,14 @@ public class TestFgs {
 
 //        out.println("Finishing simulation");
 
-        Fgs ges = new Fgs(data);
+        BDeScore score = new BDeScore(data);
+        score.setSamplePrior(samplePrior);
+        score.setStructurePrior(structurePrior);
+
+        Fgs2 ges = new Fgs2(score);
         ges.setVerbose(false);
         ges.setNumPatternsToStore(0);
         ges.setFaithfulnessAssumed(false);
-//        ges.setDepth(3);
-
-        ges.setStructurePrior(structurePrior);
-        ges.setSamplePrior(samplePrior);
 
         Graph estPattern = ges.search();
 
@@ -189,8 +186,7 @@ public class TestFgs {
     @Test
     public void testExplore3() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
-        Fgs fgs = new Fgs(new GraphScore(graph));
-        fgs.setPenaltyDiscount(2);
+        Fgs2 fgs = new Fgs2(new GraphScore(graph));
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
@@ -198,8 +194,7 @@ public class TestFgs {
     @Test
     public void testExplore4() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
-        Fgs fgs = new Fgs(new GraphScore(graph));
-        fgs.setPenaltyDiscount(2);
+        Fgs2 fgs = new Fgs2(new GraphScore(graph));
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
@@ -207,37 +202,84 @@ public class TestFgs {
     @Test
     public void testExplore5() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
-        Fgs fgs = new Fgs(new GraphScore(graph));
+        Fgs2 fgs = new Fgs2(new GraphScore(graph));
         fgs.setFaithfulnessAssumed(false);
-        fgs.setPenaltyDiscount(2);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
 
     @Test
-    public void testExplore6() {
-        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
-        Fgs fgs = new Fgs(new GraphScore(graph));
-        fgs.setFaithfulnessAssumed(false);
-        fgs.setPenaltyDiscount(1);
-        Graph pattern = fgs.search();
-    }
-
-    @Test
     public void testFromGraph() {
-        int numNodes = 10;
-        int numIterations = 20;
+        int numNodes = 6;
+        int numIterations = 100;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             Fgs2 fgs = new Fgs2(new GraphScore(dag));
+            fgs.setFaithfulnessAssumed(false);
             Graph pattern1 = fgs.search();
-            Fgs pc = new Fgs(new GraphScore(dag));
-            Graph pattern2 = pc.search();
-            assertEquals(pattern2, pattern1);
+            Graph pattern2 = new Pc(new IndTestDSep(dag)).search();
+//            System.out.println(pattern2);
+            assertEquals(pattern1, pattern2);
         }
     }
+
+    @Test
+    public void testFromGraph2() {
+
+        // This may fail if faithfulness is assumed but should pass if not.
+
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+
+        Graph g = new EdgeListGraph();
+        g.addNode(x1);
+        g.addNode(x2);
+        g.addNode(x3);
+        g.addNode(x4);
+
+        g.addDirectedEdge(x1, x2);
+        g.addDirectedEdge(x1, x3);
+        g.addDirectedEdge(x4, x2);
+        g.addDirectedEdge(x4, x3);
+
+        Graph pattern1 = new Pc(new IndTestDSep(g)).search();
+        Fgs2 fgs = new Fgs2(new GraphScore(g));
+        fgs.setFaithfulnessAssumed(false);
+        Graph pattern2 = fgs.search();
+
+        System.out.println(pattern1);
+        System.out.println(pattern2);
+
+        assertEquals(pattern1, pattern2);
+    }
+
+    public void testFgsMbFromGraph() {
+        int numNodes = 10;
+        int numIterations = 1;
+
+        for (int i = 0; i < numIterations; i++) {
+//            System.out.println("Iteration " + (i + 1));
+            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            GraphScore fgsScore = new GraphScore(dag);
+
+            Fgs2 fgs = new Fgs2(fgsScore);
+            Graph pattern1 = fgs.search();
+
+            Node x1 = fgsScore.getVariable("X1");
+
+            Graph graphMb = GraphUtils.markovBlanketDag(x1, pattern1);
+
+            FgsMb fgsMb = new FgsMb(fgsScore, x1);
+            Graph fgsMbGraph = fgsMb.search();
+//
+//            assertEquals(graphMb, fgsMbGraph);
+        }
+    }
+
 
     private void printDegreeDistribution(Graph dag, PrintStream out) {
         int max = 0;
@@ -351,7 +393,7 @@ public class TestFgs {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        Fgs fgs = new Fgs(new SemBicScore(dataSet, 1));
+        Fgs2 fgs = new Fgs2(new SemBicScore(dataSet, 1));
         fgs.setKnowledge(knowledge);
 
         Graph pattern = fgs.search();
@@ -393,7 +435,7 @@ public class TestFgs {
         Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        Fgs fgs = new Fgs(new GraphScore(graph));
+        Fgs2 fgs = new Fgs2(new GraphScore(graph));
 
         // Run search
         Graph resultGraph = fgs.search();
@@ -425,7 +467,7 @@ public class TestFgs {
         Graph input = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        Fgs fgs = new Fgs(new GraphScore(input));
+        Fgs2 fgs = new Fgs2(new GraphScore(input));
 
         // Set up search.
         fgs.setKnowledge(knowledge);
@@ -475,23 +517,6 @@ public class TestFgs {
             Graph pattern2 = pc2.search();
             assertTrue(pattern.equals(pattern2));
         }
-    }
-
-    @Test
-    public void test22() {
-        Graph graph = GraphUtils.randomGraph(100, 0, 200, 10, 10, 10, false);
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
-        Fgs fgs = new Fgs(data);
-        Graph fgsGraph = fgs.search();
-        Graph dag = SearchGraphUtils.dagFromPattern(fgsGraph);
-
-//        System.out.println("score1 = " + fgs.scoreDag(dag));
-
-        graph = GraphUtils.replaceNodes(graph, dag.getNodes());
-
-//        System.out.println("Score2 = " + fgs.scoreDag(graph));
     }
 }
 

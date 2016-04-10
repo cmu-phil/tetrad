@@ -26,15 +26,13 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
@@ -77,6 +75,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			semGraph.setShowErrorTerms(false);
 		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
+			RandomUtil.getInstance().setSeed(new Date().getTime());
 			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
@@ -96,6 +95,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
             }
         } else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
+			RandomUtil.getInstance().setSeed(new Date().getTime());
 			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
@@ -109,6 +109,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			this.semGraph.setShowErrorTerms(false);
 		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
+			RandomUtil.getInstance().setSeed(new Date().getTime());
 			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();
@@ -122,6 +123,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			this.semGraph.setShowErrorTerms(false);
 		} else if (Preferences.userRoot().getInt("newGraphInitializationMode",
 				GraphParams.MANUAL) == GraphParams.RANDOM) {
+			RandomUtil.getInstance().setSeed(new Date().getTime());
 			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
 		log();

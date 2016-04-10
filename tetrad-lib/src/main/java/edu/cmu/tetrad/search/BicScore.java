@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Calculates the BDeu score.
  */
-public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
+public class BicScore implements LocalDiscreteScore, IBDeuScore {
     private List<Node> variables;
     private int[][] data;
     private int sampleSize;
@@ -39,8 +39,9 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
     private double structurePrior = 1;
 
     private int[] numCategories;
+    private double penaltyDiscount = 2;
 
-    public BDeuScore(DataSet dataSet) {
+    public BicScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -98,15 +99,15 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         }
 
         // Number of parent states.
-        int r = 1;
+        int ps = 1;
 
         for (int p = 0; p < parents.length; p++) {
-            r *= dims[p];
+            ps *= dims[p];
         }
 
         // Conditional cell coefs of data for node given parents(node).
-        int n_jk[][] = new int[r][c];
-        int n_j[] = new int[r];
+        int n_jk[][] = new int[ps][c];
+        int n_j[] = new int[ps];
 
         int[] parentValues = new int[parents.length];
 
@@ -139,21 +140,17 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         //Finally, compute the score
         double score = 0.0;
 
-        score += getPriorForStructure(parents.length);
-
-        final double cellPrior = getSamplePrior() / (c * r);
-        final double rowPrior = getSamplePrior() / r;
-
-        for (int j = 0; j < r; j++) {
-            score -= Gamma.logGamma(rowPrior + n_j[j]);
+        for (int j = 0; j < ps; j++) {
+            score -= Gamma.logGamma(n_j[j]);
 
             for (int k = 0; k < c; k++) {
-                score += Gamma.logGamma(cellPrior + n_jk[j][k]);
+                score += Gamma.logGamma(n_jk[j][k]);
             }
         }
 
-        score += r * Gamma.logGamma(rowPrior);
-        score -= c * r * Gamma.logGamma(cellPrior);
+        int numParams = ps * (c - 1);
+
+        score += getPenaltyDiscount() * numParams * Math.log(getSampleSize());
 
         return score;
     }
@@ -265,6 +262,14 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         }
 
         this.variables = variables;
+    }
+
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
     }
 }
 

@@ -39,10 +39,10 @@ This is effective for PC, CPC, FCI, and CFCI, not FGS.
 “-significance” is by default 0.05 but may be set to any number in the range
 [0.0, 1.0]. This is effective for PC, CPC FCI, and CFCI, not FGS.
 
-"-samplePrior" is by detault 10 but may be set to any positive number; this
+"-sampleprior" is by detault 10 but may be set to any positive number; this
 is used for FGS.
 
-"-structurePrior" is by default 1 but may be set to any positive number; this
+"-structureprior" is by default 1 but may be set to any positive number; this
 is used for FGS.
 
 "-penaltydiscount" is by default 1 but may be set to any positive number; this

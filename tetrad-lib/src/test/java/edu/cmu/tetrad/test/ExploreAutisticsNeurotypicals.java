@@ -26,7 +26,8 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fgs;
+import edu.cmu.tetrad.search.Fgs2;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 
@@ -43,15 +44,15 @@ import java.util.Set;
 public final class ExploreAutisticsNeurotypicals {
 
     public void printEdgeData() {
-//        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_90_Variable";
-        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets";
-        List<List<DataSet>> allDatasets = loadData(path, "ROI_data_autistic", "ROI_data_typical");
+        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
+//        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets";
+        List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
         List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, true);
         List<List<Graph>> graphs = reconcileNodes(allGraphs);
         List<Edge> _edges = getAllEdges(allGraphs);
         DataSet dataSet = createEdgeDataSet(graphs, _edges);
-        dataSet = restrictDataRange(dataSet, .2, .8);
-        printDataTranspose(path, "edgedata", dataSet);
+//        dataSet = restrictDataRange(dataSet, .1, .9);
+        printData(path, "edgedata", dataSet);
     }
 
     public void printTrekNodeData() {
@@ -79,7 +80,7 @@ public final class ExploreAutisticsNeurotypicals {
     }
 
     private List<List<Graph>> runAlgorithm(String path, List<List<DataSet>> allDatasets, boolean redoGraphs) {
-        double penaltyDiscount = 2;
+//        double penaltyDiscount = 500;
 
         List<List<Graph>> allGraphs = new ArrayList<>();
 
@@ -87,13 +88,14 @@ public final class ExploreAutisticsNeurotypicals {
             List<Graph> graphs = new ArrayList<>();
 
             for (DataSet dataSet : dataSets) {
-                String name = dataSet.getName() + "." + penaltyDiscount + ".graph.txt";
+                String name = dataSet.getName() + "." + 10000 + ".graph.txt";
                 File file = new File(path, name);
 
-                if (redoGraphs) {
-                    Fgs search = new Fgs(dataSet);
+                if (true) {
+                    SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+                    score.setPenaltyDiscount(10);
+                    Fgs2 search = new Fgs2(score);
                     search.setVerbose(true);
-                    search.setPenaltyDiscount(penaltyDiscount);
                     Graph graph = search.search();
                     GraphUtils.saveGraph(graph, file, false);
                 }
@@ -150,6 +152,45 @@ public final class ExploreAutisticsNeurotypicals {
 
         return allDataSets;
     }
+
+
+    public void printDegreeData() {
+//        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
+        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets/all";
+        List<List<DataSet>> allDatasets = loadData(path, "ROI_data_autistic", "ROI_data_typical");
+        List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, true);
+        List<List<Graph>> graphs = reconcileNodes(allGraphs);
+        List<Node> nodes = graphs.get(0).get(0).getNodes();
+
+        System.out.print("Group\t");
+
+        for (Node node : nodes) {
+            System.out.print(node.getName() + "\t");
+        }
+
+        System.out.println();
+
+        for (int i = 0; i < graphs.size(); i++) {
+            List<Graph> _graphs = graphs.get(i);
+
+            for (Graph _graph : _graphs) {
+                System.out.print(i + "\t");
+
+                for (Node node : nodes) {
+                    System.out.print(_graph.getAdjacentNodes(node).size() + "\t");
+                }
+
+                System.out.println();
+            }
+        }
+
+//
+//        List<Edge> _edges = getAllEdges(allGraphs);
+//        DataSet dataSet = createEdgeDataSet(graphs, _edges);
+////        dataSet = restrictDataRange(dataSet, .1, .9);
+//        printData(path, "edgedata", dataSet);
+    }
+
 
     public static DataSet getTrekNodeDataSet(List<List<Graph>> graphs) {
         List<Node> graphNodes = new ArrayList<>(graphs.get(0).get(0).getNodes());
@@ -525,7 +566,7 @@ public final class ExploreAutisticsNeurotypicals {
     }
 
     public static void main(String... args) {
-        new ExploreAutisticsNeurotypicals().makeDataSpecial();
+        new ExploreAutisticsNeurotypicals().printDegreeData();
         ;
     }
 }

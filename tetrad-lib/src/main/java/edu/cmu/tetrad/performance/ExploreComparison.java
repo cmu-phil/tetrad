@@ -17,12 +17,13 @@ public class ExploreComparison {
 //        params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
         params.setScore(ComparisonParameters.ScoreType.SemBic);
 //        params.setOneEdgeFaithfulnessAssumed(false);
-        params.setNumVars(500);
-        params.setNumEdges(1000);
+        params.setNumVars(100);
+        params.setNumEdges(100);
+        params.setPenaltyDiscount(4);
 
         List<ComparisonResult> results = new ArrayList<>();
 
-        for (int sampleSize = 100; sampleSize <= 2000; sampleSize += 100) {
+        for (int sampleSize = 1000; sampleSize <= 1000; sampleSize += 100) {
             params.setSampleSize(sampleSize);
             results.add(Comparison.compare(params));
         }

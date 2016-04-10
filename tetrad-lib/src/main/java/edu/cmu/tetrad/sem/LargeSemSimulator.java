@@ -23,6 +23,7 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
@@ -31,12 +32,12 @@ import edu.cmu.tetrad.util.TetradAlgebra;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
-import org.apache.commons.math3.random.*;
+import org.apache.commons.collections4.map.HashedMap;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.random.Well1024a;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
@@ -55,6 +56,7 @@ public final class LargeSemSimulator {
     private double[][] coefs;
     private double[] errorVars;
     private double[] means;
+    private int maxThreads = 80;//Runtime.getRuntime().availableProcessors() * 5;
 
     /**
      * Used for some linear algebra calculations.
@@ -133,6 +135,9 @@ public final class LargeSemSimulator {
         return dataSet;
     }
 
+    long seed = new Date().getTime();
+
+
     // Trying again to parallelize simulateDataAcyclic.
     public DataSet simulateDataAcyclic(int sampleSize) {
         int size = variableNodes.size();
@@ -141,68 +146,167 @@ public final class LargeSemSimulator {
 //        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
         final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variableNodes);
 
-        class SimulateTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-            private int[] tierIndices;
-            private int[][] parents;
-            private double[] errorVars;
-            private double[][] coefs;
+//        class SimulateTask extends RecursiveTask<double[][]> {
+//            private int chunk;
+//            private int from;
+//            private int to;
+//            private int[] tierIndices;
+//            private int[][] parents;
+//            private double[] errorVars;
+//            private double[][] coefs;
+//
+//            public SimulateTask(int chunk, int from, int to, int[] tierIndices, int[][] parents, double[] errorVars,
+//                                double[][] coefs) {
+//                this.chunk = chunk;
+//                this.from = from;
+//                this.to = to;
+//                this.tierIndices = tierIndices;
+//                this.parents = parents;
+//                this.errorVars = errorVars;
+//                this.coefs = coefs;
+//            }
+//
+//            @Override
+//            protected double[][] compute() {
+//                if (to - from <= chunk) {
+//                    double[][] rows = new double[to - from][];
+//
+//                    for (int row = 0; row < to - from; row++) {
+//                        if ((row) % 1000 == 0) System.out.println("Row " + from);
+//
+//                        double[] _row = new double[tierIndices.length];
+//
+//                        for (int col : tierIndices) {
+//                            double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
+//
+//                            for (int j = 0; j < parents[col].length; j++) {
+//                                value += _row[parents[col][j]] * coefs[col][j];
+//                            }
+//
+//                            value += means[col];
+//
+//                            _row[col] = value;
+//                        }
+//
+//                        rows[row] = _row;
+//                    }
+//
+//                    return rows;
+//                } else {
+//                    int mid = (to + from) / 2;
+//
+//                    SimulateTask left = new SimulateTask(chunk, from, mid, tierIndices, parents, errorVars, coefs);
+//                    SimulateTask right = new SimulateTask(chunk, mid, to, tierIndices, parents, errorVars, coefs);
+//
+//                    left.fork();
+//                    double[][] _left = right.compute();
+//                    double[][] _right = left.join();
+//
+//                    double[][] together = new double[_left.length + _right.length][];
+//                    System.arraycopy(_left, 0, together, 0, _left.length);
+//                    System.arraycopy(_right, 0, together, _left.length, _right.length);
+//
+//                    return together;
+//                }
+//            }
+//        }
 
-            public SimulateTask(int chunk, int from, int to, int[] tierIndices, int[][] parents, double[] errorVars,
-                                double[][] coefs) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-                this.tierIndices = tierIndices;
-                this.parents = parents;
-                this.errorVars = errorVars;
-                this.coefs = coefs;
+//        double[][] all = ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(100, 0, dataSet.getNumRows(),
+//                tierIndices, parents, errorVars, coefs));
+
+
+
+
+        class SimulateRowTask extends RecursiveTask<double[]> {
+            private final int i;
+
+            public SimulateRowTask(int i) {
+                this.i = i;
             }
 
             @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int row = from; row < to; row++) {
-//                        if ((row + 1) % 100 == 0) System.out.println("Row " + (row + 1));
+            protected double[] compute() {
+                if ((i + 1) % 50 == 0)
+                    System.out.println("Simulating " + (i + 1));
 
-                        for (int col : tierIndices) {
-                            double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
+                double[] _row = new double[tierIndices.length];
 
-                            for (int j = 0; j < parents[col].length; j++) {
-                                value += dataSet.getDouble(row, parents[col][j]) * coefs[col][j];
-                            }
+                for (int col : tierIndices) {
+                    NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, sqrt(errorVars[col]));
+                    double value = normal.sample();
 
-                            value += means[col];
+//                    double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
 
-                            dataSet.setDouble(row, col, value);
-                        }
+                    for (int j = 0; j < parents[col].length; j++) {
+                        value += _row[parents[col][j]] * coefs[col][j];
                     }
 
-                    return true;
-                } else {
-                    int mid = (to - from) / 2;
+                    value += means[col];
 
-                    List<SimulateTask> tasks = new ArrayList<>();
-
-                    tasks.add(new SimulateTask(chunk, from, from + mid, tierIndices, parents, errorVars, coefs));
-                    tasks.add(new SimulateTask(chunk, from + mid, to, tierIndices, parents, errorVars, coefs));
-
-                    invokeAll(tasks);
-
-                    return true;
+                    _row[col] = value;
                 }
+
+                return _row;
             }
         }
 
-        ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(100, 0, dataSet.getNumRows(),
-                tierIndices, parents, errorVars, coefs));
+        class SimulateTask2 extends RecursiveTask<double[][]> {
 
-        return dataSet;
+            private final int numRows;
+
+            public SimulateTask2(int numRows) {
+                this.numRows = numRows;
+            }
+
+            @Override
+            protected double[][] compute() {
+                Queue<SimulateRowTask> tasks = new ArrayDeque<>();
+                List<double[]> rows = new ArrayList<>();
+
+                for (int i = 0; i < numRows; i++) {
+                    SimulateRowTask task = new SimulateRowTask(i);
+                    tasks.add(task);
+                    task.fork();
+
+                    for (SimulateRowTask _task : new ArrayList<>(tasks)) {
+                        if (_task.isDone()) {
+                            rows.add(_task.join());
+                            tasks.remove(_task);
+                        }
+                    }
+
+                    if (tasks.size() >= maxThreads) {
+                        SimulateRowTask _task = tasks.poll();
+                        rows.add(_task.join());
+                    }
+                }
+
+                for (SimulateRowTask task : tasks) {
+                    rows.add(task.join());
+                }
+
+                double[][] ret = new double[rows.size()][];
+
+                for (int i = 0; i < ret.length; i++) {
+                    ret[i] = rows.get(i);
+                }
+
+                return ret;
+            }
+        }
+
+        double[][] all2 = ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask2(dataSet.getNumRows()));
+
+        return new BoxDataSet(new DoubleDataBox(all2), variableNodes);
     }
 
     private void setupModel(int size) {
+        Map<Node, Integer> nodesHash = new HashedMap<>();
+
+        for (int i = 0; i < variableNodes.size(); i++) {
+            nodesHash.put(variableNodes.get(i), i);
+        }
+
         this.parents = new int[size][];
         this.coefs = new double[size][];
         this.errorVars = new double[size];
@@ -221,8 +325,8 @@ public final class LargeSemSimulator {
             Node tail = Edges.getDirectedEdgeTail(edge);
             Node head = Edges.getDirectedEdgeHead(edge);
 
-            int _tail = variableNodes.indexOf(tail);
-            int _head = variableNodes.indexOf(head);
+            int _tail = nodesHash.get(tail);
+            int _head = nodesHash.get(head);
 
             int[] parents = this.parents[_head];
             int[] newParents = new int[parents.length + 1];
@@ -244,186 +348,6 @@ public final class LargeSemSimulator {
             this.means[i] = meanDist.nextRandom();
         }
     }
-
-    // Tier ordering is the order of the variables.
-    public BoxDataSet simulateDataAcyclicConcurrent(int sampleSize) {
-        int numVars = variableNodes.size();
-        setupModel(numVars);
-
-        final int[][] _parents = parents;
-        final double[][] _coefs = coefs;
-
-//        final double[][] _data = new double[sampleSize][numVars];
-        final double[][] _data = new double[numVars][sampleSize];
-
-        // This random number generator is not thread safe, so we make a new one each time.
-        RandomGenerator apacheGen = new Well19937a(new Date().getTime());
-        final RandomDataGenerator generator = new RandomDataGenerator(new SynchronizedRandomGenerator(apacheGen));
-
-        //Do the simulation.
-        class SimulationTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-
-            public SimulationTask(int chunk, int from, int to) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                RandomGenerator apacheGen = new Well44497b(generator.nextLong(0, Long.MAX_VALUE));
-                RandomDataGenerator generatorLocal = new RandomDataGenerator(apacheGen);
-
-                if (to - from <= chunk) {
-                    for (int row = from; row < to; row++) {
-                        for (int col : tierIndices) {
-                            double value = generatorLocal.nextGaussian(0, sqrt(errorVars[col]));
-
-                            for (int j = 0; j < _parents[col].length; j++) {
-                                int parent = _parents[col][j];
-                                final double coef = _coefs[col][j];
-                                final double v = _data[parent][row];
-                                value += v * coef;
-
-                                if (Double.isNaN(value)) {
-                                    throw new IllegalArgumentException();
-                                }
-                            }
-
-                            value += means[col];
-
-                            _data[col][row] = value;
-                        }
-                    }
-
-                    return true;
-                } else {
-                    List<SimulationTask> simulationTasks = new ArrayList<>();
-
-                    int mid = (to - from) / 2;
-
-                    simulationTasks.add(new SimulationTask(chunk, from, from + mid));
-                    simulationTasks.add(new SimulationTask(chunk, from + mid, to));
-
-                    invokeAll(simulationTasks);
-
-                    return true;
-                }
-            }
-        }
-
-        int chunk = 25;
-
-        pool.invoke(new SimulationTask(chunk, 0, sampleSize));
-
-        return new BoxDataSet(new VerticalDoubleDataBox(_data), variableNodes);
-//        return ColtDataSet.makeContinuousData(variableNodes, _data);
-    }
-
-
-//    // Tier ordering is the order of the variables.
-//    private DataSet constructSimulation2(List<Node> variables, int sampleSize) {
-//        // Create some index arrays to hopefully speed up the simulation.
-////        final int[] tierIndices = new int[variableNodes.size()];
-////
-////        for (int i = 0; i < tierIndices.length; i++) {
-////            tierIndices[i] = i;
-////        }
-//
-//
-//        List<Node> tierOrdering = graph.getCausalOrdering();
-//
-//        final int[] tierIndices = new int[variableNodes.size()];
-//
-//        for (int i = 0; i < tierIndices.length; i++) {
-//            tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
-//        }
-//
-//        for (int i = 0; i < tierIndices.length; i++) {
-//            tierIndices[i] = i;
-//        }
-//
-//        final int[][] _parents = parents;
-//        final double[][] _coefs = coefs;
-////
-////        int numVars = variables.size();
-////
-////        final double[][] _data = new double[numVars][sampleSize];
-//
-//        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
-////        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variables);
-//
-////        //Do the simulation.
-//        class Task extends RecursiveTask<Boolean> {
-//            private int chunk;
-//            private int from;
-//            private int to;
-//
-//            public Task(int chunk, int from, int to) {
-//                this.chunk = chunk;
-//                this.from = from;
-//                this.to = to;
-//            }
-//
-//            @Override
-//            protected Boolean compute() {
-//                if (to - from <= chunk) {
-//
-//                    for (int row = from; row < to; row++) {
-////                        System.out.println("Row = " + row);
-//                        for (int col : tierIndices) {
-//                            double value1 = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
-//
-//                            for (int j = 0; j < _parents[col].length; j++) {
-//                                int parent = _parents[col][j];
-//                                double aDouble = dataSet.getDouble(row, parent);
-//                                value1 += aDouble * _coefs[col][j];
-//                            }
-//
-//                            value1 += means[col];
-//                            double value = value1;
-//                            dataSet.setDouble(row, col, value);
-//                        }
-//                    }
-//
-//                    return true;
-//                } else {
-//                    int numIntervals = 4;
-//
-//                    int step = (to - from) / numIntervals + 1;
-//
-//                    List<Task> tasks = new ArrayList<>();
-//
-//                    for (int i = 0; i < numIntervals; i++) {
-////                        System.out.println("From = " + (from + i * step) + " to + " + Math.min(from + (i + 1) * step, to));
-//                        tasks.add(new Task(chunk, from + i * step, Math.min(from + (i + 1) * step, to)));
-//                    }
-//
-//                    invokeAll(tasks);
-//
-//                    return true;
-//                }
-//
-//            }
-//
-//        }
-//
-//        int _chunk = variables.size() / NTHREADS;
-//        int minChunk = 11;
-//        final int chunk = _chunk < minChunk ? minChunk : _chunk;
-//
-//        System.out.println("Starting data simulation 2");
-//
-//        pool.invoke(new Task(chunk, 0, sampleSize));
-//
-//        System.out.println("Finishing data simulation 2");
-//
-//        return dataSet;
-//    }
-
 
     public TetradAlgebra getAlgebra() {
         if (algebra == null) {

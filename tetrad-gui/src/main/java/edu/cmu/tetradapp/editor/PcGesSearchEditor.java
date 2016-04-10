@@ -124,10 +124,6 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result Pattern");
     }
 
-    public PcGesSearchEditor(FgsRunner2 runner) {
-        super(runner, "Result Pattern");
-    }
-
     public PcGesSearchEditor(PValueImproverWrapper runner) {
         super(runner, "Result Graph");
 

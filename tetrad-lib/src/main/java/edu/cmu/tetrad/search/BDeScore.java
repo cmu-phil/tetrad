@@ -128,6 +128,11 @@ public class BDeScore implements LocalDiscreteScore {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
+    @Override
+    public double localScoreDiff(int x, int y) {
+        return localScore(y, x) - localScore(y);
+    }
+
     int[] append(int[] parents, int extra) {
         int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);

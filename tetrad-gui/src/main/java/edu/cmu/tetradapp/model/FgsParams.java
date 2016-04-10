@@ -213,6 +213,10 @@ public final class FgsParams implements MeekSearchParams {
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }
+
+    public String getTargetName() {
+        return "X1";
+    }
 }
 
 

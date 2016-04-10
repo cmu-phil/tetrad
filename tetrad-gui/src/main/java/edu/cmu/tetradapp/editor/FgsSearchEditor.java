@@ -73,6 +73,10 @@ public class FgsSearchEditor extends AbstractSearchEditor
         super(runner, "Result Pattern");
     }
 
+    public FgsSearchEditor(FgsMbRunner runner) {
+        super(runner, "Result Pattern");
+    }
+
     public FgsSearchEditor(ImagesRunner runner) {
         super(runner, "Result Pattern");
     }
@@ -804,6 +808,12 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
         if (algorithmRunner instanceof  IFgsRunner) {
             IFgsRunner fgsRunner = ((IFgsRunner) algorithmRunner);
+            FgsIndTestParams params = (FgsIndTestParams) indTestParams;
+            return new FgsIndTestParamsEditor(params, fgsRunner.getType());
+        }
+
+        if (algorithmRunner instanceof  FgsMbRunner) {
+            FgsMbRunner fgsRunner = ((FgsMbRunner) algorithmRunner);
             FgsIndTestParams params = (FgsIndTestParams) indTestParams;
             return new FgsIndTestParamsEditor(params, fgsRunner.getType());
         }

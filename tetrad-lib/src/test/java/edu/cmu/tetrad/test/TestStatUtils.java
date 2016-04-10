@@ -614,6 +614,18 @@ public class TestStatUtils {
         assertEquals(1.75, maxEnt, 0.01);
     }
 
+    public void test2() {
+        double d = .06;
+        double sum = 0.0;
+
+        for (int n = 1; n <= 1000; n++) {
+//            System.out.println(n * d);
+            sum += n * d;
+        }
+
+        System.out.println(sum / (60 * 60));
+    }
+
     private String f(double d1) {
         NumberFormat f = new DecimalFormat("0.000000");
         return f.format(d1);

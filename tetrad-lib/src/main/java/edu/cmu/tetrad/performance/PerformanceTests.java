@@ -38,7 +38,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.copySign;
 import static java.lang.Math.round;
 
 /**
@@ -687,7 +686,6 @@ public class PerformanceTests {
         Fgs2 fgs = new Fgs2(score);
         fgs.setVerbose(true);
         fgs.setNumPatternsToStore(0);
-        fgs.setPenaltyDiscount(penaltyDiscount);
         fgs.setOut(System.out);
         fgs.setFaithfulnessAssumed(false);
         fgs.setDepth(-1);
@@ -796,10 +794,9 @@ public class PerformanceTests {
 
         SemBicScore score = new SemBicScore(cov, penaltyDiscount);
 
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
-        fgs.setPenaltyDiscount(penaltyDiscount);
         fgs.setOut(System.out);
         fgs.setFaithfulnessAssumed(true);
         fgs.setDepth(-1);
@@ -886,7 +883,7 @@ public class PerformanceTests {
 
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
 
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
         fgs.setOut(out);
@@ -961,15 +958,16 @@ public class PerformanceTests {
 
             long time2 = System.currentTimeMillis();
 
-            Fgs fgs = new Fgs(dataSet);
+            BDeuScore score = new BDeuScore(dataSet);
+            score.setSamplePrior(samplePrior);
+            score.setStructurePrior(structurePrior);
+
+            Fgs2 fgs = new Fgs2(score);
             fgs.setVerbose(false);
             fgs.setNumPatternsToStore(0);
-            fgs.setPenaltyDiscount(4);
             fgs.setOut(out);
             fgs.setFaithfulnessAssumed(true);
             fgs.setDepth(2);
-            fgs.setStructurePrior(structurePrior);
-            fgs.setSamplePrior(samplePrior);
 
             Graph graph = fgs.search();
 
@@ -1080,17 +1078,13 @@ public class PerformanceTests {
     }
 
     private void testFgs(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
-        double penaltyDiscount = 4.0;
-        int depth = 3;
+        out.println(new Date());
 
-        init(new File("fgs.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
-                "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
-        out.println("Num vars = " + numVars);
-        out.println("Num edges = " + (int) (numVars * edgeFactor));
-        out.println("Num cases = " + numCases);
-        out.println("Penalty discount = " + penaltyDiscount);
-        out.println("Depth = " + depth);
-        out.println();
+        double penaltyDiscount = 4.0;
+        int depth = -1;
+
+//        RandomUtil.getInstance().setSeed(50304050454L);
+
 
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();
@@ -1098,12 +1092,23 @@ public class PerformanceTests {
         List<Long> elapsedTimes = new ArrayList<Long>();
 
         for (int run = 0; run < numRuns; run++) {
-
+            init(new File("fgs.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
+                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+            out.println("Num vars = " + numVars);
+            out.println("Num edges = " + (int) (numVars * edgeFactor));
+            out.println("Num cases = " + numCases);
+            out.println("Penalty discount = " + penaltyDiscount);
+            out.println("Depth = " + depth);
+            out.println();
             out.println("\n\n\n******************************** RUN " + (run + 1) + " ********************************\n\n");
 
             System.out.println("Making dag");
 
+            out.println(new Date());
+
             Graph dag = makeDag(numVars, edgeFactor);
+
+            System.out.println(new Date());
 
             System.out.println("Calculating pattern for DAG");
 
@@ -1123,6 +1128,8 @@ public class PerformanceTests {
 
             out.println("Graph done");
 
+            System.out.println(new Date());
+
             System.out.println("Starting simulation");
             Graph estPattern;
             long elapsed;
@@ -1135,38 +1142,54 @@ public class PerformanceTests {
 
                 System.out.println("Finishing simulation");
 
+                System.out.println(new Date());
+
                 long time2 = System.currentTimeMillis();
 
                 out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+                System.out.println(new Date());
 
                 System.out.println("Making covariance matrix");
+
+                long time3 = System.currentTimeMillis();
 
                 ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
 
                 System.out.println("Covariance matrix done");
 
-                long time3 = System.currentTimeMillis();
-
                 out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
 
                 SemBicScore score = new SemBicScore(cov, penaltyDiscount);
 
+                System.out.println(new Date());
+
                 Fgs2 fgs = new Fgs2(score);
-//            fgs.setVerbose(true);
+                fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
-                fgs.setPenaltyDiscount(penaltyDiscount);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(true);
-                fgs.setDepth(-1);
-                fgs.setCycleBound(5);
+                fgs.setFaithfulnessAssumed(false);
+                fgs.setDepth(depth);
+                fgs.setCycleBound(-1);
 
                 System.out.println("\nStarting FGS");
 
                 estPattern = fgs.search();
 
+                System.out.println(new Date());
+
                 long time4 = System.currentTimeMillis();
                 elapsed = time4 - time3;
             } else {
+                init(new File("fgs.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
+                        "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                out.println("Num vars = " + numVars);
+                out.println("Num edges = " + (int) (numVars * edgeFactor));
+                out.println("Num cases = " + numCases);
+                out.println("Sample prior = " + 1);
+                out.println("Structure prior = " + 1);
+                out.println("Depth = " + 1);
+                out.println();
+
                 BayesPm pm = new BayesPm(dag, 3, 3);
                 MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
@@ -1185,12 +1208,12 @@ public class PerformanceTests {
                 score.setSamplePrior(1);
 
                 Fgs2 fgs = new Fgs2(score);
-//                fgs.setVerbose(false);
+                fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(true);
-                fgs.setDepth(-1);
-                fgs.setCycleBound(5);
+                fgs.setDepth(depth);
+                fgs.setCycleBound(-1);
 
                 System.out.println("\nStarting FGS");
 
@@ -1202,8 +1225,7 @@ public class PerformanceTests {
 
             System.out.println("Done with FGS");
 
-
-            out.println(new Date());
+            System.out.println(new Date());
 
 //            System.out.println("Replacing nodes");
 //
@@ -1218,19 +1240,48 @@ public class PerformanceTests {
 
             double[] comparison = new double[4];
 
-            int adjFn = GraphUtils.countAdjErrors(pattern, estPattern);
-            int adjFp = GraphUtils.countAdjErrors(estPattern, pattern);
-            int trueAdj = pattern.getNumEdges();
+//            int adjFn = GraphUtils.countAdjErrors(pattern, estPattern);
+//            int adjFp = GraphUtils.countAdjErrors(estPattern, pattern);
+//            int trueAdj = pattern.getNumEdges();
+//
+//            comparison[0] = trueAdj / (double) (trueAdj + adjFp);
+//            comparison[1] = trueAdj / (double) (trueAdj + adjFn);
 
-            comparison[0] = trueAdj / (double) (trueAdj + adjFp);
-            comparison[1] = trueAdj / (double) (trueAdj + adjFn);
+            System.out.println("Counting misclassifications.");
+
+            estPattern = GraphUtils.replaceNodes(estPattern, pattern.getNodes());
 
             int[][] counts = GraphUtils.edgeMisclassificationCounts(pattern, estPattern, false);
             allCounts.add(counts);
 
+            System.out.println(new Date());
+
             int sumRow = counts[4][0] + counts[4][3] + counts[4][5];
             int sumCol = counts[0][3] + counts[4][3] + counts[5][3] + counts[7][3];
             int trueArrow = counts[4][3];
+
+            int sumTrueAdjacencies = 0;
+
+            for (int i = 0; i < 7; i++) {
+                for (int j = 0; j < 5; j++) {
+                    sumTrueAdjacencies += counts[i][j];
+                }
+            }
+
+            int falsePositiveAdjacencies = 0;
+
+            for (int j = 0; j < 5; j++) {
+                falsePositiveAdjacencies += counts[7][j];
+            }
+
+            int falseNegativeAdjacencies = 0;
+
+            for (int i = 0; i < 5; i++) {
+                falseNegativeAdjacencies += counts[i][5];
+            }
+
+            comparison[0] = sumTrueAdjacencies / (double) (sumTrueAdjacencies + falsePositiveAdjacencies);
+            comparison[1] = sumTrueAdjacencies / (double) (sumTrueAdjacencies + falseNegativeAdjacencies);
 
             comparison[2] = trueArrow / (double) sumCol;
             comparison[3] = trueArrow / (double) sumRow;
