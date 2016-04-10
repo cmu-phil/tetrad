@@ -1169,7 +1169,7 @@ public class PerformanceTests {
                 fgs.setNumPatternsToStore(0);
                 fgs.setPenaltyDiscount(penaltyDiscount);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(true);
+                fgs.setFaithfulnessAssumed(false);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
