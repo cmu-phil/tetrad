@@ -610,6 +610,8 @@ public class PerformanceTests {
 
         out.println(outGraph);
 
+        System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, new DagToPag(dag).convert()));
+
         long time4 = System.currentTimeMillis();
 
         out.println("# Vars = " + numVars);
@@ -1425,151 +1427,151 @@ public class PerformanceTests {
 //
 //    }
 
-//    public void testGFciComparison(int numVars, double edgeFactor, int numCases, int numLatents) {
-//        numVars = 1000;
-//        edgeFactor = 1.0;
-//        numLatents = 100;
-//        numCases = 1000;
-//        int numRuns = 5;
-//        double alpha = 0.01;
-//        double penaltyDiscount = 3.0;
-//        int depth = 3;
-//        int maxPathLength = 3;
-//        boolean possibleDsepDone = true;
-//        boolean completeRuleSetUsed = false;
-//        boolean faithfulnessAssumed = true;
-//
-//        init(new File("fci.algorithms.comparison" + numVars + "." + (int) (edgeFactor * numVars) +
-//                "." + numCases + ".txt"), "Num runs = " + numRuns);
-//        out.println("Num vars = " + numVars);
-//        out.println("Num edges = " + (int) (numVars * edgeFactor));
-//        out.println("Num cases = " + numCases);
-//        out.println("Alpha = " + alpha);
-//        out.println("Penalty discount = " + penaltyDiscount);
-//        out.println("Depth = " + depth);
-//        out.println("Maximum reachable path length for dsep search and discriminating undirectedPaths = " + maxPathLength);
-//        out.println("Num additional latent common causes = " + numLatents);
-//        out.println("Possible Dsep Done = " + possibleDsepDone);
-//        out.println("Complete Rule Set Used = " + completeRuleSetUsed);
-//        out.println();
-//
-//        List<GraphUtils.GraphComparison> ffciCounts = new ArrayList<>();
-//        List<double[]> ffciArrowStats = new ArrayList<double[]>();
-//        List<double[]> ffciTailStats = new ArrayList<double[]>();
-//        List<Long> ffciElapsedTimes = new ArrayList<Long>();
-//
-//        for (int run = 0; run < numRuns; run++) {
-//
-//            out.println("\n\n\n******************************** RUN " + (run + 1) + " ********************************\n\n");
-//
-//            System.out.println("Making list of vars");
-//
-//            List<Node> vars = new ArrayList<Node>();
-//
-//            for (int i = 0; i < numVars; i++) {
-//                vars.add(new ContinuousVariable("X" + (i + 1)));
-//            }
-//
-//            System.out.println("Finishing list of vars");
-//            Graph dag = getLatentGraph(vars, edgeFactor, numLatents);
-//
-//            System.out.println("Graph done");
-//
-//            final DagToPag dagToPag = new DagToPag(dag);
-//            dagToPag.setCompleteRuleSetUsed(false);
-//            dagToPag.setMaxPathLength(maxPathLength);
-//            Graph truePag = dagToPag.convert();
-//
-//            System.out.println("True PAG done");
-//
-//            // Data.
-//            System.out.println("Starting simulation");
-//
-//            LargeSemSimulator simulator = new LargeSemSimulator(dag);
-//            simulator.setCoefRange(.5, 1.5);
-//            simulator.setVarRange(1, 3);
-//
-//            DataSet data = simulator.simulateDataAcyclic(numCases);
-//
-//            data = DataUtils.restrictToMeasured(data);
-//
-//            System.out.println("Finishing simulation");
-//
-//            System.out.println("Making covariance matrix");
-//
-//            ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
-//
-//            System.out.println("Covariance matrix done");
-//
-//            // Independence test.
-//            final IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
-//
-//            Graph estPag;
-//            long elapsed;
-//
-////            out.println("\n\n\n========================FCI run " + (run + 1));
-//            out.println("\n\n\n========================TGFCI run " + (run + 1));
-//
-//            long ta1 = System.currentTimeMillis();
-//
-////            FCI fci = new FCI(independenceTest);
-//            GFci fci = new GFci(independenceTest);
-////            TFci fci = new TFci(independenceTest);
-////            fci.setVerbose(false);
-//            fci.setPenaltyDiscount(penaltyDiscount);
-//            fci.setDepth(depth);
-//            fci.setMaxPathLength(maxPathLength);
-//            fci.setPossibleDsepSearchDone(possibleDsepDone);
-//            fci.setCompleteRuleSetUsed(completeRuleSetUsed);
-//            fci.setFaithfulnessAssumed(faithfulnessAssumed);
-//            estPag = fci.search();
-//
-//            long ta2 = System.currentTimeMillis();
-//
-//            estPag = GraphUtils.replaceNodes(estPag, truePag.getNodes());
-//
-//            Set<Node> missingNodes = new HashSet<>();
-//
-//            for (Node node : dag.getNodes()) {
-//                if (!estPag.containsNode(node)) {
-//                    missingNodes.add(node);
-//                }
-//            }
-//
-//            ffciArrowStats.add(printCorrectArrows(dag, estPag, truePag));
-//            ffciTailStats.add(printCorrectTails(dag, estPag, truePag));
-//
-//            ffciCounts.add(SearchGraphUtils.getGraphComparison2(estPag, truePag));
-//
-//            elapsed = ta2 - ta1;
-//            ffciElapsedTimes.add(elapsed);
-//            out.println("\nElapsed: " + elapsed + " ms");
-//
-//            try {
-//                PrintStream out2 = new PrintStream(new File("dag." + run + ".txt"));
-//                out2.println(dag);
-//
-//                PrintStream out3 = new PrintStream(new File("estpag." + run + ".txt"));
-//                out3.println(estPag);
-//
-//                PrintStream out4 = new PrintStream(new File("truepag." + run + ".txt"));
-//                out4.println(truePag);
-//
-//                out2.close();
-//                out3.close();
-//                out4.close();
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//                throw new RuntimeException(e);
-//            }
-//        }
-//
+    public void testGFciComparison(int numVars, double edgeFactor, int numCases, int numLatents) {
+        numVars = 1000;
+        edgeFactor = 1.0;
+        numLatents = 100;
+        numCases = 1000;
+        int numRuns = 5;
+        double alpha = 0.01;
+        double penaltyDiscount = 3.0;
+        int depth = 3;
+        int maxPathLength = 3;
+        boolean possibleDsepDone = true;
+        boolean completeRuleSetUsed = false;
+        boolean faithfulnessAssumed = true;
+
+        init(new File("fci.algorithms.comparison" + numVars + "." + (int) (edgeFactor * numVars) +
+                "." + numCases + ".txt"), "Num runs = " + numRuns);
+        out.println("Num vars = " + numVars);
+        out.println("Num edges = " + (int) (numVars * edgeFactor));
+        out.println("Num cases = " + numCases);
+        out.println("Alpha = " + alpha);
+        out.println("Penalty discount = " + penaltyDiscount);
+        out.println("Depth = " + depth);
+        out.println("Maximum reachable path length for dsep search and discriminating undirectedPaths = " + maxPathLength);
+        out.println("Num additional latent common causes = " + numLatents);
+        out.println("Possible Dsep Done = " + possibleDsepDone);
+        out.println("Complete Rule Set Used = " + completeRuleSetUsed);
+        out.println();
+
+        List<GraphUtils.GraphComparison> ffciCounts = new ArrayList<>();
+        List<double[]> ffciArrowStats = new ArrayList<double[]>();
+        List<double[]> ffciTailStats = new ArrayList<double[]>();
+        List<Long> ffciElapsedTimes = new ArrayList<Long>();
+
+        for (int run = 0; run < numRuns; run++) {
+
+            out.println("\n\n\n******************************** RUN " + (run + 1) + " ********************************\n\n");
+
+            System.out.println("Making list of vars");
+
+            List<Node> vars = new ArrayList<Node>();
+
+            for (int i = 0; i < numVars; i++) {
+                vars.add(new ContinuousVariable("X" + (i + 1)));
+            }
+
+            System.out.println("Finishing list of vars");
+            Graph dag = getLatentGraph(vars, edgeFactor, numLatents);
+
+            System.out.println("Graph done");
+
+            final DagToPag dagToPag = new DagToPag(dag);
+            dagToPag.setCompleteRuleSetUsed(false);
+            dagToPag.setMaxPathLength(maxPathLength);
+            Graph truePag = dagToPag.convert();
+
+            System.out.println("True PAG done");
+
+            // Data.
+            System.out.println("Starting simulation");
+
+            LargeSemSimulator simulator = new LargeSemSimulator(dag);
+            simulator.setCoefRange(.5, 1.5);
+            simulator.setVarRange(1, 3);
+
+            DataSet data = simulator.simulateDataAcyclic(numCases);
+
+            data = DataUtils.restrictToMeasured(data);
+
+            System.out.println("Finishing simulation");
+
+            System.out.println("Making covariance matrix");
+
+            ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+
+            System.out.println("Covariance matrix done");
+
+            // Independence test.
+            final IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
+
+            Graph estPag;
+            long elapsed;
+
+//            out.println("\n\n\n========================FCI run " + (run + 1));
+            out.println("\n\n\n========================TGFCI run " + (run + 1));
+
+            long ta1 = System.currentTimeMillis();
+
+//            FCI fci = new FCI(independenceTest);
+            GFci fci = new GFci(independenceTest);
+//            TFci fci = new TFci(independenceTest);
+//            fci.setVerbose(false);
+            fci.setPenaltyDiscount(penaltyDiscount);
+            fci.setDepth(depth);
+            fci.setMaxPathLength(maxPathLength);
+            fci.setPossibleDsepSearchDone(possibleDsepDone);
+            fci.setCompleteRuleSetUsed(completeRuleSetUsed);
+            fci.setFaithfulnessAssumed(faithfulnessAssumed);
+            estPag = fci.search();
+
+            long ta2 = System.currentTimeMillis();
+
+            estPag = GraphUtils.replaceNodes(estPag, truePag.getNodes());
+
+            Set<Node> missingNodes = new HashSet<>();
+
+            for (Node node : dag.getNodes()) {
+                if (!estPag.containsNode(node)) {
+                    missingNodes.add(node);
+                }
+            }
+
+            ffciArrowStats.add(printCorrectArrows(dag, estPag, truePag));
+            ffciTailStats.add(printCorrectTails(dag, estPag, truePag));
+
+            ffciCounts.add(SearchGraphUtils.getGraphComparison2(estPag, truePag));
+
+            elapsed = ta2 - ta1;
+            ffciElapsedTimes.add(elapsed);
+            out.println("\nElapsed: " + elapsed + " ms");
+
+            try {
+                PrintStream out2 = new PrintStream(new File("dag." + run + ".txt"));
+                out2.println(dag);
+
+                PrintStream out3 = new PrintStream(new File("estpag." + run + ".txt"));
+                out3.println(estPag);
+
+                PrintStream out4 = new PrintStream(new File("truepag." + run + ".txt"));
+                out4.println(truePag);
+
+                out2.close();
+                out3.close();
+                out4.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        }
+
 //        printAverageConfusion("Average", ffciCounts);
-//        printAverageStatistics(ffciElapsedTimes, new ArrayList<Double>());
-//
-//        out.close();
-//
-//    }
+        printAverageStatistics(ffciElapsedTimes, new ArrayList<Double>());
+
+        out.close();
+
+    }
 
     // Compares two different ways of calculating a PAG from a DAG, to see if they match up
     public void testCompareDagToPattern(int numVars, double edgeFactor, int numLatents) {
@@ -2464,6 +2466,13 @@ public class PerformanceTests {
 
         if (args.length == 4) {
             switch (args[0]) {
+                case "GFCI": {
+                    final int numVars = Integer.parseInt(args[1]);
+                    final double edgeFactor = Double.parseDouble(args[2]);
+                    final int numCases = Integer.parseInt(args[3]);
+                    performanceTests.testGfci(numVars, edgeFactor, numCases);
+                    break;
+                }
                 default:
                     throw new IllegalArgumentException("Not a configuration!");
             }
