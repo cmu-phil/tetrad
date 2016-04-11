@@ -23,6 +23,7 @@ package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -133,7 +134,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         return bayesIm;
     }
 
-    public Dag getDag() {
+    public Graph getDag() {
         return getBayesIm().getDag();
     }
 

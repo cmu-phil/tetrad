@@ -22,6 +22,9 @@
 package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import junit.framework.TestCase;
+import org.junit.Test;
+
+import static junit.framework.TestCase.fail;
 
 /**
  * <p>Performs basic tests to ensure that sessions saved out with previous "stable"
@@ -114,16 +117,14 @@ import junit.framework.TestCase;
  * @author Joseph Ramsey
 // * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
-public class TestSerialization extends TestCase {
-    public TestSerialization(String name) {
-        super(name);
-    }
+public class TestSerialization {
 
     /**
      * Tests to make sure sessions saved out using any version for which
      * archived serialized class examplars can be loaded using the model
      * version.
      */
+    @Test
     public void testLoadabilility() {
         String serializableScope = "target/classes/edu/cmu";
         String currentDirectory = "build/tetrad/serializable/model";
@@ -159,10 +160,6 @@ public class TestSerialization extends TestCase {
         utils.deserializeCurrentDirectory();
         utils.deserializeArchivedVersions();
         utils.archiveCurrentDirectory();
-    }
-
-    public static void main(String[] args) {
-        new TestSerialization("Name").doArchive();
     }
 }
 

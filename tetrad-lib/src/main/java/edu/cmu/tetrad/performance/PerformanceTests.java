@@ -623,373 +623,6 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testFgsContinuous(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
-        final int numEdges = (int) (numVars * edgeFactor);
-
-        init(new File("long.FGS." + numVars + "." + numEdges + "." + penaltyDiscount + ".txt"), "Tests performance of the FGS algorithm");
-
-        long time1 = System.currentTimeMillis();
-
-        System.out.println("Finishing list of vars");
-
-        System.out.println("Making dag");
-//        Graph dag;
-//        dag = DataGraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
-        Graph dag = makeDag(numVars, edgeFactor);
-
-        List<Node> vars = dag.getNodes();
-
-        int[] causalOrdering = new int[vars.size()];
-
-        for (int i = 0; i < vars.size(); i++) {
-            causalOrdering[i] = i;
-        }
-
-        System.out.println("Graph done");
-
-        out.println("Graph done");
-
-        System.out.println("Starting simulation");
-
-        LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, causalOrdering);
-        simulator.setOut(out);
-
-        DataSet data = simulator.simulateDataAcyclic(numCases);
-
-        System.out.println("Finishing simulation");
-
-        long time2 = System.currentTimeMillis();
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-
-        System.out.println("Making covariance matrix");
-
-//        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
-//        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = DataUtils.covarianceNonparanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-        System.out.println("Covariance matrix done");
-
-
-        long time3 = System.currentTimeMillis();
-
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
-
-//        List<String> names = cov.getVariableNames();
-//        Collections.shuffle(names);
-//        cov = cov.getSubmatrix(names);
-
-        SemBicScore score = new SemBicScore(cov, penaltyDiscount);
-
-        Fgs2 fgs = new Fgs2(score);
-        fgs.setVerbose(true);
-        fgs.setNumPatternsToStore(0);
-        fgs.setOut(System.out);
-        fgs.setFaithfulnessAssumed(false);
-        fgs.setDepth(-1);
-        fgs.setCycleBound(5);
-
-//        IKnowledge knowledge = new Knowledge2();
-//        knowledge.setForbidden("X1", "X2");
-
-        System.out.println("\nStarting FGS");
-
-        Graph estPattern = fgs.search();
-
-        System.out.println("Done with FGS");
-
-//        fgs.setKnowledge(knowledge);
-
-        printDegreeDistribution(estPattern, System.out);
-
-//        out.println(estPattern);
-
-        long time4 = System.currentTimeMillis();
-
-        out.println(new Date());
-
-        out.println("# Vars = " + numVars);
-        out.println("# Edges = " + numEdges);
-        out.println("# Cases = " + numCases);
-        out.println("Penalty discount = " + penaltyDiscount);
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-        out.println("Elapsed (running FGS) " + (time4 - time3) + " ms");
-        out.println("Elapsed (cov + FGS) " + (time4 - time2) + " ms");
-
-//        graphComparison(estPattern, SearchGraphUtils.patternForDag(dag));
-
-        final Graph truePattern = SearchGraphUtils.patternForDag(dag);
-
-        out.println("# edges in true pattern = " + truePattern.getNumEdges());
-        out.println("# edges in est pattern = " + estPattern.getNumEdges());
-
-        SearchGraphUtils.graphComparison(estPattern, truePattern, out);
-
-//        printDegreeDistribution(estPattern, System.out);
-
-        out.close();
-    }
-
-    public void testFgsDiscrete(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
-        final int numEdges = (int) (numVars * edgeFactor);
-
-        init(new File("long.FGS." + numVars + "." + numEdges + "." + penaltyDiscount + ".txt"), "Tests performance of the FGS algorithm");
-
-        long time1 = System.currentTimeMillis();
-
-        System.out.println("Finishing list of vars");
-
-        System.out.println("Making dag");
-//        Graph dag;
-//        dag = DataGraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
-        Graph dag = makeDag(numVars, edgeFactor);
-
-        List<Node> vars = dag.getNodes();
-
-        int[] causalOrdering = new int[vars.size()];
-
-        for (int i = 0; i < vars.size(); i++) {
-            causalOrdering[i] = i;
-        }
-
-        System.out.println("Graph done");
-
-        out.println("Graph done");
-
-        System.out.println("Starting simulation");
-
-        LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, causalOrdering);
-        simulator.setOut(out);
-
-        DataSet data = simulator.simulateDataAcyclic(numCases);
-
-        System.out.println("Finishing simulation");
-
-        long time2 = System.currentTimeMillis();
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-
-        System.out.println("Making covariance matrix");
-
-//        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
-//        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = DataUtils.covarianceNonparanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-        System.out.println("Covariance matrix done");
-
-
-        long time3 = System.currentTimeMillis();
-
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
-
-//        List<String> names = cov.getVariableNames();
-//        Collections.shuffle(names);
-//        cov = cov.getSubmatrix(names);
-
-        SemBicScore score = new SemBicScore(cov, penaltyDiscount);
-
-        Fgs2 fgs = new Fgs2(score);
-        fgs.setVerbose(false);
-        fgs.setNumPatternsToStore(0);
-        fgs.setOut(System.out);
-        fgs.setFaithfulnessAssumed(true);
-        fgs.setDepth(-1);
-        fgs.setCycleBound(5);
-
-//        IKnowledge knowledge = new Knowledge2();
-//        knowledge.setForbidden("X1", "X2");
-
-        System.out.println("\nStarting FGS");
-
-        Graph estPattern = fgs.search();
-
-        System.out.println("Done with FGS");
-
-//        fgs.setKnowledge(knowledge);
-
-        printDegreeDistribution(estPattern, System.out);
-
-//        out.println(estPattern);
-
-        long time4 = System.currentTimeMillis();
-
-        out.println(new Date());
-
-        out.println("# Vars = " + numVars);
-        out.println("# Edges = " + numEdges);
-        out.println("# Cases = " + numCases);
-        out.println("Penalty discount = " + penaltyDiscount);
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-        out.println("Elapsed (running FGS) " + (time4 - time3) + " ms");
-        out.println("Elapsed (cov + FGS) " + (time4 - time2) + " ms");
-
-//        graphComparison(estPattern, SearchGraphUtils.patternForDag(dag));
-
-        final Graph truePattern = SearchGraphUtils.patternForDag(dag);
-
-        out.println("# edges in true pattern = " + truePattern.getNumEdges());
-        out.println("# edges in est pattern = " + estPattern.getNumEdges());
-
-        SearchGraphUtils.graphComparison(estPattern, truePattern, out);
-
-//        printDegreeDistribution(estPattern, System.out);
-
-        out.close();
-    }
-
-
-    public void testFgsDiscrete(int numVars, double edgeFactor, int numCases,
-                                double structurePrior, double samplePrior) {
-        init(new File("long.FGSDiscrete:" + numVars + ":" +
-                (int) (numVars * edgeFactor) + ":" +
-                structurePrior + ":" +
-                samplePrior + ".txt"), "Tests performance of the FGS algorithm");
-
-        long time1 = System.currentTimeMillis();
-
-        Graph dag = makeDag(numVars, edgeFactor);
-        printDegreeDistribution(dag, System.out);
-
-        System.out.println("Graph done");
-
-        out.println("Graph done");
-
-        System.out.println("Starting simulation");
-
-        BayesPm pm = new BayesPm(dag, 3, 3);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-
-        DataSet data = im.simulateData(numCases, false);
-
-        System.out.println("Finishing simulation");
-
-        long time2 = System.currentTimeMillis();
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-
-        BDeuScore score = new BDeuScore(data);
-        score.setSamplePrior(samplePrior);
-        score.setStructurePrior(structurePrior);
-
-        long time3 = System.currentTimeMillis();
-
-        out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
-
-        Fgs2 fgs = new Fgs2(score);
-        fgs.setVerbose(false);
-        fgs.setNumPatternsToStore(0);
-        fgs.setOut(out);
-        fgs.setFaithfulnessAssumed(true);
-        fgs.setDepth(3);
-
-        System.out.println("\nStarting FGS");
-
-        Graph estPattern = fgs.search();
-
-        System.out.println("Done with FGS");
-
-        out.println(estPattern);
-
-        long time4 = System.currentTimeMillis();
-
-        out.println(new Date());
-
-        out.println("# Vars = " + numVars);
-        out.println("# Edges = " + (int) (numVars * edgeFactor));
-        out.println("# Cases = " + numCases);
-        out.println("Structure prior = " + structurePrior);
-        out.println("Sample prior = " + samplePrior);
-
-        out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-        out.println("Elapsed (running FGS) " + (time4 - time3) + " ms");
-
-        final Graph truePattern = SearchGraphUtils.patternForDag(dag);
-
-        out.println("# edges in true pattern = " + truePattern.getNumEdges());
-        out.println("# edges in est pattern = " + estPattern.getNumEdges());
-
-        SearchGraphUtils.graphComparison(estPattern, truePattern, out);
-        printDegreeDistribution(estPattern, System.out);
-
-        out.close();
-
-        System.out.println("See output file.");
-    }
-
-    public void testFgsDiscrete(String path, double structurePrior, double samplePrior) {
-//        numVars = 2000;
-//        edgeFactor = 1.0;
-//        numCases = 1000;
-//        double structurePrior = .01;
-//        double samplePrior = 10;
-
-        if (writeToFile) {
-            try {
-                File _path = new File(path);
-                final File file = new File("long.FGSDiscrete." + _path.getName() + ".txt");
-                out = new PrintStream(file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
-        }
-
-        try {
-//            String path = "/Users/josephramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/tgen_10kvars.txt";
-//            String path = "tgen_1kvars.txt";
-
-            DataSet dataSet = BigDataSetUtility.readInContinuousData(new File(path), '\t');
-
-            out.println("data set # vars = " + dataSet.getNumColumns() + " # rows = " + dataSet.getNumRows());
-
-            long time1 = System.currentTimeMillis();
-
-//            DataSet discreteData = DataUtils.discretize(dataSet, 4, false);
-
-//            System.out.println(discreteData);
-
-            long time2 = System.currentTimeMillis();
-
-            BDeuScore score = new BDeuScore(dataSet);
-            score.setSamplePrior(samplePrior);
-            score.setStructurePrior(structurePrior);
-
-            Fgs2 fgs = new Fgs2(score);
-            fgs.setVerbose(false);
-            fgs.setNumPatternsToStore(0);
-            fgs.setOut(out);
-            fgs.setFaithfulnessAssumed(true);
-            fgs.setDepth(2);
-
-            Graph graph = fgs.search();
-
-            long time3 = System.currentTimeMillis();
-
-            out.println(graph);
-
-            out.println("Num edges = " + graph.getNumEdges());
-            out.println("Discretize elapsed " + (time2 - time1) + "ms");
-            out.println("FGS elapsed " + (time3 - time2) + "ms");
-            out.println("Total elapsed " + (time3 - time1) + "ms");
-
-            printDegreeDistribution(graph, out);
-
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        out.close();
-    }
-
     public void testSaveLoadDataText(int numVars, int numCases) {
         out.println("Tests saving and loading of data sets.");
         String dir = "/Users/josephramsey/Documents/proj/tetrad7/test_data";
@@ -1167,7 +800,7 @@ public class PerformanceTests {
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(false);
+                fgs.setFaithfulnessAssumed(true);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
@@ -1221,6 +854,270 @@ public class PerformanceTests {
 
                 long time4 = System.currentTimeMillis();
                 elapsed = time4 - time3;
+            }
+
+            System.out.println("Done with FGS");
+
+            System.out.println(new Date());
+
+//            System.out.println("Replacing nodes");
+//
+//            estPattern = GraphUtils.replaceNodes(estPattern, dag.getNodes());
+
+//            System.out.println("Calculating degree");
+//
+//            double degree = GraphUtils.degree(estPattern);
+//            degrees.add(degree);
+//
+//            out.println("Degree out output graph = " + degree);
+
+            double[] comparison = new double[4];
+
+//            int adjFn = GraphUtils.countAdjErrors(pattern, estPattern);
+//            int adjFp = GraphUtils.countAdjErrors(estPattern, pattern);
+//            int trueAdj = pattern.getNumEdges();
+//
+//            comparison[0] = trueAdj / (double) (trueAdj + adjFp);
+//            comparison[1] = trueAdj / (double) (trueAdj + adjFn);
+
+            System.out.println("Counting misclassifications.");
+
+            estPattern = GraphUtils.replaceNodes(estPattern, pattern.getNodes());
+
+            int[][] counts = GraphUtils.edgeMisclassificationCounts(pattern, estPattern, false);
+            allCounts.add(counts);
+
+            System.out.println(new Date());
+
+            int sumRow = counts[4][0] + counts[4][3] + counts[4][5];
+            int sumCol = counts[0][3] + counts[4][3] + counts[5][3] + counts[7][3];
+            int trueArrow = counts[4][3];
+
+            int sumTrueAdjacencies = 0;
+
+            for (int i = 0; i < 7; i++) {
+                for (int j = 0; j < 5; j++) {
+                    sumTrueAdjacencies += counts[i][j];
+                }
+            }
+
+            int falsePositiveAdjacencies = 0;
+
+            for (int j = 0; j < 5; j++) {
+                falsePositiveAdjacencies += counts[7][j];
+            }
+
+            int falseNegativeAdjacencies = 0;
+
+            for (int i = 0; i < 5; i++) {
+                falseNegativeAdjacencies += counts[i][5];
+            }
+
+            comparison[0] = sumTrueAdjacencies / (double) (sumTrueAdjacencies + falsePositiveAdjacencies);
+            comparison[1] = sumTrueAdjacencies / (double) (sumTrueAdjacencies + falseNegativeAdjacencies);
+
+            comparison[2] = trueArrow / (double) sumCol;
+            comparison[3] = trueArrow / (double) sumRow;
+
+            comparisons.add(comparison);
+
+            out.println(GraphUtils.edgeMisclassifications(counts));
+            out.println(precisionRecall(comparison));
+
+            elapsedTimes.add(elapsed);
+            out.println("\nElapsed: " + elapsed + " ms");
+        }
+
+
+        printAverageConfusion("Average", allCounts);
+        printAveragePrecisionRecall(comparisons);
+        printAverageStatistics(elapsedTimes, degrees);
+
+        out.close();
+    }
+
+    public void testFgsMbComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
+        testFgsMb(numVars, edgeFactor, numCases, numRuns, true);
+    }
+
+    public void testFgsMbComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
+        testFgsMb(numVars, edgeFactor, numCases, numRuns, false);
+    }
+
+    private void testFgsMb(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
+        out.println(new Date());
+
+        double penaltyDiscount = 4.0;
+        int depth = -1;
+
+//        RandomUtil.getInstance().setSeed(50304050454L);
+
+
+        List<int[][]> allCounts = new ArrayList<>();
+        List<double[]> comparisons = new ArrayList<>();
+        List<Double> degrees = new ArrayList<>();
+        List<Long> elapsedTimes = new ArrayList<Long>();
+
+        for (int run = 0; run < numRuns; run++) {
+            init(new File("fgsmb.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
+                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+            out.println("Num vars = " + numVars);
+            out.println("Num edges = " + (int) (numVars * edgeFactor));
+            out.println("Num cases = " + numCases);
+            out.println("Penalty discount = " + penaltyDiscount);
+            out.println("Depth = " + depth);
+            out.println();
+            out.println("\n\n\n******************************** RUN " + (run + 1) + " ********************************\n\n");
+
+            System.out.println("Making dag");
+
+            out.println(new Date());
+
+            Graph dag = makeDag(numVars, edgeFactor);
+            Node target = dag.getNodes().get(0);
+
+            System.out.println(new Date());
+
+            System.out.println("Calculating pattern for DAG");
+
+            Graph pattern = SearchGraphUtils.patternForDag(dag);
+
+            Set<Node> mb = new HashSet<>();
+            mb.add(target);
+
+            mb.addAll(pattern.getAdjacentNodes(target));
+
+            for (Node child : pattern.getChildren(target)) {
+                mb.addAll(pattern.getParents(child));
+            }
+
+            pattern = pattern.subgraph(new ArrayList<>(mb));
+
+            List<Node> vars = dag.getNodes();
+
+            int[] tiers = new int[vars.size()];
+
+            for (int i = 0; i < vars.size(); i++) {
+                tiers[i] = i;
+            }
+
+            System.out.println("Graph done");
+
+            long time1 = System.currentTimeMillis();
+
+            out.println("Graph done");
+
+            System.out.println(new Date());
+
+            System.out.println("Starting simulation");
+            Graph estPattern;
+            long elapsed;
+
+            if (continuous) {
+                LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
+                simulator.setOut(out);
+
+                DataSet data = simulator.simulateDataAcyclic(numCases);
+
+                System.out.println("Finishing simulation");
+
+                System.out.println(new Date());
+
+                long time2 = System.currentTimeMillis();
+
+                out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+                System.out.println(new Date());
+
+                System.out.println("Making covariance matrix");
+
+                long time3 = System.currentTimeMillis();
+
+                ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+
+                System.out.println("Covariance matrix done");
+
+                out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
+
+                SemBicScore score = new SemBicScore(cov, penaltyDiscount);
+
+                System.out.println(new Date());
+                System.out.println("\nStarting FGS");
+
+                long timea = System.currentTimeMillis();
+
+                FgsMb fgs = new FgsMb(score);
+                fgs.setVerbose(true);
+                fgs.setNumPatternsToStore(0);
+                fgs.setOut(System.out);
+                fgs.setFaithfulnessAssumed(true);
+                fgs.setDepth(depth);
+                fgs.setCycleBound(-1);
+
+                long timeb = System.currentTimeMillis();
+
+                estPattern = fgs.search(target);
+
+                long timec = System.currentTimeMillis();
+
+                out.println("Time for FGS-MB constructor " + (timeb - timea) + " ms");
+                out.println("Time for FGS-MB search " + (timec - timea) + " ms");
+                out.println();
+
+                elapsed = timec - timea;
+            } else {
+                init(new File("fgsmb.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
+                        "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+                out.println("Num vars = " + numVars);
+                out.println("Num edges = " + (int) (numVars * edgeFactor));
+                out.println("Num cases = " + numCases);
+                out.println("Sample prior = " + 1);
+                out.println("Structure prior = " + 1);
+                out.println("Depth = " + 1);
+                out.println();
+
+                BayesPm pm = new BayesPm(dag, 3, 3);
+                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+
+                DataSet data = im.simulateData(numCases, false, tiers);
+                target = data.getVariables().get(0);
+
+                System.out.println("Finishing simulation");
+
+                long time2 = System.currentTimeMillis();
+
+                out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+
+                long time3 = System.currentTimeMillis();
+
+                BDeuScore score = new BDeuScore(data);
+                score.setStructurePrior(1);
+                score.setSamplePrior(1);
+
+                System.out.println(new Date());
+                System.out.println("\nStarting FGS");
+
+                long timea = System.currentTimeMillis();
+
+                FgsMb fgs = new FgsMb(score);
+                fgs.setVerbose(true);
+                fgs.setNumPatternsToStore(0);
+                fgs.setOut(System.out);
+                fgs.setFaithfulnessAssumed(true);
+                fgs.setDepth(depth);
+                fgs.setCycleBound(-1);
+
+                long timeb = System.currentTimeMillis();
+
+                estPattern = fgs.search(target);
+
+                long timec = System.currentTimeMillis();
+
+                out.println("Time consructing BDeu score " + (timea - time3) + " ms");
+                out.println("Time for FGS-MB constructor " + (timeb - timea) + " ms");
+                out.println("Time for FGS-MB search " + (timec - timea) + " ms");
+                out.println();
+
+                elapsed = timec - timea;
             }
 
             System.out.println("Done with FGS");
@@ -2567,18 +2464,6 @@ public class PerformanceTests {
 
         if (args.length == 4) {
             switch (args[0]) {
-                case "FGS":
-                    final int numVars = Integer.parseInt(args[1]);
-                    final double edgeFactor = Double.parseDouble(args[2]);
-                    final int numCases = Integer.parseInt(args[3]);
-                    performanceTests.testFgsContinuous(numVars, edgeFactor, numCases, 2.0);
-                    break;
-                case "FGSDiscrete":
-                    String path = args[1];
-                    final double structurePrior = Double.parseDouble(args[2]);
-                    final double samplePrior = Double.parseDouble(args[3]);
-                    performanceTests.testFgsDiscrete(path, structurePrior, samplePrior);
-                    break;
                 default:
                     throw new IllegalArgumentException("Not a configuration!");
             }
@@ -2608,15 +2493,6 @@ public class PerformanceTests {
                     performanceTests.testCpcStable(numVars, edgeFactor, numCases, alpha);
                     break;
                 }
-                case "FGS": {
-                    final int numVars = Integer.parseInt(args[1]);
-                    final double edgeFactor = Double.parseDouble(args[2]);
-                    final int numCases = Integer.parseInt(args[3]);
-                    final double penaltyDiscount = Double.parseDouble(args[4]);
-
-                    performanceTests.testFgsContinuous(numVars, edgeFactor, numCases, penaltyDiscount);
-                    break;
-                }
                 case "TestFgsComparisonContinuous": {
                     final int numVars = Integer.parseInt(args[1]);
                     final double edgeFactor = Double.parseDouble(args[2]);
@@ -2635,21 +2511,29 @@ public class PerformanceTests {
                     performanceTests.testFgsComparisonDiscrete(numVars, edgeFactor, numCases, numRuns);
                     break;
                 }
+                case "TestFgsMbComparisonContinuous": {
+                    final int numVars = Integer.parseInt(args[1]);
+                    final double edgeFactor = Double.parseDouble(args[2]);
+                    final int numCases = Integer.parseInt(args[3]);
+                    final int numRuns = Integer.parseInt(args[4]);
+
+                    performanceTests.testFgsMbComparisonContinuous(numVars, edgeFactor, numCases, numRuns);
+                    break;
+                }
+                case "TestFgsMbComparisonDiscrete": {
+                    final int numVars = Integer.parseInt(args[1]);
+                    final double edgeFactor = Double.parseDouble(args[2]);
+                    final int numCases = Integer.parseInt(args[3]);
+                    final int numRuns = Integer.parseInt(args[4]);
+
+                    performanceTests.testFgsMbComparisonDiscrete(numVars, edgeFactor, numCases, numRuns);
+                    break;
+                }
                 default:
                     throw new IllegalArgumentException("Not a configuration.");
             }
         } else if (args.length == 6) {
             switch (args[0]) {
-                case "FGSDiscrete": {
-                    final int numVars = Integer.parseInt(args[1]);
-                    final double edgeFactor = Double.parseDouble(args[2]);
-                    final int numCases = Integer.parseInt(args[3]);
-                    final double structurePrior = Double.parseDouble(args[4]);
-                    final double samplePrior = Double.parseDouble(args[5]);
-
-                    performanceTests.testFgsDiscrete(numVars, edgeFactor, numCases, structurePrior, samplePrior);
-                    break;
-                }
                 default:
                     throw new IllegalArgumentException("Not a configuration.");
             }

@@ -157,12 +157,12 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         }
 
         FgsParams params = (FgsParams) getParams();
-        Node target;
+        Node target = null;
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             target = ((Graph) model).getNode(targetName);
-            fgs = new FgsMb(gesScore, target);
+            fgs = new FgsMb(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
             fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
             fgs.setVerbose(true);
@@ -173,14 +173,14 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
             if (dataSet.isContinuous()) {
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model),
                         params.getComplexityPenalty());
-                fgs = new FgsMb(gesScore, target);
+                fgs = new FgsMb(gesScore);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = 1;//((FgsParams) getParams()).getSamplePrior();
                 double structurePrior = 1;//((FgsParams) getParams()).getStructurePrior();
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
-                fgs = new FgsMb(score, target);
+                fgs = new FgsMb(score);
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
@@ -189,7 +189,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                     params.getIndTestParams().getAlpha());
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
             target = ((ICovarianceMatrix) model).getVariable(targetName);
-            fgs = new FgsMb(gesScore, target);
+            fgs = new FgsMb(gesScore);
         }
 //        else if (model instanceof DataModelList) {
 //            DataModelList list = (DataModelList) model;
@@ -315,7 +315,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         fgs.setVerbose(true);
         fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
         fgs.setDepth(params.getIndTestParams().getDepth());
-        Graph graph = fgs.search();
+        Graph graph = fgs.search(target);
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());

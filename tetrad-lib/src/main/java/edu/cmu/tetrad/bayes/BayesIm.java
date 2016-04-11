@@ -24,6 +24,7 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VariableSource;
 import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.Simulator;
 import edu.cmu.tetrad.util.IM;
@@ -67,7 +68,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
     /**
      * @return the underlying DAG.
      */
-    Dag getDag();
+    Graph getDag();
 
     /**
      * @return the number of nodes in the model.

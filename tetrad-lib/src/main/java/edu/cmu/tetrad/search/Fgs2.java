@@ -554,6 +554,8 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                 this.variables.add(node);
             }
         }
+
+        buildIndexing(fgsScore.getVariables());
     }
 
     final int[] count = new int[1];
@@ -625,7 +627,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         }
     }
 
-    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism() * 5;
+    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism() * 1;
 
 
     private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
@@ -679,7 +681,6 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
             }
         }
 
-        buildIndexing(nodes);
         pool.invoke(new InitializeFromEmptyGraphTask());
 
         long stop = System.currentTimeMillis();
@@ -879,7 +880,6 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
             }
         }
 
-        buildIndexing(nodes);
         pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
     }
 
@@ -1113,7 +1113,11 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                         if (isFaithfulnessAssumed()) {
                             adj = effectEdgesGraph.getAdjacentNodes(x);
                         } else {
-                            adj = getVariables();
+                            HashSet<Node> D = new HashSet<>();
+                            D.addAll(GraphUtils.getDconnectedVars(x, new ArrayList<Node>(), graph));
+                            D.remove(x);
+                            adj = new ArrayList<>(D);
+//                            adj = getVariables();
                         }
 
                         for (Node w : adj) {
@@ -1805,8 +1809,8 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
     // Maps adj to their indices for quick lookup.
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
-        for (Node node : nodes) {
-            this.hashIndices.put(node, variables.indexOf(node));
+        for (int i = 0; i < nodes.size(); i++) {
+            this.hashIndices.put(nodes.get(i), i);
         }
     }
 
