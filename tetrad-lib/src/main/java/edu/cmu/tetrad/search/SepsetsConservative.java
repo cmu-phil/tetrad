@@ -207,6 +207,11 @@ public class SepsetsConservative implements SepsetProducer {
         this.verbose = verbose;
     }
 
+    @Override
+    public double getPValue() {
+        return independenceTest.getPValue();
+    }
+
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
     }

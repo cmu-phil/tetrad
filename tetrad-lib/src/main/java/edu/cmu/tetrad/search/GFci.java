@@ -227,7 +227,54 @@ public final class GFci {
         if (verbose) {
             System.out.println("GES done " + gesGraph.getNumEdges() + " edges in graph");
         }
-        SepsetProducer sepsets = new SepsetsMinScore(gesGraph, getIndependenceTest(), null, depth);
+//        SepsetProducer sepsets = new SepsetsMinScore(gesGraph, getIndependenceTest(), null, depth);
+//
+////        if (possibleDsepSearchDone) {
+////            sepsets = new SepsetsPossibleDsep(gesGraph, getIndependenceTest(), knowledge, depth,
+////                    maxPathLength);
+////        } else {
+////        sepsets = new SepsetsConservative(gesGraph, getIndependenceTest(), null, depth);
+////        }
+//
+////        if (possibleDsepSearchDone) {
+////            System.out.println("Possible Dsep started maxPathLength = " + maxPathLength);
+////
+////            for (Edge edge : new ArrayList<>(graph.getEdges())) {
+////                Node i = edge.getNode1();
+////                Node k = edge.getNode2();
+////
+////                List<Node> j = graph.getAdjacentNodes(i);
+////                j.retainAll(graph.getAdjacentNodes(k));
+////
+////                if (!j.isEmpty()) {
+////                    sepsets.getSepset(i, k);
+////
+////                    if (sepsets.getScore() > getIndependenceTest().getParameter1()) {
+////                        gesGraph.removeEdge(edge);
+////                    }
+////                }
+////            }
+////
+////            System.out.println("Possible Dsep finished");
+////        } else {
+//
+//        // Look in triangles
+//        for (Edge edge : gesGraph.getEdges()) {
+//            Node i = edge.getNode1();
+//            Node k = edge.getNode2();
+//
+//            List<Node> j = gesGraph.getAdjacentNodes(i);
+//            j.retainAll(gesGraph.getAdjacentNodes(k));
+//
+//            if (!j.isEmpty()) {
+//                sepsets.getSepset(i, k);
+//
+//                if (sepsets.getScore() < 0) {
+//                    graph.removeEdge(edge);
+//                }
+//            }
+//        }
+        SepsetProducer sepsets = new SepsetsConservative(gesGraph, getIndependenceTest(), null, depth);
 
 //        if (possibleDsepSearchDone) {
 //            sepsets = new SepsetsPossibleDsep(gesGraph, getIndependenceTest(), knowledge, depth,
@@ -249,7 +296,7 @@ public final class GFci {
 //                if (!j.isEmpty()) {
 //                    sepsets.getSepset(i, k);
 //
-//                    if (sepsets.getScore() > getIndependenceTest().getParameter1()) {
+//                    if (sepsets.getPValue() > getIndependenceTest().getAlpha()) {
 //                        gesGraph.removeEdge(edge);
 //                    }
 //                }
@@ -269,13 +316,14 @@ public final class GFci {
             if (!j.isEmpty()) {
                 sepsets.getSepset(i, k);
 
-                if (sepsets.getScore() < 0) {
+                if (sepsets.getPValue() > getIndependenceTest().getAlpha()) {
                     graph.removeEdge(edge);
                 }
             }
         }
 
-        // Orientation phase.
+
+                // Orientation phase.
 
 //        // Step CI C, modified collider orientation step for FCI-GES due to Spirtes.
         ruleR0Special(graph, gesGraph, sepsets);

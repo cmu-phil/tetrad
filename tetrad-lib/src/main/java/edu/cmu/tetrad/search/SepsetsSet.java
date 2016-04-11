@@ -79,5 +79,10 @@ public class SepsetsSet implements SepsetProducer {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    @Override
+    public double getPValue() {
+        return Double.NaN;
+    }
 }
 

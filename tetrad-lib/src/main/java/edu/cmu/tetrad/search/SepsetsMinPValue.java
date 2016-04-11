@@ -155,5 +155,11 @@ public class SepsetsMinPValue implements SepsetProducer {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    @Override
+    public double getPValue() {
+        return independenceTest.getPValue();
+    }
+
 }
 
