@@ -257,9 +257,10 @@ public class TestFgs {
         assertEquals(pattern1, pattern2);
     }
 
+    @Test
     public void testFgsMbFromGraph() {
         int numNodes = 10;
-        int numIterations = 1;
+        int numIterations = 5;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
@@ -271,12 +272,21 @@ public class TestFgs {
 
             Node x1 = fgsScore.getVariable("X1");
 
-            Graph graphMb = GraphUtils.markovBlanketDag(x1, pattern1);
+            Set<Node> mb = new HashSet<>();
+            mb.add(x1);
+
+            mb.addAll(pattern1.getAdjacentNodes(x1));
+
+            for (Node child : pattern1.getChildren(x1)) {
+                mb.addAll(pattern1.getParents(child));
+            }
+
+            Graph mb1 = pattern1.subgraph(new ArrayList<>(mb));
 
             FgsMb fgsMb = new FgsMb(fgsScore, x1);
-            Graph fgsMbGraph = fgsMb.search();
-//
-//            assertEquals(graphMb, fgsMbGraph);
+            Graph mb2 = fgsMb.search();
+
+            assertEquals(mb1, mb2);
         }
     }
 

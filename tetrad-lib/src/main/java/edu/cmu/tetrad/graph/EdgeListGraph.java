@@ -1242,9 +1242,10 @@ public class EdgeListGraph implements Graph {
             return false;
         }
 
-        if (nodes.contains(node)) {
-            return false;
-        }
+        // If edgeLists contains node as a key, then nodes contains node. No need to look it up.n
+//        if (nodes.contains(node)) {
+//            return false;
+//        }
 
         if (isGraphConstraintsChecked() && !checkAddNode(node)) {
             return false;

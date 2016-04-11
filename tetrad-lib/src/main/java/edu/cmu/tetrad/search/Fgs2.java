@@ -625,7 +625,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         }
     }
 
-    final int maxThreads = Runtime.getRuntime().availableProcessors() * 5;
+    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism() * 5;
 
 
     private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
@@ -880,7 +880,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         }
 
         buildIndexing(nodes);
-        pool.invoke(new InitializeFromExistingGraphTask(nodes.size() / maxThreads + 1, 0, nodes.size()));
+        pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
     }
 
     private void fes() {
