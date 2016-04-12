@@ -148,11 +148,9 @@ public final class GFci {
         sampleSize = independenceTest.getSampleSize();
         double penaltyDiscount = getPenaltyDiscount();
 
-        Fgs2 fgs;
-        Graph fgsGraph;
-        Score score;
         DataSet dataSet = (DataSet) independenceTest.getData();
         ICovarianceMatrix cov = independenceTest.getCov();
+        Score score;
 
         if (independenceTest instanceof IndTestDSep) {
             score = new GraphScore(dag);
@@ -175,19 +173,17 @@ public final class GFci {
             throw new IllegalArgumentException("Mixed data not supported.");
         }
 
-        fgs = new Fgs2(score);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setDepth(getDepth());
         fgs.setNumPatternsToStore(0);
         fgs.setFaithfulnessAssumed(faithfulnessAssumed);
         graph = fgs.search();
-        fgsGraph = new EdgeListGraphSingleConnections(graph);
-
-        SepsetProducer sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, depth);
+        Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
         modifiedR0(fgsGraph);
-        FciOrient fciOrient = new FciOrient(sepsets);
+        FciOrient fciOrient = new FciOrient(new SepsetsConservative(fgsGraph, independenceTest, null, depth));
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
@@ -209,31 +205,6 @@ public final class GFci {
         }
 
         this.depth = depth;
-    }
-
-
-    public static boolean markovIndependent(Graph pattern, Node i, Node k, IndependenceTest test) {
-        List<Node> futurei = pattern.getDescendants(Collections.singletonList(i));
-        List<Node> boundaryi = pattern.getAdjacentNodes(i);
-        boundaryi.remove(k);
-        boundaryi.removeAll(futurei);
-        List<Node> closurei = new ArrayList<>(boundaryi);
-        closurei.add(i);
-
-        if (futurei.contains(k) || closurei.contains(k)) return true;
-        if (test.isIndependent(i, k, boundaryi)) return true;
-
-        List<Node> futurek = pattern.getDescendants(Collections.singletonList(k));
-        List<Node> boundaryk = pattern.getAdjacentNodes(k);
-        boundaryk.removeAll(futurek);
-        boundaryk.remove(i);
-        List<Node> closurek = new ArrayList<>(boundaryk);
-        closurek.add(k);
-
-        if (futurek.contains(i) || closurek.contains(i)) return true;
-        if (test.isIndependent(i, k, boundaryk)) return true;
-
-        return false;
     }
 
     // Due to Spirtes.
@@ -280,7 +251,8 @@ public final class GFci {
                 if (fgsGraph.isDefCollider(a, b, c)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else {
+                }
+                else if (!graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = getSepset(fgsGraph, a, c);
 
                     if (sepset != null && !sepset.contains(b)) {

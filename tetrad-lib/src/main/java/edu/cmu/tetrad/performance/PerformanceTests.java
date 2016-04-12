@@ -522,7 +522,7 @@ public class PerformanceTests {
     }
 
     public void testGfci(int numVars, double edgeFactor, int numCases) {
-        double alpha = 0.2;
+        double alpha = .5;
         int depth = -1;
         double penaltyDiscount = 4.0;
         int maxPathLength = -1;

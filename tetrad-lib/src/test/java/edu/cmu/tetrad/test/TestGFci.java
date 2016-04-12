@@ -154,6 +154,7 @@ public class TestGFci {
         Graph pag = gfci.search();
 
         Graph truePag = new EdgeListGraph();
+
         truePag.addNode(x1);
         truePag.addNode(x2);
         truePag.addNode(x3);
@@ -171,17 +172,19 @@ public class TestGFci {
     @Test
     public void testFromGraph() {
         int numNodes = 20;
-        int numLatents = 20;
-        int numIterations = 20;
+        int numLatents = 5;
+        int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
-            Graph dag = GraphUtils.randomDag(numNodes, numLatents, numNodes,
+            Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
             GFci fgci = new GFci(new IndTestDSep(dag));
             fgci.setFaithfulnessAssumed(false);
             Graph pattern1 = fgci.search();
             Graph pattern2 = new DagToPag(dag).convert();
+
+//            System.out.println(MisclassificationUtils.edgeMisclassifications(pattern1, pattern2));
             assertEquals(pattern1, pattern2);
         }
     }
