@@ -257,13 +257,37 @@ public final class GFci {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
+                if (getSepset(fgsGraph, a, c) != null) {
+                    graph.removeEdge(a, c);
+                }
+            }
+        }
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
                 if (fgsGraph.isDefCollider(a, b, c)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (independenceTest.isIndependent(a, c)) {
-                    graph.removeEdge(a, c);
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                } else {
+                    List<Node> sepset = getSepset(fgsGraph, a, c);
+
+                    if (sepset != null && !sepset.contains(b)) {
+                        graph.removeEdge(a, c);
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
                 }
             }
         }
@@ -438,6 +462,43 @@ public final class GFci {
         }
 
         logger.log("info", "Finishing BK Orientation.");
+    }
+
+    private List<Node> getSepset(Graph graph, Node i, Node k) {
+        List<Node> adji = graph.getAdjacentNodes(i);
+        List<Node> adjk = graph.getAdjacentNodes(k);
+        adji.remove(k);
+        adjk.remove(i);
+
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
+            if (d <= adji.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> v = GraphUtils.asList(choice, adji);
+
+                    if (getIndependenceTest().isIndependent(i, k, v)) {
+                        return v;
+                    }
+                }
+            }
+
+            if (d <= adjk.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> v = GraphUtils.asList(choice, adjk);
+
+                    if (getIndependenceTest().isIndependent(i, k, v)) {
+                        return v;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     public void setSamplePrior(double samplePrior) {

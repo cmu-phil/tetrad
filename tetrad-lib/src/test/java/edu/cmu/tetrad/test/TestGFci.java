@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -136,23 +137,53 @@ public class TestGFci {
         Node L = new GraphNode("L");
         L.setNodeType(NodeType.LATENT);
 
-        Graph g = new EdgeListGraph();
-        g.addNode(x1);
-        g.addNode(x2);
-        g.addNode(x3);
-        g.addNode(x4);
-        g.addNode(L);
+        Graph g1 = new EdgeListGraph();
+        g1.addNode(x1);
+        g1.addNode(x2);
+        g1.addNode(x3);
+        g1.addNode(x4);
+        g1.addNode(L);
 
-        g.addDirectedEdge(x1, x2);
-        g.addDirectedEdge(x4, x3);
-        g.addDirectedEdge(L, x2);
-        g.addDirectedEdge(L, x3);
+        g1.addDirectedEdge(x1, x2);
+        g1.addDirectedEdge(x4, x3);
+        g1.addDirectedEdge(L, x2);
+        g1.addDirectedEdge(L, x3);
 
-        GFci gfci = new GFci(new IndTestDSep(g, true));
+        GFci gfci = new GFci(new IndTestDSep(g1, true));
 
         Graph pag = gfci.search();
 
+        Graph truePag = new EdgeListGraph();
+        truePag.addNode(x1);
+        truePag.addNode(x2);
+        truePag.addNode(x3);
+        truePag.addNode(x4);
+
+        truePag.addPartiallyOrientedEdge(x1, x2);
+        truePag.addBidirectedEdge(x2, x3);
+        truePag.addPartiallyOrientedEdge(x4, x3);
+
         System.out.println(pag);
+
+        assertEquals(pag, truePag);
+    }
+
+    @Test
+    public void testFromGraph() {
+        int numNodes = 20;
+        int numLatents = 20;
+        int numIterations = 20;
+
+        for (int i = 0; i < numIterations; i++) {
+            System.out.println("Iteration " + (i + 1));
+            Graph dag = GraphUtils.randomDag(numNodes, numLatents, numNodes,
+                    10, 10, 10, false);
+            GFci fgci = new GFci(new IndTestDSep(dag));
+            fgci.setFaithfulnessAssumed(false);
+            Graph pattern1 = fgci.search();
+            Graph pattern2 = new DagToPag(dag).convert();
+            assertEquals(pattern1, pattern2);
+        }
     }
 }
 

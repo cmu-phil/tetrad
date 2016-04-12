@@ -211,7 +211,7 @@ public class TestFgs {
     @Test
     public void testFromGraph() {
         int numNodes = 10;
-        int numIterations = 1000;
+        int numIterations = 10;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
