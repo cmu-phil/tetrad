@@ -22,13 +22,8 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemImInitializationParams;
@@ -130,6 +125,34 @@ public class TestGFci {
 
 //        System.out.println(MatrixUtils.toString(counts));
 //        System.out.println(MatrixUtils.toString(expectedCounts));
+    }
+
+    @Test
+    public void test2() {
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node L = new GraphNode("L");
+        L.setNodeType(NodeType.LATENT);
+
+        Graph g = new EdgeListGraph();
+        g.addNode(x1);
+        g.addNode(x2);
+        g.addNode(x3);
+        g.addNode(x4);
+        g.addNode(L);
+
+        g.addDirectedEdge(x1, x2);
+        g.addDirectedEdge(x4, x3);
+        g.addDirectedEdge(L, x2);
+        g.addDirectedEdge(L, x3);
+
+        GFci gfci = new GFci(new IndTestDSep(g, true));
+
+        Graph pag = gfci.search();
+
+        System.out.println(pag);
     }
 }
 

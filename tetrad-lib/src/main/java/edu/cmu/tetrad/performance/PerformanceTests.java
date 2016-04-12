@@ -522,8 +522,10 @@ public class PerformanceTests {
     }
 
     public void testGfci(int numVars, double edgeFactor, int numCases) {
-        double alpha = 0.001;
-        int depth = 3;
+        double alpha = 0.2;
+        int depth = -1;
+        double penaltyDiscount = 4.0;
+        int maxPathLength = -1;
 
         init(new File("long.gfci." + numVars + ".txt"), "Tests performance of the FCI-GES algorithm");
 
@@ -543,7 +545,8 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = getLatentGraph(vars, edgeFactor, 20);
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 50, (int) (numVars * edgeFactor),
+                10, 10, 10, false, false);
 
         System.out.println("Graph done");
 
@@ -552,20 +555,11 @@ public class PerformanceTests {
         System.out.println("Starting simulation");
 
         LargeSemSimulator simulator = new LargeSemSimulator(dag);
-//            LargeSemSimulator simulator = new LargeSemSimulator(dag);
         simulator.setCoefRange(.5, 1.5);
 
         DataSet data = simulator.simulateDataAcyclic(numCases);
 
         data = DataUtils.restrictToMeasured(data);
-
-//            DataSet discreteData = DataUtils.discretize(data, 4, true);
-//
-//            try {
-//                data = DataUtils.convertNumericalDiscreteToContinuous(discreteData);
-//            } catch (NumberFormatException e) {
-//                throw new RuntimeException("There were some non-numeric values in that dataset.");
-//            }
 
         System.out.println("Finishing simulation");
 
@@ -577,14 +571,7 @@ public class PerformanceTests {
 
         System.out.println("Making covariance matrix");
 
-//        ICovarianceMatrix cov = new CovarianceMatrix2(data);
         ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
-//        ICovarianceMatrix cov = new CorreqlationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, false);
-//        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-//        System.out.println(cov);
 
         System.out.println("Covariance matrix done");
 
@@ -593,11 +580,7 @@ public class PerformanceTests {
 
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
-//        out.println(cov);
-
         IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
-        double penaltyDiscount = 2.0;
-        int maxPathLength = 6;
         GFci fci = new GFci(independenceTest);
         fci.setVerbose(false);
         fci.setPenaltyDiscount(penaltyDiscount);
@@ -623,85 +606,6 @@ public class PerformanceTests {
         out.println("Elapsed (running FCI) " + (time4 - time3) + " ms");
 
         out.close();
-    }
-
-    public void testSaveLoadDataText(int numVars, int numCases) {
-        out.println("Tests saving and loading of data sets.");
-        String dir = "/Users/josephramsey/Documents/proj/tetrad7/test_data";
-
-        List<Node> vars = new ArrayList<Node>();
-
-        for (int i = 0; i < numVars; i++) {
-            vars.add(new ContinuousVariable("X" + i));
-        }
-
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numVars, 30, 15, 15, false, true);
-
-        try {
-            File graphFile = new File(dir, "graph.txt");
-            PrintWriter graphOut = new PrintWriter(new FileWriter(graphFile));
-            graphOut.print(graph);
-            graphOut.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        out.println("Graph generated.");
-//        Graph graph = new EndpointMatrixGraph(DataGraphUtils.randomDagQuick(vars, 0, numVars));
-
-    }
-
-    public void testSaveLoadDataSerial(int numVars, int numCases) {
-        out.println("Tests saving and loading of data sets.");
-
-        List<Node> vars = new ArrayList<Node>();
-
-        for (int i = 0; i < numVars; i++) {
-            vars.add(new ContinuousVariable("X" + i));
-        }
-
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numVars, 30, 15, 15, false, true);
-        ;
-
-        out.println("Graph generated.");
-//        Graph graph = new EndpointMatrixGraph(DataGraphUtils.randomDagQuick(vars, 0, numVars));
-
-        LargeSemSimulator simulator = new LargeSemSimulator(graph);
-        simulator.setOut(out);
-
-        DataSet data = simulator.simulateDataAcyclic(numCases);
-
-//        out.println(data);
-
-        String dir = "/Users/josephramsey/Documents/proj/tetrad7/test_data";
-        File file = new File(dir, "test.txt");
-
-        out.println("Data generated.");
-
-        try {
-            long time1 = System.currentTimeMillis();
-
-            FileOutputStream _out = new FileOutputStream(file);
-            ObjectOutputStream objOut = new ObjectOutputStream(_out);
-
-            objOut.writeObject(data);
-            _out.close();
-
-            long time2 = System.currentTimeMillis();
-            out.println("Elapsed (saving the data): " + (time2 - time1) + " ms");
-
-            FileInputStream in = new FileInputStream(file);
-            ObjectInputStream objIn = new ObjectInputStream(in);
-            objIn.readObject();
-
-            long time3 = System.currentTimeMillis();
-            out.println("Elapsed (loading the data): " + (time3 - time2) + " ms");
-        } catch (Exception e2) {
-            e2.printStackTrace();
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                    "An error occurred while attempting to save the session as " +
-                            file.getAbsolutePath() + ".");
-        }
     }
 
     public void testFgsComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
@@ -802,7 +706,7 @@ public class PerformanceTests {
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(true);
+                fgs.setFaithfulnessAssumed(false);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
@@ -1051,7 +955,7 @@ public class PerformanceTests {
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(true);
+                fgs.setFaithfulnessAssumed(false);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
@@ -1607,7 +1511,7 @@ public class PerformanceTests {
 
         System.out.println("Graph done");
 
-        IndTestDSep test = new IndTestDSep(dag);
+        IndTestDSep test = new IndTestDSep(dag, true);
         Graph left = new Pc(test).search();
 
         System.out.println("PC graph = " + left);
@@ -1638,65 +1542,6 @@ public class PerformanceTests {
 
 //        final List<Node> path = DataGraphUtils.getInducingPath(dag.getNode("X14"), dag.getNode("X11"), dag);
 //        System.out.println(DataGraphUtils.pathString(path, dag));
-
-        System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
-    }
-
-    // Fas is calibrated; we need to calibrate other FAS versions to it.
-    public void testCompareFasVersions(int numVars, double edgeFactor, int numLatents) {
-        System.out.println("Making list of vars");
-
-//        RandomUtil.getInstance().setSeed(1429287088750L);
-//        RandomUtil.getInstance().setSeed(1429287454751L);
-//        RandomUtil.getInstance().setSeed(1429309942146L);
-
-        List<Node> vars = new ArrayList<Node>();
-
-        for (int i = 0; i < numVars; i++) {
-            vars.add(new ContinuousVariable("X" + i));
-        }
-
-        System.out.println("Finishing list of vars");
-
-        System.out.println("Making graph");
-
-        System.out.println("Finishing list of vars");
-
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgeFactor),
-                30, 15, 15, false, true);
-
-        System.out.println("DAG = " + dag);
-
-        System.out.println(dag);
-
-        System.out.println("Graph done");
-
-        Fas fas = new Fas(new IndTestDSep(dag));
-
-        Graph left = fas.search();
-
-        System.out.println("First FAS graph = " + left);
-
-        final FasStableConcurrent fas2 = new FasStableConcurrent(new IndTestDSep(dag));
-        Graph top = fas2.search();
-
-        System.out.println("Second FAS graph = " + top);
-
-        top = GraphUtils.replaceNodes(top, left.getNodes());
-//
-        top = GraphUtils.replaceNodes(top, left.getNodes());
-
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
-//        int[][] counts = edgeMisclassificationCounts(top, top);
-        System.out.println(GraphUtils.edgeMisclassifications(counts));
-
-        Set<Edge> leftEdges = left.getEdges();
-        leftEdges.removeAll(top.getEdges());
-        System.out.println("FAS1 but not Fas " + leftEdges);
-
-        Set<Edge> topEdges = top.getEdges();
-        topEdges.removeAll(left.getEdges());
-        System.out.println("Fas but not FAS1 " + topEdges);
 
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
