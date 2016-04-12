@@ -214,6 +214,8 @@ public final class GFci {
 
         List<Node> nodes = graph.getNodes();
 
+        SepsetProducer sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, -1);
+
         for (Node b : nodes) {
             List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
 
@@ -228,7 +230,8 @@ public final class GFci {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (getSepset(fgsGraph, a, c) != null) {
+                if (sepsets.getSepset(a, c) != null) {
+//                    if (getSepset(fgsGraph, a, c) != null) {
                     graph.removeEdge(a, c);
                 }
             }

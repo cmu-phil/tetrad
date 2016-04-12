@@ -173,7 +173,7 @@ public class TestGFci {
     public void testFromGraph() {
         int numNodes = 20;
         int numLatents = 5;
-        int numIterations = 1;
+        int numIterations = 100;
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
@@ -184,7 +184,7 @@ public class TestGFci {
             Graph pattern1 = fgci.search();
             Graph pattern2 = new DagToPag(dag).convert();
 
-//            System.out.println(MisclassificationUtils.edgeMisclassifications(pattern1, pattern2));
+            System.out.println(MisclassificationUtils.edgeMisclassifications(pattern1, pattern2));
             assertEquals(pattern1, pattern2);
         }
     }
