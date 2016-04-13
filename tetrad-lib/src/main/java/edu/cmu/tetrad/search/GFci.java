@@ -237,10 +237,10 @@ public final class GFci {
 
     // Due to Spirtes.
     public void modifiedR0(Graph fgsGraph) {
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, independenceTest, null, -1);
+        SepsetProducer sepsets = new SepsetsGreedy(graph, independenceTest, null, -1);
 //        SepsetProducer sepsets = new SepsetsConservative(graph, independenceTest, null, -1);
 //        SepsetProducer sepsets = new SepsetsConservativeMajority(graph, independenceTest, null, -1);
-        SepsetProducer sepsets = new SepsetsMaxPValue(graph, independenceTest, null, -1);
+//        SepsetProducer sepsets = new SepsetsMaxPValue(graph, independenceTest, null, -1);
 //        SepsetProducer sepsets = new SepsetsMinScore(graph, independenceTest, null, -1);
 
         graph.reorientAllWith(Endpoint.CIRCLE);
