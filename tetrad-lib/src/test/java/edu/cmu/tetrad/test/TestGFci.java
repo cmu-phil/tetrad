@@ -149,7 +149,7 @@ public class TestGFci {
         g1.addDirectedEdge(L, x2);
         g1.addDirectedEdge(L, x3);
 
-        GFci gfci = new GFci(new IndTestDSep(g1, true));
+        GFci gfci = new GFci(new IndTestDSep(g1));
 
         Graph pag = gfci.search();
 

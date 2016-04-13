@@ -530,6 +530,8 @@ public class PerformanceTests {
         int depth = -1;
         double penaltyDiscount = 4.0;
         int maxPathLength = -1;
+        double coefLow = .5;
+        double coefHigh = 1.5;
 
         init(new File("long.gfci." + numVars + ".txt"), "Tests performance of the FCI-GES algorithm");
 
@@ -559,7 +561,7 @@ public class PerformanceTests {
         System.out.println("Starting simulation");
 
         LargeSemSimulator simulator = new LargeSemSimulator(dag);
-        simulator.setCoefRange(.2, 1.5);
+        simulator.setCoefRange(coefLow, coefHigh);
 
         DataSet data = simulator.simulateDataAcyclic(numCases);
 
