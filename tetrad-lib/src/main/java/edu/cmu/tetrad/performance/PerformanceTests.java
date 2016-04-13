@@ -559,7 +559,7 @@ public class PerformanceTests {
         System.out.println("Starting simulation");
 
         LargeSemSimulator simulator = new LargeSemSimulator(dag);
-        simulator.setCoefRange(.5, 1.5);
+        simulator.setCoefRange(.2, 1.5);
 
         DataSet data = simulator.simulateDataAcyclic(numCases);
 
@@ -578,7 +578,6 @@ public class PerformanceTests {
         ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
 
         System.out.println("Covariance matrix done");
-
 
         long time3 = System.currentTimeMillis();
 
