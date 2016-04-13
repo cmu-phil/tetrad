@@ -522,7 +522,11 @@ public class PerformanceTests {
     }
 
     public void testGfci(int numVars, double edgeFactor, int numCases) {
-        double alpha = .2;
+        System.out.println("Seed = " + RandomUtil.getInstance().getSeed());
+
+//        RandomUtil.getInstance().setSeed(1460491316813L);
+
+        double alpha = .05;
         int depth = -1;
         double penaltyDiscount = 4.0;
         int maxPathLength = -1;
@@ -555,7 +559,7 @@ public class PerformanceTests {
         System.out.println("Starting simulation");
 
         LargeSemSimulator simulator = new LargeSemSimulator(dag);
-        simulator.setCoefRange(.5, 1.5);
+        simulator.setCoefRange(.2, 1.5);
 
         DataSet data = simulator.simulateDataAcyclic(numCases);
 
@@ -585,9 +589,8 @@ public class PerformanceTests {
         fci.setVerbose(false);
         fci.setPenaltyDiscount(penaltyDiscount);
         fci.setMaxPathLength(maxPathLength);
-        fci.setPossibleDsepSearchDone(true);
         fci.setDepth(depth);
-        fci.setFaithfulnessAssumed(true);
+        fci.setFaithfulnessAssumed(false);
         fci.setCompleteRuleSetUsed(false);
         Graph outGraph = fci.search();
 
@@ -1425,7 +1428,7 @@ public class PerformanceTests {
             fci.setPenaltyDiscount(penaltyDiscount);
             fci.setDepth(depth);
             fci.setMaxPathLength(maxPathLength);
-            fci.setPossibleDsepSearchDone(possibleDsepDone);
+//            fci.setPossibleDsepSearchDone(possibleDsepDone);
             fci.setCompleteRuleSetUsed(completeRuleSetUsed);
             fci.setFaithfulnessAssumed(faithfulnessAssumed);
             estPag = fci.search();

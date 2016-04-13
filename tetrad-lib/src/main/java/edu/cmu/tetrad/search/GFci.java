@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,7 +76,7 @@ public final class GFci {
     private boolean completeRuleSetUsed = false;
 
     // True iff the possible dsep search is done.
-    private boolean possibleDsepSearchDone = true;
+//    private boolean possibleDsepSearchDone = true;
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
@@ -182,6 +181,29 @@ public final class GFci {
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
+        // Look inside triangles.
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (graph.isAdjacentTo(a, c)) {
+                    if (getSepset(graph, a, c) != null) {
+                        graph.removeEdge(a, c);
+                    }
+                }
+            }
+        }
+
         modifiedR0(fgsGraph);
         FciOrient fciOrient = new FciOrient(new SepsetsConservative(fgsGraph, independenceTest, null, depth));
         fciOrient.setKnowledge(getKnowledge());
@@ -214,29 +236,6 @@ public final class GFci {
 
         List<Node> nodes = graph.getNodes();
 
-        SepsetProducer sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, -1);
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (sepsets.getSepset(a, c) != null) {
-//                    if (getSepset(fgsGraph, a, c) != null) {
-                    graph.removeEdge(a, c);
-                }
-            }
-        }
-
         for (Node b : nodes) {
             List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
@@ -254,12 +253,10 @@ public final class GFci {
                 if (fgsGraph.isDefCollider(a, b, c)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
-                }
-                else if (!graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = getSepset(fgsGraph, a, c);
+                } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+                    List<Node> sepset = getSepset(graph, a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
-                        graph.removeEdge(a, c);
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
@@ -296,13 +293,13 @@ public final class GFci {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    public boolean isPossibleDsepSearchDone() {
-        return possibleDsepSearchDone;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
-    }
+//    public boolean isPossibleDsepSearchDone() {
+//        return possibleDsepSearchDone;
+//    }
+//
+//    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+//        this.possibleDsepSearchDone = possibleDsepSearchDone;
+//    }
 
     /**
      * @return the maximum length of any discriminating path, or -1 of unlimited.

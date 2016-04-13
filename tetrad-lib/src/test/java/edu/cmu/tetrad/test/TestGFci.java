@@ -95,7 +95,7 @@ public class TestGFci {
         gFci.setPenaltyDiscount(penaltyDiscount);
         gFci.setDepth(depth);
         gFci.setMaxPathLength(maxPathLength);
-        gFci.setPossibleDsepSearchDone(possibleDsepDone);
+//        gFci.setPossibleDsepSearchDone(possibleDsepDone);
         gFci.setCompleteRuleSetUsed(completeRuleSetUsed);
         gFci.setFaithfulnessAssumed(faithfulnessAssumed);
         Graph outGraph = gFci.search();
@@ -173,7 +173,7 @@ public class TestGFci {
     public void testFromGraph() {
         int numNodes = 20;
         int numLatents = 5;
-        int numIterations = 100;
+        int numIterations = 10;
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
