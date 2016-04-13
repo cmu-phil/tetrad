@@ -524,9 +524,9 @@ public class PerformanceTests {
     public void testGfci(int numVars, double edgeFactor, int numCases) {
         System.out.println("Seed = " + RandomUtil.getInstance().getSeed());
 
-        RandomUtil.getInstance().setSeed(1460491316813L);
+//        RandomUtil.getInstance().setSeed(1460491316813L);
 
-        double alpha = .05;
+        double alpha = .001;
         int depth = -1;
         double penaltyDiscount = 4.0;
         int maxPathLength = -1;

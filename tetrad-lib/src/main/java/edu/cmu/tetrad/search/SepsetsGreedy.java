@@ -29,18 +29,18 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import java.util.List;
 
 /**
- * Returns the sepset from among the adjacents of i or the adjacents of k or the 'extra' sepsets with
- * the highest p value as judged by the given independence test.
+ * Selects the first sepset it comes to from among the extra sepsets or the adjacents of i or k,
+ * or null if none is found.
  */
-public class SepsetsMaxPValue implements SepsetProducer {
+public class SepsetsGreedy implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
     private int depth = 3;
-    private double p = Double.NaN;
+    private double score = Double.NaN;
     private boolean verbose = false;
 
-    public SepsetsMaxPValue(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
+    public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
@@ -48,37 +48,28 @@ public class SepsetsMaxPValue implements SepsetProducer {
     }
 
     /**
-     * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
+     * Pick out the sepset from among adj(i) or adj(k) with the highest score value.
      */
     public List<Node> getSepset(Node i, Node k) {
-        return getMaxSepset(i, k);
+        return getSepsetGreedy(i, k);
     }
 
     public boolean isCollider(Node i, Node j, Node k) {
-        List<Node> _v = getMaxSepset(i, k);
-        return _v != null && !_v.contains(j);
+        List<Node> set = getSepsetGreedy(i, k);
+        return set != null && !set.contains(j);
     }
 
     public boolean isNoncollider(Node i, Node j, Node k) {
-        List<Node> _v = getMaxSepset(i, k);
-        return _v != null && _v.contains(j);
+        List<Node> set = getSepsetGreedy(i, k);
+        return set != null && set.contains(j);
     }
 
-    private List<Node> getMaxSepset(Node i, Node k) {
-        double _p = 0.0;
-        List<Node> _v = null;
-
+    private List<Node> getSepsetGreedy(Node i, Node k) {
         if (extraSepsets != null) {
-            final List<Node> sepset = extraSepsets.get(i, k);
+            final List<Node> v = extraSepsets.get(i, k);
 
-            if (sepset != null) {
-                independenceTest.isIndependent(i, k, sepset);
-                double p = independenceTest.getPValue();
-
-                if (p > _p) {
-                    _p = p;
-                    _v = sepset;
-                }
+            if (v != null) {
+                return v;
             }
         }
 
@@ -95,12 +86,8 @@ public class SepsetsMaxPValue implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adji);
 
-                    getIndependenceTest().isIndependent(i, k, v);
-                    double p = getIndependenceTest().getPValue();
-
-                    if (p > _p) {
-                        _p = p;
-                        _v = v;
+                    if (getIndependenceTest().isIndependent(i, k, v)) {
+                        return v;
                     }
                 }
             }
@@ -112,21 +99,15 @@ public class SepsetsMaxPValue implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adjk);
 
-                    getIndependenceTest().isIndependent(i, k, v);
-                    double p = getIndependenceTest().getPValue();
-
-                    if (p > _p) {
-                        _p = p;
-                        _v = v;
+                    if (getIndependenceTest().isIndependent(i, k, v)) {
+                        return v;
                     }
                 }
             }
         }
 
-        this.p = _p;
-        return _v;
+        return null;
     }
-
 
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
@@ -135,7 +116,7 @@ public class SepsetsMaxPValue implements SepsetProducer {
 
     @Override
     public double getScore() {
-        return p;
+        return score;
     }
 
     @Override
@@ -160,6 +141,5 @@ public class SepsetsMaxPValue implements SepsetProducer {
     public double getPValue() {
         return independenceTest.getPValue();
     }
-
 }
 

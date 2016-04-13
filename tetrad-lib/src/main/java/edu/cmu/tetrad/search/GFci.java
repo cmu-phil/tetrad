@@ -181,6 +181,12 @@ public final class GFci {
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
+        SepsetProducer sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, -1);
+//        SepsetProducer sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, -1);
+//        SepsetProducer sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, -1);
+//        SepsetProducer sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, -1);
+//        SepsetProducer sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, -1);
+
         // Look inside triangles.
         for (Node b : nodes) {
             List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
@@ -197,7 +203,7 @@ public final class GFci {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
-                    if (getSepset(fgsGraph, a, c) != null) {
+                    if (sepsets.getSepset(a, c) != null) {
                         graph.removeEdge(a, c);
                     }
                 }
@@ -231,6 +237,12 @@ public final class GFci {
 
     // Due to Spirtes.
     public void modifiedR0(Graph fgsGraph) {
+//        SepsetProducer sepsets = new SepsetsGreedy(graph, independenceTest, null, -1);
+//        SepsetProducer sepsets = new SepsetsConservative(graph, independenceTest, null, -1);
+//        SepsetProducer sepsets = new SepsetsConservativeMajority(graph, independenceTest, null, -1);
+        SepsetProducer sepsets = new SepsetsMaxPValue(graph, independenceTest, null, -1);
+//        SepsetProducer sepsets = new SepsetsMinScore(graph, independenceTest, null, -1);
+
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
@@ -254,7 +266,8 @@ public final class GFci {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = getSepset(graph, a, c);
+//                    List<Node> sepset = getSepset(graph, a, c);
+                    List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
