@@ -524,7 +524,7 @@ public class PerformanceTests {
     public void testGfci(int numVars, double edgeFactor, int numCases) {
         System.out.println("Seed = " + RandomUtil.getInstance().getSeed());
 
-//        RandomUtil.getInstance().setSeed(1460491316813L);
+        RandomUtil.getInstance().setSeed(1460491316813L);
 
         double alpha = .05;
         int depth = -1;
@@ -591,7 +591,7 @@ public class PerformanceTests {
         fci.setMaxPathLength(maxPathLength);
         fci.setDepth(depth);
         fci.setFaithfulnessAssumed(false);
-        fci.setCompleteRuleSetUsed(false);
+        fci.setCompleteRuleSetUsed(true);
         Graph outGraph = fci.search();
 
         out.println(outGraph);

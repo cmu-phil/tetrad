@@ -196,8 +196,8 @@ public final class GFci {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c)) {
-                    if (getSepset(graph, a, c) != null) {
+                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
+                    if (getSepset(fgsGraph, a, c) != null) {
                         graph.removeEdge(a, c);
                     }
                 }
