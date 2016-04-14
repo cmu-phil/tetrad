@@ -114,6 +114,9 @@ public final class GFci {
     // True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches. By default false.
     private boolean faithfulnessAssumed = false;
 
+    // The score.
+    private Score score;
+
     //============================CONSTRUCTORS============================//
 
     /**
@@ -129,8 +132,22 @@ public final class GFci {
         }
 
         this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
-        buildIndexing(independenceTest.getVariables());
+        this.variables = independenceTest.getVariables();
+        buildIndexing(variables);
+    }
+
+    public GFci(Score score) {
+        if (score == null) throw new NullPointerException();
+        this.score = score;
+
+        if (score instanceof GraphScore) {
+            this.dag = ((GraphScore) score).getDag();
+        }
+
+        this.independenceTest = new IndTestScore(score);
+
+        this.variables = score.getVariables();
+        buildIndexing(variables);
     }
 
     //========================PUBLIC METHODS==========================//
@@ -144,32 +161,8 @@ public final class GFci {
 
         this.graph = new EdgeListGraphSingleConnections(nodes);
 
-        sampleSize = independenceTest.getSampleSize();
-        double penaltyDiscount = getPenaltyDiscount();
-
-        DataSet dataSet = (DataSet) independenceTest.getData();
-        ICovarianceMatrix cov = independenceTest.getCov();
-        Score score;
-
-        if (independenceTest instanceof IndTestDSep) {
-            score = new GraphScore(dag);
-        } else if (cov != null) {
-            covarianceMatrix = cov;
-            SemBicScore score0 = new SemBicScore(cov);
-            score0.setPenaltyDiscount(penaltyDiscount);
-            score = score0;
-        } else if (dataSet.isContinuous()) {
-            covarianceMatrix = new CovarianceMatrixOnTheFly(dataSet);
-            SemBicScore score0 = new SemBicScore(covarianceMatrix);
-            score0.setPenaltyDiscount(penaltyDiscount);
-            score = score0;
-        } else if (dataSet.isDiscrete()) {
-            BDeuScore score0 = new BDeuScore(dataSet);
-            score0.setSamplePrior(samplePrior);
-            score0.setStructurePrior(structurePrior);
-            score = score0;
-        } else {
-            throw new IllegalArgumentException("Mixed data not supported.");
+        if (score == null) {
+            setScore();
         }
 
         Fgs2 fgs = new Fgs2(score);
@@ -186,7 +179,7 @@ public final class GFci {
 //        SepsetProducer sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, -1);
 //        SepsetProducer sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, -1);
 //        SepsetProducer sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, -1);
-
+//
         // Look inside triangles.
         for (Node b : nodes) {
             List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
@@ -222,6 +215,38 @@ public final class GFci {
         return graph;
     }
 
+    private void setScore() {
+        sampleSize = independenceTest.getSampleSize();
+        double penaltyDiscount = getPenaltyDiscount();
+
+        DataSet dataSet = (DataSet) independenceTest.getData();
+        ICovarianceMatrix cov = independenceTest.getCov();
+        Score score;
+
+        if (independenceTest instanceof IndTestDSep) {
+            score = new GraphScore(dag);
+        } else if (cov != null) {
+            covarianceMatrix = cov;
+            SemBicScore score0 = new SemBicScore(cov);
+            score0.setPenaltyDiscount(penaltyDiscount);
+            score = score0;
+        } else if (dataSet.isContinuous()) {
+            covarianceMatrix = new CovarianceMatrixOnTheFly(dataSet);
+            SemBicScore score0 = new SemBicScore(covarianceMatrix);
+            score0.setPenaltyDiscount(penaltyDiscount);
+            score = score0;
+        } else if (dataSet.isDiscrete()) {
+            BDeuScore score0 = new BDeuScore(dataSet);
+            score0.setSamplePrior(samplePrior);
+            score0.setStructurePrior(structurePrior);
+            score = score0;
+        } else {
+            throw new IllegalArgumentException("Mixed data not supported.");
+        }
+
+        this.score = score;
+    }
+
     public int getDepth() {
         return depth;
     }
@@ -237,7 +262,7 @@ public final class GFci {
 
     // Due to Spirtes.
     public void modifiedR0(Graph fgsGraph) {
-        SepsetProducer sepsets = new SepsetsGreedy(graph, independenceTest, null, -1);
+        SepsetProducer sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, -1);
 //        SepsetProducer sepsets = new SepsetsConservative(graph, independenceTest, null, -1);
 //        SepsetProducer sepsets = new SepsetsConservativeMajority(graph, independenceTest, null, -1);
 //        SepsetProducer sepsets = new SepsetsMaxPValue(graph, independenceTest, null, -1);
@@ -266,7 +291,6 @@ public final class GFci {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-//                    List<Node> sepset = getSepset(graph, a, c);
                     List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
@@ -305,14 +329,6 @@ public final class GFci {
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
-
-//    public boolean isPossibleDsepSearchDone() {
-//        return possibleDsepSearchDone;
-//    }
-//
-//    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-//        this.possibleDsepSearchDone = possibleDsepSearchDone;
-//    }
 
     /**
      * @return the maximum length of any discriminating path, or -1 of unlimited.
@@ -447,43 +463,6 @@ public final class GFci {
         }
 
         logger.log("info", "Finishing BK Orientation.");
-    }
-
-    private List<Node> getSepset(Graph graph, Node i, Node k) {
-        List<Node> adji = graph.getAdjacentNodes(i);
-        List<Node> adjk = graph.getAdjacentNodes(k);
-        adji.remove(k);
-        adjk.remove(i);
-
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
-            if (d <= adji.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adji);
-
-                    if (getIndependenceTest().isIndependent(i, k, v)) {
-                        return v;
-                    }
-                }
-            }
-
-            if (d <= adjk.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adjk);
-
-                    if (getIndependenceTest().isIndependent(i, k, v)) {
-                        return v;
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 
     public void setSamplePrior(double samplePrior) {

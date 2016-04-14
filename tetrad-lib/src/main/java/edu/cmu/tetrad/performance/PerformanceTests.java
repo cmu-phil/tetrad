@@ -521,7 +521,7 @@ public class PerformanceTests {
         out.close();
     }
 
-    public void testGfci(int numVars, double edgeFactor, int numCases) {
+    public void testGfci(int numVars, double edgeFactor) {
         System.out.println("Seed = " + RandomUtil.getInstance().getSeed());
 
 //        RandomUtil.getInstance().setSeed(1460491316813L);
@@ -530,8 +530,10 @@ public class PerformanceTests {
         int depth = -1;
         double penaltyDiscount = 4.0;
         int maxPathLength = -1;
-        double coefLow = .5;
+        double coefLow = .3;
         double coefHigh = 1.5;
+        int numLatentConfounders = 50;
+        int numCases = 1000;
 
         init(new File("long.gfci." + numVars + ".txt"), "Tests performance of the FCI-GES algorithm");
 
@@ -551,7 +553,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 50, (int) (numVars * edgeFactor),
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, numLatentConfounders, (int) (numVars * edgeFactor),
                 10, 10, 10, false, false);
 
         System.out.println("Graph done");
@@ -585,8 +587,13 @@ public class PerformanceTests {
 
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
-        IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
-        GFci fci = new GFci(independenceTest);
+//        IndTestFisherZ independenceTest = new IndTestFisherZ(cov, alpha);
+//        GFci fci = new GFci(independenceTest);
+////
+        SemBicScore score = new SemBicScore(cov);
+        score.setPenaltyDiscount(4);
+        GFci fci = new GFci(score);
+
         fci.setVerbose(false);
         fci.setPenaltyDiscount(penaltyDiscount);
         fci.setMaxPathLength(maxPathLength);
@@ -623,8 +630,10 @@ public class PerformanceTests {
     private void testFgs(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
         out.println(new Date());
 
+//        RandomUtil.getInstance().setSeed(4828384343999L);
         double penaltyDiscount = 4.0;
-        int depth = -1;
+        int depth = 5;
+        boolean faithfulness = false;
 
 //        RandomUtil.getInstance().setSeed(50304050454L);
 
@@ -706,23 +715,29 @@ public class PerformanceTests {
                 score.setPenaltyDiscount(penaltyDiscount);
 
                 System.out.println(new Date());
+                System.out.println("\nStarting FGS");
 
-                Fgs2 fgs = new Fgs2(score);
+                long timea = System.currentTimeMillis();
+
+                Fgs fgs = new Fgs(score);
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(false);
+                fgs.setFaithfulnessAssumed(faithfulness);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
-                System.out.println("\nStarting FGS");
+                long timeb = System.currentTimeMillis();
 
                 estPattern = fgs.search();
 
-                System.out.println(new Date());
+                long timec = System.currentTimeMillis();
 
-                long time4 = System.currentTimeMillis();
-                elapsed = time4 - time3;
+                out.println("Time for FGS constructor " + (timeb - timea) + " ms");
+                out.println("Time for FGS search " + (timec - timea) + " ms");
+                out.println();
+
+                elapsed = timec - timea;
             } else {
                 init(new File("fgs.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
                         "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
@@ -751,20 +766,31 @@ public class PerformanceTests {
                 score.setStructurePrior(1);
                 score.setSamplePrior(1);
 
-                Fgs2 fgs = new Fgs2(score);
+                System.out.println(new Date());
+                System.out.println("\nStarting FGS");
+
+                long timea = System.currentTimeMillis();
+
+                Fgs fgs = new Fgs(score);
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(true);
+                fgs.setFaithfulnessAssumed(faithfulness);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
-                System.out.println("\nStarting FGS");
+                long timeb = System.currentTimeMillis();
 
                 estPattern = fgs.search();
 
-                long time4 = System.currentTimeMillis();
-                elapsed = time4 - time3;
+                long timec = System.currentTimeMillis();
+
+                out.println("Time consructing BDeu score " + (timea - time3) + " ms");
+                out.println("Time for FGS constructor " + (timeb - timea) + " ms");
+                out.println("Time for FGS search " + (timec - timea) + " ms");
+                out.println();
+
+                elapsed = timec - timea;
             }
 
             System.out.println("Done with FGS");
@@ -847,6 +873,233 @@ public class PerformanceTests {
         out.close();
     }
 
+//    private void testFgs(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
+//        out.println(new Date());
+//
+//        double penaltyDiscount = 4.0;
+//        int depth = -1;
+//
+////        RandomUtil.getInstance().setSeed(50304050454L);
+//
+//
+//        List<int[][]> allCounts = new ArrayList<>();
+//        List<double[]> comparisons = new ArrayList<>();
+//        List<Double> degrees = new ArrayList<>();
+//        List<Long> elapsedTimes = new ArrayList<Long>();
+//
+//        for (int run = 0; run < numRuns; run++) {
+//            init(new File("fgs.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
+//                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+//            out.println("Num vars = " + numVars);
+//            out.println("Num edges = " + (int) (numVars * edgeFactor));
+//            out.println("Num cases = " + numCases);
+//            out.println("Penalty discount = " + penaltyDiscount);
+//            out.println("Depth = " + depth);
+//            out.println();
+//            out.println("\n\n\n******************************** RUN " + (run + 1) + " ********************************\n\n");
+//
+//            System.out.println("Making dag");
+//
+//            out.println(new Date());
+//
+//            Graph dag = makeDag(numVars, edgeFactor);
+//
+//            System.out.println(new Date());
+//
+//            System.out.println("Calculating pattern for DAG");
+//
+//            Graph pattern = SearchGraphUtils.patternForDag(dag);
+//
+//            List<Node> vars = dag.getNodes();
+//
+//            int[] tiers = new int[vars.size()];
+//
+//            for (int i = 0; i < vars.size(); i++) {
+//                tiers[i] = i;
+//            }
+//
+//            System.out.println("Graph done");
+//
+//            long time1 = System.currentTimeMillis();
+//
+//            out.println("Graph done");
+//
+//            System.out.println(new Date());
+//
+//            System.out.println("Starting simulation");
+//            Graph estPattern;
+//            long elapsed;
+//
+//            if (continuous) {
+//                LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
+//                simulator.setOut(out);
+//
+//                DataSet data = simulator.simulateDataAcyclic(numCases);
+//
+//                System.out.println("Finishing simulation");
+//
+//                System.out.println(new Date());
+//
+//                long time2 = System.currentTimeMillis();
+//
+//                out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+//                System.out.println(new Date());
+//
+//                System.out.println("Making covariance matrix");
+//
+//                long time3 = System.currentTimeMillis();
+//
+//                ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+//
+//                System.out.println("Covariance matrix done");
+//
+//                out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
+//
+//                SemBicScore score = new SemBicScore(cov);
+//                score.setPenaltyDiscount(penaltyDiscount);
+//
+//                System.out.println(new Date());
+//
+//                Fgs2 fgs = new Fgs2(score);
+//                fgs.setVerbose(true);
+//                fgs.setNumPatternsToStore(0);
+//                fgs.setOut(System.out);
+//                fgs.setFaithfulnessAssumed(false);
+//                fgs.setDepth(depth);
+//                fgs.setCycleBound(-1);
+//
+//                System.out.println("\nStarting FGS");
+//
+//                estPattern = fgs.search();
+//
+//                System.out.println(new Date());
+//
+//                long time4 = System.currentTimeMillis();
+//                elapsed = time4 - time3;
+//            } else {
+//                init(new File("fgs.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
+//                        "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+//                out.println("Num vars = " + numVars);
+//                out.println("Num edges = " + (int) (numVars * edgeFactor));
+//                out.println("Num cases = " + numCases);
+//                out.println("Sample prior = " + 1);
+//                out.println("Structure prior = " + 1);
+//                out.println("Depth = " + 1);
+//                out.println();
+//
+//                BayesPm pm = new BayesPm(dag, 3, 3);
+//                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+//
+//                DataSet data = im.simulateData(numCases, false, tiers);
+//
+//                System.out.println("Finishing simulation");
+//
+//                long time2 = System.currentTimeMillis();
+//
+//                out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
+//
+//                long time3 = System.currentTimeMillis();
+//
+//                BDeuScore score = new BDeuScore(data);
+//                score.setStructurePrior(1);
+//                score.setSamplePrior(1);
+//
+//                Fgs2 fgs = new Fgs2(score);
+//                fgs.setVerbose(true);
+//                fgs.setNumPatternsToStore(0);
+//                fgs.setOut(System.out);
+//                fgs.setFaithfulnessAssumed(true);
+//                fgs.setDepth(depth);
+//                fgs.setCycleBound(-1);
+//
+//                System.out.println("\nStarting FGS");
+//
+//                estPattern = fgs.search();
+//
+//                long time4 = System.currentTimeMillis();
+//                elapsed = time4 - time3;
+//            }
+//
+//            System.out.println("Done with FGS");
+//
+//            System.out.println(new Date());
+//
+////            System.out.println("Replacing nodes");
+////
+////            estPattern = GraphUtils.replaceNodes(estPattern, dag.getNodes());
+//
+////            System.out.println("Calculating degree");
+////
+////            double degree = GraphUtils.degree(estPattern);
+////            degrees.add(degree);
+////
+////            out.println("Degree out output graph = " + degree);
+//
+//            double[] comparison = new double[4];
+//
+////            int adjFn = GraphUtils.countAdjErrors(pattern, estPattern);
+////            int adjFp = GraphUtils.countAdjErrors(estPattern, pattern);
+////            int trueAdj = pattern.getNumEdges();
+////
+////            comparison[0] = trueAdj / (double) (trueAdj + adjFp);
+////            comparison[1] = trueAdj / (double) (trueAdj + adjFn);
+//
+//            System.out.println("Counting misclassifications.");
+//
+//            estPattern = GraphUtils.replaceNodes(estPattern, pattern.getNodes());
+//
+//            int[][] counts = GraphUtils.edgeMisclassificationCounts(pattern, estPattern, false);
+//            allCounts.add(counts);
+//
+//            System.out.println(new Date());
+//
+//            int sumRow = counts[4][0] + counts[4][3] + counts[4][5];
+//            int sumCol = counts[0][3] + counts[4][3] + counts[5][3] + counts[7][3];
+//            int trueArrow = counts[4][3];
+//
+//            int sumTrueAdjacencies = 0;
+//
+//            for (int i = 0; i < 7; i++) {
+//                for (int j = 0; j < 5; j++) {
+//                    sumTrueAdjacencies += counts[i][j];
+//                }
+//            }
+//
+//            int falsePositiveAdjacencies = 0;
+//
+//            for (int j = 0; j < 5; j++) {
+//                falsePositiveAdjacencies += counts[7][j];
+//            }
+//
+//            int falseNegativeAdjacencies = 0;
+//
+//            for (int i = 0; i < 5; i++) {
+//                falseNegativeAdjacencies += counts[i][5];
+//            }
+//
+//            comparison[0] = sumTrueAdjacencies / (double) (sumTrueAdjacencies + falsePositiveAdjacencies);
+//            comparison[1] = sumTrueAdjacencies / (double) (sumTrueAdjacencies + falseNegativeAdjacencies);
+//
+//            comparison[2] = trueArrow / (double) sumCol;
+//            comparison[3] = trueArrow / (double) sumRow;
+//
+//            comparisons.add(comparison);
+//
+//            out.println(GraphUtils.edgeMisclassifications(counts));
+//            out.println(precisionRecall(comparison));
+//
+//            elapsedTimes.add(elapsed);
+//            out.println("\nElapsed: " + elapsed + " ms");
+//        }
+//
+//
+//        printAverageConfusion("Average", allCounts);
+//        printAveragePrecisionRecall(comparisons);
+//        printAverageStatistics(elapsedTimes, degrees);
+//
+//        out.close();
+//    }
+
     public void testFgsMbComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFgsMb(numVars, edgeFactor, numCases, numRuns, true);
     }
@@ -858,8 +1111,10 @@ public class PerformanceTests {
     private void testFgsMb(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
         out.println(new Date());
 
+//        RandomUtil.getInstance().setSeed(4828384343999L);
         double penaltyDiscount = 4.0;
-        int depth = -1;
+        int depth = 5;
+        boolean faithfulness = false;
 
 //        RandomUtil.getInstance().setSeed(50304050454L);
 
@@ -961,7 +1216,7 @@ public class PerformanceTests {
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(false);
+                fgs.setFaithfulnessAssumed(faithfulness);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
@@ -1014,7 +1269,7 @@ public class PerformanceTests {
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(true);
+                fgs.setFaithfulnessAssumed(faithfulness);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
@@ -2315,19 +2570,34 @@ public class PerformanceTests {
 
         PerformanceTests performanceTests = new PerformanceTests();
 
-        if (args.length == 4) {
+
+        if (args.length == 3) {
             switch (args[0]) {
                 case "GFCI": {
                     final int numVars = Integer.parseInt(args[1]);
                     final double edgeFactor = Double.parseDouble(args[2]);
-                    final int numCases = Integer.parseInt(args[3]);
-                    performanceTests.testGfci(numVars, edgeFactor, numCases);
+//                    final int numCases = Integer.parseInt(args[3]);
+                    performanceTests.testGfci(numVars, edgeFactor);
                     break;
                 }
                 default:
                     throw new IllegalArgumentException("Not a configuration!");
             }
-        } else if (args.length == 5) {
+        }
+//        else if (args.length == 4) {
+//            switch (args[0]) {
+//                case "GFCI": {
+//                    final int numVars = Integer.parseInt(args[1]);
+//                    final double edgeFactor = Double.parseDouble(args[2]);
+//                    final int numCases = Integer.parseInt(args[3]);
+//                    performanceTests.testGfci(numVars, edgeFactor);
+//                    break;
+//                }
+//                default:
+//                    throw new IllegalArgumentException("Not a configuration!");
+//            }
+//        }
+        else if (args.length == 5) {
             switch (args[0]) {
                 case "PC": {
                     final int numVars = Integer.parseInt(args[1]);

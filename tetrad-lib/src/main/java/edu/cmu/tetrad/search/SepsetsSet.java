@@ -41,18 +41,21 @@ public class SepsetsSet implements SepsetProducer {
 
     @Override
     public List<Node> getSepset(Node a, Node b) {
+        isIndependent(a, b, sepsets.get(a, b));
         return sepsets.get(a, b);
     }
 
     @Override
     public boolean isCollider(Node i, Node j, Node k) {
         List<Node> sepset = sepsets.get(i, k);
+        isIndependent(i, k, sepsets.get(i, k));
         return sepset != null && !sepset.contains(j);
     }
 
     @Override
     public boolean isNoncollider(Node i, Node j, Node k) {
         List<Node> sepset = sepsets.get(i, k);
+        isIndependent(i, k, sepsets.get(i, k));
         return sepset != null && sepset.contains(j);
     }
 
@@ -62,8 +65,13 @@ public class SepsetsSet implements SepsetProducer {
     }
 
     @Override
-    public double getScore() {
+    public double getPValue() {
         return test.getPValue();
+    }
+
+    @Override
+    public double getScore() {
+        return -(test.getPValue() - test.getAlpha());
     }
 
     @Override
@@ -80,9 +88,5 @@ public class SepsetsSet implements SepsetProducer {
         this.verbose = verbose;
     }
 
-    @Override
-    public double getPValue() {
-        return Double.NaN;
-    }
 }
 

@@ -37,7 +37,6 @@ public class SepsetsGreedy implements SepsetProducer {
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
     private int depth = 3;
-    private double score = Double.NaN;
     private boolean verbose = false;
 
     public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
@@ -115,8 +114,13 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     @Override
+    public double getPValue() {
+        return independenceTest.getPValue();
+    }
+
+    @Override
     public double getScore() {
-        return score;
+        return -(independenceTest.getPValue() - independenceTest.getAlpha());
     }
 
     @Override
@@ -137,9 +141,5 @@ public class SepsetsGreedy implements SepsetProducer {
         this.verbose = verbose;
     }
 
-    @Override
-    public double getPValue() {
-        return independenceTest.getPValue();
-    }
 }
 
