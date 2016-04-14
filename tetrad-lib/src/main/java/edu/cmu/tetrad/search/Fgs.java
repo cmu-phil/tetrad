@@ -173,9 +173,10 @@ public final class Fgs implements GraphSearch, GraphScorer {
         }
 
         if (dataSet.isDiscrete()) {
-            setFgsScore(new BDeuScore(dataSet));
+            setScore(new BDeuScore(dataSet));
         } else {
-            setFgsScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet), 2.0));
+            SemBicScore fgsScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            setScore(fgsScore);
         }
 
         this.graph = new EdgeListGraphSingleConnections(getVariables());
@@ -194,7 +195,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
             out.println("GES constructor");
         }
 
-        setFgsScore(new SemBicScore(covMatrix, 2.0));
+        SemBicScore score = new SemBicScore(covMatrix);
+        score.setPenaltyDiscount(2.0);
+        setScore(score);
 
         this.graph = new EdgeListGraphSingleConnections(getVariables());
 
@@ -205,7 +208,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
     public Fgs(Score fgsScore) {
         if (fgsScore == null) throw new NullPointerException();
-        setFgsScore(fgsScore);
+        setScore(fgsScore);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
     }
 
@@ -519,12 +522,12 @@ public final class Fgs implements GraphSearch, GraphScorer {
     //===========================PRIVATE METHODS========================//
 
     //Sets the discrete scoring function to use.
-    private void setFgsScore(Score fgsScore) {
-        this.fgsScore = fgsScore;
+    private void setScore(Score score) {
+        this.fgsScore = score;
 
         this.variables = new ArrayList<>();
 
-        for (Node node : fgsScore.getVariables()) {
+        for (Node node : score.getVariables()) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 this.variables.add(node);
             }

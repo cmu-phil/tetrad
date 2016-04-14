@@ -635,7 +635,8 @@ public class DMSearch {
 
         this.cov = new CovarianceMatrixOnTheFly(data);
 
-        SemBicScore score = new SemBicScore(cov, penalty);
+        SemBicScore score = new SemBicScore(cov);
+        score.setPenaltyDiscount(penalty);
         Fgs2 fgs = new Fgs2(score);
         fgs.setKnowledge(knowledge);
         fgs.setDepth(this.gesDepth);

@@ -657,7 +657,10 @@ public final class TetradCmd {
         Fgs2 fgs;
 
         if (useCovariance) {
-            fgs = new Fgs2(new SemBicScore(covarianceMatrix, penaltyDiscount));
+            SemBicScore fgsScore = new SemBicScore(covarianceMatrix);
+            fgsScore.setPenaltyDiscount(penaltyDiscount);
+            fgs = new Fgs2(fgsScore);
+
         } else {
             if (data.isDiscrete()) {
                 BDeuScore score = new BDeuScore(data);
@@ -666,7 +669,8 @@ public final class TetradCmd {
 
                 fgs = new Fgs2(score);
             } else if (data.isContinuous()) {
-                SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data), penaltyDiscount);
+                SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+                score.setPenaltyDiscount(penaltyDiscount);
                 fgs = new Fgs2(score);
             } else {
                 throw new IllegalArgumentException();

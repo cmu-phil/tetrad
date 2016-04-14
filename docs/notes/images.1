@@ -18,9 +18,9 @@ that share the same variables in the same order and have the same
 number of cases, optionally substitutes their AR residuals, runs
 iMAGES on them with the given (optional) penalty discount, and
 deposits into the output directory, for the output pattern and for
-each DAG consistent with that pattern with the maximum score, a
+each DAG consistent with that pattern with the maximum totalScore, a
 (relodable) XML file for the graph. Pattern files will suffixed
-.pattern.xml (.pattern.png, .pattern.dot); maximum-score DAG files
+.pattern.xml (.pattern.png, .pattern.dot); maximum-totalScore DAG files
 will be indexed and suffixed--e.g. run1.1.dag.xml, etc. If --png is
 specified, PNG image files of the graphs will be added to the output
 directory, similarly suffixed--e.g. run1.1.dag.png; if --dot is
@@ -76,7 +76,7 @@ are not mean centered prior to mixing.
 --noxml Leaves the graphical XML files out of the output directory. Note
   that no counting of graphs can be done if these are left out.
 --listtype all|max Lists either all of the dags in the pattern, or just
-  those with the maximum score. The default is max.
+  those with the maximum totalScore. The default is max.
 --knowledge <path> The path to a knowledge file, if appropriate. The
   knowledge file specifies edges that are forbidden or required. See
   example below.

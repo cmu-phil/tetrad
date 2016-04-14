@@ -702,7 +702,8 @@ public class PerformanceTests {
 
                 out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
 
-                SemBicScore score = new SemBicScore(cov, penaltyDiscount);
+                SemBicScore score = new SemBicScore(cov);
+                score.setPenaltyDiscount(penaltyDiscount);
 
                 System.out.println(new Date());
 
@@ -948,7 +949,8 @@ public class PerformanceTests {
 
                 out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms\n");
 
-                SemBicScore score = new SemBicScore(cov, penaltyDiscount);
+                SemBicScore score = new SemBicScore(cov);
+                score.setPenaltyDiscount(penaltyDiscount);
 
                 System.out.println(new Date());
                 System.out.println("\nStarting FGS");

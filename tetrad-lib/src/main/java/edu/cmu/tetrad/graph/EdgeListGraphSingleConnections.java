@@ -491,9 +491,11 @@ public class EdgeListGraphSingleConnections implements Graph {
      * exists.
      */
     public Edge getEdge(Node node1, Node node2) {
-        List<Edge> edges1 = edgeLists.get(node1);
+        List<Edge> edges = edgeLists.get(node1);
 
-        for (Edge edge : edges1) {
+        if (edges == null) return null;
+
+        for (Edge edge : edges) {
             if (edge.getDistalNode(node1) == node2) {
                 return edge;
             }

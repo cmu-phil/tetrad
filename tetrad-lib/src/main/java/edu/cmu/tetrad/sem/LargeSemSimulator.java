@@ -139,83 +139,9 @@ public final class LargeSemSimulator {
 
 
     // Trying again to parallelize simulateDataAcyclic.
-    public DataSet simulateDataAcyclic(int sampleSize) {
+    public DataSet simulateDataAcyclic2(int sampleSize) {
         int size = variableNodes.size();
         setupModel(size);
-
-//        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
-        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variableNodes);
-
-//        class SimulateTask extends RecursiveTask<double[][]> {
-//            private int chunk;
-//            private int from;
-//            private int to;
-//            private int[] tierIndices;
-//            private int[][] parents;
-//            private double[] errorVars;
-//            private double[][] coefs;
-//
-//            public SimulateTask(int chunk, int from, int to, int[] tierIndices, int[][] parents, double[] errorVars,
-//                                double[][] coefs) {
-//                this.chunk = chunk;
-//                this.from = from;
-//                this.to = to;
-//                this.tierIndices = tierIndices;
-//                this.parents = parents;
-//                this.errorVars = errorVars;
-//                this.coefs = coefs;
-//            }
-//
-//            @Override
-//            protected double[][] compute() {
-//                if (to - from <= chunk) {
-//                    double[][] rows = new double[to - from][];
-//
-//                    for (int row = 0; row < to - from; row++) {
-//                        if ((row) % 1000 == 0) System.out.println("Row " + from);
-//
-//                        double[] _row = new double[tierIndices.length];
-//
-//                        for (int col : tierIndices) {
-//                            double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
-//
-//                            for (int j = 0; j < parents[col].length; j++) {
-//                                value += _row[parents[col][j]] * coefs[col][j];
-//                            }
-//
-//                            value += means[col];
-//
-//                            _row[col] = value;
-//                        }
-//
-//                        rows[row] = _row;
-//                    }
-//
-//                    return rows;
-//                } else {
-//                    int mid = (to + from) / 2;
-//
-//                    SimulateTask left = new SimulateTask(chunk, from, mid, tierIndices, parents, errorVars, coefs);
-//                    SimulateTask right = new SimulateTask(chunk, mid, to, tierIndices, parents, errorVars, coefs);
-//
-//                    left.fork();
-//                    double[][] _left = right.compute();
-//                    double[][] _right = left.join();
-//
-//                    double[][] together = new double[_left.length + _right.length][];
-//                    System.arraycopy(_left, 0, together, 0, _left.length);
-//                    System.arraycopy(_right, 0, together, _left.length, _right.length);
-//
-//                    return together;
-//                }
-//            }
-//        }
-//
-//        double[][] all = ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(100, 0, dataSet.getNumRows(),
-//                tierIndices, parents, errorVars, coefs));
-
-
-
 
         class SimulateRowTask extends RecursiveTask<double[]> {
             private final int i;
@@ -297,9 +223,71 @@ public final class LargeSemSimulator {
             }
         }
 
-        double[][] all = ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(dataSet.getNumRows()));
+        double[][] all = ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(sampleSize));
 
         return new BoxDataSet(new DoubleDataBox(all), variableNodes);
+    }
+
+    public DataSet simulateDataAcyclic(int sampleSize) {
+        int size = variableNodes.size();
+        setupModel(size);
+
+        class SimulateTask extends RecursiveTask<Boolean> {
+            private final int from;
+            private final int to;
+            private double[][] all;
+            private int chunk;
+
+            public SimulateTask(int from, int to, double[][] all, int chunk) {
+                this.from = from;
+                this.to = to;
+                this.all = all;
+                this.chunk = chunk;
+            }
+
+            @Override
+            protected Boolean compute() {
+                if (from - to > chunk) {
+                    int mid = from + to / 2;
+                    SimulateTask left = new SimulateTask(from, mid, all, chunk);
+                    SimulateTask right = new SimulateTask(mid, to, all, chunk);
+                    left.fork();
+                    right.compute();
+                    left.join();
+                    return true;
+                } else {
+                    for (int i = from; i < to; i++) {
+                        NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);//sqrt(errorVars[col]));
+                        normal.sample();
+
+                        if ((i + 1) % 50 == 0)
+                            System.out.println("Simulating " + (i + 1));
+
+                        for (int col : tierIndices) {
+                            double value = normal.sample() * sqrt(errorVars[col]);
+
+                            for (int j = 0; j < parents[col].length; j++) {
+                                value += all[parents[col][j]][i] * coefs[col][j];
+                            }
+
+                            value += means[col];
+
+                            all[col][i] = value;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+        }
+
+        double[][] all = new double[variableNodes.size()][sampleSize];
+
+        int chunk = sampleSize / ForkJoinPoolInstance.getInstance().getPool().getParallelism() + 1;
+
+        ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(0, sampleSize, all, chunk));
+
+        return new BoxDataSet(new VerticalDoubleDataBox(all), variableNodes);
     }
 
     private void setupModel(int size) {

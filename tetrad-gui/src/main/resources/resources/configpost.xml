@@ -1383,7 +1383,7 @@
                    category="DAG Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
-                    <event id="score" description="Score" default="on"/>
+                    <event id="totalScore" description="Score" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.LofsRunner</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.LofsSearchEditorNew

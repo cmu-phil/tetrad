@@ -80,9 +80,13 @@ public class SemBicScoreImages implements ISemBicScore {
                     throw new IllegalArgumentException("Datasets must be continuous.");
                 }
 
-                semBicScores.add(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet), penaltyDiscount));
+                SemBicScore semBicScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+                semBicScore.setPenaltyDiscount(penaltyDiscount);
+                semBicScores.add(semBicScore);
             } else if (model instanceof ICovarianceMatrix) {
-                semBicScores.add(new SemBicScore((ICovarianceMatrix) model, penaltyDiscount));
+                SemBicScore semBicScore = new SemBicScore((ICovarianceMatrix) model);
+                semBicScore.setPenaltyDiscount(penaltyDiscount);
+                semBicScores.add(semBicScore);
             } else {
                 throw new IllegalArgumentException("Only continuous data sets and covariance matrices may be used as input.");
             }

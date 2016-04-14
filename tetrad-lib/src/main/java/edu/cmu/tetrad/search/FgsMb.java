@@ -726,7 +726,6 @@ public final class FgsMb {
                         }
 
                         Node y = nodes.get(i);
-                        System.out.println(y);
                         Set<Node> D = new HashSet<>();
 
                         D.addAll(GraphUtils.getDconnectedVars(y, new ArrayList<Node>(), graph));

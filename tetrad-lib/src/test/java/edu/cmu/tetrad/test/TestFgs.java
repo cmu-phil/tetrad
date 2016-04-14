@@ -82,7 +82,8 @@ public class TestFgs {
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
         ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
-        SemBicScore score = new SemBicScore(cov, penaltyDiscount);
+        SemBicScore score = new SemBicScore(cov);
+        score.setPenaltyDiscount(penaltyDiscount);
 
         Fgs2 fgs = new Fgs2(score);
         fgs.setVerbose(false);
@@ -403,7 +404,9 @@ public class TestFgs {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        Fgs2 fgs = new Fgs2(new SemBicScore(dataSet, 1));
+        SemBicScore score = new SemBicScore(dataSet);
+        score.setPenaltyDiscount(1);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setKnowledge(knowledge);
 
         Graph pattern = fgs.search();
