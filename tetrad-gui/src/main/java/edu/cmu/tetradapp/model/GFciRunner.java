@@ -116,7 +116,6 @@ public class GFciRunner extends AbstractAlgorithmRunner
             GFci fci = new GFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
-            fci.setPossibleDsepSearchDone(indTestParams.isPossibleDsepDone());
             fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
             fci.setDepth(indTestParams.getDepth());
             double penaltyDiscount = indTestParams.getPenaltyDiscount();

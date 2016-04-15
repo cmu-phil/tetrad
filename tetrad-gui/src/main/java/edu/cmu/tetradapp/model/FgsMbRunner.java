@@ -171,8 +171,8 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
             target = dataSet.getVariable(targetName);
 
             if (dataSet.isContinuous()) {
-                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model),
-                        params.getComplexityPenalty());
+                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
+                gesScore.setPenaltyDiscount(params.getComplexityPenalty());
                 fgs = new FgsMb(gesScore);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = 1;//((FgsParams) getParams()).getSamplePrior();
@@ -185,8 +185,8 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model,
-                    params.getIndTestParams().getAlpha());
+            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+            gesScore.setPenaltyDiscount(params.getIndTestParams().getAlpha());
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
             target = ((ICovarianceMatrix) model).getVariable(targetName);
             fgs = new FgsMb(gesScore);

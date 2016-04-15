@@ -317,8 +317,8 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model),
-                        params.getComplexityPenalty());
+                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
+                gesScore.setPenaltyDiscount(params.getComplexityPenalty());
                 fgs = new Fgs2(gesScore);
                 fgs.setKnowledge(getParams().getKnowledge());
                 fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
@@ -339,7 +339,8 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model, params.getComplexityPenalty());
+            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+            gesScore.setPenaltyDiscount(params.getComplexityPenalty());
             fgs = new Fgs2(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
             fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());

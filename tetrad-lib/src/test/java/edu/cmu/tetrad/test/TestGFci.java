@@ -189,8 +189,6 @@ public class TestGFci {
             Graph pattern1 = fgci.search();
             Graph pattern2 = new DagToPag(dag).convert();
 
-//            pattern1 = GraphUtils.replaceNodes(pattern1, pattern2.getNodes());
-
             System.out.println(pattern1);
             System.out.println(pattern2);
 
