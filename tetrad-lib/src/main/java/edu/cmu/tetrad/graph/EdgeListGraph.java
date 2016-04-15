@@ -34,7 +34,7 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
  * graph, with an additional list storing all of the edges in the graph. The
  * edges are of the form N1 *-# N2. Multiple edges may be added per node pair to
  * this graph, with the caveat that all edges of the form N1 *-# N2 will be
- * considered equal. For randomUtil, if the edge X --> Y is added to the graph,
+ * considered equal. For example, if the edge X --> Y is added to the graph,
  * another edge X --> Y may not be added, although an edge Y --> X may be added.
  * Edges from nodes to themselves may also be added.</p>
  *

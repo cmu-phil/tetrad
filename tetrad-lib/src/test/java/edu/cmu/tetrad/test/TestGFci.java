@@ -35,6 +35,7 @@ import org.junit.Test;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -171,9 +172,11 @@ public class TestGFci {
 
     @Test
     public void testFromGraph() {
+        RandomUtil.getInstance().setSeed(new Date().getTime());
+
         int numNodes = 20;
         int numLatents = 5;
-        int numIterations = 1;
+        int numIterations = 20;
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
@@ -183,8 +186,8 @@ public class TestGFci {
             // Why does the first construct pass when TestGFci is run manually
             // but fail when run as part of the test suite? Inquiring minds want
             // to know. The second constructor passes both ways. jdramsey 4/14/2016
-//            GFci fgci = new GFci(new GraphScore(dag));
-            GFci fgci = new GFci(new IndTestDSep(dag));
+            GFci fgci = new GFci(new GraphScore(dag));
+//            GFci fgci = new GFci(new IndTestDSep(dag));
             fgci.setFaithfulnessAssumed(false);
             Graph pattern1 = fgci.search();
             Graph pattern2 = new DagToPag(dag).convert();

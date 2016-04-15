@@ -144,8 +144,8 @@ public final class GFci {
             this.dag = ((GraphScore) score).getDag();
         }
 
+        this.sampleSize = score.getSampleSize();
         this.independenceTest = new IndTestScore(score);
-
         this.variables = score.getVariables();
         buildIndexing(variables);
     }
