@@ -183,9 +183,6 @@ public class TestGFci {
             Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
-            // Why does the first construct pass when TestGFci is run manually
-            // but fail when run as part of the test suite? Inquiring minds want
-            // to know. The second constructor passes both ways. jdramsey 4/14/2016
             GFci fgci = new GFci(new GraphScore(dag));
 //            GFci fgci = new GFci(new IndTestDSep(dag));
             fgci.setFaithfulnessAssumed(false);
