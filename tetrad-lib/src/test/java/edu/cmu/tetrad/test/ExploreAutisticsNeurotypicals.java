@@ -178,12 +178,6 @@ public final class ExploreAutisticsNeurotypicals {
                 System.out.println();
             }
         }
-
-//
-//        List<Edge> _edges = getAllEdges(allGraphs);
-//        DataSet dataSet = createEdgeDataSet(graphs, _edges);
-////        dataSet = restrictDataRange(dataSet, .1, .9);
-//        printData(path, "edgedata", dataSet);
     }
 
 

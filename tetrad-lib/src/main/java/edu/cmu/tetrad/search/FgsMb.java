@@ -21,11 +21,12 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -138,7 +139,7 @@ public final class FgsMb {
     private double score;
 
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
-    private Graph effectEdgesGraph;
+    private Graph dconn;
 
     // The minimum number of operations to do before parallelizing.
     private final int minChunk = 100;
@@ -225,8 +226,8 @@ public final class FgsMb {
         }
 
         calcMbEffectEdges(target);
+//        calcMbEffectNodes(target);
 
-        addExtraEdges();
         fes();
 
         // Do backward search.
@@ -523,12 +524,10 @@ public final class FgsMb {
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
 
-        this.effectEdgesGraph = new EdgeListGraphSingleConnections();
-        this.effectEdgesGraph.addNode(target);
+        this.dconn = new EdgeListGraphSingleConnections();
+        this.dconn.addNode(target);
 
         Set emptySet = new HashSet();
-
-        List<Node> adj = new ArrayList<>();
 
         for (Node x : getVariables()) {
             if (x == target) continue;
@@ -537,76 +536,34 @@ public final class FgsMb {
             double bump = fgsScore.localScoreDiff(parent, child);
 
             if (bump > 0) {
-                if (!effectEdgesGraph.containsNode(x)) {
-                    effectEdgesGraph.addNode(x);
-                }
+                dconn.addNode(x);
+                addEffectEdge(x, target, emptySet);
 
-                if (!effectEdgesGraph.isAdjacentTo(x, target)) {
-                    addEffectEdge(x, target, emptySet);
-                }
+                for (Node y : getVariables()) {
+                    if (x == y) continue;
 
-                adj.add(x);
-            }
-        }
+                    if (!dconn.isAdjacentTo(x, y) && !dconn.isAdjacentTo(y, target)) {
+                        int child2 = hashIndices.get(x);
+                        int parent2 = hashIndices.get(y);
 
-        for (Node x : adj) {
-            for (Node y : getVariables()) {
-                if (x == y) continue;
+                        double bump2 = fgsScore.localScoreDiff(parent2, child2);
 
-                if (!effectEdgesGraph.isAdjacentTo(x, y)) {
-                    int child = hashIndices.get(x);
-                    int parent = hashIndices.get(y);
-
-                    double bump = fgsScore.localScoreDiff(parent, child);
-
-                    if (bump > 0) {
-                        if (!effectEdgesGraph.containsNode(y)) {
-                            effectEdgesGraph.addNode(y);
+                        if (bump2 > 0) {
+                            dconn.addNode(y);
+                            addEffectEdge(x, y, emptySet);
                         }
-
-                        addEffectEdge(x, y, emptySet);
-
-//                        if (!effectEdgesGraph.isAdjacentTo(y, target)) {
-//                            addEffectEdge(y, target, emptySet);
-//                        }
                     }
                 }
+
             }
         }
 
         this.target = target;
 
-        this.variables = effectEdgesGraph.getNodes();
+        this.variables = dconn.getNodes();
 
         this.graph = new EdgeListGraphSingleConnections(this.variables);
     }
-
-    private void addExtraEdges() {
-//        List<Node> nodes = effectEdgesGraph.getNodes();
-
-        for (Node x : effectEdgesGraph.getAdjacentNodes(target)) {
-            for (Node y : effectEdgesGraph.getAdjacentNodes(x)) {
-//                if (y == target) continue;
-
-                if (!effectEdgesGraph.isAdjacentTo(y, target)) {
-                    effectEdgesGraph.addUndirectedEdge(y, target);
-                }
-
-                for (Node z : effectEdgesGraph.getAdjacentNodes(y)) {
-//                    if (z == x || z == target) continue;
-
-                    if (!effectEdgesGraph.isAdjacentTo(z, y)) {
-                        effectEdgesGraph.addUndirectedEdge(z, y);
-                    }
-
-//                    if (!effectEdgesGraph.isAdjacentTo(z, target)) {
-//                        effectEdgesGraph.addUndirectedEdge(z, target);
-//                    }
-                }
-            }
-        }
-    }
-
 
     private void addEffectEdge(Node x, Node y, Set emptySet) {
         if (existsKnowledge()) {
@@ -630,7 +587,7 @@ public final class FgsMb {
         if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) return;
 
         final Edge edge = Edges.undirectedEdge(x, y);
-        effectEdgesGraph.addEdge(edge);
+        dconn.addEdge(edge);
 
         if (bump > 0.0) {
             addArrow(x, y, emptySet, emptySet, bump);
@@ -756,7 +713,7 @@ public final class FgsMb {
             reevaluateBackward(toProcess);
         }
 
-        meekOrientRestricted(effectEdgesGraph.getNodes(), getKnowledge());
+        meekOrientRestricted(variables, getKnowledge());
     }
 
     private Set<Node> getCommonAdjacents(Node x, Node y) {
@@ -774,7 +731,7 @@ public final class FgsMb {
             toProcess.addAll(newArrows);
         }
 
-        toProcess.retainAll(effectEdgesGraph.getNodes());
+        toProcess.retainAll(variables);
 
         return meekOrientRestricted(new ArrayList<>(toProcess), getKnowledge());
     }
@@ -835,25 +792,7 @@ public final class FgsMb {
                     for (int _w = from; _w < to; _w++) {
                         Node x = nodes.get(_w);
 
-                        List<Node> adj;
-
-//                        if (isFaithfulnessAssumed()) {
-//                            if (!effectEdgesGraph.containsNode(x)) continue;
-//                            adj = effectEdgesGraph.getAdjacentNodes(x);
-                        adj = effectEdgesGraph.getNodes();
-//                        } else {
-//                            HashSet<Node> D = new HashSet<>();
-//                            D.addAll(GraphUtils.getDconnectedVars(x, graph.getAdjacentNodes(x), graph));
-//                        D.addAll(effectEdgesGraph.getAdjacentNodes(x));
-//                            D.remove(x);
-//
-//                        System.out.println("equal " + D.size() + " " + effectEdgesGraph.getNodes().size());
-
-//                            adj = new ArrayList<>(D);
-//                            adj = getVariables();
-//                        }
-
-                        for (Node w : adj) {
+                        for (Node w : variables) {
                             if (adjacencies != null && !(adjacencies.isAdjacentTo(w, x))) {
                                 continue;
                             }
@@ -891,7 +830,6 @@ public final class FgsMb {
 
     // Calculates the new arrows for an a->b edge.
     private void calculateArrowsForward(Node a, Node b) {
-//        if (isFaithfulnessAssumed() && !effectEdgesGraph.isAdjacentTo(a, b)) return;
         if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) return;
         this.neighbors.put(b, getNeighbors(b));
 
@@ -946,8 +884,8 @@ public final class FgsMb {
                 }
 
 //                if (isFaithfulnessAssumed() && union.isEmpty() && fgsScore.isEffectEdge(bump) &&
-//                        !effectEdgesGraph.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
-//                    effectEdgesGraph.addUndirectedEdge(a, b);
+//                        !dconn.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
+//                    dconn.addUndirectedEdge(a, b);
 //                }
             }
 
@@ -1253,13 +1191,6 @@ public final class FgsMb {
 
     // Do an actual deletion (Definition 13 from Chickering, 2002).
     private boolean delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
-        Edge trueEdge = null;
-
-        if (trueGraph != null) {
-            Node _x = trueGraph.getNode(x.getName());
-            Node _y = trueGraph.getNode(y.getName());
-            trueEdge = trueGraph.getEdge(_x, _y);
-        }
 
         Edge oldxy = graph.getEdge(x, y);
 
@@ -1271,14 +1202,6 @@ public final class FgsMb {
         if (verbose) {
             int numEdges = graph.getNumEdges();
             if (numEdges % 1000 == 0) out.println("Num edges (backwards) = " + numEdges);
-
-//            if (verbose) {
-//                String label = trueGraph != null && trueEdge != null ? "*" : "";
-//                String message = (graph.getNumEdges()) + ". DELETE " + x + "-->" + y +
-//                        " H = " + H + " NaYX = " + naYX + " diff = " + diff + " (" + bump + ") " + label;
-//                TetradLogger.getInstance().log("deletedEdges", message);
-//                out.println(message);
-//            }
         }
 
         for (Node h : H) {
@@ -1287,27 +1210,12 @@ public final class FgsMb {
             Edge oldyh = graph.getEdge(y, h);
 
             graph.removeEdge(oldyh);
-
             graph.addEdge(Edges.directedEdge(y, h));
-
-//            if (verbose) {
-//                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldyh + " to " +
-//                        graph.getEdge(y, h));
-//                out.println("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
-//            }
-
             Edge oldxh = graph.getEdge(x, h);
 
             if (Edges.isUndirectedEdge(oldxh)) {
                 graph.removeEdge(oldxh);
-
                 graph.addEdge(Edges.directedEdge(x, h));
-
-//                if (verbose) {
-//                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldxh + " to " +
-//                            graph.getEdge(x, h));
-//                    out.println("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
-//                }
             }
         }
 
@@ -1532,7 +1440,7 @@ public final class FgsMb {
 
     // Runs Meek rules on just the changed adj.
     private Set<Node> meekOrientRestricted(List<Node> nodes, IKnowledge knowledge) {
-        if (!effectEdgesGraph.getNodes().containsAll(nodes)) {
+        if (!variables.containsAll(nodes)) {
             throw new IllegalArgumentException();
         }
 
@@ -1541,15 +1449,15 @@ public final class FgsMb {
         rules.setUndirectUnforcedEdges(true);
         rules.orientImplied(graph, nodes);
 
-        if (!effectEdgesGraph.getNodes().containsAll(nodes)) {
+        if (!variables.containsAll(nodes)) {
             throw new IllegalArgumentException();
         }
 
         Set<Node> visited = rules.getVisited();
 
-        visited.retainAll(effectEdgesGraph.getNodes());
+        visited.retainAll(variables);
 
-        if (!effectEdgesGraph.getNodes().containsAll(visited)) {
+        if (!variables.containsAll(visited)) {
             throw new IllegalArgumentException();
         }
 

@@ -1130,6 +1130,8 @@ public class PerformanceTests {
 
         out.println("Number of runs skipped because of undefined accuracies: " + numSkipped);
 
+        printAverageStatistics(elapsedTimes, degrees);
+
         out.close();
     }
 
@@ -1846,13 +1848,13 @@ public class PerformanceTests {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                double sum = 0;
+                int sum = 0;
 
                 for (int[][] comparison : comparisons) {
                     sum += comparison[i][j];
                 }
 
-                average[i][j] = sum / comparisons.size();
+                average[i][j] = (double) sum / comparisons.size();
                 _sum[i][j] += sum;
             }
         }
