@@ -211,23 +211,23 @@ public class TestFgs {
 
     @Test
     public void testFromGraph() {
-        int numNodes = 10;
+        int numNodes = 20;
         int numIterations = 10;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
-            Fgs fgs = new Fgs(new GraphScore(dag));
+            Fgs3 fgs = new Fgs3(new GraphScore(dag));
             fgs.setFaithfulnessAssumed(false);
             Graph pattern1 = fgs.search();
             Graph pattern2 = new Pc(new IndTestDSep(dag)).search();
 //            System.out.println(pattern2);
-            assertEquals(pattern1, pattern2);
+            assertEquals(pattern2, pattern1);
         }
     }
 
     @Test
-    public void testFromGraph2() {
+    public void testFromGraphSimpleFgs() {
 
         // This may fail if faithfulness is assumed but should pass if not.
 
@@ -259,9 +259,41 @@ public class TestFgs {
     }
 
     @Test
+    public void testFromGraphSimpleFgsMb() {
+
+        // This may fail if faithfulness is assumed but should pass if not.
+
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+
+        Graph g = new EdgeListGraph();
+        g.addNode(x1);
+        g.addNode(x2);
+        g.addNode(x3);
+        g.addNode(x4);
+
+        g.addDirectedEdge(x1, x2);
+        g.addDirectedEdge(x1, x3);
+        g.addDirectedEdge(x4, x2);
+        g.addDirectedEdge(x4, x3);
+
+        Graph pattern1 = new Pc(new IndTestDSep(g)).search();
+        FgsMb fgs = new FgsMb(new GraphScore(g));
+        fgs.setFaithfulnessAssumed(false);
+        Graph pattern2 = fgs.search(x1);
+
+        System.out.println(pattern1);
+        System.out.println(pattern2);
+
+        assertEquals(pattern1, pattern2);
+    }
+
+    @Test
     public void testFgsMbFromGraph() {
-        int numNodes = 10;
-        int numIterations = 1;
+        int numNodes = 20;
+        int numIterations = 10;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
