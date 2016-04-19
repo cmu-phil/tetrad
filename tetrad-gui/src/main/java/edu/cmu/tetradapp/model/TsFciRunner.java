@@ -195,7 +195,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
 
     @Override
     public String getAlgorithmName() {
-        return "GFCI";
+        return "tsFCI";
     }
 }
 
