@@ -182,15 +182,15 @@
                 </editor-class>
             </model>
             <!--<model name="Extract Markov Blanket" acronym="MB from Graph"-->
-                   <!--help="graph">-->
-                <!--<logger>-->
-                    <!--<event id="info" description="Information" default="on"/>-->
-                    <!--<event id="graph" description="Graph" default="on"/>-->
-                <!--</logger>-->
-                <!--<model-class>edu.cmu.tetradapp.model.ExtractMarkovBlanketWrapper-->
-                <!--</model-class>-->
-                <!--<editor-class>edu.cmu.tetradapp.editor.GraphEditor-->
-                <!--</editor-class>-->
+            <!--help="graph">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="graph" description="Graph" default="on"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.ExtractMarkovBlanketWrapper-->
+            <!--</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.GraphEditor-->
+            <!--</editor-class>-->
             <!--</model>-->
             <model name="Extract Structure Model" acronym="Extract Struct Model"
                    help="graph">
@@ -1610,6 +1610,23 @@
                 <params-class>edu.cmu.tetradapp.model.GFciSearchParams
                 </params-class>
             </model>
+            <model name="TSFCI" acronym="TSFCI" help="tsfci"
+                   category="PAG searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="tripleClassifications" description="Triple Classifications" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.TsFciRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.GFciSearchParams
+                </params-class>
+            </model>
             <model name="ION" acronym="ION" help="ion" category="PAG searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1645,21 +1662,21 @@
                 </params-class>
             </model>
             <!--<model name="FGS" acronym="FGS" help="fgs" category="Unlisted">-->
-                <!--&lt;!&ndash;category="Pattern Searches">&ndash;&gt;-->
-                <!--<logger>-->
-                    <!--<event id="info" description="Information" default="on"/>-->
-                    <!--<event id="insertedEdges" description="Inserted Edges" default="on"/>-->
-                    <!--<event id="deletedEdges" description="Deleted Edges" default="on"/>-->
-                    <!--<event id="directedEdges" description="Directed Edges" default="on"/>-->
-                    <!--<event id="edgeEvaluations" description="Edge Evaluations"/>-->
-                    <!--<event id="impliedOrientations" description="Implied Orientations"/>-->
-                    <!--<event id="rebuiltPatterns" description="Rebuilt Patterns"/>-->
-                    <!--<event id="graph" description="Graph" default="on"/>-->
-                <!--</logger>-->
-                <!--<model-class>edu.cmu.tetradapp.model.FgsRunnerOld</model-class>-->
-                <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
-                <!--</editor-class>-->
-                <!--<params-class>edu.cmu.tetradapp.model.FgsParams</params-class>-->
+            <!--&lt;!&ndash;category="Pattern Searches">&ndash;&gt;-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="insertedEdges" description="Inserted Edges" default="on"/>-->
+            <!--<event id="deletedEdges" description="Deleted Edges" default="on"/>-->
+            <!--<event id="directedEdges" description="Directed Edges" default="on"/>-->
+            <!--<event id="edgeEvaluations" description="Edge Evaluations"/>-->
+            <!--<event id="impliedOrientations" description="Implied Orientations"/>-->
+            <!--<event id="rebuiltPatterns" description="Rebuilt Patterns"/>-->
+            <!--<event id="graph" description="Graph" default="on"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.FgsRunnerOld</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+            <!--</editor-class>-->
+            <!--<params-class>edu.cmu.tetradapp.model.FgsParams</params-class>-->
             <!--</model>-->
             <model name="FGS" acronym="FGS" help="fgs"
                    category="Pattern Searches">
@@ -1848,7 +1865,7 @@
                 <params-class>edu.cmu.tetradapp.model.FgsParams
                 </params-class>
                 <!--<params-editor-class>-->
-                    <!--edu.cmu.tetradapp.editor.MbSearchParamEditor-->
+                <!--edu.cmu.tetradapp.editor.MbSearchParamEditor-->
                 <!--</params-editor-class>-->
             </model>
             <model name="CEFS" acronym="CEFS" help="cef"
