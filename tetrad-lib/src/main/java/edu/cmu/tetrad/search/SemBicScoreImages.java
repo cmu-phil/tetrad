@@ -39,7 +39,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreImages implements ISemBicScore {
+public class SemBicScoreImages implements ISemBicScore, Score {
 
     // The covariance matrix.
     private List<SemBicScore> semBicScores;
@@ -278,6 +278,17 @@ public class SemBicScoreImages implements ISemBicScore {
                 out.println("### Linear dependence among variables: " + _sel);
             }
         }
+    }
+
+    @Override
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
     }
 }
 

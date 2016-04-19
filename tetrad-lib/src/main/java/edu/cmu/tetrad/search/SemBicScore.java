@@ -314,6 +314,17 @@ public class SemBicScore implements Score {
         covariances.setVariables(variables);
         this.variables = variables;
     }
+
+    @Override
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
 }
 
 

@@ -162,7 +162,7 @@ public final class FgsMb {
 
     // The final score after search.
     private double modelScore;
-    private Node target;
+    private List<Node> targets;
 
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism() * 5;
 
@@ -200,21 +200,28 @@ public final class FgsMb {
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
-     * edges till a minimum is achieved.
-     *
-     * @return the resulting Pattern.
+     * Returns the subgraph over the Markov blanket of the given target variable.
      */
     public Graph search(Node target) {
+        return search(Collections.singletonList(target));
+    }
+
+    /**
+     * Returns the subgraph over the union of the Markov blankets of the individual targets.
+     */
+    public Graph search(List<Node> targets) {
         long start = System.currentTimeMillis();
         score = 0.0;
 
-        if (target == null) throw new NullPointerException();
-        if (!fgsScore.getVariables().contains(target)) throw new IllegalArgumentException(
-                "Target is not one of the variables for the score."
-        );
+        if (targets == null) throw new NullPointerException();
 
-        this.target = target;
+        for (Node target : targets) {
+            if (!fgsScore.getVariables().contains(target)) throw new IllegalArgumentException(
+                    "Target is not one of the variables for the score."
+            );
+        }
+
+        this.targets = targets;
 
         topGraphs.clear();
 
@@ -225,14 +232,11 @@ public final class FgsMb {
             adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
         }
 
-        calcMbEffectEdges(target);
-//        calcMbEffectNodes(target);
-
+        calcDConnections(targets);
         fes();
 
         // Do backward search.
         bes();
-
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
@@ -244,12 +248,14 @@ public final class FgsMb {
         this.modelScore = score;
 
         Set<Node> mb = new HashSet<>();
-        mb.add(target);
+        mb.addAll(targets);
 
-        mb.addAll(graph.getAdjacentNodes(target));
+        for (Node target : targets) {
+            mb.addAll(graph.getAdjacentNodes(target));
 
-        for (Node child : graph.getChildren(target)) {
-            mb.addAll(graph.getParents(child));
+            for (Node child : graph.getChildren(target)) {
+                mb.addAll(graph.getParents(child));
+            }
         }
 
         Graph mbgraph = graph.subgraph(new ArrayList<>(mb));
@@ -519,53 +525,63 @@ public final class FgsMb {
         return Math.max(n / maxThreads, minChunk);
     }
 
-    private void calcMbEffectEdges(Node target) {
+    /**
+     * Generates the union of the dconnection edges for the individual targets.
+     */
+    private void calcDConnections(List<Node> targets) {
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
         neighbors = new ConcurrentHashMap<>();
 
         this.dconn = new EdgeListGraphSingleConnections();
-        this.dconn.addNode(target);
+
+        for (Node target : targets) {
+            this.dconn.addNode(target);
+        }
 
         Set emptySet = new HashSet();
 
-        for (Node x : getVariables()) {
-            if (x == target) continue;
-            int child = hashIndices.get(target);
-            int parent = hashIndices.get(x);
-            double bump = fgsScore.localScoreDiff(parent, child);
+        for (Node target : targets) {
+            for (Node x : getVariables()) {
+                if (targets.contains(x)) {
+                    continue;
+                }
 
-            if (bump > 0) {
-                dconn.addNode(x);
-                addEffectEdge(x, target, emptySet);
+                int child = hashIndices.get(target);
+                int parent = hashIndices.get(x);
+                double bump = fgsScore.localScoreDiff(parent, child);
 
-                for (Node y : getVariables()) {
-                    if (x == y) continue;
+                if (bump > 0) {
+                    dconn.addNode(x);
+                    addUnconditionalArrows(x, target, emptySet);
 
-                    if (!dconn.isAdjacentTo(x, y) && !dconn.isAdjacentTo(y, target)) {
-                        int child2 = hashIndices.get(x);
-                        int parent2 = hashIndices.get(y);
+                    for (Node y : getVariables()) {
+                        if (x == y) continue;
 
-                        double bump2 = fgsScore.localScoreDiff(parent2, child2);
+                        if (!dconn.isAdjacentTo(x, y) && !dconn.isAdjacentTo(y, target)) {
+                            int child2 = hashIndices.get(x);
+                            int parent2 = hashIndices.get(y);
 
-                        if (bump2 > 0) {
-                            dconn.addNode(y);
-                            addEffectEdge(x, y, emptySet);
+                            double bump2 = fgsScore.localScoreDiff(parent2, child2);
+
+                            if (bump2 > 0) {
+                                dconn.addNode(y);
+                                addUnconditionalArrows(x, y, emptySet);
+                            }
                         }
                     }
                 }
-
             }
         }
 
-        this.target = target;
+        this.targets = targets;
 
         this.variables = dconn.getNodes();
 
         this.graph = new EdgeListGraphSingleConnections(this.variables);
     }
 
-    private void addEffectEdge(Node x, Node y, Set emptySet) {
+    private void addUnconditionalArrows(Node x, Node y, Set emptySet) {
         if (existsKnowledge()) {
             if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
                 return;
@@ -882,11 +898,6 @@ public final class FgsMb {
                 if (bump > 0.0) {
                     addArrow(a, b, naYX, T, bump);
                 }
-
-//                if (isFaithfulnessAssumed() && union.isEmpty() && fgsScore.isEffectEdge(bump) &&
-//                        !dconn.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
-//                    dconn.addUndirectedEdge(a, b);
-//                }
             }
 
             previousCliques = newCliques;
@@ -1167,23 +1178,11 @@ public final class FgsMb {
             if (numEdges % 1000 == 0) out.println("Num edges added: " + numEdges);
         }
 
-//        if (verbose) {
-//            String label = trueGraph != null && trueEdge != null ? "*" : "";
-//            out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
-//                    " " + T + " " + bump + " " + label + " degree = " + GraphUtils.getDegree(graph));
-//        }
-
         for (Node _t : T) {
             graph.removeEdge(_t, y);
             if (boundGraph != null && !boundGraph.isAdjacentTo(_t, y)) continue;
 
             graph.addDirectedEdge(_t, y);
-
-//            if (verbose) {
-//                String message = "--- Directing " + graph.getEdge(_t, y);
-//                TetradLogger.getInstance().log("directedEdges", message);
-//                out.println(message);
-//            }
         }
 
         return true;
@@ -1467,32 +1466,6 @@ public final class FgsMb {
     // Maps adj to their indices for quick lookup.
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
-
-//        class BuildIndexingTask extends RecursiveTask<Boolean> {
-//            private final int from;
-//            private final int to;
-//            private final List<Node> nodes;
-//            private final Map<Node, Integer> hashIndices;
-//
-//            public BuildIndexingTask(int from, int to, List<Node> nodes, Map<Node, Integer> hashIndices) {
-//                this.from = from;
-//                this.to = to;
-//                this.nodes = nodes;
-//                this.hashIndices = hashIndices;
-//            }
-//
-//            @Override
-//            protected Boolean compute() {
-//                for (int i = from; i < to; i++) {
-//                    this.hashIndices.put(nodes.get(i), i);
-//                }
-//
-//                return true;
-//            }
-//        }
-//
-//        pool.invoke(new BuildIndexingTask(0, nodes.size(), nodes, hashIndices));
-
 
         int i = 0;
 

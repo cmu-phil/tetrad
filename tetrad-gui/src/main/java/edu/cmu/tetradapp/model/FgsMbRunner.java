@@ -161,25 +161,26 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
-            target = ((Graph) model).getNode(targetName);
+            target = gesScore.getVariable(targetName);
             fgs = new FgsMb(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
             fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
             fgs.setVerbose(true);
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
-            target = dataSet.getVariable(targetName);
 
             if (dataSet.isContinuous()) {
-                SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
-                gesScore.setPenaltyDiscount(params.getComplexityPenalty());
-                fgs = new FgsMb(gesScore);
+                SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
+                target = score.getVariable(targetName);
+                score.setPenaltyDiscount(params.getComplexityPenalty());
+                fgs = new FgsMb(score);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = 1;//((FgsParams) getParams()).getSamplePrior();
                 double structurePrior = 1;//((FgsParams) getParams()).getStructurePrior();
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
+                target = score.getVariable(targetName);
                 fgs = new FgsMb(score);
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
@@ -188,60 +189,59 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
             gesScore.setPenaltyDiscount(params.getIndTestParams().getAlpha());
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
-            target = ((ICovarianceMatrix) model).getVariable(targetName);
+            target = gesScore.getVariable(targetName);
             fgs = new FgsMb(gesScore);
         }
-//        else if (model instanceof DataModelList) {
-//            DataModelList list = (DataModelList) model;
-//
-//            for (DataModel dataModel : list) {
-//                if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
-//                    throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
-//                            "covariance matrices, or else all discrete data sets, or else a single initialGraph.");
-//                }
-//            }
-//
+        else if (model instanceof DataModelList) {
+            DataModelList list = (DataModelList) model;
+
+            for (DataModel dataModel : list) {
+                if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
+                    throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
+                            "covariance matrices, or else all discrete data sets, or else a single initialGraph.");
+                }
+            }
+
 //            if (list.size() != 1) {
 //                throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or initialGraph " +
 //                        "as input. For multiple data sets as input, use IMaGES.");
 //            }
-//
-//            FgsParams FgsParams = (FgsParams) getParams();
-//            FgsIndTestParams indTestParams = (FgsIndTestParams) FgsParams.getIndTestParams();
-//
-//            if (allContinuous(list)) {
-//                double penalty = ((FgsParams) getParams()).getComplexityPenalty();
-//                target = dataSet.getVariable(targetName);
-//
-//                if (indTestParams.isFirstNontriangular()) {
-//                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-//                    fgsScore.setPenaltyDiscount(penalty);
-//                    fgs = new FgsMb(fgsScore, target);
-//                    fgs.setPenaltyDiscount(penalty);
-//                } else {
-//                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-//                    fgsScore.setPenaltyDiscount(penalty);
-//                    fgs = new FgsMb(fgsScore, target);
-//                    fgs.setPenaltyDiscount(penalty);
-//                }
-//            } else if (allDiscrete(list)) {
-//                double structurePrior = ((FgsParams) getParams()).getStructurePrior();
-//                double samplePrior = ((FgsParams) getParams()).getSamplePrior();
-//
-//                if (indTestParams.isFirstNontriangular()) {
-//                    fgs = new FgsMb(new BdeuScoreImages(list), target);
-//                    fgs.setSamplePrior(samplePrior);
-//                    fgs.setStructurePrior(structurePrior);
-//                } else {
-//                    fgs = new FgsMb(new BdeuScoreImages(list), target);
-//                    fgs.setSamplePrior(samplePrior);
-//                    fgs.setStructurePrior(structurePrior);
-//                }
-//            } else {
-//                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
-//            }
-//        }
-        else {
+
+            FgsParams FgsParams = (FgsParams) getParams();
+            FgsIndTestParams indTestParams = (FgsIndTestParams) FgsParams.getIndTestParams();
+
+            if (allContinuous(list)) {
+                double penalty = ((FgsParams) getParams()).getComplexityPenalty();
+
+                if (indTestParams.isFirstNontriangular()) {
+                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                    fgsScore.setPenaltyDiscount(penalty);
+                    target = fgsScore.getVariable(targetName);
+                    fgs = new FgsMb(fgsScore);
+                } else {
+                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
+                    fgsScore.setPenaltyDiscount(penalty);
+                    target = fgsScore.getVariable(targetName);
+                    fgs = new FgsMb(fgsScore);
+                }
+            } else if (allDiscrete(list)) {
+                double structurePrior = ((FgsParams) getParams()).getStructurePrior();
+                double samplePrior = ((FgsParams) getParams()).getSamplePrior();
+
+                BdeuScoreImages fgsScore = new BdeuScoreImages(list);
+                fgsScore.setSamplePrior(samplePrior);
+                fgsScore.setStructurePrior(structurePrior);
+                target = fgsScore.getVariable(targetName);
+
+                if (indTestParams.isFirstNontriangular()) {
+                    fgs = new FgsMb(fgsScore);
+                } else {
+                    fgs = new FgsMb(fgsScore);
+                }
+            } else {
+                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
+            }
+        }        else {
             System.out.println("No viable input.");
         }
 
