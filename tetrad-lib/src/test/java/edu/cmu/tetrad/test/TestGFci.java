@@ -199,7 +199,10 @@ public class TestGFci {
         int numEdges = 1000;
         int sampleSize = 1000;
 
-        System.out.println(RandomUtil.getInstance().getSeed());
+//        System.out.println(RandomUtil.getInstance().getSeed());
+
+        RandomUtil.getInstance().setSeed(1461176226123L);
+
 
         List<Node> variables = new ArrayList<>();
 
@@ -219,7 +222,13 @@ public class TestGFci {
         score.setPenaltyDiscount(4);
         GFci gFci = new GFci(score);
 
+        long start = System.currentTimeMillis();
+
         Graph graph = gFci.search();
+
+        long stop = System.currentTimeMillis();
+
+        System.out.println("Elapsed " + (stop - start) + " ms");
 
         System.out.println(MisclassificationUtils.edgeMisclassifications(graph, new DagToPag(g).convert()));
 
