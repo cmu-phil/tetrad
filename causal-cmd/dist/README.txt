@@ -41,7 +41,7 @@ Graph Edges:
 9. tst_scores --- stdt_clss_stndng
 </pre>
 
-In FGS, "Elapsed getEffectEdges = XXms" refers to the amount of time it took to evaluate all pairs of variables for correlation.  The file then details each step taken in the greedy search procedure i.e., insertion or deletion of edges based on a scoring function (i.e., BIC score difference for each chosen search operation).
+In FGS, "Elapsed getEffectEdges = XXms" refers to the amount of time it took to evaluate all pairs of variables for correlation.  The file then details each step taken in the greedy search procedure i.e., insertion or deletion of edges based on a scoring function (i.e., BIC totalScore difference for each chosen search operation).
 
 The end of the file contains the causal graph from the search procedure.  Here is a key to the edge types
 <pre>

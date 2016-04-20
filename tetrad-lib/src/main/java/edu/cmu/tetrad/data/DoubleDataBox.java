@@ -134,6 +134,10 @@ public class DoubleDataBox implements DataBox {
     public DataBox like(int rows, int cols) {
         return new DoubleDataBox(rows, cols);
     }
+
+    public double[][] getData() {
+        return data;
+    }
 }
 
 

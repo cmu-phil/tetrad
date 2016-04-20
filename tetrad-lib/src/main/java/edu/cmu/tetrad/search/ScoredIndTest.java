@@ -146,6 +146,18 @@ public class ScoredIndTest implements Score {
     public void setParameter1(double alpha) {
         test.setAlpha(alpha);
     }
+
+    @Override
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
 }
 
 

@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,11 +42,11 @@ import java.util.concurrent.ConcurrentMap;
  * utilize unshielded colliders found by GES. 5/31/2015
  * <p>
  * Previous:
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
+ * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
  * Insufficient Systems").
  * <p>
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
+ * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  *
@@ -58,112 +57,197 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class GFci {
 
-    /**
-     * The PAG being constructed.
-     */
+    // If a graph is provided.
+    private Graph dag = null;
+
+    // The PAG being constructed.
     private Graph graph;
 
-    /**
-     * The background knowledge.
-     */
+    // The background knowledge.
     private IKnowledge knowledge = new Knowledge2();
 
-    /**
-     * The variables to search over (optional)
-     */
-    private List<Node> variables = new ArrayList<Node>();
+    // The variables to search over (optional)
+    private List<Node> variables = new ArrayList<>();
 
-    /**
-     * The conditional independence test.
-     */
+    // The conditional independence test.
     private IndependenceTest independenceTest;
 
-    /**
-     * Flag for complete rule set, true if should use complete rule set, false otherwise.
-     */
+    // Flag for complete rule set, true if should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed = false;
 
-    /**
-     * True iff the possible dsep search is done.
-     */
-    private boolean possibleDsepSearchDone = true;
+    // True iff the possible dsep search is done.
+//    private boolean possibleDsepSearchDone = true;
 
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
 
-    /**
-     * The depth for the fast adjacency search.
-     */
+    // The depth for the fast adjacency search.
     private int depth = -1;
 
-    /**
-     * The logger to use.
-     */
+    // The logger to use.
     private TetradLogger logger = TetradLogger.getInstance();
 
-    /**
-     * True iff verbose output should be printed.
-     */
+    // True iff verbose output should be printed.
     private boolean verbose = false;
 
-    /**
-     * The covariance matrix beign searched over. Assumes continuous data.
-     */
+    // The covariance matrix beign searched over. Assumes continuous data.
     ICovarianceMatrix covarianceMatrix;
 
-    /**
-     * The sample size.
-     */
+    // The sample size.
     int sampleSize;
 
-    /**
-     * The penalty penaltyDiscount for the GES search. By default 2.
-     */
+    // The penalty discount for the GES search. By default 2.
     private double penaltyDiscount = 2;
 
-    /**
-     * The sample prior for the BDeu score (discrete data).
-     */
+    // The sample prior for the BDeu score (discrete data).
     private double samplePrior = 10;
 
-    /**
-     * The structure prior for the BDeu score (discrete data).
-     */
+    // The structure prior for the Bdeu score (discrete data).
     private double structurePrior = 1;
 
-    /**
-     * Map from variables to their column indices in the data set.
-     */
+    // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
 
-    /**
-     * The print stream that output is directed to.
-     */
+    // The print stream that output is directed to.
     private PrintStream out = System.out;
 
-    /**
-     * True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches. By default false.
-     */
+    // True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches. By default false.
     private boolean faithfulnessAssumed = false;
+
+    // The score.
+    private Score score;
+
+    private SepsetProducer sepsets;
 
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge.
+     * Constructs a new GFCI search for the given independence test and background knowledge.
      */
     public GFci(IndependenceTest independenceTest) {
         if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }
 
+        if (independenceTest instanceof IndTestDSep) {
+            this.dag = ((IndTestDSep) independenceTest).getGraph();
+        }
+
         this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
-        buildIndexing(independenceTest.getVariables());
+        this.variables = independenceTest.getVariables();
+        buildIndexing(variables);
+    }
+
+    public GFci(Score score) {
+        if (score == null) throw new NullPointerException();
+        this.score = score;
+
+        if (score instanceof GraphScore) {
+            this.dag = ((GraphScore) score).getDag();
+        }
+
+        this.sampleSize = score.getSampleSize();
+        this.independenceTest = new IndTestScore(score);
+        this.variables = score.getVariables();
+        buildIndexing(variables);
     }
 
     //========================PUBLIC METHODS==========================//
+
+
+    public Graph search() {
+        List<Node> nodes = getIndependenceTest().getVariables();
+
+        logger.log("info", "Starting FCI algorithm.");
+        logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+
+        this.graph = new EdgeListGraphSingleConnections(nodes);
+
+        if (score == null) {
+            setScore();
+        }
+
+        Fgs fgs = new Fgs(score);
+        fgs.setKnowledge(getKnowledge());
+        fgs.setVerbose(verbose);
+        fgs.setDepth(getDepth());
+        fgs.setNumPatternsToStore(0);
+        fgs.setFaithfulnessAssumed(faithfulnessAssumed);
+        graph = fgs.search();
+        Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
+
+        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, depth);
+//        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, depth);
+//        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, depth);
+//        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, depth);
+//        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, depth);
+//
+        // Look inside triangles.
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
+                    if (sepsets.getSepset(a, c) != null) {
+                        graph.removeEdge(a, c);
+                    }
+                }
+            }
+        }
+
+        modifiedR0(fgsGraph);
+        FciOrient fciOrient = new FciOrient(sepsets);
+        fciOrient.setKnowledge(getKnowledge());
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.doFinalOrientation(graph);
+
+        GraphUtils.replaceNodes(graph, independenceTest.getVariables());
+
+        return graph;
+    }
+
+    private void setScore() {
+        sampleSize = independenceTest.getSampleSize();
+        double penaltyDiscount = getPenaltyDiscount();
+
+        DataSet dataSet = (DataSet) independenceTest.getData();
+        ICovarianceMatrix cov = independenceTest.getCov();
+        Score score;
+
+        if (independenceTest instanceof IndTestDSep) {
+            score = new GraphScore(dag);
+        } else if (cov != null) {
+            covarianceMatrix = cov;
+            SemBicScore score0 = new SemBicScore(cov);
+            score0.setPenaltyDiscount(penaltyDiscount);
+            score = score0;
+        } else if (dataSet.isContinuous()) {
+            covarianceMatrix = new CovarianceMatrixOnTheFly(dataSet);
+            SemBicScore score0 = new SemBicScore(covarianceMatrix);
+            score0.setPenaltyDiscount(penaltyDiscount);
+            score = score0;
+        } else if (dataSet.isDiscrete()) {
+            BDeuScore score0 = new BDeuScore(dataSet);
+            score0.setSamplePrior(samplePrior);
+            score0.setStructurePrior(structurePrior);
+            score = score0;
+        } else {
+            throw new IllegalArgumentException("Mixed data not supported.");
+        }
+
+        this.score = score;
+    }
 
     public int getDepth() {
         return depth;
@@ -178,150 +262,8 @@ public final class GFci {
         this.depth = depth;
     }
 
-    public Graph search() {
-        List<Node> nodes = getIndependenceTest().getVariables();
-
-        logger.log("info", "Starting FCI algorithm.");
-        logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-
-        this.graph = new EdgeListGraphSingleConnections(nodes);
-
-        DataSet dataSet = (DataSet) independenceTest.getData();
-
-        sampleSize = independenceTest.getSampleSize();
-        double penaltyDiscount = getPenaltyDiscount();
-
-        // Adjacency phase
-
-        // Run GES to get an initial graph.
-        Fgs2 ges;
-        Graph gesGraph;
-
-        if (dataSet == null || dataSet.isContinuous()) {
-            covarianceMatrix = independenceTest.getCov();
-            Score score = new SemBicScore(covarianceMatrix, penaltyDiscount);
-            ges = new Fgs2(score);
-            ges.setKnowledge(getKnowledge());
-            ges.setVerbose(verbose);
-            ges.setDepth(getDepth());
-            ges.setNumPatternsToStore(0);
-            ges.setFaithfulnessAssumed(faithfulnessAssumed);
-            graph = ges.search();
-            gesGraph = new EdgeListGraphSingleConnections(graph);
-        } else if (dataSet.isDiscrete()) {
-            BDeuScore score = new BDeuScore(dataSet);
-            score.setSamplePrior(samplePrior);
-            score.setStructurePrior(structurePrior);
-            ges = new Fgs2(score);
-            ges.setKnowledge(getKnowledge());
-            ges.setVerbose(false);
-            ges.setDepth(getDepth());
-            ges.setNumPatternsToStore(0);
-            ges.setFaithfulnessAssumed(faithfulnessAssumed);
-            graph = ges.search();
-            gesGraph = new EdgeListGraphSingleConnections(graph);
-        } else {
-            throw new IllegalArgumentException("Mixed data not supported.");
-        }
-
-        if (verbose) {
-            System.out.println("GES done " + gesGraph.getNumEdges() + " edges in graph");
-        }
-        SepsetProducer sepsets = new SepsetsMinScore(gesGraph, getIndependenceTest(), null, depth);
-
-//        if (possibleDsepSearchDone) {
-//            sepsets = new SepsetsPossibleDsep(gesGraph, getIndependenceTest(), knowledge, depth,
-//                    maxPathLength);
-//        } else {
-//        sepsets = new SepsetsConservative(gesGraph, getIndependenceTest(), null, depth);
-//        }
-
-//        if (possibleDsepSearchDone) {
-//            System.out.println("Possible Dsep started maxPathLength = " + maxPathLength);
-//
-//            for (Edge edge : new ArrayList<>(graph.getEdges())) {
-//                Node i = edge.getNode1();
-//                Node k = edge.getNode2();
-//
-//                List<Node> j = graph.getAdjacentNodes(i);
-//                j.retainAll(graph.getAdjacentNodes(k));
-//
-//                if (!j.isEmpty()) {
-//                    sepsets.getSepset(i, k);
-//
-//                    if (sepsets.getScore() > getIndependenceTest().getParameter1()) {
-//                        gesGraph.removeEdge(edge);
-//                    }
-//                }
-//            }
-//
-//            System.out.println("Possible Dsep finished");
-//        } else {
-
-        // Look in triangles
-        for (Edge edge : gesGraph.getEdges()) {
-            Node i = edge.getNode1();
-            Node k = edge.getNode2();
-
-            List<Node> j = gesGraph.getAdjacentNodes(i);
-            j.retainAll(gesGraph.getAdjacentNodes(k));
-
-            if (!j.isEmpty()) {
-                sepsets.getSepset(i, k);
-
-                if (sepsets.getScore() < 0) {
-                    graph.removeEdge(edge);
-                }
-            }
-        }
-
-        // Orientation phase.
-
-//        // Step CI C, modified collider orientation step for FCI-GES due to Spirtes.
-        ruleR0Special(graph, gesGraph, sepsets);
-//
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setKnowledge(getKnowledge());
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.doFinalOrientation(graph);
-//
-//        GraphUtils.replaceNodes(graph, independenceTest.getVariables());
-
-        //end.
-
-        return graph;
-    }
-
-    public static boolean markovIndependent(Graph pattern, Node i, Node k, IndependenceTest test) {
-        List<Node> futurei = pattern.getDescendants(Collections.singletonList(i));
-        List<Node> boundaryi = pattern.getAdjacentNodes(i);
-        boundaryi.remove(k);
-        boundaryi.removeAll(futurei);
-        List<Node> closurei = new ArrayList<>(boundaryi);
-        closurei.add(i);
-
-        if (futurei.contains(k) || closurei.contains(k)) return true;
-        if (test.isIndependent(i, k, boundaryi)) return true;
-
-        List<Node> futurek = pattern.getDescendants(Collections.singletonList(k));
-        List<Node> boundaryk = pattern.getAdjacentNodes(k);
-        boundaryk.removeAll(futurek);
-        boundaryk.remove(i);
-        List<Node> closurek = new ArrayList<>(boundaryk);
-        closurek.add(k);
-
-        if (futurek.contains(i) || closurek.contains(i)) return true;
-        if (test.isIndependent(i, k, boundaryk)) return true;
-
-        return false;
-    }
-
-    public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets) {
-//        SepsetsMaxScore sepsetProducer = new SepsetsMaxScore(graph, independenceTest, null, getDepth());
-
-        System.out.println("AAA " + graph + " " + gesGraph  );
-
+    // Due to Spirtes.
+    public void modifiedR0(Graph fgsGraph) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
@@ -341,83 +283,17 @@ public final class GFci {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
+                if (fgsGraph.isDefCollider(a, b, c)) {
+                    graph.setEndpoint(a, b, Endpoint.ARROW);
+                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+                    List<Node> sepset = sepsets.getSepset(a, c);
 
-                // Skip triples already oriented as colliders
-                if (graph.isDefCollider(a, b, c)) {
-                    continue;
-                }
-
-                // Skip triple where collider orientations are forbidden by background knowledge
-                if (!isArrowpointAllowed(a, b, graph)) {
-                    continue;
-                }
-
-                if (!isArrowpointAllowed(c, b, graph)) {
-                    continue;
-                }
-
-                if (gesGraph.isAdjacentTo(a, c)) {
-//                    SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(a, b, c,
-//                            getIndependenceTest(), depth, graph, verbose);
-//                    if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-//                        graph.setEndpoint(a, b, Endpoint.ARROW);
-//                        graph.setEndpoint(c, b, Endpoint.ARROW);
-//                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                    }
-
-                    if (sepsets.isCollider(a, b, c)) {
-                        System.out.println("Collider " + a + " " + b + " " + c);
-
+                    if (sepset != null && !sepset.contains(b)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
-//                        graph.removeEdge(a, c);
-
-                        if (verbose) {
-                            logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                            System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        }
-                    }
-                } else {
-
-                    // Skip triples that are shielded.
-                    if (graph.isAdjacentTo(a, c)) {
-                        continue;
-                    }
-
-                    if (gesGraph.isDefCollider(a, b, c)) {
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                        if (verbose) {
-                            logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                            System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        }
                     }
                 }
-
-//                if (!gesGraph.isAdjacentTo(a, c)) {
-//
-//                    // Copy colliders from the GES graph into the current graph where possible
-//                    if (gesGraph.isDefCollider(a, b, c)) {
-//                        graph.setEndpoint(a, b, Endpoint.ARROW);
-//                        graph.setEndpoint(c, b, Endpoint.ARROW);
-//                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                    }
-//                } else {
-//                    if (sepsets.isCollider(a, b, c)) {
-//                        graph.setEndpoint(a, b, Endpoint.ARROW);
-//                        graph.setEndpoint(c, b, Endpoint.ARROW);
-//                        logger.log("colliderOrientations", "On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                        System.out.println("On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                    }
-//                }
-
-
             }
         }
     }
@@ -448,14 +324,6 @@ public final class GFci {
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    public boolean isPossibleDsepSearchDone() {
-        return possibleDsepSearchDone;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
     /**
@@ -534,36 +402,12 @@ public final class GFci {
 
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
+
+        int i = 0;
+
         for (Node node : nodes) {
-            this.hashIndices.put(node, variables.indexOf(node));
+            this.hashIndices.put(node, i++);
         }
-    }
-
-    /**
-     * Helper method. Appears to check if an arrowpoint is permitted by background knowledge.
-     *
-     * @param x The possible other node.
-     * @param y The possible point node.
-     * @return Whether the arrowpoint is allowed.
-     */
-    private boolean isArrowpointAllowed(Node x, Node y, Graph graph) {
-        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        return graph.getEndpoint(y, x) == Endpoint.CIRCLE;
     }
 
     /**
@@ -608,11 +452,6 @@ public final class GFci {
             if (graph.getEdge(from, to) == null) {
                 continue;
             }
-
-            // Orient from*->to (?)
-            // Orient from-->to
-
-//            System.out.println("Rule R8: Orienting " + from + "-->" + to);
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);

@@ -654,20 +654,24 @@ public final class TetradCmd {
             TetradLogger.getInstance().log("info", "Testing it.");
         }
 
-        Fgs2 fgs;
+        Fgs fgs;
 
         if (useCovariance) {
-            fgs = new Fgs2(new SemBicScore(covarianceMatrix, penaltyDiscount));
+            SemBicScore fgsScore = new SemBicScore(covarianceMatrix);
+            fgsScore.setPenaltyDiscount(penaltyDiscount);
+            fgs = new Fgs(fgsScore);
+
         } else {
             if (data.isDiscrete()) {
                 BDeuScore score = new BDeuScore(data);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
 
-                fgs = new Fgs2(score);
+                fgs = new Fgs(score);
             } else if (data.isContinuous()) {
-                SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data), penaltyDiscount);
-                fgs = new Fgs2(score);
+                SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+                score.setPenaltyDiscount(penaltyDiscount);
+                fgs = new Fgs(score);
             } else {
                 throw new IllegalArgumentException();
             }

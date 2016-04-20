@@ -491,9 +491,11 @@ public class EdgeListGraphSingleConnections implements Graph {
      * exists.
      */
     public Edge getEdge(Node node1, Node node2) {
-        List<Edge> edges1 = edgeLists.get(node1);
+        List<Edge> edges = edgeLists.get(node1);
 
-        for (Edge edge : edges1) {
+        if (edges == null) return null;
+
+        for (Edge edge : edges) {
             if (edge.getDistalNode(node1) == node2) {
                 return edge;
             }
@@ -1152,9 +1154,10 @@ public class EdgeListGraphSingleConnections implements Graph {
             return false;
         }
 
-        if (nodes.contains(node)) {
-            return false;
-        }
+        // If edgeLists contains node as a key, then nodes contains node. No need to look it up.n
+//        if (nodes.contains(node)) {
+//            return false;
+//        }
 
         edgeLists.put(node, new ArrayList<Edge>());
         nodes.add(node);

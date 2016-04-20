@@ -132,8 +132,13 @@ public class SepsetsMaxScore implements SepsetProducer {
     }
 
     @Override
-    public double getScore() {
+    public double getPValue() {
         return p;
+    }
+
+    @Override
+    public double getScore() {
+        return -(p - independenceTest.getAlpha());
     }
 
     @Override
@@ -153,5 +158,6 @@ public class SepsetsMaxScore implements SepsetProducer {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
 }
 

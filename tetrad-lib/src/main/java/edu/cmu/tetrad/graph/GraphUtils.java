@@ -2980,6 +2980,56 @@ public final class GraphUtils {
         return true;
     }
 
+    public static String edgeMisclassifications(double[][] counts, NumberFormat nf) {
+        StringBuilder builder = new StringBuilder();
+
+        TextTable table2 = new TextTable(9, 7);
+
+        table2.setToken(1, 0, "---");
+        table2.setToken(2, 0, "o-o");
+        table2.setToken(3, 0, "o->");
+        table2.setToken(4, 0, "<-o");
+        table2.setToken(5, 0, "-->");
+        table2.setToken(6, 0, "<--");
+        table2.setToken(7, 0, "<->");
+        table2.setToken(8, 0, "No Edge");
+        table2.setToken(0, 1, "---");
+        table2.setToken(0, 2, "o-o");
+        table2.setToken(0, 3, "o->");
+        table2.setToken(0, 4, "-->");
+        table2.setToken(0, 5, "<->");
+        table2.setToken(0, 6, "No Edge");
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 6; j++) {
+                if (i == 7 && j == 5) table2.setToken(i + 1, j + 1, "*");
+                else
+                    table2.setToken(i + 1, j + 1, "" + nf.format(counts[i][j]));
+            }
+        }
+
+        builder.append(table2.toString());
+
+        double correctEdges = 0;
+        double estimatedEdges = 0;
+
+        for (int i = 0; i < counts.length; i++) {
+            for (int j = 0; j < counts[0].length - 1; j++) {
+                if ((i == 0 && j == 0) || (i == 1 && j == 1) || (i == 2 && j == 2) || (i == 4 && j == 3) || (i == 6 && j == 4)) {
+                    correctEdges += counts[i][j];
+                }
+
+                estimatedEdges += counts[i][j];
+            }
+        }
+
+        NumberFormat nf2 = new DecimalFormat("0.00");
+
+        builder.append("\nRatio correct edges to estimated edges = ").append(nf2.format((correctEdges / (double) estimatedEdges)));
+
+        return builder.toString();
+    }
+
     public static String edgeMisclassifications(int[][] counts) {
         StringBuilder builder = new StringBuilder();
 
@@ -3023,9 +3073,9 @@ public final class GraphUtils {
             }
         }
 
-        NumberFormat nf = new DecimalFormat("0.00");
+        NumberFormat nf2 = new DecimalFormat("0.00");
 
-        builder.append("\nRatio correct edges to estimated edges = ").append(nf.format((correctEdges / (double) estimatedEdges)));
+        builder.append("\nRatio correct edges to estimated edges = ").append(nf2.format((correctEdges / (double) estimatedEdges)));
 
         return builder.toString();
     }
@@ -4027,8 +4077,8 @@ public final class GraphUtils {
         }
 
 
-        boolean ancestor = zAncestors(z, graph).contains(b);
-//        boolean ancestor2 = isAncestor(b, z, graph);
+//        boolean ancestor = zAncestors(z, graph).contains(b);
+        boolean ancestor = isAncestor(b, z, graph);
 
 //        if (ancestor != ancestor2) {
 //            System.out.println("Ancestors of " + z + " are " + zAncestors(z, graph));
@@ -4057,13 +4107,37 @@ public final class GraphUtils {
     }
 
     private static boolean isAncestor(Node b, List<Node> z, Graph graph) {
-        for (Node n : z) {
-            if (graph.isAncestorOf(b, n)) {
-                return true;
+//        for (Node n : z) {
+//            if (graph.isAncestorOf(b, n)) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
+        if (z.contains(b)) return true;
+
+        Queue<Node> Q = new ArrayDeque<>();
+        Set<Node> V = new HashSet<>();
+
+        for (Node node : z) {
+            Q.offer(node);
+            V.add(node);
+        }
+
+        while (!Q.isEmpty()) {
+            Node t = Q.poll();
+            if (t == b) return true;
+
+            for (Node c : graph.getParents(t)) {
+                if (!V.contains(c)) {
+                    Q.offer(c);
+                    V.add(c);
+                }
             }
         }
 
         return false;
+
     }
 
     private static List<Node> getPassNodes(Node a, Node b, List<Node> z, Graph graph, Set<Triple> colliders) {

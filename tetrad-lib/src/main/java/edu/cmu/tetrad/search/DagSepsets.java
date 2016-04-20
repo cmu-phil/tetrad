@@ -60,13 +60,18 @@ public class DagSepsets implements SepsetProducer {
     }
 
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return dag.isDSeparatedFrom(a, b, c);
+    public double getPValue() {
+        return Double.NaN;
     }
 
     @Override
     public double getScore() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isIndependent(Node a, Node b, List<Node> c) {
+        return dag.isDSeparatedFrom(a, b, c);
     }
 
     @Override
@@ -82,5 +87,6 @@ public class DagSepsets implements SepsetProducer {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
 }
 

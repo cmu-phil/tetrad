@@ -116,15 +116,13 @@ public class VerticalDoubleDataBox implements DataBox {
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        VerticalDoubleDataBox box = new VerticalDoubleDataBox(numRows(), numCols());
+        double[][] copy = new double[data.length][data[0].length];
 
-        for (int i = 0; i < numRows(); i++) {
-            for (int j = 0; j < numCols(); j++) {
-                box.set(i, j, get(i, j));
-            }
+        for (int i = 0; i < data.length; i++) {
+            System.arraycopy(data[i], 0, copy[i], 0, data[0].length);
         }
 
-        return box;
+        return new VerticalDoubleDataBox(data);
     }
 
     /**

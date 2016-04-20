@@ -50,10 +50,10 @@ public final class TestBayesIm {
     @Test
     public void testConstructManual() {
         Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        Dag dag = new Dag(graph);
+        Graph dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm);
-        Dag dag1 = bayesIm.getBayesPm().getDag();
+        Graph dag1 = bayesIm.getBayesPm().getDag();
         Graph dag2 = GraphUtils.replaceNodes(dag1, graph.getNodes());
         assertEquals(dag2, graph);
     }
@@ -72,7 +72,7 @@ public final class TestBayesIm {
         Node a = new GraphNode("a");
         Node b = new GraphNode("b");
 
-        Dag dag = new Dag();
+        Graph dag = new EdgeListGraph();
 
         dag.addNode(a);
         dag.addNode(b);

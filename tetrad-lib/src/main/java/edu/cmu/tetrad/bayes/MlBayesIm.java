@@ -22,20 +22,17 @@
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.random.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
@@ -251,7 +248,7 @@ public final class MlBayesIm implements BayesIm {
     /**
      * @return the DAG.
      */
-    public Dag getDag() {
+    public Graph getDag() {
         return bayesPm.getDag();
     }
 
@@ -1168,6 +1165,8 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
+    final long[] seed = new long[]{new Date().getTime()};
+
     private void constructSample(int sampleSize, DataSet dataSet, int[] map, int[] tiers) {
 
         //Do the simulation.
@@ -1191,6 +1190,8 @@ public final class MlBayesIm implements BayesIm {
             @Override
             protected Boolean compute() {
                 if (to - from <= chunk) {
+                    RandomGenerator randomGenerator = new Well1024a(++seed[0]);
+
                     for (int row = from; row < to; row++) {
                         for (int t : tiers) {
                             int[] parentValues = new int[parents[t].length];
@@ -1203,7 +1204,7 @@ public final class MlBayesIm implements BayesIm {
                             double sum = 0.0;
                             double r;
 
-                            r = RandomUtil.getInstance().nextDouble();
+                            r = randomGenerator.nextDouble();
 
                             for (int k = 0; k < getNumColumns(t); k++) {
                                 double probability = getProbability(t, rowIndex, k);

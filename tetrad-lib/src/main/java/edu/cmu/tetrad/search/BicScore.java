@@ -271,6 +271,18 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
+
+    @Override
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
 }
 
 
