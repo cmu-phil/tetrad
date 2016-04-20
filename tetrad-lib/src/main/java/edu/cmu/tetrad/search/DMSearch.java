@@ -163,7 +163,7 @@ public class DMSearch {
 
         if (useFgs) {
             Score score = new SemBicScore(cov);
-            Fgs2 fgs = new Fgs2(score);
+            Fgs fgs = new Fgs(score);
 
             pattern = recursiveFgs(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
         } else {
@@ -637,7 +637,7 @@ public class DMSearch {
 
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penalty);
-        Fgs2 fgs = new Fgs2(score);
+        Fgs fgs = new Fgs(score);
         fgs.setKnowledge(knowledge);
         fgs.setDepth(this.gesDepth);
         fgs.setIgnoreLinearDependent(true);

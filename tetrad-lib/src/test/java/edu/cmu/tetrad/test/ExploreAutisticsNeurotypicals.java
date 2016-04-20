@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fgs2;
+import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
@@ -91,7 +91,7 @@ public final class ExploreAutisticsNeurotypicals {
 
                 SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
                 score.setPenaltyDiscount(penaltyDiscount);
-                Fgs2 search = new Fgs2(score);
+                Fgs search = new Fgs(score);
                 search.setVerbose(true);
                 Graph graph = search.search();
                 GraphUtils.saveGraph(graph, file, false);

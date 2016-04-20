@@ -67,7 +67,7 @@ public final class GFci {
     private IKnowledge knowledge = new Knowledge2();
 
     // The variables to search over (optional)
-    private List<Node> variables = new ArrayList<Node>();
+    private List<Node> variables = new ArrayList<>();
 
     // The conditional independence test.
     private IndependenceTest independenceTest;
@@ -117,6 +117,8 @@ public final class GFci {
     // The score.
     private Score score;
 
+    private SepsetProducer sepsets;
+
     //============================CONSTRUCTORS============================//
 
     /**
@@ -165,7 +167,7 @@ public final class GFci {
             setScore();
         }
 
-        Fgs2 fgs = new Fgs2(score);
+        Fgs fgs = new Fgs(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setDepth(getDepth());
@@ -174,11 +176,11 @@ public final class GFci {
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, -1);
-//        SepsetProducer sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, -1);
-//        SepsetProducer sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, -1);
-//        SepsetProducer sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, -1);
-//        SepsetProducer sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, -1);
+        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, depth);
+//        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, depth);
+//        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, depth);
+//        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, depth);
+//        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, depth);
 //
         // Look inside triangles.
         for (Node b : nodes) {
@@ -204,7 +206,7 @@ public final class GFci {
         }
 
         modifiedR0(fgsGraph);
-        FciOrient fciOrient = new FciOrient(new SepsetsConservative(fgsGraph, independenceTest, null, depth));
+        FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
@@ -262,12 +264,6 @@ public final class GFci {
 
     // Due to Spirtes.
     public void modifiedR0(Graph fgsGraph) {
-        SepsetProducer sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, -1);
-//        SepsetProducer sepsets = new SepsetsConservative(graph, independenceTest, null, -1);
-//        SepsetProducer sepsets = new SepsetsConservativeMajority(graph, independenceTest, null, -1);
-//        SepsetProducer sepsets = new SepsetsMaxPValue(graph, independenceTest, null, -1);
-//        SepsetProducer sepsets = new SepsetsMinScore(graph, independenceTest, null, -1);
-
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 

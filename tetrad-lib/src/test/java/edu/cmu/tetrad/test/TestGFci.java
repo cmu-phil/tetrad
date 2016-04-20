@@ -165,7 +165,7 @@ public class TestGFci {
         truePag.addBidirectedEdge(x2, x3);
         truePag.addPartiallyOrientedEdge(x4, x3);
 
-        System.out.println(pag);
+//        System.out.println(pag);
 
         assertEquals(pag, truePag);
     }
@@ -176,10 +176,10 @@ public class TestGFci {
 
         int numNodes = 20;
         int numLatents = 5;
-        int numIterations = 20;
+        int numIterations = 10;
 
         for (int i = 0; i < numIterations; i++) {
-            System.out.println("Iteration " + (i + 1));
+//            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
@@ -189,11 +189,11 @@ public class TestGFci {
             Graph pattern1 = fgci.search();
             Graph pattern2 = new DagToPag(dag).convert();
 
-            System.out.println(pattern1);
-            System.out.println(pattern2);
-
-            System.out.println(MisclassificationUtils.edgeMisclassifications(pattern1, pattern2));
-            assertEquals(pattern1, pattern2);
+//            System.out.println(pattern1);
+//            System.out.println(pattern2);
+//
+//            System.out.println(MisclassificationUtils.edgeMisclassifications(pattern1, pattern2));
+            assertEquals(pattern2, pattern1);
         }
     }
 }

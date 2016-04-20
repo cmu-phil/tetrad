@@ -688,6 +688,7 @@ public class PerformanceTests {
 
             if (continuous) {
                 LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
+                simulator.setVerbose(true);
                 simulator.setOut(out);
 
                 DataSet data = simulator.simulateDataAcyclic(numCases);
@@ -705,7 +706,7 @@ public class PerformanceTests {
 
                 long time3 = System.currentTimeMillis();
 
-                ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+                ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, true);
 
                 System.out.println("Covariance matrix done");
 
@@ -719,7 +720,7 @@ public class PerformanceTests {
 
                 long timea = System.currentTimeMillis();
 
-                Fgs3 fgs = new Fgs3(score);
+                Fgs fgs = new Fgs(score);
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
@@ -940,6 +941,7 @@ public class PerformanceTests {
             vars = dag.getNodes();
 
             LargeSemSimulator simulator = new LargeSemSimulator(dag, vars, tiers);
+            simulator.setVerbose(true);
             simulator.setOut(out);
 
             DataSet data = simulator.simulateDataAcyclic(numCases);
@@ -957,7 +959,7 @@ public class PerformanceTests {
 
             long time3 = System.currentTimeMillis();
 
-            ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+            ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data, true);
 
             System.out.println("Covariance matrix done");
 

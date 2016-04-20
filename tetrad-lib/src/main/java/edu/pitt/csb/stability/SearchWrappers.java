@@ -71,7 +71,7 @@ public class SearchWrappers {
         public Graph search(DataSet ds){
             SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(MixedUtils.makeContinuousData(ds)));
             score.setPenaltyDiscount(searchParams[0]);
-            Fgs2 fg = new Fgs2(score);
+            Fgs fg = new Fgs(score);
             return fg.search();
         }
     }

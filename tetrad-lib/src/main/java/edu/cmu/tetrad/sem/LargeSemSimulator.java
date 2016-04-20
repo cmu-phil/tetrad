@@ -71,6 +71,7 @@ public final class LargeSemSimulator {
     private PrintStream out = System.out;
     private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
     private int[] tierIndices;
+    private boolean verbose = false;
 
 
     //=============================CONSTRUCTORS============================//
@@ -155,7 +156,7 @@ public final class LargeSemSimulator {
                 NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);//sqrt(errorVars[col]));
                 normal.sample();
 
-                if ((i + 1) % 50 == 0)
+                if (verbose && (i + 1) % 50 == 0)
                     System.out.println("Simulating " + (i + 1));
 
                 double[] _row = new double[tierIndices.length];
@@ -260,7 +261,7 @@ public final class LargeSemSimulator {
                         NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);//sqrt(errorVars[col]));
                         normal.sample();
 
-                        if ((i + 1) % 50 == 0)
+                        if (verbose && (i + 1) % 50 == 0)
                             System.out.println("Simulating " + (i + 1));
 
                         for (int col : tierIndices) {
@@ -369,6 +370,13 @@ public final class LargeSemSimulator {
         return out;
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 }
 
 
