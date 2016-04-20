@@ -39,7 +39,6 @@ public class ComparisonScript {
         // add algorithms to compare to the list algList. comment out those you don't want to consider.
         algList.add(ComparisonParameters.Algorithm.PC);
         algList.add(ComparisonParameters.Algorithm.FGS);
-        algList.add(ComparisonParameters.Algorithm.FGS2);
 
         // currently this runs multiple algs on the same sample size but NOT on the same data!
 
