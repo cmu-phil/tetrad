@@ -270,6 +270,17 @@ public class BdeuScoreImages implements IBDeuScore {
         }
         this.structurePrior = structurePrior;
     }
+
+    @Override
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
 }
 
 

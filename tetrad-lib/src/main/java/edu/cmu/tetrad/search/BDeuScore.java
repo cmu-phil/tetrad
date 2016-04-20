@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Calculates the BDeu score.
  */
-public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
+public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
     private List<Node> variables;
     private int[][] data;
     private int sampleSize;
@@ -265,6 +265,16 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         }
 
         this.variables = variables;
+    }
+
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
     }
 }
 

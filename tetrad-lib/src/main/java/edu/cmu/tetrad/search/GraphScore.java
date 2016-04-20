@@ -199,6 +199,10 @@ public class GraphScore implements Score {
     public void setParameter1(double alpha) {
         throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
     }
+
+    public Graph getDag() {
+        return dag;
+    }
 }
 
 

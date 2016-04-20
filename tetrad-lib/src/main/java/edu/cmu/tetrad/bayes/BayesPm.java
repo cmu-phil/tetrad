@@ -24,10 +24,7 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.VariableSource;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.PM;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -57,7 +54,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Dag dag;
+    private Graph dag;
 
     /**
      * The map from nodes to variables.
@@ -77,7 +74,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
         if (graph == null) {
             throw new NullPointerException("The graph must not be null.");
         }
-        this.dag = new Dag(graph);
+        this.dag = new EdgeListGraph(graph);
         this.nodesToVariables = new HashMap<>();
 
         boolean allDiscreteVars = true;
@@ -121,7 +118,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
 //                    "The graph must have at least " + "one node in it.");
 //        }
 
-        this.dag = new Dag(graph);
+        this.dag = new EdgeListGraph(graph);
         this.nodesToVariables = new HashMap<>();
         initializeValues(lowerBound, upperBound);
     }
@@ -152,7 +149,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
                     "The graph must have at least " + "one node in it.");
         }
 
-        this.dag = new Dag(graph);
+        this.dag = new EdgeListGraph(graph);
         this.nodesToVariables = new HashMap<>();
         copyAvailableInformationFromOldBayesPm(oldBayesPm, lowerBound,
                 upperBound);
@@ -162,7 +159,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      * Copy constructor.
      */
     public BayesPm(BayesPm bayesPm) {
-        this.dag = new Dag(bayesPm.dag);
+        this.dag = bayesPm.dag;
         this.nodesToVariables = new HashMap<>();
 
         for (Node node : bayesPm.nodesToVariables.keySet()) {
@@ -187,7 +184,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     /**
      * @return the DAG as a Graph.
      */
-    public Dag getDag() {
+    public Graph getDag() {
         return this.dag;
     }
 

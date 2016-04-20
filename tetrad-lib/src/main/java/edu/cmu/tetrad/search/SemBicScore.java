@@ -65,14 +65,10 @@ public class SemBicScore implements Score {
     private Set<Integer> forbidden = new HashSet<>();
     private final double logn;
 
-    public SemBicScore(ICovarianceMatrix covariances) {
-        this(covariances, 2.0);
-    }
-
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(ICovarianceMatrix covariances, double penaltyDiscount) {
+    public SemBicScore(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -80,7 +76,7 @@ public class SemBicScore implements Score {
         this.setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
-        this.penaltyDiscount = penaltyDiscount;
+        this.penaltyDiscount = 2;
         logn = Math.log(sampleSize);
     }
 
@@ -317,6 +313,17 @@ public class SemBicScore implements Score {
     public void setVariables(List<Node> variables) {
         covariances.setVariables(variables);
         this.variables = variables;
+    }
+
+    @Override
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
     }
 }
 

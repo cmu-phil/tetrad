@@ -209,6 +209,17 @@ public class BDeScore implements LocalDiscreteScore {
     public void setParameter1(double alpha) {
 
     }
+
+    @Override
+    public Node getVariable(String targetName) {
+        for (Node node : dataSet.getVariables()) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
 }
 
 

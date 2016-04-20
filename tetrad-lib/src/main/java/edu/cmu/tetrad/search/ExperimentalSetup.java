@@ -52,7 +52,7 @@ public class ExperimentalSetup {
         this.bayesPm = pm;
         this.pmType = PmType.bayes;
 
-        Dag dag = pm.getDag();
+        Graph dag = pm.getDag();
         this.gNat = new EdgeListGraph(dag);
         this.gManip = new EdgeListGraph(gNat);
     }

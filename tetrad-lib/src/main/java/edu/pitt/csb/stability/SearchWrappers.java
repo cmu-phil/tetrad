@@ -69,14 +69,11 @@ public class SearchWrappers {
         public FgsWrapper copy() {return new FgsWrapper(searchParams);}
 
         public Graph search(DataSet ds){
-            double penaltyDiscount = searchParams[0];
-            Score score = new SemBicScore(new CovarianceMatrixOnTheFly(MixedUtils.makeContinuousData(ds)),
-                    penaltyDiscount);
-            Fgs2 fg = new Fgs2(score);
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(MixedUtils.makeContinuousData(ds)));
+            score.setPenaltyDiscount(searchParams[0]);
+            Fgs fg = new Fgs(score);
             return fg.search();
         }
     }
-
-
 }
 

@@ -39,7 +39,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreImages implements ISemBicScore {
+public class SemBicScoreImages implements ISemBicScore, Score {
 
     // The covariance matrix.
     private List<SemBicScore> semBicScores;
@@ -80,9 +80,13 @@ public class SemBicScoreImages implements ISemBicScore {
                     throw new IllegalArgumentException("Datasets must be continuous.");
                 }
 
-                semBicScores.add(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet), penaltyDiscount));
+                SemBicScore semBicScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+                semBicScore.setPenaltyDiscount(penaltyDiscount);
+                semBicScores.add(semBicScore);
             } else if (model instanceof ICovarianceMatrix) {
-                semBicScores.add(new SemBicScore((ICovarianceMatrix) model, penaltyDiscount));
+                SemBicScore semBicScore = new SemBicScore((ICovarianceMatrix) model);
+                semBicScore.setPenaltyDiscount(penaltyDiscount);
+                semBicScores.add(semBicScore);
             } else {
                 throw new IllegalArgumentException("Only continuous data sets and covariance matrices may be used as input.");
             }
@@ -274,6 +278,17 @@ public class SemBicScoreImages implements ISemBicScore {
                 out.println("### Linear dependence among variables: " + _sel);
             }
         }
+    }
+
+    @Override
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
     }
 }
 

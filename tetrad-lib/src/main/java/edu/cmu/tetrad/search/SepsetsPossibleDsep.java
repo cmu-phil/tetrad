@@ -140,8 +140,13 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     }
 
     @Override
-    public double getScore() {
+    public double getPValue() {
         return independenceTest.getPValue();
+    }
+
+    @Override
+    public double getScore() {
+        return -(independenceTest.getPValue() - independenceTest.getAlpha());
     }
 
     @Override
@@ -156,5 +161,6 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
 }
 

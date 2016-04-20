@@ -1,14 +1,13 @@
 package edu.cmu.tetrad.cli.search;
 
-import edu.cmu.tetrad.io.DataReader;
-import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.TabularContinuousData;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.io.DataReader;
+import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.Fgs2;
 import edu.cmu.tetrad.search.SemBicScore;
 
 import java.nio.file.Path;

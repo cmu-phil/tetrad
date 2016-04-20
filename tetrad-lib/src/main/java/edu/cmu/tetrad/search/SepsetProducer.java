@@ -37,6 +37,8 @@ public interface SepsetProducer {
 
     boolean isIndependent(Node a, Node b, List<Node> c);
 
+    double getPValue();
+
     double getScore();
 
     List<Node> getVariables();

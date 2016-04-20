@@ -146,7 +146,9 @@ public class Comparison {
                 throw new IllegalArgumentException("Penalty discount not set.");
             }
 
-            score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet), params.getPenaltyDiscount());
+            SemBicScore semBicScore = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+            semBicScore.setPenaltyDiscount(params.getPenaltyDiscount());
+            score = semBicScore;
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
         }
@@ -206,7 +208,7 @@ public class Comparison {
             result.setCorrectResult(SearchGraphUtils.patternForDag(trueDag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGS2) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
-            Fgs2 search = new Fgs2(score);
+            Fgs search = new Fgs(score);
             search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.patternForDag(trueDag));
