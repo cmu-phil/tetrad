@@ -18,10 +18,10 @@
  */
 package edu.cmu.tetrad.cli.data;
 
-import edu.cmu.tetrad.io.DataReader;
-import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.io.DataReader;
+import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -81,7 +81,7 @@ public class VerticalTabularDiscreteDataReaderTest {
         int numOfColumns = dataSet.getNumColumns();
         int numOfRows = dataSet.getNumRows();
 
-        Assert.assertEquals(11, numOfColumns);
+        Assert.assertEquals(20, numOfColumns);
         Assert.assertEquals(100, numOfRows);
     }
 
