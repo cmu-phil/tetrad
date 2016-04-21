@@ -31,6 +31,7 @@ import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
+import org.junit.Test;
 
 import javax.swing.*;
 import java.io.*;
@@ -2174,6 +2175,38 @@ public class PerformanceTests {
 
         return dag;
     }
+
+    @Test
+    public void printGraphDegrees() {
+        int numVars = 30000;
+        int numEdges = 60000;
+
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(numVars, 0, numEdges,
+                30, 30, 30, false);
+
+        TreeMap<Integer, Integer> degreeCounts = new TreeMap<>();
+        List<Node> nodes = graph.getNodes();
+
+        for (int i = 0; i < numVars; i++) {
+            Node node = nodes.get(i);
+
+            List<Node> adj = graph.getAdjacentNodes(node);
+
+            int degree = adj.size();
+
+            if (degreeCounts.get(degree) == null) {
+                degreeCounts.put(degree, 0);
+            }
+
+            degreeCounts.put(degree, degreeCounts.get(degree) + 1);
+        }
+
+        for (int i : degreeCounts.keySet()) {
+            System.out.println(i + " " + degreeCounts.get(i));
+        }
+    }
+
+
 
     public static void main(String... args) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);

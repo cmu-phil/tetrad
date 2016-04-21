@@ -200,8 +200,8 @@ public class TestGFci {
         int sampleSize = 1000;
 
 //        System.out.println(RandomUtil.getInstance().getSeed());
-
-        RandomUtil.getInstance().setSeed(1461176226123L);
+//
+//        RandomUtil.getInstance().setSeed(1461186701390L);
 
 
         List<Node> variables = new ArrayList<>();
