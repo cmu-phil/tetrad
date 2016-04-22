@@ -1157,8 +1157,11 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     public void setLagged(boolean lagged) {
         this.lagged = lagged;
     }
+
+    //@Override
+    public int isInWhichTier(Node node) {
+        return tierMap.get(node.getName());
+    } // added by DMalinsky for tsFCI on 4/20/16
+
 }
-
-
-
 

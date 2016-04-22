@@ -683,15 +683,28 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
     }
 
+//    private void ensureTiers(int tier) {
+//        for (int i = tierSpecs.size(); i <= tier; i++) {
+//            tierSpecs.add(new HashSet<MyNode>());
+//
+//            for (int j = 0; j < i; j++) {
+//                forbiddenRulesSpecs.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
+//            }
+//        }
+//    }
+
+//  made the HashSet into a TreeSet so the order is right. DMalinsky 04/22/2016.
     private void ensureTiers(int tier) {
         for (int i = tierSpecs.size(); i <= tier; i++) {
-            tierSpecs.add(new HashSet<MyNode>());
+            tierSpecs.add(new TreeSet<MyNode>());
 
             for (int j = 0; j < i; j++) {
                 forbiddenRulesSpecs.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
             }
         }
     }
+
+
 
     /**
      * @return the largest indes of a tier in which every variable is forbidden by every
@@ -935,8 +948,25 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         return rules;
     }
+
+    /**
+     * Returns the index of the tier of node if it's in a tier, otherwise -1.
+     */
+    //@Override
+    public int isInWhichTier(Node node) {
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            Set<MyNode> tier = tierSpecs.get(i);
+
+            for (MyNode myNode : tier) {
+                if (myNode.getName().equals(myNode.getName())) {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    } // added by DMalinsky for tsFCI on 4/20/16
+
 }
-
-
 
 

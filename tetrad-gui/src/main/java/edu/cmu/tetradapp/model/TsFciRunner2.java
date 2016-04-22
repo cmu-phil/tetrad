@@ -25,75 +25,72 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.util.IonInput;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the FCI algorithm.
  *
  * @author Joseph Ramsey
  */
-public class TsFciRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource, IonInput {
+public class TsFciRunner2 extends AbstractAlgorithmRunner
+        implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
 
     //=========================CONSTRUCTORS================================//
 
-    public TsFciRunner(DataWrapper dataWrapper, FciSearchParams params) {
+    public TsFciRunner2(DataWrapper dataWrapper, GFciSearchParams params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public TsFciRunner(GraphSource graphWrapper, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner2(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
-
-
-    public TsFciRunner(DataWrapper dataWrapper, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    /**
+     * Constructs a wrapper for the given DataWrapper. The DataWrapper must
+     * contain a DataSet that is either a DataSet or a DataSet or a DataList
+     * containing either a DataSet or a DataSet as its selected model.
+     */
+    public TsFciRunner2(DataWrapper dataWrapper, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner(Graph graph, FciSearchParams params) {
+    public TsFciRunner2(Graph graph, FciSearchParams params) {
         super(graph, params);
     }
 
-    public TsFciRunner(Graph graph, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(graph, params, knowledgeBoxModel);
-    }
 
-    public TsFciRunner(GraphWrapper graphWrapper, FciSearchParams params) {
+    public TsFciRunner2(GraphWrapper graphWrapper, GFciSearchParams params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public TsFciRunner(DagWrapper dagWrapper, FciSearchParams params) {
+    public TsFciRunner2(DagWrapper dagWrapper, GFciSearchParams params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public TsFciRunner(SemGraphWrapper dagWrapper, FciSearchParams params) {
+    public TsFciRunner2(SemGraphWrapper dagWrapper, GFciSearchParams params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public TsFciRunner(IndependenceFactsModel model, FciSearchParams params) {
+    public TsFciRunner2(IndependenceFactsModel model, GFciSearchParams params) {
         super(model, params, null);
     }
 
-    public TsFciRunner(IndependenceFactsModel model, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner2(IndependenceFactsModel model, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
-
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
      */
-    public static TsFciRunner serializableInstance() {
-        return new TsFciRunner(Dag.serializableInstance(),
+    public static TsFciRunner2 serializableInstance() {
+        return new TsFciRunner2(Dag.serializableInstance(),
                 FciSearchParams.serializableInstance());
     }
 
@@ -107,42 +104,38 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         IKnowledge knowledge = getParams().getKnowledge();
         SearchParams searchParams = getParams();
 
-        FciIndTestParams indTestParams = (FciIndTestParams) searchParams.getIndTestParams();
+        GFciIndTestParams indTestParams = (GFciIndTestParams) searchParams.getIndTestParams();
 
-//            Cfci fciSearch =
-//                    new Cfci(getIndependenceTest(), knowledge);
-//            fciSearch.setDepth(indTestParams.depth());
-//            Graph graph = fciSearch.search();
-//
-//            if (knowledge.isDefaultToKnowledgeLayout()) {
-//                SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-//            }
-//
-//            setResultGraph(graph);
         Graph graph;
 
-        if (indTestParams.isRFCI_Used()) {
-            Rfci fci = new Rfci(getIndependenceTest());
+        if (getIndependenceTest() instanceof  IndTestDSep) {
+            final DagToPag dagToPag = new DagToPag(((IndTestDSep) getIndependenceTest()).getGraph());
+            dagToPag.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
+            graph = dagToPag.convert();
+        }
+        else {
+            GFci fci = new GFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
             fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
             fci.setDepth(indTestParams.getDepth());
-            graph = fci.search();
-        } else {
-            TsFci fci = new TsFci(getIndependenceTest());
-            fci.setKnowledge(knowledge);
-            fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
-            fci.setPossibleDsepSearchDone(indTestParams.isPossibleDsepDone());
-            fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
-            fci.setDepth(indTestParams.getDepth());
+            double penaltyDiscount = indTestParams.getPenaltyDiscount();
+
+            fci.setPenaltyDiscount(penaltyDiscount);
+            fci.setSamplePrior(indTestParams.getSamplePrior());
+            fci.setStructurePrior(indTestParams.getStructurePrior());
+            fci.setCompleteRuleSetUsed(false);
+            fci.setFaithfulnessAssumed(indTestParams.isFaithfulnessAssumed());
             graph = fci.search();
         }
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (knowledge.isDefaultToKnowledgeLayout()) {
+        }
+        else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        } else {
+        }
+        else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
@@ -162,8 +155,9 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         if (getParams() instanceof BasicSearchParams) {
             BasicSearchParams _params = (BasicSearchParams) params;
             testType = _params.getIndTestType();
-        } else {
-            FciSearchParams _params = (FciSearchParams) params;
+        }
+        else {
+            GFciSearchParams _params = (GFciSearchParams) params;
             testType = _params.getIndTestType();
         }
 
@@ -174,7 +168,6 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         return getResultGraph();
     }
 
-
     /**
      * @return the names of the triple classifications. Coordinates with
      */
@@ -182,6 +175,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         List<String> names = new ArrayList<String>();
 //        names.add("Definite Colliders");
 //        names.add("Definite Noncolliders");
+        names.add("Ambiguous Triples");
         return names;
     }
 
@@ -193,17 +187,16 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
+        triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         return triplesList;
     }
 
-    public boolean supportsKnowledge() {
-        return true;
-    }
 
     @Override
     public String getAlgorithmName() {
-        return "FCI";
+        return "tsFCI";
     }
 }
+
 
 
