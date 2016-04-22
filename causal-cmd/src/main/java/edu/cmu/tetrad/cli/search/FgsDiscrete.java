@@ -18,8 +18,6 @@
  */
 package edu.cmu.tetrad.cli.search;
 
-import edu.cmu.tetrad.io.DataReader;
-import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.util.DateTime;
 import edu.cmu.tetrad.cli.util.FileIO;
@@ -29,6 +27,8 @@ import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.io.DataReader;
+import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.util.DataUtility;
@@ -85,11 +85,11 @@ public class FgsDiscrete {
         // algorithm parameters
         MAIN_OPTIONS.addOption(null, "structure-prior", true, "Structure prior.");
         MAIN_OPTIONS.addOption(null, "sample-prior", true, "Sample prior.");
+        MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited). Default is -1.");
 
         // output
         MAIN_OPTIONS.addOption(null, "out", true, "Output directory.");
         MAIN_OPTIONS.addOption(null, "output-prefix", true, "Prefix name of output files.");
-        MAIN_OPTIONS.addOption(null, "no-validation-output", false, "No validation output files created.");
         MAIN_OPTIONS.addOption(null, "no-validation-output", false, "No validation output files created.");
 
         // data validations
@@ -276,6 +276,7 @@ public class FgsDiscrete {
         LOGGER.info(String.format("Runtime Parameters: number of threads=%,d,verbose=%s", numOfThreads, verbose));
 
         writer.println("Algorithm Parameters:");
+        writer.println("algorithm type = fgs discrete");
         writer.printf("structure prior = %f%n", structurePrior);
         writer.printf("sample prior = %f%n", samplePrior);
         writer.printf("depth = %s%n", depth);

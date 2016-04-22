@@ -50,16 +50,17 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
     protected VariableAnalysis analyzeVariables(Set<String> excludeVariables) throws IOException {
         VariableAnalysis variableAnalysis = new VariableAnalysis();
 
+        int numOfCols = 0;
+        int numOfRows = 0;
+        VarInfo[] varInfos = new VarInfo[countNumberOfColumns()];
         try (FileChannel fc = new RandomAccessFile(dataFile.toFile(), "r").getChannel()) {
             MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-            StringBuilder dataBuilder = new StringBuilder();
-            byte currentChar = -1;
-            byte prevChar = NEW_LINE;
 
             // read in variables
-            int numOfCols = 0;
-            int col = 0;
-            VarInfo[] varInfos = new VarInfo[countNumberOfColumns()];
+            int columnIndex = 0;
+            byte currentChar = -1;
+            byte prevChar = NEW_LINE;
+            StringBuilder dataBuilder = new StringBuilder();
             while (buffer.hasRemaining()) {
                 currentChar = buffer.get();
                 if (currentChar == CARRIAGE_RETURN) {
@@ -71,34 +72,32 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                     dataBuilder.delete(0, dataBuilder.length());
                     if (value.length() > 0) {
                         if (excludeVariables.contains(value)) {
-                            varInfos[col] = new VarInfo(value, true);
+                            varInfos[columnIndex++] = new VarInfo(value, true);
                         } else {
-                            varInfos[col] = new VarInfo(value);
+                            varInfos[columnIndex++] = new VarInfo(value);
                             numOfCols++;
                         }
                     } else {
-                        String errMsg = String.format("Missing variable name at column %d.", col + 1);
+                        String errMsg = String.format("Missing variable name at column %d.", columnIndex + 1);
                         LOGGER.error(errMsg);
                         throw new IOException(errMsg);
                     }
 
-                    col++;
                     if (currentChar == NEW_LINE) {
                         prevChar = currentChar;
                         break;
                     }
                 } else {
-                    if (currentChar <= SPACE || currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-                        continue;
+                    if (currentChar > SPACE && (currentChar != SINGLE_QUOTE && currentChar != DOUBLE_QUOTE)) {
+                        dataBuilder.append((char) currentChar);
                     }
-                    dataBuilder.append((char) currentChar);
                 }
 
                 prevChar = currentChar;
             }
             if (currentChar != NEW_LINE) {
                 if (currentChar == delimiter) {
-                    String errMsg = String.format("Missing variable name at column %d.", col + 1);
+                    String errMsg = String.format("Missing variable name at column %d.", columnIndex + 1);
                     LOGGER.error(errMsg);
                     throw new IOException(errMsg);
                 } else {
@@ -106,21 +105,24 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                     dataBuilder.delete(0, dataBuilder.length());
                     if (value.length() > 0) {
                         if (excludeVariables.contains(value)) {
-                            varInfos[col] = new VarInfo(value, true);
+                            varInfos[columnIndex++] = new VarInfo(value, true);
                         } else {
-                            varInfos[col] = new VarInfo(value);
+                            varInfos[columnIndex++] = new VarInfo(value);
                             numOfCols++;
                         }
                     } else {
-                        String errMsg = String.format("Missing variable name at column %d.", col + 1);
+                        String errMsg = String.format("Missing variable name at column %d.", columnIndex + 1);
                         LOGGER.error(errMsg);
                         throw new IOException(errMsg);
                     }
+                    currentChar = NEW_LINE;
+                    prevChar = currentChar;
                 }
             }
 
-            int numOfRows = 0;
-            col = 0;
+            // read in data
+            columnIndex = 0;
+            int col = 0;
             while (buffer.hasRemaining()) {
                 currentChar = buffer.get();
                 if (currentChar == CARRIAGE_RETURN) {
@@ -130,61 +132,90 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                 if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
                     String value = dataBuilder.toString();
                     dataBuilder.delete(0, dataBuilder.length());
-                    if (!varInfos[col].excluded) {
-                        if (value.length() > 0) {
-                            varInfos[col].setValue(value);
-                            try {
-                                Integer.parseInt(value);
-                            } catch (NumberFormatException exception) {
-                                String errMsg = String.format("Unable to parse data at line %d column %d.", numOfRows + 2, col + 1);
-                                LOGGER.error(errMsg, exception);
+                    if (varInfos[columnIndex].isExcluded()) {
+                        columnIndex++;
+                    } else {
+                        if (col < numOfCols) {
+                            if (value.length() > 0) {
+                                try {
+                                    Integer.parseInt(value);
+                                } catch (NumberFormatException exception) {
+                                    String errMsg = String.format("Unable to parse data at line %d column %d.", numOfRows + 2, columnIndex + 1);
+                                    LOGGER.error(errMsg, exception);
+                                    throw new IOException(errMsg);
+                                }
+                                varInfos[columnIndex++].setValue(value);
+                                col++;
+                            } else {
+                                String errMsg = String.format("Missing data at line %d column %d.", numOfRows + 2, columnIndex + 1);
+                                LOGGER.error(errMsg);
                                 throw new IOException(errMsg);
                             }
                         } else {
-                            String errMsg = String.format("Missing value at line %d column %d.", numOfRows + 2, col + 1);
+                            String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", numOfRows + 2, numOfCols, columnCount + 1);
                             LOGGER.error(errMsg);
                             throw new IOException(errMsg);
                         }
                     }
 
-                    col++;
                     if (currentChar == NEW_LINE) {
-                        col = 0;
+                        if (col < numOfCols) {
+                            String errMsg = String.format("Insufficient number of columns at line %d.  Expect %d column(s) but found %d.", numOfRows + 2, numOfCols, columnIndex);
+                            LOGGER.error(errMsg);
+                            throw new IOException(errMsg);
+                        }
                         numOfRows++;
+                        columnIndex = 0;
+                        col = 0;
                     }
                 } else {
-                    if (currentChar <= SPACE || currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-                        continue;
+                    if (currentChar > SPACE && (currentChar != SINGLE_QUOTE && currentChar != DOUBLE_QUOTE)) {
+                        dataBuilder.append((char) currentChar);
                     }
-                    dataBuilder.append((char) currentChar);
                 }
 
                 prevChar = currentChar;
             }
             if (currentChar != NEW_LINE) {
-                if (!varInfos[col].excluded) {
-                    if (currentChar == delimiter) {
-                        String errMsg = String.format("Missing value at line %d column %d.", numOfRows + 2, col + 1);
-                        LOGGER.error(errMsg);
-                        throw new IOException(errMsg);
+                if (currentChar == delimiter) {
+                    String errMsg = String.format("Missing data at line %d column %d.", numOfRows + 2, columnIndex + 1);
+                    LOGGER.error(errMsg);
+                    throw new IOException(errMsg);
+                } else {
+                    String value = dataBuilder.toString();
+                    dataBuilder.delete(0, dataBuilder.length());
+                    if (varInfos[columnIndex].isExcluded()) {
+                        columnIndex++;
                     } else {
-                        String value = dataBuilder.toString();
-                        dataBuilder.delete(0, dataBuilder.length());
-                        if (value.length() > 0) {
-                            varInfos[col].setValue(value);
+                        if (col < numOfCols) {
+                            if (value.length() > 0) {
+                                try {
+                                    Integer.parseInt(value);
+                                } catch (NumberFormatException exception) {
+                                    String errMsg = String.format("Unable to parse data at line %d column %d.", numOfRows + 2, columnIndex + 1);
+                                    LOGGER.error(errMsg, exception);
+                                    throw new IOException(errMsg);
+                                }
+                                varInfos[columnIndex++].setValue(value);
+                                numOfRows++;
+                            } else {
+                                String errMsg = String.format("Missing data at line %d column %d.", numOfRows + 2, columnIndex + 1);
+                                LOGGER.error(errMsg);
+                                throw new IOException(errMsg);
+                            }
                         } else {
-                            String errMsg = String.format("Unable to parse data at line %d column %d.", numOfRows + 2, col + 1);
+                            String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", numOfRows + 2, numOfCols, columnCount + 1);
                             LOGGER.error(errMsg);
                             throw new IOException(errMsg);
                         }
                     }
                 }
             }
-
-            variableAnalysis.setNumOfCols(numOfCols);
-            variableAnalysis.setNumOfRows(numOfRows);
-            variableAnalysis.setVarInfos(varInfos);
         }
+
+        variableAnalysis.setNumOfCols(numOfCols);
+        variableAnalysis.setNumOfRows(numOfRows);
+        variableAnalysis.setVarInfos(varInfos);
 
         return variableAnalysis;
     }
@@ -192,15 +223,17 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
     protected VariableAnalysis analyzeVariables() throws IOException {
         VariableAnalysis variableAnalysis = new VariableAnalysis();
 
+        int numOfCols = countNumberOfColumns();
+        int numOfRows = 0;
+        VarInfo[] varInfos = new VarInfo[numOfCols];
         try (FileChannel fc = new RandomAccessFile(dataFile.toFile(), "r").getChannel()) {
             MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-            StringBuilder dataBuilder = new StringBuilder();
-            byte currentChar = -1;
-            byte prevChar = NEW_LINE;
 
             // read in variables
-            int numOfCols = 0;
-            VarInfo[] varInfos = new VarInfo[countNumberOfColumns()];
+            int columnIndex = 0;
+            byte currentChar = -1;
+            byte prevChar = NEW_LINE;
+            StringBuilder dataBuilder = new StringBuilder();
             while (buffer.hasRemaining()) {
                 currentChar = buffer.get();
                 if (currentChar == CARRIAGE_RETURN) {
@@ -211,48 +244,47 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                     String value = dataBuilder.toString();
                     dataBuilder.delete(0, dataBuilder.length());
                     if (value.length() > 0) {
-                        varInfos[numOfCols] = new VarInfo(value);
+                        varInfos[columnIndex++] = new VarInfo(value);
                     } else {
-                        String errMsg = String.format("Missing variable name at column %d.", numOfCols + 1);
+                        String errMsg = String.format("Missing variable name at column %d.", columnIndex + 1);
                         LOGGER.error(errMsg);
                         throw new IOException(errMsg);
                     }
 
-                    numOfCols++;
                     if (currentChar == NEW_LINE) {
                         prevChar = currentChar;
                         break;
                     }
                 } else {
-                    if (currentChar <= SPACE || currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-                        continue;
+                    if (currentChar > SPACE && (currentChar != SINGLE_QUOTE && currentChar != DOUBLE_QUOTE)) {
+                        dataBuilder.append((char) currentChar);
                     }
-                    dataBuilder.append((char) currentChar);
                 }
 
                 prevChar = currentChar;
             }
             if (currentChar != NEW_LINE) {
                 if (currentChar == delimiter) {
-                    String errMsg = String.format("Missing variable name at column %d.", numOfCols + 1);
+                    String errMsg = String.format("Missing variable name at column %d.", columnIndex + 1);
                     LOGGER.error(errMsg);
                     throw new IOException(errMsg);
                 } else {
                     String value = dataBuilder.toString();
                     dataBuilder.delete(0, dataBuilder.length());
                     if (value.length() > 0) {
-                        varInfos[numOfCols] = new VarInfo(value);
+                        varInfos[columnIndex++] = new VarInfo(value);
                     } else {
-                        String errMsg = String.format("Missing variable name at column %d.", numOfCols + 1);
+                        String errMsg = String.format("Missing variable name at column %d.", columnIndex + 1);
                         LOGGER.error(errMsg);
                         throw new IOException(errMsg);
                     }
-                    numOfCols++;
+                    currentChar = NEW_LINE;
+                    prevChar = currentChar;
                 }
             }
 
-            int numOfRows = 0;
-            int col = 0;
+            // read in data
+            columnIndex = 0;
             while (buffer.hasRemaining()) {
                 currentChar = buffer.get();
                 if (currentChar == CARRIAGE_RETURN) {
@@ -260,59 +292,82 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                 }
 
                 if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                    String value = dataBuilder.toString();
-                    dataBuilder.delete(0, dataBuilder.length());
-                    if (value.length() > 0) {
-                        varInfos[col].setValue(value);
-                        try {
-                            Integer.parseInt(value);
-                        } catch (NumberFormatException exception) {
-                            String errMsg = String.format("Unable to parse data at line %d column %d.", numOfRows + 2, col + 1);
-                            LOGGER.error(errMsg, exception);
+                    if (columnIndex < numOfCols) {
+                        String value = dataBuilder.toString();
+                        dataBuilder.delete(0, dataBuilder.length());
+                        if (value.length() > 0) {
+                            try {
+                                Integer.parseInt(value);
+                            } catch (NumberFormatException exception) {
+                                String errMsg = String.format("Unable to parse data at line %d column %d.", numOfRows + 2, columnIndex + 1);
+                                LOGGER.error(errMsg, exception);
+                                throw new IOException(errMsg);
+                            }
+                            varInfos[columnIndex++].setValue(value);
+                        } else {
+                            String errMsg = String.format("Missing data at line %d column %d.", numOfRows + 2, columnIndex + 1);
+                            LOGGER.error(errMsg);
                             throw new IOException(errMsg);
                         }
                     } else {
-                        String errMsg = String.format("Missing value at line %d column %d.", numOfRows + 2, col + 1);
+                        String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", numOfRows + 2, numOfCols, columnIndex + 1);
                         LOGGER.error(errMsg);
                         throw new IOException(errMsg);
                     }
 
-                    col++;
                     if (currentChar == NEW_LINE) {
-                        col = 0;
+                        if (columnIndex < numOfCols) {
+                            String errMsg = String.format("Insufficient number of columns at line %d.  Expect %d column(s) but found %d.", numOfRows + 2, numOfCols, columnIndex);
+                            LOGGER.error(errMsg);
+                            throw new IOException(errMsg);
+                        }
                         numOfRows++;
+                        columnIndex = 0;
                     }
                 } else {
-                    if (currentChar <= SPACE || currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-                        continue;
+                    if (currentChar > SPACE && (currentChar != SINGLE_QUOTE && currentChar != DOUBLE_QUOTE)) {
+                        dataBuilder.append((char) currentChar);
                     }
-                    dataBuilder.append((char) currentChar);
                 }
 
                 prevChar = currentChar;
             }
             if (currentChar != NEW_LINE) {
                 if (currentChar == delimiter) {
-                    String errMsg = String.format("Missing value at line %d column %d.", numOfRows + 2, col + 1);
+                    String errMsg = String.format("Missing data at line %d column %d.", numOfRows + 2, columnIndex + 1);
                     LOGGER.error(errMsg);
                     throw new IOException(errMsg);
                 } else {
-                    String value = dataBuilder.toString();
-                    dataBuilder.delete(0, dataBuilder.length());
-                    if (value.length() > 0) {
-                        varInfos[col].setValue(value);
+                    if (columnIndex < numOfCols) {
+                        String value = dataBuilder.toString();
+                        dataBuilder.delete(0, dataBuilder.length());
+                        if (value.length() > 0) {
+                            try {
+                                Integer.parseInt(value);
+                            } catch (NumberFormatException exception) {
+                                String errMsg = String.format("Unable to parse data at line %d column %d.", numOfRows + 2, columnIndex + 1);
+                                LOGGER.error(errMsg, exception);
+                                throw new IOException(errMsg);
+                            }
+                            varInfos[columnIndex++].setValue(value);
+                        } else {
+                            String errMsg = String.format("Missing data at line %d column %d.", numOfRows + 2, columnIndex + 1);
+                            LOGGER.error(errMsg);
+                            throw new IOException(errMsg);
+                        }
                     } else {
-                        String errMsg = String.format("Unable to parse data at line %d column %d.", numOfRows + 2, col + 1);
+                        String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", numOfRows + 2, numOfCols, columnIndex + 1);
                         LOGGER.error(errMsg);
                         throw new IOException(errMsg);
                     }
+                    numOfRows++;
                 }
             }
-
-            variableAnalysis.setNumOfCols(numOfCols);
-            variableAnalysis.setNumOfRows(numOfRows);
-            variableAnalysis.setVarInfos(varInfos);
         }
+
+        variableAnalysis.setNumOfCols(numOfCols);
+        variableAnalysis.setNumOfRows(numOfRows);
+        variableAnalysis.setVarInfos(varInfos);
 
         return variableAnalysis;
     }
