@@ -31,6 +31,7 @@ import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
+import org.junit.Test;
 
 import javax.swing.*;
 import java.io.*;
@@ -633,7 +634,7 @@ public class PerformanceTests {
 //        RandomUtil.getInstance().setSeed(4828384343999L);
         double penaltyDiscount = 4.0;
         int depth = 5;
-        boolean faithfulness = true;
+        boolean faithfulness = false;
 
 //        RandomUtil.getInstance().setSeed(50304050454L);
 
@@ -643,7 +644,7 @@ public class PerformanceTests {
         List<Double> degrees = new ArrayList<>();
         List<Long> elapsedTimes = new ArrayList<Long>();
 
-        for (int run = 0; run < numRuns; run++) {
+        if (continuous) {
             init(new File("fgs.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
                     "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
             out.println("Num vars = " + numVars);
@@ -652,6 +653,20 @@ public class PerformanceTests {
             out.println("Penalty discount = " + penaltyDiscount);
             out.println("Depth = " + depth);
             out.println();
+
+        } else {
+            init(new File("fgs.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
+                    "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
+            out.println("Num vars = " + numVars);
+            out.println("Num edges = " + (int) (numVars * edgeFactor));
+            out.println("Num cases = " + numCases);
+            out.println("Sample prior = " + 1);
+            out.println("Structure prior = " + 1);
+            out.println("Depth = " + 1);
+            out.println();
+        }
+
+        for (int run = 0; run < numRuns; run++) {
             out.println("\n\n\n******************************** RUN " + (run + 1) + " ********************************\n\n");
 
             System.out.println("Making dag");
@@ -737,18 +752,10 @@ public class PerformanceTests {
                 out.println("Time for FGS constructor " + (timeb - timea) + " ms");
                 out.println("Time for FGS search " + (timec - timea) + " ms");
                 out.println();
+                out.flush();
 
                 elapsed = timec - timea;
             } else {
-                init(new File("fgs.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
-                        "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
-                out.println("Num vars = " + numVars);
-                out.println("Num edges = " + (int) (numVars * edgeFactor));
-                out.println("Num cases = " + numCases);
-                out.println("Sample prior = " + 1);
-                out.println("Structure prior = " + 1);
-                out.println("Depth = " + 1);
-                out.println();
 
                 BayesPm pm = new BayesPm(dag, 3, 3);
                 MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
@@ -884,7 +891,7 @@ public class PerformanceTests {
 
     private void testFgsMb(int numVars, double edgeFactor, int numCases, int numRuns, boolean continuous) {
 
-        double penaltyDiscount = 6.0;
+        double penaltyDiscount = 4.0;
         int structurePrior = 10;
         int samplePrior = 10;
         int depth = 5;
@@ -2168,6 +2175,38 @@ public class PerformanceTests {
 
         return dag;
     }
+
+    @Test
+    public void printGraphDegrees() {
+        int numVars = 30000;
+        int numEdges = 60000;
+
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(numVars, 0, numEdges,
+                30, 30, 30, false);
+
+        TreeMap<Integer, Integer> degreeCounts = new TreeMap<>();
+        List<Node> nodes = graph.getNodes();
+
+        for (int i = 0; i < numVars; i++) {
+            Node node = nodes.get(i);
+
+            List<Node> adj = graph.getAdjacentNodes(node);
+
+            int degree = adj.size();
+
+            if (degreeCounts.get(degree) == null) {
+                degreeCounts.put(degree, 0);
+            }
+
+            degreeCounts.put(degree, degreeCounts.get(degree) + 1);
+        }
+
+        for (int i : degreeCounts.keySet()) {
+            System.out.println(i + " " + degreeCounts.get(i));
+        }
+    }
+
+
 
     public static void main(String... args) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);

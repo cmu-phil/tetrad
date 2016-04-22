@@ -25,14 +25,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemImInitializationParams;
-import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -195,6 +190,48 @@ public class TestGFci {
 //            System.out.println(MisclassificationUtils.edgeMisclassifications(pattern1, pattern2));
             assertEquals(pattern2, pattern1);
         }
+    }
+
+    @Test
+    public void test5() {
+        int numNodes = 1000;
+        int numLatents = 50;
+        int numEdges = 1000;
+        int sampleSize = 1000;
+
+//        System.out.println(RandomUtil.getInstance().getSeed());
+//
+//        RandomUtil.getInstance().setSeed(1461186701390L);
+
+
+        List<Node> variables = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            variables.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph g = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
+
+        LargeSemSimulator semSimulator = new LargeSemSimulator(g);
+
+        DataSet data = semSimulator.simulateDataAcyclic(sampleSize);
+
+        data = DataUtils.restrictToMeasured(data);
+
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+        score.setPenaltyDiscount(4);
+        GFci gFci = new GFci(score);
+
+        long start = System.currentTimeMillis();
+
+        Graph graph = gFci.search();
+
+        long stop = System.currentTimeMillis();
+
+        System.out.println("Elapsed " + (stop - start) + " ms");
+
+        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, new DagToPag(g).convert()));
+
     }
 }
 
