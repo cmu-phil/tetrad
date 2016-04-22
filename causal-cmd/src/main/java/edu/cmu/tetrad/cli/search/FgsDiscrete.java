@@ -276,6 +276,7 @@ public class FgsDiscrete {
         LOGGER.info(String.format("Runtime Parameters: number of threads=%,d,verbose=%s", numOfThreads, verbose));
 
         writer.println("Algorithm Parameters:");
+        writer.println("algorithm type = fgs discrete");
         writer.printf("structure prior = %f%n", structurePrior);
         writer.printf("sample prior = %f%n", samplePrior);
         writer.printf("depth = %s%n", depth);
