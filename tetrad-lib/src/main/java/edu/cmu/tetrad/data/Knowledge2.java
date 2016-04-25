@@ -488,6 +488,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             buf.append("\n").append(i).append(forbiddenWithin).append(" ");
 
             List<String> tier = getTier(i);
+            Collections.sort(tier);
 
             for (Object aTier : tier) {
                 String name = (String) aTier;
