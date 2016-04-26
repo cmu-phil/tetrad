@@ -469,7 +469,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
                 }
 
                 PatternToDag search = new PatternToDag(new Pattern(graph));
-                Graph dag = search.patternToDagMeekRules();
+                Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);

@@ -253,7 +253,7 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
 
             Pattern pattern = new Pattern(resultGraph);
             PatternToDag ptd = new PatternToDag(pattern);
-            Graph dag = ptd.patternToDagMeekRules();
+            Graph dag = ptd.patternToDagMeek();
 
             DataSet dataSet =
                     (DataSet) getAlgorithmRunner().getDataModel();
@@ -494,7 +494,7 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
                 }
 
                 PatternToDag search = new PatternToDag(new Pattern(graph));
-                Graph dag = search.patternToDagMeekRules();
+                Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);

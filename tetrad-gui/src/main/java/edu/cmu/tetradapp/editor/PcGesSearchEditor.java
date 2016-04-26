@@ -339,7 +339,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
             Pattern pattern = new Pattern(resultGraph);
             PatternToDag ptd = new PatternToDag(pattern);
-            Graph dag = ptd.patternToDagMeekRules();
+            Graph dag = ptd.patternToDagMeek();
 
             DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
             String report;
@@ -381,7 +381,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
             Pattern pattern = new Pattern(resultGraph);
             PatternToDag ptd = new PatternToDag(pattern);
-            Graph dag = ptd.patternToDagMeekRules();
+            Graph dag = ptd.patternToDagMeek();
 
             ICovarianceMatrix dataSet = (ICovarianceMatrix) getAlgorithmRunner().getDataModel();
             String report = reportIfCovMatrix(dag, dataSet);
@@ -646,7 +646,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
 
                 PatternToDag search = new PatternToDag(new Pattern(graph));
-                Graph dag = search.patternToDagMeekRules();
+                Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);

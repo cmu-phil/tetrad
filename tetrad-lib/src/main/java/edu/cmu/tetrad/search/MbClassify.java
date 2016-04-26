@@ -184,7 +184,7 @@ public class MbClassify implements DiscreteClassifier {
             }
         }
 
-        Dag selectedDag = MbUtils.getOneMbDag(mbPattern);
+        Graph selectedDag = MbUtils.getOneMbDag(mbPattern);
 
         TetradLogger.getInstance().log("details", "Selected DAG = " + selectedDag);
         TetradLogger.getInstance().log("details", "Vars = " + selectedDag.getNodes());
