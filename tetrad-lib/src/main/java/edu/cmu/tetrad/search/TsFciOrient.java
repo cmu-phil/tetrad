@@ -220,8 +220,8 @@ public final class TsFciOrient {
 
                         printWrongColliderMessage(a, b, c, location, graph);
                     }
-                    this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.ARROW);
-                    this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.ARROW);
+                    this.orientSimilarPairs(graph, knowledge, a, b, Endpoint.ARROW);
+                    this.orientSimilarPairs(graph, knowledge, c, b, Endpoint.ARROW);
                 }
             }
         }
@@ -1356,6 +1356,7 @@ public final class TsFciOrient {
 
 
     private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
+        System.out.println("orienting similar pairs for x and y: " + x + ", " + y);
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
         int indy_tier = knowledge.isInWhichTier(y);

@@ -217,7 +217,10 @@ public final class TsFci implements GraphSearch {
         //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
         if (isPossibleDsepSearchDone()) {
 //            long time1 = System.currentTimeMillis();
-            new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest).ruleR0(graph);
+            TsFciOrient tsFciOrient = new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest);
+            tsFciOrient.setKnowledge(knowledge);
+            tsFciOrient.ruleR0(graph);
+//            new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest).ruleR0(graph);
 
             for (Edge edge : new ArrayList<>(graph.getEdges())) {
                 Node x = edge.getNode1();

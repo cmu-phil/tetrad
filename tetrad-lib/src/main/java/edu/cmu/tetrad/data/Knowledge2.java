@@ -488,6 +488,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             buf.append("\n").append(i).append(forbiddenWithin).append(" ");
 
             List<String> tier = getTier(i);
+            Collections.sort(tier);
 
             for (Object aTier : tier) {
                 String name = (String) aTier;
@@ -541,6 +542,73 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         out.write(buf.toString());
         out.flush();
     }
+
+//    private void saveKnowledge(Writer out)
+//            throws IOException {
+//        StringBuilder buf = new StringBuilder();
+//        buf.append("/knowledge");
+//
+//        buf.append("\naddtemporal\n");
+//
+//        for (int i = 0; i < tierSpecs.size(); i++) {
+//            String forbiddenWithin = isTierForbiddenWithin(i) ? "*" : "";
+//
+//            buf.append("\n").append(i).append(forbiddenWithin).append(" ");
+//
+//            List<String> tier = getTier(i);
+//
+//            for (Object aTier : tier) {
+//                String name = (String) aTier;
+//                buf.append(name).append(" ");
+//            }
+//        }
+//
+//        buf.append("\n");
+//
+//        buf.append("\nforbiddirect\n\n");
+//
+//        Set<OrderedPair<Set<MyNode>>> copy = new HashSet<>(forbiddenRulesSpecs);
+//        copy.removeAll(forbiddenTierRules());
+//
+//        for (OrderedPair<Set<MyNode>> o : copy) {
+//            Set<MyNode> first = o.getFirst();
+//            Set<MyNode> second = o.getSecond();
+//
+//            for (MyNode s : first) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("==> ");
+//
+//            for (MyNode s : second) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("\n");
+//        }
+//
+//        buf.append("requiredirect\n\n");
+//
+//        for (OrderedPair<Set<MyNode>> o : requiredRulesSpecs) {
+//            Set<MyNode> first = o.getFirst();
+//            Set<MyNode> second = o.getSecond();
+//
+//            for (MyNode s : first) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("==> ");
+//
+//            for (MyNode s : second) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("\n");
+//        }
+//
+//        out.write(buf.toString());
+//        out.flush();
+//    }
 
     /**
      * Iterator over the KnowledgeEdge's representing required edges.
@@ -691,27 +759,15 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
     }
 
-//    private void ensureTiers(int tier) {
-//        for (int i = tierSpecs.size(); i <= tier; i++) {
-//            tierSpecs.add(new HashSet<MyNode>());
-//
-//            for (int j = 0; j < i; j++) {
-//                forbiddenRulesSpecs.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
-//            }
-//        }
-//    }
-
-//  made the HashSet into a TreeSet so the order is right. DMalinsky 04/22/2016.
     private void ensureTiers(int tier) {
         for (int i = tierSpecs.size(); i <= tier; i++) {
-            tierSpecs.add(new TreeSet<MyNode>());
+            tierSpecs.add(new HashSet<MyNode>());
 
             for (int j = 0; j < i; j++) {
                 forbiddenRulesSpecs.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
             }
         }
     }
-
 
 
     /**
@@ -966,7 +1022,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             Set<MyNode> tier = tierSpecs.get(i);
 
             for (MyNode myNode : tier) {
-                if (myNode.getName().equals(myNode.getName())) {
+                if (myNode.getName().equals(node.getName())) {
                     return i;
                 }
             }
