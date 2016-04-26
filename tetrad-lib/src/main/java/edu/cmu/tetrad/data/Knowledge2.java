@@ -69,7 +69,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     private Map<String, MyNode> namesToVars = new HashMap<>();
 
     // Wraps a variable name so that it has object identity. For speed.
-    public static class MyNode implements TetradSerializable {
+    public static class MyNode implements Comparable, TetradSerializable {
         static final long serialVersionUID = 23L;
         private final String name;
 
@@ -87,6 +87,14 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         public static MyNode serializableInstance() {
             return new MyNode("X");
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            if (o == null) throw new NullPointerException();
+            if (!(o instanceof MyNode)) throw new IllegalArgumentException();
+            MyNode node = (MyNode) o;
+            return getName().compareTo(node.getName());
         }
     }
 
@@ -480,6 +488,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             buf.append("\n").append(i).append(forbiddenWithin).append(" ");
 
             List<String> tier = getTier(i);
+            Collections.sort(tier);
 
             for (Object aTier : tier) {
                 String name = (String) aTier;

@@ -306,7 +306,7 @@ public class MbUtils {
         return dags;
     }
 
-    public static Dag getOneMbDag(Graph mbPattern) {
+    public static Graph getOneMbDag(Graph mbPattern) {
         PatternToDag search = new PatternToDag(new Pattern(mbPattern));
         return search.patternToDagMeek();
     }

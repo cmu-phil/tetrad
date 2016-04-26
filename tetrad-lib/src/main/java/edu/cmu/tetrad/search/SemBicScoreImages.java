@@ -108,12 +108,18 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
+        int count = 0;
 
         for (SemBicScore score : semBicScores) {
-            sum += score.localScoreDiff(x, y, z);
+            double _score = score.localScoreDiff(x, y, z);
+
+            if (!Double.isNaN(_score)) {
+                sum += _score;
+                count++;
+            }
         }
 
-        return sum / semBicScores.size();
+        return sum / count;
     }
 
     @Override
@@ -133,6 +139,7 @@ public class SemBicScoreImages implements ISemBicScore, Score {
 
             if (!Double.isNaN(_score)) {
                 sum += _score;
+                count++;
             }
         }
 
@@ -160,12 +167,18 @@ public class SemBicScoreImages implements ISemBicScore, Score {
      */
     public double localScore(int i, int parent) {
         double sum = 0.0;
+        int count = 0;
 
         for (SemBicScore score : semBicScores) {
-            sum += score.localScore(i, parent);
+            double _score = score.localScore(i, parent);
+
+            if (!Double.isNaN(_score)) {
+                sum += _score;
+                count++;
+            }
         }
 
-        return sum / semBicScores.size();
+        return sum / count;
     }
 
     /**
@@ -173,12 +186,18 @@ public class SemBicScoreImages implements ISemBicScore, Score {
      */
     public double localScore(int i) {
         double sum = 0.0;
+        int count = 0;
 
         for (SemBicScore score : semBicScores) {
-            sum += score.localScore(i);
+            double _score = score.localScore(i);
+
+            if (!Double.isNaN(_score)) {
+                sum += _score;
+                count++;
+            }
         }
 
-        return sum / semBicScores.size();
+        return sum / count;
     }
 
     public void setOut(PrintStream out) {
