@@ -1354,7 +1354,6 @@ public final class TsFciOrient {
         return changeFlag;
     }
 
-
     private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
         System.out.println("orienting similar pairs for x and y: " + x + ", " + y);
         int ntiers = knowledge.getNumTiers();
@@ -1364,43 +1363,43 @@ public final class TsFciOrient {
         int indx_comp = -1;
         int indy_comp = -1;
         List tier_x = knowledge.getTier(indx_tier);
+        Collections.sort(tier_x);
         List tier_y = knowledge.getTier(indy_tier);
+        Collections.sort(tier_y);
 
         int i;
         for(i = 0; i < tier_x.size(); ++i) {
-            if(x.getName().equals(tier_x.get(i))) {
+            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
         for(i = 0; i < tier_y.size(); ++i) {
-            if(y.getName().equals(tier_y.get(i))) {
+            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
         }
+
+        if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
+        if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
 
         for(i = 0; i < ntiers - tier_diff; ++i) {
             String A;
             Node x1;
             String B;
             Node y1;
-            if(indx_tier >= indy_tier) {
-                if(i != indy_tier) {
-                    A = (String)knowledge.getTier(i + tier_diff).get(indx_comp);
-                    B = (String)knowledge.getTier(i).get(indy_comp);
-                    x1 = this.independenceTest.getVariable(A);
-                    y1 = this.independenceTest.getVariable(B);
-                    if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
-                        System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
-                        graph.setEndpoint(x1, y1, mark);
-                        System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
-                    }
-                }
-            } else if(i != indx_tier) {
-                A = (String)knowledge.getTier(i).get(indx_comp);
-                B = (String)knowledge.getTier(i + tier_diff).get(indy_comp);
+            if (indx_tier >= indy_tier) {
+                List tmp_tier1 = knowledge.getTier(i + tier_diff);
+                Collections.sort(tmp_tier1);
+                List tmp_tier2 = knowledge.getTier(i);
+                Collections.sort(tmp_tier2);
+                A = (String) tmp_tier1.get(indx_comp);
+                B = (String) tmp_tier2.get(indy_comp);
+                if (A.equals(B)) continue;
+                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
                 x1 = this.independenceTest.getVariable(A);
                 y1 = this.independenceTest.getVariable(B);
                 if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
@@ -1408,9 +1407,81 @@ public final class TsFciOrient {
                     graph.setEndpoint(x1, y1, mark);
                     System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
                 }
+            } else {
+                System.out.println("############## WARNING (orientSimilarPairs): did not catch x,y pair " + x + ", " + y);
             }
         }
 
     }
+
+
+    public String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
+        if(tempS.indexOf(':')== -1) {
+            return tempS;
+        } else return tempS.substring(0, tempS.indexOf(':'));
+    }
+
+
+
+//    private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
+//        System.out.println("orienting similar pairs for x and y: " + x + ", " + y);
+//        int ntiers = knowledge.getNumTiers();
+//        int indx_tier = knowledge.isInWhichTier(x);
+//        int indy_tier = knowledge.isInWhichTier(y);
+//        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+//        int indx_comp = -1;
+//        int indy_comp = -1;
+//        List tier_x = knowledge.getTier(indx_tier);
+//        Collections.sort(tier_x);
+//        List tier_y = knowledge.getTier(indy_tier);
+//        Collections.sort(tier_y);
+//
+//        int i;
+//        for(i = 0; i < tier_x.size(); ++i) {
+//            if(x.getName().equals(tier_x.get(i))) {
+//                indx_comp = i;
+//                break;
+//            }
+//        }
+//
+//        for(i = 0; i < tier_y.size(); ++i) {
+//            if(y.getName().equals(tier_y.get(i))) {
+//                indy_comp = i;
+//                break;
+//            }
+//        }
+//
+//        for(i = 0; i < ntiers - tier_diff; ++i) {
+//            String A;
+//            Node x1;
+//            String B;
+//            Node y1;
+//            if(indx_tier >= indy_tier) {
+//                if(i != indy_tier) {
+//                    A = (String)knowledge.getTier(i + tier_diff).get(indx_comp);
+//                    B = (String)knowledge.getTier(i).get(indy_comp);
+//                    x1 = this.independenceTest.getVariable(A);
+//                    y1 = this.independenceTest.getVariable(B);
+//                    if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
+//                        System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
+//                        graph.setEndpoint(x1, y1, mark);
+//                        System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
+//                    }
+//                }
+//            } else if(i != indx_tier) {
+//                A = (String)knowledge.getTier(i).get(indx_comp);
+//                B = (String)knowledge.getTier(i + tier_diff).get(indy_comp);
+//                x1 = this.independenceTest.getVariable(A);
+//                y1 = this.independenceTest.getVariable(B);
+//                if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
+//                    System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
+//                    graph.setEndpoint(x1, y1, mark);
+//                    System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
+//                }
+//            }
+//        }
+//
+//    }
 }
 
