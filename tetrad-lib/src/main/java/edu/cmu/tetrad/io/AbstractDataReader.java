@@ -55,6 +55,12 @@ public abstract class AbstractDataReader {
         this.columnCount = -1;
     }
 
+    /**
+     * Count number of columns in the first line of the file.
+     *
+     * @return
+     * @throws IOException
+     */
     public int countNumberOfColumns() throws IOException {
         if (columnCount == -1) {
             int count = 0;
@@ -89,6 +95,12 @@ public abstract class AbstractDataReader {
         return columnCount;
     }
 
+    /**
+     * Count number of lines that contain data.
+     *
+     * @return
+     * @throws IOException
+     */
     public int countNumberOfLines() throws IOException {
         if (lineCount == -1) {
             int count = 0;
@@ -117,6 +129,29 @@ public abstract class AbstractDataReader {
         }
 
         return lineCount;
+    }
+
+    /**
+     * Advance the current position of the buffer to the next line.
+     *
+     * @param buffer
+     */
+    protected void skipToNextLine(MappedByteBuffer buffer) {
+        byte currentChar;
+        byte prevChar = NEW_LINE;
+        while (buffer.hasRemaining()) {
+            currentChar = buffer.get();
+            if (currentChar == CARRIAGE_RETURN) {
+                currentChar = NEW_LINE;
+            }
+
+            // we break when we come to the end of the line
+            if (currentChar == NEW_LINE && prevChar != NEW_LINE) {
+                break;
+            }
+
+            prevChar = currentChar;
+        }
     }
 
 }
