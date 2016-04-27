@@ -235,6 +235,8 @@ public final class TsFci implements GraphSearch {
                     if (verbose) {
                         System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
                     }
+                    // This is another added component to enforce repeating structure, specifically for possibleDsep
+                    removeSimilarPairs(getIndependenceTest(), x, y, sepset); // added 4.27.2016
                 }
             }
 
@@ -434,6 +436,103 @@ public final class TsFci implements GraphSearch {
 
     public void setPossibleDsepDepth(int possibleDsepDepth) {
         this.possibleDsepDepth = possibleDsepDepth;
+    }
+
+    // removeSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    // this version removes edges from graph instead of list of adjacencies
+    private void removeSimilarPairs(final IndependenceTest test, Node x, Node y, List<Node> condSet) {
+        int ntiers = knowledge.getNumTiers();
+        int indx_tier = knowledge.isInWhichTier(x);
+        int indy_tier = knowledge.isInWhichTier(y);
+        int max_tier = Math.max(indx_tier, indy_tier);
+        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int indx_comp = -1;
+        int indy_comp = -1;
+        List tier_x = knowledge.getTier(indx_tier);
+        Collections.sort(tier_x);
+        List tier_y = knowledge.getTier(indy_tier);
+        Collections.sort(tier_y);
+
+        int i;
+        for(i = 0; i < tier_x.size(); ++i) {
+            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+                indx_comp = i;
+                break;
+            }
+        }
+
+        for(i = 0; i < tier_y.size(); ++i) {
+            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+                indy_comp = i;
+                break;
+            }
+        }
+
+        System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
+
+        if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
+        if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
+
+        for(i = 0; i < ntiers - tier_diff; ++i) {
+            String A;
+            Node x1;
+            String B;
+            Node y1;
+            if (indx_tier >= indy_tier) {
+                List tmp_tier1 = knowledge.getTier(i + tier_diff);
+                Collections.sort(tmp_tier1);
+                List tmp_tier2 = knowledge.getTier(i);
+                Collections.sort(tmp_tier2);
+                A = (String) tmp_tier1.get(indx_comp);
+                B = (String) tmp_tier2.get(indy_comp);
+                if (A.equals(B)) continue;
+                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+                x1 = test.getVariable(A);
+                y1 = test.getVariable(B);
+                //adjacencies.get(x1).remove(y1);
+                //adjacencies.get(y1).remove(x1);
+                graph.removeEdge(x, y);
+                System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
+                List<Node> condSetAB = new ArrayList<>();
+                for (Node tempNode : condSet) {
+                    int ind_temptier = knowledge.isInWhichTier(tempNode);
+                    List temptier = knowledge.getTier(ind_temptier);
+                    Collections.sort(temptier);
+                    int ind_temp = -1;
+                    for (int j = 0; j < temptier.size(); ++j) {
+                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
+                            ind_temp = j;
+                            break;
+                        }
+                    }
+
+                    int cond_diff = indx_tier - ind_temptier;
+                    int condAB_tier = knowledge.isInWhichTier(x1) - cond_diff;
+                    if(condAB_tier < 0 || condAB_tier > max_tier) {
+                        System.out.println("Warning: For nodes " + A + "," + B + " the conditioning variable is outside "
+                                + "of window, so not added to SepSet");
+                        continue;
+                    }
+                    List new_tier = knowledge.getTier(condAB_tier);
+                    Collections.sort(new_tier);
+                    String tempNode1 = (String) new_tier.get(ind_temp);
+                    System.out.println("adding variable " + tempNode1 + " to SepSet");
+                    condSetAB.add(test.getVariable(tempNode1));
+                }
+                System.out.println("done");
+                getSepsets().set(x1, y1, condSetAB);
+            } else {
+                System.out.println("############## WARNING (removeSimilarPairs): did not catch x,y pair " + x + ", " + y);
+            }
+        }
+    }
+
+    public String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
+        if(tempS.indexOf(':')== -1) {
+            return tempS;
+        } else return tempS.substring(0, tempS.indexOf(':'));
     }
 }
 
