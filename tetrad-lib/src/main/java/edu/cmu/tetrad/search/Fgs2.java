@@ -287,6 +287,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
                     // Do forward search.
                     fes();
+                    bes();
 
                     setFaithfulnessAssumed(false);
                     initializeForwardEdgesFromExistingGraph(getVariables());
