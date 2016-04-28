@@ -21,12 +21,12 @@
 
 package edu.cmu.tetradapp.test;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -56,6 +56,9 @@ public class TestLogisticRegression {
 
         Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
                 3, 3, 3, false));
+
+        System.out.println(graph);
+
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateDataRecursive(1000, false);
@@ -65,6 +68,27 @@ public class TestLogisticRegression {
         Node x3 = data.getVariable("X3");
         Node x4 = data.getVariable("X4");
         Node x5 = data.getVariable("X5");
+
+        Discretizer discretizer = new Discretizer(data);
+
+        discretizer.equalCounts(x1, 2);
+
+        DataSet d2 = discretizer.discretize();
+
+        LogisticRegression regression = new LogisticRegression(d2);
+
+        List<Node> regressors = new ArrayList<>();
+
+        regressors.add(x2);
+        regressors.add(x3);
+        regressors.add(x4);
+        regressors.add(x5);
+
+        DiscreteVariable x1b = (DiscreteVariable) d2.getVariable("X1");
+
+        LogisticRegression.Result result = regression.regress(x1b, regressors);
+
+        System.out.println(result);
       
     }
 
