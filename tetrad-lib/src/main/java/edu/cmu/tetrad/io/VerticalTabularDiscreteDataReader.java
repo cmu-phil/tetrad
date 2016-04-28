@@ -20,15 +20,15 @@ package edu.cmu.tetrad.io;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
+import static edu.cmu.tetrad.io.AbstractDataReader.NEW_LINE;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -51,7 +51,16 @@ public class VerticalTabularDiscreteDataReader extends AbstractDiscreteDataReade
 
     @Override
     public DataSet readInData() throws IOException {
-        VariableAnalysis variableAnalysis = analyzeVariables();
+        return readInData(Collections.EMPTY_SET);
+    }
+
+    @Override
+    public DataSet readInData(Set<String> excludedVariables) throws IOException {
+        if (excludedVariables == null) {
+            excludedVariables = Collections.EMPTY_SET;
+        }
+
+        VariableAnalysis variableAnalysis = analyzeVariables(excludedVariables);
         variableAnalysis.recategorizeDiscreteVariables();
 
         List<Node> nodes = createNodeList(variableAnalysis);
@@ -60,145 +69,19 @@ public class VerticalTabularDiscreteDataReader extends AbstractDiscreteDataReade
         return new BoxDataSet(new VerticalIntDataBox(data), nodes);
     }
 
-    @Override
-    public DataSet readInData(Set<String> excludedVariables) throws IOException {
-        if (excludedVariables == null || excludedVariables.isEmpty()) {
-            return readInData();
-        }
-
-        VariableAnalysis variableAnalysis = analyzeVariables(excludedVariables);
-        variableAnalysis.recategorizeDiscreteVariables();
-
-        int numOfRows = variableAnalysis.getNumOfRows();
-        int numOfCols = variableAnalysis.getNumOfCols();
-
-        List<Node> nodes = new ArrayList<>(numOfCols);
-        VarInfo[] varInfos = variableAnalysis.getVarInfos();
-        for (VarInfo varInfo : varInfos) {
-            nodes.add(new DiscreteVariable(varInfo.getName(), varInfo.getCategories()));
-        }
-
-        int[][] data = new int[numOfCols][numOfRows];
-        try (FileChannel fc = new RandomAccessFile(dataFile.toFile(), "r").getChannel()) {
-            MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-
-            // skip the header
-            byte currentChar = -1;
-            byte prevChar = NEW_LINE;
-            while (buffer.hasRemaining()) {
-                currentChar = buffer.get();
-                if (currentChar == CARRIAGE_RETURN) {
-                    currentChar = NEW_LINE;
-                }
-
-                if (currentChar == NEW_LINE && prevChar != NEW_LINE) {
-                    prevChar = currentChar;
-                    break;
-                }
-                prevChar = currentChar;
-            }
-            if (currentChar != NEW_LINE) {
-                currentChar = NEW_LINE;
-                prevChar = currentChar;
-            }
-
-            // read in data
-            int rowIndex = 0;
-            int columnIndex = 0;
-            int col = 0;
-            StringBuilder dataBuilder = new StringBuilder();
-            while (buffer.hasRemaining()) {
-                currentChar = buffer.get();
-                if (currentChar == CARRIAGE_RETURN) {
-                    currentChar = NEW_LINE;
-                }
-
-                if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                    String value = dataBuilder.toString();
-                    dataBuilder.delete(0, dataBuilder.length());
-                    if (varInfos[columnIndex].isExcluded()) {
-                        columnIndex++;
-                    } else {
-                        if (col < numOfCols) {
-                            if (value.length() > 0) {
-                                data[col++][rowIndex] = varInfos[columnIndex++].getEncodeValue(value);
-                            } else {
-                                String errMsg = String.format("Missing data at line %d column %d.", rowIndex + 2, columnIndex + 1);
-                                LOGGER.error(errMsg);
-                                throw new IOException(errMsg);
-                            }
-                        }
-                    }
-
-                    if (currentChar == NEW_LINE) {
-                        if (col < numOfCols) {
-                            String errMsg = String.format("Insufficient number of columns at line %d.  Expect %d column(s) but found %d.", rowIndex + 2, numOfCols, columnIndex);
-                            LOGGER.error(errMsg);
-                            throw new IOException(errMsg);
-                        }
-                        rowIndex++;
-                        columnIndex = 0;
-                        col = 0;
-                    }
-                } else {
-                    if (currentChar > SPACE && (currentChar != SINGLE_QUOTE && currentChar != DOUBLE_QUOTE)) {
-                        dataBuilder.append((char) currentChar);
-                    }
-                }
-
-                prevChar = currentChar;
-            }
-            if (currentChar != NEW_LINE) {
-                if (currentChar == delimiter) {
-                    String errMsg = String.format("Missing data at line %d column %d.", rowIndex + 2, columnIndex + 1);
-                    LOGGER.error(errMsg);
-                    throw new IOException(errMsg);
-                } else {
-                    String value = dataBuilder.toString();
-                    dataBuilder.delete(0, dataBuilder.length());
-                    if (varInfos[columnIndex].isExcluded()) {
-                        columnIndex++;
-                    } else {
-                        if (col < numOfCols) {
-                            if (value.length() > 0) {
-                                data[col++][rowIndex] = varInfos[columnIndex++].getEncodeValue(value);
-                            } else {
-                                String errMsg = String.format("Missing data at line %d column %d.", rowIndex + 2, columnIndex + 1);
-                                LOGGER.error(errMsg);
-                                throw new IOException(errMsg);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return new BoxDataSet(new VerticalIntDataBox(data), nodes);
-    }
-
-    protected List<Node> createNodeList(VariableAnalysis variableAnalysis) {
-        int numOfCols = variableAnalysis.getNumOfCols();
-
-        List<Node> nodes = new ArrayList<>(numOfCols);
-        VarInfo[] varInfos = variableAnalysis.getVarInfos();
-        for (VarInfo varInfo : varInfos) {
-            nodes.add(new DiscreteVariable(varInfo.getName(), varInfo.getCategories()));
-        }
-
-        return nodes;
-    }
-
     protected int[][] encodeData(VariableAnalysis variableAnalysis) throws IOException {
+        VarInfo[] variables = variableAnalysis.getVarInfos();
+        int numOfCols = variables.length;
         int numOfRows = variableAnalysis.getNumOfRows();
-        int numOfCols = variableAnalysis.getNumOfCols();
-        VarInfo[] varInfos = variableAnalysis.getVarInfos();
+        int numOfActualCols = variableAnalysis.getNumOfCols();
 
-        int[][] data = new int[numOfCols][numOfRows];
+        int[][] data = new int[numOfActualCols][numOfRows];
         try (FileChannel fc = new RandomAccessFile(dataFile.toFile(), "r").getChannel()) {
             MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
 
             skipToNextLine(buffer);  // skip the header
 
+            int columnIndexCount = 0;
             int columnIndex = 0;
             int rowIndex = 0;  // data start on the second row
             byte currentChar = -1;
@@ -211,29 +94,33 @@ public class VerticalTabularDiscreteDataReader extends AbstractDiscreteDataReade
                 }
 
                 if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                    if (columnIndex < numOfCols) {
-                        String value = dataBuilder.toString();
-                        dataBuilder.delete(0, dataBuilder.length());
-                        if (value.length() > 0) {
-                            data[columnIndex][rowIndex] = varInfos[columnIndex].getEncodeValue(value);
-                            columnIndex++;
-                        } else {
-                            String errMsg = String.format("Missing data at line %d column %d.", rowIndex + 2, columnIndex + 1);
-                            LOGGER.error(errMsg);
-                            throw new IOException(errMsg);
+                    String value = dataBuilder.toString();
+                    dataBuilder.delete(0, dataBuilder.length());
+                    if (columnIndexCount < numOfCols) {
+                        VarInfo variable = variables[columnIndexCount];
+                        if (variable != null) {
+                            if (value.length() > 0) {
+                                data[columnIndex++][rowIndex] = variable.getEncodeValue(value);
+                            } else {
+                                String errMsg = String.format("Missing data at line %d column %d.", rowIndex + 2, columnIndexCount + 1);
+                                LOGGER.error(errMsg);
+                                throw new IOException(errMsg);
+                            }
                         }
                     } else {
-                        String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", rowIndex + 2, numOfCols, columnIndex + 1);
+                        String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", rowIndex + 2, numOfCols, columnIndexCount + 1);
                         LOGGER.error(errMsg);
                         throw new IOException(errMsg);
                     }
 
+                    columnIndexCount++;
                     if (currentChar == NEW_LINE) {
-                        if (columnIndex < numOfCols) {
-                            String errMsg = String.format("Insufficient number of columns at line %d.  Expect %d column(s) but found %d.", rowIndex + 2, numOfCols, columnIndex);
+                        if (columnIndexCount < numOfCols) {
+                            String errMsg = String.format("Insufficient number of columns at line %d.  Expect %d column(s) but found %d.", rowIndex + 2, numOfCols, columnIndexCount);
                             LOGGER.error(errMsg);
                             throw new IOException(errMsg);
                         }
+                        columnIndexCount = 0;
                         columnIndex = 0;
                         rowIndex++;
                     }
@@ -244,22 +131,27 @@ public class VerticalTabularDiscreteDataReader extends AbstractDiscreteDataReade
                 prevChar = currentChar;
             }
             if (currentChar > -1 && currentChar != NEW_LINE) {
-                if (currentChar == delimiter) {
-                    String errMsg = String.format("Missing data at column %d.", columnIndex + 1);
-                    LOGGER.error(errMsg);
-                    throw new IOException(errMsg);
-                } else if (columnIndex < numOfCols) {
-                    String value = dataBuilder.toString();
-                    dataBuilder.delete(0, dataBuilder.length());
-                    if (value.length() > 0) {
-                        data[columnIndex][rowIndex] = varInfos[columnIndex].getEncodeValue(value);
-                    } else {
-                        String errMsg = String.format("Missing data at line %d column %d.", rowIndex + 2, columnIndex + 1);
-                        LOGGER.error(errMsg);
-                        throw new IOException(errMsg);
+                if (columnIndexCount < numOfCols) {
+                    VarInfo variable = variables[columnIndexCount];
+                    if (variable != null) {
+                        if (currentChar == delimiter) {
+                            String errMsg = String.format("Missing data at line %d column %d.", rowIndex + 2, columnIndexCount + 1);
+                            LOGGER.error(errMsg);
+                            throw new IOException(errMsg);
+                        } else {
+                            String value = dataBuilder.toString();
+                            dataBuilder.delete(0, dataBuilder.length());
+                            if (value.length() > 0) {
+                                data[columnIndex++][rowIndex] = variable.getEncodeValue(value);
+                            } else {
+                                String errMsg = String.format("Missing data at line %d column %d.", rowIndex + 2, columnIndexCount + 1);
+                                LOGGER.error(errMsg);
+                                throw new IOException(errMsg);
+                            }
+                        }
                     }
                 } else {
-                    String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", rowIndex + 2, numOfCols, columnIndex + 1);
+                    String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", rowIndex + 2, numOfCols, columnIndexCount + 1);
                     LOGGER.error(errMsg);
                     throw new IOException(errMsg);
                 }
