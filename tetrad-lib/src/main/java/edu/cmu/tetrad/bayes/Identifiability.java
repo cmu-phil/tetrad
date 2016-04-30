@@ -354,7 +354,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         //////////////////////////////////////
 
-        // full joint probability of all the measured variables
+        // nonFaithful joint probability of all the measured variables
         int[] probTermV = new int[nNodes];
         for (int i = 0; i < nNodes; i++) {
             if (bayesIm.getNode(i).getNodeType() == NodeType.MEASURED) {
@@ -374,7 +374,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         QList[] cFactors = new QList[nCComponents];
 
         for (int i = 0; i < nCComponents; i++) {
-            // Q[V]: full joint probTermV
+            // Q[V]: nonFaithful joint probTermV
             QList qV = new QList(nNodes, probTermV);
 
             if (debug) {

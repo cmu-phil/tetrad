@@ -741,11 +741,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 //
 //                    if (nonsingular) {
 //                        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                                "This dataset has full rank.");
+//                                "This dataset has nonFaithful rank.");
 //                        return;
 //                    } else {
 //                        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                                "This dataset has less than full rank.");
+//                                "This dataset has less than nonFaithful rank.");
 //                        return;
 //                    }
 //                }

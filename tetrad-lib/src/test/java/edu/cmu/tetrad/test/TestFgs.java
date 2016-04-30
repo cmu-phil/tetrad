@@ -89,7 +89,7 @@ public class TestFgs {
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
         fgs.setOut(out);
-        fgs.setFaithfulnessAssumed(true);
+        fgs.setHeuristicSpeedup(true);
         fgs.setDepth(1);
         fgs.setCycleBound(5);
 
@@ -155,7 +155,7 @@ public class TestFgs {
         Fgs ges = new Fgs(score);
         ges.setVerbose(false);
         ges.setNumPatternsToStore(0);
-        ges.setFaithfulnessAssumed(false);
+        ges.setHeuristicSpeedup(false);
 
         Graph estPattern = ges.search();
 
@@ -204,7 +204,7 @@ public class TestFgs {
     public void testExplore5() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
         Fgs fgs = new Fgs(new GraphScore(graph));
-        fgs.setFaithfulnessAssumed(false);
+        fgs.setHeuristicSpeedup(false);
         Graph pattern = fgs.search();
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
@@ -218,7 +218,7 @@ public class TestFgs {
 //            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             Fgs2 fgs = new Fgs2(new GraphScore(dag));
-            fgs.setFaithfulnessAssumed(false);
+            fgs.setHeuristicSpeedup(true);
             Graph pattern1 = fgs.search();
             Graph pattern2 = new Pc(new IndTestDSep(dag)).search();
 //            System.out.println(pattern2);
@@ -249,7 +249,7 @@ public class TestFgs {
 
         Graph pattern1 = new Pc(new IndTestDSep(g)).search();
         Fgs fgs = new Fgs(new GraphScore(g));
-        fgs.setFaithfulnessAssumed(false);
+        fgs.setHeuristicSpeedup(true);
         Graph pattern2 = fgs.search();
 
 //        System.out.println(pattern1);

@@ -283,7 +283,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            }
 //
 //            fgs.setVerbose(true);
-//            fgs.setFaithfulnessAssumed(true);
+//            fgs.setHeuristicSpeedup(true);
 //            searchGraph = fgs.search();
 //        } else {
 //            Node target = getIndependenceTest().getVariable(targetName);
@@ -297,7 +297,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            search.setKnowledge(knowledge);
 //            search.setDepth(depth);
 //            search.setVerbose(true);
-//            search.setFaithfulnessAssumed(true);
+//            search.setHeuristicSpeedup(true);
 //            searchGraph = search.search();
 //        }
 

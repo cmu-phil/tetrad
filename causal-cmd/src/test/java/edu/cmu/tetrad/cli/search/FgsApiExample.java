@@ -44,7 +44,7 @@ public class FgsApiExample {
         fgs.setDepth(-1);
         fgs.setIgnoreLinearDependent(false);
         fgs.setNumPatternsToStore(0);  // always set to zero
-        fgs.setFaithfulnessAssumed(true);
+        fgs.setHeuristicSpeedup(true);
         fgs.setVerbose(true);
 
         Graph graph = fgs.search();

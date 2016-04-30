@@ -21,19 +21,16 @@
 
 package edu.cmu.tetrad.performance;
 
-import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
-import javax.swing.*;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -739,7 +736,7 @@ public class PerformanceTests {
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(faithfulness);
+                fgs.setHeuristicSpeedup(faithfulness);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
@@ -783,7 +780,7 @@ public class PerformanceTests {
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setFaithfulnessAssumed(faithfulness);
+                fgs.setHeuristicSpeedup(faithfulness);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 

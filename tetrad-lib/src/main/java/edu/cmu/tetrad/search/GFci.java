@@ -172,7 +172,7 @@ public final class GFci {
         fgs.setVerbose(verbose);
         fgs.setDepth(getDepth());
         fgs.setNumPatternsToStore(0);
-        fgs.setFaithfulnessAssumed(faithfulnessAssumed);
+        fgs.setHeuristicSpeedup(faithfulnessAssumed);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 

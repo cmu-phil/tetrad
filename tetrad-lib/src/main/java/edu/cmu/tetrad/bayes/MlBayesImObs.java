@@ -137,7 +137,7 @@ public final class MlBayesImObs implements BayesIm {
     private BayesIm bayesImRandomize;
 
     // BayesIm containing only the observed variables.  Only used to
-    // 1) construct propositions (mapped from the original full bayesIm)
+    // 1) construct propositions (mapped from the original nonFaithful bayesIm)
     //    in Identifiability
     // 2) to avoid summing over rows in jpd when only the latent variables
     //    have changed values (only sum when all the latent variables have
@@ -233,7 +233,7 @@ public final class MlBayesImObs implements BayesIm {
     }
 
     /*
-     * construct from a full MlBayesIm using marginalized probaiblities,
+     * construct from a nonFaithful MlBayesIm using marginalized probaiblities,
 	 * or copy from another MlBayesImObs
      */
     public MlBayesImObs(BayesIm bayesIm) throws IllegalArgumentException {

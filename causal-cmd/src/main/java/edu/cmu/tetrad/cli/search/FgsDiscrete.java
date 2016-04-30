@@ -185,7 +185,7 @@ public class FgsDiscrete {
                 fgs.setVerbose(verbose);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(writer);
-                fgs.setFaithfulnessAssumed(faithfulness);
+                fgs.setHeuristicSpeedup(faithfulness);
                 fgs.setDepth(depth);
                 writer.flush();
 

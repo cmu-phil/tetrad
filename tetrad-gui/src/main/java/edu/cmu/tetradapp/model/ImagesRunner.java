@@ -322,7 +322,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                 fgs = new Fgs(gesScore);
                 fgs.setKnowledge(getParams().getKnowledge());
                 fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-                fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+                fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
                 fgs.setVerbose(true);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = ((FgsParams) getParams()).getSamplePrior();
@@ -334,7 +334,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                 fgs.setVerbose(true);
                 fgs.setKnowledge(getParams().getKnowledge());
                 fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-                fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+                fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
@@ -344,7 +344,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
             fgs = new Fgs(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
             fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-            fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+            fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
             fgs.setVerbose(true);
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
