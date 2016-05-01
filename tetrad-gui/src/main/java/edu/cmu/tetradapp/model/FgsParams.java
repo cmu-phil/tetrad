@@ -215,7 +215,7 @@ public final class FgsParams implements MeekSearchParams {
     }
 
     public String getTargetName() {
-        return "X3000";//"Hippocampus_L";
+        return "X1";//"Hippocampus_L";
     }
 }
 

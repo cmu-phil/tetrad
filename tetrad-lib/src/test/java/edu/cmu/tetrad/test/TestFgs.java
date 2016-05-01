@@ -218,7 +218,7 @@ public class TestFgs {
 //            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             Fgs2 fgs = new Fgs2(new GraphScore(dag));
-            fgs.setHeuristicSpeedup(true);
+            fgs.setFaithfulnessAssumed(true);
             Graph pattern1 = fgs.search();
             Graph pattern2 = new Pc(new IndTestDSep(dag)).search();
 //            System.out.println(pattern2);
@@ -248,8 +248,8 @@ public class TestFgs {
         g.addDirectedEdge(x4, x3);
 
         Graph pattern1 = new Pc(new IndTestDSep(g)).search();
-        Fgs fgs = new Fgs(new GraphScore(g));
-        fgs.setHeuristicSpeedup(true);
+        Fgs2 fgs = new Fgs2(new GraphScore(g));
+        fgs.setFaithfulnessAssumed(true);
         Graph pattern2 = fgs.search();
 
 //        System.out.println(pattern1);
@@ -300,7 +300,7 @@ public class TestFgs {
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             GraphScore fgsScore = new GraphScore(dag);
 
-            Fgs fgs = new Fgs(fgsScore);
+            Fgs2 fgs = new Fgs2(fgsScore);
             Graph pattern1 = fgs.search();
 
             Node x1 = fgsScore.getVariable("X1");
@@ -316,7 +316,7 @@ public class TestFgs {
 
             Graph mb1 = pattern1.subgraph(new ArrayList<>(mb));
 
-            FgsMb fgsMb = new FgsMb(fgsScore);
+            FgsMb2 fgsMb = new FgsMb2(fgsScore);
             Graph mb2 = fgsMb.search(x1);
 
             assertEquals(mb1, mb2);

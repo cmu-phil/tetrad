@@ -736,7 +736,7 @@ public class PerformanceTests {
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setHeuristicSpeedup(faithfulness);
+                fgs.setFaithfulnessAssumed(faithfulness);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
@@ -780,7 +780,7 @@ public class PerformanceTests {
                 fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
-                fgs.setHeuristicSpeedup(faithfulness);
+                fgs.setFaithfulnessAssumed(faithfulness);
                 fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
@@ -891,8 +891,8 @@ public class PerformanceTests {
         double penaltyDiscount = 4.0;
         int structurePrior = 10;
         int samplePrior = 10;
-        int depth = 5;
-        boolean faithfulness = false;
+        int depth = -1;
+//        boolean faithfulness = false;
 
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();
@@ -927,7 +927,7 @@ public class PerformanceTests {
         Graph estPattern;
         long elapsed;
 
-        FgsMb fgs;
+        FgsMb2 fgs;
         List<Node> vars;
 
         if (continuous) {
@@ -975,11 +975,11 @@ public class PerformanceTests {
             System.out.println(new Date());
             System.out.println("\nStarting FGS");
 
-            fgs = new FgsMb(score);
+            fgs = new FgsMb2(score);
             fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
-            fgs.setFaithfulnessAssumed(faithfulness);
+//            fgs.setFaithfulnessAssumed(faithfulness);
             fgs.setDepth(depth);
             fgs.setCycleBound(-1);
         } else {
@@ -1020,11 +1020,11 @@ public class PerformanceTests {
 
             long time4 = System.currentTimeMillis();
 
-            fgs = new FgsMb(score);
+            fgs = new FgsMb2(score);
             fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
-            fgs.setFaithfulnessAssumed(faithfulness);
+//            fgs.setFaithfulnessAssumed(faithfulness);
             fgs.setDepth(depth);
             fgs.setCycleBound(-1);
 
