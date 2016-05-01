@@ -26,8 +26,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -40,7 +38,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey
  */
-public class SemGpScore implements Score {
+public class SemBicScore2 implements Score {
 
     private ICovarianceMatrix covarianceMatrix;
 
@@ -71,7 +69,7 @@ public class SemGpScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemGpScore(ICovarianceMatrix covariances) {
+    public SemBicScore2(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -103,7 +101,7 @@ public class SemGpScore implements Score {
             Matrix covxy = getSelection2(covariances, parents, i);
             Matrix b = covxxInv.times(covxy);
 
-            double dot = 1.0;
+            double dot = 1;
 
             for (int j = 0; j < covxy.getRowDimension(); j++) {
                 for (int k = 0; k < covxy.getColumnDimension(); k++) {
@@ -159,53 +157,51 @@ public class SemGpScore implements Score {
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
     public double localScore(int i, int parent) {
-        return localScore(i, new int[]{parent});
-//        double residualVariance = covariances.get(i, i);
-//        int n = getSampleSize();
-//        int p = 1;
-//        final double covXX = covariances.get(parent, parent);
-//
-//        if (covXX == 0) {
-//            if (isVerbose()) {
-//                out.println("Dividing by zero");
-//            }
-//            return Double.NaN;
-//        }
-//
-//        double covxxInv = 1.0 / covXX;
-//        double covxy = covariances.get(i, parent);
-//        double b = covxxInv * covxy;
-//        residualVariance -= covxy * b;
-//
-//        if (residualVariance <= 0) {
-//            if (isVerbose()) {
-//                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / covariances.get(i, i)));
-//            }
-//            return Double.NaN;
-//        }
-//
-//        double c = getPenaltyDiscount();
-//        return score(residualVariance, n, logn, p, c);
+        double residualVariance = covariances.get(i, i);
+        int n = getSampleSize();
+        int p = 1;
+        final double covXX = covariances.get(parent, parent);
+
+        if (covXX == 0) {
+            if (isVerbose()) {
+                out.println("Dividing by zero");
+            }
+            return Double.NaN;
+        }
+
+        double covxxInv = 1.0 / covXX;
+        double covxy = covariances.get(i, parent);
+        double b = covxxInv * covxy;
+        residualVariance -= covxy * b;
+
+        if (residualVariance <= 0) {
+            if (isVerbose()) {
+                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / covariances.get(i, i)));
+            }
+            return Double.NaN;
+        }
+
+        double c = getPenaltyDiscount();
+        return score(residualVariance, n, logn, p, c);
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
     public double localScore(int i) {
-        return localScore(i, new int[0]);
-//        double residualVariance = covariances.get(i, i);
-//        int n = getSampleSize();
-//        int p = 0;
-//
-//        if (residualVariance <= 0) {
-//            if (isVerbose()) {
-//                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / covariances.get(i, i)));
-//            }
-//            return Double.NaN;
-//        }
-//
-//        double c = getPenaltyDiscount();
-//        return score(residualVariance, n, logn, p, c);
+        double residualVariance = covariances.get(i, i);
+        int n = getSampleSize();
+        int p = 0;
+
+        if (residualVariance <= 0) {
+            if (isVerbose()) {
+                out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / covariances.get(i, i)));
+            }
+            return Double.NaN;
+        }
+
+        double c = getPenaltyDiscount();
+        return score(residualVariance, n, logn, p, c);
     }
 
     /**
