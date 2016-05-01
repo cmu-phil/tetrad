@@ -107,7 +107,7 @@ public class SemGpScore implements Score {
 
             for (int j = 0; j < covxy.getRowDimension(); j++) {
                 for (int k = 0; k < covxy.getColumnDimension(); k++) {
-                    dot *= covxy.get(j, k) * b.get(i, j);
+                    dot *= covxy.get(j, k) * b.get(j, k);
                 }
             }
 
