@@ -66,6 +66,10 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         super(graph, params, knowledgeBoxModel);
     }
 
+    public TsFciRunner(TimeLagGraphWrapper model, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+        super(model.getGraph(), params, knowledgeBoxModel);
+    }
+
     public TsFciRunner(GraphWrapper graphWrapper, FciSearchParams params) {
         super(graphWrapper.getGraph(), params);
     }
