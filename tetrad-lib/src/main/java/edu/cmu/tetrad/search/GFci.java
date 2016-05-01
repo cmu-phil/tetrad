@@ -112,7 +112,7 @@ public final class GFci {
     private PrintStream out = System.out;
 
     // True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches. By default false.
-    private boolean faithfulnessAssumed = false;
+    private boolean faithfulnessAssumed = true;
 
     // The score.
     private Score score;
@@ -167,12 +167,12 @@ public final class GFci {
             setScore();
         }
 
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setDepth(getDepth());
         fgs.setNumPatternsToStore(0);
-        fgs.setHeuristicSpeedup(faithfulnessAssumed);
+        fgs.setFaithfulnessAssumed(faithfulnessAssumed);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
