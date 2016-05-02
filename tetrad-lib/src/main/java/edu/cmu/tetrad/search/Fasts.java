@@ -558,6 +558,8 @@ public class Fasts implements IFas {
                     int cond_diff = indx_tier - ind_temptier;
                     int condAB_tier = knowledge.isInWhichTier(x1) - cond_diff;
                     if(condAB_tier < 0 || condAB_tier > max_tier) {
+                        List<Node> empty = Collections.emptyList();
+                        getSepsets().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + A + "," + B + " the conditioning variable is outside "
                         + "of window, so not added to SepSet");
                         continue;

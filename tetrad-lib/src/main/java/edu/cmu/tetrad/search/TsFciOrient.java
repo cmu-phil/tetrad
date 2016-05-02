@@ -1402,6 +1402,11 @@ public final class TsFciOrient {
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
                 x1 = this.independenceTest.getVariable(A);
                 y1 = this.independenceTest.getVariable(B);
+
+                if (getSepset(x1,y1).isEmpty() || getSepset(y1,x1).isEmpty()){
+                    continue;
+                } // added 05.01.2016
+
                 if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
                     System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
                     graph.setEndpoint(x1, y1, mark);
