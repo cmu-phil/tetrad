@@ -48,38 +48,30 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
         super(dataFile, delimiter);
     }
 
-    protected List<Node> createNodeList(VariableAnalysis variableAnalysis) {
-        int numOfCols = variableAnalysis.getNumOfCols();
-
-        List<Node> nodes = new ArrayList<>(numOfCols);
-        VarInfo[] varInfos = variableAnalysis.getVarInfos();
-        for (VarInfo varInfo : varInfos) {
-            if (varInfo != null) {
-                nodes.add(new DiscreteVariable(varInfo.getName(), varInfo.getCategories()));
+    protected List<Node> createDiscreteVariableList(DiscreteVariableAnalysis variableAnalysis) {
+        List<Node> nodes = new ArrayList<>(variableAnalysis.getNumOfCols());
+        DiscreteVarInfo[] variables = variableAnalysis.getDiscreteVarInfos();
+        for (DiscreteVarInfo variable : variables) {
+            if (variable != null) {
+                nodes.add(new DiscreteVariable(variable.getName(), variable.getCategories()));
             }
         }
 
         return nodes;
     }
 
-    protected VariableAnalysis analyzeVariables(Set<String> excludedVariables) throws IOException {
-        int numOfCols = countNumberOfColumns();
-        int numOfRows = countNumberOfLines() - 1;  // minus the header
-
-        VarInfo[] varInfos = new VarInfo[numOfCols];
-        int numOfExpectedCols = extractVariableNames(varInfos, excludedVariables);
-        extractVariableValues(varInfos, excludedVariables, numOfExpectedCols);
-
-        VariableAnalysis variableAnalysis = new VariableAnalysis();
-        variableAnalysis.setNumOfCols(numOfExpectedCols);
-        variableAnalysis.setNumOfRows(numOfRows);
-        variableAnalysis.setVarInfos(varInfos);
+    protected DiscreteVariableAnalysis analyzeVariables(Set<String> excludedVariables) throws IOException {
+        DiscreteVariableAnalysis variableAnalysis = new DiscreteVariableAnalysis();
+        extractVariables(excludedVariables, variableAnalysis);
+        extractVariableValues(excludedVariables, variableAnalysis);
 
         return variableAnalysis;
     }
 
-    protected void extractVariableValues(VarInfo[] variables, Set<String> excludedVariables, int numOfExpectedCols) throws IOException {
-        int numOfCols = variables.length;
+    protected void extractVariableValues(Set<String> excludedVariables, DiscreteVariableAnalysis variableAnalysis) throws IOException {
+        DiscreteVarInfo[] discreteVarInfos = variableAnalysis.getDiscreteVarInfos();
+        int numOfCols = variableAnalysis.numOfCols;
+        int maxNumOfVariables = discreteVarInfos.length;
         try (FileChannel fc = new RandomAccessFile(dataFile.toFile(), "r").getChannel()) {
             MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
 
@@ -99,8 +91,8 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                 if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
                     String value = dataBuilder.toString();
                     dataBuilder.delete(0, dataBuilder.length());
-                    if (columnIndex < numOfCols) {
-                        VarInfo variable = variables[columnIndex];
+                    if (columnIndex < maxNumOfVariables) {
+                        DiscreteVarInfo variable = discreteVarInfos[columnIndex];
                         if (variable != null) {
                             if (value.length() > 0) {
                                 variable.setValue(value);
@@ -111,7 +103,7 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                             }
                         }
                     } else {
-                        String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", rowCount, numOfCols, columnIndex + 1);
+                        String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", rowCount, maxNumOfVariables, columnIndex + 1);
                         LOGGER.error(errMsg);
                         throw new IOException(errMsg);
                     }
@@ -133,8 +125,8 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                 prevChar = currentChar;
             }
             if (currentChar > -1 && currentChar != NEW_LINE) {
-                if (columnIndex < numOfCols) {
-                    VarInfo variable = variables[columnIndex];
+                if (columnIndex < maxNumOfVariables) {
+                    DiscreteVarInfo variable = discreteVarInfos[columnIndex];
                     if (variable != null) {
                         if (currentChar == delimiter) {
                             String errMsg = String.format("Missing data at line %d column %d.", rowCount, columnIndex + 1);
@@ -161,16 +153,9 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
         }
     }
 
-    /**
-     * Read in the variable names.
-     *
-     * @param varInfos an empty array of variables
-     * @param excludedVariables set of variables to exclude from the dataset
-     * @return the number of non-excluded variables to consider
-     * @throws IOException
-     */
-    protected int extractVariableNames(VarInfo[] varInfos, Set<String> excludedVariables) throws IOException {
-        int numOfVariables = 0;
+    protected void extractVariables(Set<String> excludedVariables, DiscreteVariableAnalysis variableAnalysis) throws IOException {
+        int numOfCols = 0;
+        DiscreteVarInfo[] discreteVarInfos = new DiscreteVarInfo[countNumberOfColumns()];
         try (FileChannel fc = new RandomAccessFile(dataFile.toFile(), "r").getChannel()) {
             MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
 
@@ -189,8 +174,8 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                     dataBuilder.delete(0, dataBuilder.length());
                     if (value.length() > 0) {
                         if (!excludedVariables.contains(value)) {
-                            varInfos[index] = new VarInfo(value);
-                            numOfVariables++;
+                            discreteVarInfos[index] = new DiscreteVarInfo(value);
+                            numOfCols++;
                         }
                     } else {
                         String errMsg = String.format("Missing variable name at column %d.", index + 1);
@@ -218,8 +203,8 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                     dataBuilder.delete(0, dataBuilder.length());
                     if (value.length() > 0) {
                         if (!excludedVariables.contains(value)) {
-                            varInfos[index] = new VarInfo(value);
-                            numOfVariables++;
+                            discreteVarInfos[index] = new DiscreteVarInfo(value);
+                            numOfCols++;
                         }
                     } else {
                         String errMsg = String.format("Missing variable name at column %d.", index + 1);
@@ -230,46 +215,32 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
             }
         }
 
-        return numOfVariables;
+        variableAnalysis.setDiscreteVarInfos(discreteVarInfos);
+        variableAnalysis.setNumOfCols(numOfCols);
     }
 
-    public static class VariableAnalysis {
+    public static class DiscreteVariableAnalysis {
 
-        private VarInfo[] varInfos;
-        private int numOfRows;
+        private DiscreteVarInfo[] discreteVarInfos;
         private int numOfCols;
 
-        public VariableAnalysis() {
+        public DiscreteVariableAnalysis() {
         }
 
-        public VariableAnalysis(VarInfo[] varInfos, int numOfRows, int numOfCols) {
-            this.varInfos = varInfos;
-            this.numOfRows = numOfRows;
-            this.numOfCols = numOfCols;
-        }
-
-        public void recategorizeDiscreteVariables() {
-            for (VarInfo varInfo : varInfos) {
-                if (varInfo != null) {
-                    varInfo.recategorize();
+        public void recategorize() {
+            for (DiscreteVarInfo var : discreteVarInfos) {
+                if (var != null) {
+                    var.recategorize();
                 }
             }
         }
 
-        public VarInfo[] getVarInfos() {
-            return varInfos;
+        public DiscreteVarInfo[] getDiscreteVarInfos() {
+            return discreteVarInfos;
         }
 
-        public void setVarInfos(VarInfo[] varInfos) {
-            this.varInfos = varInfos;
-        }
-
-        public int getNumOfRows() {
-            return numOfRows;
-        }
-
-        public void setNumOfRows(int numOfRows) {
-            this.numOfRows = numOfRows;
+        public void setDiscreteVarInfos(DiscreteVarInfo[] discreteVarInfos) {
+            this.discreteVarInfos = discreteVarInfos;
         }
 
         public int getNumOfCols() {
@@ -282,14 +253,14 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
 
     }
 
-    public static class VarInfo {
+    public static class DiscreteVarInfo {
 
         private final String name;
         private final Map<String, Integer> values;
 
         private final List<String> categories;
 
-        public VarInfo(String name) {
+        public DiscreteVarInfo(String name) {
             this.name = name;
             this.values = new TreeMap<>();
             this.categories = new ArrayList<>();
@@ -302,6 +273,11 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
                 values.put(key, count++);
                 categories.add(key);
             }
+        }
+
+        @Override
+        public String toString() {
+            return "DiscreteVarInfo{" + "name=" + name + ", values=" + values + ", categories=" + categories + '}';
         }
 
         public String getName() {
