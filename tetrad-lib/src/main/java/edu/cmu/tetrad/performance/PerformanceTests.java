@@ -21,19 +21,16 @@
 
 package edu.cmu.tetrad.performance;
 
-import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
-import javax.swing.*;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -894,8 +891,8 @@ public class PerformanceTests {
         double penaltyDiscount = 4.0;
         int structurePrior = 10;
         int samplePrior = 10;
-        int depth = 5;
-        boolean faithfulness = false;
+        int depth = -1;
+//        boolean faithfulness = false;
 
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();
@@ -930,7 +927,7 @@ public class PerformanceTests {
         Graph estPattern;
         long elapsed;
 
-        FgsMb fgs;
+        FgsMb2 fgs;
         List<Node> vars;
 
         if (continuous) {
@@ -976,13 +973,13 @@ public class PerformanceTests {
             score.setPenaltyDiscount(penaltyDiscount);
 
             System.out.println(new Date());
-            System.out.println("\nStarting FGS");
+            System.out.println("\nStarting FGS-MB");
 
-            fgs = new FgsMb(score);
+            fgs = new FgsMb2(score);
             fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
-            fgs.setFaithfulnessAssumed(faithfulness);
+//            fgs.setFaithfulnessAssumed(faithfulness);
             fgs.setDepth(depth);
             fgs.setCycleBound(-1);
         } else {
@@ -1023,11 +1020,11 @@ public class PerformanceTests {
 
             long time4 = System.currentTimeMillis();
 
-            fgs = new FgsMb(score);
+            fgs = new FgsMb2(score);
             fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
-            fgs.setFaithfulnessAssumed(faithfulness);
+//            fgs.setFaithfulnessAssumed(faithfulness);
             fgs.setDepth(depth);
             fgs.setCycleBound(-1);
 
@@ -1427,7 +1424,12 @@ public class PerformanceTests {
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
 
-    public void testDagToPagOnly(int numVars, double edgeFactor, int numLatents) {
+    @Test
+    public void testDagToPagOnly() {
+        int numVars = 20;
+        double edgeFactor = 1.0;
+        int numLatents = 5;
+
         System.out.println("Making list of vars");
 
         List<Node> vars = new ArrayList<Node>();
@@ -1453,14 +1455,18 @@ public class PerformanceTests {
 
         final DagToPag dagToPag = new DagToPag(dag);
         dagToPag.setCompleteRuleSetUsed(true);
-        Graph top = dagToPag.convert();
+        Graph left = dagToPag.convert();
+
+        final DagToPag2 dagToPag2 = new DagToPag2(dag);
+        dagToPag2.setCompleteRuleSetUsed(true);
+        Graph top = dagToPag2.convert();
 
         long time2b = System.currentTimeMillis();
 
 //        top = DataGraphUtils.replaceNodes(top, left.getNodes());
 
 //        int[][] counts = edgeMisclassificationCounts(left, top);
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(top, top, true);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
 //        System.out.println("Elapsed fci = " + (time1b - time1a) + " ms");

@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * Implementation of HITON-MB following Matlab code by authors. Note that the full HITON algorithm includes a
+ * Implementation of HITON-MB following Matlab code by authors. Note that the allowUnfaithfulness HITON algorithm includes a
  * cross-classification wrapper, which is not implemented here.
  *
  * @author Joseph Ramsey

@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.util.*;
 import nu.xom.*;
 
@@ -3123,33 +3124,33 @@ public final class GraphUtils {
     }
 
 
-private static class Counts {
-    private int[][] counts;
+    private static class Counts {
+        private int[][] counts;
 
-    public Counts() {
-        this.counts = new int[8][6];
-    }
+        public Counts() {
+            this.counts = new int[8][6];
+        }
 
-    public void increment(int m, int n) {
-        this.counts[m][n]++;
-    }
+        public void increment(int m, int n) {
+            this.counts[m][n]++;
+        }
 
-    public int getCount(int m, int n) {
-        return this.counts[m][n];
-    }
+        public int getCount(int m, int n) {
+            return this.counts[m][n];
+        }
 
-    public void addAll(Counts counts2) {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 6; j++) {
-                counts[i][j] += counts2.getCount(i, j);
+        public void addAll(Counts counts2) {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 6; j++) {
+                    counts[i][j] += counts2.getCount(i, j);
+                }
             }
         }
-    }
 
-    public int[][] countArray() {
-        return counts;
+        public int[][] countArray() {
+            return counts;
+        }
     }
-}
 
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
 //        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
@@ -3467,139 +3468,139 @@ private static class Counts {
         return buf.toString();
     }
 
-public static class GraphComparison {
-    private final int[][] counts;
-    private int adjFn;
-    private int adjFp;
-    private int adjCorrect;
-    private int arrowptFn;
-    private int arrowptFp;
-    private int arrowptCorrect;
+    public static class GraphComparison {
+        private final int[][] counts;
+        private int adjFn;
+        private int adjFp;
+        private int adjCorrect;
+        private int arrowptFn;
+        private int arrowptFp;
+        private int arrowptCorrect;
 
-    private double adjPrec;
-    private double adjRec;
-    private double arrowptPrec;
-    private double arrowptRec;
+        private double adjPrec;
+        private double adjRec;
+        private double arrowptPrec;
+        private double arrowptRec;
 
-    private int shd;
-    private int twoCycleFn;
-    private int twoCycleFp;
-    private int twoCycleCorrect;
+        private int shd;
+        private int twoCycleFn;
+        private int twoCycleFp;
+        private int twoCycleCorrect;
 
-    private List<Edge> edgesAdded;
-    private List<Edge> edgesRemoved;
-    private List<Edge> edgesReorientedFrom;
-    private List<Edge> edgesReorientedTo;
+        private List<Edge> edgesAdded;
+        private List<Edge> edgesRemoved;
+        private List<Edge> edgesReorientedFrom;
+        private List<Edge> edgesReorientedTo;
 
-    public GraphComparison(int adjFn, int adjFp, int adjCorrect,
-                           int arrowptFn, int arrowptFp, int arrowptCorrect,
-                           double adjPrec, double adjRec, double arrowptPrec, double arrowptRec,
-                           int shd,
-                           int twoCycleCorrect, int twoCycleFn, int twoCycleFp,
-                           List<Edge> edgesAdded, List<Edge> edgesRemoved,
-                           List<Edge> edgesReorientedFrom,
-                           List<Edge> edgesReorientedTo,
-                           int[][] counts) {
-        this.adjFn = adjFn;
-        this.adjFp = adjFp;
-        this.adjCorrect = adjCorrect;
-        this.arrowptFn = arrowptFn;
-        this.arrowptFp = arrowptFp;
-        this.arrowptCorrect = arrowptCorrect;
+        public GraphComparison(int adjFn, int adjFp, int adjCorrect,
+                               int arrowptFn, int arrowptFp, int arrowptCorrect,
+                               double adjPrec, double adjRec, double arrowptPrec, double arrowptRec,
+                               int shd,
+                               int twoCycleCorrect, int twoCycleFn, int twoCycleFp,
+                               List<Edge> edgesAdded, List<Edge> edgesRemoved,
+                               List<Edge> edgesReorientedFrom,
+                               List<Edge> edgesReorientedTo,
+                               int[][] counts) {
+            this.adjFn = adjFn;
+            this.adjFp = adjFp;
+            this.adjCorrect = adjCorrect;
+            this.arrowptFn = arrowptFn;
+            this.arrowptFp = arrowptFp;
+            this.arrowptCorrect = arrowptCorrect;
 
-        this.adjPrec = adjPrec;
-        this.adjRec = adjRec;
-        this.arrowptPrec = arrowptPrec;
-        this.arrowptRec = arrowptRec;
+            this.adjPrec = adjPrec;
+            this.adjRec = adjRec;
+            this.arrowptPrec = arrowptPrec;
+            this.arrowptRec = arrowptRec;
 
-        this.shd = shd;
-        this.twoCycleCorrect = twoCycleCorrect;
-        this.twoCycleFn = twoCycleFn;
-        this.twoCycleFp = twoCycleFp;
-        this.edgesAdded = edgesAdded;
-        this.edgesRemoved = edgesRemoved;
-        this.edgesReorientedFrom = edgesReorientedFrom;
-        this.edgesReorientedTo = edgesReorientedTo;
+            this.shd = shd;
+            this.twoCycleCorrect = twoCycleCorrect;
+            this.twoCycleFn = twoCycleFn;
+            this.twoCycleFp = twoCycleFp;
+            this.edgesAdded = edgesAdded;
+            this.edgesRemoved = edgesRemoved;
+            this.edgesReorientedFrom = edgesReorientedFrom;
+            this.edgesReorientedTo = edgesReorientedTo;
 
-        this.counts = counts;
+            this.counts = counts;
+        }
+
+        public int getAdjFn() {
+            return adjFn;
+        }
+
+        public int getAdjFp() {
+            return adjFp;
+        }
+
+        public int getAdjCor() {
+            return adjCorrect;
+        }
+
+        public int getAhdFn() {
+            return arrowptFn;
+        }
+
+        public int getAhdFp() {
+            return arrowptFp;
+        }
+
+        public int getAhdCor() {
+            return arrowptCorrect;
+        }
+
+        public int getShd() {
+            return shd;
+        }
+
+        public int getTwoCycleFn() {
+            return twoCycleFn;
+        }
+
+        public int getTwoCycleFp() {
+            return twoCycleFp;
+        }
+
+        public int getTwoCycleCorrect() {
+            return twoCycleCorrect;
+        }
+
+        public List<Edge> getEdgesAdded() {
+            return edgesAdded;
+        }
+
+        public List<Edge> getEdgesRemoved() {
+            return edgesRemoved;
+        }
+
+        public List<Edge> getEdgesReorientedFrom() {
+            return edgesReorientedFrom;
+        }
+
+        public List<Edge> getEdgesReorientedTo() {
+            return edgesReorientedTo;
+        }
+
+        public double getAdjPrec() {
+            return adjPrec;
+        }
+
+        public double getAdjRec() {
+            return adjRec;
+        }
+
+        public double getAhdPrec() {
+            return arrowptPrec;
+        }
+
+        public double getAhdRec() {
+            return arrowptRec;
+        }
+
+        public int[][] getCounts() {
+            return counts;
+        }
     }
-
-    public int getAdjFn() {
-        return adjFn;
-    }
-
-    public int getAdjFp() {
-        return adjFp;
-    }
-
-    public int getAdjCor() {
-        return adjCorrect;
-    }
-
-    public int getAhdFn() {
-        return arrowptFn;
-    }
-
-    public int getAhdFp() {
-        return arrowptFp;
-    }
-
-    public int getAhdCor() {
-        return arrowptCorrect;
-    }
-
-    public int getShd() {
-        return shd;
-    }
-
-    public int getTwoCycleFn() {
-        return twoCycleFn;
-    }
-
-    public int getTwoCycleFp() {
-        return twoCycleFp;
-    }
-
-    public int getTwoCycleCorrect() {
-        return twoCycleCorrect;
-    }
-
-    public List<Edge> getEdgesAdded() {
-        return edgesAdded;
-    }
-
-    public List<Edge> getEdgesRemoved() {
-        return edgesRemoved;
-    }
-
-    public List<Edge> getEdgesReorientedFrom() {
-        return edgesReorientedFrom;
-    }
-
-    public List<Edge> getEdgesReorientedTo() {
-        return edgesReorientedTo;
-    }
-
-    public double getAdjPrec() {
-        return adjPrec;
-    }
-
-    public double getAdjRec() {
-        return adjRec;
-    }
-
-    public double getAhdPrec() {
-        return arrowptPrec;
-    }
-
-    public double getAhdRec() {
-        return arrowptRec;
-    }
-
-    public int[][] getCounts() {
-        return counts;
-    }
-}
 
     public static TwoCycleErrors getTwoCycleErrors(Graph trueGraph, Graph estGraph) {
         Set<Edge> trueEdges = trueGraph.getEdges();
@@ -3661,26 +3662,26 @@ public static class GraphComparison {
         return twoCycleErrors;
     }
 
-public static class TwoCycleErrors {
-    public int twoCycCor = 0;
-    public int twoCycFn = 0;
-    public int twoCycFp = 0;
+    public static class TwoCycleErrors {
+        public int twoCycCor = 0;
+        public int twoCycFn = 0;
+        public int twoCycFp = 0;
 
-    public TwoCycleErrors(int twoCycCor, int twoCycFn, int twoCycFp) {
-        this.twoCycCor = twoCycCor;
-        this.twoCycFn = twoCycFn;
-        this.twoCycFp = twoCycFp;
+        public TwoCycleErrors(int twoCycCor, int twoCycFn, int twoCycFp) {
+            this.twoCycCor = twoCycCor;
+            this.twoCycFn = twoCycFn;
+            this.twoCycFp = twoCycFp;
+        }
+
+        public String toString() {
+            String buf = "2c cor = " + twoCycCor + "\t" +
+                    "2c fn = " + twoCycFn + "\t" +
+                    "2c fp = " + twoCycFp;
+
+            return buf;
+        }
+
     }
-
-    public String toString() {
-        String buf = "2c cor = " + twoCycCor + "\t" +
-                "2c fn = " + twoCycFn + "\t" +
-                "2c fp = " + twoCycFp;
-
-        return buf;
-    }
-
-}
 
 
     public static boolean isDConnectedTo(Node x, Node y, List<Node> z, Graph graph) {
@@ -4254,6 +4255,73 @@ public static class TwoCycleErrors {
 
         path.removeLast();
         return false;
+    }
+
+    public static Set<Node> getInducedNodes(Node x, Graph graph) {
+        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+
+        final LinkedList<Node> path = new LinkedList<>();
+        path.add(x);
+
+        Set<Node> induced = new HashSet<>();
+
+        for (Node b : graph.getAdjacentNodes(x)) {
+            collectInducedNodesVisit(graph, x, b, path, induced);
+        }
+
+        return induced;
+    }
+
+    private static void collectInducedNodesVisit(Graph graph, Node x, Node b, LinkedList<Node> path,
+                                                 Set<Node> induced) {
+        if (path.contains(b)) {
+            return;
+        }
+
+        if (induced.contains(b)) {
+            return;
+        }
+
+        path.addLast(b);
+
+        if (isInducingPath(graph, path)) {
+            induced.add(b);
+        }
+
+        for (Node c : graph.getAdjacentNodes(b)) {
+            collectInducedNodesVisit(graph, x, c, path, induced);
+        }
+
+        path.removeLast();
+    }
+
+    public static boolean isInducingPath(Graph graph, LinkedList<Node> path) {
+        if (path.size() < 2) return false;
+        if (path.get(0).getNodeType() != NodeType.MEASURED) return false;
+        if (path.get(path.size() - 1).getNodeType() != NodeType.MEASURED) return false;
+
+        System.out.println("Path = " + path);
+
+        Node x = path.get(0);
+        Node y = path.get(path.size() - 1);
+
+        for (int i = 0; i < path.size() - 2; i++) {
+            Node a = path.get(i);
+            Node b = path.get(i + 1);
+            Node c = path.get(i + 2);
+
+            if (b.getNodeType() == NodeType.MEASURED) {
+                if (!graph.isDefCollider(a, b, c)) return false;
+            }
+
+            if (graph.isDefCollider(a, b, c)) {
+                if (!(graph.isAncestorOf(b, x) || graph.isAncestorOf(b, y))) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public static List<Node> getInducingPath(Node x, Node y, Graph graph) {

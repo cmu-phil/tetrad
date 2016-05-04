@@ -194,9 +194,9 @@ public class TestGFci {
 
     @Test
     public void test5() {
-        int numNodes = 1000;
+        int numNodes = 500;
         int numLatents = 50;
-        int numEdges = 1000;
+        int numEdges = 500;
         int sampleSize = 1000;
 
 //        System.out.println(RandomUtil.getInstance().getSeed());
@@ -221,6 +221,7 @@ public class TestGFci {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
         score.setPenaltyDiscount(4);
         GFci gFci = new GFci(score);
+        gFci.setFaithfulnessAssumed(true);
 
         long start = System.currentTimeMillis();
 
@@ -230,7 +231,9 @@ public class TestGFci {
 
         System.out.println("Elapsed " + (stop - start) + " ms");
 
-        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, new DagToPag(g).convert()));
+        DagToPag2 dagToPag2 = new DagToPag2(g);
+        dagToPag2.setVerbose(true);
+        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dagToPag2.convert()));
 
     }
 }

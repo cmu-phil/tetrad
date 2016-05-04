@@ -44,7 +44,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         IndTestProducer, GraphSource, IFgsRunner, Indexable {
     static final long serialVersionUID = 23L;
 
-    private transient FgsMb fgs;
+    private transient FgsMb2 fgs;
     private int index;
     private ArrayList<ScoredGraph> topGraphs;
 
@@ -162,7 +162,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             target = gesScore.getVariable(targetName);
-            fgs = new FgsMb(gesScore);
+            fgs = new FgsMb2(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
             fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
             fgs.setVerbose(true);
@@ -173,7 +173,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
                 target = score.getVariable(targetName);
                 score.setPenaltyDiscount(params.getComplexityPenalty());
-                fgs = new FgsMb(score);
+                fgs = new FgsMb2(score);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = 1;//((FgsParams) getParams()).getSamplePrior();
                 double structurePrior = 1;//((FgsParams) getParams()).getStructurePrior();
@@ -181,7 +181,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
                 target = score.getVariable(targetName);
-                fgs = new FgsMb(score);
+                fgs = new FgsMb2(score);
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
@@ -190,7 +190,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
             gesScore.setPenaltyDiscount(params.getIndTestParams().getAlpha());
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
             target = gesScore.getVariable(targetName);
-            fgs = new FgsMb(gesScore);
+            fgs = new FgsMb2(gesScore);
         }
         else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
@@ -217,12 +217,12 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
                     target = fgsScore.getVariable(targetName);
-                    fgs = new FgsMb(fgsScore);
+                    fgs = new FgsMb2(fgsScore);
                 } else {
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
                     target = fgsScore.getVariable(targetName);
-                    fgs = new FgsMb(fgsScore);
+                    fgs = new FgsMb2(fgsScore);
                 }
             } else if (allDiscrete(list)) {
                 double structurePrior = ((FgsParams) getParams()).getStructurePrior();
@@ -234,9 +234,9 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 target = fgsScore.getVariable(targetName);
 
                 if (indTestParams.isFirstNontriangular()) {
-                    fgs = new FgsMb(fgsScore);
+                    fgs = new FgsMb2(fgsScore);
                 } else {
-                    fgs = new FgsMb(fgsScore);
+                    fgs = new FgsMb2(fgsScore);
                 }
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
@@ -283,7 +283,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            }
 //
 //            fgs.setVerbose(true);
-//            fgs.setFaithfulnessAssumed(true);
+//            fgs.setHeuristicSpeedup(true);
 //            searchGraph = fgs.search();
 //        } else {
 //            Node target = getIndependenceTest().getVariable(targetName);
@@ -297,7 +297,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            search.setKnowledge(knowledge);
 //            search.setDepth(depth);
 //            search.setVerbose(true);
-//            search.setFaithfulnessAssumed(true);
+//            search.setHeuristicSpeedup(true);
 //            searchGraph = search.search();
 //        }
 
@@ -313,7 +313,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         fgs.setKnowledge(getParams().getKnowledge());
         fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
         fgs.setVerbose(true);
-        fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+//        fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
         fgs.setDepth(params.getIndTestParams().getDepth());
         Graph graph = fgs.search(target);
 
