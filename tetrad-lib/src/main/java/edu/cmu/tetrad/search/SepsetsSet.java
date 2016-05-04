@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
@@ -87,11 +86,6 @@ public class SepsetsSet implements SepsetProducer {
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    @Override
-    public Graph getDag() {
-        return null;
     }
 
 }

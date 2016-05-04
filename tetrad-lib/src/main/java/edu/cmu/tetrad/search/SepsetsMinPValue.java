@@ -161,11 +161,6 @@ public class SepsetsMinPValue implements SepsetProducer {
         this.verbose = verbose;
     }
 
-    @Override
-    public Graph getDag() {
-        return null;
-    }
-
 
 }
 

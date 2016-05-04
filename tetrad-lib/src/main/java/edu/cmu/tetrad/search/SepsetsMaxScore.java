@@ -159,10 +159,5 @@ public class SepsetsMaxScore implements SepsetProducer {
         this.verbose = verbose;
     }
 
-    @Override
-    public Graph getDag() {
-        return null;
-    }
-
 }
 

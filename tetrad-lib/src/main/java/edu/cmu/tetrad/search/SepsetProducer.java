@@ -46,6 +46,5 @@ public interface SepsetProducer {
 
     void setVerbose(boolean verbose);
 
-    Graph getDag();
 }
 

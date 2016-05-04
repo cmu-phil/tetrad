@@ -38,6 +38,7 @@ public class SepsetsGreedy implements SepsetProducer {
     private final SepsetMap extraSepsets;
     private int depth = 3;
     private boolean verbose = false;
+    private Graph dag;
 
     public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -141,10 +142,12 @@ public class SepsetsGreedy implements SepsetProducer {
         this.verbose = verbose;
     }
 
-    @Override
     public Graph getDag() {
-        return null;
+        if (independenceTest instanceof IndTestDSep) {
+            return ((IndTestDSep) independenceTest).getGraph();
+        } else {
+            return null;
+        }
     }
-
 }
 

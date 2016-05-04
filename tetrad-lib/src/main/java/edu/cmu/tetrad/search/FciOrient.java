@@ -49,7 +49,6 @@ import java.util.*;
  */
 public final class FciOrient {
 
-    private final Graph dag;
     /**
      * The SepsetMap being constructed.
      */
@@ -85,6 +84,7 @@ public final class FciOrient {
     private boolean verbose = false;
 
     private Graph truePag;
+    private Graph dag;
 
     //============================CONSTRUCTORS============================//
 
@@ -93,7 +93,11 @@ public final class FciOrient {
      */
     public FciOrient(SepsetProducer sepsets) {
         this.sepsets = sepsets;
-        this.dag = sepsets.getDag();
+
+        if (sepsets instanceof SepsetsGreedy) {
+            SepsetsGreedy _sepsets = (SepsetsGreedy) sepsets;
+            this.dag = _sepsets.getDag();
+        }
     }
 
     //========================PUBLIC METHODS==========================//
