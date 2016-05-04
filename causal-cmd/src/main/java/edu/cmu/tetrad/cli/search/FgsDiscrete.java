@@ -24,6 +24,7 @@ import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.cli.util.GraphmlSerializer;
 import edu.cmu.tetrad.cli.util.XmlPrint;
 import edu.cmu.tetrad.cli.validation.DataValidation;
+import edu.cmu.tetrad.cli.validation.LimitDiscreteCategory;
 import edu.cmu.tetrad.cli.validation.TabularDiscreteData;
 import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
 import edu.cmu.tetrad.data.DataSet;
@@ -66,6 +67,8 @@ public class FgsDiscrete {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FgsDiscrete.class);
 
+    public static final int CATEGORY_LIMIT = 10;
+
     private static final Options MAIN_OPTIONS = new Options();
 
     static {
@@ -95,6 +98,7 @@ public class FgsDiscrete {
 
         // data validations
         MAIN_OPTIONS.addOption(null, "skip-unique-var-name", false, "Skip check for unique variable names.");
+        MAIN_OPTIONS.addOption(null, "skip-category-limit", false, "Skip check for number of categories accepted.");
     }
 
     private static Path dataFile;
@@ -114,6 +118,7 @@ public class FgsDiscrete {
     private static boolean validationOutput;
 
     private static boolean skipUniqueVarName;
+    private static boolean skipCategoryLimit;
 
     /**
      * @param args the command line arguments
@@ -143,6 +148,7 @@ public class FgsDiscrete {
             validationOutput = !cmd.hasOption("no-validation-output");
 
             skipUniqueVarName = cmd.hasOption("skip-unique-var-name");
+            skipCategoryLimit = cmd.hasOption("skip-category-limit");
         } catch (ParseException | FileNotFoundException exception) {
             System.err.println(exception.getLocalizedMessage());
             Args.showHelp("fgs-discrete", MAIN_OPTIONS);
@@ -233,6 +239,9 @@ public class FgsDiscrete {
         List<DataValidation> validations = new LinkedList<>();
         if (!skipUniqueVarName) {
             validations.add(new UniqueVariableNames(dataSet, validationOutput ? Paths.get(dir, outputPrefix + "_duplicate_var_name.txt") : null));
+        }
+        if (!skipCategoryLimit) {
+            validations.add(new LimitDiscreteCategory(dataSet, CATEGORY_LIMIT));
         }
 
         for (DataValidation dataValidation : validations) {
