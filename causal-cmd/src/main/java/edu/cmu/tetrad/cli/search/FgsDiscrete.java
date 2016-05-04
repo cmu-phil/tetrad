@@ -24,6 +24,7 @@ import edu.cmu.tetrad.cli.util.FileIO;
 import edu.cmu.tetrad.cli.util.GraphmlSerializer;
 import edu.cmu.tetrad.cli.util.XmlPrint;
 import edu.cmu.tetrad.cli.validation.DataValidation;
+import edu.cmu.tetrad.cli.validation.TabularDiscreteData;
 import edu.cmu.tetrad.cli.validation.UniqueVariableNames;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -157,6 +158,11 @@ public class FgsDiscrete {
             String errMsg = String.format("Failed to read variable file '%s'.", variableFile.getFileName());
             System.err.println(errMsg);
             LOGGER.error(errMsg, exception);
+            System.exit(-128);
+        }
+
+        DataValidation dataValidation = new TabularDiscreteData(variables, dataFile, delimiter);
+        if (!dataValidation.validate(System.err, verbose)) {
             System.exit(-128);
         }
 
