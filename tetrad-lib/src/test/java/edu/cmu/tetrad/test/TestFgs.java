@@ -218,7 +218,7 @@ public class TestFgs {
 //            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             Fgs2 fgs = new Fgs2(new GraphScore(dag));
-            fgs.setFaithfulnessAssumed(true);
+            fgs.setFaithfulnessAssumed(false);
             Graph pattern1 = fgs.search();
             Graph pattern2 = new Pc(new IndTestDSep(dag)).search();
 //            System.out.println(pattern2);
