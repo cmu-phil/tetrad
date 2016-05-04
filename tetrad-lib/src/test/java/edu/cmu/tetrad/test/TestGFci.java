@@ -182,7 +182,7 @@ public class TestGFci {
 //            GFci fgci = new GFci(new IndTestDSep(dag));
             fgci.setFaithfulnessAssumed(false);
             Graph pattern1 = fgci.search();
-            Graph pattern2 = new DagToPag(dag).convert();
+            Graph pattern2 = new DagToPag2(dag).convert();
 
 //            System.out.println(pattern1);
 //            System.out.println(pattern2);
@@ -194,9 +194,9 @@ public class TestGFci {
 
     @Test
     public void test5() {
-        int numNodes = 500;
+        int numNodes = 1000;
         int numLatents = 50;
-        int numEdges = 500;
+        int numEdges = 1000;
         int sampleSize = 1000;
 
 //        System.out.println(RandomUtil.getInstance().getSeed());
