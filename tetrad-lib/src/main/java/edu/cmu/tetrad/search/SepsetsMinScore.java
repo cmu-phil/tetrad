@@ -162,5 +162,10 @@ public class SepsetsMinScore implements SepsetProducer {
         this.verbose = verbose;
     }
 
+    @Override
+    public Graph getDag() {
+        return null;
+    }
+
 }
 

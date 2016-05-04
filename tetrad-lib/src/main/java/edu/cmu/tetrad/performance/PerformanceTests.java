@@ -1424,7 +1424,12 @@ public class PerformanceTests {
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
 
-    public void testDagToPagOnly(int numVars, double edgeFactor, int numLatents) {
+    @Test
+    public void testDagToPagOnly() {
+        int numVars = 20;
+        double edgeFactor = 1.0;
+        int numLatents = 5;
+
         System.out.println("Making list of vars");
 
         List<Node> vars = new ArrayList<Node>();
@@ -1450,14 +1455,18 @@ public class PerformanceTests {
 
         final DagToPag dagToPag = new DagToPag(dag);
         dagToPag.setCompleteRuleSetUsed(true);
-        Graph top = dagToPag.convert();
+        Graph left = dagToPag.convert();
+
+        final DagToPag2 dagToPag2 = new DagToPag2(dag);
+        dagToPag2.setCompleteRuleSetUsed(true);
+        Graph top = dagToPag2.convert();
 
         long time2b = System.currentTimeMillis();
 
 //        top = DataGraphUtils.replaceNodes(top, left.getNodes());
 
 //        int[][] counts = edgeMisclassificationCounts(left, top);
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(top, top, true);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
         System.out.println(GraphUtils.edgeMisclassifications(counts));
 
 //        System.out.println("Elapsed fci = " + (time1b - time1a) + " ms");

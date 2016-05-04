@@ -49,6 +49,7 @@ import java.util.*;
  */
 public final class FciOrient {
 
+    private final Graph dag;
     /**
      * The SepsetMap being constructed.
      */
@@ -92,6 +93,7 @@ public final class FciOrient {
      */
     public FciOrient(SepsetProducer sepsets) {
         this.sepsets = sepsets;
+        this.dag = sepsets.getDag();
     }
 
     //========================PUBLIC METHODS==========================//
@@ -615,6 +617,7 @@ public final class FciOrient {
      * arguments.
      */
     private void doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
+
         List<Node> sepset = getSepset(d, c);
 
         if (sepset == null) return;
@@ -747,6 +750,27 @@ public final class FciOrient {
      * arguments.
      */
     private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Map<Node, Node> previous, Graph graph) {
+        if (dag != null) {
+            if (dag.isChildOf(c, b)) {
+                graph.setEndpoint(c, b, Endpoint.TAIL);
+                changeFlag = true;
+            } else {
+                if (!isArrowpointAllowed(a, b, graph)) {
+                    return false;
+                }
+
+                if (!isArrowpointAllowed(c, b, graph)) {
+                    return false;
+                }
+
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
+                changeFlag = true;
+            }
+
+            return true;
+        }
+
         if (graph.isAdjacentTo(d, c)) {
             throw new IllegalArgumentException();
         }

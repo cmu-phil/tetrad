@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
@@ -44,5 +45,7 @@ public interface SepsetProducer {
     List<Node> getVariables();
 
     void setVerbose(boolean verbose);
+
+    Graph getDag();
 }
 

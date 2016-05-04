@@ -212,6 +212,11 @@ public class SepsetsConservative implements SepsetProducer {
         this.verbose = verbose;
     }
 
+    @Override
+    public Graph getDag() {
+        return null;
+    }
+
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
     }

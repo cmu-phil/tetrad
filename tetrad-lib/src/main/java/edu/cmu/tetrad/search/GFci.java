@@ -176,13 +176,20 @@ public final class GFci {
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
+        System.out.println("GFCI: FGS done");
+
         sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, depth);
 //        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, depth);
 //        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, depth);
 //        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, depth);
 //        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, depth);
 //
+        System.out.println("GFCI: Look inside triangles starting");
+
         // Look inside triangles.
+        // Must first remove the nuisance adjacencies before orienting anything; otherwise,
+        // you may end up with extra orientations for colliders X->Y<-Z where X->Y is subsequently
+        // removed from the graph.
         for (Node b : nodes) {
             List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
 
@@ -205,12 +212,19 @@ public final class GFci {
             }
         }
 
+        System.out.println("GFCI: Look inside triangles done");
+
         modifiedR0(fgsGraph);
+
+        System.out.println("GFCI: R0 done");
+
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.doFinalOrientation(graph);
+
+        System.out.println("GFCI: Final orientation done");
 
         GraphUtils.replaceNodes(graph, independenceTest.getVariables());
 

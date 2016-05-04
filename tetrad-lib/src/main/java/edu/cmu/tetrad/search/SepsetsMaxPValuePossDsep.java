@@ -284,5 +284,10 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    @Override
+    public Graph getDag() {
+        return null;
+    }
 }
 
