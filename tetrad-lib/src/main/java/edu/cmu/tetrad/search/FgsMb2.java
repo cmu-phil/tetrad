@@ -54,7 +54,11 @@ import java.util.concurrent.*;
  */
 public final class FgsMb2 {
 
-    private enum Mode {nonFaithful, heuristicSpeedup, coverNoncolliders}
+    // Internal. Actually we are assuming faithfulness for this algorithm, so the first item
+    // is not used. Its necessary for correctness.
+    private enum Mode {
+        allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
+    }
 
     /**
      * Specification of forbidden and required edges.
@@ -162,6 +166,7 @@ public final class FgsMb2 {
     // The final totalScore after search.
     private double modelScore;
 
+    // Internal.
     private Mode mode = Mode.heuristicSpeedup;
 
 //    private boolean faithfulnessAssumed = true;
@@ -170,52 +175,6 @@ public final class FgsMb2 {
 
 
     //===========================CONSTRUCTORS=============================//
-
-    /**
-     * The data set must either be all continuous or all discrete.
-     *
-     * @deprecated Construct a Score and pass it in instead.
-     */
-    public FgsMb2(DataSet dataSet) {
-        if (verbose) {
-            out.println("GES constructor");
-        }
-
-        if (dataSet.isDiscrete()) {
-            setFgsScore(new BDeuScore(dataSet));
-        } else {
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-            score.setPenaltyDiscount(2.0);
-            setFgsScore(score);
-        }
-
-        this.graph = new EdgeListGraphSingleConnections(getVariables());
-
-        if (verbose) {
-            out.println("GES constructor done");
-        }
-    }
-
-    /**
-     * Continuous case--where a covariance matrix is already available.
-     *
-     * @deprecated Construct a Score and pass it in instead.
-     */
-    public FgsMb2(ICovarianceMatrix covMatrix) {
-        if (verbose) {
-            out.println("GES constructor");
-        }
-
-        SemBicScore _score = new SemBicScore(covMatrix);
-        _score.setPenaltyDiscount(2.0);
-        setFgsScore(_score);
-
-        this.graph = new EdgeListGraphSingleConnections(getVariables());
-
-        if (verbose) {
-            out.println("GES constructor done");
-        }
-    }
 
     /**
      * Construct a Score and pass it in here. The totalScore should return a
@@ -334,8 +293,10 @@ public final class FgsMb2 {
 
         Set emptySet = new HashSet();
 
+        List<RecursiveTask> tasks = new ArrayList<>();
+
         for (Node target : targets) {
-            for (Node x : fgsScore.getVariables()) {
+            for (final Node x : fgsScore.getVariables()) {
                 if (targets.contains(x)) {
                     continue;
                 }
@@ -348,23 +309,47 @@ public final class FgsMb2 {
                     dconn.addNode(x);
                     addUnconditionalArrows(x, target, emptySet);
 
-                    for (Node y : fgsScore.getVariables()) {
+                    for (final Node y : fgsScore.getVariables()) {
                         if (x == y) continue;
 
                         if (!dconn.isAdjacentTo(x, y) && !dconn.isAdjacentTo(y, target)) {
-                            int child2 = hashIndices.get(x);
-                            int parent2 = hashIndices.get(y);
+                            class MbTask extends RecursiveTask<Boolean> {
+                                Node x;
+                                Node y;
+                                Set<Node> emptySet = new HashSet<>();
 
-                            double bump2 = fgsScore.localScoreDiff(parent2, child2);
+                                public MbTask(Node x, Node y) {
+                                    this.x = x;
+                                    this.y = y;
+                                }
 
-                            if (bump2 > 0) {
-                                dconn.addNode(y);
-                                addUnconditionalArrows(x, y, emptySet);
+                                @Override
+                                protected Boolean compute() {
+                                    int child2 = hashIndices.get(x);
+                                    int parent2 = hashIndices.get(y);
+
+                                    double bump2 = fgsScore.localScoreDiff(parent2, child2);
+
+                                    if (bump2 > 0) {
+                                        dconn.addNode(y);
+                                        addUnconditionalArrows(x, y, emptySet);
+                                    }
+
+                                    return true;
+                                }
                             }
+
+                            MbTask mbTask = new MbTask(x, y);
+                            mbTask.fork();
+                            tasks.add(mbTask);
                         }
                     }
                 }
             }
+        }
+
+        for (RecursiveTask task : tasks) {
+            task.join();
         }
 
         this.targets = targets;
@@ -654,7 +639,11 @@ public final class FgsMb2 {
             }
         }
 
+        System.out.println("Starting to build indexing");
+
         buildIndexing(totalScore.getVariables());
+
+        System.out.println("FGS score done");
     }
 
     final int[] count = new int[1];
@@ -729,71 +718,63 @@ public final class FgsMb2 {
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism() * 1;
 
 
-    private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
-        if (verbose) {
-            System.out.println("heuristicSpeedup = true");
-        }
-
-        sortedArrows = new ConcurrentSkipListSet<>();
-        lookupArrows = new ConcurrentHashMap<>();
-        neighbors = new ConcurrentHashMap<>();
-        final Set<Node> emptySet = new HashSet<>();
-
-        long start = System.currentTimeMillis();
-        this.dconn = new EdgeListGraphSingleConnections(nodes);
-
-        class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
-
-            public InitializeFromEmptyGraphTask() {
-            }
-
-            @Override
-            protected Boolean compute() {
-                Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
-
-                int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
-
-                for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
-                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
-                            nodes, emptySet);
-                    tasks.add(task);
-                    task.fork();
-
-                    for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
-                        if (_task.isDone()) {
-                            _task.join();
-                            tasks.remove(_task);
-                        }
-                    }
-
-                    while (tasks.size() > maxThreads) {
-                        NodeTaskEmptyGraph _task = tasks.poll();
-                        _task.join();
-                    }
-                }
-
-                for (NodeTaskEmptyGraph task : tasks) {
-                    task.join();
-                }
-
-                return true;
-            }
-        }
-
-        pool.invoke(new InitializeFromEmptyGraphTask());
-
-        long stop = System.currentTimeMillis();
-
-        if (verbose) {
-            out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
-        }
-    }
+//    private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
+//        sortedArrows = new ConcurrentSkipListSet<>();
+//        lookupArrows = new ConcurrentHashMap<>();
+//        neighbors = new ConcurrentHashMap<>();
+//        final Set<Node> emptySet = new HashSet<>();
+//
+//        long start = System.currentTimeMillis();
+//        this.dconn = new EdgeListGraphSingleConnections(nodes);
+//
+//        class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
+//
+//            public InitializeFromEmptyGraphTask() {
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
+//
+//                int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
+//
+//                for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
+//                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
+//                            nodes, emptySet);
+//                    tasks.add(task);
+//                    task.fork();
+//
+//                    for (NodeTaskEmptyGraph _task : new ArrayList<>(tasks)) {
+//                        if (_task.isDone()) {
+//                            _task.join();
+//                            tasks.remove(_task);
+//                        }
+//                    }
+//
+//                    while (tasks.size() > maxThreads) {
+//                        NodeTaskEmptyGraph _task = tasks.poll();
+//                        _task.join();
+//                    }
+//                }
+//
+//                for (NodeTaskEmptyGraph task : tasks) {
+//                    task.join();
+//                }
+//
+//                return true;
+//            }
+//        }
+//
+//        pool.invoke(new InitializeFromEmptyGraphTask());
+//
+//        long stop = System.currentTimeMillis();
+//
+//        if (verbose) {
+//            out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
+//        }
+//    }
 
     private void initializeTwoStepEdges(final List<Node> nodes) {
-        if (verbose) {
-            System.out.println("heuristicSpeedup = false");
-        }
-
         count[0] = 0;
 
         sortedArrows = new ConcurrentSkipListSet<>();
@@ -896,103 +877,99 @@ public final class FgsMb2 {
         pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
     }
 
-    private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
-        if (verbose) {
-            System.out.println("heuristicSpeedup = false");
-        }
-
-        count[0] = 0;
-
-        sortedArrows = new ConcurrentSkipListSet<>();
-        lookupArrows = new ConcurrentHashMap<>();
-        neighbors = new ConcurrentHashMap<>();
-
-        if (this.dconn == null) {
-            this.dconn = new EdgeListGraph(nodes);
-        }
-
-        if (initialGraph != null) {
-            for (Edge edge : initialGraph.getEdges()) {
-                if (!dconn.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                    dconn.addUndirectedEdge(edge.getNode1(), edge.getNode2());
-                }
-            }
-        }
-
-        final Set<Node> emptySet = new HashSet<>(0);
-
-        class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-
-            public InitializeFromExistingGraphTask(int chunk, int from, int to) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (TaskManager.getInstance().isCanceled()) return false;
-
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        if ((i + 1) % 1000 == 0) {
-                            count[0] += 1000;
-                            out.println("Initializing effect edges: " + (count[0]));
-                        }
-
-                        Node y = nodes.get(i);
-//                        neighbors.put(y, getNeighbors(y));
-                        Set<Node> D = new HashSet<>();
-
-                        List<Node> cond = new ArrayList<>();
-//                        cond.addAll(graph.getParents(y));
-//                        cond.addAll(graph.getChildren(y));
-
-                        D.addAll(GraphUtils.getDconnectedVars(y, cond, graph));
-
-                        D.remove(y);
-                        D.removeAll(dconn.getAdjacentNodes(y));
-
-                        for (Node x : D) {
-                            if (existsKnowledge()) {
-                                if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
-                                    continue;
-                                }
-
-                                if (!validSetByKnowledge(y, emptySet)) {
-                                    continue;
-                                }
-                            }
-
-                            if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
-                                continue;
-                            }
-
-                            calculateArrowsForward(x, y);
-                        }
-                    }
-
-                    return true;
-                } else {
-                    int mid = (to + from) / 2;
-
-                    InitializeFromExistingGraphTask left = new InitializeFromExistingGraphTask(chunk, from, mid);
-                    InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(chunk, mid, to);
-
-                    left.fork();
-                    right.compute();
-                    left.join();
-
-                    return true;
-                }
-            }
-        }
-
-        pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
-    }
+//    private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
+//        count[0] = 0;
+//
+//        sortedArrows = new ConcurrentSkipListSet<>();
+//        lookupArrows = new ConcurrentHashMap<>();
+//        neighbors = new ConcurrentHashMap<>();
+//
+//        if (this.dconn == null) {
+//            this.dconn = new EdgeListGraph(nodes);
+//        }
+//
+//        if (initialGraph != null) {
+//            for (Edge edge : initialGraph.getEdges()) {
+//                if (!dconn.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                    dconn.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+//                }
+//            }
+//        }
+//
+//        final Set<Node> emptySet = new HashSet<>(0);
+//
+//        class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
+//            private int chunk;
+//            private int from;
+//            private int to;
+//
+//            public InitializeFromExistingGraphTask(int chunk, int from, int to) {
+//                this.chunk = chunk;
+//                this.from = from;
+//                this.to = to;
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                if (TaskManager.getInstance().isCanceled()) return false;
+//
+//                if (to - from <= chunk) {
+//                    for (int i = from; i < to; i++) {
+//                        if ((i + 1) % 1000 == 0) {
+//                            count[0] += 1000;
+//                            out.println("Initializing effect edges: " + (count[0]));
+//                        }
+//
+//                        Node y = nodes.get(i);
+////                        neighbors.put(y, getNeighbors(y));
+//                        Set<Node> D = new HashSet<>();
+//
+//                        List<Node> cond = new ArrayList<>();
+////                        cond.addAll(graph.getParents(y));
+////                        cond.addAll(graph.getChildren(y));
+//
+//                        D.addAll(GraphUtils.getDconnectedVars(y, cond, graph));
+//
+//                        D.remove(y);
+//                        D.removeAll(dconn.getAdjacentNodes(y));
+//
+//                        for (Node x : D) {
+//                            if (existsKnowledge()) {
+//                                if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
+//                                    continue;
+//                                }
+//
+//                                if (!validSetByKnowledge(y, emptySet)) {
+//                                    continue;
+//                                }
+//                            }
+//
+//                            if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+//                                continue;
+//                            }
+//
+//                            calculateArrowsForward(x, y);
+//                        }
+//                    }
+//
+//                    return true;
+//                } else {
+//                    int mid = (to + from) / 2;
+//
+//                    InitializeFromExistingGraphTask left = new InitializeFromExistingGraphTask(chunk, from, mid);
+//                    InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(chunk, mid, to);
+//
+//                    left.fork();
+//                    right.compute();
+//                    left.join();
+//
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+//    }
 
     private void fes() {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
@@ -1190,8 +1167,7 @@ public final class FgsMb2 {
 
                         if (mode == Mode.heuristicSpeedup) {
                             adj = dconn.getAdjacentNodes(x);
-                        }
-                        else if (mode == Mode.coverNoncolliders) {
+                        } else if (mode == Mode.coverNoncolliders) {
                             Set<Node> g = new HashSet<>();
 
                             for (Node n : graph.getAdjacentNodes(x)) {
@@ -1209,9 +1185,7 @@ public final class FgsMb2 {
                             }
 
                             adj = new ArrayList<>(g);
-                        }
-
-                        else if (mode == Mode.nonFaithful) {
+                        } else if (mode == Mode.allowUnfaithfulness) {
                             HashSet<Node> D = new HashSet<>();
                             D.addAll(GraphUtils.getDconnectedVars(x, new ArrayList<Node>(), graph));
                             D.remove(x);
@@ -1914,8 +1888,11 @@ public final class FgsMb2 {
     // Maps adj to their indices for quick lookup.
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
-        for (int i = 0; i < nodes.size(); i++) {
-            this.hashIndices.put(nodes.get(i), i);
+
+        int i = -1;
+
+        for (Node n : nodes) {
+            this.hashIndices.put(n, ++i);
         }
     }
 

@@ -973,7 +973,7 @@ public class PerformanceTests {
             score.setPenaltyDiscount(penaltyDiscount);
 
             System.out.println(new Date());
-            System.out.println("\nStarting FGS");
+            System.out.println("\nStarting FGS-MB");
 
             fgs = new FgsMb2(score);
             fgs.setVerbose(true);

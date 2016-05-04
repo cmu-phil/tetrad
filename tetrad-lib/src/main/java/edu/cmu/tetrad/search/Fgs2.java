@@ -1749,8 +1749,11 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
     // Maps adj to their indices for quick lookup.
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
-        for (int i = 0; i < nodes.size(); i++) {
-            this.hashIndices.put(nodes.get(i), i);
+
+        int i = -1;
+
+        for (Node n : nodes) {
+            this.hashIndices.put(n, ++i);
         }
     }
 

@@ -280,8 +280,8 @@ public class TestFgs {
         g.addDirectedEdge(x4, x3);
 
         Graph pattern1 = new Pc(new IndTestDSep(g)).search();
-        FgsMb fgs = new FgsMb(new GraphScore(g));
-        fgs.setFaithfulnessAssumed(false);
+        FgsMb2 fgs = new FgsMb2(new GraphScore(g));
+//        fgs.setFaithfulnessAssumed(false);
         Graph pattern2 = fgs.search(x1);
 
 //        System.out.println(pattern1);

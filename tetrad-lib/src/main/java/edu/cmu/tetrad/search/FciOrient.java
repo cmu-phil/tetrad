@@ -755,7 +755,7 @@ public final class FciOrient {
      */
     private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Map<Node, Node> previous, Graph graph) {
         if (dag != null) {
-            if (dag.isChildOf(c, b)) {
+            if (dag.isAncestorOf(b, c)) {
                 graph.setEndpoint(c, b, Endpoint.TAIL);
                 changeFlag = true;
             } else {
