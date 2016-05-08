@@ -325,6 +325,11 @@ public class SemBicScore implements Score {
 
         return null;
     }
+
+    @Override
+    public int getMaxIndegree() {
+        return (int) Math.ceil(Math.log(sampleSize));
+    }
 }
 
 

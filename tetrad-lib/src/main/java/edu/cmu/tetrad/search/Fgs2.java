@@ -54,6 +54,7 @@ import java.util.concurrent.*;
  */
 public final class Fgs2 implements GraphSearch, GraphScorer {
 
+
     /**
      * Internal.
      */
@@ -174,6 +175,9 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
      * True if one-edge faithfulness is assumed. Speeds the algorithm up.
      */
     private boolean faithfulnessAssumed = true;
+
+    // Bounds the indegree of the graph.
+    private int maxIndegree;
 
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
@@ -504,6 +508,8 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         }
 
         buildIndexing(totalScore.getVariables());
+
+        this.maxIndegree = score.getMaxIndegree();
     }
 
     final int[] count = new int[1];
@@ -576,9 +582,9 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
     }
 
     private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
-        if (verbose) {
-            System.out.println("heuristicSpeedup = true");
-        }
+//        if (verbose) {
+//            System.out.println("heuristicSpeedup = true");
+//        }
 
         sortedArrows = new ConcurrentSkipListSet<>();
         lookupArrows = new ConcurrentHashMap<>();
@@ -636,9 +642,9 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
     }
 
     private void initializeTwoStepEdges(final List<Node> nodes) {
-        if (verbose) {
-            System.out.println("heuristicSpeedup = false");
-        }
+//        if (verbose) {
+//            System.out.println("heuristicSpeedup = false");
+//        }
 
         count[0] = 0;
 
@@ -743,9 +749,9 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
     }
 
     private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
-        if (verbose) {
-            System.out.println("heuristicSpeedup = false");
-        }
+//        if (verbose) {
+//            System.out.println("heuristicSpeedup = false");
+//        }
 
         count[0] = 0;
 
@@ -1108,14 +1114,14 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
         List<Node> TNeighbors = getTNeighbors(a, b);
 
-        final int _depth = Math.min(TNeighbors.size(), depth == -1 ? 1000 : depth);
+        final int _max = Math.min(TNeighbors.size(), maxIndegree == -1 ? 1000 : maxIndegree - graph.getIndegree(b));
 
         Set<Set<Node>> previousCliques = new HashSet<>();
         previousCliques.add(new HashSet<Node>());
         Set<Set<Node>> newCliques = new HashSet<>();
 
         FOR:
-        for (int i = 0; i <= _depth; i++) {
+        for (int i = 0; i <= _max; i++) {
             final ChoiceGenerator gen = new ChoiceGenerator(TNeighbors.size(), i);
             int[] choice;
 
@@ -1147,10 +1153,10 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                     addArrow(a, b, naYX, T, bump);
                 }
 
-                if (mode == Mode.heuristicSpeedup && union.isEmpty() && score.isEffectEdge(bump) &&
-                        !effectEdgesGraph.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
-                    effectEdgesGraph.addUndirectedEdge(a, b);
-                }
+//                if (mode == Mode.heuristicSpeedup && union.isEmpty() && score.isEffectEdge(bump) &&
+//                        !effectEdgesGraph.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
+//                    effectEdgesGraph.addUndirectedEdge(a, b);
+//                }
             }
 
             previousCliques = newCliques;
@@ -1427,15 +1433,17 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
         int numEdges = graph.getNumEdges();
 
-        if (verbose) {
-            if (numEdges % 1000 == 0) out.println("Num edges added: " + numEdges);
-        }
-
 //        if (verbose) {
-//            String label = trueGraph != null && trueEdge != null ? "*" : "";
-//            out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
-//                    " " + T + " " + bump + " " + label + " degree = " + GraphUtils.getDegree(graph));
+        if (numEdges % 1000 == 0) out.println("Num edges added: " + numEdges);
 //        }
+
+        if (verbose) {
+            String label = trueGraph != null && trueEdge != null ? "*" : "";
+            out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
+                    " " + T + " " + bump + " " + label
+                    + " degree = " + GraphUtils.getDegree(graph)
+                    + " indegree = " + GraphUtils.getIndegree(graph));
+        }
 
         for (Node _t : T) {
             graph.removeEdge(_t, y);
@@ -1443,11 +1451,11 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
             graph.addDirectedEdge(_t, y);
 
-//            if (verbose) {
-//                String message = "--- Directing " + graph.getEdge(_t, y);
-//                TetradLogger.getInstance().log("directedEdges", message);
-//                out.println(message);
-//            }
+            if (verbose) {
+                String message = "--- Directing " + graph.getEdge(_t, y);
+                TetradLogger.getInstance().log("directedEdges", message);
+                out.println(message);
+            }
         }
 
         return true;
@@ -1473,17 +1481,17 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         graph.removeEdge(oldxy);
         removedEdges.add(Edges.undirectedEdge(x, y));
 
-        if (verbose) {
-            int numEdges = graph.getNumEdges();
-            if (numEdges % 1000 == 0) out.println("Num edges (backwards) = " + numEdges);
+//        if (verbose) {
+        int numEdges = graph.getNumEdges();
+        if (numEdges % 1000 == 0) out.println("Num edges (backwards) = " + numEdges);
+//        }
 
-//            if (verbose) {
-//                String label = trueGraph != null && trueEdge != null ? "*" : "";
-//                String message = (graph.getNumEdges()) + ". DELETE " + x + "-->" + y +
-//                        " H = " + H + " NaYX = " + naYX + " diff = " + diff + " (" + bump + ") " + label;
-//                TetradLogger.getInstance().log("deletedEdges", message);
-//                out.println(message);
-//            }
+        if (verbose) {
+            String label = trueGraph != null && trueEdge != null ? "*" : "";
+            String message = (graph.getNumEdges()) + ". DELETE " + x + "-->" + y +
+                    " H = " + H + " NaYX = " + naYX + " diff = " + diff + " (" + bump + ") " + label;
+            TetradLogger.getInstance().log("deletedEdges", message);
+            out.println(message);
         }
 
         for (Node h : H) {
@@ -1495,11 +1503,11 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
             graph.addEdge(Edges.directedEdge(y, h));
 
-//            if (verbose) {
-//                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldyh + " to " +
-//                        graph.getEdge(y, h));
-//                out.println("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
-//            }
+            if (verbose) {
+                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldyh + " to " +
+                        graph.getEdge(y, h));
+                out.println("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
+            }
 
             Edge oldxh = graph.getEdge(x, h);
 
@@ -1508,11 +1516,11 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
                 graph.addEdge(Edges.directedEdge(x, h));
 
-//                if (verbose) {
-//                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldxh + " to " +
-//                            graph.getEdge(x, h));
-//                    out.println("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
-//                }
+                if (verbose) {
+                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldxh + " to " +
+                            graph.getEdge(x, h));
+                    out.println("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
+                }
             }
         }
 

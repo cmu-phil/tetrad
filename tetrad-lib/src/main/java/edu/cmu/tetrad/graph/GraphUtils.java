@@ -4470,6 +4470,18 @@ public final class GraphUtils {
         return max;
     }
 
+    public static int getIndegree(Graph graph) {
+        int max = 0;
+
+        for (Node node : graph.getNodes()) {
+            if (graph.getAdjacentNodes(node).size() > max) {
+                max = graph.getIndegree(node);
+            }
+        }
+
+        return max;
+    }
+
     // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
     // length at most 'bound'. Cycle checker in other words.
     public static List<Node> existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, int bound, Graph graph) {

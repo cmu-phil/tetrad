@@ -309,6 +309,11 @@ public class SemBicScoreImages implements ISemBicScore, Score {
 
         return null;
     }
+
+    @Override
+    public int getMaxIndegree() {
+        return 1000;
+    }
 }
 
 

@@ -52,5 +52,7 @@ public interface Score {
     int getSampleSize();
 
     Node getVariable(String targetName);
+
+    int getMaxIndegree();
 }
 
