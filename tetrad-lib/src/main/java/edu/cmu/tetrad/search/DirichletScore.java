@@ -355,6 +355,11 @@ public class DirichletScore implements LocalDiscreteScore, Score {
 
         return null;
     }
+
+    @Override
+    public int getMaxIndegree() {
+        return 1000;
+    }
 }
 
 

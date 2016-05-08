@@ -631,7 +631,7 @@ public class PerformanceTests {
 //        RandomUtil.getInstance().setSeed(4828384343999L);
         double penaltyDiscount = 4.0;
         int depth = 5;
-        boolean faithfulness = false;
+        boolean faithfulness = true;
 
 //        RandomUtil.getInstance().setSeed(50304050454L);
 
@@ -733,7 +733,7 @@ public class PerformanceTests {
                 long timea = System.currentTimeMillis();
 
                 Fgs2 fgs = new Fgs2(score);
-                fgs.setVerbose(true);
+//                fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(faithfulness);
@@ -777,7 +777,7 @@ public class PerformanceTests {
                 long timea = System.currentTimeMillis();
 
                 Fgs2 fgs = new Fgs2(score);
-                fgs.setVerbose(true);
+//                fgs.setVerbose(true);
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(faithfulness);
