@@ -81,8 +81,8 @@ public final class GFci {
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
 
-    // The depth for the fast adjacency search.
-    private int depth = -1;
+    // The maxIndegree for the fast adjacency search.
+    private int maxIndegree = -1;
 
     // The logger to use.
     private TetradLogger logger = TetradLogger.getInstance();
@@ -170,7 +170,7 @@ public final class GFci {
         Fgs2 fgs = new Fgs2(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
-        fgs.setDepth(getDepth());
+        fgs.setMaxIndegree(getMaxIndegree());
         fgs.setNumPatternsToStore(0);
         fgs.setFaithfulnessAssumed(faithfulnessAssumed);
         graph = fgs.search();
@@ -178,11 +178,11 @@ public final class GFci {
 
         System.out.println("GFCI: FGS done");
 
-        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, depth);
-//        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, depth);
-//        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, depth);
-//        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, depth);
-//        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, depth);
+        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, maxIndegree);
 //
         System.out.println("GFCI: Look inside triangles starting");
 
@@ -263,17 +263,17 @@ public final class GFci {
         this.score = score;
     }
 
-    public int getDepth() {
-        return depth;
+    public int getMaxIndegree() {
+        return maxIndegree;
     }
 
-    public void setDepth(int depth) {
-        if (depth < -1) {
+    public void setMaxIndegree(int maxIndegree) {
+        if (maxIndegree < -1) {
             throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+                    "Depth must be -1 (unlimited) or >= 0: " + maxIndegree);
         }
 
-        this.depth = depth;
+        this.maxIndegree = maxIndegree;
     }
 
     // Due to Spirtes.

@@ -125,7 +125,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
 //     * independence test. If set to -1, the value of 1000 will be used. May
 //     * not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
 //     */
-//    public final void setDepth(int depth) {
+//    public final void setMaxIndegree(int depth) {
 //        if (depth < -1) {
 //            throw new IllegalArgumentException("Depth must be -1 or >= 0: "  + depth);
 //        }

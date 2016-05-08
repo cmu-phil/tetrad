@@ -170,7 +170,7 @@ public class DMSearch {
             this.cov = new CovarianceMatrixOnTheFly(data);
 //            PC pc = new PC(new IndTestFisherZ(cov, this.alphaPC));
 //            pc.setKnowledge(knowledge);
-//            pc.setDepth(0);
+//            pc.setMaxIndegree(0);
             if (verbose) {
                 if (verbose) {
                     System.out.println("Running PC Search");

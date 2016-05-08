@@ -143,7 +143,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	 * implemented in the extending class.
 	 */
 	public void execute() {
-//		int pcDepth = ((MbSearchParams) getParams()).getDepth();
+//		int pcDepth = ((MbSearchParams) getParams()).getMaxIndegree();
 //		Mbfs mbfs = new Mbfs(getIndependenceTest(), pcDepth);
 //		SearchParams params = getParams();
 //		if (params instanceof MeekSearchParams) {

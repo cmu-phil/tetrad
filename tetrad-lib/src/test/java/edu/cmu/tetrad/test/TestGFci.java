@@ -89,7 +89,7 @@ public class TestGFci {
         GFci gFci = new GFci(independenceTest);
         gFci.setVerbose(false);
         gFci.setPenaltyDiscount(penaltyDiscount);
-        gFci.setDepth(depth);
+        gFci.setMaxIndegree(depth);
         gFci.setMaxPathLength(maxPathLength);
 //        gFci.setPossibleDsepSearchDone(possibleDsepDone);
         gFci.setCompleteRuleSetUsed(completeRuleSetUsed);

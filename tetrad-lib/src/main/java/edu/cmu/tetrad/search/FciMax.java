@@ -244,7 +244,7 @@ public final class FciMax implements GraphSearch {
 //
 //            System.out.println("Starting possible dsep search");
 //            PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
-//            possibleDSep.setDepth(getPossibleDsepDepth());
+//            possibleDSep.setMaxIndegree(getPossibleDsepDepth());
 //            possibleDSep.setKnowledge(getKnowledge());
 //            possibleDSep.setMaxPathLength(maxPathLength);
 //            this.sepsets.addAll(possibleDSep.search());

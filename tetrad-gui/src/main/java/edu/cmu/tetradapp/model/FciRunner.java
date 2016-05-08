@@ -111,7 +111,7 @@ public class FciRunner extends AbstractAlgorithmRunner
 
 //            Cfci fciSearch =
 //                    new Cfci(getIndependenceTest(), knowledge);
-//            fciSearch.setDepth(indTestParams.depth());
+//            fciSearch.setMaxIndegree(indTestParams.depth());
 //            Graph graph = fciSearch.search();
 //
 //            if (knowledge.isDefaultToKnowledgeLayout()) {

@@ -201,7 +201,7 @@ public final class ProbFci implements GraphSearch {
 ////        // Step FCI B.  (Zhang's step F2.)
 //        Fas adj = new Fas(graph, independenceTest);
 //        adj.setKnowledge(getKnowledge());
-//        adj.setDepth(depth);
+//        adj.setMaxIndegree(depth);
 //        adj.setFci(true);
 //        graph = adj.search();
 //        this.sepsets = adj.getSepsets();
