@@ -41,6 +41,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -139,26 +140,23 @@ public class FgsDiscrete {
 
         parseArgs(args);
 
-        String argInfo = createArgsInfo();
         System.out.println("================================================================================");
         System.out.printf("FGS Discrete (%s)%n", DateTime.printNow());
         System.out.println("================================================================================");
-        System.out.println(argInfo);
-        LOGGER.info("=== Starting FGS Discrete: " + argInfo.trim().replaceAll("\n", ",").replaceAll(" = ", "="));
 
-        Set<String> excludedVariables = getExcludedVariables();
+        String argInfo = createArgsInfo();
+        System.out.println(argInfo);
+        LOGGER.info("=== Starting FGS Discrete: " + Args.toString(args, ' '));
+        LOGGER.info(argInfo.trim().replaceAll("\n", ",").replaceAll(" = ", "="));
+
+        Set<String> excludedVariables = (variableFile == null) ? Collections.EMPTY_SET : getExcludedVariables();
 
         runPreDataValidations(excludedVariables, System.err);
 
-        System.out.printf("%s: Start reading in data.%n", DateTime.printNow());
-        LOGGER.info("Start reading in data.");
         DataSet dataSet = readInDataSet(excludedVariables);
-        System.out.printf("%s: End reading in data.%n", DateTime.printNow());
-        LOGGER.info("End reading in data.");
 
         runOptionalDataValidations(dataSet, System.err);
 
-        Graph graph = null;
         Path outputFile = Paths.get(dirOut.toString(), outputPrefix + ".txt");
         try (PrintStream writer = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
             String runInfo = createOutputRunInfo(excludedVariables, dataSet);
@@ -168,26 +166,43 @@ public class FgsDiscrete {
                 LOGGER.info(s.trim().replaceAll("\n", ",").replaceAll(":,", ":").replaceAll(" = ", "="));
             }
 
-            graph = runFgsDiscrete(dataSet, writer);
+            Graph graph = runFgsDiscrete(dataSet, writer);
 
             writer.println();
-            writer.println(graph.toString().trim());
+            writer.println(graph.toString());
+
+            if (graphML) {
+                writeOutGraphML(graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.txt"));
+            }
         } catch (IOException exception) {
-            String errMsg = String.format("Failed to write results to file '%s'.", outputFile.getFileName());
-            System.err.println(errMsg);
-            LOGGER.error(errMsg, exception);
+            LOGGER.error("FGS Discrete failed.", exception);
+            System.err.printf("%s: FGS Discrete failed.%n", DateTime.printNow());
+            System.out.println("Please see log file for more information.");
             System.exit(-128);
         }
+        System.out.printf("%s: FGS Discrete finished!  Please see %s for details.%n", DateTime.printNow(), outputFile.getFileName().toString());
+        LOGGER.info(String.format("FGS Discrete finished!  Please see %s for details.%n", outputFile.getFileName().toString()));
+    }
 
-        if (graphML && graph != null) {
-            Path graphOutputFile = Paths.get(dirOut.toString(), outputPrefix + "_graph.txt");
-            try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(graphOutputFile, StandardOpenOption.CREATE)))) {
-                XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
-            } catch (Throwable throwable) {
-                String errMsg = String.format("Failed when writting out GraphML file '%s'.", graphOutputFile.getFileName().toString());
-                System.err.println(errMsg);
-                LOGGER.error(errMsg, throwable);
-            }
+    private static void writeOutGraphML(Graph graph, Path outputFile) {
+        if (graph == null) {
+            return;
+        }
+
+        try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+            String fileName = outputFile.getFileName().toString();
+
+            String msg = String.format("Writing out GraphML file '%s'.", fileName);
+            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+            LOGGER.info(msg);
+            XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
+            msg = String.format("Finished writing out GraphML file '%s'.", fileName);
+            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+            LOGGER.info(msg);
+        } catch (Throwable throwable) {
+            String errMsg = String.format("Failed when writting out GraphML file '%s'.", outputFile.getFileName().toString());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, throwable);
         }
     }
 
@@ -278,7 +293,11 @@ public class FgsDiscrete {
 
         DataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, delimiter);
         try {
+            System.out.printf("%s: Start reading in data.%n", DateTime.printNow());
+            LOGGER.info("Start reading in data.");
             dataSet = dataReader.readInData(excludedVariables);
+            System.out.printf("%s: End reading in data.%n", DateTime.printNow());
+            LOGGER.info("End reading in data.");
         } catch (IOException exception) {
             String errMsg = String.format("Failed when reading data file '%s'.", dataFile.getFileName());
             System.err.println(errMsg);
@@ -298,10 +317,15 @@ public class FgsDiscrete {
 
     private static Set<String> getExcludedVariables() {
         Set<String> variables = new HashSet<>();
+
         try {
+            System.out.printf("%s: Start reading in excluded variable file.%n", DateTime.printNow());
+            LOGGER.info("Start reading in excluded variable file.");
             variables.addAll(FileIO.extractUniqueLine(variableFile));
+            System.out.printf("%s: End reading in excluded variable file.%n", DateTime.printNow());
+            LOGGER.info("End reading in excluded variable file.");
         } catch (IOException exception) {
-            String errMsg = String.format("Failed when reading variable file '%s'.", variableFile.getFileName());
+            String errMsg = String.format("Failed when reading excluded variable file '%s'.", variableFile.getFileName());
             System.err.println(errMsg);
             LOGGER.error(errMsg, exception);
             System.exit(-128);
