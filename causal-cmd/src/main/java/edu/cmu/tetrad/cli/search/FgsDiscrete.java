@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.cli.search;
 
+import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.util.DateTime;
 import edu.cmu.tetrad.cli.util.FileIO;
@@ -112,7 +113,7 @@ public class FgsDiscrete {
 
     private static Path dataFile;
     private static Path knowledgeFile;
-    private static Path variableFile;
+    private static Path excludedVariableFile;
     private static char delimiter;
     private static double structurePrior;
     private static double samplePrior;
@@ -149,7 +150,7 @@ public class FgsDiscrete {
         LOGGER.info("=== Starting FGS Discrete: " + Args.toString(args, ' '));
         LOGGER.info(argInfo.trim().replaceAll("\n", ",").replaceAll(" = ", "="));
 
-        Set<String> excludedVariables = (variableFile == null) ? Collections.EMPTY_SET : getExcludedVariables();
+        Set<String> excludedVariables = (excludedVariableFile == null) ? Collections.EMPTY_SET : getExcludedVariables();
 
         runPreDataValidations(excludedVariables, System.err);
 
@@ -181,7 +182,7 @@ public class FgsDiscrete {
             System.exit(-128);
         }
         System.out.printf("%s: FGS Discrete finished!  Please see %s for details.%n", DateTime.printNow(), outputFile.getFileName().toString());
-        LOGGER.info(String.format("FGS Discrete finished!  Please see %s for details.%n", outputFile.getFileName().toString()));
+        LOGGER.info(String.format("FGS Discrete finished!  Please see %s for details.", outputFile.getFileName().toString()));
     }
 
     private static void writeOutGraphML(Graph graph, Path outputFile) {
@@ -206,7 +207,7 @@ public class FgsDiscrete {
         }
     }
 
-    private static Graph runFgsDiscrete(DataSet dataSet, PrintStream writer) {
+    private static Graph runFgsDiscrete(DataSet dataSet, PrintStream writer) throws IOException {
         BDeuScore score = new BDeuScore(dataSet);
         score.setSamplePrior(samplePrior);
         score.setStructurePrior(structurePrior);
@@ -218,6 +219,9 @@ public class FgsDiscrete {
         fgs.setOut(writer);
         fgs.setFaithfulnessAssumed(heuristicSpeedup);
         fgs.setDepth(depth);
+        if (knowledgeFile != null) {
+            fgs.setKnowledge(IKnowledgeFactory.readInKnowledge(knowledgeFile));
+        }
 
         System.out.printf("%s: Start search.%n", DateTime.printNow());
         LOGGER.info("Start search.");
@@ -243,10 +247,10 @@ public class FgsDiscrete {
         fmt.format("variables read in= %s%n", dataSet.getNumRows());
         fmt.format("%n");
 
-        if (variableFile != null || knowledgeFile != null) {
+        if (excludedVariableFile != null || knowledgeFile != null) {
             fmt.format("Filters:%n");
-            if (variableFile != null) {
-                fmt.format("excluded variables (%d variables) = %s%n", excludedVariables.size(), variableFile.getFileName());
+            if (excludedVariableFile != null) {
+                fmt.format("excluded variables (%d variables) = %s%n", excludedVariables.size(), excludedVariableFile.getFileName());
             }
             if (knowledgeFile != null) {
                 fmt.format("knowledge = %s%n", knowledgeFile.getFileName());
@@ -262,8 +266,11 @@ public class FgsDiscrete {
 
         fmt.format("Run Options:%n");
         fmt.format("heuristic speedup = %s%n", heuristicSpeedup);
-        fmt.format("skip-unique-var-name = %s%n", skipUniqueVarName);
-        fmt.format("skip-category-limit = %s%n", skipCategoryLimit);
+        fmt.format("%n");
+
+        fmt.format("Data Validations:%n");
+        fmt.format("skip unique variable name check = %s%n", skipUniqueVarName);
+        fmt.format("skip limit number of category check = %s%n", skipCategoryLimit);
         fmt.format("%n");
 
         return fmt.toString();
@@ -321,11 +328,11 @@ public class FgsDiscrete {
         try {
             System.out.printf("%s: Start reading in excluded variable file.%n", DateTime.printNow());
             LOGGER.info("Start reading in excluded variable file.");
-            variables.addAll(FileIO.extractUniqueLine(variableFile));
+            variables.addAll(FileIO.extractUniqueLine(excludedVariableFile));
             System.out.printf("%s: End reading in excluded variable file.%n", DateTime.printNow());
             LOGGER.info("End reading in excluded variable file.");
         } catch (IOException exception) {
-            String errMsg = String.format("Failed when reading excluded variable file '%s'.", variableFile.getFileName());
+            String errMsg = String.format("Failed when reading excluded variable file '%s'.", excludedVariableFile.getFileName());
             System.err.println(errMsg);
             LOGGER.error(errMsg, exception);
             System.exit(-128);
@@ -339,25 +346,25 @@ public class FgsDiscrete {
         if (dataFile != null) {
             fmt.format("data = %s%n", dataFile.getFileName());
         }
-        if (variableFile != null) {
-            fmt.format("excluded variables = %s%n", variableFile.getFileName());
+        if (excludedVariableFile != null) {
+            fmt.format("exclude-variables = %s%n", excludedVariableFile.getFileName());
         }
         if (knowledgeFile != null) {
             fmt.format("knowledge = %s%n", knowledgeFile.getFileName());
         }
         fmt.format("delimiter = %s%n", Args.getDelimiterName(delimiter));
         fmt.format("verbose = %s%n", verbose);
-        fmt.format("number of threads = %s%n", numOfThreads);
-        fmt.format("structure prior = %f%n", structurePrior);
-        fmt.format("sample prior = %f%n", samplePrior);
+        fmt.format("thread = %s%n", numOfThreads);
+        fmt.format("structure-prior = %f%n", structurePrior);
+        fmt.format("sample-prior = %f%n", samplePrior);
         fmt.format("depth = %d%n", depth);
-        fmt.format("heuristic speedup = %s%n", heuristicSpeedup);
-        fmt.format("graphML = %s%n", graphML);
+        fmt.format("heuristic-speedup = %s%n", heuristicSpeedup);
+        fmt.format("graphml = %s%n", graphML);
 
         fmt.format("skip-unique-var-name = %s%n", skipUniqueVarName);
         fmt.format("skip-category-limit = %s%n", skipCategoryLimit);
 
-        fmt.format("dir-out = %s%n", dirOut.getFileName().toString());
+        fmt.format("out = %s%n", dirOut.getFileName().toString());
         fmt.format("output-prefix = %s%n", outputPrefix);
         fmt.format("no-validation-output = %s%n", !validationOutput);
 
@@ -370,7 +377,7 @@ public class FgsDiscrete {
             CommandLine cmd = cmdParser.parse(MAIN_OPTIONS, args);
             dataFile = Args.getPathFile(cmd.getOptionValue("data"), true);
             knowledgeFile = Args.getPathFile(cmd.getOptionValue("knowledge", null), false);
-            variableFile = Args.getPathFile(cmd.getOptionValue("exclude-variables", null), false);
+            excludedVariableFile = Args.getPathFile(cmd.getOptionValue("exclude-variables", null), false);
             delimiter = Args.getDelimiterForName(cmd.getOptionValue("delimiter", dataFile.getFileName().toString().endsWith(".csv") ? "comma" : "tab"));
             structurePrior = Args.getDouble(cmd.getOptionValue("structure-prior", "1.0"));
             samplePrior = Args.getDouble(cmd.getOptionValue("sample-prior", "1.0"));
