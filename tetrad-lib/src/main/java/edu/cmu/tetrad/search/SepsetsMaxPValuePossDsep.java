@@ -29,7 +29,7 @@ import java.util.*;
 /**
  * Created by josephramsey on 3/24/15.
  */
-public class SepsetsMaxPValuePossDsep extends SepsetProducer {
+public class SepsetsMaxPValuePossDsep implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;

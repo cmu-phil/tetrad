@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Created by josephramsey on 3/24/15.
  */
-public class SepsetsMinPValue extends SepsetProducer {
+public class SepsetsMinPValue implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;

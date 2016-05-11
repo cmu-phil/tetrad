@@ -29,22 +29,21 @@ import java.util.List;
 /**
  * @author Joseph Ramsey
  */
-public abstract class SepsetProducer {
-    abstract List<Node> getSepset(Node a, Node b);
+public interface SepsetProducer {
+    List<Node> getSepset(Node a, Node b);
 
-    abstract boolean isCollider(Node i, Node j, Node k);
+    boolean isCollider(Node i, Node j, Node k);
 
-    abstract boolean isNoncollider(Node a, Node b, Node c);
+    boolean isNoncollider(Node a, Node b, Node c);
 
-    abstract boolean isIndependent(Node a, Node b, List<Node> c);
+    boolean isIndependent(Node a, Node b, List<Node> c);
 
-    abstract double getPValue();
+    double getPValue();
 
-    abstract double getScore();
+    double getScore();
 
-    abstract List<Node> getVariables();
+    List<Node> getVariables();
 
-    abstract void setVerbose(boolean verbose);
-
+    void setVerbose(boolean verbose);
 }
 
