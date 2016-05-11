@@ -186,27 +186,7 @@ public final class GFci implements GraphSearch {
 //        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, maxIndegree);
 //
-//        System.out.println("GFCI: Look inside triangles starting");
-
-/// /        SepsetMap map = new SepsetMap();
-//
-//        for (Edge edge : graph.getEdges()) {
-//            Node a = edge.getNode1();
-//            Node c = edge.getNode2();
-//
-//            Set<Node> adj = new HashSet<>(fgsGraph.getAdjacentNodes(a));
-//            adj.retainAll(fgsGraph.getAdjacentNodes(c));
-//
-//            if (!adj.isEmpty()) {
-//                if (fgsGraph.isAdjacentTo(a, c)) {
-//                    List<Node> sepset = sepsets.getSepset(a, c);
-//                    if (sepset != null) {
-//                        graph.removeEdge(a, c);
-//                        map.set(a, c, sepset);
-//                    }
-//                }
-//            }
-//        }
+        System.out.println("GFCI: Look inside triangles starting");
 
         SepsetMap map = new SepsetMap();
 
@@ -214,13 +194,20 @@ public final class GFci implements GraphSearch {
             Node a = edge.getNode1();
             Node c = edge.getNode2();
 
-            if (fgsGraph.isAdjacentTo(a, c)) {
+            Edge e = fgsGraph.getEdge(a, c);
 
+            if (e != null && e.isDirected()) {
+
+                // Only the ones that are in triangles.
                 Set<Node> _adj = new HashSet<>(fgsGraph.getAdjacentNodes(a));
                 _adj.retainAll(fgsGraph.getAdjacentNodes(c));
-                List<Node> adj = new ArrayList<>(_adj);
+                if (_adj.isEmpty()) continue;
 
-                DepthChoiceGenerator gen = new DepthChoiceGenerator(_adj.size(), _adj.size());
+                Node f = Edges.getDirectedEdgeHead(e);
+                List<Node> adj = fgsGraph.getAdjacentNodes(f);
+                adj.remove(Edges.getDirectedEdgeTail(e));
+
+                DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
@@ -233,53 +220,8 @@ public final class GFci implements GraphSearch {
                 }
             }
         }
-
-//        int depth = 3;
-//
-//        for (int d = 0; d <= depth; d++) {
-//            for (Node b : variables) {
-//                List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
-//
-//                if (adjacentNodes.size() < 2) {
-//                    continue;
-//                }
-//
-//                ChoiceGenerator gen1 = new ChoiceGenerator(adjacentNodes.size(), 2);
-//                int[] choice1;
-//
-//                while ((choice1 = gen1.next()) != null) {
-//                    List<Node> pair = GraphUtils.asList(choice1, adjacentNodes);
-//
-//                    Node x = pair.get(0);
-//                    Node y = pair.get(1);
-//
-//                    Set<Node> rest = new HashSet<>(variables);
-//                    rest.remove(x);
-//                    rest.remove(y);
-//                    rest.remove(b);
-//
-//                    List<Node> _rest = new ArrayList<>(rest);
-//
-//                    ChoiceGenerator gen2 = new ChoiceGenerator(_rest.size(), d);
-//                    int[] choice2;
-//
-//                    while ((choice2 = gen2.next()) != null) {
-//                        List<Node> cond = GraphUtils.asList(choice2, _rest);
-//
-//                        if (independenceTest.isIndependent(x, y, cond)) {
-//                            graph.removeEdge(x, y);
-//                        }
-//                    }
-//                }
-//            }
-//
-//            if (d > freeDegree(nodes, graph)) break;
-//        }
-
-//        SepsetMap map
-
-
-//        System.out.println("GFCI: Look inside triangles done");
+        
+        System.out.println("GFCI: Look inside triangles done");
 
         modifiedR0(fgsGraph, map);
 

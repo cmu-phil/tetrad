@@ -194,9 +194,9 @@ public class TestGFci {
 
     @Test
     public void testFromData() {
-        int numNodes = 500;
+        int numNodes = 100;
         int numLatents = 50;
-        int numEdges = 500;
+        int numEdges = 100;
         int sampleSize = 1000;
 
 //        System.out.println(RandomUtil.getInstance().getSeed());

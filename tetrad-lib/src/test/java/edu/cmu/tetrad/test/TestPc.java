@@ -380,17 +380,6 @@ public class TestPc {
                     continue;
                 }
 
-                if (edge.getEndpoint2() == Endpoint.ARROW) {
-                    if (!dag.isAncestorOf(edge.getNode2(), edge.getNode1()) &&
-                            dag.existsTrek(edge.getNode1(), edge.getNode2())) {
-                        arrowsTp++;
-                    } else {
-                        arrowsFp++;
-                    }
-
-                    numArrows++;
-                }
-
                 if (edge.getEndpoint1() == Endpoint.ARROW) {
                     if (!dag.isAncestorOf(edge.getNode1(), edge.getNode2()) &&
                             dag.existsTrek(edge.getNode1(), edge.getNode2())) {
@@ -402,8 +391,19 @@ public class TestPc {
                     numArrows++;
                 }
 
-                if (edge.getEndpoint2() == Endpoint.TAIL) {
-                    if (dag.isAncestorOf(edge.getNode2(), edge.getNode1())) {
+                if (edge.getEndpoint2() == Endpoint.ARROW) {
+                    if (!dag.isAncestorOf(edge.getNode2(), edge.getNode1()) &&
+                            dag.existsTrek(edge.getNode1(), edge.getNode2())) {
+                        arrowsTp++;
+                    } else {
+                        arrowsFp++;
+                    }
+
+                    numArrows++;
+                }
+
+                if (edge.getEndpoint1() == Endpoint.TAIL) {
+                    if (dag.existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
                         tailsTp++;
                     } else {
                         tailsFp++;
@@ -412,8 +412,8 @@ public class TestPc {
                     numTails++;
                 }
 
-                if (edge.getEndpoint1() == Endpoint.TAIL) {
-                    if (dag.isAncestorOf(edge.getNode1(), edge.getNode2())) {
+                if (edge.getEndpoint2() == Endpoint.TAIL) {
+                    if (dag.existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
                         tailsTp++;
                     } else {
                         tailsFp++;
