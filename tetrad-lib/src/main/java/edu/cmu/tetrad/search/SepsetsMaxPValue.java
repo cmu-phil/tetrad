@@ -32,7 +32,7 @@ import java.util.List;
  * Returns the sepset from among the adjacents of i or the adjacents of k or the 'extra' sepsets with
  * the highest p value as judged by the given independence test.
  */
-public class SepsetsMaxPValue implements SepsetProducer {
+public class SepsetsMaxPValue extends SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;

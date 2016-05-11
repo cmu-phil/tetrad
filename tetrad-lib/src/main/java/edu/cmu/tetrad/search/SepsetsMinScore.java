@@ -33,7 +33,7 @@ import java.util.List;
  * <score>
  * Created by josephramsey on 3/24/15.
  */
-public class SepsetsMinScore implements SepsetProducer {
+public class SepsetsMinScore extends SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;

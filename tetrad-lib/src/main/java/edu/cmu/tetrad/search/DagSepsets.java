@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class DagSepsets implements SepsetProducer {
+public class DagSepsets extends SepsetProducer {
     private EdgeListGraphSingleConnections dag;
     private boolean verbose = false;
 

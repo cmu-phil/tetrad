@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Created by josephramsey on 3/24/15.
  */
-public class SepsetsConservative implements SepsetProducer {
+public class SepsetsConservative extends SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
