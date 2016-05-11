@@ -186,7 +186,7 @@ public final class GFci implements GraphSearch {
 //        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, maxIndegree);
 //
-        System.out.println("GFCI: Look inside triangles starting");
+//        System.out.println("GFCI: Look inside triangles starting");
 
         SepsetMap map = new SepsetMap();
 
@@ -221,7 +221,7 @@ public final class GFci implements GraphSearch {
             }
         }
         
-        System.out.println("GFCI: Look inside triangles done");
+//        System.out.println("GFCI: Look inside triangles done");
 
         modifiedR0(fgsGraph, map);
 
