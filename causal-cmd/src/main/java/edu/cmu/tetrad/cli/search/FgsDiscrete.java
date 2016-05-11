@@ -244,7 +244,7 @@ public class FgsDiscrete {
         fmt.format("file = %s%n", dataFile.getFileName());
         fmt.format("delimiter = %s%n", Args.getDelimiterName(delimiter));
         fmt.format("cases read in = %s%n", dataSet.getNumColumns());
-        fmt.format("variables read in= %s%n", dataSet.getNumRows());
+        fmt.format("variables read in = %s%n", dataSet.getNumRows());
         fmt.format("%n");
 
         if (excludedVariableFile != null || knowledgeFile != null) {
