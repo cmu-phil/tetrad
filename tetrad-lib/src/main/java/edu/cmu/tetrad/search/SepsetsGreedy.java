@@ -32,7 +32,7 @@ import java.util.List;
  * Selects the first sepset it comes to from among the extra sepsets or the adjacents of i or k,
  * or null if none is found.
  */
-public class SepsetsGreedy extends SepsetProducer {
+public class SepsetsGreedy implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;

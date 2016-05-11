@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Created by josephramsey on 3/24/15.
  */
-public class SepsetsSet extends SepsetProducer {
+public class SepsetsSet implements SepsetProducer {
     private final SepsetMap sepsets;
     private final IndependenceTest test;
     private double p;

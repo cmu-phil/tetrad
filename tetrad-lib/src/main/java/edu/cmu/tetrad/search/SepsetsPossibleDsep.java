@@ -33,7 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class SepsetsPossibleDsep extends SepsetProducer {
+public class SepsetsPossibleDsep implements SepsetProducer {
     private Graph graph;
     private IndependenceTest independenceTest;
     private int maxPathLength = 5;
