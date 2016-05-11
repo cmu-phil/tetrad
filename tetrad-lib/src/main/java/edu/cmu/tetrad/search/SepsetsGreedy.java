@@ -149,5 +149,9 @@ public class SepsetsGreedy implements SepsetProducer {
             return null;
         }
     }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
 }
 

@@ -786,7 +786,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 //    private Set<Set<Integer>> findThreeClusters() {
 ////        Graph graph = new EdgeListGraph(variables);
 ////        Fas fas = new Fas(graph, indTest);
-////        fas.setDepth(0);     // 1?
+////        fas.setMaxIndegree(0);     // 1?
 ////        Map<Node, Set<Node>> adjacencies = fas.searchMapOnly();
 //
 //        List<Integer> allVariables = new ArrayList<Integer>();

@@ -319,7 +319,7 @@ public final class VcpcFast implements GraphSearch {
             }
             SearchGraphUtils.pcOrientbk(knowledge, graph, allNodes);
             orientUnshieldedTriples(knowledge, getIndependenceTest(), getDepth());
-//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getDepth());
+//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
             MeekRules meekRules = new MeekRules();
 
             meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);

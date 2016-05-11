@@ -613,22 +613,6 @@ public final class FgsMb2 {
     }
 
     /**
-     * @return the depth for the forward reevaluation step.
-     */
-    public int getDepth() {
-        return depth;
-    }
-
-    /**
-     * -1 for unlimited depth, otherwise a number >= 0. In the forward reevaluation step, subsets of neighbors up to
-     * depth in size are considered. Limiting depth can speed up the algorithm.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-
-    /**
      * A bound on cycle length.
      */
     public int getCycleBound() {
@@ -700,6 +684,23 @@ public final class FgsMb2 {
         if (fgsScore instanceof ISemBicScore) {
             ((ISemBicScore) fgsScore).setPenaltyDiscount(penaltyDiscount);
         }
+    }
+
+    /**
+     * The maximum of parents any nodes can have in output pattern.
+     * @return -1 for unlimited.
+     */
+    public int getMaxIndegree() {
+        return maxIndegree;
+    }
+
+    /**
+     * The maximum of parents any nodes can have in output pattern.
+     * @param maxIndegree -1 for unlimited.
+     */
+    public void setMaxIndegree(int maxIndegree) {
+        if (maxIndegree < -1) throw new IllegalArgumentException();
+        this.maxIndegree = maxIndegree;
     }
 
     //===========================PRIVATE METHODS========================//
@@ -1322,8 +1323,9 @@ public final class FgsMb2 {
         if (!isClique(naYX)) return;
 
         List<Node> TNeighbors = getTNeighbors(a, b);
+        int _maxIndegree = maxIndegree == -1 ? 1000 : maxIndegree;
 
-        final int _max = Math.min(TNeighbors.size(), maxIndegree == -1 ? 1000 : maxIndegree - graph.getIndegree(b));
+        final int _max = Math.min(TNeighbors.size(), _maxIndegree - graph.getIndegree(b));
 
         Set<Set<Node>> previousCliques = new HashSet<>();
         previousCliques.add(new HashSet<Node>());
@@ -1362,7 +1364,7 @@ public final class FgsMb2 {
                     addArrow(a, b, naYX, T, bump);
                 }
 
-//                if (mode == Mode.heuristicSpeedup && union.isEmpty() && fgsScore.isEffectEdge(bump) &&
+//                if (mode == Mode.heuristicSpeedup && union.isEmpty() && score.isEffectEdge(bump) &&
 //                        !effectEdgesGraph.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
 //                    effectEdgesGraph.addUndirectedEdge(a, b);
 //                }
@@ -1458,7 +1460,7 @@ public final class FgsMb2 {
 
         List<Node> _naYX = new ArrayList<>(naYX);
 
-        final int _depth = Math.min(_naYX.size(), depth == -1 ? 1000 : depth);
+        final int _depth = _naYX.size();
 
         for (int i = 0; i <= _depth; i++) {
             final ChoiceGenerator gen = new ChoiceGenerator(_naYX.size(), i);

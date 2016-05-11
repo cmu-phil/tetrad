@@ -183,7 +183,7 @@ public final class Fci implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        return search(new FasStableConcurrent(getIndependenceTest()));
+        return search(new Fas(getIndependenceTest()));
 //        return search(new Fas(getIndependenceTest()));
     }
 
@@ -238,7 +238,7 @@ public final class Fci implements GraphSearch {
 //
 //            System.out.println("Starting possible dsep search");
 //            PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
-//            possibleDSep.setDepth(getPossibleDsepDepth());
+//            possibleDSep.setMaxIndegree(getPossibleDsepDepth());
 //            possibleDSep.setKnowledge(getKnowledge());
 //            possibleDSep.setMaxPathLength(maxPathLength);
 //            this.sepsets.addAll(possibleDSep.search());

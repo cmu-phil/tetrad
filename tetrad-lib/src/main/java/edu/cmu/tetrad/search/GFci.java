@@ -24,12 +24,11 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -55,7 +54,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Joseph Ramsey
  * @author Choh-Man Teng
  */
-public final class GFci {
+public final class GFci implements GraphSearch {
 
     // If a graph is provided.
     private Graph dag = null;
@@ -81,8 +80,8 @@ public final class GFci {
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
 
-    // The depth for the fast adjacency search.
-    private int depth = -1;
+    // The maxIndegree for the fast adjacency search.
+    private int maxIndegree = -1;
 
     // The logger to use.
     private TetradLogger logger = TetradLogger.getInstance();
@@ -118,6 +117,7 @@ public final class GFci {
     private Score score;
 
     private SepsetProducer sepsets;
+    private long elapsedTime;
 
     //============================CONSTRUCTORS============================//
 
@@ -156,6 +156,8 @@ public final class GFci {
 
 
     public Graph search() {
+        long time1 = System.currentTimeMillis();
+
         List<Node> nodes = getIndependenceTest().getVariables();
 
         logger.log("info", "Starting FCI algorithm.");
@@ -170,53 +172,60 @@ public final class GFci {
         Fgs2 fgs = new Fgs2(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
-        fgs.setDepth(getDepth());
         fgs.setNumPatternsToStore(0);
         fgs.setFaithfulnessAssumed(faithfulnessAssumed);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
-        System.out.println("GFCI: FGS done");
+//        System.out.println("GFCI: FGS done");
 
-        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, depth);
-//        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, depth);
-//        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, depth);
-//        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, depth);
-//        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, depth);
+        sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
+        ((SepsetsGreedy) sepsets).setDepth(3);
+//        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);
+//        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, maxIndegree);
 //
         System.out.println("GFCI: Look inside triangles starting");
 
-        // Look inside triangles.
-        // Must first remove the nuisance adjacencies before orienting anything; otherwise,
-        // you may end up with extra orientations for colliders X->Y<-Z where X->Y is subsequently
-        // removed from the graph.
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+        SepsetMap map = new SepsetMap();
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node c = edge.getNode2();
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
+            Edge e = fgsGraph.getEdge(a, c);
 
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
+            if (e != null && e.isDirected()) {
 
-                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
-                    if (sepsets.getSepset(a, c) != null) {
+                // Only the ones that are in triangles.
+                Set<Node> _adj = new HashSet<>(fgsGraph.getAdjacentNodes(a));
+                _adj.retainAll(fgsGraph.getAdjacentNodes(c));
+                if (_adj.isEmpty()) continue;
+
+                Node f = Edges.getDirectedEdgeHead(e);
+                List<Node> adj = fgsGraph.getAdjacentNodes(f);
+                adj.remove(Edges.getDirectedEdgeTail(e));
+
+                DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> cond = GraphUtils.asList(choice, adj);
+
+                    if (independenceTest.isIndependent(a, c, cond)) {
                         graph.removeEdge(a, c);
+                        map.set(a, c, cond);
                     }
                 }
             }
         }
-
+        
         System.out.println("GFCI: Look inside triangles done");
 
-        modifiedR0(fgsGraph);
+        modifiedR0(fgsGraph, map);
 
-        System.out.println("GFCI: R0 done");
+//        System.out.println("GFCI: R0 done");
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setKnowledge(getKnowledge());
@@ -224,11 +233,20 @@ public final class GFci {
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
-        System.out.println("GFCI: Final orientation done");
+//        System.out.println("GFCI: Final orientation done");
 
         GraphUtils.replaceNodes(graph, independenceTest.getVariables());
 
+        long time2 = System.currentTimeMillis();
+
+        elapsedTime = time2 - time1;
+
         return graph;
+    }
+
+    @Override
+    public long getElapsedTime() {
+        return elapsedTime;
     }
 
     private void setScore() {
@@ -263,21 +281,21 @@ public final class GFci {
         this.score = score;
     }
 
-    public int getDepth() {
-        return depth;
+    public int getMaxIndegree() {
+        return maxIndegree;
     }
 
-    public void setDepth(int depth) {
-        if (depth < -1) {
+    public void setMaxIndegree(int maxIndegree) {
+        if (maxIndegree < -1) {
             throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+                    "Depth must be -1 (unlimited) or >= 0: " + maxIndegree);
         }
 
-        this.depth = depth;
+        this.maxIndegree = maxIndegree;
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgsGraph) {
+    public void modifiedR0(Graph fgsGraph, SepsetMap map) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
@@ -301,7 +319,8 @@ public final class GFci {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
+                    List<Node> sepset = map.get(a, c);
+//                    List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -481,6 +500,25 @@ public final class GFci {
 
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
+    }
+
+    private int freeDegree(List<Node> nodes, Graph graph) {
+        int max = 0;
+
+        for (Node x : nodes) {
+            List<Node> opposites = graph.getAdjacentNodes(x);
+
+            for (Node y : opposites) {
+                Set<Node> adjx = new HashSet<Node>(opposites);
+                adjx.remove(y);
+
+                if (adjx.size() > max) {
+                    max = adjx.size();
+                }
+            }
+        }
+
+        return max;
     }
 }
 

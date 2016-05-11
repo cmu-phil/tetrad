@@ -238,7 +238,7 @@ public final class SimulationStudy {
         for (int i = 0; i < repetition; i++) {
             if (Preferences.userRoot().getBoolean("experimental", false) &&
                     Preferences.userRoot().getBoolean("errorFound", false)) {
-                break;
+//                break;
             }
 
             if (!overwrite && sessionNode.getModel() != null) {

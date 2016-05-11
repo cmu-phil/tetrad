@@ -595,7 +595,7 @@ public class PerformanceTests {
         fci.setVerbose(false);
         fci.setPenaltyDiscount(penaltyDiscount);
         fci.setMaxPathLength(maxPathLength);
-        fci.setDepth(depth);
+        fci.setMaxIndegree(depth);
         fci.setFaithfulnessAssumed(false);
         fci.setCompleteRuleSetUsed(true);
         Graph outGraph = fci.search();
@@ -630,7 +630,7 @@ public class PerformanceTests {
 
 //        RandomUtil.getInstance().setSeed(4828384343999L);
         double penaltyDiscount = 4.0;
-        int depth = 5;
+        int maxIndegree = 5;
         boolean faithfulness = true;
 
 //        RandomUtil.getInstance().setSeed(50304050454L);
@@ -648,7 +648,7 @@ public class PerformanceTests {
             out.println("Num edges = " + (int) (numVars * edgeFactor));
             out.println("Num cases = " + numCases);
             out.println("Penalty discount = " + penaltyDiscount);
-            out.println("Depth = " + depth);
+            out.println("Depth = " + maxIndegree);
             out.println();
 
         } else {
@@ -737,7 +737,6 @@ public class PerformanceTests {
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
                 long timeb = System.currentTimeMillis();
@@ -781,7 +780,6 @@ public class PerformanceTests {
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setDepth(depth);
                 fgs.setCycleBound(-1);
 
                 long timeb = System.currentTimeMillis();
@@ -891,7 +889,7 @@ public class PerformanceTests {
         double penaltyDiscount = 4.0;
         int structurePrior = 10;
         int samplePrior = 10;
-        int depth = -1;
+        int maxIndegree = -1;
 //        boolean faithfulness = false;
 
         List<int[][]> allCounts = new ArrayList<>();
@@ -937,7 +935,7 @@ public class PerformanceTests {
             out.println("Num edges = " + (int) (numVars * edgeFactor));
             out.println("Num cases = " + numCases);
             out.println("Penalty discount = " + penaltyDiscount);
-            out.println("Depth = " + depth);
+            out.println("Depth = " + maxIndegree);
             out.println();
 
             out.println(new Date());
@@ -980,7 +978,7 @@ public class PerformanceTests {
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
 //            fgs.setFaithfulnessAssumed(faithfulness);
-            fgs.setDepth(depth);
+            fgs.setMaxIndegree(maxIndegree);
             fgs.setCycleBound(-1);
         } else {
             init(new File("FgsMb.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
@@ -990,7 +988,7 @@ public class PerformanceTests {
             out.println("Num cases = " + numCases);
             out.println("Sample prior = " + samplePrior);
             out.println("Structure prior = " + structurePrior);
-            out.println("Depth = " + depth);
+            out.println("Depth = " + maxIndegree);
             out.println();
 
             out.println(new Date());
@@ -1025,7 +1023,7 @@ public class PerformanceTests {
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
 //            fgs.setFaithfulnessAssumed(faithfulness);
-            fgs.setDepth(depth);
+            fgs.setMaxIndegree(maxIndegree);
             fgs.setCycleBound(-1);
 
             long timeb = System.currentTimeMillis();
@@ -1244,7 +1242,7 @@ public class PerformanceTests {
 //            TFci fci = new TFci(independenceTest);
 //            fci.setVerbose(false);
             fci.setPenaltyDiscount(penaltyDiscount);
-            fci.setDepth(depth);
+            fci.setMaxIndegree(depth);
             fci.setMaxPathLength(maxPathLength);
 //            fci.setPossibleDsepSearchDone(possibleDsepDone);
             fci.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -1598,7 +1596,7 @@ public class PerformanceTests {
 //            GFci GFci = new GFci(independenceTestGFci);
 //            GFci.setVerbose(false);
 //            GFci.setPenaltyDiscount(penaltyDiscount);
-//            GFci.setDepth(depth);
+//            GFci.setMaxIndegree(depth);
 //            GFci.setMaxPathLength(maxPathLength);
 //            GFci.setPossibleDsepSearchDone(true);
 //            GFci.setCompleteRuleSetUsed(true);
@@ -1617,7 +1615,7 @@ public class PerformanceTests {
 //
 //            PC pc = new PC(independencePc);
 //            pc.setVerbose(false);
-//            pc.setDepth(depth);
+//            pc.setMaxIndegree(depth);
 //
 //            Graph pattern = pc.search();
 //

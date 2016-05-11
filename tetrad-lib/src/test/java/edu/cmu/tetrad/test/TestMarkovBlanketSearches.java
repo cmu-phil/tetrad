@@ -121,7 +121,7 @@ public class TestMarkovBlanketSearches {
 //            params.setDiscrete(false);
 //            params.setRandomGraphEveryTime(true);
 //            params.setTimeLimit(600000);
-//            params.setDepth(3);
+//            params.setMaxIndegree(3);
 //            params.setNumTests(30);
 //            params.setMinMbSize(
 //                    8);
@@ -173,7 +173,7 @@ public class TestMarkovBlanketSearches {
 //            params.setSampleSize(1000);
 //            params.setRandomGraphEveryTime(false);
 //            params.setTimeLimit(450000);
-//            params.setDepth(2);
+//            params.setMaxIndegree(2);
 //            params.setNumTests(30);
 //            params.setMinMbSize(8);
 //            params.setParameter1(0.01);
@@ -211,7 +211,7 @@ public class TestMarkovBlanketSearches {
 //            params.setDiscrete(false);
 //            params.setRandomGraphEveryTime(true);
 //            params.setTimeLimit(600000);
-//            params.setDepth(3);
+//            params.setMaxIndegree(3);
 //            params.setNumTests(30);
 //            params.setMinMbSize(6);
 //            params.setParameter1(0.05);
@@ -245,7 +245,7 @@ public class TestMarkovBlanketSearches {
 //        println(out, "# variables = " + params.getNumVars());
 //        println(out, "# edges = " + numEdges);
 //        println(out, "# samples = " + params.getSampleSize());
-//        println(out, "Depth = " + params.getDepth());
+//        println(out, "Depth = " + params.getMaxIndegree());
 //        println(out, params.isDiscrete() ? "Discrete" : "Continuous");
 //
 //        if (params.isDiscrete()) {
@@ -295,7 +295,7 @@ public class TestMarkovBlanketSearches {
 //                algorithms.clear();
 //
 //                for (String algName : algNames) {
-//                    algorithms.add(getAlgorithm(algName, test, params.getDepth(), dataSet));
+//                    algorithms.add(getAlgorithm(algName, test, params.getMaxIndegree(), dataSet));
 //                }
 //            }
 //
@@ -973,11 +973,11 @@ public class TestMarkovBlanketSearches {
 //            this.timeLimit = timeLimit;
 //        }
 //
-//        public int getDepth() {
+//        public int getMaxIndegree() {
 //            return depth;
 //        }
 //
-//        public void setDepth(int depth) {
+//        public void setMaxIndegree(int depth) {
 //            this.depth = depth;
 //        }
 //

@@ -11,7 +11,7 @@ Step 2: Put this jar in the directory you intend to work in, together with the d
 Step 3: Type this command:
 
 java -jar tetradcmd-5.0.0-19.jar -data munin1.txt -datatype discrete -algorithm
-fci -depth 3 -significance 0.5
+fci -maxIndegree 3 -significance 0.5
 
 I'm assuming that tetradcmd.jar and munin1.txt are in the same directory you're
 typing in. I'm assuming you're on a Unix-type machine and have JDK 1.4.2 or
@@ -33,7 +33,7 @@ a covariance matrix, this may be omitted, since the data must be continuous.
 “-algorithm” must be followed by either “pc”, "cpc", "fci", "cfci", "ccd",
 "fgs", "bayes_est", "randomDag".
 
-“-depth” is by default -1 (unlimited) but may be followed by any integer >= -1.
+“-maxIndegree” is by default -1 (unlimited) but may be followed by any integer >= -1.
 This is effective for PC, CPC, FCI, and CFCI, not FGS.
 
 “-significance” is by default 0.05 but may be set to any number in the range

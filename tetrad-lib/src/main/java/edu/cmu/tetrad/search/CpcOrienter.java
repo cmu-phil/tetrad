@@ -194,14 +194,14 @@ public final class CpcOrienter implements Reorienter {
 //        Fas fas =
 //                new Fas(graph, getIndependenceTest());
 //        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(getDepth());
+//        fas.setMaxIndegree(getMaxIndegree());
 //        graph = fas.search();
 //        this.sepsetMap = fas.getSepsets();
 
 //        FastAdjacencySearchLo fas =
 //                new FastAdjacencySearchLo(graph, getIndependenceTest());
 //        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(depth());
+//        fas.setMaxIndegree(depth());
 //        fas.search();
 
 //        if (!sepsetMap.equals(sepsetPc)) {

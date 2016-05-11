@@ -289,13 +289,13 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            Node target = getIndependenceTest().getVariable(targetName);
 //            System.out.println("Target = " + target);
 //
-//            int depth = getParams().getIndTestParams().getDepth();
+//            int depth = getParams().getIndTestParams().getMaxIndegree();
 //
 //            ScoredIndTest fgsScore = new ScoredIndTest(getIndependenceTest());
 //            fgsScore.setParameter1(getParams().getIndTestParams().getAlpha());
 //            FgsMb search = new FgsMb(fgsScore, target);
 //            search.setKnowledge(knowledge);
-//            search.setDepth(depth);
+//            search.setMaxIndegree(depth);
 //            search.setVerbose(true);
 //            search.setHeuristicSpeedup(true);
 //            searchGraph = search.search();
@@ -314,7 +314,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
         fgs.setVerbose(true);
 //        fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
-        fgs.setDepth(params.getIndTestParams().getDepth());
+        fgs.setMaxIndegree(params.getIndTestParams().getDepth());
         Graph graph = fgs.search(target);
 
         if (getSourceGraph() != null) {
