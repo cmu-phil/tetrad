@@ -24,12 +24,11 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -55,7 +54,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Joseph Ramsey
  * @author Choh-Man Teng
  */
-public final class GFci {
+public final class GFci implements GraphSearch {
 
     // If a graph is provided.
     private Graph dag = null;
@@ -118,6 +117,7 @@ public final class GFci {
     private Score score;
 
     private SepsetProducer sepsets;
+    private long elapsedTime;
 
     //============================CONSTRUCTORS============================//
 
@@ -156,6 +156,8 @@ public final class GFci {
 
 
     public Graph search() {
+        long time1 = System.currentTimeMillis();
+
         List<Node> nodes = getIndependenceTest().getVariables();
 
         logger.log("info", "Starting FCI algorithm.");
@@ -170,53 +172,118 @@ public final class GFci {
         Fgs2 fgs = new Fgs2(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
-        fgs.setMaxIndegree(getMaxIndegree());
         fgs.setNumPatternsToStore(0);
         fgs.setFaithfulnessAssumed(faithfulnessAssumed);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
-        System.out.println("GFCI: FGS done");
+//        System.out.println("GFCI: FGS done");
 
         sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
+        ((SepsetsGreedy) sepsets).setDepth(3);
 //        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, maxIndegree);
 //
-        System.out.println("GFCI: Look inside triangles starting");
+//        System.out.println("GFCI: Look inside triangles starting");
 
-        // Look inside triangles.
-        // Must first remove the nuisance adjacencies before orienting anything; otherwise,
-        // you may end up with extra orientations for colliders X->Y<-Z where X->Y is subsequently
-        // removed from the graph.
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+/// /        SepsetMap map = new SepsetMap();
+//
+//        for (Edge edge : graph.getEdges()) {
+//            Node a = edge.getNode1();
+//            Node c = edge.getNode2();
+//
+//            Set<Node> adj = new HashSet<>(fgsGraph.getAdjacentNodes(a));
+//            adj.retainAll(fgsGraph.getAdjacentNodes(c));
+//
+//            if (!adj.isEmpty()) {
+//                if (fgsGraph.isAdjacentTo(a, c)) {
+//                    List<Node> sepset = sepsets.getSepset(a, c);
+//                    if (sepset != null) {
+//                        graph.removeEdge(a, c);
+//                        map.set(a, c, sepset);
+//                    }
+//                }
+//            }
+//        }
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
+        SepsetMap map = new SepsetMap();
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node c = edge.getNode2();
 
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
+            if (fgsGraph.isAdjacentTo(a, c)) {
 
-                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
-                    if (sepsets.getSepset(a, c) != null) {
+                Set<Node> _adj = new HashSet<>(fgsGraph.getAdjacentNodes(a));
+                _adj.retainAll(fgsGraph.getAdjacentNodes(c));
+                List<Node> adj = new ArrayList<>(_adj);
+
+                DepthChoiceGenerator gen = new DepthChoiceGenerator(_adj.size(), _adj.size());
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> cond = GraphUtils.asList(choice, adj);
+
+                    if (independenceTest.isIndependent(a, c, cond)) {
                         graph.removeEdge(a, c);
+                        map.set(a, c, cond);
                     }
                 }
             }
         }
 
-        System.out.println("GFCI: Look inside triangles done");
+//        int depth = 3;
+//
+//        for (int d = 0; d <= depth; d++) {
+//            for (Node b : variables) {
+//                List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+//
+//                if (adjacentNodes.size() < 2) {
+//                    continue;
+//                }
+//
+//                ChoiceGenerator gen1 = new ChoiceGenerator(adjacentNodes.size(), 2);
+//                int[] choice1;
+//
+//                while ((choice1 = gen1.next()) != null) {
+//                    List<Node> pair = GraphUtils.asList(choice1, adjacentNodes);
+//
+//                    Node x = pair.get(0);
+//                    Node y = pair.get(1);
+//
+//                    Set<Node> rest = new HashSet<>(variables);
+//                    rest.remove(x);
+//                    rest.remove(y);
+//                    rest.remove(b);
+//
+//                    List<Node> _rest = new ArrayList<>(rest);
+//
+//                    ChoiceGenerator gen2 = new ChoiceGenerator(_rest.size(), d);
+//                    int[] choice2;
+//
+//                    while ((choice2 = gen2.next()) != null) {
+//                        List<Node> cond = GraphUtils.asList(choice2, _rest);
+//
+//                        if (independenceTest.isIndependent(x, y, cond)) {
+//                            graph.removeEdge(x, y);
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if (d > freeDegree(nodes, graph)) break;
+//        }
 
-        modifiedR0(fgsGraph);
+//        SepsetMap map
 
-        System.out.println("GFCI: R0 done");
+
+//        System.out.println("GFCI: Look inside triangles done");
+
+        modifiedR0(fgsGraph, map);
+
+//        System.out.println("GFCI: R0 done");
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setKnowledge(getKnowledge());
@@ -224,11 +291,20 @@ public final class GFci {
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
-        System.out.println("GFCI: Final orientation done");
+//        System.out.println("GFCI: Final orientation done");
 
         GraphUtils.replaceNodes(graph, independenceTest.getVariables());
 
+        long time2 = System.currentTimeMillis();
+
+        elapsedTime = time2 - time1;
+
         return graph;
+    }
+
+    @Override
+    public long getElapsedTime() {
+        return elapsedTime;
     }
 
     private void setScore() {
@@ -277,7 +353,7 @@ public final class GFci {
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgsGraph) {
+    public void modifiedR0(Graph fgsGraph, SepsetMap map) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
@@ -301,7 +377,8 @@ public final class GFci {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
+                    List<Node> sepset = map.get(a, c);
+//                    List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -481,6 +558,25 @@ public final class GFci {
 
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
+    }
+
+    private int freeDegree(List<Node> nodes, Graph graph) {
+        int max = 0;
+
+        for (Node x : nodes) {
+            List<Node> opposites = graph.getAdjacentNodes(x);
+
+            for (Node y : opposites) {
+                Set<Node> adjx = new HashSet<Node>(opposites);
+                adjx.remove(y);
+
+                if (adjx.size() > max) {
+                    max = adjx.size();
+                }
+            }
+        }
+
+        return max;
     }
 }
 

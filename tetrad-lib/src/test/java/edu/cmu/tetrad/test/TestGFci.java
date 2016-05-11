@@ -193,7 +193,7 @@ public class TestGFci {
     }
 
     @Test
-    public void test5() {
+    public void testFromData() {
         int numNodes = 500;
         int numLatents = 50;
         int numEdges = 500;

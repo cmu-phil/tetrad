@@ -209,22 +209,6 @@ public class TestFgs {
         assertEquals(SearchGraphUtils.patternForDag(graph), pattern);
     }
 
-    @Test
-    public void testFromGraph() {
-        int numNodes = 20;
-        int numIterations = 20;
-
-        for (int i = 0; i < numIterations; i++) {
-//            System.out.println("Iteration " + (i + 1));
-            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
-            Fgs2 fgs = new Fgs2(new GraphScore(dag));
-            fgs.setFaithfulnessAssumed(false);
-            Graph pattern1 = fgs.search();
-            Graph pattern2 = new Pc(new IndTestDSep(dag)).search();
-//            System.out.println(pattern2);
-            assertEquals(pattern2, pattern1);
-        }
-    }
 
     @Test
     public void testFromGraphSimpleFgs() {
@@ -563,6 +547,68 @@ public class TestFgs {
             assertTrue(pattern.equals(pattern2));
         }
     }
+
+
+    @Test
+    public void testFromGraph() {
+        int numNodes = 20;
+        int numIterations = 20;
+
+        for (int i = 0; i < numIterations; i++) {
+//            System.out.println("Iteration " + (i + 1));
+            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Fgs2 fgs = new Fgs2(new GraphScore(dag));
+            fgs.setFaithfulnessAssumed(false);
+            Graph pattern1 = fgs.search();
+            Graph pattern2 = new Pc(new IndTestDSep(dag)).search();
+//            System.out.println(pattern2);
+            assertEquals(pattern2, pattern1);
+        }
+    }
+
+    @Test
+    public void testFromData() {
+        int numNodes = 500;
+        int numLatents = 0;
+        int numEdges = 500;
+        int sampleSize = 1000;
+
+//        System.out.println(RandomUtil.getInstance().getSeed());
+//
+//        RandomUtil.getInstance().setSeed(1461186701390L);
+
+
+        List<Node> variables = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            variables.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
+
+        LargeSemSimulator semSimulator = new LargeSemSimulator(dag);
+
+        DataSet data = semSimulator.simulateDataAcyclic(sampleSize);
+
+        data = DataUtils.restrictToMeasured(data);
+
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+        score.setPenaltyDiscount(4);
+        Fgs fgs = new Fgs(score);
+
+        long start = System.currentTimeMillis();
+
+        Graph graph = fgs.search();
+
+        long stop = System.currentTimeMillis();
+
+        System.out.println("Elapsed " + (stop - start) + " ms");
+
+        Graph pattern = SearchGraphUtils.patternForDag(dag);
+        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, pattern));
+
+    }
+
 }
 
 

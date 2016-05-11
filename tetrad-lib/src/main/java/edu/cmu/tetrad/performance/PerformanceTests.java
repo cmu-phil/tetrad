@@ -737,7 +737,6 @@ public class PerformanceTests {
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setMaxIndegree(maxIndegree);
                 fgs.setCycleBound(-1);
 
                 long timeb = System.currentTimeMillis();
@@ -781,7 +780,6 @@ public class PerformanceTests {
                 fgs.setNumPatternsToStore(0);
                 fgs.setOut(System.out);
                 fgs.setFaithfulnessAssumed(faithfulness);
-                fgs.setMaxIndegree(maxIndegree);
                 fgs.setCycleBound(-1);
 
                 long timeb = System.currentTimeMillis();

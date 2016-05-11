@@ -183,7 +183,7 @@ public final class Fci implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        return search(new FasStableConcurrent(getIndependenceTest()));
+        return search(new Fas(getIndependenceTest()));
 //        return search(new Fas(getIndependenceTest()));
     }
 
