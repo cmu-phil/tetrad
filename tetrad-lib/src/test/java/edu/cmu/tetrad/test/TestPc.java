@@ -243,10 +243,10 @@ public class TestPc {
         String[] algorithms = {"PC", "CPC", "FGS", "FCI", "GFCI", "RFCI"};
         String[] statLabels = {"AP", "TP", "BP", "NA", "NT", "NB", "E", "AP/E"};
 
-        int numMeasures = 40;
+        int numMeasures = 100;
         double edgeFactor = 1.0;
 
-        int numRuns = 20;
+        int numRuns = 10;
         int maxLatents = numMeasures;
         int jumpLatents = maxLatents / 5;
         double alpha = 0.001;
