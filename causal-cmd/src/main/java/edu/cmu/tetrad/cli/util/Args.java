@@ -315,7 +315,22 @@ public class Args {
         sb.append(algorithmName);
 
         HelpFormatter formatter = new HelpFormatter();
+        formatter.setWidth(-1);
         formatter.printHelp(sb.toString(), options, true);
+    }
+
+    public static String toString(String[] args, char delimiter) {
+        StringBuilder sb = new StringBuilder();
+
+        int lastIndex = args.length - 1;
+        for (int i = 0; i < args.length; i++) {
+            sb.append(args[i]);
+            if (i < lastIndex) {
+                sb.append(delimiter);
+            }
+        }
+
+        return sb.toString();
     }
 
 }
