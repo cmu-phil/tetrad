@@ -272,7 +272,6 @@ public final class Cpc implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-
 //        Fas fas = new Fas(graph, getIndependenceTest());
 //        FasStableConcurrent fas = new FasStableConcurrent(graph, getIndependenceTest());
 //        Fas6 fas = new Fas6(graph, getIndependenceTest());
