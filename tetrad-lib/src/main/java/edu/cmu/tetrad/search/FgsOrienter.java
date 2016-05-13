@@ -39,7 +39,7 @@ import java.util.concurrent.*;
  * <p>
  * To speed things up, it has been assumed that variables X and Y with zero correlation do not correspond to edges in
  * the graph. This is a restricted form of the faithfulness assumption, something GES does not assume. This
- * faithfulness assumption needs to be explicitly turned on using setFaithfulnessAssumed(true).
+ * faithfulness assumption needs to be explicitly turned on using setHeuristicSpeedup(true).
  * <p>
  * A number of other optimizations were added 5/2015. See code for details.
  *

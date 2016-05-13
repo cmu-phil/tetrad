@@ -28,12 +28,18 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -229,6 +235,339 @@ public class TestPc {
             Graph pattern2 = pc2.search();
             assertTrue(pattern.equals(pattern2));
         }
+    }
+
+//    @Test
+    public void testPcFci() {
+
+        String[] algorithms = {"PC", "CPC", "FGS", "FCI", "GFCI", "RFCI"};
+        String[] statLabels = {"AP", "TP", "BP", "NA", "NT", "NB", "E", "AP/E"};
+
+        int numMeasures = 100;
+        double edgeFactor = 1.0;
+
+        int numRuns = 10;
+        int maxLatents = numMeasures;
+        int jumpLatents = maxLatents / 5;
+        double alpha = 0.001;
+        double penaltyDiscount = 4.0;
+
+        if (maxLatents % jumpLatents != 0) throw new IllegalStateException();
+        int numLatentGroups = maxLatents / jumpLatents + 1;
+
+        double[][][] allAllRet = new double[numLatentGroups][][];
+        int latentIndex = -1;
+
+        for (int numLatents = 0; numLatents <= maxLatents; numLatents += jumpLatents) {
+            latentIndex++;
+
+            System.out.println();
+
+            System.out.println("num latents = " + numLatents);
+            System.out.println("num measures = " + numMeasures);
+            System.out.println("edge factor = " + edgeFactor);
+            System.out.println("alpha = " + alpha);
+            System.out.println("penaltyDiscount = " + penaltyDiscount);
+            System.out.println("num runs = " + numRuns);
+
+            double[][] allRet = new double[algorithms.length][];
+
+            for (int t = 0; t < algorithms.length; t++) {
+                allRet[t] = printStats(algorithms, t, true, numRuns, alpha, penaltyDiscount, maxLatents,
+                        numLatents, edgeFactor);
+            }
+
+            allAllRet[latentIndex] = allRet;
+        }
+
+        System.out.println();
+        System.out.println("=======");
+        System.out.println();
+        System.out.println("Algorithms within 0.05 of the max.");
+        System.out.println();
+        System.out.println("AP = Average Arrow Precision; TP = Average Tail Precision");
+        System.out.println("BP = Average Bidirected Precision; NA = Average Number of Arrows");
+        System.out.println("NT = Average Number of Tails; NB = Average Number of Bidirected");
+        System.out.println("E = Averaged Elapsed Time (ms), AP/P");
+        System.out.println();
+        System.out.println("num latents = 0 to " + maxLatents);        System.out.println("alpha = " + alpha);
+        System.out.println("penaltyDiscount = " + penaltyDiscount);
+        System.out.println("num runs = " + numRuns);
+        System.out.println();
+        System.out.println("num measures = " + numMeasures);
+        System.out.println("edge factor = " + edgeFactor);
+
+
+        printBestStats(allAllRet, algorithms, statLabels, maxLatents, jumpLatents);
+    }
+
+    private double[] printStats(String[] algorithms, int t, boolean directed, int numRuns,
+                                double alpha, double penaltyDiscount,
+                                int numMeasures, int numLatents,
+                                double edgeFactor) {
+        NumberFormat nf = new DecimalFormat("0.00");
+
+        double sumArrowPrecision = 0.0;
+        double sumTailPrecision = 0.0;
+        double sumBidirectedPrecision = 0.0;
+        int numArrows = 0;
+        int numTails = 0;
+        int numBidirected = 0;
+        int count = 0;
+        int totalElapsed = 0;
+
+        int countAP = 0;
+        int countTP = 0;
+        int countBP = 0;
+
+        for (int i = 0; i < numRuns; i++) {
+            int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
+            Graph dag = GraphUtils.randomGraphRandomForwardEdges(numMeasures + numLatents, numLatents, numEdges,
+                    10, 10, 10, false);
+            SemPm pm = new SemPm(dag);
+            SemIm im = new SemIm(pm);
+            DataSet data = im.simulateData(1000, false);
+
+            IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+            score.setPenaltyDiscount(penaltyDiscount);
+            GraphSearch search;
+
+            switch (t) {
+                case 0:
+                    search = new Pc(test);
+                    break;
+                case 1:
+                    search = new Cpc(test);
+                    break;
+                case 2:
+                    search = new Fgs2(score);
+                    break;
+                case 3:
+                    search = new Fci(test);
+                    break;
+                case 4:
+                    search = new GFci(score);
+                    break;
+                case 5:
+                    search = new Rfci(test);
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+
+            long start = System.currentTimeMillis();
+
+            Graph out = search.search();
+
+            long stop = System.currentTimeMillis();
+
+            long elapsed = stop - start;
+            totalElapsed += elapsed;
+
+            out = GraphUtils.replaceNodes(out, dag.getNodes());
+
+            int arrowsTp = 0;
+            int arrowsFp = 0;
+            int tailsTp = 0;
+            int tailsFp = 0;
+            int bidirectedTp = 0;
+            int bidirectedFp = 0;
+
+            for (Edge edge : out.getEdges()) {
+                if (directed && !(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
+                    continue;
+                }
+
+                if (edge.getEndpoint1() == Endpoint.ARROW) {
+                    if (!dag.isAncestorOf(edge.getNode1(), edge.getNode2()) &&
+                            dag.existsTrek(edge.getNode1(), edge.getNode2())) {
+                        arrowsTp++;
+                    } else {
+                        arrowsFp++;
+                    }
+
+                    numArrows++;
+                }
+
+                if (edge.getEndpoint2() == Endpoint.ARROW) {
+                    if (!dag.isAncestorOf(edge.getNode2(), edge.getNode1()) &&
+                            dag.existsTrek(edge.getNode1(), edge.getNode2())) {
+                        arrowsTp++;
+                    } else {
+                        arrowsFp++;
+                    }
+
+                    numArrows++;
+                }
+
+                if (edge.getEndpoint1() == Endpoint.TAIL) {
+                    if (dag.existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
+                        tailsTp++;
+                    } else {
+                        tailsFp++;
+                    }
+
+                    numTails++;
+                }
+
+                if (edge.getEndpoint2() == Endpoint.TAIL) {
+                    if (dag.existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
+                        tailsTp++;
+                    } else {
+                        tailsFp++;
+                    }
+
+                    numTails++;
+                }
+
+                if (Edges.isBidirectedEdge(edge)) {
+                    if (!dag.isAncestorOf(edge.getNode1(), edge.getNode2())
+                            && !dag.isAncestorOf(edge.getNode2(), edge.getNode1())
+                            && dag.existsTrek(edge.getNode1(), edge.getNode2())) {
+                        bidirectedTp++;
+                    } else {
+                        bidirectedFp++;
+                    }
+
+                    numBidirected++;
+                }
+            }
+
+            double arrowPrecision = arrowsTp / (double) (arrowsTp + arrowsFp);
+            double tailPrecision = tailsTp / (double) (tailsTp + tailsFp);
+            double bidirectedPrecision = bidirectedTp / (double) (bidirectedTp + bidirectedFp);
+
+            if (!Double.isNaN(arrowPrecision)) {
+                sumArrowPrecision += arrowPrecision;
+                countAP++;
+            }
+
+            if (!Double.isNaN(tailPrecision)) {
+                sumTailPrecision += tailPrecision;
+                countTP++;
+            }
+
+            if (!Double.isNaN(bidirectedPrecision)) {
+                sumBidirectedPrecision += bidirectedPrecision;
+                countBP++;
+            }
+
+            count++;
+        }
+
+        double avgArrowPrecision = sumArrowPrecision / (double) countAP;
+        double avgTailPrecision = sumTailPrecision / (double) countTP;
+        double avgBidirectedPrecision = sumBidirectedPrecision / (double) countBP;
+        double avgNumArrows = numArrows / (double) count;
+        double avgNumTails = numTails / (double) count;
+        double avgNumBidirected = numBidirected / (double) count;
+        double avgElapsed = totalElapsed / (double) numRuns;
+        double avgRatioPrecisionToElapsed = avgArrowPrecision / avgElapsed;
+
+        double[] ret = new double[]{
+                avgArrowPrecision,
+                avgTailPrecision,
+                avgBidirectedPrecision,
+                avgNumArrows,
+                avgNumTails,
+                avgNumBidirected,
+                -avgElapsed, // minimize
+                avgRatioPrecisionToElapsed
+        };
+
+        System.out.println();
+
+        NumberFormat nf2 = new DecimalFormat("0.0000");
+
+        System.out.println(algorithms[t] + " arrow precision " + nf.format(avgArrowPrecision));
+        System.out.println(algorithms[t] + " tail precision " + nf.format(avgTailPrecision));
+        System.out.println(algorithms[t] + " bidirected precision " + nf.format(avgBidirectedPrecision));
+        System.out.println(algorithms[t] + " avg num arrow " + nf.format(avgNumArrows));
+        System.out.println(algorithms[t] + " avg num tails " + nf.format(avgNumTails));
+        System.out.println(algorithms[t] + " avg num bidirected " + nf.format(avgNumBidirected));
+        System.out.println(algorithms[t] + " avg elapsed " + nf.format(avgElapsed));
+        System.out.println(algorithms[t] + " avg precision / elapsed " + nf2.format(avgRatioPrecisionToElapsed));
+
+        return ret;
+    }
+
+    private void printBestStats(double[][][] allAllRet, String[] algorithms, String[] statLabels,
+                                int maxLatents, int jumpLatents) {
+        TextTable table = new TextTable(allAllRet.length + 1, allAllRet[0][0].length + 1);
+
+        int latentIndex = -1;
+
+        class Pair {
+            private String algorithm;
+            private double stat;
+
+            public Pair(String algorithm, double stat) {
+                this.algorithm = algorithm;
+                this.stat = stat;
+            }
+
+            public String getAlgorithm() {
+                return algorithm;
+            }
+
+            public double getStat() {
+                return stat;
+            }
+        }
+
+
+        for (int numLatents = 0; numLatents <= maxLatents; numLatents += jumpLatents) {
+            latentIndex++;
+
+            table.setToken(latentIndex + 1, 0, numLatents + "");
+
+            for (int statIndex = 0; statIndex < allAllRet[latentIndex][0].length; statIndex++) {
+//                double maxStat = Double.NaN;
+                String maxAlg = "-";
+
+                List<Pair> algStats = new ArrayList<>();
+
+                for (int t = 0; t < algorithms.length; t++) {
+                    double stat = allAllRet[latentIndex][t][statIndex];
+                    if (!Double.isNaN(stat)) {
+                        algStats.add(new Pair(algorithms[t], stat));
+                    }
+                }
+
+                if (algStats.isEmpty()) {
+                    maxAlg = "-";
+                } else {
+                    Collections.sort(algStats, new Comparator<Pair>() {
+
+                        @Override
+                        public int compare(Pair o1, Pair o2) {
+                            return -Double.compare(o1.getStat(), o2.getStat());
+                        }
+                    });
+
+                    double maxStat = algStats.get(0).getStat();
+                    maxAlg = algStats.get(0).getAlgorithm();
+
+                    for (int i = 1; i < algStats.size(); i++) {
+                        if (Math.abs(algStats.get(i).getStat() - maxStat) == 0) {//< 0.05) {
+                            maxAlg += "," + algStats.get(i).getAlgorithm();
+                        }
+                    }
+                }
+
+                table.setToken(latentIndex + 1, statIndex + 1, maxAlg);
+            }
+        }
+
+        for (int j = 0; j < statLabels.length; j++) {
+            table.setToken(0, j + 1, statLabels[j]);
+        }
+
+        System.out.println();
+
+        System.out.println(table.toString());
     }
 }
 

@@ -43,7 +43,7 @@ import java.util.concurrent.*;
  * <p>
  * To speed things up, it has been assumed that variables X and Y with zero correlation do not correspond to edges in
  * the graph. This is a restricted form of the faithfulness assumption, something GES does not assume. This
- * faithfulness assumption needs to be explicitly turned on using setFaithfulnessAssumed(true).
+ * faithfulness assumption needs to be explicitly turned on using setHeuristicSpeedup(true).
  * <p>
  * A number of other optimizations were added 5/2015. See code for details.
  *
@@ -149,7 +149,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private Graph adjacencies = null;
 
     // True if it is assumed that zero effect adjacencies are not in the graph.
-    private boolean faithfulnessAssumed = false;
+    private boolean heuristicSpeedup = false;
 
     // The graph being constructed.
     private Graph graph;
@@ -217,15 +217,15 @@ public final class Fgs implements GraphSearch, GraphScorer {
     /**
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
      */
-    public void setFaithfulnessAssumed(boolean faithfulness) {
-        this.faithfulnessAssumed = faithfulness;
+    public void setHeuristicSpeedup(boolean faithfulness) {
+        this.heuristicSpeedup = faithfulness;
     }
 
     /**
      * @return true if it is assumed that all path pairs with one length 1 path do not cancel.
      */
-    public boolean isFaithfulnessAssumed() {
-        return this.faithfulnessAssumed;
+    public boolean isHeuristicSpeedup() {
+        return this.heuristicSpeedup;
     }
 
     /**
@@ -264,7 +264,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 // Do forward search.
                 fes();
             } else {
-                if (isFaithfulnessAssumed()) {
+                if (isHeuristicSpeedup()) {
                     graph = new EdgeListGraphSingleConnections(getVariables());
                     initializeForwardEdgesFromEmptyGraph(getVariables());
 
@@ -273,13 +273,13 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 } else {
                     graph = new EdgeListGraphSingleConnections(getVariables());
 
-                    setFaithfulnessAssumed(true);
+                    setHeuristicSpeedup(true);
                     initializeForwardEdgesFromEmptyGraph(getVariables());
 
                     // Do forward search.
                     fes();
 
-                    setFaithfulnessAssumed(false);
+                    setHeuristicSpeedup(false);
                     initializeForwardEdgesFromExistingGraph(getVariables());
                     fes();
                 }
@@ -595,7 +595,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                             int parent = hashIndices.get(x);
                             double bump = fgsScore.localScoreDiff(parent, child, new int[]{});
 
-                            if (isFaithfulnessAssumed() && fgsScore.isEffectEdge(bump)) {
+                            if (isHeuristicSpeedup() && fgsScore.isEffectEdge(bump)) {
                                 final Edge edge = Edges.undirectedEdge(x, y);
                                 if (boundGraph != null && !boundGraph.isAdjacentTo(edge.getNode1(), edge.getNode2()))
                                     continue;
@@ -931,7 +931,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                         List<Node> adj;
 
-                        if (isFaithfulnessAssumed()) {
+                        if (isHeuristicSpeedup()) {
                             adj = effectEdgesGraph.getAdjacentNodes(x);
                         } else {
                             adj = getVariables();
@@ -975,7 +975,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
     // Calculates the new arrows for an a->b edge.
     private void calculateArrowsForward(Node a, Node b) {
-        if (isFaithfulnessAssumed() && !effectEdgesGraph.isAdjacentTo(a, b)) return;
+        if (isHeuristicSpeedup() && !effectEdgesGraph.isAdjacentTo(a, b)) return;
         if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) return;
         this.neighbors.put(b, getNeighbors(b));
 
@@ -1029,7 +1029,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                     addArrow(a, b, naYX, T, bump);
                 }
 
-                if (isFaithfulnessAssumed() && union.isEmpty() && fgsScore.isEffectEdge(bump) &&
+                if (isHeuristicSpeedup() && union.isEmpty() && fgsScore.isEffectEdge(bump) &&
                         !effectEdgesGraph.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
                     effectEdgesGraph.addUndirectedEdge(a, b);
                 }

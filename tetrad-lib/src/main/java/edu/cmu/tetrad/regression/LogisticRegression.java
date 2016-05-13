@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -310,9 +311,9 @@ public class LogisticRegression implements TetradSerializable {
 
         //report = report + (" (Converged) \n");
 
-        EdgeListGraph outgraph = new EdgeListGraph();
-        Node targNode = new GraphNode(targetName);
-        outgraph.addNode(targNode);
+//        EdgeListGraph outgraph = new EdgeListGraph();
+//        Node targNode = new GraphNode(targetName);
+//        outgraph.addNode(targNode);
 
         double chiSq = llN - ll;
 
@@ -328,25 +329,13 @@ public class LogisticRegression implements TetradSerializable {
             double zScore = par[j] / parStdErr[j];
             double prob = norm(Math.abs(zScore));
 
-
             pValues[j] = prob;
             zScores[j] = zScore;
-
-            if (prob < alpha) {
-                sigMarker[j - 1] = "*";
-                Node predNode = new GraphNode(regressorNames.get(j - 1));
-                outgraph.addNode(predNode);
-                Edge newEdge = new Edge(predNode, targNode, Endpoint.TAIL,
-                        Endpoint.ARROW);
-                outgraph.addEdge(newEdge);
-            } else {
-                sigMarker[j - 1] = "";
-            }
         }
 
         parStdErr[0] = Math.sqrt(arr[0][0]);
         double zScore = par[0] / parStdErr[0];
-        pValues[0] = norm(Math.abs(zScore));
+        pValues[0] = norm(zScore);
         zScores[0] = zScore;
 
         double intercept = par[0];
@@ -355,7 +344,7 @@ public class LogisticRegression implements TetradSerializable {
 
         return new Result(targetName,
                 regressorNames, xMeans, xStdDevs, numRegressors, ny0, ny1, coefficients,
-                parStdErr, pValues, intercept, ll, sigMarker, chiSq
+                parStdErr, pValues, intercept, ll, sigMarker, chiSq, alpha
         );
     }
 
@@ -363,11 +352,11 @@ public class LogisticRegression implements TetradSerializable {
         double q = z * z;
         double piOver2 = Math.PI / 2.0;
 
-        if (Math.abs(z) > 7.0) {
+        if (Math.abs(q) > 7.0) {
             return (1.0 - 1.0 / q + 3.0 / (q * q)) * Math.exp(-q / 2.0) /
                     (Math.abs(z) * Math.sqrt(piOver2));
         } else {
-            return ProbUtils.chisqCdf(q, 1);
+            return new ChiSquaredDistribution(1).cumulativeProbability(q);
         }
 
     }
@@ -401,6 +390,7 @@ public class LogisticRegression implements TetradSerializable {
         static final long serialVersionUID = 23L;
         private final String[] sigMarker;
         private final double chiSq;
+        private final double alpha;
         private List<String> regressorNames;
         private String target;
         private int ny0;
@@ -429,7 +419,7 @@ public class LogisticRegression implements TetradSerializable {
         public Result(String target, List<String> regressorNames, double[] xMeans, double[] xStdDevs,
                       int numRegressors, int ny0, int ny1, double[] coefs,
                       double[] stdErrs, double[] probs, double intercept, double logLikelihood,
-                      String[] sigmMarker, double chiSq) {
+                      String[] sigmMarker, double chiSq, double alpha) {
 
 
             if (regressorNames.size() != numRegressors) {
@@ -473,6 +463,7 @@ public class LogisticRegression implements TetradSerializable {
             this.logLikelihood = logLikelihood;
             this.sigMarker = sigmMarker;
             this.chiSq = chiSq;
+            this.alpha = alpha;
         }
 
         /**
@@ -480,7 +471,7 @@ public class LogisticRegression implements TetradSerializable {
          */
         public static Result serializableInstance() {
             return new Result("X1", new ArrayList<String>(), new double[1], new double[1], 0, 0, 0,
-                    new double[1], new double[1], new double[1], 1.5, 0.0, new String[0], 0.0);
+                    new double[1], new double[1], new double[1], 1.5, 0.0, new String[0], 0.0, 0.05);
         }
 
         /**
@@ -564,42 +555,31 @@ public class LogisticRegression implements TetradSerializable {
             return logLikelihood;
         }
 
-        public String getReport() {
+        public String toString() {
             NumberFormat nf = new DecimalFormat("0.0000");
             String report = "";
 
             report = report + (ny0 + " cases have " + target + " = 0; " + ny1 +
                     " cases have " + target + " = 1.\n");
-            //if(nc != numCases) System.out.println("nc NOT numCases");
-
-            for (int j = 0; j < regressorNames.size(); j++) {
-                report = report + ("\tVariable\tAvg\tSD\n");
-                report = report + ("\t" + regressorNames.get(j - 1) + "\t" +
-                        nf.format(xMeans[j]) + "\t" + nf.format(xStdDevs[j]) +
-                        "\n");
-            }
-
-            double[] par = new double[numRegressors + 1];
-
-            par[0] = Math.log((double) ny1 / (double) ny0);
-            for (int j = 1; j <= numRegressors; j++) {
-                par[j] = 0.0;
-            }
-
-            for (int j = 0; j < regressorNames.size(); j++) {
-                report = report + (regressorNames.get(j - 1) + "\t" + nf.format(par[j]) +
-                        "\t" + nf.format(probs[j]) +
-                        "\t" + sigMarker[j - 1] + "\n");
-            }
 
             report = report + ("Overall Model Fit...\n");
             report = report + ("  Chi Square = " + nf.format(chiSq) + "; df = " +
                     numRegressors + "; " + "p = " +
-                    nf.format(ProbUtils.chisqCdf(chiSq, numRegressors)) + "\n");
+                    nf.format(new ChiSquaredDistribution(numRegressors).cumulativeProbability(chiSq)) + "\n");
             report = report + ("\nCoefficients and Standard Errors...\n");
-            report = report + (" Variable\tCoeff.\tStdErr\tprob.\tsig.\n");
+            report = report + ("\tCoeff.\tStdErr\tprob.\tsig.");
 
-            report = report + ("\nIntercept = " + nf.format(intercept) + "\n");
+            report += "\n";
+
+            for (int i = 0; i < regressorNames.size(); i++) {
+                report += "\n" + regressorNames.get(i) +
+                        "\t" + nf.format(coefs[i + 1]) +
+                        "\t" + nf.format(stdErrs[i + 1]) +
+                        "\t" + nf.format(probs[i + 1]) +
+                        "\t" + (probs[i + 1] < alpha ? "*" : "");
+            }
+
+            report = report + ("\n\nIntercept = " + nf.format(intercept) + "\n");
 
             return report;
         }

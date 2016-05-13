@@ -129,7 +129,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         }
     }
 
-    // get vaues by marginalizing probabilities from full bayesIm
+    // get vaues by marginalizing probabilities from allowUnfaithfulness bayesIm
     public void createCellTable(MlBayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();

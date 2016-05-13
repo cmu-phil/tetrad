@@ -72,11 +72,11 @@ class PcLingamIndTestParamsEditor extends JComponent {
             }
         });
 
-//        depthField = new IntTextField(indTestParams().getDepth(), 4);
+//        depthField = new IntTextField(indTestParams().getMaxIndegree(), 4);
 //        depthField.setFilter(new IntTextField.Filter() {
 //            public int filter(int value, int oldValue) {
 //                try {
-//                    indTestParams().setDepth(value);
+//                    indTestParams().setMaxIndegree(value);
 //                    return value;
 //                }
 //                catch (IllegalArgumentException e) {

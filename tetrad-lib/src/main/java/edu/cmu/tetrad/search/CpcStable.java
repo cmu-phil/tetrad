@@ -261,7 +261,7 @@ public final class CpcStable implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, getGraph(), nodes);
 
-//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getDepth());
+//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
         orientUnshieldedTriples(knowledge);
 
         System.out.println("Meek rules");

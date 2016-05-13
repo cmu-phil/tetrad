@@ -474,6 +474,14 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * @return a copy of the covariance matrix.
      */
     public final TetradMatrix getMatrix() {
+        TetradMatrix matrix = new TetradMatrix(getDimension(), getDimension());
+
+        for (int i = 0; i < getDimension(); i++) {
+            for (int j = 0; j < getDimension(); j++) {
+                matrix.set(i, j, getValue(i, j));
+            }
+        }
+
         return matrix;
     }
 

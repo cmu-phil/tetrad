@@ -158,6 +158,11 @@ public class ScoredIndTest implements Score {
         return null;
     }
 
+    @Override
+    public int getMaxIndegree() {
+        return 1000;
+    }
+
 }
 
 

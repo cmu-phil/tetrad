@@ -84,6 +84,7 @@ public final class FciOrient {
     private boolean verbose = false;
 
     private Graph truePag;
+    private Graph dag;
 
     //============================CONSTRUCTORS============================//
 
@@ -92,6 +93,11 @@ public final class FciOrient {
      */
     public FciOrient(SepsetProducer sepsets) {
         this.sepsets = sepsets;
+
+        if (sepsets instanceof SepsetsGreedy) {
+            SepsetsGreedy _sepsets = (SepsetsGreedy) sepsets;
+            this.dag = _sepsets.getDag();
+        }
     }
 
     //========================PUBLIC METHODS==========================//
@@ -615,6 +621,7 @@ public final class FciOrient {
      * arguments.
      */
     private void doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
+
         List<Node> sepset = getSepset(d, c);
 
         if (sepset == null) return;
@@ -747,6 +754,27 @@ public final class FciOrient {
      * arguments.
      */
     private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Map<Node, Node> previous, Graph graph) {
+        if (dag != null) {
+            if (dag.isAncestorOf(b, c)) {
+                graph.setEndpoint(c, b, Endpoint.TAIL);
+                changeFlag = true;
+            } else {
+                if (!isArrowpointAllowed(a, b, graph)) {
+                    return false;
+                }
+
+                if (!isArrowpointAllowed(c, b, graph)) {
+                    return false;
+                }
+
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
+                changeFlag = true;
+            }
+
+            return true;
+        }
+
         if (graph.isAdjacentTo(d, c)) {
             throw new IllegalArgumentException();
         }

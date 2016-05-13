@@ -301,7 +301,7 @@ public final class Cpc implements GraphSearch {
         }
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
         orientUnshieldedTriples(knowledge);
-//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getDepth());
+//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
         MeekRules meekRules = new MeekRules();
 
         meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);

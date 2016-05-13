@@ -219,5 +219,6 @@ public class SepsetsConservativeMajority implements SepsetProducer {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
 }
 

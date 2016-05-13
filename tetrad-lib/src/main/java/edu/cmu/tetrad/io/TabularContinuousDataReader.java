@@ -19,7 +19,6 @@
 package edu.cmu.tetrad.io;
 
 import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
@@ -28,9 +27,11 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -38,7 +39,9 @@ import java.util.Set;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class TabularContinuousDataReader extends AbstractDataReader implements DataReader {
+public class TabularContinuousDataReader extends AbstractContinuousDataReader implements DataReader {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TabularContinuousDataReader.class);
 
     public TabularContinuousDataReader(Path dataFile, char delimiter) {
         super(dataFile, delimiter);
@@ -46,155 +49,43 @@ public class TabularContinuousDataReader extends AbstractDataReader implements D
 
     @Override
     public DataSet readInData() throws IOException {
-        int numOfRows = countNumberOfLines() - 1;  // exclude the header
-
-        double[][] data;
-        List<Node> nodes = new LinkedList<>();
-        try (FileChannel fc = new RandomAccessFile(dataFile.toFile(), "r").getChannel()) {
-            MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-            StringBuilder dataBuilder = new StringBuilder();
-
-            // read in variables
-            int numOfCols = 0;
-            byte currentChar = -1;
-            byte prevChar = NEW_LINE;
-            while (buffer.hasRemaining()) {
-                currentChar = buffer.get();
-                if (currentChar == CARRIAGE_RETURN) {
-                    currentChar = NEW_LINE;
-                }
-
-                if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                    String value = dataBuilder.toString().trim();
-                    if (value.length() > 0) {
-                        nodes.add(new ContinuousVariable(value));
-                    } else {
-                        throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
-                    }
-
-                    numOfCols++;
-                    dataBuilder.delete(0, dataBuilder.length());
-                    if (currentChar == NEW_LINE) {
-                        prevChar = currentChar;
-                        break;
-                    }
-                } else {
-                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-                        continue;
-                    }
-                    dataBuilder.append((char) currentChar);
-                }
-
-                prevChar = currentChar;
-            }
-            if (currentChar == NEW_LINE) {
-                if (prevChar == delimiter) {
-                    throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
-                }
-            } else {
-                if (currentChar == delimiter) {
-                    throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
-                } else {
-                    String value = dataBuilder.toString().trim();
-                    if (value.length() > 0) {
-                        nodes.add(new ContinuousVariable(value));
-                    } else {
-                        throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
-                    }
-
-                    numOfCols++;
-                    dataBuilder.delete(0, dataBuilder.length());
-                }
-            }
-
-            // read in data
-            data = new double[numOfRows][numOfCols];
-            int row = 0;
-            int col = 0;
-            while (buffer.hasRemaining()) {
-                currentChar = buffer.get();
-                if (currentChar == CARRIAGE_RETURN) {
-                    currentChar = NEW_LINE;
-                }
-
-                if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                    String value = dataBuilder.toString().trim();
-                    if (value.length() > 0) {
-                        try {
-                            data[row][col] = Double.parseDouble(value);
-                        } catch (NumberFormatException exception) {
-                            throw new IOException(
-                                    String.format("Unable to parse data at line %d column %d.", row + 2, ++col),
-                                    exception);
-                        }
-                    } else {
-                        throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
-                    }
-
-                    col++;
-                    dataBuilder.delete(0, dataBuilder.length());
-                    if (currentChar == NEW_LINE) {
-                        col = 0;
-                        row++;
-                    }
-                } else {
-                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-                        continue;
-                    }
-                    dataBuilder.append((char) currentChar);
-                }
-
-                prevChar = currentChar;
-            }
-            if (currentChar == NEW_LINE) {
-                if (prevChar == delimiter) {
-                    throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
-                }
-            } else {
-                if (currentChar == delimiter) {
-                    throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
-                } else {
-                    String value = dataBuilder.toString().trim();
-                    if (value.length() > 0) {
-                        try {
-                            data[row][col] = Double.parseDouble(value);
-                        } catch (NumberFormatException exception) {
-                            throw new IOException(
-                                    String.format("Unable to parse data at line %d column %d.", row + 2, ++col),
-                                    exception);
-                        }
-                    } else {
-                        throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
-                    }
-
-                    numOfCols++;
-                    dataBuilder.delete(0, dataBuilder.length());
-                }
-            }
-        }
-
-        return new BoxDataSet(new DoubleDataBox(data), nodes);
+        return readInData(Collections.EMPTY_SET);
     }
 
     @Override
     public DataSet readInData(Set<String> excludedVariables) throws IOException {
-        if (excludedVariables == null || excludedVariables.isEmpty()) {
-            return readInData();
+        if (excludedVariables == null) {
+            excludedVariables = Collections.EMPTY_SET;
         }
 
-        int numOfRows = countNumberOfLines() - 1;  // exclude the header
+        ContinuousVariableAnalysis variableAnalysis = analyzeData(excludedVariables);
+        List<Node> nodes = variableAnalysis.getVariables();
+        double[][] data = extractContinuousData(variableAnalysis);
 
-        double[][] data;
-        List<Node> nodes = new LinkedList<>();
+        return new BoxDataSet(new DoubleDataBox(data), nodes);
+    }
+
+    protected double[][] extractContinuousData(ContinuousVariableAnalysis variableAnalysis) throws IOException {
+        int maxNumOfCols = countNumberOfColumns();
+        int numOfCols = variableAnalysis.getVariables().size();
+        int numOfRows = countNumberOfLines() - 1;  // minus the header
+
+        double[][] data = new double[numOfRows][numOfCols];
         try (FileChannel fc = new RandomAccessFile(dataFile.toFile(), "r").getChannel()) {
             MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-            StringBuilder dataBuilder = new StringBuilder();
 
-            List<Integer> variablesToExclude = new LinkedList<>();
+            skipToNextLine(buffer);  // skip header
 
-            int numOfCols = 0;
+            int[] excludedIndices = variableAnalysis.getExcludedIndices();
+            int excludedIndex = 0;
+            int excludedColumn = excludedIndices[excludedIndex];
+
+            int row = 0;
+            int col = 0;
+            int colCount = 0;
             byte currentChar = -1;
             byte prevChar = NEW_LINE;
+            StringBuilder dataBuilder = new StringBuilder();
             while (buffer.hasRemaining()) {
                 currentChar = buffer.get();
                 if (currentChar == CARRIAGE_RETURN) {
@@ -202,214 +93,89 @@ public class TabularContinuousDataReader extends AbstractDataReader implements D
                 }
 
                 if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                    String value = dataBuilder.toString().trim();
-                    if (value.length() > 0) {
-                        if (excludedVariables.contains(value)) {
-                            variablesToExclude.add(numOfCols);
-                        } else {
-                            nodes.add(new ContinuousVariable(value));
+                    String value = dataBuilder.toString();
+                    dataBuilder.delete(0, dataBuilder.length());
+                    if (colCount == excludedColumn) {
+                        excludedIndex++;
+                        if (excludedIndex < excludedIndices.length) {
+                            excludedColumn = excludedIndices[excludedIndex];
                         }
                     } else {
-                        throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
+                        if (colCount < maxNumOfCols) {
+                            if (value.length() > 0) {
+                                try {
+                                    data[row][col++] = Double.parseDouble(value);
+                                } catch (NumberFormatException exception) {
+                                    throw new IOException(
+                                            String.format("Unable to parse data at line %d column %d.", row + 2, colCount + 1),
+                                            exception);
+                                }
+                            } else {
+                                String errMsg = String.format("Missing data at line %d column %d.", row + 2, colCount + 1);
+                                LOGGER.error(errMsg);
+                                throw new IOException(errMsg);
+                            }
+                        } else {
+                            String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", row + 2, maxNumOfCols, colCount + 1);
+                            LOGGER.error(errMsg);
+                            throw new IOException(errMsg);
+                        }
                     }
 
-                    numOfCols++;
-                    dataBuilder.delete(0, dataBuilder.length());
+                    colCount++;
                     if (currentChar == NEW_LINE) {
-                        prevChar = currentChar;
-                        break;
+                        if (col < numOfCols) {
+                            String errMsg = String.format("Insufficient number of columns at line %d.  Expect %d column(s) but found %d.", row + 2, maxNumOfCols, colCount);
+                            LOGGER.error(errMsg);
+                            throw new IOException(errMsg);
+                        }
+                        colCount = 0;
+                        col = 0;
+                        row++;
+
+                        excludedIndex = 0;
+                        excludedColumn = excludedIndices[excludedIndex];
                     }
-                } else {
-                    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-                        continue;
-                    }
+                } else if (currentChar > SPACE && (currentChar != SINGLE_QUOTE && currentChar != DOUBLE_QUOTE)) {
                     dataBuilder.append((char) currentChar);
                 }
 
                 prevChar = currentChar;
             }
-            if (currentChar == NEW_LINE) {
-                if (prevChar == delimiter) {
-                    throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
-                }
-            } else {
+            if (currentChar > -1 && currentChar != NEW_LINE) {
                 if (currentChar == delimiter) {
-                    throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
+                    String errMsg = String.format("Missing data at line %d column %d.", row + 2, col + 1);
+                    LOGGER.error(errMsg);
+                    throw new IOException(errMsg);
                 } else {
-                    String value = dataBuilder.toString().trim();
-                    if (value.length() > 0) {
-                        if (excludedVariables.contains(value)) {
-                            variablesToExclude.add(numOfCols);
-                        } else {
-                            nodes.add(new ContinuousVariable(value));
-                        }
-                    } else {
-                        throw new IOException(String.format("Missing variable name at column %d.", ++numOfCols));
-                    }
-
-                    numOfCols++;
+                    String value = dataBuilder.toString();
                     dataBuilder.delete(0, dataBuilder.length());
-                }
-            }
-
-            if (variablesToExclude.isEmpty()) {
-                // read in data
-                data = new double[numOfRows][numOfCols];
-                int row = 0;
-                int col = 0;
-                while (buffer.hasRemaining()) {
-                    currentChar = buffer.get();
-                    if (currentChar == CARRIAGE_RETURN) {
-                        currentChar = NEW_LINE;
-                    }
-
-                    if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                        String value = dataBuilder.toString().trim();
-                        if (value.length() > 0) {
-                            try {
-                                data[row][col] = Double.parseDouble(value);
-                            } catch (NumberFormatException exception) {
-                                throw new IOException(
-                                        String.format("Unable to parse data at line %d column %d.", row + 2, ++col),
-                                        exception);
-                            }
-                        } else {
-                            throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
-                        }
-
-                        col++;
-                        dataBuilder.delete(0, dataBuilder.length());
-                        if (currentChar == NEW_LINE) {
-                            col = 0;
-                            row++;
-                        }
-                    } else {
-                        if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-                            continue;
-                        }
-                        dataBuilder.append((char) currentChar);
-                    }
-
-                    prevChar = currentChar;
-                }
-                if (currentChar == NEW_LINE) {
-                    if (prevChar == delimiter) {
-                        throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
-                    }
-                } else {
-                    if (currentChar == delimiter) {
-                        throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
-                    } else {
-                        String value = dataBuilder.toString().trim();
-                        if (value.length() > 0) {
-                            try {
-                                data[row][col] = Double.parseDouble(value);
-                            } catch (NumberFormatException exception) {
-                                throw new IOException(
-                                        String.format("Unable to parse data at line %d column %d.", row + 2, ++col),
-                                        exception);
-                            }
-                        } else {
-                            throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
-                        }
-
-                        numOfCols++;
-                        dataBuilder.delete(0, dataBuilder.length());
-                    }
-                }
-            } else {
-                numOfCols = nodes.size();
-
-                int[] exclusions = new int[variablesToExclude.size()];
-                int excludeIndex = 0;
-                for (Integer varIndex : variablesToExclude) {
-                    exclusions[excludeIndex++] = varIndex;
-                }
-
-                excludeIndex = 0;
-                int excludeColumn = exclusions[excludeIndex];
-
-                // read in data
-                data = new double[numOfRows][numOfCols];
-                int row = 0;
-                int col = 0;
-                int dataCol = 0;
-                while (buffer.hasRemaining()) {
-                    currentChar = buffer.get();
-                    if (currentChar == CARRIAGE_RETURN) {
-                        currentChar = NEW_LINE;
-                    }
-
-                    if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                        if (col == excludeColumn) {
-                            excludeIndex++;
-                            if (excludeIndex < exclusions.length) {
-                                excludeColumn = exclusions[excludeIndex];
-                            }
-                        } else {
-                            String value = dataBuilder.toString().trim();
+                    if (colCount != excludedColumn) {
+                        if (colCount < maxNumOfCols) {
                             if (value.length() > 0) {
                                 try {
-                                    data[row][dataCol] = Double.parseDouble(value);
+                                    data[row][col++] = Double.parseDouble(value);
                                 } catch (NumberFormatException exception) {
                                     throw new IOException(
-                                            String.format("Unable to parse data at line %d column %d.", row + 2, col),
+                                            String.format("Unable to parse data at line %d column %d.", row + 2, colCount + 1),
                                             exception);
                                 }
                             } else {
-                                throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
+                                String errMsg = String.format("Missing data at line %d column %d.", row + 2, colCount + 1);
+                                LOGGER.error(errMsg);
+                                throw new IOException(errMsg);
                             }
-
-                            dataCol++;
-                        }
-                        col++;
-
-                        dataBuilder.delete(0, dataBuilder.length());
-                        if (currentChar == NEW_LINE) {
-                            dataCol = 0;
-                            col = 0;
-                            row++;
-
-                            excludeIndex = 0;
-                            excludeColumn = exclusions[excludeIndex];
-                        }
-                    } else {
-                        if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-                            continue;
-                        }
-                        dataBuilder.append((char) currentChar);
-                    }
-
-                    prevChar = currentChar;
-                }
-                if (col != excludeColumn) {
-                    if (currentChar == NEW_LINE) {
-                        if (prevChar == delimiter) {
-                            throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
-                        }
-                    } else {
-                        if (currentChar == delimiter) {
-                            throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
                         } else {
-                            String value = dataBuilder.toString().trim();
-                            if (value.length() > 0) {
-                                try {
-                                    data[row][dataCol] = Double.parseDouble(value);
-                                } catch (NumberFormatException exception) {
-                                    throw new IOException(
-                                            String.format("Unable to parse data at line %d column %d.", row + 2, col),
-                                            exception);
-                                }
-                            } else {
-                                throw new IOException(String.format("Missing value at line %d column %d.", row + 2, ++col));
-                            }
+                            String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", row + 2, maxNumOfCols, colCount + 1);
+                            LOGGER.error(errMsg);
+                            throw new IOException(errMsg);
                         }
                     }
                 }
             }
         }
 
-        return new BoxDataSet(new DoubleDataBox(data), nodes);
+        return data;
     }
 
 }

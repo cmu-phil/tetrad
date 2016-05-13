@@ -183,6 +183,11 @@ public class GraphScore implements Score {
         throw new IllegalArgumentException("No variable by that name: " + name);
     }
 
+    @Override
+    public int getMaxIndegree() {
+        return 1000;
+    }
+
     public int getSampleSize() {
         return 0;
     }

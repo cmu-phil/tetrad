@@ -65,7 +65,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource, 
 	// Only constructed from a PM or from another BayesIm
 	//
 	// If from a regular BayesIm, the new probability values are 
-	// the marginalized values of the full probability values in 
+	// the marginalized values of the allowUnfaithfulness probability values in
 	// the old BayesIm, stored in a JPD
 	//
 
@@ -166,7 +166,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable, GraphSource, 
         log(bayesIm);
     }
 	
-	// from regular full BayesIm
+	// from regular allowUnfaithfulness BayesIm
 	// marginalize the probability values from the old BayesIm
     public BayesImWrapperObs(BayesImWrapper bayesImWrapper) {
         if (bayesImWrapper == null) {

@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.*;
