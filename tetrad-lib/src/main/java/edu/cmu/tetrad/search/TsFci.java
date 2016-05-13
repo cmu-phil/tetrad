@@ -62,6 +62,8 @@ public final class TsFci implements GraphSearch {
      */
     private SepsetMap sepsets;
 
+    private SepsetMap sepsets2;
+
     /**
      * The background knowledge.
      */
@@ -207,6 +209,7 @@ public final class TsFci implements GraphSearch {
         fas.setInitialGraph(initialGraph);
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
+        this.sepsets2 = fas.getSepsets2();
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
@@ -217,7 +220,7 @@ public final class TsFci implements GraphSearch {
         //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
         if (isPossibleDsepSearchDone()) {
 //            long time1 = System.currentTimeMillis();
-            TsFciOrient tsFciOrient = new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest);
+            TsFciOrient tsFciOrient = new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest, new SepsetsSet(this.sepsets2, independenceTest));
             tsFciOrient.setKnowledge(knowledge);
             tsFciOrient.ruleR0(graph);
 //            new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest).ruleR0(graph);
@@ -270,7 +273,7 @@ public final class TsFci implements GraphSearch {
         long time6 = System.currentTimeMillis();
         logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
-        final TsFciOrient fciOrient = new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest),independenceTest);
+        final TsFciOrient fciOrient = new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest),independenceTest, new SepsetsSet(this.sepsets2, independenceTest));
 
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);

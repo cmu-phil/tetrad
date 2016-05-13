@@ -9,11 +9,13 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.data.DataReader;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.*;
 
 /**
  * Does a comparison of algorithm results across algorithm type, sample sizes, etc.
@@ -33,6 +35,51 @@ public class Comparison2 {
         Score score = null;
 
         ComparisonResult result = new ComparisonResult(params);
+
+//        if (params.isdataFromFile()) {
+//            int numDataSets = 0;
+//
+//            /** Set path to the data directory **/
+//            String path = "/Users/dmalinsky/Documents/research/data/danexamples";
+//
+//            try {
+//                File dir = new File(path);
+//                File[] files = dir.listFiles();
+//
+//                if (files == null) throw new NullPointerException("No files in " + path);
+//
+//                for (File file : files) {
+//                    boolean attested = false;
+//
+//                    for (int i = 0; i < prefixes.length; i++) {
+//                        if (file.getName().startsWith(prefixes[i]) && !file.getName().endsWith(".graph.txt")
+//                             && !file.getName().contains("tet")) {
+////                            DataReader reader = new DataReader();
+////                            reader.setDelimiter(DelimiterType.TAB);
+////                            reader.setMaxIntegralDiscrete(0);
+////                            allDataSets.get(i).add(reader.parseTabular(file));
+//
+//                            params.setDataFile(file.getName());
+//
+//                            attested = true;
+//                            numDataSets++;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (!attested) {
+//                        System.out.println("Ignoring " + file.getAbsolutePath());
+//                    }
+//                }
+//
+//                System.out.println("# data sets = " + numDataSets);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
+
+
 
         if (params.isNoData()){
             List<Node> nodes = new ArrayList<>();
@@ -303,6 +350,11 @@ public class Comparison2 {
     }
 
     private static DataSet loadDataFile(String dataFile) {
+//        DataReader reader = new DataReader();
+//        reader.setDelimiter(DelimiterType.TAB);
+//        reader.setMaxIntegralDiscrete(0);
+//        DataSet dataset = reader.parseTabular(new File(dataFile));
+//        return dataset;
         return null;
     }
 

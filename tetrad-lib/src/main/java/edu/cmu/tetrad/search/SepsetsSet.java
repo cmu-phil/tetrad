@@ -41,7 +41,7 @@ public class SepsetsSet implements SepsetProducer {
 
     @Override
     public List<Node> getSepset(Node a, Node b) {
-        isIndependent(a, b, sepsets.get(a, b));
+        //isIndependent(a, b, sepsets.get(a, b));
         return sepsets.get(a, b);
     }
 

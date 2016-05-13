@@ -59,6 +59,8 @@ public final class TsFciOrient {
      */
     private SepsetProducer sepsets;
 
+    private SepsetProducer sepsets2; // added 5.11.2016
+
     private IKnowledge knowledge = new Knowledge2();
 
     private boolean changeFlag = true;
@@ -97,9 +99,10 @@ public final class TsFciOrient {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public TsFciOrient(SepsetProducer sepsets, IndependenceTest independenceTest) {
+    public TsFciOrient(SepsetProducer sepsets, IndependenceTest independenceTest, SepsetProducer sepsets2) {
         this.sepsets = sepsets;
         this.independenceTest = independenceTest;
+        this.sepsets2 = sepsets2;
     }
 
     //========================PUBLIC METHODS==========================//
@@ -129,6 +132,10 @@ public final class TsFciOrient {
     public SepsetProducer getSepsets() {
         return this.sepsets;
     }
+
+    public SepsetProducer getSepsets2() {
+        return this.sepsets2;
+    } // added 5.11.2016
 
     /**
      * The background knowledge.
@@ -165,6 +172,10 @@ public final class TsFciOrient {
 
     private List<Node> getSepset(Node i, Node k) {
         return this.sepsets.getSepset(i, k);
+    }
+
+    private List<Node> getSepset2(Node i, Node k) {
+        return this.sepsets2.getSepset(i, k);
     }
 
 
@@ -1403,9 +1414,10 @@ public final class TsFciOrient {
                 x1 = this.independenceTest.getVariable(A);
                 y1 = this.independenceTest.getVariable(B);
 
-                if (getSepset(x1,y1).isEmpty() || getSepset(y1,x1).isEmpty()){
-                    continue;
-                } // added 05.01.2016
+//                if(getSepset2(x1,y1) != null) if (getSepset2(x1,y1).isEmpty() || getSepset2(y1,x1).isEmpty()){
+//                    System.out.println("$$$ empty sepset between x1,y1 = " + x1 + " and " + y1);
+//                    continue;
+//                } // added 05.01.2016
 
                 if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
                     System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());

@@ -20,6 +20,7 @@ public class ComparisonParameters {
     private String graphFile;
     private boolean oneEdgeFaithfulnessAssumed = false;
     private boolean noData = false;
+    private boolean dataFromFile = false;
 
     public ComparisonParameters() {
 
@@ -39,6 +40,7 @@ public class ComparisonParameters {
         this.graphFile = params.graphFile;
         this.oneEdgeFaithfulnessAssumed = params.oneEdgeFaithfulnessAssumed;
         this.noData = params.noData;
+        this.dataFromFile = params.dataFromFile;
     }
 
     public void setDataType(DataType dataType) {
@@ -286,6 +288,12 @@ public class ComparisonParameters {
     }
 
     public boolean isNoData() { return noData; }
+
+    public boolean isdataFromFile() { return dataFromFile; }
+
+    public void setdataFromFile(boolean dataFromFile) {
+        this.dataFromFile = dataFromFile;
+    }
 
     public enum DataType {Continuous, Discrete}
     public enum ResultType {Pattern, PAG}

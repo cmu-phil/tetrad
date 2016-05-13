@@ -59,7 +59,7 @@ public final class TsDagToPag {
     /**
      * Glag for complete rule set, true if should use complete rule set, false otherwise.
      */
-    private boolean completeRuleSetUsed = false;
+    private boolean completeRuleSetUsed = true;
 
     /**
      * The logger to use.
@@ -138,9 +138,12 @@ public final class TsDagToPag {
         }
 
         final FciOrient fciOrient = new FciOrient(new DagSepsets(dag));
+        System.out.println("Complete rule set is used? " + completeRuleSetUsed);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setKnowledge(knowledge);
+        fciOrient.ruleR0(graph);
         fciOrient.doFinalOrientation(graph);
 
         if (verbose) {

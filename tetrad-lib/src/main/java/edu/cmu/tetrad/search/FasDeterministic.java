@@ -103,6 +103,8 @@ public class FasDeterministic implements IFas {
      */
     private SepsetMap sepset = new SepsetMap();
 
+    private SepsetMap sepset2 = new SepsetMap();
+
     /**
      * True if this is being run by FCI--need to skip the knowledge forbid step.
      */
@@ -548,6 +550,10 @@ public class FasDeterministic implements IFas {
 
     public SepsetMap getSepsets() {
         return sepset;
+    }
+
+    public SepsetMap getSepsets2() {
+        return sepset2;
     }
 
     public void setInitialGraph(Graph initialGraph) {

@@ -106,6 +106,8 @@ public class Fasts implements IFas {
      */
     private SepsetMap sepset = new SepsetMap();
 
+    private SepsetMap sepset2 = new SepsetMap();
+
     /**
      * True if this is being run by FCI--need to skip the knowledge forbid step.
      */
@@ -557,10 +559,17 @@ public class Fasts implements IFas {
 
                     int cond_diff = indx_tier - ind_temptier;
                     int condAB_tier = knowledge.isInWhichTier(x1) - cond_diff;
-                    if(condAB_tier < 0 || condAB_tier > max_tier) {
-                        List<Node> empty = Collections.emptyList();
-                        getSepsets().set(x1, y1, empty); // added 05.01.2016
-                        System.out.println("Warning: For nodes " + A + "," + B + " the conditioning variable is outside "
+//                    System.out.println("tempNode = " + tempNode);
+//                    System.out.println("ind_temptier = " + ind_temptier);
+//                    System.out.println("indx_tier = " + indx_tier);
+//                    System.out.println("cond_diff = " + cond_diff);
+//                    System.out.println("condAB_tier = " + condAB_tier);
+//                    System.out.println("max_tier = " + max_tier);
+//                    System.out.println("ntiers = " + ntiers);
+                    if(condAB_tier < 0 || condAB_tier > (ntiers-1)) {
+//                        List<Node> empty = Collections.emptyList();
+//                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
+                        System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
                         + "of window, so not added to SepSet");
                         continue;
                     }
@@ -672,6 +681,10 @@ public class Fasts implements IFas {
 
     public SepsetMap getSepsets() {
         return sepset;
+    }
+
+    public SepsetMap getSepsets2() {
+        return sepset2;
     }
 
     public void setInitialGraph(Graph initialGraph) {

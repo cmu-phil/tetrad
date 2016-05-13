@@ -22,6 +22,7 @@ public class ComparisonScript {
         int maxSample = 2000;
         int increment = 100;
         params.setNoData(false);
+        params.setdataFromFile(false);
 
         int numTrials = 100;
 

@@ -39,6 +39,7 @@ import java.util.List;
 public class TsFciRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource, IonInput {
     static final long serialVersionUID = 23L;
+    private IKnowledge knowledge = null;
 
     //=========================CONSTRUCTORS================================//
 
@@ -66,8 +67,9 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         super(graph, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner(TimeLagGraphWrapper model, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(model.getGraph(), params, knowledgeBoxModel);
+    public TsFciRunner(TimeLagGraphWrapper model, FciSearchParams params/*, KnowledgeBoxModel knowledgeBoxModel*/) {
+        super(model.getGraph(), params);
+        this.knowledge = model.getKnowledge();
     }
 
     public TsFciRunner(GraphWrapper graphWrapper, FciSearchParams params) {
@@ -108,7 +110,9 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
+        if(this.knowledge == null) {
+            knowledge = getParams().getKnowledge();
+        } /*else {knowledge = this.knowledge;}*/
         SearchParams searchParams = getParams();
 
         FciIndTestParams indTestParams = (FciIndTestParams) searchParams.getIndTestParams();

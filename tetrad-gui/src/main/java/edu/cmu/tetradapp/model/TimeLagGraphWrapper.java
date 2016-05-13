@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.SessionModel;
@@ -50,6 +51,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
      * @serial Cannot be null.
      */
     private TimeLagGraph graph;
+    private IKnowledge knowledge;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -91,6 +93,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         }
 
         this.graph = graph;
+        this.knowledge = graph.getKnowlege();
     }
 
     public TimeLagGraphWrapper() {
@@ -167,6 +170,10 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
 
     public void setGraph(TimeLagGraph graph) {
         this.graph = graph;
+    }
+
+    public IKnowledge getKnowledge() {
+        return graph.getKnowlege();
     }
 }
 
