@@ -101,7 +101,7 @@ public final class DagToPag2 {
         }
 
         final FciOrient fciOrient = new FciOrient(new DagSepsets(dag));
-        fciOrient.setCompleteRuleSetUsed(false);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.doFinalOrientation(graph);
