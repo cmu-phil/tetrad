@@ -171,7 +171,7 @@ public class TestGFci {
 
         int numNodes = 20;
         int numLatents = 5;
-        int numIterations = 10;
+        int numIterations = 2000;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
