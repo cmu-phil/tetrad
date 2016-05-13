@@ -16,66 +16,61 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package edu.cmu.tetrad.io;
+package edu.cmu.tetrad.cli.validation;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
-import edu.cmu.tetrad.graph.Node;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This data reader reads in discrete data in a transposed (vertical) format.
  *
- * Mar 30, 2016 2:40:14 PM
+ * May 3, 2016 4:12:51 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class VerticalTabularDiscreteDataReader extends AbstractDiscreteDataReader implements DataReader {
+public class TabularDiscreteData extends AbstractDatasetValidation implements DataValidation {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(VerticalTabularDiscreteDataReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TabularDiscreteData.class);
 
-    public VerticalTabularDiscreteDataReader(Path dataFile, char delimiter) {
-        super(dataFile, delimiter);
+    public TabularDiscreteData(Set<String> excludedVariables, Path dataFile, char delimiter) {
+        super(excludedVariables, dataFile, delimiter);
+    }
+
+    public TabularDiscreteData(Path dataFile, char delimiter) {
+        super(Collections.EMPTY_SET, dataFile, delimiter);
     }
 
     @Override
-    public DataSet readInData() throws IOException {
-        return readInData(Collections.EMPTY_SET);
-    }
+    public boolean validate(PrintStream stderr, boolean verbose) {
+        boolean valid = true;
 
-    @Override
-    public DataSet readInData(Set<String> excludedVariables) throws IOException {
-        if (excludedVariables == null) {
-            excludedVariables = Collections.EMPTY_SET;
+        try {
+            VariableAnalysis variableAnalysis = analyzeVariables(stderr);
+            valid = variableAnalysis.isValid() && valid;
+            valid = analyzeData(stderr, variableAnalysis) && valid;
+        } catch (IOException exception) {
+            String errMsg = String.format("Error during reading in file '%s'.", dataFile.getFileName().toString());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, exception);
+            valid = false;
         }
 
-        DiscreteVariableAnalysis variableAnalysis = analyzeVariables(excludedVariables);
-        variableAnalysis.recategorize();
-
-        List<Node> nodes = createDiscreteVariableList(variableAnalysis);
-        int[][] data = encodeDiscreteData(variableAnalysis);
-
-        return new BoxDataSet(new VerticalIntDataBox(data), nodes);
+        return valid;
     }
 
-    protected int[][] encodeDiscreteData(DiscreteVariableAnalysis variableAnalysis) throws IOException {
-        DiscreteVarInfo[] variables = variableAnalysis.getDiscreteVarInfos();
+    private boolean analyzeData(PrintStream stderr, VariableAnalysis variableAnalysis) throws IOException {
+        boolean valid = true;
 
-        int maxNumOfCols = variables.length;
+        String[] variables = variableAnalysis.getVariables();
         int numOfCols = variableAnalysis.getNumOfCols();
-        int numOfRows = countNumberOfLines() - 1;  // minus the header
-
-        int[][] data = new int[numOfCols][numOfRows];
+        int maxNumOfCols = variables.length;
         try (FileChannel fc = new RandomAccessFile(dataFile.toFile(), "r").getChannel()) {
             MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
 
@@ -94,37 +89,39 @@ public class VerticalTabularDiscreteDataReader extends AbstractDiscreteDataReade
                 }
 
                 if (currentChar == delimiter || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
-                    String value = dataBuilder.toString().trim();
+                    String value = dataBuilder.toString();
                     dataBuilder.delete(0, dataBuilder.length());
                     if (colCount < maxNumOfCols) {
-                        DiscreteVarInfo variable = variables[colCount];
+                        String variable = variables[colCount];
                         if (variable != null) {
-                            if (value.length() > 0) {
-                                data[col++][row] = variable.getEncodeValue(value);
-                            } else {
-                                String errMsg = String.format("Missing data at line %d column %d.", row + 2, col + 1);
+                            col++;
+                            if (value.length() == 0) {
+                                String errMsg = String.format("Missing data for variable '%s' at line %d column %d.", variable, row + 2, colCount + 1);
+                                stderr.println(errMsg);
                                 LOGGER.error(errMsg);
-                                throw new IOException(errMsg);
+                                valid = false;
                             }
                         }
                     } else {
                         String errMsg = String.format("Number of columns exceeded at line %d.  Expect %d column(s) but found %d.", row + 2, maxNumOfCols, colCount + 1);
+                        stderr.println(errMsg);
                         LOGGER.error(errMsg);
-                        throw new IOException(errMsg);
+                        valid = false;
                     }
 
                     colCount++;
                     if (currentChar == NEW_LINE) {
                         if (col < numOfCols) {
                             String errMsg = String.format("Insufficient number of columns at line %d.  Expect %d column(s) but found %d.", row + 2, numOfCols, col);
+                            stderr.println(errMsg);
                             LOGGER.error(errMsg);
-                            throw new IOException(errMsg);
+                            valid = false;
                         }
                         colCount = 0;
                         col = 0;
                         row++;
                     }
-                } else if (currentChar != SINGLE_QUOTE && currentChar != DOUBLE_QUOTE) {
+                } else if (currentChar > SPACE && (currentChar != SINGLE_QUOTE && currentChar != DOUBLE_QUOTE)) {
                     dataBuilder.append((char) currentChar);
                 }
 
@@ -132,22 +129,17 @@ public class VerticalTabularDiscreteDataReader extends AbstractDiscreteDataReade
             }
             if (currentChar > -1 && currentChar != NEW_LINE) {
                 if (colCount < maxNumOfCols) {
-                    DiscreteVarInfo variable = variables[colCount];
+                    String value = dataBuilder.toString();
+                    dataBuilder.delete(0, dataBuilder.length());
+
+                    String variable = variables[colCount];
                     if (variable != null) {
-                        if (currentChar == delimiter) {
-                            String errMsg = String.format("Missing data at line %d column %d.", row + 2, colCount + 1);
+                        col++;
+                        if (value.length() == 0) {
+                            String errMsg = String.format("Missing data for variable '%s' at line %d column %d.", variable, row + 2, colCount + 1);
+                            stderr.println(errMsg);
                             LOGGER.error(errMsg);
-                            throw new IOException(errMsg);
-                        } else {
-                            String value = dataBuilder.toString().trim();
-                            dataBuilder.delete(0, dataBuilder.length());
-                            if (value.length() > 0) {
-                                data[col++][row] = variable.getEncodeValue(value);
-                            } else {
-                                String errMsg = String.format("Missing data at line %d column %d.", row + 2, colCount + 1);
-                                LOGGER.error(errMsg);
-                                throw new IOException(errMsg);
-                            }
+                            valid = false;
                         }
                     }
                 } else {
@@ -158,7 +150,7 @@ public class VerticalTabularDiscreteDataReader extends AbstractDiscreteDataReade
             }
         }
 
-        return data;
+        return valid;
     }
 
 }
