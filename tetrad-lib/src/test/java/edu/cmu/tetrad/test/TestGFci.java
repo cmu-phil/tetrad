@@ -165,24 +165,30 @@ public class TestGFci {
         assertEquals(pag, truePag);
     }
 
-//    @Test
+    @Test
     public void testFromGraph() {
         RandomUtil.getInstance().setSeed(new Date().getTime());
 
         int numNodes = 20;
         int numLatents = 5;
-        int numIterations = 2000;
+        int numIterations = 20;
+
+        boolean completeRuleSetUsed = false;
+        boolean faithfulnessAssumed = true;
 
         for (int i = 0; i < numIterations; i++) {
-//            System.out.println("Iteration " + (i + 1));
+            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
-            GFci fgci = new GFci(new GraphScore(dag));
-//            GFci fgci = new GFci(new IndTestDSep(dag));
-            fgci.setFaithfulnessAssumed(false);
-            Graph pattern1 = fgci.search();
-            Graph pattern2 = new DagToPag2(dag).convert();
+            GFci gfci = new GFci(new GraphScore(dag));
+            gfci.setCompleteRuleSetUsed(completeRuleSetUsed);
+//            GFci gfci = new GFci(new IndTestDSep(dag));
+            gfci.setFaithfulnessAssumed(faithfulnessAssumed);
+            Graph pattern1 = gfci.search();
+            DagToPag2 dagToPag2 = new DagToPag2(dag);
+            dagToPag2.setCompleteRuleSetUsed(completeRuleSetUsed);
+            Graph pattern2 = dagToPag2.convert();
 
 //            System.out.println(pattern1);
 //            System.out.println(pattern2);
