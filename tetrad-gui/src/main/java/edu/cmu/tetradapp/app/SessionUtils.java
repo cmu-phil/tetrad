@@ -115,11 +115,11 @@ final class SessionUtils {
 ////        b5.add(new JLabel("For an explanation for \"" + descrip + ",\"" +
 ////                " click here-->"));
 //        b5.add(Box.createHorizontalGlue());
-//        JButton button2 = new JButton("Launch Help for " + modelConfig.getName());
+//        JButton button2 = new JButton("Launch Help for " + modelConfig.getNode());
 //
 //        button2.addActionListener(new ActionListener() {
 //            public void actionPerformed(ActionEvent e) {
-//                launchHelpForName(modelConfig.getHelpIdentifier(), modelConfig.getName());
+//                launchHelpForName(modelConfig.getHelpIdentifier(), modelConfig.getNode());
 //            }                              
 //        });
 //

@@ -1675,7 +1675,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //
 //        // Make an empty data set.
 //        for (Node node : variableNodes) {
-//            ContinuousVariable var = new ContinuousVariable(node.getName());
+//            ContinuousVariable var = new ContinuousVariable(node.getNode());
 //            var.setNodeType(node.getNodeType());
 //            variables.add(var);
 //        }
@@ -1767,7 +1767,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        List<Node> variableNodes = getVariableNodes();
 //
 //        for (Node node : variableNodes) {
-//            ContinuousVariable var = new ContinuousVariable(node.getName());
+//            ContinuousVariable var = new ContinuousVariable(node.getNode());
 //            var.setNodeType(node.getNodeType());
 //            variables.add(var);
 //        }
@@ -1890,7 +1890,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        List<Node> variableNodes = getVariableNodes();
 //
 //        for (Node node : variableNodes) {
-//            ContinuousVariable var = new ContinuousVariable(node.getName());
+//            ContinuousVariable var = new ContinuousVariable(node.getNode());
 //            var.setNodeType(node.getNodeType());
 //            variables.add(var);
 //        }

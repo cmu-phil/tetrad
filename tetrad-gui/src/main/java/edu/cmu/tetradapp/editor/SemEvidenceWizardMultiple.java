@@ -162,7 +162,7 @@ public class SemEvidenceWizardMultiple extends JPanel {
 //        for (int i = 0; i < selectedNodes.size(); i++) {
 //            Node selectedNode = (Node) selectedNodes.get(i);
 //            marginalsArea.append(
-//                    "\nVariable " + selectedNode.getName() + ":\n");
+//                    "\nVariable " + selectedNode.getNode() + ":\n");
 //
 //            int nodeIndex = manipulatedIm.getNodeIndex(selectedNode);
 //

@@ -188,42 +188,66 @@ public final class GFci implements GraphSearch {
 //
 //        System.out.println("GFCI: Look inside triangles starting");
 
-        SepsetMap map = new SepsetMap();
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
 
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node c = edge.getNode2();
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
 
-            Edge e = fgsGraph.getEdge(a, c);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
 
-            if (e != null && e.isDirected()) {
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
 
-                // Only the ones that are in triangles.
-                Set<Node> _adj = new HashSet<>(fgsGraph.getAdjacentNodes(a));
-                _adj.retainAll(fgsGraph.getAdjacentNodes(c));
-                if (_adj.isEmpty()) continue;
-
-                Node f = Edges.getDirectedEdgeHead(e);
-                List<Node> adj = fgsGraph.getAdjacentNodes(f);
-                adj.remove(Edges.getDirectedEdgeTail(e));
-
-                DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    List<Node> cond = GraphUtils.asList(choice, adj);
-
-                    if (independenceTest.isIndependent(a, c, cond)) {
+                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
+                    if (sepsets.getSepset(a, c) != null) {
                         graph.removeEdge(a, c);
-                        map.set(a, c, cond);
                     }
                 }
             }
         }
+
+//        SepsetMap map = new SepsetMap();
+//
+//        for (Edge edge : graph.getEdges()) {
+//            Node a = edge.getNode1();
+//            Node c = edge.getNode2();
+//
+//            Edge e = fgsGraph.getEdge(a, c);
+//
+//            if (e != null && e.isDirected()) {
+//
+//                // Only the ones that are in triangles.
+//                Set<Node> _adj = new HashSet<>(fgsGraph.getAdjacentNodes(a));
+//                _adj.retainAll(fgsGraph.getAdjacentNodes(c));
+//                if (_adj.isEmpty()) continue;
+//
+//                Node f = Edges.getDirectedEdgeHead(e);
+//                List<Node> adj = fgsGraph.getAdjacentNodes(f);
+//                adj.remove(Edges.getDirectedEdgeTail(e));
+//
+//                DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+//                int[] choice;
+//
+//                while ((choice = gen.next()) != null) {
+//                    List<Node> cond = GraphUtils.asList(choice, adj);
+//
+//                    if (independenceTest.isIndependent(a, c, cond)) {
+//                        graph.removeEdge(a, c);
+//                        map.set(a, c, cond);
+//                    }
+//                }
+//            }
+//        }
         
 //        System.out.println("GFCI: Look inside triangles done");
 
-        modifiedR0(fgsGraph, map);
+    modifiedR0(fgsGraph);
+
+//    modifiedR0(fgsGraph, map);
 
 //        System.out.println("GFCI: R0 done");
 
@@ -295,7 +319,7 @@ public final class GFci implements GraphSearch {
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgsGraph, SepsetMap map) {
+    public void modifiedR0(Graph fgsGraph) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
@@ -319,8 +343,7 @@ public final class GFci implements GraphSearch {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgsGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = map.get(a, c);
-//                    List<Node> sepset = sepsets.getSepset(a, c);
+                    List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);

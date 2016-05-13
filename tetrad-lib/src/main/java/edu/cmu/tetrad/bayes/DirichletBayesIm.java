@@ -898,7 +898,7 @@ public final class DirichletBayesIm implements BayesIm {
 //            }
 //
 //            DiscreteVariable var =
-//                    new DiscreteVariable(nodes[j].getName(), categories);
+//                    new DiscreteVariable(nodes[j].getNode(), categories);
 //            variables.add(var);
 //            int index = ++numMeasured - 1;
 //            map[index] = j;
@@ -1042,7 +1042,7 @@ public final class DirichletBayesIm implements BayesIm {
 //                }
 //
 //                DiscreteVariable ar =
-//                        new DiscreteVariable(node.getName(), categories);
+//                        new DiscreteVariable(node.getNode(), categories);
 //                variables.add(ar);
 //            }
 //        }

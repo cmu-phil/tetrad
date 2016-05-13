@@ -132,7 +132,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
 //
 //            TetradLogger.getInstance().log("info", "\nCPT Invariant Exact Updater");
 //
-//            String nodeName = node.getName();
+//            String nodeName = node.getNode();
 //            int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
 //            double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
 //            double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);

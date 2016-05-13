@@ -556,7 +556,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
 
 //        for (int i = 0; i < variables.size(); i++) {
-//            if (!variables.get(i).getName().equals(variables.get(i).getName())) {
+//            if (!variables.get(i).getNode().equals(variables.get(i).getNode())) {
 //                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
 //                        "as the variable being substituted for it.");
 //            }

@@ -303,7 +303,7 @@ public class RegressionCovariance implements Regression {
 //        summary += " VAR\tCOEF\tSE\tT\tP\n";
 //
 //        for (int i = 0; i < allIndices.length; i++) {
-//            String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
+//            String variableName = (i > 0) ? regressors.get(i - 1).getNode() : "const";
 //
 //            summary += " " + variableName + "\t" + nf.format(b.get(i)) +
 //                    "\t" + nf.format(se.get(i)) + "\t" + nf.format(t.get(i)) +

@@ -60,7 +60,7 @@ public class GraphNodeMeasured extends DisplayNode {
         }
 
         setDisplayComp(new MeasuredDisplayComp(modelNode.getName()));
-//        setDisplayComp(new MeasuredDisplaySmallComp(modelNode.getName()));
+//        setDisplayComp(new MeasuredDisplaySmallComp(modelNode.getNode()));
     }
 
     /**

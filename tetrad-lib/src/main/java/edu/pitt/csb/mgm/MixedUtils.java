@@ -791,7 +791,7 @@ public class MixedUtils {
         for(int i = 0; i < nodes.size(); i++){
             int coin = RandomUtil.getInstance().nextInt(2);
             int dist = (coin==0) ? 0 : 3; //continuous if coin == 0
-            nd.put(nodes.get(i).getName(), dist);
+            nd.put(nodes.get(i).getNode(), dist);
         }
 
 

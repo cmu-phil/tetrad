@@ -283,7 +283,7 @@ public final class ColtDataSet implements DataSet, TetradSerializable {
 
 //        for (Node node : variables) {
 //            if (!(node instanceof ContinuousVariable)) {
-//                convertedVars.add(new ContinuousVariable(node.getName()));
+//                convertedVars.add(new ContinuousVariable(node.getNode()));
 //                throw new IllegalArgumentException("Expecting all continuous variables: " + variables);
 //            } else {
 //                convertedVars.add(node);

@@ -302,7 +302,7 @@ public class TetradSerializableUtils {
 //        System.out.println(clazz);
 //
 //        for (Field field : fieldList) {
-//            System.out.println(field.getName());
+//            System.out.println(field.getNode());
 //        }
 
         for (Field field : fieldList) {

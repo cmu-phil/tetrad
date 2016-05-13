@@ -185,7 +185,7 @@ public class RegressionDatasetGeneralized implements Regression {
 //            p.set(i, _p);
 //        }
 //
-//        this.graph = createOutputGraph(target.getName(), y, regressors, p);
+//        this.graph = createOutputGraph(target.getNode(), y, regressors, p);
 //
         String[] vNames = new String[regressors.size()];
 

@@ -89,7 +89,7 @@ public class QQPlotEditorPanel extends JPanel {
                     QQPlot newValue = new QQPlot(QQPlotEditorPanel.this.dataSet, node);
                     //numBarsSelector.setValue(newValue.getNumberOfCategories());
                  //   numBarsSelector.setMax(getMaxCategoryValue(newValue));
-                    //System.out.println(node.getName());
+                    //System.out.println(node.getNode());
                     changeQQPlot(newValue);
                 }
             }

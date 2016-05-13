@@ -350,7 +350,7 @@ final class BdeMetric {
                     //System.out.println("    Parent values:  ");
                     //for (int i = 0; i < parentVarIndices.length; i++) {
                     //    Variable par = (Variable) dataSet.getVariableNames().get(parentVarIndices[i]);
-                    //    System.out.print("    " + par.getName() + " " + parValues[i] + "    ");
+                    //    System.out.print("    " + par.getNode() + " " + parValues[i] + "    ");
                     //}
                     //System.out.println();
 

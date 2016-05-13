@@ -314,7 +314,7 @@ public final class BayesUpdaterClassifier
 
                 for (int m = 0; m < nvars; m++) {
                     //System.out.print(getBayesImVars()
-                    //        .get(m).getName());
+                    //        .get(m).getNode());
                     TetradLogger.getInstance().log("details", "  " + selectedData.getDouble(i, m));
                 }
 

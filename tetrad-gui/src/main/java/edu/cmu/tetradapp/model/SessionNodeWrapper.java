@@ -83,7 +83,7 @@ public class SessionNodeWrapper extends GraphNode
     //===========================PUBLIC METHODS=======================//
 
     /**
-     * @return the session name. (Should return the same as getName.)
+     * @return the session name. (Should return the same as getNode.)
      */
     public String getSessionName() {
         return this.sessionNode.getDisplayName();

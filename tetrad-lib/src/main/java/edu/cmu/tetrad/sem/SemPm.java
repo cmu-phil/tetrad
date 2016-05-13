@@ -643,8 +643,8 @@ public final class SemPm implements PM, TetradSerializable {
 //
 //        Collections.sort(edges, new Comparator<Edge>() {
 //            public int compare(Edge o1, Edge o2) {
-//                int compareFirst = o1.getNode1().getName().compareTo(o2.getNode1().toString());
-//                int compareSecond = o1.getNode1().getName().compareTo(o2.getNode2().toString());
+//                int compareFirst = o1.getNode1().getNode().compareTo(o2.getNode1().toString());
+//                int compareSecond = o1.getNode1().getNode().compareTo(o2.getNode2().toString());
 //
 //                if (compareFirst != 0) {
 //                    return compareFirst;

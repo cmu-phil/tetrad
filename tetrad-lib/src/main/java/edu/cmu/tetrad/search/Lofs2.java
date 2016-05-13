@@ -458,7 +458,7 @@ public class Lofs2 {
 
         for (Node _node : graph.getAdjacentNodes(x)) {
             if (!knowledge.isForbidden(_node.getName(), x.getName())) {
-//                if (!knowledge.edgeForbidden(x.getName(), _node.getName())) {
+//                if (!knowledge.edgeForbidden(x.getNode(), _node.getNode())) {
                 neighborsx.add(_node);
             }
         }

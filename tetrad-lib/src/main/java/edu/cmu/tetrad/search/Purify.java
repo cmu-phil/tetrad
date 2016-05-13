@@ -2294,13 +2294,13 @@ public class Purify {
         this.latentNames = new Hashtable();
         this.latentNodes = new ArrayList();
         for (int i = 0; i < numLatent; i++) {
-            latentNames.put(v[i].getName(), new Integer(i));
+            latentNames.put(v[i].getNode(), new Integer(i));
             latentNodes.add(v[i]);
         }
         this.observableNames = new Hashtable();
         this.measuredNodes = new ArrayList();
         for (int i = numLatent; i < numLatent + numObserved; i++) {
-            observableNames.put(v[i].getName(), new Integer(i - numLatent));
+            observableNames.put(v[i].getNode(), new Integer(i - numLatent));
             measuredNodes.add(v[i]);
         }
 
