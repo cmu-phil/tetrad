@@ -240,17 +240,18 @@ public class TestPc {
 //    @Test
     public void testPcFci() {
 
-        String[] algorithms = {"PC", "CPC", "FGS", "FCI", "GFCI", "RFCI"};
-        String[] statLabels = {"AP", "TP", "BP", "NA", "NT", "NB", "E", "AP/E"};
+        String[] algorithms = {"PC", "CPC", "FGS", "FCI", "GFCI", "RFCI", "CFCI"};
+        String[] statLabels = {"AP", "TP", "BP", "NA", "NT", "NB", "E"/*, "AP/E"*/};
 
-        int numMeasures = 100;
+        int numMeasures = 200;
         double edgeFactor = 1.0;
 
-        int numRuns = 10;
+        int numRuns = 5;
         int maxLatents = numMeasures;
         int jumpLatents = maxLatents / 5;
-        double alpha = 0.001;
-        double penaltyDiscount = 4.0;
+        double alpha = 0.01;
+        double penaltyDiscount = 2.0;
+        double ofInterestCutoff = 0.1;
 
         if (maxLatents % jumpLatents != 0) throw new IllegalStateException();
         int numLatentGroups = maxLatents / jumpLatents + 1;
@@ -283,7 +284,7 @@ public class TestPc {
         System.out.println();
         System.out.println("=======");
         System.out.println();
-        System.out.println("Algorithms within 0.05 of the max.");
+        System.out.println("Algorithms with max = " +  ofInterestCutoff + "*(max - min) < stat <= max.");
         System.out.println();
         System.out.println("AP = Average Arrow Precision; TP = Average Tail Precision");
         System.out.println("BP = Average Bidirected Precision; NA = Average Number of Arrows");
@@ -298,7 +299,7 @@ public class TestPc {
         System.out.println("edge factor = " + edgeFactor);
 
 
-        printBestStats(allAllRet, algorithms, statLabels, maxLatents, jumpLatents);
+        printBestStats(allAllRet, algorithms, statLabels, maxLatents, jumpLatents, ofInterestCutoff);
     }
 
     private double[] printStats(String[] algorithms, int t, boolean directed, int numRuns,
@@ -322,7 +323,23 @@ public class TestPc {
 
         for (int i = 0; i < numRuns; i++) {
             int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
-            Graph dag = GraphUtils.randomGraphRandomForwardEdges(numMeasures + numLatents, numLatents, numEdges,
+
+            List<Node> nodes = new ArrayList<>();
+            List<String> names = new ArrayList<>();
+
+            for (int r = 0; r < numMeasures + numLatents; r++) {
+                String name = "X" + (r + 1);
+                nodes.add(new ContinuousVariable(name));
+                names.add(name);
+            }
+
+//            IKnowledge knowledge = new Knowledge2(names);
+//
+//            for (int r = 0; r < names.size(); r++) {
+//                knowledge.addToTier(r, names.get(r));
+//            }
+
+            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
                     10, 10, 10, false);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
@@ -342,7 +359,7 @@ public class TestPc {
                     search = new Cpc(test);
                     break;
                 case 2:
-                    search = new Fgs2(score);
+                    search = new Fgs(score);
                     break;
                 case 3:
                     search = new Fci(test);
@@ -352,6 +369,9 @@ public class TestPc {
                     break;
                 case 5:
                     search = new Rfci(test);
+                    break;
+                case 6:
+                    search = new Cfci(test);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -374,6 +394,8 @@ public class TestPc {
             int tailsFp = 0;
             int bidirectedTp = 0;
             int bidirectedFp = 0;
+
+//            out = outClosure(out);
 
             for (Edge edge : out.getEdges()) {
                 if (directed && !(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
@@ -464,7 +486,7 @@ public class TestPc {
         double avgNumTails = numTails / (double) count;
         double avgNumBidirected = numBidirected / (double) count;
         double avgElapsed = totalElapsed / (double) numRuns;
-        double avgRatioPrecisionToElapsed = avgArrowPrecision / avgElapsed;
+//        double avgRatioPrecisionToElapsed = avgArrowPrecision / avgElapsed;
 
         double[] ret = new double[]{
                 avgArrowPrecision,
@@ -474,7 +496,7 @@ public class TestPc {
                 avgNumTails,
                 avgNumBidirected,
                 -avgElapsed, // minimize
-                avgRatioPrecisionToElapsed
+//                avgRatioPrecisionToElapsed
         };
 
         System.out.println();
@@ -488,13 +510,35 @@ public class TestPc {
         System.out.println(algorithms[t] + " avg num tails " + nf.format(avgNumTails));
         System.out.println(algorithms[t] + " avg num bidirected " + nf.format(avgNumBidirected));
         System.out.println(algorithms[t] + " avg elapsed " + nf.format(avgElapsed));
-        System.out.println(algorithms[t] + " avg precision / elapsed " + nf2.format(avgRatioPrecisionToElapsed));
+//        System.out.println(algorithms[t] + " avg precision / elapsed " + nf2.format(avgRatioPrecisionToElapsed));
 
         return ret;
     }
 
+    private Graph outClosure(Graph out) {
+        Graph revised = new EdgeListGraph(out);
+
+        for (Node n : out.getNodes()) {
+            for (Node m : out.getNodesOutTo(n, Endpoint.ARROW)) {
+                Edge e = out.getEdge(n, m);
+                Endpoint proximalEndpoint = e.getProximalEndpoint(n);
+                if (proximalEndpoint == Endpoint.CIRCLE || proximalEndpoint == Endpoint.TAIL) {
+                    List<Node> descendants = out.getDescendants(Collections.singletonList(m));
+
+                    for (Node o : descendants) {
+                        if (!revised.isAdjacentTo(m, o)) {
+                            revised.addEdge(new Edge(n, o, proximalEndpoint, Endpoint.ARROW));
+                        }
+                    }
+                }
+            }
+        }
+
+        return revised;
+    }
+
     private void printBestStats(double[][][] allAllRet, String[] algorithms, String[] statLabels,
-                                int maxLatents, int jumpLatents) {
+                                int maxLatents, int jumpLatents, double ofInterestCutoff) {
         TextTable table = new TextTable(allAllRet.length + 1, allAllRet[0][0].length + 1);
 
         int latentIndex = -1;
@@ -550,8 +594,17 @@ public class TestPc {
                     double maxStat = algStats.get(0).getStat();
                     maxAlg = algStats.get(0).getAlgorithm();
 
+                    double minStat = algStats.get(algStats.size() - 1).getStat();
+
+                    double diff = maxStat - minStat;
+                    double ofInterest = maxStat - ofInterestCutoff * (diff);
+
                     for (int i = 1; i < algStats.size(); i++) {
-                        if (Math.abs(algStats.get(i).getStat() - maxStat) == 0) {//< 0.05) {
+//                        if (Math.abs(algStats.get(i).getStat() - maxStat) == 0) {//< 0.05) {
+//                            maxAlg += "," + algStats.get(i).getAlgorithm();
+//                        }
+
+                        if (algStats.get(i).getStat() > ofInterest) {
                             maxAlg += "," + algStats.get(i).getAlgorithm();
                         }
                     }

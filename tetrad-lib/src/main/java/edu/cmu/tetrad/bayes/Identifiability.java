@@ -232,7 +232,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 				/*
 				int[] variableValues = getVariableValues(i);
 				 
-				String nodeName = getVariables().get(j).getName();
+				String nodeName = getVariables().get(j).getNode();
 				Node node = bayesIm.getNode(nodeName);
 				targetProp.setCategory(bayesIm.getNodeIndex(node), 
 									   variableValues[j]);		

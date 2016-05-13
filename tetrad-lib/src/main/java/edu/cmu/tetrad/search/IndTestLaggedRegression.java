@@ -172,10 +172,10 @@ public final class IndTestLaggedRegression implements IndependenceTest {
         }
 
         List<Node> regressors = new ArrayList<Node>();
-//        regressors.add(dataSet.getVariable(yVar.getName()));
+//        regressors.add(dataSet.getVariable(yVar.getNode()));
 //
 //        for (Node zVar : zList) {
-//            regressors.add(dataSet.getVariable(zVar.getName()));
+//            regressors.add(dataSet.getVariable(zVar.getNode()));
 //        }
 
 //        TetradMatrix residuals = new TetradMatrix(timeLags.getNumRows(), timeSeries.getNumColumns());

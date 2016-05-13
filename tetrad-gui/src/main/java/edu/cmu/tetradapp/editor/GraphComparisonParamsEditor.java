@@ -157,8 +157,8 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
         group3.add(graph1);
         group3.add(graph2);
         
-//        getParams().setReferenceGraphName(model1.getName());
-//        getParams().setTargetGraphName(model2.getName());
+//        getParams().setReferenceGraphName(model1.getNode());
+//        getParams().setTargetGraphName(model2.getNode());
 
 //        getParams().setReferenceGraphName(getParams().getReferenceGraphName());
 //        getParams().setTargetGraphName(getParams().getTargetGraphName());

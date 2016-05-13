@@ -2473,8 +2473,8 @@ public final class SearchGraphUtils {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-//                Node _x = graph.getNode(x.getName());
-//                Node _y = graph.getNode(y.getName());
+//                Node _x = graph.getNode(x.getNode());
+//                Node _y = graph.getNode(y.getNode());
 
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = graph.getEdge(x, y);
@@ -2606,8 +2606,8 @@ public final class SearchGraphUtils {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-//                Node _x = graph.getNode(x.getName());
-//                Node _y = graph.getNode(y.getName());
+//                Node _x = graph.getNode(x.getNode());
+//                Node _y = graph.getNode(y.getNode());
 
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = graph.getEdge(x, y);
@@ -2735,8 +2735,8 @@ public final class SearchGraphUtils {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-//                Node _x = graph.getNode(x.getName());
-//                Node _y = graph.getNode(y.getName());
+//                Node _x = graph.getNode(x.getNode());
+//                Node _y = graph.getNode(y.getNode());
 
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = graph.getEdge(x, y);

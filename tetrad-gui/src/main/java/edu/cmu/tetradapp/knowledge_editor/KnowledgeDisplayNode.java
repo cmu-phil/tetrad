@@ -137,7 +137,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
         boolean changed = false;
 
         if (super.getModelNode() != null /*&&
-                !newName.equals(super.getModelNode().getName())*/) {
+                !newName.equals(super.getModelNode().getNode())*/) {
             super.getModelNode().setName(newName);
             changed = true;
         }

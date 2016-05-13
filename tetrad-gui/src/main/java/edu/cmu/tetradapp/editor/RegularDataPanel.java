@@ -867,7 +867,7 @@ final class RegularDataPanel extends JPanel {
                 dataModel = reader.parseCovariance(files[fileIndex]);
             }
 
-//            addDataModel(dataModel, fileIndex, files[fileIndex].getName());
+//            addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
 
             anomaliesTextArea.setCaretPosition(
                     anomaliesTextArea.getText().length());

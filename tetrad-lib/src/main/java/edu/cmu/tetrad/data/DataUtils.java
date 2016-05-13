@@ -481,7 +481,7 @@ public final class DataUtils {
         discretizer.setVariablesCopied(variablesCopied);
 
         for (Node node : dataSet.getVariables()) {
-//            if (dataSet.getVariable(node.getName()) instanceof ContinuousVariable) {
+//            if (dataSet.getVariable(node.getNode()) instanceof ContinuousVariable) {
             discretizer.equalIntervals(node, numCategories);
 //            }
         }
@@ -1503,7 +1503,7 @@ public final class DataUtils {
                 } else if (edge.isDirected()) {
                     Node node1 = edge.getNode1();
                     Node node2 = edge.getNode2();
-//                    knowledge.setEdgeForbidden(node2.getName(), node1.getName(), true);
+//                    knowledge.setEdgeForbidden(node2.getNode(), node1.getNode(), true);
                     knowledge.setRequired(node1.getName(), node2.getName());
                 } else if (Edges.isUndirectedEdge(edge)) {
                     Node node1 = edge.getNode1();

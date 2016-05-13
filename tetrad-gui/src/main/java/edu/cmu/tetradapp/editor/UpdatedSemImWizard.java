@@ -237,7 +237,7 @@ public final class UpdatedSemImWizard extends JPanel {
         addListOfEvidence(marginalBox);
         marginalBox.add(Box.createRigidArea(new Dimension(1, 20)));
 
-//        Node node1 = semUpdater.getEstIm().getIndex(node.getName());
+//        Node node1 = semUpdater.getEstIm().getIndex(node.getNode());
 //        int nodeIndex = semUpdater.getEstIm().getNodeIndex(node1);
 //
 //        double[] priorMeans =

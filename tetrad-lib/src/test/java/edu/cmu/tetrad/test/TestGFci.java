@@ -165,13 +165,13 @@ public class TestGFci {
         assertEquals(pag, truePag);
     }
 
-    @Test
+//    @Test
     public void testFromGraph() {
         RandomUtil.getInstance().setSeed(new Date().getTime());
 
         int numNodes = 20;
         int numLatents = 5;
-        int numIterations = 10;
+        int numIterations = 2000;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));

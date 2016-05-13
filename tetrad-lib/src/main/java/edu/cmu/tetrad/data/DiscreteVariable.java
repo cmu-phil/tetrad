@@ -309,10 +309,10 @@ public final class DiscreteVariable extends AbstractVariable
 
         throw new IllegalArgumentException();
 
-//        return getName().hashCode();
+//        return getNode().hashCode();
 
 //        int hashCode = 39;
-//        hashCode = 17 * hashCode + getName().hashCode();
+//        hashCode = 17 * hashCode + getNode().hashCode();
 //
 //        for (int i = 0; i < getNumCategories(); i++) {
 //            hashCode = 17 * hashCode + getCategory(i).hashCode();
@@ -377,7 +377,7 @@ public final class DiscreteVariable extends AbstractVariable
 //
 //        DiscreteVariable variable = (DiscreteVariable) o;
 //
-//        if (!(getName().equals(variable.getName()))) {
+//        if (!(getNode().equals(variable.getNode()))) {
 //            return false;
 //        }
 //
@@ -470,7 +470,7 @@ public final class DiscreteVariable extends AbstractVariable
 //    public final String toStringFull() {
 //        StringBuilder buf = new StringBuilder();
 //
-//        buf.append(getName());
+//        buf.append(getNode());
 //        buf.append(" <");
 //
 //        for (int i = 0; i < getNumCategories(); i++) {

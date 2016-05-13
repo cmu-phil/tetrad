@@ -1171,7 +1171,7 @@ public class EndpointMatrixGraph implements Graph {
 
             // This is problematic for the sem updater. jdramsey 7/23/2005
 //            throw new IllegalArgumentException("A node by name " +
-//                    node.getName() + " has already been added to the graph.");
+//                    node.getNode() + " has already been added to the graph.");
         }
 
         if (nodes.contains(node)) {
@@ -1336,7 +1336,7 @@ public class EndpointMatrixGraph implements Graph {
     public Node getNode(String name) {
         Node node = namesHash.get(name);
 
-        if (node == null /*|| !name.equals(node.getName())*/) {
+        if (node == null /*|| !name.equals(node.getNode())*/) {
             namesHash = new HashMap<>();
 
             for (Node _node : nodes) {
@@ -1349,7 +1349,7 @@ public class EndpointMatrixGraph implements Graph {
         return node;
 
 //        for (Node node : nodes) {
-//            if (node.getName().equals(name)) {
+//            if (node.getNode().equals(name)) {
 //                return node;
 //            }
 //        }

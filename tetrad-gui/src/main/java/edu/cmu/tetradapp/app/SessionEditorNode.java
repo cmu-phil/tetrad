@@ -1280,7 +1280,7 @@ public final class SessionEditorNode extends DisplayNode {
 
 //    private String getDescription(Class modelClass) {
 //        SessionNodeModelConfig config = this.config.getModelConfig(modelClass);
-//        return config.getName();
+//        return config.getNode();
 //    }
 
     private void setSpawnedEditor(EditorWindow editorWindow) {

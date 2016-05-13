@@ -96,7 +96,7 @@ public class SaveComponentImage extends AbstractAction {
 //         * Accepts a file if its name ends with ".tet".
 //         */
 //        public boolean accept(File file) {
-//            return file.isDirectory() || file.getName().endsWith(".png");
+//            return file.isDirectory() || file.getNode().endsWith(".png");
 //        }
 //
 //        /**

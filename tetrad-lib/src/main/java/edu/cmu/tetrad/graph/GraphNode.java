@@ -214,9 +214,9 @@ public class GraphNode implements Node, TetradSerializable {
             return getName().hashCode();
         }
 
-//        return 17 * getName().hashCode() + 19 * getNodeType().hashCode();
-//        return 17 * getName().hashCode();
-//        return getName().hashCode();
+//        return 17 * getNode().hashCode() + 19 * getNodeType().hashCode();
+//        return 17 * getNode().hashCode();
+//        return getNode().hashCode();
         throw new IllegalArgumentException();
     }
 

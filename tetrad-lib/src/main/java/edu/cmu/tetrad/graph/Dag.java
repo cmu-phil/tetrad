@@ -250,8 +250,8 @@ public final class Dag implements Graph /*, KnowledgeTransferable*/ {
 //        resetDPath();
 //        reconstituteDpath();
 
-//        node1 = graph.getNode(node1.getName());
-//        node2 = graph.getNode(node2.getName());
+//        node1 = graph.getNode(node1.getNode());
+//        node2 = graph.getNode(node2.getNode());
 
         //System.out.println(MatrixUtils.toString(dpath));
 

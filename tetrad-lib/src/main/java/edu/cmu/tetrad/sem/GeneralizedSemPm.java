@@ -499,7 +499,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
         for (Node variable : nodes) {
             if (parameterNames.contains(variable.getName())) {
                 parameterNames.remove(variable.getName());
-//                throw new IllegalArgumentException("The list of parameter names may not include variables: " + variable.getName());
+//                throw new IllegalArgumentException("The list of parameter names may not include variables: " + variable.getNode());
             }
         }
 
@@ -865,7 +865,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
      */
     public Node getNode(String name) {
 //        for (Node node : nodes) {
-//            if (name.equals(node.getName())) {
+//            if (name.equals(node.getNode())) {
 //                return node;
 //            }
 //        }

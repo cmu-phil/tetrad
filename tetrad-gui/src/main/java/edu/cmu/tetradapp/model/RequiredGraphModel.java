@@ -198,7 +198,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
                 else if (edge.isDirected()) {
                     Node node1 = edge.getNode1();
                     Node node2 = edge.getNode2();
-//                    knowledge.setEdgeForbidden(node2.getName(), node1.getName(), true);
+//                    knowledge.setEdgeForbidden(node2.getNode(), node1.getNode(), true);
                     knowledge.setRequired(node1.getName(), node2.getName());
                 }
                 else if (Edges.isUndirectedEdge(edge)) {

@@ -265,7 +265,7 @@ public class RegressionDataset implements Regression {
 //
 //        for (int i = 0; i < x.columns(); i++) {
 //            // Note: the first column contains the regression constants.
-//            String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
+//            String variableName = (i > 0) ? regressors.get(i - 1).getNode() : "const";
 //
 //            summary += " " + variableName + "\t" + nf.format(b.get(i, 0)) +
 //                    "\t" + nf.format(se.get(i)) + "\t" + nf.format(t.get(i)) +

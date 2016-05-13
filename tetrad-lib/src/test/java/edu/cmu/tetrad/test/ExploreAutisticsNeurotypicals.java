@@ -124,7 +124,7 @@ public final class ExploreAutisticsNeurotypicals {
 
                 for (int i = 0; i < prefixes.length; i++) {
                     if (file.getName().startsWith(prefixes[i]) && !file.getName().endsWith(".graph.txt")
-                            /*&& file.getName().contains("cerebellum_off")*/ && !file.getName().contains("tet")) {
+                            /*&& file.getNode().contains("cerebellum_off")*/ && !file.getName().contains("tet")) {
                         DataReader reader = new DataReader();
                         reader.setDelimiter(DelimiterType.TAB);
                         reader.setMaxIntegralDiscrete(0);

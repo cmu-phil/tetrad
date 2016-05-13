@@ -604,7 +604,7 @@ public class GeneralizedSemEstimator {
 //            int[] indices = new int[tierOrdering.size()];
 //
 //            for (int i = 0; i < tierOrdering.size(); i++) {
-//                indices[i] = data.getColumn(data.getVariable(tierOrdering.get(i).getName()));
+//                indices[i] = data.getColumn(data.getVariable(tierOrdering.get(i).getNode()));
 //            }
 //
 //            for (int i = 0; i < data.getNumRows(); i++) {
@@ -621,7 +621,7 @@ public class GeneralizedSemEstimator {
 //            }
 //
 //            for (Node error : pm.getErrorNodes()) {
-//                context.putVariableValue(error.getName(), 0.0);
+//                context.putVariableValue(error.getNode(), 0.0);
 //            }
 //
 //            double totalDiscrepancy = 0.0;
@@ -630,7 +630,7 @@ public class GeneralizedSemEstimator {
 //            ROWS:
 //            for (int row = 0; row < data.getNumRows(); row++) {
 //                for (int i = 0; i < tierOrdering.size(); i++) {
-//                    context.putVariableValue(tierOrdering.get(i).getName(), dataValues[row][i]);
+//                    context.putVariableValue(tierOrdering.get(i).getNode(), dataValues[row][i]);
 //                    if (Double.isNaN(dataValues[row][i])) continue ROWS;
 //                }
 //
@@ -709,7 +709,7 @@ public class GeneralizedSemEstimator {
 //
 //                for (int i = 0; i < tierOrdering.size(); i++) {
 //                    Expression expression = pm.getNodeExpression(error);
-//                    context.putVariableValue(error.getName(), expression.evaluate(context));
+//                    context.putVariableValue(error.getNode(), expression.evaluate(context));
 //                }
 //
 //                RealDistribution dist;

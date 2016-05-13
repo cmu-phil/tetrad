@@ -1235,7 +1235,7 @@ public class EdgeListGraph implements Graph {
 
             // This is problematic for the sem updater. jdramsey 7/23/2005
 //            throw new IllegalArgumentException("A node by name " +
-//                    node.getName() + " has already been added to the graph.");
+//                    node.getNode() + " has already been added to the graph.");
         }
 
         if (edgeLists.containsKey(node)) {
