@@ -287,7 +287,7 @@
 //    @Override
 //    public Node getVariable(String targetName) {
 //        for (Node node : variables) {
-//            if (node.getName().equals(targetName)) {
+//            if (node.getNode().equals(targetName)) {
 //                return node;
 //            }
 //        }

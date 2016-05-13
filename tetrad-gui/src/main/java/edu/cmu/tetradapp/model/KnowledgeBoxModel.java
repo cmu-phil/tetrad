@@ -230,7 +230,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 //                public List<Node> getVariables() {return new ArrayList<Node>();}
 //                public List<String> getVariableNames() {return new ArrayList<String>();}
 //                public void setName(String name) {}
-//                public String getName() {return "";}
+//                public String getNode() {return "";}
 //            };
 //        }
 

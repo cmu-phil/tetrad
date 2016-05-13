@@ -1277,7 +1277,7 @@ public class EdgeListGraphSingleConnections implements Graph {
     public Node getNode(String name) {
         Node node = namesHash.get(name);
 
-        if (node == null /*|| !name.equals(node.getName())*/) {
+        if (node == null /*|| !name.equals(node.getNode())*/) {
             namesHash = new HashMap<>();
 
             for (Node _node : nodes) {
@@ -1290,7 +1290,7 @@ public class EdgeListGraphSingleConnections implements Graph {
         return node;
 
 //        for (Node node : nodes) {
-//            if (node.getName().equals(name)) {
+//            if (node.getNode().equals(name)) {
 //                return node;
 //            }
 //        }

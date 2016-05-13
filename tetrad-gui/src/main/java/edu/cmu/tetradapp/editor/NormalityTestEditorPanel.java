@@ -89,7 +89,7 @@ public class NormalityTestEditorPanel extends JPanel {
                     QQPlot newValue = new QQPlot(NormalityTestEditorPanel.this.dataSet, node);
                     //numBarsSelector.setValue(newValue.getNumberOfCategories());
                  //   numBarsSelector.setMax(getMaxCategoryValue(newValue));
-                    //System.out.println(node.getName());
+                    //System.out.println(node.getNode());
                     changeNormalityTest(NormalityTests.runNormalityTests(NormalityTestEditorPanel.this.dataSet, (ContinuousVariable)node));
                 }
             }

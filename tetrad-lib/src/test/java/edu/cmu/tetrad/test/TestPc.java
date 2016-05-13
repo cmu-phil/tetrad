@@ -237,7 +237,7 @@ public class TestPc {
         }
     }
 
-//    @Test
+    @Test
     public void testPcFci() {
 
         String[] algorithms = {"PC", "CPC", "FGS", "FCI", "GFCI", "RFCI", "CFCI"};
@@ -251,6 +251,7 @@ public class TestPc {
         int jumpLatents = maxLatents / 5;
         double alpha = 0.01;
         double penaltyDiscount = 2.0;
+        double ofInterestCutoff = 0.1;
 
         if (maxLatents % jumpLatents != 0) throw new IllegalStateException();
         int numLatentGroups = maxLatents / jumpLatents + 1;
@@ -283,7 +284,7 @@ public class TestPc {
         System.out.println();
         System.out.println("=======");
         System.out.println();
-        System.out.println("Algorithms with max - 0.1(max - min) < stat <= max.");
+        System.out.println("Algorithms with max = " +  ofInterestCutoff + "*(max - min) < stat <= max.");
         System.out.println();
         System.out.println("AP = Average Arrow Precision; TP = Average Tail Precision");
         System.out.println("BP = Average Bidirected Precision; NA = Average Number of Arrows");
@@ -298,7 +299,7 @@ public class TestPc {
         System.out.println("edge factor = " + edgeFactor);
 
 
-        printBestStats(allAllRet, algorithms, statLabels, maxLatents, jumpLatents);
+        printBestStats(allAllRet, algorithms, statLabels, maxLatents, jumpLatents, ofInterestCutoff);
     }
 
     private double[] printStats(String[] algorithms, int t, boolean directed, int numRuns,
@@ -393,6 +394,8 @@ public class TestPc {
             int tailsFp = 0;
             int bidirectedTp = 0;
             int bidirectedFp = 0;
+
+//            out = outClosure(out);
 
             for (Edge edge : out.getEdges()) {
                 if (directed && !(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
@@ -512,8 +515,30 @@ public class TestPc {
         return ret;
     }
 
+    private Graph outClosure(Graph out) {
+        Graph revised = new EdgeListGraph(out);
+
+        for (Node n : out.getNodes()) {
+            for (Node m : out.getNodesOutTo(n, Endpoint.ARROW)) {
+                Edge e = out.getEdge(n, m);
+                Endpoint proximalEndpoint = e.getProximalEndpoint(n);
+                if (proximalEndpoint == Endpoint.CIRCLE || proximalEndpoint == Endpoint.TAIL) {
+                    List<Node> descendants = out.getDescendants(Collections.singletonList(m));
+
+                    for (Node o : descendants) {
+                        if (!revised.isAdjacentTo(m, o)) {
+                            revised.addEdge(new Edge(n, o, proximalEndpoint, Endpoint.ARROW));
+                        }
+                    }
+                }
+            }
+        }
+
+        return revised;
+    }
+
     private void printBestStats(double[][][] allAllRet, String[] algorithms, String[] statLabels,
-                                int maxLatents, int jumpLatents) {
+                                int maxLatents, int jumpLatents, double ofInterestCutoff) {
         TextTable table = new TextTable(allAllRet.length + 1, allAllRet[0][0].length + 1);
 
         int latentIndex = -1;
@@ -572,7 +597,7 @@ public class TestPc {
                     double minStat = algStats.get(algStats.size() - 1).getStat();
 
                     double diff = maxStat - minStat;
-                    double ofInterest = maxStat - 0.1 * (diff);
+                    double ofInterest = maxStat - ofInterestCutoff * (diff);
 
                     for (int i = 1; i < algStats.size(); i++) {
 //                        if (Math.abs(algStats.get(i).getStat() - maxStat) == 0) {//< 0.05) {

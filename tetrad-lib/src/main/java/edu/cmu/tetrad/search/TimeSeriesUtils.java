@@ -410,7 +410,7 @@ public class TimeSeriesUtils {
         knowledge.setDefaultToKnowledgeLayout(true);
 //        knowledge.setLagged(true);
         laggedData.setKnowledge(knowledge);
-//        laggedData.setName(data.getName());
+//        laggedData.setName(data.getNode());
         return laggedData;
     }
 }

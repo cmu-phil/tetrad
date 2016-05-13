@@ -84,7 +84,7 @@ public final class BrainSpecial {
         }
 
 //        for (Node node : graph.getNodes()) {
-//            String name = node.getName();
+//            String name = node.getNode();
 //            name = name.substring(1, name.length());
 //            node.setName(name);
 //        }

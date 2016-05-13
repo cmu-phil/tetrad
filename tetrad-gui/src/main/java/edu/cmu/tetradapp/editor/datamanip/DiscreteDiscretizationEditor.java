@@ -50,7 +50,7 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
         int numCategories = variable.getNumCategories();
         this.variable = variable;
 
-        //String name = variable.getName();
+        //String name = variable.getNode();
 
         Box b1 = Box.createVerticalBox();
 

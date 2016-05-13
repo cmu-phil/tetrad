@@ -741,7 +741,7 @@ final class SemImGraphicalEditor extends JPanel {
 ////        instruct.setForeground(Color.GRAY);
 //
 //        Box b1 = Box.createHorizontalBox();
-//        b1.add(new JLabel(parameter.getName() + " = "));
+//        b1.add(new JLabel(parameter.getNode() + " = "));
 //        b1.add(doubleTextField);
 //
 //        Box b2 = Box.createHorizontalBox();

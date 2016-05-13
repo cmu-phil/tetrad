@@ -184,7 +184,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
         JOptionPane.showMessageDialog(editClusters, clusterEditor);
 
 //        EditorWindow window = new EditorWindow(clusterEditor,
-//                clusterEditor.getName(), "Save", false, PurifyParamsEditor.this);
+//                clusterEditor.getNode(), "Save", false, PurifyParamsEditor.this);
 //        DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
 //        window.setVisible(true);
     }

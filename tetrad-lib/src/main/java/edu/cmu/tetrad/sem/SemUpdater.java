@@ -166,7 +166,7 @@ public class SemUpdater implements TetradSerializable {
 //        String[] varNames = new String[variableNodes.size()];
 //
 //        for (int i = 0; i < variableNodes.size(); i++) {
-//            varNames[i] = ((Node) variableNodes.get(i)).getName();
+//            varNames[i] = ((Node) variableNodes.get(i)).getNode();
 //        }
 
 //        System.out.println(sigmaBar);

@@ -95,7 +95,7 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
      */
     public Dimension getPreferredSize() {
         FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-//        int width = fm.stringWidth(getName()) + fm.getMaxAdvance();
+//        int width = fm.stringWidth(getNode()) + fm.getMaxAdvance();
 //        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent() + 3;
 //        width = (width < 60) ? 60 : width;
 //        return new Dimension(width, height);

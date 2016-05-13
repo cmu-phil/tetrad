@@ -266,7 +266,7 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
 
 //    private String getDisplayString() {
 //        if (this.displayString == null) {
-//            this.displayString = "Showing: " + scatterPlot.getYVariable().getName();
+//            this.displayString = "Showing: " + scatterPlot.getYVariable().getNode();
 //        }
 //        return this.displayString;
 //    }

@@ -140,7 +140,7 @@ public class TestMimbuild2 {
 //
 //        for (Node node : mimbuildStructure.getNodes()) {
 //            for (Node _node : mimStructure.getNodes()) {
-//                if (node.getName().startsWith(_node.getName())) {
+//                if (node.getNode().startsWith(_node.getNode())) {
 //                    substitutions.put(node, _node);
 //                    break;
 //                }

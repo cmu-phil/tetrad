@@ -363,7 +363,7 @@ public final class EmBayesProperties {
     }
 
 //    private int translate(int parent, List<String> dataVarNames) {
-//        String imName = blankBayesIm.getNode(parent).getName();
+//        String imName = blankBayesIm.getNode(parent).getNode();
 //        return dataVarNames.indexOf(imName);
 //    }
 

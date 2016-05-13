@@ -343,7 +343,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //                    boolean contains = false;
 //
 //                    for (Node _child : trueChildren) {
-//                        if (child.getName().equals(_child.getName())) {
+//                        if (child.getNode().equals(_child.getNode())) {
 //                            contains = true;
 //                            break;
 //                        }
@@ -443,7 +443,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //        }
 //
 //        for (Node _trueLatent : trueLatents) {
-//            Node trueLatent = new ContinuousVariable(_trueLatent.getName());
+//            Node trueLatent = new ContinuousVariable(_trueLatent.getNode());
 //
 //            double max = 0.0;
 //            Node maxNode = null;
@@ -492,7 +492,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //        INDEX:
 //        for (int i = 1; ; i++) {
 //            for (Node node : graph.getNodes()) {
-//                if (node.getName().equals(name + i)) {
+//                if (node.getNode().equals(name + i)) {
 //                    continue INDEX;
 //                }
 //            }
@@ -506,7 +506,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //    private double getCoefficient(SemIm semIm, Node trueLatent, Node child) {
 //        SemGraph graph = semIm.getSemPm().getGraph();
 //
-//        Node _node = graph.getNode(child.getName());
+//        Node _node = graph.getNode(child.getNode());
 //        List<Node> parents = graph.getParents(_node);
 //
 //        int numLatents = 0;

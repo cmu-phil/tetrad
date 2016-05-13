@@ -467,7 +467,7 @@ public final class EmBayesEstimator {
 //                                continue;
 //                            }
 //                            existsEvidence = true;
-//                            String otherVarName = otherVar.getName();
+//                            String otherVarName = otherVar.getNode();
 //                            Node otherNode = graph.getNode(otherVarName);
 //                            int otherIndex = inputBayesIm.getNodeIndex(
 //                                    otherNode);
@@ -506,7 +506,7 @@ public final class EmBayesEstimator {
                                 for(int k = 0; k < parPlusChildIndices.length; k++) {
                                     int pIndex = parPlusChildIndices[k];
                                     Node pNode = inputBayesIm.getIndex(pIndex);
-                                    String pName = pNode.getName();
+                                    String pName = pNode.getNode();
                                     System.out.println(pName + " " + parPlusChildValues[k]);
                                 }
                             }
@@ -534,7 +534,7 @@ public final class EmBayesEstimator {
                             //System.out.println("Case " + i + " parent values ");
                             //for (int pp = 0; pp < parentVarIndices.length; pp++) {
                             //    Variable par = (Variable) allVariables.get(parentVarIndices[pp]);
-                            //    System.out.print("    " + par.getName() + " " + parValues[pp]);
+                            //    System.out.print("    " + par.getNode() + " " + parValues[pp]);
                             //}
 
                             //System.out.println();
@@ -550,7 +550,7 @@ public final class EmBayesEstimator {
                     //System.out.println("    Parent values:  ");
                     //for (int i = 0; i < parentVarIndices.length; i++) {
                     //    Variable par = (Variable) allVariables.get(parentVarIndices[i]);
-                    //    System.out.print("    " + par.getName() + " " + parValues[i] + "    ");
+                    //    System.out.print("    " + par.getNode() + " " + parValues[i] + "    ");
                     //}
                     //System.out.println();
 
@@ -600,7 +600,7 @@ public final class EmBayesEstimator {
 
                     //for (int p = 0; p < parentVarIndices.length; p++) {
                     //    Variable par = (Variable) allVariables.get(parentVarIndices[p]);
-                    //    System.out.print("    " + par.getName() + " " + parValues[p]);
+                    //    System.out.print("    " + par.getNode() + " " + parValues[p]);
                     //}
 
                     //double sum = 0.0;
@@ -727,9 +727,9 @@ public final class EmBayesEstimator {
             }
 
             //int nodeObsIndex = estimatedIm.getCorrespondingNodeIndex(node, observedIm);
-            //System.out.println("nodes[node] name = " + nodes[node].getName());
+            //System.out.println("nodes[node] name = " + nodes[node].getNode());
             Node nodeObs = observedIm.getNode(nodes[node].getName());
-            //System.out.println("nodeObs name = " + nodeObs.getName());
+            //System.out.println("nodeObs name = " + nodeObs.getNode());
             int nodeObsIndex = observedIm.getNodeIndex(nodeObs);
 //            int[] parentsObs = observedIm.getParents(nodeObsIndex);
 

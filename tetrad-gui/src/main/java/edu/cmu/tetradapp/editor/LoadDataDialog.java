@@ -606,7 +606,7 @@ final class LoadDataDialog extends JPanel {
                                 loadDataSelect(fileIndex, anomaliesTextArea, tabbedPane, files, progressLabel);
 //                                DataModel dataModel = loadDataSelect(anomaliesTextArea, tabbedPane, files, progressLabel);
 //                                if (dataModel == null) throw new NullPointerException("Data not loaded.");
-//                                addDataModel(dataModel, fileIndex, files[fileIndex].getName());
+//                                addDataModel(dataModel, fileIndex, files[fileIndex].getNode());
                             }
                         };
                     }

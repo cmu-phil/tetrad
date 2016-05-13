@@ -1126,8 +1126,8 @@ public final class Vcpc implements GraphSearch {
     public CpcTripleType getPopulationTripleType(Node x, Node y, Node z,
                                                  IndependenceTest test, int depth,
                                                  Graph graph, boolean verbose) {
-//        if ((x.getName().equals("X5") && z.getName().equals("X7"))
-//            || (x.getName().equals("X7") && z.getName().equals("X5"))) {
+//        if ((x.getNode().equals("X5") && z.getNode().equals("X7"))
+//            || (x.getNode().equals("X7") && z.getNode().equals("X5"))) {
 //            System.out.println();
 //        }
 

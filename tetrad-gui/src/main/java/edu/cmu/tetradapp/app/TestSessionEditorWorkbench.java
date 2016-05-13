@@ -59,7 +59,7 @@ public final class TestSessionEditorWorkbench extends TestCase {
 
         //        Node tetradNode = this.workbench.getNewModelNode();
 
-        //        assertEquals("Graph1", tetradNode.getName());
+        //        assertEquals("Graph1", tetradNode.getNode());
 
         //AbstractGraphNode graphNode = this.workbench.getNewDisplayNode(tetradNode);
     }

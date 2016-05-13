@@ -2214,7 +2214,7 @@ public final class GraphUtils {
     }
 
     public static Graph loadGraph(File file) {
-//        if (!file.getName().endsWith(".xml")) {
+//        if (!file.getNode().endsWith(".xml")) {
 //            throw new IllegalArgumentException("Not an XML file.");
 //        }
 

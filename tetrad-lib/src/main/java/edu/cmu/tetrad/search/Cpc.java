@@ -351,8 +351,8 @@ public final class Cpc implements GraphSearch {
 //            Node nodeA = edge.getNode1();
 //            Node nodeB = edge.getNode2();
 //
-//            Node _nodeA = independenceTest.getVariable(nodeA.getName());
-//            Node _nodeB = independenceTest.getVariable(nodeB.getName());
+//            Node _nodeA = independenceTest.getVariable(nodeA.getNode());
+//            Node _nodeB = independenceTest.getVariable(nodeB.getNode());
 //
 //            graph.addUndirectedEdge(_nodeA, _nodeB);
 //        }

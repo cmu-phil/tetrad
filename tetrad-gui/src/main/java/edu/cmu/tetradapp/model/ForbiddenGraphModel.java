@@ -205,7 +205,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
                     Node node1 = edge.getNode1();
                     Node node2 = edge.getNode2();
                     knowledge.setForbidden(node2.getName(), node1.getName());
-//                    knowledge.setEdgeRequired(node1.getName(), node2.getName(), true);
+//                    knowledge.setEdgeRequired(node1.getNode(), node2.getNode(), true);
                 }
             }
         }

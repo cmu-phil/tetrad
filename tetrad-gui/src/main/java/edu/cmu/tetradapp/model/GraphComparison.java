@@ -108,7 +108,7 @@ public final class GraphComparison implements SessionModel {
             throw new IllegalArgumentException("Must specify a reference graph.");
 //            this.referenceGraph = ((GraphSource) model1).getGraph();
 //            this.targetGraph = ((GraphSource) model2).getGraph();
-//            this.params.setReferenceGraphName(model1.getName());
+//            this.params.setReferenceGraphName(model1.getNode());
         } else if (referenceName.equals(model1.getName())) {
             this.referenceGraph = ((GraphSource) model1).getGraph();
             this.targetGraph = ((GraphSource) model2).getGraph();

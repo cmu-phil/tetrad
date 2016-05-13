@@ -188,8 +188,8 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 //            Integer yi = indexMap.get(y);
 //
 //            if (xi == null || yi == null) {
-//                xi = indexMap.get(nameMap.get(x.getName()));
-//                yi = indexMap.get(nameMap.get(y.getName()));
+//                xi = indexMap.get(nameMap.get(x.getNode()));
+//                yi = indexMap.get(nameMap.get(y.getNode()));
 //
 //                if (xi == null || yi == null) {
 //                    throw new IllegalArgumentException("Node not in map");

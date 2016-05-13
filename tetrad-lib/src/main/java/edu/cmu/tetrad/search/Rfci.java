@@ -458,7 +458,7 @@ public final class Rfci implements GraphSearch {
         // (for example, setting independent1 and independent2 in ruleR0_RFCI)
         /*
         // background knowledge requires this edge
-		if (knowledge.noEdgeRequired(x.getName(), y.getName()))
+		if (knowledge.noEdgeRequired(x.getNode(), y.getNode()))
 		{
 			return;
 		}
