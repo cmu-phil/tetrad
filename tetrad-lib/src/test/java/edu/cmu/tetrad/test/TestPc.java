@@ -237,7 +237,7 @@ public class TestPc {
         }
     }
 
-    @Test
+//    @Test
     public void testPcFci() {
 
         String[] algorithms = {"PC", "CPC", "FGS", "FCI", "GFCI", "RFCI", "CFCI"};
