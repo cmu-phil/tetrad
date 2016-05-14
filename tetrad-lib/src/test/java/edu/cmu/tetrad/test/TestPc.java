@@ -26,17 +26,16 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
+import org.w3c.dom.Text;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -237,7 +236,7 @@ public class TestPc {
         }
     }
 
-//    @Test
+    @Test
     public void testPcFci() {
 
         String[] algorithms = {"PC", "CPC", "FGS", "FCI", "GFCI", "RFCI", "CFCI"};
@@ -284,14 +283,15 @@ public class TestPc {
         System.out.println();
         System.out.println("=======");
         System.out.println();
-        System.out.println("Algorithms with max = " +  ofInterestCutoff + "*(max - min) < stat <= max.");
+        System.out.println("Algorithms with max = " + ofInterestCutoff + "*(max - min) < stat <= max.");
         System.out.println();
         System.out.println("AP = Average Arrow Precision; TP = Average Tail Precision");
         System.out.println("BP = Average Bidirected Precision; NA = Average Number of Arrows");
         System.out.println("NT = Average Number of Tails; NB = Average Number of Bidirected");
         System.out.println("E = Averaged Elapsed Time (ms), AP/P");
         System.out.println();
-        System.out.println("num latents = 0 to " + maxLatents);        System.out.println("alpha = " + alpha);
+        System.out.println("num latents = 0 to " + maxLatents);
+        System.out.println("alpha = " + alpha);
         System.out.println("penaltyDiscount = " + penaltyDiscount);
         System.out.println("num runs = " + numRuns);
         System.out.println();
@@ -332,12 +332,6 @@ public class TestPc {
                 nodes.add(new ContinuousVariable(name));
                 names.add(name);
             }
-
-//            IKnowledge knowledge = new Knowledge2(names);
-//
-//            for (int r = 0; r < names.size(); r++) {
-//                knowledge.addToTier(r, names.get(r));
-//            }
 
             Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
                     10, 10, 10, false);
@@ -537,6 +531,7 @@ public class TestPc {
         return revised;
     }
 
+
     private void printBestStats(double[][][] allAllRet, String[] algorithms, String[] statLabels,
                                 int maxLatents, int jumpLatents, double ofInterestCutoff) {
         TextTable table = new TextTable(allAllRet.length + 1, allAllRet[0][0].length + 1);
@@ -560,7 +555,6 @@ public class TestPc {
                 return stat;
             }
         }
-
 
         for (int numLatents = 0; numLatents <= maxLatents; numLatents += jumpLatents) {
             latentIndex++;

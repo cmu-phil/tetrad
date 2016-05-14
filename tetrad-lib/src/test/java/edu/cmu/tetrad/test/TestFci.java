@@ -21,21 +21,20 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TextTable;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -258,6 +257,230 @@ public class TestFci {
 //
 //        assertTrue(compareGraph.equals(resultGraph));
     }
+
+    @Test
+    public void testFciAnc() {
+        int numMeasures = 50;
+        double edgeFactor = 1.0;
+
+        int numRuns = 10;
+        double alpha = 0.01;
+        double penaltyDiscount = 4.0;
+        int numVarsToMarginalize = 5;
+        int numLatents = 20;
+
+        System.out.println("num measures = " + numMeasures);
+        System.out.println("edge factor = " + edgeFactor);
+        System.out.println("alpha = " + alpha);
+        System.out.println("penaltyDiscount = " + penaltyDiscount);
+        System.out.println("num runs = " + numRuns);
+        System.out.println("Num vars to marginalize = " + numVarsToMarginalize);
+
+        System.out.println();
+        System.out.println("num latents = " + numLatents);
+
+        for (int i = 0; i < numRuns; i++) {
+            int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
+
+            List<Node> nodes = new ArrayList<>();
+
+            for (int r = 0; r < numMeasures + numLatents; r++) {
+                String name = "X" + (r + 1);
+                nodes.add(new ContinuousVariable(name));
+            }
+
+            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
+                    10, 10, 10, false);
+            SemPm pm = new SemPm(dag);
+            SemIm im = new SemIm(pm);
+            DataSet data = im.simulateData(1000, false);
+
+            Graph pag = getPag(alpha, penaltyDiscount, data);
+
+            DataSet marginalData = data.copy();
+
+            List<Node> variables = marginalData.getVariables();
+            Collections.shuffle(variables);
+
+            for (int m = 0; m < numVarsToMarginalize; m++) {
+                marginalData.removeColumn(marginalData.getColumn(variables.get(m)));
+            }
+
+            Graph margPag = getPag(alpha, penaltyDiscount, marginalData);
+
+            int ancAnc = 0;
+            int ancNanc = 0;
+            int nancAnc = 0;
+            int nancNanc = 0;
+            int ambAnc = 0;
+            int ambNanc = 0;
+
+            int totalAncMarg = 0;
+            int totalNancMarg = 0;
+
+            for (Node n1 : marginalData.getVariables()) {
+                for (Node n2 : marginalData.getVariables()) {
+                    if (n1 == n2) continue;
+
+                    if (ancestral(n1, n2, margPag)) {
+                        if (ancestral(n1, n2, pag)) {
+                            ancAnc++;
+                        } else if (nonAncestral(n1, n2, pag)) {
+                            nancAnc++;
+                        } else {
+                            ambAnc++;
+                        }
+
+                        totalAncMarg++;
+                    } else if (nonAncestral(n1, n2, margPag)) {
+                        if (ancestral(n1, n2, pag)) {
+                            ancNanc++;
+                        } else if (nonAncestral(n1, n2, pag)) {
+                            nancNanc++;
+                        } else {
+                            ambNanc++;
+                        }
+
+                        totalNancMarg++;
+                    }
+                }
+            }
+
+//            {
+//                TextTable table = new TextTable(5, 3);
+//                table.setToken(0, 1, "Ancestral");
+//                table.setToken(0, 2, "Nonancestral");
+//                table.setToken(1, 0, "Ancestral");
+//                table.setToken(2, 0, "Nonancestral");
+//                table.setToken(3, 0, "Ambiguous");
+//                table.setToken(4, 0, "Total");
+//
+//                table.setToken(1, 1, ancAnc + "");
+//                table.setToken(2, 1, nancAnc + "");
+//                table.setToken(3, 1, ambAnc + "");
+//                table.setToken(1, 2, ancNanc + "");
+//                table.setToken(2, 2, nancNanc + "");
+//                table.setToken(3, 2, ambNanc + "");
+//                table.setToken(4, 1, totalAncMarg + "");
+//                table.setToken(4, 2, totalNancMarg + "");
+//
+//                System.out.println(table);
+//            }
+
+            {
+                TextTable table = new TextTable(5, 3);
+                table.setToken(0, 1, "Ancestral");
+                table.setToken(0, 2, "Nonancestral");
+                table.setToken(1, 0, "Ancestral");
+                table.setToken(2, 0, "Nonancestral");
+                table.setToken(3, 0, "Ambiguous");
+                table.setToken(4, 0, "Total");
+
+                NumberFormat nf = new DecimalFormat("0.00");
+
+                table.setToken(1, 1, nf.format(ancAnc / (double) totalAncMarg) + "");
+                table.setToken(2, 1, nf.format(nancAnc / (double) totalAncMarg) + "");
+                table.setToken(3, 1, nf.format(ambAnc / (double) totalAncMarg) + "");
+                table.setToken(1, 2, nf.format(ancNanc / (double) totalNancMarg) + "");
+                table.setToken(2, 2, nf.format(nancNanc / (double) totalNancMarg) + "");
+                table.setToken(3, 2, nf.format(ambNanc / (double) totalNancMarg) + "");
+                table.setToken(4, 1, totalAncMarg + "");
+                table.setToken(4, 2, totalNancMarg + "");
+
+                System.out.println(table);
+            }
+        }
+    }
+
+    private boolean ancestral(Node n, Node q, Graph pag) {
+        if (n == q) return false;
+
+        if (pag.isAncestorOf(n, q)) {
+            return true;
+        } else {
+            List<Node> adj = uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>());
+
+            if (adj.size() >= 2) {
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
+                int[] choice;
+                boolean found = false;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> c = GraphUtils.asList(choice, adj);
+                    Node n1 = c.get(0);
+                    Node n2 = c.get(1);
+
+                    if (!pag.isAdjacentTo(n1, n2)) {
+                        if (pag.isDefNoncollider(n1, n, n2)) {
+                            found = true;
+                        }
+                    }
+                }
+
+                if (found) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean nonAncestral(Node n, Node q, Graph pag) {
+        if (n == q) return false;
+
+        if (ancestral(n, q, pag)) {
+            return false;
+        }
+
+        if (pag.isAdjacentTo(n, q)) {
+            if (pag.getEdge(n, q).pointsTowards(n)) {
+                return true;
+            }
+        }
+
+        if (uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>()).isEmpty()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private Graph getPag(double alpha, double penaltyDiscount, DataSet data) {
+        IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+        score.setPenaltyDiscount(penaltyDiscount);
+
+        GraphSearch search = new Fci(test);
+
+        return search.search();
+    }
+
+    /**
+     * Returns the adjacents n of x such that x*-*n... starts a potentially directed path.
+     */
+    private List<Node> uncoveredPotentiallyDirectedPathStarts(Node x, Node y, Graph g, LinkedList<Node> path) {
+        List<Node> pathThrough = new ArrayList<>();
+
+        if (x == y) return path;
+        if (path.contains(x)) return path;
+        path.add(x);
+
+        for (Node n : g.getAdjacentNodes(x)) {
+            Edge e = g.getEdge(x, n);
+
+            if (e.getProximalEndpoint(x) == Endpoint.ARROW) continue;
+
+            if (!uncoveredPotentiallyDirectedPathStarts(n, y, g, path).isEmpty()) {
+                pathThrough.add(n);
+            }
+        }
+
+        path.remove(x);
+        return pathThrough;
+    }
+
 }
 
 
