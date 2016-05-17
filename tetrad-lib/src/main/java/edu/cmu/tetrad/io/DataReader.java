@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * Interface for reading in continuous dataset.
+ * Interface for reading in data.
  *
  * Feb 29, 2016 1:32:03 PM
  *
@@ -32,20 +32,19 @@ import java.util.Set;
 public interface DataReader {
 
     /**
-     * Read in dataset containing continuous values.
+     * Read in dataset.
      *
      * @return
-     * @throws IOException
+     * @throws IOException whenever unable to read file
      */
     public DataSet readInData() throws IOException;
 
     /**
-     * Read in dataset containing continuous values. Excludes any variables from
-     * the given set.
+     * Read in dataset. Excludes any variables from the given set.
      *
      * @param excludedVariables set of variables to exclude
      * @return
-     * @throws IOException
+     * @throws IOException whenever unable to read file
      */
     public DataSet readInData(Set<String> excludedVariables) throws IOException;
 

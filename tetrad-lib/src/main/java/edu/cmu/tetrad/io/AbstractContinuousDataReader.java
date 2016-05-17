@@ -32,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * This class contains all the basic functions that the data readers for
+ * continuous data should have.
  *
  * May 2, 2016 11:32:07 AM
  *
@@ -45,6 +47,13 @@ public abstract class AbstractContinuousDataReader extends AbstractDataReader {
         super(dataFile, delimiter);
     }
 
+    /**
+     * Method to start analyzing variables.
+     *
+     * @param excludedVariables set of variables to disregard
+     * @return
+     * @throws IOException
+     */
     protected ContinuousVariableAnalysis analyzeData(Set<String> excludedVariables) throws IOException {
         ContinuousVariableAnalysis variableAnalysis = new ContinuousVariableAnalysis();
         extractVariables(excludedVariables, variableAnalysis);
@@ -52,6 +61,13 @@ public abstract class AbstractContinuousDataReader extends AbstractDataReader {
         return variableAnalysis;
     }
 
+    /**
+     * Read in variable names.
+     *
+     * @param excludedVariables set of variables to disregard
+     * @param variableAnalysis variable information
+     * @throws IOException whenever unable to read file
+     */
     protected void extractVariables(Set<String> excludedVariables, ContinuousVariableAnalysis variableAnalysis) throws IOException {
         List<Integer> excludedVarIndices = new LinkedList<>();
         List<Node> nodes = new LinkedList<>();
@@ -131,6 +147,10 @@ public abstract class AbstractContinuousDataReader extends AbstractDataReader {
         variableAnalysis.setVariables(nodes);
     }
 
+    /**
+     * This internal class is used to hold information about continuous
+     * variables.
+     */
     public static class ContinuousVariableAnalysis {
 
         private int[] excludedIndices;

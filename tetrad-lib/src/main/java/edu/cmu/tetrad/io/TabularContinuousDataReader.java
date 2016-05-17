@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * This data reader reads in tabular data contains continuous variables.
  *
  * Feb 29, 2016 1:34:57 PM
  *
@@ -65,6 +66,13 @@ public class TabularContinuousDataReader extends AbstractContinuousDataReader im
         return new BoxDataSet(new DoubleDataBox(data), nodes);
     }
 
+    /**
+     * Read in data.
+     *
+     * @param variableAnalysis
+     * @return
+     * @throws IOException
+     */
     protected double[][] extractContinuousData(ContinuousVariableAnalysis variableAnalysis) throws IOException {
         int maxNumOfCols = countNumberOfColumns();
         int numOfCols = variableAnalysis.getVariables().size();
