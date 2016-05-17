@@ -43,6 +43,7 @@ import java.util.Set;
  * Apr 30, 2015 11:30:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @deprecated User the data readers in the edu.cmu.tetrad.io package.
  */
 public class BigDataSetUtility {
 
@@ -63,6 +64,7 @@ public class BigDataSetUtility {
      * @param file dataset
      * @param delimiter a single character used to separate the data
      * @throws IOException
+     * @deprecated use edu.cmu.tetrad.io.TabularContinuousDataReader instead
      */
     public static DataSet readInContinuousData(File file, char delimiter) throws IOException {
         byte delim = (byte) delimiter;
@@ -178,6 +180,7 @@ public class BigDataSetUtility {
      * @param delimiter a single character used to separate the data
      * @param excludeVariables the names of the columns to be excluded
      * @throws IOException
+     * @deprecated use edu.cmu.tetrad.io.TabularContinuousDataReader instead
      */
     public static DataSet readInContinuousData(File file, char delimiter, Set<String> excludeVariables) throws IOException {
         if (excludeVariables == null || excludeVariables.isEmpty()) {
@@ -393,6 +396,16 @@ public class BigDataSetUtility {
         return readInContinuousData(file, delimiter, Collections.singleton("MULT"));
     }
 
+    /**
+     *
+     * @param file
+     * @param delimiter
+     * @param excludeVariables
+     * @return
+     * @throws IOException
+     * @deprecated use edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader
+     * instead
+     */
     public static DataSet readInDiscreteData(File file, char delimiter, Set<String> excludeVariables) throws IOException {
         if (excludeVariables == null || excludeVariables.isEmpty()) {
             return readInDiscreteData(file, delimiter);
@@ -483,6 +496,15 @@ public class BigDataSetUtility {
         return new BoxDataSet(new IntDataBox(data), nodes);
     }
 
+    /**
+     *
+     * @param file
+     * @param delimiter
+     * @return
+     * @throws IOException
+     * @deprecated use edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader
+     * instead
+     */
     private static DataSet readInDiscreteData(File file, char delimiter) throws IOException {
         DiscreteDataAnalysis dataAnalysis = analyDiscreteData(file, delimiter);
         dataAnalysis.recategorizeDiscreteVariables();
@@ -802,6 +824,9 @@ public class BigDataSetUtility {
         return dataAnalysis;
     }
 
+    /**
+     * @deprecated User the data readers in the edu.cmu.tetrad.io package.
+     */
     public static class DiscreteDataAnalysis {
 
         private DiscreteVar[] discreteVars;
@@ -857,6 +882,8 @@ public class BigDataSetUtility {
 
     /**
      * This class is used to store information on a discrete variable.
+     *
+     * @deprecated User the data readers in the edu.cmu.tetrad.io package.
      */
     public static class DiscreteVar {
 
@@ -930,6 +957,7 @@ public class BigDataSetUtility {
      * @param file dataset
      * @param delimiter a single character used to separate the data
      * @throws IOException
+     * @deprecated User edu.cmu.tetrad.io.AbstractDataReader instead.
      */
     public static int countColumn(File file, char delimiter) throws IOException {
         int count = 0;
@@ -969,6 +997,7 @@ public class BigDataSetUtility {
      *
      * @param file dataset
      * @throws IOException
+     * @deprecated User edu.cmu.tetrad.io.AbstractDataReader instead.
      */
     public static int countLine(File file) throws IOException {
         int count = 0;
