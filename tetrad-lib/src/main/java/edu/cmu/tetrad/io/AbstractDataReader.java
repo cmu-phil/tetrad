@@ -25,6 +25,8 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 
 /**
+ * This class contains all the basic functions that the data readers should
+ * have.
  *
  * Feb 29, 2016 1:32:34 PM
  *
