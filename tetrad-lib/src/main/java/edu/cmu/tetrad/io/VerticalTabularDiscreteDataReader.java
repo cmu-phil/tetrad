@@ -34,7 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This data reader reads in discrete data in a transposed (vertical) format.
+ * This data reader reads in tabular data contains discrete variables in a
+ * transposed (vertical) format.
  *
  * Mar 30, 2016 2:40:14 PM
  *

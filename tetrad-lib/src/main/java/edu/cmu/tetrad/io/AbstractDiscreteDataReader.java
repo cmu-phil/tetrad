@@ -34,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * This class contains all the basic functions that the data readers for
+ * continuous data should have.
  *
  * Apr 1, 2016 11:40:18 AM
  *
@@ -47,6 +49,12 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
         super(dataFile, delimiter);
     }
 
+    /**
+     * Create a list of Nodes from variable analysis results.
+     *
+     * @param variableAnalysis
+     * @return
+     */
     protected List<Node> createDiscreteVariableList(DiscreteVariableAnalysis variableAnalysis) {
         List<Node> nodes = new ArrayList<>(variableAnalysis.getNumOfCols());
         DiscreteVarInfo[] variables = variableAnalysis.getDiscreteVarInfos();
@@ -59,6 +67,13 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
         return nodes;
     }
 
+    /**
+     * Method to start analyzing variables.
+     *
+     * @param excludedVariables set of variables to disregard
+     * @return variable information
+     * @throws IOException whenever unable to read file
+     */
     protected DiscreteVariableAnalysis analyzeVariables(Set<String> excludedVariables) throws IOException {
         DiscreteVariableAnalysis variableAnalysis = new DiscreteVariableAnalysis();
         extractVariables(excludedVariables, variableAnalysis);
@@ -67,6 +82,13 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
         return variableAnalysis;
     }
 
+    /**
+     * Collect the values for the variables.
+     *
+     * @param excludedVariables set of variables to disregard
+     * @param variableAnalysis object to hold results
+     * @throws IOException whenever unable to read file
+     */
     protected void extractVariableValues(Set<String> excludedVariables, DiscreteVariableAnalysis variableAnalysis) throws IOException {
         DiscreteVarInfo[] discreteVarInfos = variableAnalysis.getDiscreteVarInfos();
         int numOfCols = variableAnalysis.numOfCols;
@@ -152,6 +174,13 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
         }
     }
 
+    /**
+     * Read in the variable names.
+     *
+     * @param excludedVariables set of variables to disregard
+     * @param variableAnalysis object to hold results
+     * @throws IOException whenever unable to read file
+     */
     protected void extractVariables(Set<String> excludedVariables, DiscreteVariableAnalysis variableAnalysis) throws IOException {
         int numOfCols = 0;
         DiscreteVarInfo[] discreteVarInfos = new DiscreteVarInfo[countNumberOfColumns()];
@@ -218,6 +247,9 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
         variableAnalysis.setNumOfCols(numOfCols);
     }
 
+    /**
+     * This class is used to hold the results for reading in variables.
+     */
     public static class DiscreteVariableAnalysis {
 
         private DiscreteVarInfo[] discreteVarInfos;
@@ -252,6 +284,10 @@ public abstract class AbstractDiscreteDataReader extends AbstractDataReader {
 
     }
 
+    /**
+     * This internal class is used to hold information about discrete variables
+     * for discretization.
+     */
     public static class DiscreteVarInfo {
 
         private final String name;

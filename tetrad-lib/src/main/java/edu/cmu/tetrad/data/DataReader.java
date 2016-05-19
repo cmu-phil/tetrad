@@ -18,16 +18,25 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
-
-import java.io.*;
-import java.util.*;
+import java.io.CharArrayReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -92,12 +101,10 @@ public final class DataReader {
      */
     private List<Node> knownVariables = new LinkedList<>();
 
-
     /**
      * The tetrad logger.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
 
     /**
      * True if variable names should be read lowercase.
@@ -111,7 +118,6 @@ public final class DataReader {
     }
 
     //============================PUBLIC METHODS========================//
-
     /**
      * Lines beginning with blanks or this marker will be skipped.
      */
@@ -206,6 +212,7 @@ public final class DataReader {
      * RectangularDataSet if successful.
      *
      * @throws IOException if the file cannot be read.
+     * @deprecated use the data readers from edu.cmu.tetrad.io package
      */
     public DataSet parseTabular(File file) throws IOException {
         FileReader reader = null, reader2 = null;
@@ -355,8 +362,8 @@ public final class DataReader {
 
                         if ("".equals(token)) {
                             throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                    + ": Expected a category name, got an empty token, " +
-                                    "for variable " + name + ".");
+                                    + ": Expected a category name, got an empty token, "
+                                    + "for variable " + name + ".");
                         }
 
                         if (categories.contains(token)) {
@@ -391,8 +398,8 @@ public final class DataReader {
 
         if (varNamesSupplied) {
             varNames = new ArrayList<>();
-            RegexTokenizer tokenizer =
-                    new RegexTokenizer(dataFirstLine, delimiter, quoteChar);
+            RegexTokenizer tokenizer
+                    = new RegexTokenizer(dataFirstLine, delimiter, quoteChar);
 
             while (tokenizer.hasMoreTokens()) {
                 String name = tokenizer.nextToken().trim();
@@ -409,16 +416,14 @@ public final class DataReader {
 
 //               True if variable names should be read uppercase.
                 /*
-      True if variable names should be read lowercase.
-     */
+                 True if variable names should be read lowercase.
+                 */
                 boolean readVariablesUppercase = false;
                 if (readVariablesLowercase) {
                     varNames.add(name.toLowerCase());
-                }
-                else if (readVariablesUppercase) {
+                } else if (readVariablesUppercase) {
                     varNames.add(name.toUpperCase());
-                }
-                else {
+                } else {
                     varNames.add(name);
                 }
             }
@@ -426,8 +431,8 @@ public final class DataReader {
             dataFirstLine = null;
         } else {
             varNames = new LinkedList<>();
-            RegexTokenizer tokenizer =
-                    new RegexTokenizer(dataFirstLine, delimiter, quoteChar);
+            RegexTokenizer tokenizer
+                    = new RegexTokenizer(dataFirstLine, delimiter, quoteChar);
 
             if (idsSupplied && idLabel == null) {
                 if (tokenizer.hasMoreTokens()) {
@@ -498,7 +503,6 @@ public final class DataReader {
 
 //        ShortDataBox box = new ShortDataBox(description.getNumRows(), description.getVariables().size());
 //        BoxDataSet dataSet = new BoxDataSet(box, description.getVariables());
-
         int row = -1;
 
         while (lineizer.hasMoreLines()) {
@@ -534,8 +538,8 @@ public final class DataReader {
 
         // Copy ids into the data set and remove the id column.
         if (description.getIdIndex() != -1) {
-            DiscreteVariable idVar =
-                    (DiscreteVariable) dataSet.getVariable(description.getIdIndex());
+            DiscreteVariable idVar
+                    = (DiscreteVariable) dataSet.getVariable(description.getIdIndex());
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 int index = dataSet.getInt(i, description.getIdIndex());
@@ -601,8 +605,7 @@ public final class DataReader {
      * <pre>
      * CovarianceMatrix dataSet = DataLoader.loadCovMatrix(
      *                           new FileReader(file), " \t", "//");
-     * </pre>
-     * The initial "/covariance" is optional.
+     * </pre> The initial "/covariance" is optional.
      */
     public ICovarianceMatrix parseCovariance(char[] chars) {
 
@@ -618,7 +621,6 @@ public final class DataReader {
         this.logger.reset();
         return covarianceMatrix;
     }
-
 
     private ICovarianceMatrix doCovariancePass(Reader reader) {
         this.logger.log("info", "\nDATA LOADING PARAMETERS:");
@@ -699,16 +701,16 @@ public final class DataReader {
 
             for (int j = 0; j <= i; j++) {
                 if (!st.hasMoreTokens()) {
-                    throw new IllegalArgumentException("Expecting " + (i + 1) +
-                            " numbers on line " + (i + 1) +
-                            " of the covariance " + "matrix input.");
+                    throw new IllegalArgumentException("Expecting " + (i + 1)
+                            + " numbers on line " + (i + 1)
+                            + " of the covariance " + "matrix input.");
                 }
 
                 String literal = st.nextToken();
 
                 if ("".equals(literal)) {
-                    TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a " +
-                            "covariance value--ignoring.");
+                    TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a "
+                            + "covariance value--ignoring.");
                     continue;
                 }
 
@@ -727,8 +729,8 @@ public final class DataReader {
 
         IKnowledge knowledge = parseKnowledge(lineizer, delimiterType.getPattern());
 
-        ICovarianceMatrix covarianceMatrix =
-                new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), c, n);
+        ICovarianceMatrix covarianceMatrix
+                = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), c, n);
 
         if (knowledge != null) {
             covarianceMatrix.setKnowledge(knowledge);
@@ -740,8 +742,8 @@ public final class DataReader {
     }
 
     /**
-     * Loads knowledge from a file. Assumes knowledge is the only thing in
-     * the file. No jokes please. :)
+     * Loads knowledge from a file. Assumes knowledge is the only thing in the
+     * file. No jokes please. :)
      */
     public IKnowledge parseKnowledge(File file) throws IOException {
         FileReader reader = new FileReader(file);
@@ -752,8 +754,8 @@ public final class DataReader {
     }
 
     /**
-     * Parses knowledge from the char array, assuming that's all there is in
-     * the char array.
+     * Parses knowledge from the char array, assuming that's all there is in the
+     * char array.
      */
     public IKnowledge parseKnowledge(char[] chars) {
         CharArrayReader reader = new CharArrayReader(chars);
@@ -764,7 +766,6 @@ public final class DataReader {
     }
 
     //============================PRIVATE METHODS========================//
-
     private int adjustForId(List<String> varNames, Lineizer lineizer) {
         int idIndex = -1;
 
@@ -777,8 +778,8 @@ public final class DataReader {
 
                 if (idIndex == -1) {
                     throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                            + ": The given ID column label (" + idLabel + ") was not among " +
-                            "the list of variables.");
+                            + ": The given ID column label (" + idLabel + ") was not among "
+                            + "the list of variables.");
                 }
             }
         }
@@ -927,13 +928,13 @@ public final class DataReader {
                     }
 
                     if (st.hasMoreTokens()) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber() +
-                                ": Lines contains more than two elements.");
+                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                                + ": Lines contains more than two elements.");
                     }
 
                     if (from == null || to == null) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber() +
-                                ": Line contains fewer than two elements.");
+                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                                + ": Line contains fewer than two elements.");
                     }
 
                     knowledge.setForbidden(from, to);
@@ -964,13 +965,13 @@ public final class DataReader {
                     }
 
                     if (st.hasMoreTokens()) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber() +
-                                ": Lines contains more than two elements.");
+                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                                + ": Lines contains more than two elements.");
                     }
 
                     if (from == null || to == null) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber() +
-                                ": Line contains fewer than two elements.");
+                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                                + ": Line contains fewer than two elements.");
                     }
 
                     knowledge.setRequired(from, to);
@@ -997,6 +998,7 @@ public final class DataReader {
     }
 
     private static class DataSetDescription {
+
         private final List<Node> variables;
         private final int numRows;
         private final int idIndex;
@@ -1005,8 +1007,8 @@ public final class DataReader {
         private final boolean multColumnIncluded;
 
         public DataSetDescription(List<Node> variables, int numRows, int idIndex,
-                                  boolean variablesSectionIncluded, Pattern delimiter,
-                                  boolean multColumnIncluded) {
+                boolean variablesSectionIncluded, Pattern delimiter,
+                boolean multColumnIncluded) {
             this.variables = variables;
             this.numRows = numRows;
             this.idIndex = idIndex;
@@ -1043,19 +1045,18 @@ public final class DataReader {
     /**
      * Scans the file for variable definitions and number of cases.
      *
-     * @param varNames  Names of variables, if known. Otherwise, if null,
-     *                  variables in the series X1, X2, ..., Xn will be made up,
-     *                  one for each token in the first row.
-     * @param lineizer  Parses lines, skipping comments.
+     * @param varNames Names of variables, if known. Otherwise, if null,
+     * variables in the series X1, X2, ..., Xn will be made up, one for each
+     * token in the first row.
+     * @param lineizer Parses lines, skipping comments.
      * @param delimiter Delimiter to tokenize tokens in each row.
-     * @param firstLine Non-null if a non-variable first line had to be
-     *                  lineized
-     * @param idIndex   The index of the ID column.
+     * @param firstLine Non-null if a non-variable first line had to be lineized
+     * @param idIndex The index of the ID column.
      */
     private DataSetDescription scanForDescription(List<String> varNames,
-                                                  Lineizer lineizer, Pattern delimiter,
-                                                  String firstLine, int idIndex,
-                                                  boolean variableSectionIncluded) {
+            Lineizer lineizer, Pattern delimiter,
+            String firstLine, int idIndex,
+            boolean variableSectionIncluded) {
 
         // Scan file, collecting up the set of range values for each variables.
         List<Set<String>> dataStrings = new ArrayList<>();
@@ -1082,8 +1083,8 @@ public final class DataReader {
 
             ++row;
 
-            RegexTokenizer tokenizer =
-                    new RegexTokenizer(line, delimiter, quoteChar);
+            RegexTokenizer tokenizer
+                    = new RegexTokenizer(line, delimiter, quoteChar);
 
             int col = -1;
 
@@ -1104,14 +1105,14 @@ public final class DataReader {
 
             if (col < varNames.size() - 1) {
                 this.logger.log("info", "Line " + lineizer.getLineNumber()
-                        + ": Too few tokens; expected " + varNames.size() +
-                        " tokens but got " + (col + 1) + " tokens.");
+                        + ": Too few tokens; expected " + varNames.size()
+                        + " tokens but got " + (col + 1) + " tokens.");
             }
 
             if (col > varNames.size() - 1) {
                 this.logger.log("info", "Line " + lineizer.getLineNumber()
-                        + ": Too many tokens; expected " + varNames.size() +
-                        " tokens but got " + (col + 1) + " tokens.");
+                        + ": Too many tokens; expected " + varNames.size()
+                        + " tokens but got " + (col + 1) + " tokens.");
             }
         }
 
@@ -1135,8 +1136,8 @@ public final class DataReader {
 
             if (isDouble(strings) && !isIntegral(strings) && i != idIndex) {
                 variables.add(new ContinuousVariable(varNames.get(i)));
-            } else if (isIntegral(strings) && tooManyDiscreteValues(strings) &&
-                    i != idIndex) {
+            } else if (isIntegral(strings) && tooManyDiscreteValues(strings)
+                    && i != idIndex) {
                 String name = varNames.get(i);
 
                 if (name.contains(" ")) {
@@ -1210,8 +1211,8 @@ public final class DataReader {
             } else if (node instanceof DiscreteVariable) {
                 StringBuilder buf = new StringBuilder();
                 buf.append(node).append(" --> <");
-                List<String> categories =
-                        ((DiscreteVariable) node).getCategories();
+                List<String> categories
+                        = ((DiscreteVariable) node).getCategories();
 
                 for (int j = 0; j < categories.size(); j++) {
                     buf.append(categories.get(j));
@@ -1273,6 +1274,3 @@ public final class DataReader {
 //        return writer.toCharArray();
 //    }
 }
-
-
-
