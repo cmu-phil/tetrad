@@ -269,8 +269,8 @@ public class FgsDiscrete {
         fmt.format("%n");
 
         fmt.format("Data Validations:%n");
-        fmt.format("skip unique variable name check = %s%n", skipUniqueVarName);
-        fmt.format("skip limit number of category check = %s%n", skipCategoryLimit);
+        fmt.format("ensure variable names are unique = %s%n", !skipUniqueVarName);
+        fmt.format("limit number of categories (%d) = %s%n", CATEGORY_LIMIT, !skipCategoryLimit);
         fmt.format("%n");
 
         return fmt.toString();

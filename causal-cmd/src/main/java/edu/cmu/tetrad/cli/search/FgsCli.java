@@ -239,8 +239,8 @@ public class FgsCli {
         fmt.format("%n");
 
         fmt.format("Data Validations:%n");
-        fmt.format("skip unique variable name check = %s%n", skipUniqueVarName);
-        fmt.format("skip variables with zero variance check = %s%n", skipZeroVariance);
+        fmt.format("ensure variable names are unique = %s%n", !skipUniqueVarName);
+        fmt.format("ensure variables have non-zero variance = %s%n", !skipZeroVariance);
         fmt.format("%n");
 
         return fmt.toString();
