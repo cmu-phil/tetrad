@@ -118,7 +118,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
             fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
-            fci.setDepth(indTestParams.getDepth());
+            //fci.setDepth(indTestParams.getDepth());
             double penaltyDiscount = indTestParams.getPenaltyDiscount();
 
             fci.setPenaltyDiscount(penaltyDiscount);
