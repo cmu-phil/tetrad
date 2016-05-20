@@ -258,26 +258,26 @@ public class TestFci {
 //        assertTrue(compareGraph.equals(resultGraph));
     }
 
-    @Test
+//    @Test
     public void testFciAnc() {
         int numMeasures = 50;
-        double edgeFactor = 1.0;
+        double edgeFactor = 2.0;
 
         int numRuns = 10;
         double alpha = 0.01;
         double penaltyDiscount = 4.0;
         int numVarsToMarginalize = 5;
-        int numLatents = 20;
+        int numLatents = 10;
 
         System.out.println("num measures = " + numMeasures);
         System.out.println("edge factor = " + edgeFactor);
         System.out.println("alpha = " + alpha);
         System.out.println("penaltyDiscount = " + penaltyDiscount);
         System.out.println("num runs = " + numRuns);
-        System.out.println("Num vars to marginalize = " + numVarsToMarginalize);
+        System.out.println("num vars to marginalize = " + numVarsToMarginalize);
+        System.out.println("num latents = " + numLatents);
 
         System.out.println();
-        System.out.println("num latents = " + numLatents);
 
         for (int i = 0; i < numRuns; i++) {
             int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
@@ -452,7 +452,9 @@ public class TestFci {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
         score.setPenaltyDiscount(penaltyDiscount);
 
-        GraphSearch search = new Fci(test);
+//        GraphSearch search = new Fci(test);
+//        GraphSearch search = new GFci(score);
+        GraphSearch search = new Pc(test);
 
         return search.search();
     }

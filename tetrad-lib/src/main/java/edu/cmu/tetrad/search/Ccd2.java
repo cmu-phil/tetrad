@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * This class provides the datastructures and methods for carrying out the Cyclic Causal Discovery algorithm (CCD)
+ * This class provides the data structures and methods for carrying out the Cyclic Causal Discovery algorithm (CCD)
  * described by Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, & Discovery by Glymour and
  * Cooper eds.  The comments that appear below are keyed to the algorithm specification on pp. 269-271. </p> The search
  * method returns an instance of a Graph but it also constructs two lists of node triples which represent the underlines
@@ -39,47 +39,20 @@ import java.util.*;
  * @author Frank C. Wimberly
  * @author Joseph Ramsey
  */
-public final class Ccd implements GraphSearch {
+public final class Ccd2 implements GraphSearch {
+    private Score score;
     private IndependenceTest test;
     private int depth = -1;
     private IKnowledge knowledge;
     private List<Node> nodes;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-    private TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * Whether verbose output about independencies is output.
-     */
     private boolean verbose = false;
-    private Graph initialGraph;
+    private boolean applyR1 = true;
 
-    /**
-     * The arguments of the constructor are an oracle which answers conditional independence questions.  In the case of
-     * a continuous dataset it will most likely be an instance of the IndTestCramerT class.  The second argument is not
-     * used at this time.  The author (Wimberly) asked Thomas Richardson about how to use background knowledge and his
-     * answer was that it should be applied after steps A-F had been executed.  Any implementation of the use of
-     * background knowledge will be done later.
-     *
-     * @param knowledge Background knowledge. Not used yet--can be null.
-     */
-    public Ccd(IndependenceTest test, IKnowledge knowledge) {
-        this.knowledge = knowledge;
-        this.test = test;
-        this.nodes = test.getVariables();
-    }
-
-    /**
-     * The arguments of the constructor are an oracle which answers conditional independence questions.  In the case of
-     * a continuous dataset it will most likely be an instance of the IndTestCramerT class.  The second argument is not
-     * used at this time.  The author (Wimberly) asked Thomas Richardson about how to use background knowledge and his
-     * answer was that it should be applied after steps A-F had been executed.  Any implementation of the use of
-     * background knowledge will be done later.
-     */
-    public Ccd(IndependenceTest test) {
-        this(test, new Knowledge2());
+    public Ccd2(Score score) {
+        if (score == null) throw new NullPointerException();
+        this.score = score;
+        this.test = new IndTestScore(score);
+        this.nodes = score.getVariables();
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -95,36 +68,34 @@ public final class Ccd implements GraphSearch {
     public Graph search() {
         Map<Triple, List<Node>> supSepsets = new HashMap<>();
 
-        //Step A
-        TetradLogger.getInstance().log("info", "\nStep A");
+        Fgs2 fgs = new Fgs2(score);
+        fgs.setVerbose(verbose);
+        fgs.setNumPatternsToStore(0);
+        fgs.setFaithfulnessAssumed(true);
+        Graph graph = fgs.search();
 
-        IFas search = new Fas(initialGraph, test);
-        search.setDepth(depth);
-        search.setKnowledge(getKnowledge());
-        search.setVerbose(verbose);
-        Graph psi = search.search();
-        SepsetMap sepsetsFromFas = search.getSepsets();
+        SepsetsGreedy sepsets = new SepsetsGreedy(graph, test, null, -1);
+        sepsets.setDepth(5);
 
-        SepsetProducer sepsets = new SepsetsMaxScore(psi, test, null, depth);
+        Fas fas = new Fas(graph, test);
+        graph = fas.search();
 
-        psi.reorientAllWith(Endpoint.CIRCLE);
-        SearchGraphUtils.pcOrientbk(knowledge, psi, nodes);
-        stepB(psi, sepsets);
-        stepC(psi, sepsets, sepsetsFromFas);
-        stepD(psi, sepsets, supSepsets, sepsetsFromFas);
-        if (stepE(supSepsets, psi)) return psi;
-        stepF(psi, sepsets, supSepsets);
-        ruleR1(psi);
+        graph.reorientAllWith(Endpoint.CIRCLE);
 
+        modifiedR0(graph, sepsets);
+//        stepC(graph, sepsets, null);
+        stepD(graph, sepsets, supSepsets, null);
+        if (stepE(supSepsets, graph)) return graph;
+        stepF(graph, sepsets, supSepsets);
 
-        TetradLogger.getInstance().log("graph", "\nFinal Graph:");
-        TetradLogger.getInstance().log("graph", psi.toString());
+        if (applyR1) {
+            for (Node node : nodes) {
+                orientR1(node, graph, new LinkedList<Node>());
+            }
+        }
 
-        this.logger.log("graph", "\nReturning this graph: " + psi);
-
-        return psi;
+        return graph;
     }
-
 
     public IKnowledge getKnowledge() {
         return knowledge;
@@ -160,99 +131,7 @@ public final class Ccd implements GraphSearch {
                 !getKnowledge().isForbidden(from.toString(), to.toString());
     }
 
-
-    private void stepB(Graph psi, SepsetProducer sepsets) {
-        addColliders(psi, sepsets);
-        addNoncolliders(psi, sepsets);
-
-//        List<Node> nodes1 = test.getVariables();
-//
-//        for (Node y : nodes1) {
-//            List<Node> adjacentNodes = psi.getAdjacentNodes(y);
-//
-//            if (adjacentNodes.size() < 2) {
-//                continue;
-//            }
-//
-//            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-//            int[] combination;
-//
-//            while ((combination = cg.next()) != null) {
-//                Node x = adjacentNodes.get(combination[0]);
-//                Node z = adjacentNodes.get(combination[1]);
-//
-//                if (psi.isAdjacentTo(x, z)) {
-//                    continue;
-//                }
-//
-//                if (sepsets.isCollider(x, y, z)) {
-//                    if (isArrowpointAllowed(x, y) && isArrowpointAllowed(z, y)) {
-////                        psi.removeEdge(x, y);
-////                        psi.removeEdge(y, z);
-////                        psi.addDirectedEdge(x, y);
-////                        psi.addDirectedEdge(z, y);
-//
-//                        psi.setEndpoint(x, y, Endpoint.ARROW);
-//                        psi.setEndpoint(z, y, Endpoint.ARROW);
-//                    }
-//                } else if (sepsets.isNoncollider(x, y, z)) {
-//                    psi.addUnderlineTriple(x, y, z);
-//                }
-//            }
-//        }
-    }
-
-    private void addColliders(Graph graph, final SepsetProducer sepsetProducer) {
-        final Map<Triple, Double> collidersPs = findCollidersUsingSepsets(sepsetProducer, graph, verbose);
-
-        List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
-
-//        Collections.sort(colliders, new Comparator<Triple>() {
-//            public int compare(Triple o1, Triple o2) {
-//                return -Double.compare(collidersPs.get(o1), collidersPs.get(o2));
-//            }
-//        });
-
-        for (Triple collider : colliders) {
-            Node a = collider.getX();
-            Node b = collider.getY();
-            Node c = collider.getZ();
-
-            if (!(isArrowpointAllowed(a, b) && isArrowpointAllowed(c, b))) {
-                continue;
-            }
-
-            if (!graph.getEdge(a, b).pointsTowards(a) && !graph.getEdge(b, c).pointsTowards(c)) {
-                graph.removeEdge(a, b);
-                graph.removeEdge(c, b);
-                graph.addDirectedEdge(a, b);
-                graph.addDirectedEdge(c, b);
-//                graph.setEndpoint(a, b, Endpoint.ARROW);
-//                graph.setEndpoint(c, b, Endpoint.ARROW);
-            }
-        }
-    }
-
-    private void addNoncolliders(Graph graph, final SepsetProducer sepsetProducer) {
-        List<Triple> nonColliders = findNoncollidersUsingSepsets(sepsetProducer, graph, verbose);
-
-        for (Triple collider : nonColliders) {
-            Node a = collider.getX();
-            Node b = collider.getY();
-            Node c = collider.getZ();
-
-            graph.addUnderlineTriple(a, b, c);
-        }
-    }
-
-    /**
-     * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-> y <-* z just in
-     * case y is in Sepset({x, z}).
-     */
-    public Map<Triple, Double> findCollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose) {
-        TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
-        Map<Triple, Double> colliders = new HashMap<>();
-
+    public void modifiedR0(Graph graph, SepsetProducer sepsets) {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
@@ -269,79 +148,22 @@ public final class Ccd implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                // Skip triples that are shielded.
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
+                if (!graph.isAdjacentTo(a, c)) {
+                    List<Node> sepset = sepsets.getSepset(a, c);
 
-                List<Node> sepset = sepsetProducer.getSepset(a, c);
-
-                if (sepset == null) continue;
-
-                if (!sepset.contains(b)) {
-                    colliders.put(new Triple(a, b, c), sepsetProducer.getScore());
-
-                    if (verbose) {
-                        TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
+                    if (sepset != null && !sepset.contains(b) && !test.isIndependent(a, c, b)) {
+                        graph.removeEdge(a, b);
+                        graph.removeEdge(c, b);
+                        graph.addDirectedEdge(a, b);
+                        graph.addDirectedEdge(c, b);
+                    } else {
+                        graph.addUnderlineTriple(a, b, c);
                     }
                 }
             }
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
-        }
-        return colliders;
     }
-
-    public List<Triple> findNoncollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose) {
-        TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
-        List<Triple> noncolliders = new ArrayList<>();
-
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                // Skip triples that are shielded.
-                if (graph.isAdjacentTo(a, c)) {
-                    continue;
-                }
-
-                List<Node> sepset = sepsetProducer.getSepset(a, c);
-
-                if (sepset == null) continue;
-
-//                if (sepsetProducer.getScore() < test.getParameter1()) continue;
-
-                if (sepset.contains(b)) {
-                    if (verbose) {
-                        System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
-                    }
-
-                    noncolliders.add(new Triple(a, b, c));
-
-                    TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
-                }
-            }
-        }
-
-        TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
-
-        return noncolliders;
-    }
-
 
     private void stepC(Graph psi, SepsetProducer sepsets, SepsetMap sepsetsFromFas) {
         TetradLogger.getInstance().log("info", "\nStep C");
@@ -376,7 +198,7 @@ public final class Ccd implements GraphSearch {
 
                 //...X is not in sepset<A, Y>...
                 List<Node> sepset = sepsets.getSepset(a, y);
-                if (sepset == null) sepset = sepsetsFromFas.get(a, y);
+//                if (sepset == null && sepsetsFromFas != null) sepset = sepsetsFromFas.get(a, y);
 
                 if (sepset.contains(x)) continue;
 
@@ -464,7 +286,7 @@ public final class Ccd implements GraphSearch {
 
                         setT.add(b);
                         List<Node> sepset = sepsets.getSepset(a, c);
-                        if (sepset == null) sepset = fasSepsets.get(a, c);
+                        if (sepset == null && fasSepsets != null) sepset = fasSepsets.get(a, c);
                         setT.addAll(sepset);
 
                         List<Node> listT = new ArrayList<Node>(setT);
@@ -675,14 +497,6 @@ public final class Ccd implements GraphSearch {
         }
     }
 
-    private void ruleR1(Graph psi) {
-        boolean changed;
-
-        do {
-            changed = rulesR1cycle(psi);
-        } while (changed);
-    }
-
     private List<Node> local(Graph psi, Node z) {
         List<Node> local = new ArrayList<>();
 
@@ -713,31 +527,31 @@ public final class Ccd implements GraphSearch {
         return local;
     }
 
-    private boolean rulesR1cycle(Graph graph) {
-        List<Node> nodes = graph.getNodes();
-        boolean changed = false;
+    private void orientR1(Node B, Graph graph, List<Node> path) {
+        if (path.contains(B)) return;
+        path.add(B);
 
-        for (Node B : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(B);
+        List<Node> adj = graph.getAdjacentNodes(B);
 
-            if (adj.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node A = adj.get(combination[0]);
-                Node C = adj.get(combination[1]);
-
-                //choice gen doesn't do diff orders, so must switch A & C around.
-                changed = changed || ruleR1(A, B, C, graph);
-                changed = changed || ruleR1(C, B, A, graph);
-            }
+        if (adj.size() < 2) {
+            return;
         }
 
-        return changed;
+        ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
+        int[] combination;
+
+        while ((combination = cg.next()) != null) {
+            Node A = adj.get(combination[0]);
+            Node C = adj.get(combination[1]);
+
+            if (ruleR1(A, B, C, graph)) {
+                orientR1(C, graph, path);
+            }
+
+            if (ruleR1(C, B, A, graph)) {
+                orientR1(A, graph, path);
+            }
+        }
     }
 
     private boolean ruleR1(Node a, Node b, Node c, Graph graph) {
@@ -746,15 +560,11 @@ public final class Ccd implements GraphSearch {
         }
 
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
+
+
             if (!graph.isUnderlineTriple(a, b, c)) {
                 return false;
             }
-
-            List<Node> adj1 = graph.getAdjacentNodes(b);
-            List<Node> adj2 = graph.getAdjacentNodes(c);
-//            adj1.removeAll(adj2);
-
-            if (!adj1.isEmpty() && !adj1.equals(adj2)) return false;
 
             graph.removeEdge(b, c);
             graph.addDirectedEdge(b, c);
@@ -765,8 +575,12 @@ public final class Ccd implements GraphSearch {
         return false;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public boolean isApplyR1() {
+        return applyR1;
+    }
+
+    public void setApplyR1(boolean applyR1) {
+        this.applyR1 = applyR1;
     }
 }
 

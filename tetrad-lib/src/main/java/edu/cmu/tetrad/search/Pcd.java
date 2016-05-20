@@ -233,13 +233,7 @@ public class Pcd implements GraphSearch {
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
-//        if (getIndependenceTest() instanceof IndTestFisherZConcatenateResiduals2) {
-//            return search(new FasICov2(getIndependenceTest()), nodes);
-////            return search(new FasICov(getIndependenceTest()), nodes);
-//        }
-
-//        return search(new Fas(getIndependenceTest()), nodes);
-        return search(new Fas(getIndependenceTest()), nodes);
+        return search(new Fas(initialGraph, getIndependenceTest()), nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
@@ -261,7 +255,6 @@ public class Pcd implements GraphSearch {
         }
 
 
-        fas.setInitialGraph(initialGraph);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(verbose);

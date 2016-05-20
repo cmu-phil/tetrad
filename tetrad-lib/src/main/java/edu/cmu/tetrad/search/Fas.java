@@ -52,6 +52,11 @@ public class Fas implements IFas {
     private Graph graph;
 
     /**
+     * The search nodes.
+     */
+    private List<Node> nodes;
+
+    /**
      * The independence test. This should be appropriate to the types
      */
     private IndependenceTest test;
@@ -124,14 +129,17 @@ public class Fas implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public Fas(Graph graph, IndependenceTest test) {
-        this.graph = graph;
+    public Fas(Graph initialGraph, IndependenceTest test) {
+        if (initialGraph != null) {
+            this.initialGraph = new EdgeListGraph(initialGraph);
+        }
         this.test = test;
+        this.nodes = test.getVariables();
     }
 
     public Fas(IndependenceTest test) {
-        this.graph = new EdgeListGraphSingleConnections(test.getVariables());
         this.test = test;
+        this.nodes = test.getVariables();
     }
 
     //==========================PUBLIC METHODS===========================//
@@ -148,7 +156,6 @@ public class Fas implements IFas {
      */
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
-        graph.removeEdges(graph.getEdges());
 
         sepset = new SepsetMap();
         sepset.setReturnEmptyIfNotSet(true);
@@ -160,7 +167,6 @@ public class Fas implements IFas {
         }
 
         Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
-        List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
             adjacencies.put(node, new TreeSet<Node>());
@@ -179,6 +185,8 @@ public class Fas implements IFas {
                 break;
             }
         }
+
+        graph = new EdgeListGraph(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -207,7 +215,6 @@ public class Fas implements IFas {
         if (_depth == -1) {
             _depth = 1000;
         }
-
 
         Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
         List<Node> nodes = graph.getNodes();
@@ -464,10 +471,6 @@ public class Fas implements IFas {
 
     public SepsetMap getSepsets() {
         return sepset;
-    }
-
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
     }
 
     public boolean isVerbose() {

@@ -23,15 +23,14 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
-import org.w3c.dom.Text;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -236,7 +235,7 @@ public class TestPc {
         }
     }
 
-    @Test
+//    @Test
     public void testPcFci() {
 
         String[] algorithms = {"PC", "CPC", "FGS", "FCI", "GFCI", "RFCI", "CFCI"};
@@ -594,11 +593,7 @@ public class TestPc {
                     double ofInterest = maxStat - ofInterestCutoff * (diff);
 
                     for (int i = 1; i < algStats.size(); i++) {
-//                        if (Math.abs(algStats.get(i).getStat() - maxStat) == 0) {//< 0.05) {
-//                            maxAlg += "," + algStats.get(i).getAlgorithm();
-//                        }
-
-                        if (algStats.get(i).getStat() > ofInterest) {
+                        if (algStats.get(i).getStat() >= ofInterest) {
                             maxAlg += "," + algStats.get(i).getAlgorithm();
                         }
                     }
@@ -615,6 +610,244 @@ public class TestPc {
         System.out.println();
 
         System.out.println(table.toString());
+    }
+
+//    @Test
+    public void testPcRegression() {
+
+        String[] algorithms = {"PC", "CPC", "FGS", "FCI", "GFCI", "RFCI", "CFCI", "Regression"};
+        String[] statLabels = {"AP", "AR"};
+
+        int numMeasures = 10;
+        double edgeFactor = 2.0;
+
+        int numRuns = 5;
+        int maxLatents = numMeasures;
+        int jumpLatents = maxLatents / 5;
+        double alpha = 0.1;
+        double penaltyDiscount = 4.0;
+        double ofInterestCutoff = 0.01;
+        int sampleSize = 10000;
+
+        if (maxLatents % jumpLatents != 0) throw new IllegalStateException();
+        int numLatentGroups = maxLatents / jumpLatents + 1;
+
+        double[][][] allAllRet = new double[numLatentGroups][][];
+        int latentIndex = -1;
+
+        for (int numLatents = 0; numLatents <= maxLatents; numLatents += jumpLatents) {
+            latentIndex++;
+
+            System.out.println();
+
+            System.out.println("num latents = " + numLatents);
+            System.out.println("num measures = " + numMeasures);
+            System.out.println("edge factor = " + edgeFactor);
+            System.out.println("alpha = " + alpha);
+            System.out.println("penaltyDiscount = " + penaltyDiscount);
+            System.out.println("num runs = " + numRuns);
+            System.out.println("sample size = " + sampleSize);
+
+            double[][] allRet = new double[algorithms.length][];
+
+            for (int t = 0; t < algorithms.length; t++) {
+                allRet[t] = printStatsPcRegression(algorithms, t, true, numRuns, alpha, penaltyDiscount, maxLatents,
+                        numLatents, edgeFactor, sampleSize);
+            }
+
+            allAllRet[latentIndex] = allRet;
+        }
+
+        System.out.println();
+        System.out.println("=======");
+        System.out.println();
+        System.out.println("Algorithms with max = " + ofInterestCutoff + "*(max - min) <= stat <= max.");
+        System.out.println();
+        System.out.println("AP = Average Adjacency Precision; AR = Average Adjacency Recall");
+        System.out.println();
+        System.out.println("num latents = 0 to " + maxLatents);
+        System.out.println("alpha = " + alpha);
+        System.out.println("penaltyDiscount = " + penaltyDiscount);
+        System.out.println("num runs = " + numRuns);
+        System.out.println();
+        System.out.println("num measures = " + numMeasures);
+        System.out.println("edge factor = " + edgeFactor);
+
+
+        printBestStats(allAllRet, algorithms, statLabels, maxLatents, jumpLatents, ofInterestCutoff);
+    }
+
+    private double[] printStatsPcRegression(String[] algorithms, int t, boolean directed, int numRuns,
+                                            double alpha, double penaltyDiscount,
+                                            int numMeasures, int numLatents,
+                                            double edgeFactor, int sampleSize) {
+        NumberFormat nf = new DecimalFormat("0.00");
+
+        double sumAdjPrecision = 0.0;
+        double sumAdjRecall = 0.0;
+        int count = 0;
+
+        for (int i = 0; i < numRuns; i++) {
+            int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
+
+            List<Node> nodes = new ArrayList<>();
+            List<String> names = new ArrayList<>();
+
+            for (int r = 0; r < numMeasures + numLatents; r++) {
+                String name = "X" + (r + 1);
+                nodes.add(new ContinuousVariable(name));
+                names.add(name);
+            }
+
+            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
+                    10, 10, 10, false);
+            SemPm pm = new SemPm(dag);
+            SemIm im = new SemIm(pm);
+            DataSet data = im.simulateData(sampleSize, false);
+
+//            Graph comparison = dag;
+            Graph comparison = new DagToPag2(dag).convert();
+//            Graph comparison = new Pc(new IndTestDSep(dag)).search();
+
+            IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+
+
+            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(data));
+            score.setPenaltyDiscount(penaltyDiscount);
+            GraphSearch search;
+            Graph out;
+
+            Node target = null;
+
+            for (Node node : nodes) {
+                if (node.getNodeType() == NodeType.MEASURED) {
+                    target = node;
+                    break;
+                }
+            }
+
+            switch (t) {
+                case 0:
+                    search = new Pc(test);
+                    out = search.search();
+                    break;
+                case 1:
+                    search = new Cpc(test);
+                    out = search.search();
+                    break;
+                case 2:
+                    search = new Fgs(score);
+                    out = search.search();
+                    break;
+                case 3:
+                    search = new Fci(test);
+                    out = search.search();
+                    break;
+                case 4:
+                    search = new GFci(score);
+                    out = search.search();
+                    break;
+                case 5:
+                    search = new Rfci(test);
+                    out = search.search();
+                    break;
+                case 6:
+                    search = new Cfci(test);
+                    out = search.search();
+                    break;
+                case 7:
+                    out = getRegressionGraph(data, target);
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+
+            target = out.getNode(target.getName());
+
+            out = trim(out, target);
+
+            long start = System.currentTimeMillis();
+
+            long stop = System.currentTimeMillis();
+
+            long elapsed = stop - start;
+
+            out = GraphUtils.replaceNodes(out, dag.getNodes());
+
+            for (Node node : dag.getNodes()) {
+                if (!out.containsNode(node)) {
+                    out.addNode(node);
+                }
+            }
+
+            int adjTp = 0;
+            int adjFp = 0;
+            int adjFn = 0;
+
+            for (Node node : out.getAdjacentNodes(target)) {
+                if (comparison.isAdjacentTo(target, node)) {
+                    adjTp++;
+                } else {
+                    adjFp++;
+                }
+            }
+
+            for (Node node : dag.getAdjacentNodes(target)) {
+                if (!out.isAdjacentTo(target, node)) {
+                    adjFn++;
+                }
+            }
+
+            double adjPrecision = adjTp / (double) (adjTp + adjFp);
+            double adjRecall = adjTp / (double) (adjTp + adjFn);
+
+            if (!Double.isNaN(adjPrecision)) {
+                sumAdjPrecision += adjPrecision;
+            }
+
+            if (!Double.isNaN(adjRecall)) {
+                sumAdjRecall += adjRecall;
+            }
+
+            count++;
+        }
+
+        double avgAdjPrecision = sumAdjPrecision / (double) count;
+        double avgAdjRecall = sumAdjRecall / (double) count;
+
+        double[] ret = new double[]{
+                avgAdjPrecision,
+                avgAdjRecall,
+        };
+
+        System.out.println();
+
+        System.out.println(algorithms[t] + " adj precision " + nf.format(avgAdjPrecision));
+        System.out.println(algorithms[t] + " adj recall " + nf.format(avgAdjRecall));
+
+        return ret;
+    }
+
+    private Graph trim(Graph out, Node target) {
+        Graph trimmed = new EdgeListGraph(out.getNodes());
+
+        if (!out.containsNode(target)) throw new IllegalArgumentException();
+
+        for (Node node : out.getAdjacentNodes(target)) {
+            trimmed.addUndirectedEdge(target, node);
+        }
+
+        return trimmed;
+    }
+
+    private Graph getRegressionGraph(DataSet data, Node target) {
+        List<Node> rest = new ArrayList<>(data.getVariables());
+        rest.remove(target);
+        RegressionDataset regressionDataset = new RegressionDataset(data);
+        regressionDataset.regress(target, rest);
+        Graph graph = regressionDataset.getGraph();
+        graph = GraphUtils.replaceNodes(graph, data.getVariables());
+        return graph;
     }
 }
 
