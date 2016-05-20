@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.performance;
 
 /**
- * Created by jdramsey on 3/24/16.
+ * Created by jdramsey on 3/24/16. Edited by dmalinsky 5/20/16.
  */
 public class ComparisonParameters {
     private DataType dataType = null;
@@ -21,6 +21,8 @@ public class ComparisonParameters {
     private boolean oneEdgeFaithfulnessAssumed = false;
     private boolean noData = false;
     private boolean dataFromFile = false;
+    private int graphNum = 0;
+    private int trial = 0;
 
     public ComparisonParameters() {
 
@@ -242,14 +244,14 @@ public class ComparisonParameters {
         }
 
 
-        if (dataFile != null) {
-            b.append("\nData File = " + dataFile);
-        }
-
-
-        if (graphFile != null) {
-            b.append("\nGraph File = " + graphFile);
-        }
+//        if (dataFile != null) {
+//            b.append("\nData File = " + dataFile);
+//        }
+//
+//
+//        if (graphFile != null) {
+//            b.append("\nGraph File = " + graphFile);
+//        }
 
         if (oneEdgeFaithfulnessAssumed) {
             b.append("\nOne Edge Faithfulnes = true");
@@ -289,10 +291,30 @@ public class ComparisonParameters {
 
     public boolean isNoData() { return noData; }
 
-    public boolean isdataFromFile() { return dataFromFile; }
+    public boolean isDataFromFile() { return dataFromFile; }
 
-    public void setdataFromFile(boolean dataFromFile) {
+    public void setDataFromFile(boolean dataFromFile) {
         this.dataFromFile = dataFromFile;
+    }
+
+    public void setGraphFile(String graphFile) {
+        this.graphFile = graphFile;
+    }
+
+    public void setGraphNum(int graphNum) {
+        this.graphNum = graphNum;
+    }
+
+    public int getGraphNum() {
+        return graphNum;
+    }
+
+    public void setTrial(int trial) {
+        this.trial = trial;
+    }
+
+    public int getTrial() {
+        return trial;
     }
 
     public enum DataType {Continuous, Discrete}

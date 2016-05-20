@@ -9,22 +9,35 @@ import java.util.List;
  * Runs algorithms on data set (simulation is OK), printing out error statistics.
  *
  * @author jdramsey 2016.03.24
- * modified by dmalinsky 2016.03.28
+ * @author dmalinsky 2016.03.28
  */
 public class ComparisonScript {
 
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
-        params.setDataType(ComparisonParameters.DataType.Continuous);
-        params.setNumVars(20);
-        params.setNumEdges(40);
-        int minSample = 100;
-        int maxSample = 2000;
-        int increment = 100;
-        params.setNoData(false);
-        params.setdataFromFile(false);
+        params.setDataType(ComparisonParameters.DataType.Continuous); // Continuous or Discrete
+        params.setNumVars(20); // number of variables
+        params.setNumEdges(40); // number of edges
+        int minSample = 100; // smallest sample size to generate
+        int maxSample = 2000; // largest sample size to generate
+        int increment = 100; // ramp up sample size by this increment
+        int numTrials = 100; // number of data sets to run for a particular sample size, results will be averaged
 
-        int numTrials = 100;
+        /** If you want to run data sets from file instead of generating random graphs **/
+        params.setDataFromFile(false); // set this to true
+        int maxGraphs = 2; // how many true graphs are in your directory?
+        int dataSetsPerGraph = 3; // how many data sets are there in your directory for each true graph?
+        // remember the path to the data directory is set in Comparison2.java
+        /** ******************** **/
+
+        /** If you want to run on NO DATA, i.e., just run each algorithm directly on some random true graphs **/
+        params.setNoData(false); // set this to true
+        // note that the number of random graphs will be equal to numTrials, set above
+        /** ******************** **/
+
+        if ( params.isDataFromFile() && params.isNoData() ){
+            throw new IllegalArgumentException("Cannot have setDataFromFile and setNoData both be true!");
+        }
 
         ArrayList<Comparison2.TableColumn> tableColumns= new ArrayList<>();
         tableColumns.add(Comparison2.TableColumn.AdjPrec);
@@ -34,15 +47,23 @@ public class ComparisonScript {
         tableColumns.add(Comparison2.TableColumn.SHD);
         tableColumns.add(Comparison2.TableColumn.Elapsed);
 
-        // List<ComparisonResult> results = new ArrayList<>(); //not currently using this
         List<ComparisonParameters.Algorithm> algList = new ArrayList<>();
 
-        // add algorithms to compare to the list algList. comment out those you don't want to consider.
+        /** add algorithms to compare to the list algList. comment out those you don't want to consider. **/
         algList.add(ComparisonParameters.Algorithm.PC);
         algList.add(ComparisonParameters.Algorithm.FGS);
+        algList.add(ComparisonParameters.Algorithm.FCI);
 
-        // currently this runs multiple algs on the same sample size but NOT on the same data!
+        /** User shouldn't need to change anything below this line **/
+        /***********************************************************/
 
+        if( params.isDataFromFile() ){
+            System.out.println("running algorithms on data from input files");
+            minSample = 1;
+            maxSample = maxGraphs;
+            increment = 1;
+            numTrials = dataSetsPerGraph;
+        }
 
         if( params.isNoData() ) {
             System.out.println("running algorithms on NO DATA, only true graph");
@@ -55,7 +76,12 @@ public class ComparisonScript {
         TextTable avgTable = new TextTable((((maxSample - minSample) / increment) + 1) * algList.size() + 2, tableColumns.size() + 1);
         for (int sampleSize = minSample; sampleSize <= maxSample; sampleSize += increment) {
             params.setSampleSize(sampleSize);
-            System.out.println("sample size = " + sampleSize);
+            if(params.isDataFromFile()){
+                params.setGraphNum(sampleSize);
+                System.out.println("graph file number = " + sampleSize);
+            } else System.out.println("sample size = " + sampleSize);
+
+
             for (ComparisonParameters.Algorithm alg : algList) {
                 count++;
                 params.setAlgorithm(alg);
@@ -63,24 +89,26 @@ public class ComparisonScript {
                 params.setScore(ComparisonParameters.ScoreType.SemBic);
                 // params.setOneEdgeFaithfulnessAssumed(false);
 
-                // trials loop start
                 List<ComparisonResult> resultsTrials = new ArrayList<>();
                 for (int trial = 1; trial <= numTrials; trial++) {
-                    System.out.println("trial # = " + trial);
+                    params.setTrial(trial);
                     resultsTrials.add(Comparison2.compare(params));
                 }
                 TextTable tempTable = new TextTable(numTrials + 2, tableColumns.size() + 1);
                 tempTable = Comparison2.summarize(resultsTrials, tableColumns);
 
                 System.out.println(tempTable);
-                //System.out.println(tempTable.getTokenAt(tempTable.getNumRows()-1, tempTable.getNumColumns()-1));
 
                 for (int k = 0; k <= tempTable.getNumColumns() - 1; k++) {
                     avgTable.setToken(count, k, tempTable.getTokenAt(tempTable.getNumRows() - 1, k));
                 }
 
-                avgTable.setToken(count, 0, "N=" + sampleSize + ", alg = " + alg);
-                // results.add(Comparison.compare(params));
+                if(params.isDataFromFile()){
+                    avgTable.setToken(count, 0, "G=" + sampleSize + ", alg = " + alg);
+                } else if(params.isNoData()) {
+                    avgTable.setToken(count, 0, "N=" + 0 + ", alg = " + alg);
+                    } else avgTable.setToken(count, 0, "N=" + sampleSize + ", alg = " + alg);
+
                 } // loop over algorithms in algList
             } // loop over sample sizes
 
@@ -89,9 +117,6 @@ public class ComparisonScript {
                 avgTable.setToken(0, j, tableColumns.get(j).toString());
             }
             System.out.println(avgTable);
-
-
-        //System.out.println(Comparison.summarize(results, tableColumns));
     }
 
     public static void main(String... args) {

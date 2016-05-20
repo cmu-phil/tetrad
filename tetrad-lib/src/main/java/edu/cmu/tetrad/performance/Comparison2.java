@@ -6,11 +6,15 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.io.TabularContinuousDataReader;
+import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetrad.data.DataReader;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -21,11 +25,12 @@ import java.io.*;
  * Does a comparison of algorithm results across algorithm type, sample sizes, etc.
  *
  * @author jdramsey 2016.03.24
+ * @author dmalinsky 2016.05.20
  */
 public class Comparison2 {
 
     /**
-     * Simulates data from model paramerizing the given DAG, and runs the algorithm on that data,
+     * Simulates data from model parameterizing the given DAG, and runs the algorithm on that data,
      * printing out error statistics.
      */
     public static ComparisonResult compare(ComparisonParameters params) {
@@ -36,47 +41,66 @@ public class Comparison2 {
 
         ComparisonResult result = new ComparisonResult(params);
 
-//        if (params.isdataFromFile()) {
-//            int numDataSets = 0;
-//
-//            /** Set path to the data directory **/
-//            String path = "/Users/dmalinsky/Documents/research/data/danexamples";
-//
-//            try {
-//                File dir = new File(path);
-//                File[] files = dir.listFiles();
-//
-//                if (files == null) throw new NullPointerException("No files in " + path);
-//
-//                for (File file : files) {
-//                    boolean attested = false;
-//
-//                    for (int i = 0; i < prefixes.length; i++) {
-//                        if (file.getName().startsWith(prefixes[i]) && !file.getName().endsWith(".graph.txt")
-//                             && !file.getName().contains("tet")) {
-////                            DataReader reader = new DataReader();
-////                            reader.setDelimiter(DelimiterType.TAB);
-////                            reader.setMaxIntegralDiscrete(0);
-////                            allDataSets.get(i).add(reader.parseTabular(file));
-//
-//                            params.setDataFile(file.getName());
-//
-//                            attested = true;
-//                            numDataSets++;
-//                            break;
-//                        }
-//                    }
-//
-//                    if (!attested) {
-//                        System.out.println("Ignoring " + file.getAbsolutePath());
-//                    }
-//                }
-//
-//                System.out.println("# data sets = " + numDataSets);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        if (params.isDataFromFile()) {
+
+            /** Set path to the data directory **/
+            String path = "/Users/dmalinsky/Documents/research/data/danexamples";
+
+
+            File dir = new File(path);
+            File[] files = dir.listFiles();
+
+            if (files == null) throw new NullPointerException("No files in " + path);
+
+            for (File file : files) {
+
+                if (file.getName().startsWith("graph") && file.getName().contains(String.valueOf(params.getGraphNum()))
+                        && file.getName().endsWith(".g.txt")) {
+                    params.setGraphFile(file.getName());
+                    trueDag = GraphUtils.loadGraphTxt(file);
+                    break;
+                }
+
+            }
+
+            String trialGraph = String.valueOf(params.getGraphNum()).concat("-").concat(String.valueOf(params.getTrial())).concat(".dat.txt");
+
+            for (File file : files) {
+
+                if (file.getName().startsWith("graph") && file.getName().endsWith(trialGraph)) {
+
+                    Path dataFile = Paths.get(path.concat("/").concat(file.getName()));
+                    Character delimiter = '\t';
+
+                    if (params.getDataType() == ComparisonParameters.DataType.Continuous) {
+                        try {
+                            edu.cmu.tetrad.io.DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
+                            dataSet = dataReader.readInData();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        params.setDataFile(file.getName());
+                        break;
+
+                    } else {
+                        try {
+                            edu.cmu.tetrad.io.DataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, delimiter);
+                            dataSet = dataReader.readInData();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        params.setDataFile(file.getName());
+                        break;
+
+                    }
+                }
+
+            }
+            System.out.println("current graph file = " + params.getGraphFile());
+            System.out.println("current data set file = " + params.getDataFile());
+        } // end isDataFromFile()
 
 
 
@@ -150,17 +174,16 @@ public class Comparison2 {
             return result;
 
         } else if (params.getDataFile() != null) {
-            dataSet = loadDataFile(params.getDataFile());
-
+//            dataSet = loadDataFile(params.getDataFile());
+            System.out.println("Using data from file... ");
             if (params.getGraphFile() == null) {
                 throw new IllegalArgumentException("True graph file not set.");
+            } else {
+                System.out.println("Using graph from file... ");
+//                trueDag = GraphUtils.loadGraph(File params.getGraphFile());
             }
 
-            trueDag = loadGraphFile(params.getGraphFile());
         } else {
-//            if (params.getDataType() == null) {
-//                throw new IllegalArgumentException("Data type not set.");
-//            }
 
             if (params.getNumVars() == -1) {
                 throw new IllegalArgumentException("Number of variables not set.");
@@ -345,18 +368,18 @@ public class Comparison2 {
         return result;
     }
 
-    private static Graph loadGraphFile(String graphFile) {
-        return null;
-    }
-
-    private static DataSet loadDataFile(String dataFile) {
-//        DataReader reader = new DataReader();
-//        reader.setDelimiter(DelimiterType.TAB);
-//        reader.setMaxIntegralDiscrete(0);
-//        DataSet dataset = reader.parseTabular(new File(dataFile));
-//        return dataset;
-        return null;
-    }
+//    private static Graph loadGraphFile(String graphFile) {
+//        return null;
+//    }
+//
+//    private static DataSet loadDataFile(String dataFile) {
+////        DataReader reader = new DataReader();
+////        reader.setDelimiter(DelimiterType.TAB);
+////        reader.setMaxIntegralDiscrete(0);
+////        DataSet dataset = reader.parseTabular(new File(dataFile));
+////        return dataset;
+//        return null;
+//    }
 
     // changed return type of 'summarize' to TextTable
     public static TextTable summarize(List<ComparisonResult> results, List<TableColumn> tableColumns) {
