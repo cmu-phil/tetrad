@@ -132,7 +132,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(CcdRunner wrapper) {
+    public DagWrapper(CcdRunner2 wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 

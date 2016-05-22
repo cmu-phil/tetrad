@@ -73,16 +73,9 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * @serial Can be null.
      */
     private Graph outGraph;
-
-
-    /**
-     *@serial Can be null.
-     */
-    private LogisticRegression.Result result;
-
-
     private double[] coefficients;
     private Map<String, String> allParamsSettings;
+    private LogisticRegression logisticRegression;
 
     //=========================CONSTRUCTORS===============================//
 
@@ -114,12 +107,6 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         this.dataSet = dataSet;
 
         TetradLogger.getInstance().log("info", "Linear Regression");
-
-        if (result == null) {
-            TetradLogger.getInstance().log("info", "Please double click this regression node to run the regession.");
-        } else {
-            TetradLogger.getInstance().log("result", report);
-        }
     }
 
     /**
@@ -168,11 +155,6 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
             return this.params.getAlpha();
         }
         return -1.0;
-    }
-
-
-    public LogisticRegression.Result getResult(){
-        return this.result;
     }
 
     public SearchParams getParams() {
@@ -275,14 +257,12 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
             targetColumn[j] = (int) dataSet.getDouble(j, targetIndex);
         }
 
-        LogisticRegression logRegression = new LogisticRegression(dataSet);
-        logRegression.setAlpha(alpha);
+        LogisticRegression logisticRegression = new LogisticRegression(dataSet);
+        logisticRegression.setAlpha(alpha);
 
-        LogisticRegression.Result result = logRegression.regress((DiscreteVariable) target, regressorNodes);
-//        this.report = logRegression.getReport();
-        this.result = result;
-        coefficients = result.getCoefs();
-//        outGraph = logRegression.getOutGraph();
+        logisticRegression.regress((DiscreteVariable) target, regressorNodes);
+        coefficients = logisticRegression.getCoefs();
+        this.logisticRegression = logisticRegression;
     }
 
     public boolean supportsKnowledge() {
@@ -398,6 +378,10 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
     @Override
     public Map<String, String> getAllParamSettings() {
         return null;
+    }
+
+    public LogisticRegression getLogisticRegression() {
+        return logisticRegression;
     }
 }
 

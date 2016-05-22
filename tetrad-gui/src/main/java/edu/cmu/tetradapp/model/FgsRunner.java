@@ -44,7 +44,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     static final long serialVersionUID = 23L;
     private LinkedHashMap<String, String> allParamSettings;
 
-    public enum Type {CONTINUOUS, DISCRETE, GRAPH}
+    public enum Type {CONTINUOUS, DISCRETE, MIXED, GRAPH}
 
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
@@ -323,7 +323,9 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                     score.setStructurePrior(structurePrior);
                     fgs = new Fgs2(score);
                 } else {
-                    throw new IllegalStateException("Data set must either be continuous or discrete.");
+                    MixedBicScore gesScore = new MixedBicScore(dataSet);
+                    gesScore.setPenaltyDiscount(penaltyDiscount);
+                    fgs = new Fgs2(gesScore);
                 }
             } else if (model instanceof ICovarianceMatrix) {
                 SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
@@ -441,7 +443,8 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             } else if (dataSet.isDiscrete()) {
                 type = Type.DISCRETE;
             } else {
-                throw new IllegalStateException("Data set must either be continuous or discrete.");
+                type = Type.MIXED;
+//                throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
             type = Type.CONTINUOUS;
@@ -453,7 +456,8 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             } else if (allDiscrete(list)) {
                 type = Type.DISCRETE;
             } else {
-                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
+                type = Type.MIXED;
+//                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }
         } else {
             throw new IllegalArgumentException("Unrecognized data type.");

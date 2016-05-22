@@ -54,7 +54,6 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     private double alpha;
     private double lastP;
     private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
-    private LogisticRegression logisticRegression;
     private RegressionDataset regression;
     private boolean verbose = false;
 
@@ -72,7 +71,6 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         }
 
         this.internalData = internalData;
-        this.logisticRegression = new LogisticRegression(internalData);
         this.regression = new RegressionDataset(internalData);
     }
 
@@ -162,6 +160,8 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         List<Double> pValues = new ArrayList<Double>();
 
         int[] _rows = getNonMissingRows(x, y, z);
+
+        LogisticRegression logisticRegression = new LogisticRegression(internalData);
         logisticRegression.setRows(_rows);
 
         for (Node _x : variablesPerNode.get(x)) {
@@ -173,7 +173,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
                 regressors0.addAll(variablesPerNode.get(_z));
             }
 
-            LogisticRegression.Result result0 = logisticRegression.regress((DiscreteVariable) _x, regressors0);
+            logisticRegression.regress((DiscreteVariable) _x, regressors0);
 
             // With y.
             List<Node> regressors1 = new ArrayList<Node>();
@@ -183,13 +183,10 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
                 regressors1.addAll(variablesPerNode.get(_z));
             }
 
-            LogisticRegression.Result result1 = logisticRegression.regress((DiscreteVariable) _x, regressors1);
+            logisticRegression.regress((DiscreteVariable) _x, regressors1);
 
             // Returns -2 LL
-            double ll0 = result0.getLogLikelihood();
-            double ll1 = result1.getLogLikelihood();
-
-            double chisq = (ll0 - ll1);
+            double chisq = logisticRegression.getChiSq();
             int df = variablesPerNode.get(y).size();
             double p = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(chisq);
             pValues.add(p);

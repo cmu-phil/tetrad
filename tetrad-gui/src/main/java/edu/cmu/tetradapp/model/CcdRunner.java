@@ -21,62 +21,74 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Triple;
+import edu.cmu.tetrad.search.Ccd;
+import edu.cmu.tetrad.search.IndTestType;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Extends AbstractAlgorithmRunner to produce a wrapper for the FCI algorithm.
+ * Extends AbstractAlgorithmRunner to produce a wrapper for the CCD algorithm.
  *
- * @author Joseph Ramsey
+ * @author Frank Wimberly after Shane Harwood's PcRunner
  */
+
 public class CcdRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
 
-    private transient List<PropertyChangeListener> listeners;
-    //    private List<ScoredGraph> topGraphs;
-//    private int index;
-    private transient Ccd2 ccd;
-//    private transient Graph initialGraph;
-
-
-    //=========================CONSTRUCTORS================================//
-
-//    public CcdRunner(DataWrapper dataWrapper, BasicSearchParams params) {
-//        super(dataWrapper, params, null);
-//    }
-//
-//    /**
-//     * Constucts a wrapper for the given EdgeListGraph.
-//     */
-//    public CcdRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-//        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
-//    }
+    //=========================CONSTRUCTORS===============================//
 
     /**
      * Constructs a wrapper for the given DataWrapper. The DataWrapper must
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CcdRunner(DataWrapper dataWrapper, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner(DataWrapper dataWrapper, BasicSearchParams params) {
+        super(dataWrapper, params, null);
+    }
+
+    public CcdRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, BasicSearchParams params) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public CcdRunner(Graph graph, BasicSearchParams params) {
-        super(graph, params);
+    public CcdRunner(DataWrapper dataWrapper, GraphWrapper initialGraph, BasicSearchParams params) {
+        super(dataWrapper, params);
+        setInitialGraph(initialGraph.getGraph());
     }
 
 
+    /**
+     * Constucts a wrapper for the given EdgeListGraph.
+     */
+    public CcdRunner(GraphSource graphWrapper, PcSearchParams params) {
+        super(graphWrapper.getGraph(), params, null);
+    }
+
+
+    /**
+     * Constucts a wrapper for the given EdgeListGraph.
+     */
     public CcdRunner(GraphWrapper graphWrapper, BasicSearchParams params) {
         super(graphWrapper.getGraph(), params);
     }
 
+    /**
+     * Constucts a wrapper for the given EdgeListGraph.
+     */
+    public CcdRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, BasicSearchParams params) {
+        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
+    }
+
+    /**
+     * Constucts a wrapper for the given EdgeListGraph.
+     */
     public CcdRunner(DagWrapper dagWrapper, BasicSearchParams params) {
         super(dagWrapper.getDag(), params);
     }
@@ -86,230 +98,20 @@ public class CcdRunner extends AbstractAlgorithmRunner
     }
 
     public CcdRunner(IndependenceFactsModel model, BasicSearchParams params) {
-        super(model, params, null); 
+        super(model, params, null);
     }
 
     public CcdRunner(IndependenceFactsModel model, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
-//    public CcdRunner(DataWrapper dataWrapper, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-    //        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
-//    }
-
-    public CcdRunner(DataWrapper dataWrapper, BasicSearchParams params) {
-        super(new MergeDatasetsWrapper(dataWrapper), params, null);
-    }
-
-//    public CcdRunner(DataWrapper dataWrapper, GraphSource graph, BasicSearchParams params) {
-//        super(new MergeDatasetsWrapper(dataWrapper), params, null);
-////        if (graph == dataWrapper) throw new IllegalArgumentException();
-//        if (graph == this) throw new IllegalArgumentException();
-//        this.initialGraph = graph.getGraph();
-//    }
-//
-//    public CcdRunner(DataWrapper dataWrapper, GraphSource graph, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-//        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
-//        if (graph == this) throw new IllegalArgumentException();
-//        this.initialGraph = graph.getGraph();
-//    }
-
-    public CcdRunner(DataWrapper dataWrapper1,
-                      DataWrapper dataWrapper2,
-                      BasicSearchParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2),
-                params, null);
-
-    }
-
-    public CcdRunner(DataWrapper dataWrapper1,
-                      DataWrapper dataWrapper2,
-                      DataWrapper dataWrapper3,
-                      BasicSearchParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3
-                ),
-                params, null);
-
-    }
-
-    public CcdRunner(DataWrapper dataWrapper1,
-                      DataWrapper dataWrapper2,
-                      DataWrapper dataWrapper3,
-                      DataWrapper dataWrapper4,
-                      BasicSearchParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4
-                ),
-                params, null);
-
-    }
-
-    public CcdRunner(DataWrapper dataWrapper1,
-                      DataWrapper dataWrapper2,
-                      DataWrapper dataWrapper3,
-                      DataWrapper dataWrapper4,
-                      DataWrapper dataWrapper5,
-                      BasicSearchParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5
-                ),
-                params, null);
-
-    }
-
-    public CcdRunner(DataWrapper dataWrapper1,
-                      DataWrapper dataWrapper2,
-                      DataWrapper dataWrapper3,
-                      DataWrapper dataWrapper4,
-                      DataWrapper dataWrapper5,
-                      DataWrapper dataWrapper6,
-                      BasicSearchParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6
-                ),
-                params, null);
-
-    }
-
-    public CcdRunner(DataWrapper dataWrapper1,
-                      DataWrapper dataWrapper2,
-                      DataWrapper dataWrapper3,
-                      DataWrapper dataWrapper4,
-                      DataWrapper dataWrapper5,
-                      DataWrapper dataWrapper6,
-                      DataWrapper dataWrapper7,
-                      BasicSearchParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7
-                ),
-                params, null);
-
-    }
-
-    public CcdRunner(DataWrapper dataWrapper1,
-                      DataWrapper dataWrapper2,
-                      DataWrapper dataWrapper3,
-                      DataWrapper dataWrapper4,
-                      DataWrapper dataWrapper5,
-                      DataWrapper dataWrapper6,
-                      DataWrapper dataWrapper7,
-                      DataWrapper dataWrapper8,
-                      BasicSearchParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8
-                ),
-                params, null);
-
-    }
-
-    public CcdRunner(DataWrapper dataWrapper1,
-                      DataWrapper dataWrapper2,
-                      DataWrapper dataWrapper3,
-                      DataWrapper dataWrapper4,
-                      DataWrapper dataWrapper5,
-                      DataWrapper dataWrapper6,
-                      DataWrapper dataWrapper7,
-                      DataWrapper dataWrapper8,
-                      DataWrapper dataWrapper9,
-                      BasicSearchParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9
-                ),
-                params, null);
-
-    }
-
-    public CcdRunner(DataWrapper dataWrapper1,
-                      DataWrapper dataWrapper2,
-                      DataWrapper dataWrapper3,
-                      DataWrapper dataWrapper4,
-                      DataWrapper dataWrapper5,
-                      DataWrapper dataWrapper6,
-                      DataWrapper dataWrapper7,
-                      DataWrapper dataWrapper8,
-                      DataWrapper dataWrapper9,
-                      DataWrapper dataWrapper10,
-                      BasicSearchParams params) {
-
-        super(new MergeDatasetsWrapper(
-                        dataWrapper1,
-                        dataWrapper2,
-                        dataWrapper3,
-                        dataWrapper4,
-                        dataWrapper5,
-                        dataWrapper6,
-                        dataWrapper7,
-                        dataWrapper8,
-                        dataWrapper9,
-                        dataWrapper10
-                ),
-                params, null);
-
-    }
-
-    public CcdRunner(GraphWrapper graphWrapper, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
-    }
-
-//    public CcdRunner(GraphWrapper graphWrapper, BasicSearchParams params) {
-//        super(graphWrapper.getGraph(), params, null);
-//    }
-
-
-    /**
+	/**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
      */
     public static CcdRunner serializableInstance() {
-        return new CcdRunner(Dag.serializableInstance(),
-                BasicSearchParams.serializableInstance().serializableInstance());
+        return new CcdRunner(DataWrapper.serializableInstance(), BasicSearchParams.serializableInstance());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -318,198 +120,21 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-//    public void execute() {
-//        IKnowledge knowledge = getParams().getKnowledge();
-//        SearchParams searchParams = getParams();
-//
-//        GFciIndTestParams indTestParams = (GFciIndTestParams) searchParams.getIndTestParams();
-//
-//        Graph graph;
-//
-//        if (getIndependenceTest() instanceof IndTestDSep) {
-//            GFci gfci = new GFci(getIndependenceTest());
-//            graph = gfci.search();
-//        } else {
-//            GFci fci = new GFci(getIndependenceTest());
-//            fci.setKnowledge(knowledge);
-//            fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
-//            fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
-//            fci.setMaxIndegree(indTestParams.getDepth());
-//            double penaltyDiscount = indTestParams.getPenaltyDiscount();
-//
-//            fci.setPenaltyDiscount(penaltyDiscount);
-//            fci.setSamplePrior(indTestParams.getSamplePrior());
-//            fci.setStructurePrior(indTestParams.getStructurePrior());
-//            fci.setCompleteRuleSetUsed(false);
-//            fci.setFaithfulnessAssumed(indTestParams.isFaithfulnessAssumed());
-//            graph = fci.search();
-//        }
-//
-//        if (getSourceGraph() != null) {
-//            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-//        } else if (knowledge.isDefaultToKnowledgeLayout()) {
-//            SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-//        } else {
-//            GraphUtils.circleLayout(graph, 200, 200, 150);
-//        }
-//
-//        setResultGraph(graph);
-//    }
-
-    /**
-     * Executes the algorithm, producing (at least) a result workbench. Must be
-     * implemented in the extending class.
-     */
     public void execute() {
-//        IKnowledge knowledge = getParams().getKnowledge();
-
-        Object model = getDataModel();
-
-        if (model == null && getSourceGraph() != null) {
-            model = getSourceGraph();
-        }
-
-        if (model == null) {
-            throw new RuntimeException("Data source is unspecified. You may need to double click all your data boxes, \n" +
-                    "then click Save, and then right click on them and select Propagate Downstream. \n" +
-                    "The issue is that we use a seed to simulate from IM's, so your data is not saved to \n" +
-                    "file when you save the session. It can, however, be recreated from the saved seed.");
-        }
-
-        BasicIndTestParams indTestParams = (BasicIndTestParams) getParams().getIndTestParams();
-        double penaltyDiscount = 2.0;//indTestParams.getPenaltyDiscount();
-
-        if (model instanceof Graph) {
-            GraphScore gesScore = new GraphScore((Graph) model);
-            ccd = new Ccd2(gesScore);
-//            ccd.setKnowledge(getParams().getKnowledge());
-            ccd.setVerbose(true);
-        } else {
-
-            if (model instanceof DataSet) {
-                DataSet dataSet = (DataSet) model;
-
-                if (dataSet.isContinuous()) {
-                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
-//                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrixOnTheFly((DataSet) model));
-//                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrixOnTheFly((DataSet) model));
-//                    SvrScore gesScore = new SvrScore((DataSet) model);
-                    gesScore.setPenaltyDiscount(penaltyDiscount);
-                    System.out.println("Score done");
-                    ccd = new Ccd2(gesScore);
-                }
-//                else if (dataSet.isDiscrete()) {
-//                    double samplePrior = ((BasicSearchParams) getParams()).getSamplePrior();
-//                    double structurePrior = ((BasicSearchParams) getParams()).getStructurePrior();
-//                    BDeuScore score = new BDeuScore(dataSet);
-//                    score.setSamplePrior(samplePrior);
-//                    score.setStructurePrior(structurePrior);
-//                    gfci = new GFci(score);
-//                }
-                else {
-                    throw new IllegalStateException("Data set must either be continuous or discrete.");
-                }
-            } else if (model instanceof ICovarianceMatrix) {
-                SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
-                gesScore.setPenaltyDiscount(penaltyDiscount);
-                gesScore.setPenaltyDiscount(penaltyDiscount);
-                ccd = new Ccd2(gesScore);
-            } else if (model instanceof DataModelList) {
-                DataModelList list = (DataModelList) model;
-
-                for (DataModel dataModel : list) {
-                    if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
-                        throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
-                                "covariance matrices, or else all discrete data sets, or else a single initialGraph.");
-                    }
-                }
-
-                if (list.size() != 1) {
-                    throw new IllegalArgumentException("FGS takes exactly one data set, covariance matrix, or initialGraph " +
-                            "as input. For multiple data sets as input, use IMaGES.");
-                }
-
-//                BasicSearchParams BasicSearchParams = (BasicSearchParams) getParams();
-//                FgsIndTestParams indTestParams = (FgsIndTestParams) BasicSearchParams.getIndTestParams();
-
-                if (allContinuous(list)) {
-                    double penalty = 4;//indTestParams.getPenaltyDiscount();
-
-                    SemBicScoreImages fgsScore = new SemBicScoreImages(list);
-                    fgsScore.setPenaltyDiscount(penalty);
-                    ccd = new Ccd2(fgsScore);
-                }
-//                else if (allDiscrete(list)) {
-//                    double structurePrior = ((BasicSearchParams) getParams()).getStructurePrior();
-//                    double samplePrior = ((BasicSearchParams) getParams()).getSamplePrior();
-//
-//                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
-//                    fgsScore.setSamplePrior(samplePrior);
-//                    fgsScore.setStructurePrior(structurePrior);
-//
-//                    gfci = new GFci(fgsScore);
-//                }
-                else {
-                    throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
-                }
-            } else {
-                System.out.println("No viable input.");
-            }
-        }
-
-//        gfci.setInitialGraph(initialGraph);
-//        gfci.setKnowledge(getParams().getKnowledge());
-//        gfci.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-        ccd.setVerbose(true);
-//        gfci.setHeuristicSpeedup(true);
-//        gfci.setDepth(3);
-//        ccd.setFaithfulnessAssumed(indTestParams.isFaithfulnessAssumed());
+        Ccd ccd = new Ccd(getIndependenceTest());
+        ccd.setDepth(getParams().getIndTestParams().getDepth());
+        ccd.setKnowledge(getParams().getKnowledge());
         Graph graph = ccd.search();
+
+        setResultGraph(graph);
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         }
-//        else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-//            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
-//        } else
-        {
+        else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        setResultGraph(graph);
-
-//        this.topGraphs = new ArrayList<>(gfci.getTopGraphs());
-//
-//        if (topGraphs.isEmpty()) {
-//
-//            topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
-//        }
-//
-//        setIndex(topGraphs.size() - 1);
-    }
-
-    private boolean allContinuous(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
-            if (dataModel instanceof DataSet) {
-                if (!((DataSet) dataModel).isContinuous() || dataModel instanceof ICovarianceMatrix) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private boolean allDiscrete(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
-            if (dataModel instanceof DataSet) {
-                if (!((DataSet) dataModel).isDiscrete()) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     public IndependenceTest getIndependenceTest() {
@@ -519,58 +144,44 @@ public class CcdRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        SearchParams params = getParams();
-        IndTestType testType = null;
-
-//        if (getParams() instanceof BasicSearchParams) {
-            BasicSearchParams _params = (BasicSearchParams) params;
-            testType = _params.getIndTestType();
-//        } 
-//        else {
-//            BasicSearchParams _params = (BasicSearchParams) params;
-//            testType = _params.getIndTestType();
-//        }
-
-        return new IndTestChooser().getTest(dataModel, params, testType);
+        IndTestType testType = (getParams()).getIndTestType();
+        return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
     public Graph getGraph() {
         return getResultGraph();
     }
 
+
     /**
-     * @return the names of the triple classifications. Coordinates with
+     * @return the names of the triple classifications. Coordinates with <code>getTriplesList</code>
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<String>();
-//        names.add("Definite Colliders");
-//        names.add("Definite Noncolliders");
-//        names.add("Ambiguous Triples");
         names.add("Underlines");
         names.add("Dotted Underlines");
         return names;
     }
 
     /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given
+     * node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
         Graph graph = getGraph();
         triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
-//        triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         return triplesList;
     }
-
 
     @Override
     public String getAlgorithmName() {
         return "CCD";
     }
 }
+
+
 
 
 

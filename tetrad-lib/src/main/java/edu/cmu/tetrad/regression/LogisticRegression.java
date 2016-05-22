@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -36,6 +35,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.Math.sqrt;
 
 /**
  * Implements a logistic regression algorithm based on a Javascript
@@ -57,9 +58,6 @@ public class LogisticRegression implements TetradSerializable {
      */
     private DataSet dataSet;
 
-    /**
-     * The default alpha level which may be specified otherwise in the GUI
-     */
     private double alpha = 0.05;
 
     /**
@@ -68,6 +66,23 @@ public class LogisticRegression implements TetradSerializable {
     private double[][] dataCols;
 
     private int[] rows;
+
+    private boolean calculateAll = true;
+
+    private String targetName;
+
+    private List<String> regressorNames;
+    private int ny0;
+    private int ny1;
+    private double chiSq;
+    private int numRegressors;
+    private int[] target;
+    private double[] coefs;
+    private double[] stdErrs;
+    private double[] probs;
+    private double intercept;
+    private double likelihood;
+    private double[] xMeans;
 
     /**
      * A mixed data set. The targets of regresson must be binary. Regressors must be continuous or binary.
@@ -80,6 +95,9 @@ public class LogisticRegression implements TetradSerializable {
         for (int i = 0; i < getRows().length; i++) getRows()[i] = i;
     }
 
+    public LogisticRegression() {
+    }
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
@@ -90,7 +108,7 @@ public class LogisticRegression implements TetradSerializable {
     /**
      * x must be binary; regressors must be continuous or binary.
      */
-    public Result regress(DiscreteVariable x, List<Node> regressors) {
+    public void regress(DiscreteVariable x, List<Node> regressors) {
         if (!binary(x)) {
             throw new IllegalArgumentException("Target must be binary.");
         }
@@ -112,6 +130,10 @@ public class LogisticRegression implements TetradSerializable {
             }
         }
 
+        for (int j = 0; j < regressors.size(); j++) {
+            standardize(_regressors[j]);
+        }
+
         int[] target = new int[getRows().length];
         int col = dataSet.getColumn(dataSet.getVariable(x.getName()));
 
@@ -119,13 +141,12 @@ public class LogisticRegression implements TetradSerializable {
             target[i] = dataSet.getInt(getRows()[i], col);
         }
 
-        List<String> regressorNames = new ArrayList<String>();
+        this.targetName = x.getName();
+        this.regressorNames = new ArrayList<>();
 
         for (Node node : regressors) {
             regressorNames.add(node.getName());
         }
-
-        return regress(target, x.getName(), _regressors, regressorNames);
     }
 
     private boolean binary(Node x) {
@@ -140,8 +161,7 @@ public class LogisticRegression implements TetradSerializable {
      * <p>
      * This implements an iterative search.
      */
-    private Result regress(int[] target, String targetName, double[][] regressors, List<String> regressorNames) {
-
+    public void regress(int[] target, double[][] regressors) {
         double[][] x;
         double[] c1;
 
@@ -207,13 +227,12 @@ public class LogisticRegression implements TetradSerializable {
 
         //report = report + ("Iteration history...\n");
 
-        double[] par = new double[numRegressors + 1];
-        double[] parStdErr = new double[numRegressors + 1];
-        double[] coefficients;
+        double[] coefficients = new double[numRegressors + 1];
+        double[] coefStdErr = new double[numRegressors + 1];
 
-        par[0] = Math.log((double) ny1 / (double) ny0);
+        coefficients[0] = Math.log((double) ny1 / (double) ny0);
         for (int j = 1; j <= numRegressors; j++) {
-            par[j] = 0.0;
+            coefficients[j] = 0.0;
         }
 
         double[][] arr = new double[numRegressors + 1][numRegressors + 2];
@@ -238,10 +257,10 @@ public class LogisticRegression implements TetradSerializable {
 
             for (int i = 0; i < nc; i++) {
                 double q;
-                double v = par[0];
+                double v = coefficients[0];
 
                 for (int j = 1; j <= numRegressors; j++) {
-                    v += par[j] * x[j][i];
+                    v += coefficients[j] * x[j][i];
                 }
 
                 if (v > 15.0) {
@@ -305,50 +324,68 @@ public class LogisticRegression implements TetradSerializable {
             }
 
             for (int j = 0; j <= numRegressors; j++) {
-                par[j] += arr[j][numRegressors + 1];
+                coefficients[j] += arr[j][numRegressors + 1];
             }
         }
-
-        //report = report + (" (Converged) \n");
-
-//        EdgeListGraph outgraph = new EdgeListGraph();
-//        Node targNode = new GraphNode(targetName);
-//        outgraph.addNode(targNode);
 
         double chiSq = llN - ll;
 
         //Indicates whether each coefficient is significant at the alpha level.
-        String[] sigMarker = new String[numRegressors];
-        double[] pValues = new double[numRegressors + 1];
-        double[] zScores = new double[numRegressors + 1];
+        double[] pValues = null;
 
-        for (int j = 1; j <= numRegressors; j++) {
-            par[j] = par[j] / xStdDevs[j];
-            parStdErr[j] = Math.sqrt(arr[j][j]) / xStdDevs[j];
-            par[0] = par[0] - par[j] * xMeans[j];
-            double zScore = par[j] / parStdErr[j];
-            double prob = norm(Math.abs(zScore));
+        if (calculateAll) {
+            pValues = new double[numRegressors + 1];
 
-            pValues[j] = prob;
-            zScores[j] = zScore;
+            for (int j = 1; j <= numRegressors; j++) {
+                coefficients[j] = coefficients[j] / xStdDevs[j];
+                coefStdErr[j] = Math.sqrt(Math.abs(arr[j][j])) / xStdDevs[j];
+                coefficients[0] = coefficients[0] - coefficients[j] * xMeans[j];
+                double zScore = coefficients[j] / coefStdErr[j];
+                double prob = norm(Math.abs(zScore));
+
+                pValues[j] = prob;
+            }
+
+            coefStdErr[0] = Math.sqrt(arr[0][0]);
+            double zScore = coefficients[0] / coefStdErr[0];
+            pValues[0] = norm(zScore);
+//            zScores[0] = zScore;
         }
 
-        parStdErr[0] = Math.sqrt(arr[0][0]);
-        double zScore = par[0] / parStdErr[0];
-        pValues[0] = norm(zScore);
-        zScores[0] = zScore;
+        double intercept = coefficients[0];
 
-        double intercept = par[0];
+        // Calculating this explicitly. Should check if it's equal to par[0].
+        double likelihood = getLikelihood(numCases, regressors, coefficients);
 
-        coefficients = par;
-
-        return new Result(targetName,
-                regressorNames, xMeans, xStdDevs, numRegressors, ny0, ny1, coefficients,
-                parStdErr, pValues, intercept, ll, sigMarker, chiSq, alpha
-        );
+        this.ny0 = ny0;
+        this.ny1 = ny1;
+        this.chiSq = chiSq;
+        this.numRegressors = numRegressors;
+        this.target = target;
+        this.chiSq = chiSq;
+        this.coefs = coefficients;
+        this.stdErrs = coefStdErr;
+        this.probs = pValues;
+        this.intercept = intercept;
+        this.likelihood = likelihood;
+        this.xMeans = xMeans;
     }
 
-    private double norm(double z) {
+    private double getLikelihood(int numCases, double[][] regressors, double[] coefficients) {
+        double e = coefficients[0];
+
+        for (int i = 0; i < numCases; i++) {
+            for (int j = 0; j < regressors.length; j++) {
+                e += coefficients[j + 1] * regressors[j][i];
+            }
+
+            likelihood += i * e - Math.log(1.0 + Math.exp(e));
+        }
+
+        return likelihood;
+    }
+
+    private static double norm(double z) {
         double q = z * z;
         double piOver2 = Math.PI / 2.0;
 
@@ -361,6 +398,9 @@ public class LogisticRegression implements TetradSerializable {
 
     }
 
+    /**
+     * The default alpha level which may be specified otherwise in the GUI
+     */
     /**
      * @return the alpha level.
      */
@@ -386,203 +426,33 @@ public class LogisticRegression implements TetradSerializable {
         this.rows = rows;
     }
 
-    public static class Result implements TetradSerializable {
-        static final long serialVersionUID = 23L;
-        private final String[] sigMarker;
-        private final double chiSq;
-        private final double alpha;
-        private List<String> regressorNames;
-        private String target;
-        private int ny0;
-        private int ny1;
-        private int numRegressors;
-        private double[] coefs;
-        private double[] stdErrs;
-        private double[] probs;
-        private double[] xMeans;
-        private double[] xStdDevs;
-        private double intercept;
-        private double logLikelihood;
+    public String toString() {
+        NumberFormat nf = new DecimalFormat("0.0000");
+        String report = "";
 
+        report = report + (ny0 + " cases have " + target + " = 0; " + ny1 +
+                " cases have " + target + " = 1.\n");
 
-        /**
-         * Constructs a new LinRegrResult.
-         *
-         * @param ny0           the number of cases with target = 0.
-         * @param ny1           the number of cases with target = 1.
-         * @param numRegressors the number of regressors
-         * @param coefs         the array of regression coefficients.
-         * @param stdErrs       the array of std errors of the coefficients.
-         * @param probs         the array of P-values for the regression
-         *                      coefficients.
-         */
-        public Result(String target, List<String> regressorNames, double[] xMeans, double[] xStdDevs,
-                      int numRegressors, int ny0, int ny1, double[] coefs,
-                      double[] stdErrs, double[] probs, double intercept, double logLikelihood,
-                      String[] sigmMarker, double chiSq, double alpha) {
+        report = report + ("Overall Model Fit...\n");
+        report = report + ("  Chi Square = " + nf.format(chiSq) + "; df = " +
+                numRegressors + "; " + "p = " +
+                nf.format(new ChiSquaredDistribution(numRegressors).cumulativeProbability(chiSq)) + "\n");
+        report = report + ("\nCoefficients and Standard Errors...\n");
+        report = report + ("\tCoeff.\tStdErr\tprob.\tsig.");
 
+        report += "\n";
 
-            if (regressorNames.size() != numRegressors) {
-                throw new IllegalArgumentException();
-            }
-
-            if (coefs.length != numRegressors + 1) {
-                throw new IllegalArgumentException();
-            }
-
-            if (stdErrs.length != numRegressors + 1) {
-                throw new IllegalArgumentException();
-            }
-
-            if (probs.length != numRegressors + 1) {
-                throw new IllegalArgumentException();
-            }
-
-            if (xMeans.length != numRegressors + 1) {
-                throw new IllegalArgumentException();
-            }
-
-            if (xStdDevs.length != numRegressors + 1) {
-                throw new IllegalArgumentException();
-            }
-            if (target == null) {
-                throw new NullPointerException();
-            }
-
-            this.intercept = intercept;
-            this.target = target;
-            this.xMeans = xMeans;
-            this.xStdDevs = xStdDevs;
-            this.regressorNames = regressorNames;
-            this.numRegressors = numRegressors;
-            this.ny0 = ny0;
-            this.ny1 = ny1;
-            this.coefs = coefs;
-            this.stdErrs = stdErrs;
-            this.probs = probs;
-            this.logLikelihood = logLikelihood;
-            this.sigMarker = sigmMarker;
-            this.chiSq = chiSq;
-            this.alpha = alpha;
+        for (int i = 0; i < regressorNames.size(); i++) {
+            report += "\n" + regressorNames.get(i) +
+                    "\t" + nf.format(coefs[i + 1]) +
+                    "\t" + nf.format(stdErrs[i + 1]) +
+                    "\t" + nf.format(probs[i + 1]) +
+                    "\t" + (probs[i + 1] < alpha ? "*" : "");
         }
 
-        /**
-         * Generates a simple exemplar of this class to test serialization.
-         */
-        public static Result serializableInstance() {
-            return new Result("X1", new ArrayList<String>(), new double[1], new double[1], 0, 0, 0,
-                    new double[1], new double[1], new double[1], 1.5, 0.0, new String[0], 0.0, 0.05);
-        }
+        report = report + ("\n\nIntercept = " + nf.format(intercept) + "\n");
 
-        /**
-         * The variables.
-         */
-        public List<String> getRegressorNames() {
-            return regressorNames;
-        }
-
-        /**
-         * The target.
-         */
-        public String getTarget() {
-            return target;
-        }
-
-        /**
-         * The number of data points with target = 0.
-         */
-        public int getNy0() {
-            return ny0;
-        }
-
-        /**
-         * The number of data points with target = 1.
-         */
-        public int getNy1() {
-            return ny1;
-        }
-
-        /**
-         * The number of regressors.
-         */
-        public int getNumRegressors() {
-            return numRegressors;
-        }
-
-        /**
-         * The array of regression coefficients.
-         */
-        public double[] getCoefs() {
-            return coefs;
-        }
-
-        /**
-         * The array of standard errors for the regression coefficients.
-         */
-        public double[] getStdErrs() {
-            return stdErrs;
-        }
-
-        /**
-         * The array of coefP-values for the regression coefficients.
-         */
-        public double[] getProbs() {
-            return probs;
-        }
-
-        /**
-         * THe array of means.
-         */
-        public double[] getxMeans() {
-            return xMeans;
-        }
-
-        /**
-         * The array of standard devs.
-         */
-        public double[] getxStdDevs() {
-            return xStdDevs;
-        }
-
-        public double getIntercept() {
-            return intercept;
-        }
-
-        /**
-         * The log likelihood of the regression
-         */
-        public double getLogLikelihood() {
-            return logLikelihood;
-        }
-
-        public String toString() {
-            NumberFormat nf = new DecimalFormat("0.0000");
-            String report = "";
-
-            report = report + (ny0 + " cases have " + target + " = 0; " + ny1 +
-                    " cases have " + target + " = 1.\n");
-
-            report = report + ("Overall Model Fit...\n");
-            report = report + ("  Chi Square = " + nf.format(chiSq) + "; df = " +
-                    numRegressors + "; " + "p = " +
-                    nf.format(new ChiSquaredDistribution(numRegressors).cumulativeProbability(chiSq)) + "\n");
-            report = report + ("\nCoefficients and Standard Errors...\n");
-            report = report + ("\tCoeff.\tStdErr\tprob.\tsig.");
-
-            report += "\n";
-
-            for (int i = 0; i < regressorNames.size(); i++) {
-                report += "\n" + regressorNames.get(i) +
-                        "\t" + nf.format(coefs[i + 1]) +
-                        "\t" + nf.format(stdErrs[i + 1]) +
-                        "\t" + nf.format(probs[i + 1]) +
-                        "\t" + (probs[i + 1] < alpha ? "*" : "");
-            }
-
-            report = report + ("\n\nIntercept = " + nf.format(intercept) + "\n");
-
-            return report;
-        }
+        return report;
     }
 
     //================================== Public Methods =======================================//
@@ -603,6 +473,137 @@ public class LogisticRegression implements TetradSerializable {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
+    }
+
+    private void standardize(double[] data) {
+        double sum = 0.0;
+
+        for (double d : data) {
+            sum += d;
+        }
+
+        double mean = sum / data.length;
+
+        for (int i = 0; i < data.length; i++) {
+            data[i] = data[i] - mean;
+        }
+
+        double var = 0.0;
+
+        for (double d : data) {
+            var += d * d;
+        }
+
+        var /= (data.length);
+        double sd = sqrt(var);
+
+        for (int i = 0; i < data.length; i++) {
+            data[i] /= sd;
+        }
+    }
+
+    public boolean isCalculateAll() {
+        return calculateAll;
+    }
+
+    public void setCalculateAll(boolean calculateAll) {
+        this.calculateAll = calculateAll;
+    }
+
+    public String getTargetName() {
+        return targetName;
+    }
+
+    public void setTargetName(String targetName) {
+        this.targetName = targetName;
+    }
+
+    public List<String> getRegressorNames() {
+        return regressorNames;
+    }
+
+    public void setRegressorNames(List<String> regressorNames) {
+        this.regressorNames = regressorNames;
+    }
+
+    public int getNy0() {
+        return ny0;
+    }
+
+    public void setNy0(int ny0) {
+        this.ny0 = ny0;
+    }
+
+    public int getNy1() {
+        return ny1;
+    }
+
+    public void setNy1(int ny1) {
+        this.ny1 = ny1;
+    }
+
+    public double getChiSq() {
+        return chiSq;
+    }
+
+    public void setChiSq(double chiSq) {
+        this.chiSq = chiSq;
+    }
+
+    public int getNumRegressors() {
+        return numRegressors;
+    }
+
+    public void setNumRegressors(int numRegressors) {
+        this.numRegressors = numRegressors;
+    }
+
+    public double[] getCoefs() {
+        return coefs;
+    }
+
+    public void setCoefs(double[] coefs) {
+        this.coefs = coefs;
+    }
+
+    public double[] getStdErrs() {
+        return stdErrs;
+    }
+
+    public void setStdErrs(double[] stdErrs) {
+        this.stdErrs = stdErrs;
+    }
+
+    public double[] getProbs() {
+        return probs;
+    }
+
+    public void setProbs(double[] probs) {
+        this.probs = probs;
+    }
+
+    public double getIntercept() {
+        return intercept;
+    }
+
+    public void setIntercept(double intercept) {
+        this.intercept = intercept;
+    }
+
+    public double getLikelihood() {
+        return likelihood;
+    }
+
+    public void setLikelihood(double likelihood) {
+        this.likelihood = likelihood;
+    }
+
+    public double[] getxMeans() {
+        return xMeans;
+    }
+
+    public void setxMeans(double[] xMeans) {
+        this.xMeans = xMeans;
     }
 }
 
