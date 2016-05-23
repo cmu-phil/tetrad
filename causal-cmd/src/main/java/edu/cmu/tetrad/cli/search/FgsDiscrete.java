@@ -90,7 +90,7 @@ public class FgsDiscrete {
         MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited). Default is -1.");
 
         // search options
-        MAIN_OPTIONS.addOption(null, "heuristic-speedup", false, "Heuristic speedup. Default is false.");
+        MAIN_OPTIONS.addOption(null, "disable-heuristic-speedup", false, "Heuristic speedup. Default is false.");
 
         // filter options
         MAIN_OPTIONS.addOption(null, "knowledge", true, "A file containing prior knowledge.");
@@ -382,7 +382,7 @@ public class FgsDiscrete {
             structurePrior = Args.getDouble(cmd.getOptionValue("structure-prior", "1.0"));
             samplePrior = Args.getDouble(cmd.getOptionValue("sample-prior", "1.0"));
             depth = Args.getIntegerMin(cmd.getOptionValue("depth", "-1"), -1);
-            heuristicSpeedup = cmd.hasOption("heuristic-speedup");
+            heuristicSpeedup = !cmd.hasOption("disable-heuristic-speedup");
             graphML = cmd.hasOption("graphml");
             verbose = cmd.hasOption("verbose");
             numOfThreads = Args.getInteger(cmd.getOptionValue("thread", Integer.toString(Runtime.getRuntime().availableProcessors())));
