@@ -90,7 +90,7 @@ public class FgsDiscrete {
         MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited). Default is -1.");
 
         // search options
-        MAIN_OPTIONS.addOption(null, "heuristic-speedup", false, "Heuristic speedup. Default is false.");
+        MAIN_OPTIONS.addOption(null, "disable-heuristic-speedup", false, "Heuristic speedup. Default is false.");
 
         // filter options
         MAIN_OPTIONS.addOption(null, "knowledge", true, "A file containing prior knowledge.");
@@ -269,8 +269,8 @@ public class FgsDiscrete {
         fmt.format("%n");
 
         fmt.format("Data Validations:%n");
-        fmt.format("skip unique variable name check = %s%n", skipUniqueVarName);
-        fmt.format("skip limit number of category check = %s%n", skipCategoryLimit);
+        fmt.format("ensure variable names are unique = %s%n", !skipUniqueVarName);
+        fmt.format("limit number of categories (%d) = %s%n", CATEGORY_LIMIT, !skipCategoryLimit);
         fmt.format("%n");
 
         return fmt.toString();
@@ -382,7 +382,7 @@ public class FgsDiscrete {
             structurePrior = Args.getDouble(cmd.getOptionValue("structure-prior", "1.0"));
             samplePrior = Args.getDouble(cmd.getOptionValue("sample-prior", "1.0"));
             depth = Args.getIntegerMin(cmd.getOptionValue("depth", "-1"), -1);
-            heuristicSpeedup = cmd.hasOption("heuristic-speedup");
+            heuristicSpeedup = !cmd.hasOption("disable-heuristic-speedup");
             graphML = cmd.hasOption("graphml");
             verbose = cmd.hasOption("verbose");
             numOfThreads = Args.getInteger(cmd.getOptionValue("thread", Integer.toString(Runtime.getRuntime().availableProcessors())));

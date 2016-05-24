@@ -87,7 +87,7 @@ public class FgsCli {
         MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited). Default is -1.");
 
         // search options
-        MAIN_OPTIONS.addOption(null, "heuristic-speedup", false, "Heuristic speedup. Default is false.");
+        MAIN_OPTIONS.addOption(null, "disable-heuristic-speedup", false, "Disable heuristic speedup. Default is false.");
         MAIN_OPTIONS.addOption(null, "ignore-linear-dependence", false, "Ignore linear dependence.");
 
         // filter options
@@ -239,8 +239,8 @@ public class FgsCli {
         fmt.format("%n");
 
         fmt.format("Data Validations:%n");
-        fmt.format("skip unique variable name check = %s%n", skipUniqueVarName);
-        fmt.format("skip variables with zero variance check = %s%n", skipZeroVariance);
+        fmt.format("ensure variable names are unique = %s%n", !skipUniqueVarName);
+        fmt.format("ensure variables have non-zero variance = %s%n", !skipZeroVariance);
         fmt.format("%n");
 
         return fmt.toString();
@@ -351,7 +351,7 @@ public class FgsCli {
             delimiter = Args.getDelimiterForName(cmd.getOptionValue("delimiter", dataFile.getFileName().toString().endsWith(".csv") ? "comma" : "tab"));
             penaltyDiscount = Args.getDouble(cmd.getOptionValue("penalty-discount", "4.0"));
             depth = Args.getIntegerMin(cmd.getOptionValue("depth", "-1"), -1);
-            heuristicSpeedup = cmd.hasOption("heuristic-speedup");
+            heuristicSpeedup = !cmd.hasOption("disable-heuristic-speedup");
             ignoreLinearDependence = cmd.hasOption("ignore-linear-dependence");
             graphML = cmd.hasOption("graphml");
             verbose = cmd.hasOption("verbose");
