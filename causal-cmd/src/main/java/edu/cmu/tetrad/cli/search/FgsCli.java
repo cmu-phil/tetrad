@@ -22,6 +22,8 @@ import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.util.DateTime;
 import edu.cmu.tetrad.cli.util.FileIO;
+import edu.cmu.tetrad.cli.util.GraphmlSerializer;
+import edu.cmu.tetrad.cli.util.XmlPrint;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.NonZeroVariance;
 import edu.cmu.tetrad.cli.validation.TabularContinuousData;
@@ -167,6 +169,10 @@ public class FgsCli {
 
             writer.println();
             writer.println(graph.toString());
+
+            if (graphML) {
+                writeOutGraphML(graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.txt"));
+            }
         } catch (IOException exception) {
             LOGGER.error("FGS failed.", exception);
             System.err.printf("%s: FGS failed.%n", DateTime.printNow());
@@ -175,6 +181,28 @@ public class FgsCli {
         }
         System.out.printf("%s: FGS finished!  Please see %s for details.%n", DateTime.printNow(), outputFile.getFileName().toString());
         LOGGER.info(String.format("FGS finished!  Please see %s for details.", outputFile.getFileName().toString()));
+    }
+
+    private static void writeOutGraphML(Graph graph, Path outputFile) {
+        if (graph == null) {
+            return;
+        }
+
+        try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+            String fileName = outputFile.getFileName().toString();
+
+            String msg = String.format("Writing out GraphML file '%s'.", fileName);
+            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+            LOGGER.info(msg);
+            XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
+            msg = String.format("Finished writing out GraphML file '%s'.", fileName);
+            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+            LOGGER.info(msg);
+        } catch (Throwable throwable) {
+            String errMsg = String.format("Failed when writting out GraphML file '%s'.", outputFile.getFileName().toString());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, throwable);
+        }
     }
 
     private static Graph runFgs(DataSet dataSet, PrintStream writer) throws IOException {
