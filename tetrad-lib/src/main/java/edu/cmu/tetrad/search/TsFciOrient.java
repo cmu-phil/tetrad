@@ -897,7 +897,9 @@ public final class TsFciOrient {
                     logger.log("colliderOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b)));
 
                     graph.setEndpoint(a, b, Endpoint.TAIL);
+                    this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.TAIL);
                     graph.setEndpoint(b, a, Endpoint.TAIL);
+                    this.orientSimilarPairs(graph, this.getKnowledge(), b, a, Endpoint.TAIL);
                     orientTailPath(u, graph);
                     changeFlag = true;
                 }
@@ -933,7 +935,7 @@ public final class TsFciOrient {
 
                     // We know A---Bo-*C: R6 applies!
                     graph.setEndpoint(c, b, Endpoint.TAIL);
-
+                    this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
                     logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
 
                     changeFlag = true;
@@ -946,6 +948,7 @@ public final class TsFciOrient {
 
                     // We know A--oBo-*C and A,C nonadjacent: R7 applies!
                     graph.setEndpoint(c, b, Endpoint.TAIL);
+                    this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
                     changeFlag = true;
                 }
 
@@ -994,7 +997,9 @@ public final class TsFciOrient {
             Node n2 = path.get(i + 1);
 
             graph.setEndpoint(n1, n2, Endpoint.TAIL);
+            this.orientSimilarPairs(graph, this.getKnowledge(), n1, n2, Endpoint.TAIL);
             graph.setEndpoint(n2, n1, Endpoint.TAIL);
+            this.orientSimilarPairs(graph, this.getKnowledge(), n2, n1, Endpoint.TAIL);
             changeFlag = true;
 
             logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle undirectedPaths", graph.getEdge(n1, n2)));
