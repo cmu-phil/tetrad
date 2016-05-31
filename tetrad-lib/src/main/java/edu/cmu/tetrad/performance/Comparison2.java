@@ -114,6 +114,13 @@ public class Comparison2 {
             trueDag = GraphUtils.randomGraphRandomForwardEdges(
                     nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
+            /** added 5.25.16 for tsFCI **/
+            if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+                trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true); //need lag version of this
+            }
+            /***************************/
+
             test = new IndTestDSep(trueDag);
             score = new GraphScore(trueDag);
 
@@ -159,6 +166,11 @@ public class Comparison2 {
                 GFci search = new GFci(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new DagToPag(trueDag).convert());
+            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+                if (test == null) throw new IllegalArgumentException("Test not set.");
+                TsFci search = new TsFci(test);
+                result.setResultGraph(search.search());
+                result.setCorrectResult(new TsDagToPag(trueDag).convert());
             } else {
                 throw new IllegalArgumentException("Unrecognized algorithm.");
             }
@@ -353,6 +365,11 @@ public class Comparison2 {
             GFci search = new GFci(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(new DagToPag(trueDag).convert());
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+            if (test == null) throw new IllegalArgumentException("Test not set.");
+            TsFci search = new TsFci(test);
+            result.setResultGraph(search.search());
+            result.setCorrectResult(new TsDagToPag(trueDag).convert());
         } else {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }

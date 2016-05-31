@@ -664,6 +664,21 @@
                     edu.cmu.tetradapp.editor.datamanip.TimeSeriesParamsEditor
                 </params-editor-class>
             </model>
+            <model name="Convert to Time Lag Data with Index" acronym="Time Lag w Index"
+                   help="data" category="Convert">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.datamanip.TimeSeriesWrapper2
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-class>edu.cmu.tetradapp.model.datamanip.TimeSeriesParams
+                </params-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.datamanip.TimeSeriesParamsEditor
+                </params-editor-class>
+            </model>
             <model name="Convert to AR residuals" acronym="AR Residuals"
                    help="data" category="Convert">
                 <logger>

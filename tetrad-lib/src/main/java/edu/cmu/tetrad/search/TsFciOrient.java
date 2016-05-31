@@ -1371,6 +1371,9 @@ public final class TsFciOrient {
     }
 
     private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
+        if(x.getName().equals("time") || y.getName().equals("time")){
+            return;
+        }
         System.out.println("orienting similar pairs for x and y: " + x + ", " + y);
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
@@ -1402,6 +1405,7 @@ public final class TsFciOrient {
         if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
 
         for(i = 0; i < ntiers - tier_diff; ++i) {
+            if(knowledge.getTier(i).size()==1) continue;
             String A;
             Node x1;
             String B;
