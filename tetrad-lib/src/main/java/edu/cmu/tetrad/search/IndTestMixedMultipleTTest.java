@@ -19,8 +19,13 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.pitt.csb.mgm;
 
+import cern.colt.matrix.DoubleFactory2D;
+import cern.colt.matrix.DoubleMatrix1D;
+import cern.colt.matrix.DoubleMatrix2D;
+import cern.colt.matrix.linalg.Algebra;
+import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
@@ -29,6 +34,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchLogUtils;
+import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -47,7 +55,7 @@ import java.util.*;
  * @author Joseph Ramsey
  * @author Augustus Mayo.
  */
-public class IndTestMultinomialLogisticRegression implements IndependenceTest {
+public class IndTestMixedMultipleTTest implements IndependenceTest {
     private DataSet originalData;
     private List<Node> searchVariables;
     private DataSet internalData;
@@ -57,8 +65,11 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     private LogisticRegression logisticRegression;
     private RegressionDataset regression;
     private boolean verbose = false;
+    private DoubleFactory2D factory2D = DoubleFactory2D.dense;
+    private boolean flipLast;
+    private boolean preferLinear = true;
 
-    public IndTestMultinomialLogisticRegression(DataSet data, double alpha) {
+    public IndTestMixedMultipleTTest(DataSet data, double alpha) {
         this.searchVariables = data.getVariables();
         this.originalData = data.copy();
         DataSet internalData = data.copy();
@@ -76,6 +87,10 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         this.regression = new RegressionDataset(internalData);
     }
 
+    public void setPreferLinear(boolean preferLinear){
+        this.preferLinear = preferLinear;
+    }
+
     /**
      * @return an Independence test for a subset of the searchVariables.
      */
@@ -89,13 +104,53 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        if (x instanceof DiscreteVariable) {
+        if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
+            flipLast = false;
             return isIndependentMultinomialLogisticRegression(x, y, z);
-        } else if (y instanceof DiscreteVariable) {
-            return isIndependentMultinomialLogisticRegression(y, x, z);
+        } else if (x instanceof DiscreteVariable) {
+            if(preferLinear) {
+                flipLast = true;
+                return isIndependentRegression(y, x, z);
+            } else {
+                flipLast = false;
+                return isIndependentMultinomialLogisticRegression(x, y, z);
+            }
         } else {
-            return isIndependentRegression(x, y, z);
+            if(y instanceof DiscreteVariable && !preferLinear) {
+                flipLast = true;
+                return isIndependentMultinomialLogisticRegression(y, x, z);
+            } else {
+                flipLast = false;
+                return isIndependentRegression(x, y, z);
+            }
         }
+    }
+
+    public double[] dependencePvals(Node x, Node y, List<Node> z) {
+        if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
+            flipLast = false;
+            return dependencePvalsLogit(x, y, z);
+        } else if (x instanceof DiscreteVariable) {
+            if(preferLinear) {
+                flipLast = true;
+                return dependencePvalsLinear(y, x, z);
+            } else {
+                flipLast = false;
+                return dependencePvalsLogit(x, y, z);
+            }
+        } else {
+            if(y instanceof DiscreteVariable && !preferLinear) {
+                flipLast = true;
+                return dependencePvalsLogit(y, x, z);
+            } else {
+                flipLast = false;
+                return dependencePvalsLinear(x, y, z);
+            }
+        }
+    }
+
+    public boolean getFlipLast(){
+        return flipLast;
     }
 
     private List<Node> expandVariable(DataSet dataSet, Node node) {
@@ -112,6 +167,8 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         }
 
         List<String> varCats = new ArrayList<String>(((DiscreteVariable) node).getCategories());
+
+        // first category is reference
         varCats.remove(0);
         List<Node> variables = new ArrayList<Node>();
 
@@ -144,7 +201,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         return variables;
     }
 
-    private boolean isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
+    private double[] dependencePvalsLogit(Node x, Node y, List<Node> z) {
         if (!variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -154,7 +211,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         }
 
         for (Node node : z) {
-            if (!variablesPerNode.containsKey(x)) {
+            if (!variablesPerNode.containsKey(node)) {
                 throw new IllegalArgumentException("Unrecogized node: " + node);
             }
         }
@@ -164,55 +221,74 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         int[] _rows = getNonMissingRows(x, y, z);
         logisticRegression.setRows(_rows);
 
-        for (Node _x : variablesPerNode.get(x)) {
+        List<Node> yzDumList = new ArrayList<>();
+        List<Node> yzList = new ArrayList<>();
+        yzList.add(y);
+        yzList.addAll(z);
+        //List<Node> zList = new ArrayList<>();
 
-            // Without y
-            List<Node> regressors0 = new ArrayList<Node>();
-
-            for (Node _z : z) {
-                regressors0.addAll(variablesPerNode.get(_z));
-            }
-
-            LogisticRegression.Result result0 = logisticRegression.regress((DiscreteVariable) _x, regressors0);
-
-            // With y.
-            List<Node> regressors1 = new ArrayList<Node>();
-            regressors1.addAll(variablesPerNode.get(y));
-
-            for (Node _z : z) {
-                regressors1.addAll(variablesPerNode.get(_z));
-            }
-
-            LogisticRegression.Result result1 = logisticRegression.regress((DiscreteVariable) _x, regressors1);
-
-            // Returns -2 LL
-            double ll0 = result0.getLogLikelihood();
-            double ll1 = result1.getLogLikelihood();
-
-            double chisq = (ll0 - ll1);
-            int df = variablesPerNode.get(y).size();
-            double p = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(chisq);
-            pValues.add(p);
+        yzDumList.addAll(variablesPerNode.get(y));
+        for (Node _z : z) {
+            yzDumList.addAll(variablesPerNode.get(_z));
+            //zList.addAll(variablesPerNode.get(_z));
         }
 
-        double p = 1.0;
+        //double[][] coeffsDep = new double[variablesPerNode.get(x).size()][];
+        //DoubleMatrix2D coeffsNull = DoubleFactory2D.dense.make(zList.size(), variablesPerNode.get(x).size());
+        //DoubleMatrix2D coeffsDep = DoubleFactory2D.dense.make(yzDumList.size()+1, variablesPerNode.get(x).size());
+        double[] sumLnP = new double[yzList.size()];
+        for(int i = 0; i < sumLnP.length; i++)
+            sumLnP[i] = 0.0;
 
-        // Choose the minimum of the p-values
-        // This is only one method that can be used, this requires every coefficient to be significant
-        for (double val : pValues) {
-            if (val < p) p = val;
+        for (int i = 0; i < variablesPerNode.get(x).size(); i++) {
+            Node _x = variablesPerNode.get(x).get(i);
+
+            LogisticRegression.Result result1 = logisticRegression.regress((DiscreteVariable) _x, yzDumList);
+
+            int n = originalData.getNumRows();
+            int k = yzDumList.size();
+
+            //skip intercept at index 0
+            int coefIndex = 1;
+            for (int j = 0; j < yzList.size(); j++) {
+                for (int dum = 0; dum < variablesPerNode.get(yzList.get(j)).size(); dum++) {
+
+                    double wald = Math.abs(result1.getCoefs()[coefIndex] / result1.getStdErrs()[coefIndex]);
+                    //double val = (1.0 - new NormalDistribution(0,1).cumulativeProbability(wald))*2;//two-tailed test
+                    //double val = 1-result1.getProbs()[i+1];
+
+                    //this is exactly the same test as the linear case
+                    double val = (1.0 - ProbUtils.tCdf(wald, n - k)) * 2;
+                    //System.out.println(_x.getName() + "\t" + yzDumList.get(coefIndex-1).getName() + "\t" + val + "\t" + (n-k));
+                    //if(val <= 0) System.out.println("Zero p-val t-test: p " + val + " stat " + wald + " k " + k + " n " + n);
+                    sumLnP[j] += Math.log(val);
+                    coefIndex++;
+                }
+            }
         }
 
+        double[] pVec = new double[sumLnP.length];
+        for (int i = 0; i < pVec.length; i++) {
+            if(sumLnP[i]==Double.NEGATIVE_INFINITY) pVec[i] = 0.0;
+            else {
+                int df = 2 * variablesPerNode.get(x).size() * variablesPerNode.get(yzList.get(i)).size();
+                pVec[i] = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(-2 * sumLnP[i]);
+            }
+        }
+
+        return pVec;
+    }
+
+    private boolean isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
+        double p = dependencePvalsLogit(x,y,z)[0];
         boolean indep = p > alpha;
-
+        //0 corresponds to y
         this.lastP = p;
 
-        if (verbose) {
-            if (indep) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
-            } else {
-                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
-            }
+        if (indep) {
+            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
+        } else {
+            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
         }
 
         return indep;
@@ -276,7 +352,27 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         return false;
     }
 
-    private boolean isIndependentRegression(Node x, Node y, List<Node> z) {
+    private double multiLL(DoubleMatrix2D coeffs, Node dep, List<Node> indep){
+
+        DoubleMatrix2D indepData = factory2D.make(internalData.subsetColumns(indep).getDoubleData().toArray());
+        List<Node> depList = new ArrayList<>();
+        depList.add(dep);
+        DoubleMatrix2D depData = factory2D.make(internalData.subsetColumns(depList).getDoubleData().toArray());
+
+        int N = indepData.rows();
+        DoubleMatrix2D probs = Algebra.DEFAULT.mult(factory2D.appendColumns(factory2D.make(N, 1, 1.0), indepData), coeffs);
+
+        probs = factory2D.appendColumns(factory2D.make(indepData.rows(), 1, 1.0), probs).assign(Functions.exp);
+        double ll = 0;
+        for(int i = 0; i < N; i++){
+            DoubleMatrix1D curRow = probs.viewRow(i);
+            curRow.assign(Functions.div(curRow.zSum()));
+            ll += Math.log(curRow.get((int)depData.get(i,0)));
+        }
+        return ll;
+    }
+
+    private double[] dependencePvalsLinear(Node x, Node y, List<Node> z) {
         if (!variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -286,16 +382,21 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         }
 
         for (Node node : z) {
-            if (!variablesPerNode.containsKey(x)) {
+            if (!variablesPerNode.containsKey(node)) {
                 throw new IllegalArgumentException("Unrecogized node: " + node);
             }
         }
 
-        List<Node> regressors = new ArrayList<Node>();
-        regressors.add(internalData.getVariable(y.getName()));
+        List<Node> yzDumList = new ArrayList<>();
+        List<Node> yzList = new ArrayList<>();
+        yzList.add(y);
+        yzList.addAll(z);
+        //List<Node> zList = new ArrayList<>();
 
+        yzDumList.addAll(variablesPerNode.get(y));
         for (Node _z : z) {
-            regressors.addAll(variablesPerNode.get(_z));
+            yzDumList.addAll(variablesPerNode.get(_z));
+            //zList.addAll(variablesPerNode.get(_z));
         }
 
         int[] _rows = getNonMissingRows(x, y, z);
@@ -304,12 +405,44 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         RegressionResult result;
 
         try {
-            result = regression.regress(x, regressors);
+            result = regression.regress(x, yzDumList);
         } catch (Exception e) {
-            return false;
+            return null;
         }
 
-        double p = result.getP()[1];
+        double[] pVec = new double[yzList.size()];
+        double[] pCoef = result.getP();
+
+        //skip intercept at 0
+        int coeffInd = 1;
+
+        for (int i = 0; i < pVec.length; i++) {
+            List<Node> curDummy = variablesPerNode.get(yzList.get(i));
+            if (curDummy.size() == 1) {
+                pVec[i] = pCoef[coeffInd];
+                coeffInd++;
+                continue;
+            } else {
+                pVec[i] = 0;
+            }
+
+            for (Node n : curDummy) {
+                pVec[i] += Math.log(pCoef[coeffInd]);
+                coeffInd++;
+            }
+
+            if(pVec[i]==Double.NEGATIVE_INFINITY)
+                pVec[i] = 0.0;
+            else
+                pVec[i] = 1.0 - new ChiSquaredDistribution(2 * curDummy.size()).cumulativeProbability(-2 * pVec[i]);
+        }
+
+        return pVec;
+    }
+
+    private boolean isIndependentRegression(Node x, Node y, List<Node> z) {
+        double p = dependencePvalsLinear(x,y,z)[0];
+        //result.getP()[1];
         this.lastP = p;
 
         boolean indep = p > alpha;
@@ -432,7 +565,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return 0;
+        return getPValue();
     }
 
     /**
@@ -451,5 +584,3 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         this.verbose = verbose;
     }
 }
-
-

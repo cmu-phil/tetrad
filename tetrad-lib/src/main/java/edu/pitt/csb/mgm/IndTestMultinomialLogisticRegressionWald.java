@@ -204,7 +204,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
                 regressors1.addAll(variablesPerNode.get(_z));
             }
 
-            logisticRegression.regress((DiscreteVariable) _x, regressors1);
+            LogisticRegression.Result result1 = logisticRegression.regress((DiscreteVariable) _x, regressors1);
 
             // Returns -2 LL
 //            double ll0 = result0.getLogLikelihood();
@@ -219,7 +219,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             int k = regressors1.size()+1;
 
             for(int i = 0; i < variablesPerNode.get(y).size(); i++){
-                double wald = Math.abs(logisticRegression.getCoefs()[i+1] / logisticRegression.getStdErrs()[i+1]);
+                double wald = Math.abs(result1.getCoefs()[i+1] / result1.getStdErrs()[i+1]);
                 //double val = (1.0 - new NormalDistribution(0,1).cumulativeProbability(wald))*2;//two-tailed test
                 //double val = 1-result1.getProbs()[i+1];
 

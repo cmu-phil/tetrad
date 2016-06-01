@@ -421,8 +421,8 @@ public final class GraphUtils {
             double alpha, double beta,
             double delta_in, double delta_out) {
 
-        System.out.println("# nodes = " + _nodes.size() + " latents = " + numLatentConfounders
-                + "  alpha = " + alpha + " beta = " + beta + " delta_in = " + delta_in + " delta_out = " + delta_out);
+//        System.out.println("# nodes = " + _nodes.size() + " latents = " + numLatentConfounders
+//                + "  alpha = " + alpha + " beta = " + beta + " delta_in = " + delta_in + " delta_out = " + delta_out);
 
 //        >>> print inspect.getsource(nx.scale_free_graph)
 //        def scale_free_graph(n,

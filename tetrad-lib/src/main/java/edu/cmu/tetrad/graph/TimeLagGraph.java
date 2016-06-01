@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.graph;
 
+import org.apache.commons.math3.linear.EigenDecomposition;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

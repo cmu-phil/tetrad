@@ -73,8 +73,8 @@ public class LogisticRegressionEditor extends JPanel {
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 regRunner.execute();
-              //  modelParameters.setText(regRunner.getReport());
-                print(regRunner.getLogisticRegression(), regRunner.getAlpha());
+                //  modelParameters.setText(regRunner.getReport());
+                print(regRunner.getResult(), regRunner.getAlpha());
                 Graph outGraph = regRunner.getOutGraph();
                 GraphUtils.circleLayout(outGraph, 200, 200, 150);
                 GraphUtils.fruchtermanReingoldLayout(outGraph);
@@ -120,38 +120,38 @@ public class LogisticRegressionEditor extends JPanel {
     //============================== Private Methods =====================================//
 
     /**
-     * Prints the info in the logisticRegression to the text area (doesn't use the results representation).
+     * Prints the info in the result to the text area (doesn't use the results representation).
      */
-    private void print(LogisticRegression logisticRegression, double alpha){
-        if(logisticRegression == null){
+    private void print(LogisticRegression.Result result, double alpha){
+        if(result == null){
             return;
         }
         // print cases
-        String text = logisticRegression.getNy0() + " cases have " + logisticRegression.getTargetName()  + " = 0; ";
-        text += logisticRegression.getNy1() + " cases have " + logisticRegression.getTargetName() + " = 1.\n\n";
+        String text = result.getNy0() + " cases have " + result.getTarget()  + " = 0; ";
+        text += result.getNy1() + " cases have " + result.getTarget() + " = 1.\n\n";
         // print avgs/SD
         text += "Var\tAvg\tSD\n";
-        for(int i = 1; i<=logisticRegression.getNumRegressors(); i++){
-            text += logisticRegression.getRegressorNames().get(i - 1) + "\t";
-            text += nf.format(logisticRegression.getxMeans()[i]) + "\t";
-            text += nf.format(logisticRegression.getStdErrs()[i]) + "\n";
+        for(int i = 1; i<=result.getNumRegressors(); i++){
+            text += result.getRegressorNames().get(i - 1) + "\t";
+            text += nf.format(result.getxMeans()[i]) + "\t";
+            text += nf.format(result.getxStdDevs()[i]) + "\n";
         }
         text += "\nCoefficients and Standard Errors:\n";
         text += "Var\tCoeff.\tStdErr\tProb.\tSig.\n";
-        for(int i = 1; i<=logisticRegression.getNumRegressors(); i++){
-            text += logisticRegression.getRegressorNames().get(i - 1) + "\t";
-            text += nf.format(logisticRegression.getCoefs()[i]) + "\t";
-            text += nf.format(logisticRegression.getStdErrs()[i]) + "\t";
-            text += nf.format(logisticRegression.getProbs()[i]) + "\t";
-            if(logisticRegression.getProbs()[i] < alpha){
+        for(int i = 1; i<=result.getNumRegressors(); i++){
+            text += result.getRegressorNames().get(i - 1) + "\t";
+            text += nf.format(result.getCoefs()[i]) + "\t";
+            text += nf.format(result.getStdErrs()[i]) + "\t";
+            text += nf.format(result.getProbs()[i]) + "\t";
+            if(result.getProbs()[i] < alpha){
                 text += "*\n";
             } else {
                 text += "\n";
             }
         }
 
-        text+= "\n\nIntercept = " + nf.format(logisticRegression.getIntercept()) + "\n";
-        
+        text+= "\n\nIntercept = " + nf.format(result.getIntercept()) + "\n";
+
         this.modelParameters.setText(text);
     }
 
