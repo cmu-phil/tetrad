@@ -311,6 +311,10 @@ public class KnowledgeBoxEditor extends JPanel {
     private Box getTierBoxes(int numTiers) {
         Box c = Box.createVerticalBox();
 
+        for (String var : varNames) {
+            getKnowledge().addVariable(var);
+        }
+
         List varsNotInTiers = getKnowledge().getVariablesNotInTiers();
         JList l1 = new DragDropList(varsNotInTiers, -1);
         l1.setBorder(null);
@@ -480,15 +484,20 @@ public class KnowledgeBoxEditor extends JPanel {
         List<String> varNames = getVarNames();
         IKnowledge knowledge = getKnowledge();
 
+        for (String name : varNames) {
+            knowledge.addVariable(name);
+        }
+
         KnowledgeGraph graph = new KnowledgeGraph(getKnowledge());
 
         for (String varName : varNames) {
             graph.addNode(new KnowledgeModelNode(varName));
         }
+
         if (this.showRequiredByGroups) {
             for (Iterator<KnowledgeEdge> i = knowledge.requiredEdgesIterator(); i
                     .hasNext(); ) {
-                KnowledgeEdge edge = i.next();
+                KnowledgeEdge edge = i.next()   ;
                 String from = edge.getFrom();
                 String to = edge.getTo();
                 if (knowledge.isRequiredByGroups(from, to)) {
