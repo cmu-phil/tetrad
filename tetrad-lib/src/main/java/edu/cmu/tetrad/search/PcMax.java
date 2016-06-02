@@ -216,8 +216,7 @@ public class PcMax implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        IFas fas = new FasStableConcurrent(getIndependenceTest());
-        fas.setInitialGraph(initialGraph);
+        IFas fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(false);

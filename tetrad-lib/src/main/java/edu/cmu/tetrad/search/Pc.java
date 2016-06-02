@@ -233,7 +233,13 @@ public class Pc implements GraphSearch {
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
-        IFas fas = new Fas(getIndependenceTest());
+        IFas fas = null;
+
+        if (initialGraph == null) {
+            fas = new Fas(getIndependenceTest());
+        } else {
+            fas = new Fas(initialGraph, getIndependenceTest());
+        }
         fas.setVerbose(verbose);
         return search(fas, nodes);
     }
@@ -256,7 +262,6 @@ public class Pc implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        fas.setInitialGraph(initialGraph);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(verbose);

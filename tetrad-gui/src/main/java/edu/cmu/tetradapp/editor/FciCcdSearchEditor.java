@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
@@ -81,6 +80,9 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
      * Opens up an editor to let the user view the given CcdRunner.
      */
     public FciCcdSearchEditor(CcdRunner runner) {
+        super(runner, "Result PAG");
+    }
+    public FciCcdSearchEditor(CcdRunner2 runner) {
         super(runner, "Result PAG");
     }
 

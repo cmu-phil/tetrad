@@ -33,7 +33,7 @@ package edu.cmu.tetrad.util;
  *
  * @author Joseph Ramsey
  */
-public final class CombinationGenerator {
+public final class  CombinationGenerator {
 
     /**
      * The number of items for each dimension.

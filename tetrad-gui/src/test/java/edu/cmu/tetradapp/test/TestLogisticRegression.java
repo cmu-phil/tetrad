@@ -86,12 +86,10 @@ public class TestLogisticRegression {
 
         DiscreteVariable x1b = (DiscreteVariable) d2.getVariable("X1");
 
-        LogisticRegression.Result result = regression.regress(x1b, regressors);
+        regression.regress(x1b, regressors);
 
-        System.out.println(result);
-      
+        System.out.println(regression);
     }
-
 }
 
 

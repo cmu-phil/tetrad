@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.rmi.MarshalledObject;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -165,6 +166,8 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
         if (this.dataModelList != null) {
             return this.dataModelList;
         }
+
+        RandomUtil.getInstance().setSeed(new Date().getTime());
 
         DataModelList dataModelList = new DataModelList();
         int sampleSize = params.getSampleSize();

@@ -38,7 +38,8 @@ import java.util.Set;
  *
  * @author Joseph Ramsey (this version).
  */
-public final class Cpc implements GraphSearch {
+public final class
+Cpc implements GraphSearch {
 
 //    private int NTHREDS = Runtime.getRuntime().availableProcessors() * 5;
 
@@ -79,6 +80,8 @@ public final class Cpc implements GraphSearch {
      * Set of unshielded noncolliders from the triple orientation step.
      */
     private Set<Triple> noncolliderTriples;
+
+    private Graph initialGraph;
 
     /**
      * Set of ambiguous unshielded triples.
@@ -247,7 +250,7 @@ public final class Cpc implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        return search(new Fas(getIndependenceTest()), nodes);
+        return search(new Fas(initialGraph, getIndependenceTest()), nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
@@ -662,6 +665,14 @@ public final class Cpc implements GraphSearch {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
+
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
     }
 }
 

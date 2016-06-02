@@ -44,12 +44,12 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     static final long serialVersionUID = 23L;
     private LinkedHashMap<String, String> allParamSettings;
 
-    public enum Type {CONTINUOUS, DISCRETE, GRAPH}
+    public enum Type {CONTINUOUS, DISCRETE, MIXED, GRAPH}
 
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
-    private transient Fgs2 fgs;
+    private transient Fgs fgs;
     private transient Graph initialGraph;
 
     //============================CONSTRUCTORS============================//
@@ -298,7 +298,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
-            fgs = new Fgs2(gesScore);
+            fgs = new Fgs(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
             fgs.setVerbose(true);
         } else {
@@ -314,22 +314,24 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    fgs = new Fgs2(gesScore);
+                    fgs = new Fgs(gesScore);
                 } else if (dataSet.isDiscrete()) {
                     double samplePrior = ((FgsParams) getParams()).getSamplePrior();
                     double structurePrior = ((FgsParams) getParams()).getStructurePrior();
                     BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
-                    fgs = new Fgs2(score);
+                    fgs = new Fgs(score);
                 } else {
-                    throw new IllegalStateException("Data set must either be continuous or discrete.");
+                    MixedBicScore gesScore = new MixedBicScore(dataSet);
+                    gesScore.setPenaltyDiscount(penaltyDiscount);
+                    fgs = new Fgs(gesScore);
                 }
             } else if (model instanceof ICovarianceMatrix) {
                 SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
-                fgs = new Fgs2(gesScore);
+                fgs = new Fgs(gesScore);
             }
             else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
@@ -355,11 +357,11 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                     if (indTestParams.isFirstNontriangular()) {
                         SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                         fgsScore.setPenaltyDiscount(penalty);
-                        fgs = new Fgs2(fgsScore);
+                        fgs = new Fgs(fgsScore);
                     } else {
                         SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                         fgsScore.setPenaltyDiscount(penalty);
-                        fgs = new Fgs2(fgsScore);
+                        fgs = new Fgs(fgsScore);
                     }
                 } else if (allDiscrete(list)) {
                     double structurePrior = ((FgsParams) getParams()).getStructurePrior();
@@ -370,9 +372,9 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                     fgsScore.setStructurePrior(structurePrior);
 
                     if (indTestParams.isFirstNontriangular()) {
-                        fgs = new Fgs2(fgsScore);
+                        fgs = new Fgs(fgsScore);
                     } else {
-                        fgs = new Fgs2(fgsScore);
+                        fgs = new Fgs(fgsScore);
                     }
                 } else {
                     throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
@@ -382,13 +384,13 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             }
         }
 
-//        fgs.setInitialGraph(initialGraph);
-//        fgs.setKnowledge(getParams().getKnowledge());
+        fgs.setInitialGraph(initialGraph);
+        fgs.setKnowledge(getParams().getKnowledge());
         fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
         fgs.setVerbose(true);
 //        fgs.setHeuristicSpeedup(true);
 //        fgs.setDepth(3);
-        fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+        fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
         Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {
@@ -441,7 +443,8 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             } else if (dataSet.isDiscrete()) {
                 type = Type.DISCRETE;
             } else {
-                throw new IllegalStateException("Data set must either be continuous or discrete.");
+                type = Type.MIXED;
+//                throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
             type = Type.CONTINUOUS;
@@ -453,7 +456,8 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
             } else if (allDiscrete(list)) {
                 type = Type.DISCRETE;
             } else {
-                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
+                type = Type.MIXED;
+//                throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }
         } else {
             throw new IllegalArgumentException("Unrecognized data type.");

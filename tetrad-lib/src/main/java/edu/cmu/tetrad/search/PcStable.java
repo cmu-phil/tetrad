@@ -232,8 +232,7 @@ public class PcStable implements GraphSearch {
 //        IFas fas = new FasStable2(getIndependenceTest());
 //        IFas fas = new FasStable2a(getIndependenceTest());
 //        IFas fas = new FasStable2b(getIndependenceTest());
-        IFas fas = new FasStableConcurrent(getIndependenceTest());
-        fas.setInitialGraph(initialGraph);
+        IFas fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(verbose);
