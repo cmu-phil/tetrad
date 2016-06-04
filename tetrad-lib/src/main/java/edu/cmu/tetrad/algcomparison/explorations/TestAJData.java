@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.algcomparison.explorations;
 
-import edu.cmu.tetrad.algcomparison.mixed.*;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedSemFgs;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;

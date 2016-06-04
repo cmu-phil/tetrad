@@ -24,15 +24,16 @@ package edu.cmu.tetrad.algcomparison.explorations;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
 import edu.cmu.tetrad.algcomparison.Simulation;
-import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousCfci;
-import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousFci;
-import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousGfci;
-import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousRfci;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousCpc;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousFgs;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousPc;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousPcs;
+import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteCfci;
+import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFci;
+import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteGfci;
+import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteRfci;
+import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteCpc;
+import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteFgs;
+import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePc;
+import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePcs;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.DiscreteBayesNetSimulation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -42,7 +43,7 @@ import java.util.Map;
 /**
  * @author Joseph Ramsey
  */
-public class ExploreContinuousComparison {
+public class ExploreDiscreteComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
         parameters.put("numMeasures", 10);
@@ -77,19 +78,16 @@ public class ExploreContinuousComparison {
         stats.put("E", "Elapsed time in seconds");
 
         List<ComparisonAlgorithm> algorithms = new ArrayList<>();
-        algorithms.add(new ContinuousPc());
-        algorithms.add(new ContinuousCpc());
-        algorithms.add(new ContinuousFgs());
-        algorithms.add(new ContinuousPcs());
-        algorithms.add(new ContinuousFci());
-        algorithms.add(new ContinuousRfci());
-        algorithms.add(new ContinuousCfci());
-        algorithms.add(new ContinuousGfci());
+        algorithms.add(new DiscretePc());
+        algorithms.add(new DiscreteCpc());
+        algorithms.add(new DiscreteFgs());
+        algorithms.add(new DiscretePcs());
+        algorithms.add(new DiscreteFci());
+        algorithms.add(new DiscreteRfci());
+        algorithms.add(new DiscreteCfci());
+        algorithms.add(new DiscreteGfci());
 
-//        Simulation simulation = new LeeHastieSimulation();
-        Simulation simulation = new ContinuousSemSimulation();
-//        Simulation simulation = new SemThenDiscretizeHalfSimulation();
-
+        Simulation simulation = new DiscreteBayesNetSimulation();
         new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation);
     }
 

@@ -1,27 +1,24 @@
-package edu.cmu.tetrad.algcomparison.mixed;
+package edu.cmu.tetrad.algcomparison.continuous.pag;
 
 import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.IndTestMixedLrt;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.*;
 
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedFci implements ComparisonAlgorithm {
+public class ContinuousFci implements ComparisonAlgorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-        IndependenceTest test = new IndTestMixedLrt(dataSet, parameters.get("alpha").doubleValue());
+        IndependenceTest test = new IndTestFisherZ(dataSet, parameters.get("alpha").doubleValue());
         Fci pc = new Fci(test);
         return pc.search();
     }
 
     public String getName() {
-        return "AJMixedFci";
+        return "FCI-c";
     }
 
     @Override

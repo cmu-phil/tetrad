@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.mixed;
+package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
 import edu.cmu.tetrad.data.DataSet;
@@ -31,7 +31,7 @@ public class MixedMGMPc implements ComparisonAlgorithm {
     }
 
     public String getName() {
-        return "MGMPc";
+        return "MGMPC-m";
     }
 
     public Graph getComparisonGraph(Graph dag) {

@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.mixed;
+package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
@@ -28,7 +28,7 @@ public class MixedSemFgs implements ComparisonAlgorithm {
     }
 
     public String getName() {
-        return "SemFgs";
+        return "FGS-c-m";
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {

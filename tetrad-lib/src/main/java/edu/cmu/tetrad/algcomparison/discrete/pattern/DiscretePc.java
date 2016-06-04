@@ -1,27 +1,24 @@
-package edu.cmu.tetrad.algcomparison.continuous;
+package edu.cmu.tetrad.algcomparison.discrete.pattern;
 
 import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IndTestMixedLrt;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class ContinuousPc implements ComparisonAlgorithm {
+public class DiscretePc implements ComparisonAlgorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-        IndependenceTest test = new IndTestMixedLrt(dataSet, parameters.get("alpha").doubleValue());
+        IndependenceTest test = new IndTestChiSquare(dataSet, parameters.get("alpha").doubleValue());
         Pc pc = new Pc(test);
         return pc.search();
     }
 
     public String getName() {
-        return "AJMixedPc";
+        return "PC-d";
     }
 
     public Graph getComparisonGraph(Graph dag) {

@@ -24,10 +24,11 @@ package edu.cmu.tetrad.algcomparison.explorations;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
 import edu.cmu.tetrad.algcomparison.Simulation;
-import edu.cmu.tetrad.algcomparison.any.AnyWfgs;
-import edu.cmu.tetrad.algcomparison.any.AnyWgfci;
-import edu.cmu.tetrad.algcomparison.mixed.*;
-import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
+import edu.cmu.tetrad.algcomparison.simulation.SemThenDiscretizeHalfSimulation;
 
 import java.util.*;
 
@@ -67,22 +68,25 @@ public class ExploreMixedComparison {
         stats.put("E", "Elapsed time in seconds");
 
         List<ComparisonAlgorithm> algorithms = new ArrayList<>();
+
+        // Fast
+
         algorithms.add(new MixedSemFgs());
         algorithms.add(new MixedBdeuFgs());
-        algorithms.add(new MixedSemFgs());
-        algorithms.add(new AnyWfgs());
+        algorithms.add(new MixedWfgs());
+        algorithms.add(new MixedWgfci());
+
+        // Slow
         algorithms.add(new MixedPc());
         algorithms.add(new MixedPcs());
         algorithms.add(new MixedCpc());
         algorithms.add(new MixedMGMFgs());
         algorithms.add(new MixedMGMPc());
-
         algorithms.add(new MixedFci());
         algorithms.add(new MixedGfci());
-        algorithms.add(new AnyWgfci());
 
-        Simulation simulation = new LeeHastieSimulation();
-//        Simulation simulation = new SemThenDiscretizeSimulation();
+//        Simulation simulation = new LeeHastieSimulation();
+        Simulation simulation = new SemThenDiscretizeHalfSimulation();
 
         new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation);
     }

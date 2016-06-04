@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.mixed;
+package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -40,7 +40,7 @@ public class MixedBdeuFgs implements ComparisonAlgorithm {
     }
 
     public String getName() {
-        return "BdeuFgs";
+        return "FGS-d-m";
     }
 
     @Override

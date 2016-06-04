@@ -34,6 +34,8 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class Comparison {
+    private boolean[] graphTypeUsed;
+
     private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
         if (discrete1 && discrete2) {
             Graph newGraph = new EdgeListGraph(graph.getNodes());
@@ -190,6 +192,8 @@ public class Comparison {
                                     Map<String, Number> parameters, Simulation simulation) {
         int numGraphTypes = 4;
 
+        graphTypeUsed = new boolean[4];
+
         NumberFormat nf = new DecimalFormat("0.00");
 
         double[][][] statSums = new double[algorithms.size()][stats.size()][4];
@@ -199,6 +203,8 @@ public class Comparison {
             simulation.simulate(parameters);
             Graph dag = simulation.getDag();
             DataSet data = simulation.getData();
+
+            boolean isMixed = data.isMixed();
 
             for (int t = 0; t < algorithms.size(); t++) {
                 long start = System.currentTimeMillis();
@@ -214,20 +220,34 @@ public class Comparison {
                 Graph[] est = new Graph[numGraphTypes];
 
                 Graph comparisonGraph = algorithms.get(t).getComparisonGraph(dag);
+                dag = GraphUtils.replaceNodes(dag, out.getNodes());
 
                 est[0] = out;
-                est[1] = getSubgraph(out, true, true, data);
-                est[2] = getSubgraph(out, true, false, data);
-                est[3] = getSubgraph(out, false, false, data);
+                graphTypeUsed[0] = true;
+
+                if (isMixed) {
+                    est[1] = getSubgraph(out, true, true, data);
+                    est[2] = getSubgraph(out, true, false, data);
+                    est[3] = getSubgraph(out, false, false, data);
+
+                    graphTypeUsed[1] = true;
+                    graphTypeUsed[2] = true;
+                    graphTypeUsed[3] = true;
+                }
 
                 Graph[] truth = new Graph[numGraphTypes];
 
                 truth[0] = dag;
-                truth[1] = getSubgraph(comparisonGraph, true, true, data);
-                truth[2] = getSubgraph(comparisonGraph, true, false, data);
-                truth[3] = getSubgraph(comparisonGraph, false, false, data);
+
+                if (isMixed) {
+                    truth[1] = getSubgraph(comparisonGraph, true, true, data);
+                    truth[2] = getSubgraph(comparisonGraph, true, false, data);
+                    truth[3] = getSubgraph(comparisonGraph, false, false, data);
+                }
 
                 for (int u = 0; u < numGraphTypes; u++) {
+                    if (!graphTypeUsed[u]) continue;
+
                     EdgeStats edgeStats = new EdgeStats(est[u], truth[u], elapsed).invoke();
 
                     int j = -1;
@@ -259,6 +279,10 @@ public class Comparison {
 
         for (int t = 0; t < algorithms.size(); t++) {
             for (int u = 0; u < 4; u++) {
+                if (!graphTypeUsed[u]) {
+                    continue;
+                }
+
                 String header = getHeader(u);
                 System.out.println("\n" + header + "\n");
                 int j = -1;
@@ -320,6 +344,10 @@ public class Comparison {
         System.out.println("And the winners are... !");
 
         for (int u = 0; u < 4; u++) {
+            if (!graphTypeUsed[u]) {
+                continue;
+            }
+
             for (int numCategories = parameters.get("minCategoriesForSearch").intValue();
                  numCategories <= parameters.get("maxCategoriesForSearch").intValue(); numCategories++) {
                 parameters.put("numCategories", numCategories);
@@ -382,6 +410,8 @@ public class Comparison {
         System.out.println("AVERAGE STATISTICS");
 
         for (int u = 0; u < 4; u++) {
+            if (!graphTypeUsed[u]) continue;
+
             for (int numCategories = parameters.get("minCategoriesForSearch").intValue();
                  numCategories <= parameters.get("maxCategoriesForSearch").intValue(); numCategories++) {
                 parameters.put("numCategories", numCategories);

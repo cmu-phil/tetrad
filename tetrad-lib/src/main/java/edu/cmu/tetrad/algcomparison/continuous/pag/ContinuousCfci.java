@@ -1,25 +1,24 @@
-package edu.cmu.tetrad.algcomparison.any;
+package edu.cmu.tetrad.algcomparison.continuous.pag;
 
 import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.WGfci;
+import edu.cmu.tetrad.search.*;
 
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class AnyWgfci implements ComparisonAlgorithm {
+public class ContinuousCfci implements ComparisonAlgorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-        WGfci fgs = new WGfci(dataSet);
-        fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        return fgs.search();
+        IndependenceTest test = new IndTestFisherZ(dataSet, parameters.get("alpha").doubleValue());
+        Cfci pc = new Cfci(test);
+        return pc.search();
     }
 
     public String getName() {
-        return "WGFCI";
+        return "CFCI-c";
     }
 
     @Override

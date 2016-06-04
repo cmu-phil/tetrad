@@ -1,25 +1,24 @@
-package edu.cmu.tetrad.algcomparison.any;
+package edu.cmu.tetrad.algcomparison.continuous.pattern;
 
 import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.WFgs;
+import edu.cmu.tetrad.search.*;
 
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class AnyWfgs implements ComparisonAlgorithm {
+public class ContinuousPcs implements ComparisonAlgorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-        WFgs fgs = new WFgs(dataSet);
-        fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        return fgs.search();
+        IndependenceTest test = new IndTestFisherZ(dataSet, parameters.get("alpha").doubleValue());
+        PcStable pc = new PcStable(test);
+        return pc.search();
     }
 
     public String getName() {
-        return "WFGS";
+        return "PCS-c";
     }
 
     public Graph getComparisonGraph(Graph dag) {
