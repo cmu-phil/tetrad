@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
-import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
+import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Discretizer;
@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedPc implements ComparisonAlgorithm {
+public class MixedPc implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         IndependenceTest test = new IndTestMixedLrt(dataSet, parameters.get("alpha").doubleValue());
         Pc pc = new Pc(test);
@@ -34,7 +34,7 @@ public class MixedPc implements ComparisonAlgorithm {
     /**
      * Created by jdramsey on 6/4/16.
      */
-    static class MixedBdeuFgs implements ComparisonAlgorithm {
+    static class MixedBdeuFgs implements Algorithm {
         public Graph search(DataSet Dk, Map<String, Number> parameters) {
             Discretizer discretizer = new Discretizer(Dk);
             List<Node> nodes = Dk.getVariables();

@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.algcomparison.explorations;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
+import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteCfci;
 import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFci;
@@ -32,7 +32,6 @@ import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteCpc;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteFgs;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePc;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePcs;
-import edu.cmu.tetrad.algcomparison.simulation.ContinuousSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.DiscreteBayesNetSimulation;
 
 import java.util.ArrayList;
@@ -77,7 +76,7 @@ public class ExploreDiscreteComparison {
         stats.put("F1Or", "F1 statistic for arrows");
         stats.put("E", "Elapsed time in seconds");
 
-        List<ComparisonAlgorithm> algorithms = new ArrayList<>();
+        List<Algorithm> algorithms = new ArrayList<>();
         algorithms.add(new DiscretePc());
         algorithms.add(new DiscreteCpc());
         algorithms.add(new DiscreteFgs());

@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
-import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
+import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedSemFgs implements ComparisonAlgorithm {
+public class MixedSemFgs implements Algorithm {
     public Graph search(DataSet Dk, Map<String, Number> parameters) {
         Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(Dk));

@@ -144,7 +144,7 @@ public class Comparison {
 
 
     public void testBestAlgorithms(Map<String, Number> parameters, Map<String, String> stats,
-                                   List<ComparisonAlgorithm> algorithms, Simulation simulation) {
+                                   List<Algorithm> algorithms, Simulation simulation) {
 
 
         int numCategoryLevels = parameters.get("maxCategoriesForSearch").intValue()
@@ -188,7 +188,7 @@ public class Comparison {
         printBestStats(allAllRet, algorithms, stats, parameters);
     }
 
-    private double[][][] printStats(List<ComparisonAlgorithm> algorithms, Map<String, String> stats,
+    private double[][][] printStats(List<Algorithm> algorithms, Map<String, String> stats,
                                     Map<String, Number> parameters, Simulation simulation) {
         int numGraphTypes = 4;
 
@@ -320,18 +320,18 @@ public class Comparison {
         return header;
     }
 
-    private void printBestStats(double[][][][] allAllRet, List<ComparisonAlgorithm> algorithms, Map<String, String> stats,
+    private void printBestStats(double[][][][] allAllRet, List<Algorithm> algorithms, Map<String, String> stats,
                                 Map<String, Number> parameters) {
         class Pair {
-            private ComparisonAlgorithm algorithm;
+            private Algorithm algorithm;
             private double stat;
 
-            public Pair(ComparisonAlgorithm algorithm, double stat) {
+            public Pair(Algorithm algorithm, double stat) {
                 this.algorithm = algorithm;
                 this.stat = stat;
             }
 
-            public ComparisonAlgorithm getAlgorithm() {
+            public Algorithm getAlgorithm() {
                 return algorithm;
             }
 

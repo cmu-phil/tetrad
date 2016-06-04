@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
-import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
+import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestMixedLrt;
@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedMGMPc implements ComparisonAlgorithm {
+public class MixedMGMPc implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
         MGM m = new MGM(ds, new double[]{
                 parameters.get("mgmParam1").doubleValue(),

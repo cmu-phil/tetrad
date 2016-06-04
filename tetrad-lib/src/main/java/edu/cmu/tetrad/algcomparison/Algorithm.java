@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public interface ComparisonAlgorithm {
+public interface Algorithm {
     Graph search(DataSet dataSet, Map<String, Number> parameters);
 
     String getName();

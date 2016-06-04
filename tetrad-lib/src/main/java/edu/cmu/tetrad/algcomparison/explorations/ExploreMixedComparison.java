@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.algcomparison.explorations;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
+import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
@@ -67,7 +67,7 @@ public class ExploreMixedComparison {
         stats.put("F1Or", "F1 statistic for arrows");
         stats.put("E", "Elapsed time in seconds");
 
-        List<ComparisonAlgorithm> algorithms = new ArrayList<>();
+        List<Algorithm> algorithms = new ArrayList<>();
 
         // Fast
 
