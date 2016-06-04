@@ -1,81 +1,71 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.dist.Discrete;
 
 import java.util.*;
 
 /**
- * Created by jdramsey on 6/1/16.
+ * "Whimsical"FGS. Handles mixed, continuous, and discrete data.
+ *
+ * @author Joseph Ramsey
  */
-public class FgsMixed2 implements GraphSearch {
+public class WFgs implements GraphSearch {
 
-    private DataSet originalData;
     private List<Node> searchVariables;
-    private DataSet internalData;
     private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
     private Fgs fgs;
     private double penaltyDiscount;
     private SemBicScore score;
 
-    public FgsMixed2(DataSet data) {
+    public WFgs(DataSet data) {
         this.searchVariables = data.getVariables();
-        this.originalData = data.copy();
         DataSet internalData = data.copy();
 
-        List<Node> variables = internalData.getVariables();
+        List<Node> variables = data.getVariables();
+        IKnowledge knowledge = new Knowledge2();
 
         for (Node node : variables) {
-            List<Node> nodes = expandVariable(internalData, node);
+            List<Node> nodes = expandVariable(internalData, node, knowledge);
             variablesPerNode.put(node, nodes);
         }
 
-        this.internalData = internalData;
+//        internalData = DataUtils.center(internalData);
+
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(internalData));
         this.score = score;
         this.fgs = new Fgs(score);
     }
 
-    private List<Node> expandVariable(DataSet dataSet, Node node) {
+    private List<Node> expandVariable(DataSet dataSet, Node node, IKnowledge knowledge) {
         if (node instanceof ContinuousVariable) {
             return Collections.singletonList(node);
         }
 
         List<String> varCats = new ArrayList<String>(((DiscreteVariable) node).getCategories());
-        varCats.remove(0);
-        List<Node> variables = new ArrayList<Node>();
 
-        for (String cat : varCats) {
+        List<Node> variables = new ArrayList<>();
 
-            Node newVar;
-
-            do {
-                String newVarName = node.getName() + "MULTINOM" + "." + cat;
-                newVar = new ContinuousVariable(newVarName);
-            } while (dataSet.getVariable(newVar.getName()) != null);
-
+        for (int i = 0; i < varCats.size() - 1; i++) {
+            Node newVar = new ContinuousVariable(node.getName() + ".MULTINOM" + "." + varCats.get(i));
             variables.add(newVar);
-
             dataSet.addVariable(newVar);
             int newVarIndex = dataSet.getColumn(newVar);
-            int numCases = dataSet.getNumRows();
+            for (int l = 0; l < dataSet.getNumRows(); l++) {
+                int v = dataSet.getInt(l, dataSet.getColumn(node));
 
-            for (int l = 0; l < numCases; l++) {
-                Object dataCell = dataSet.getObject(l, dataSet.getColumn(node));
-                int dataCellIndex = ((DiscreteVariable) node).getIndex(dataCell.toString());
-
-                if (dataCellIndex == ((DiscreteVariable) node).getIndex(cat))
+                if (v == i) {
                     dataSet.setDouble(l, newVarIndex, 1);
-                else
+                } else {
                     dataSet.setDouble(l, newVarIndex, 0);
+                }
             }
         }
 
@@ -98,7 +88,7 @@ public class FgsMixed2 implements GraphSearch {
                 List<Node> xNodes = variablesPerNode.get(x);
                 List<Node> yNodes = variablesPerNode.get(y);
 
-                boolean existsEdge = false;
+                int numEdges = 0;
                 int numRight = 0;
                 int numLeft = 0;
 
@@ -106,17 +96,20 @@ public class FgsMixed2 implements GraphSearch {
                     for (int l = 0; l < yNodes.size(); l++) {
                         Edge e = pattern.getEdge(xNodes.get(k), yNodes.get(l));
                         if (e != null) {
-                            existsEdge = true;
-
+                            numEdges++;
                             if (e.pointsTowards(xNodes.get(k))) numLeft++;
                             if (e.pointsTowards(yNodes.get(l))) numRight++;
                         }
                     }
                 }
 
-                if (numLeft > 0 && numRight == 0) out.addDirectedEdge(y, x);
-                else if (numRight > 0 && numLeft == 0) out.addDirectedEdge(x, y);
-                else if (existsEdge) out.addUndirectedEdge(x, y);
+                if (numEdges > 0) {
+                    if (numLeft > 0 && numRight == 0) out.addDirectedEdge(y, x);
+                    else if (numRight > 0 && numLeft == 0) out.addDirectedEdge(x, y);
+                    else {
+                        out.addUndirectedEdge(x, y);
+                    }
+                }
             }
         }
 

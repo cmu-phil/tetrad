@@ -73,6 +73,10 @@ public class FgsSearchEditor extends AbstractSearchEditor
         super(runner, "Result Pattern");
     }
 
+    public FgsSearchEditor(WFgsRunner runner) {
+        super(runner, "Result Pattern");
+    }
+
     public FgsSearchEditor(FgsMbRunner runner) {
         super(runner, "Result Pattern");
     }
