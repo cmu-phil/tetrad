@@ -416,7 +416,7 @@ public class ExploreMixedComparison {
         int[][][] countStat = new int[algorithms.size()][stats.size()][4];
 
         for (int i = 0; i < parameters.get("numRuns").intValue(); i++) {
-            simulation.simulate();
+            simulation.simulate(parameters);
             Graph dag = simulation.getDag();
             DataSet data = simulation.getData();
 
@@ -749,22 +749,19 @@ public class ExploreMixedComparison {
     }
 
     interface Simulation {
-        void simulate();
+        void simulate(Map<String, Number> parameters);
         Graph getDag();
         DataSet getData();
     }
 
     public static class LeeHastieData implements Simulation {
         private Graph dag;
-        private Map<String, Number> parameters;
-        private Graph graph;
         private DataSet dataSet;
 
-        public LeeHastieData(Map<String, Number> parameters) {
-            this.parameters = parameters;
+        public LeeHastieData() {
         }
 
-        public void simulate() {
+        public void simulate(Map<String, Number> parameters) {
             this.dag = GraphUtils.randomGraphRandomForwardEdges(
                     parameters.get("numNodes").intValue(), 0, parameters.get("numEdges").intValue(),
                     10, 10, 10, false);
@@ -802,15 +799,12 @@ public class ExploreMixedComparison {
     }
 
     public static class SemThenDiscretize implements Simulation {
-        private Map<String, Number> parameters;
         private Graph graph;
         private DataSet dataSet;
 
-        public SemThenDiscretize(Map<String, Number> parameters) {
-            this.parameters = parameters;
-        }
+        public SemThenDiscretize() {}
 
-        public void simulate() {
+        public void simulate(Map<String, Number> parameters) {
             this.graph = GraphUtils.randomGraphRandomForwardEdges(
                     parameters.get("numNodes").intValue(), 0, parameters.get("numEdges").intValue(),
                     10, 10, 10, false);
@@ -842,11 +836,11 @@ public class ExploreMixedComparison {
 
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numNodes", 5);
-        parameters.put("numEdges", 5);
+        parameters.put("numNodes", 10);
+        parameters.put("numEdges", 10);
         parameters.put("sampleSize", 1000);
         parameters.put("minCategoriesForSearch", 2);
-        parameters.put("maxCategoriesForSearch", 5);
+        parameters.put("maxCategoriesForSearch", 4);
         parameters.put("numRuns", 5);
         parameters.put("alpha", 0.001);
         parameters.put("penaltyDiscount", 4);
@@ -854,7 +848,6 @@ public class ExploreMixedComparison {
         parameters.put("mgmParam2", 0.1);
         parameters.put("mgmParam3", 0.1);
         parameters.put("ofInterestCutoff", 0.05);
-        parameters.put("simulationStyle", 1);
 
         Map<String, String> stats = new LinkedHashMap<>();
         stats.put("AP", "Adjacency Precision");
@@ -878,8 +871,8 @@ public class ExploreMixedComparison {
         algorithms.add(new MGMFgs());
         algorithms.add(new MGMPc());
 
-//        Simulation simulation = new LeeHastieData(parameters);
-        Simulation simulation = new SemThenDiscretize(parameters);
+//        Simulation simulation = new LeeHastieData();
+        Simulation simulation = new SemThenDiscretize();
 
         new ExploreMixedComparison().testBestAlgorithms(parameters, stats, algorithms, simulation);
     }
