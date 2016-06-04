@@ -19,16 +19,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.algcomparison;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.GeneralizedSemIm;
-import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
-import edu.pitt.csb.mgm.MGM;
-import edu.pitt.csb.mgm.MixedUtils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -37,7 +33,7 @@ import java.util.*;
 /**
  * @author Joseph Ramsey
  */
-public class ExploreMixedComparison {
+public class Comparison {
     private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
         if (discrete1 && discrete2) {
             Graph newGraph = new EdgeListGraph(graph.getNodes());
@@ -145,230 +141,8 @@ public class ExploreMixedComparison {
 //    }
 
 
-    interface Search {
-        Graph search(DataSet dataSet, Map<String, Number> parameters);
-
-        String getName();
-    }
-
-
-    static class SemFgs implements Search {
-        public Graph search(DataSet Dk, Map<String, Number> parameters) {
-            Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
-            SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(Dk));
-            score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-            Fgs fgs = new Fgs(score);
-            Graph p = fgs.search();
-            return convertBack(Dk, p);
-        }
-
-        public String getName() {
-            return "SemFgs";
-        }
-
-        private Graph convertBack(DataSet Dk, Graph p) {
-            Graph p2 = new EdgeListGraph(Dk.getVariables());
-
-            for (int i = 0; i < p.getNodes().size(); i++) {
-                for (int j = i + 1; j < p.getNodes().size(); j++) {
-                    Node v1 = p.getNodes().get(i);
-                    Node v2 = p.getNodes().get(j);
-
-                    Edge e = p.getEdge(v1, v2);
-
-                    if (e != null) {
-                        Node w1 = Dk.getVariable(e.getNode1().getName());
-                        Node w2 = Dk.getVariable(e.getNode2().getName());
-
-                        Edge e2 = new Edge(w1, w2, e.getEndpoint1(), e.getEndpoint2());
-
-                        p2.addEdge(e2);
-                    }
-                }
-            }
-            return p2;
-        }
-    }
-
-    static class BdeuFgs implements Search {
-        public Graph search(DataSet Dk, Map<String, Number> parameters) {
-            Discretizer discretizer = new Discretizer(Dk);
-            List<Node> nodes = Dk.getVariables();
-
-            for (Node node : nodes) {
-                if (node instanceof ContinuousVariable) {
-                    discretizer.equalIntervals(node, parameters.get("numCategories").intValue());
-                }
-            }
-
-            Dk = discretizer.discretize();
-
-            BDeuScore score = new BDeuScore(Dk);
-            score.setSamplePrior(1.0);
-            score.setStructurePrior(1.0);
-            Fgs fgs = new Fgs(score);
-            Graph p = fgs.search();
-            return convertBack(Dk, p);
-        }
-
-        public String getName() {
-            return "BdeuFgs";
-        }
-
-        private Graph convertBack(DataSet Dk, Graph p) {
-            Graph p2 = new EdgeListGraph(Dk.getVariables());
-
-            for (int i = 0; i < p.getNodes().size(); i++) {
-                for (int j = i + 1; j < p.getNodes().size(); j++) {
-                    Node v1 = p.getNodes().get(i);
-                    Node v2 = p.getNodes().get(j);
-
-                    Edge e = p.getEdge(v1, v2);
-
-                    if (e != null) {
-                        Node w1 = Dk.getVariable(e.getNode1().getName());
-                        Node w2 = Dk.getVariable(e.getNode2().getName());
-
-                        Edge e2 = new Edge(w1, w2, e.getEndpoint1(), e.getEndpoint2());
-
-                        p2.addEdge(e2);
-                    }
-                }
-            }
-            return p2;
-        }
-    }
-
-    static class MixedFgs implements Search {
-        public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-            MixedBicScore score = new MixedBicScore(dataSet);
-            score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-            Fgs fgs = new Fgs(score);
-            return fgs.search();
-        }
-
-        public String getName() {
-            return "MixedFgs";
-        }
-    }
-
-    static class WFGS implements Search {
-        public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-            WFgs fgs = new WFgs(dataSet);
-            fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-            return fgs.search();
-        }
-
-        public String getName() {
-            return "WFGS";
-        }
-    }
-
-    static class MixedPc implements Search {
-        public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-            IndependenceTest test = new IndTestMixedLrt(dataSet, parameters.get("alpha").doubleValue());
-            Pc pc = new Pc(test);
-            return pc.search();
-        }
-
-        public String getName() {
-            return "AJMixedPc";
-        }
-    }
-
-    static class MixedPcs implements Search {
-        public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-            IndependenceTest test = new IndTestMixedLrt(dataSet, parameters.get("alpha").doubleValue());
-            PcStable pc = new PcStable(test);
-            return pc.search();
-        }
-
-        public String getName() {
-            return "AJPcs";
-        }
-    }
-
-    static class MixedCpc implements Search {
-        public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-            IndependenceTest test = new IndTestMixedLrt(dataSet, parameters.get("alpha").doubleValue());
-            Cpc pc = new Cpc(test);
-            return pc.search();
-        }
-
-        public String getName() {
-            return "AJMixedCpc";
-        }
-    }
-
-    static class MGMFgs implements Search {
-        public Graph search(DataSet ds, Map<String, Number> parameters) {
-            MGM m = new MGM(ds, new double[]{
-                    parameters.get("mgmParam1").doubleValue(),
-                    parameters.get("mgmParam2").doubleValue(),
-                    parameters.get("mgmParam3").doubleValue()
-            });
-            Graph gm = m.search();
-            DataSet dataSet = MixedUtils.makeContinuousData(ds);
-            SemBicScore2 score = new SemBicScore2(new CovarianceMatrixOnTheFly(dataSet));
-            score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-            Fgs fg = new Fgs(score);
-            fg.setBoundGraph(gm);
-            fg.setVerbose(false);
-            Graph p = fg.search();
-            return convertBack(ds, p);
-        }
-
-        public String getName() {
-            return "MGMFgs";
-        }
-
-        private Graph convertBack(DataSet Dk, Graph p) {
-            Graph p2 = new EdgeListGraph(Dk.getVariables());
-
-            for (int i = 0; i < p.getNodes().size(); i++) {
-                for (int j = i + 1; j < p.getNodes().size(); j++) {
-                    Node v1 = p.getNodes().get(i);
-                    Node v2 = p.getNodes().get(j);
-
-                    Edge e = p.getEdge(v1, v2);
-
-                    if (e != null) {
-                        Node w1 = Dk.getVariable(e.getNode1().getName());
-                        Node w2 = Dk.getVariable(e.getNode2().getName());
-
-                        Edge e2 = new Edge(w1, w2, e.getEndpoint1(), e.getEndpoint2());
-
-                        p2.addEdge(e2);
-                    }
-                }
-            }
-            return p2;
-        }
-    }
-
-    static class MGMPc implements Search {
-        public Graph search(DataSet ds, Map<String, Number> parameters) {
-            MGM m = new MGM(ds, new double[]{
-                    parameters.get("mgmParam1").doubleValue(),
-                    parameters.get("mgmParam2").doubleValue(),
-                    parameters.get("mgmParam3").doubleValue()
-            });
-            Graph gm = m.search();
-            IndependenceTest indTest = new IndTestMixedLrt(ds, parameters.get("alpha").doubleValue());
-            PcStable pcs = new PcStable(indTest);
-            pcs.setDepth(-1);
-            pcs.setInitialGraph(gm);
-            pcs.setVerbose(false);
-            return pcs.search();
-        }
-
-        public String getName() {
-            return "MGMPc";
-        }
-    }
-
     public void testBestAlgorithms(Map<String, Number> parameters, Map<String, String> stats,
-                                   List<Search> algorithms, Simulation simulation) {
+                                   List<ComparisonAlgorithm> algorithms, Simulation simulation) {
 
 
         int numCategoryLevels = parameters.get("maxCategoriesForSearch").intValue()
@@ -382,12 +156,6 @@ public class ExploreMixedComparison {
              numCategories++) {
             parameters.put("numCategories", numCategories);
             latentIndex++;
-
-            System.out.println();
-
-            for (String param : parameters.keySet()) {
-                System.out.println(param + " = " + parameters.get(param));
-            }
 
             double[][][] allRet = printStats(algorithms, stats, parameters, simulation);
 
@@ -405,11 +173,23 @@ public class ExploreMixedComparison {
             System.out.println(stat + " = " + stats.get(stat));
         }
 
+        System.out.println();
+
+        parameters.remove("numCategories");
+
+        for (String param : parameters.keySet()) {
+            System.out.println(param + " = " + parameters.get(param));
+        }
+
+        System.out.println("Simulation = " + simulation);
+
         printBestStats(allAllRet, algorithms, stats, parameters);
     }
 
-    private double[][][] printStats(List<Search> algorithms, Map<String, String> stats,
+    private double[][][] printStats(List<ComparisonAlgorithm> algorithms, Map<String, String> stats,
                                     Map<String, Number> parameters, Simulation simulation) {
+        int numGraphTypes = 4;
+
         NumberFormat nf = new DecimalFormat("0.00");
 
         double[][][] statSums = new double[algorithms.size()][stats.size()][4];
@@ -431,21 +211,23 @@ public class ExploreMixedComparison {
 
                 out = GraphUtils.replaceNodes(out, dag.getNodes());
 
-                Graph[] est = new Graph[4];
+                Graph[] est = new Graph[numGraphTypes];
+
+                Graph comparisonGraph = algorithms.get(t).getComparisonGraph(dag);
 
                 est[0] = out;
                 est[1] = getSubgraph(out, true, true, data);
                 est[2] = getSubgraph(out, true, false, data);
                 est[3] = getSubgraph(out, false, false, data);
 
-                Graph[] truth = new Graph[4];
+                Graph[] truth = new Graph[numGraphTypes];
 
                 truth[0] = dag;
-                truth[1] = getSubgraph(dag, true, true, data);
-                truth[2] = getSubgraph(dag, true, false, data);
-                truth[3] = getSubgraph(dag, false, false, data);
+                truth[1] = getSubgraph(comparisonGraph, true, true, data);
+                truth[2] = getSubgraph(comparisonGraph, true, false, data);
+                truth[3] = getSubgraph(comparisonGraph, false, false, data);
 
-                for (int u = 0; u < 4; u++) {
+                for (int u = 0; u < numGraphTypes; u++) {
                     EdgeStats edgeStats = new EdgeStats(est[u], truth[u], elapsed).invoke();
 
                     int j = -1;
@@ -463,7 +245,7 @@ public class ExploreMixedComparison {
             }
         }
 
-        double[][][] avgStat = new double[algorithms.size()][stats.size()][4];
+        double[][][] avgStat = new double[algorithms.size()][stats.size()][numGraphTypes];
 
         for (int t = 0; t < algorithms.size(); t++) {
             for (int u = 0; u < 4; u++) {
@@ -514,18 +296,18 @@ public class ExploreMixedComparison {
         return header;
     }
 
-    private void printBestStats(double[][][][] allAllRet, List<Search> algorithms, Map<String, String> stats,
+    private void printBestStats(double[][][][] allAllRet, List<ComparisonAlgorithm> algorithms, Map<String, String> stats,
                                 Map<String, Number> parameters) {
         class Pair {
-            private Search algorithm;
+            private ComparisonAlgorithm algorithm;
             private double stat;
 
-            public Pair(Search algorithm, double stat) {
+            public Pair(ComparisonAlgorithm algorithm, double stat) {
                 this.algorithm = algorithm;
                 this.stat = stat;
             }
 
-            public Search getAlgorithm() {
+            public ComparisonAlgorithm getAlgorithm() {
                 return algorithm;
             }
 
@@ -747,136 +529,6 @@ public class ExploreMixedComparison {
             return this;
         }
     }
-
-    interface Simulation {
-        void simulate(Map<String, Number> parameters);
-        Graph getDag();
-        DataSet getData();
-    }
-
-    public static class LeeHastieData implements Simulation {
-        private Graph dag;
-        private DataSet dataSet;
-
-        public LeeHastieData() {
-        }
-
-        public void simulate(Map<String, Number> parameters) {
-            this.dag = GraphUtils.randomGraphRandomForwardEdges(
-                    parameters.get("numNodes").intValue(), 0, parameters.get("numEdges").intValue(),
-                    10, 10, 10, false);
-
-            HashMap<String, Integer> nd = new HashMap<>();
-
-            List<Node> nodes = dag.getNodes();
-
-            Collections.shuffle(nodes);
-
-            for (int i = 0; i < nodes.size(); i++) {
-                if (i < nodes.size() / 2) {
-                    nd.put(nodes.get(i).getName(), parameters.get("numCategories").intValue());
-                } else {
-                    nd.put(nodes.get(i).getName(), 0);
-                }
-            }
-
-            Graph graph = MixedUtils.makeMixedGraph(dag, nd);
-
-            GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
-            GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
-
-            DataSet ds = im.simulateDataAvoidInfinity(parameters.get("sampleSize").intValue(), false);
-            this.dataSet = MixedUtils.makeMixedData(ds, nd);
-        }
-
-        public Graph getDag() {
-            return dag;
-        }
-
-        public DataSet getData() {
-            return dataSet;
-        }
-    }
-
-    public static class SemThenDiscretize implements Simulation {
-        private Graph graph;
-        private DataSet dataSet;
-
-        public SemThenDiscretize() {}
-
-        public void simulate(Map<String, Number> parameters) {
-            this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                    parameters.get("numNodes").intValue(), 0, parameters.get("numEdges").intValue(),
-                    10, 10, 10, false);
-
-            SemPm pm = new SemPm(graph);
-            SemIm im = new SemIm(pm);
-            DataSet continuousData = im.simulateData(parameters.get("sampleSize").intValue(), false);
-
-            List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
-            Collections.shuffle(shuffledNodes);
-
-            Discretizer discretizer = new Discretizer(continuousData);
-
-            for (int i = 0; i < shuffledNodes.size() / 2; i++) {
-                discretizer.equalCounts(shuffledNodes.get(i), parameters.get("numCategories").intValue());
-            }
-
-            this.dataSet = discretizer.discretize();
-        }
-
-        public Graph getDag() {
-            return graph;
-        }
-
-        public DataSet getData() {
-            return dataSet;
-        }
-    }
-
-    public static void main(String... args) {
-        Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numNodes", 10);
-        parameters.put("numEdges", 10);
-        parameters.put("sampleSize", 1000);
-        parameters.put("minCategoriesForSearch", 2);
-        parameters.put("maxCategoriesForSearch", 4);
-        parameters.put("numRuns", 5);
-        parameters.put("alpha", 0.001);
-        parameters.put("penaltyDiscount", 4);
-        parameters.put("mgmParam1", 0.1);
-        parameters.put("mgmParam2", 0.1);
-        parameters.put("mgmParam3", 0.1);
-        parameters.put("ofInterestCutoff", 0.05);
-
-        Map<String, String> stats = new LinkedHashMap<>();
-        stats.put("AP", "Adjacency Precision");
-        stats.put("AR", "Adjacency Recall");
-        stats.put("OP", "Orientation (Arrow) precision");
-        stats.put("OR", "Orientation (Arrow) recall");
-        stats.put("McAdj", "Matthew's correlation coeffficient for adjacencies");
-        stats.put("McOr", "Matthew's correlation coefficient for arrow");
-        stats.put("F1Adj", "F1 statistic for adjacencies");
-        stats.put("F1Or", "F1 statistic for arrows");
-        stats.put("E", "Elapsed time in seconds");
-
-        List<Search> algorithms = new ArrayList<>();
-        algorithms.add(new SemFgs());
-        algorithms.add(new BdeuFgs());
-        algorithms.add(new MixedFgs());
-        algorithms.add(new WFGS());
-        algorithms.add(new MixedPc());
-        algorithms.add(new MixedPcs());
-        algorithms.add(new MixedCpc());
-        algorithms.add(new MGMFgs());
-        algorithms.add(new MGMPc());
-
-//        Simulation simulation = new LeeHastieData();
-        Simulation simulation = new SemThenDiscretize();
-
-        new ExploreMixedComparison().testBestAlgorithms(parameters, stats, algorithms, simulation);
-    }
-
 }
 
 

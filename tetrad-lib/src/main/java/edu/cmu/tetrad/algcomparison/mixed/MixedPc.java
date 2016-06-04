@@ -1,0 +1,90 @@
+package edu.cmu.tetrad.algcomparison.mixed;
+
+import edu.cmu.tetrad.algcomparison.ComparisonAlgorithm;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Discretizer;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.*;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by jdramsey on 6/4/16.
+ */
+public class MixedPc implements ComparisonAlgorithm {
+    public Graph search(DataSet dataSet, Map<String, Number> parameters) {
+        IndependenceTest test = new IndTestMixedLrt(dataSet, parameters.get("alpha").doubleValue());
+        Pc pc = new Pc(test);
+        return pc.search();
+    }
+
+    public String getName() {
+        return "AJMixedPc";
+    }
+
+    public Graph getComparisonGraph(Graph dag) {
+        return SearchGraphUtils.patternForDag(dag);
+    }
+
+    /**
+     * Created by jdramsey on 6/4/16.
+     */
+    static class MixedBdeuFgs implements ComparisonAlgorithm {
+        public Graph search(DataSet Dk, Map<String, Number> parameters) {
+            Discretizer discretizer = new Discretizer(Dk);
+            List<Node> nodes = Dk.getVariables();
+
+            for (Node node : nodes) {
+                if (node instanceof ContinuousVariable) {
+                    discretizer.equalIntervals(node, parameters.get("numCategories").intValue());
+                }
+            }
+
+            Dk = discretizer.discretize();
+
+            BDeuScore score = new BDeuScore(Dk);
+            score.setSamplePrior(1.0);
+            score.setStructurePrior(1.0);
+            Fgs fgs = new Fgs(score);
+            Graph p = fgs.search();
+            return convertBack(Dk, p);
+        }
+
+        public String getName() {
+            return "BdeuFgs";
+        }
+
+        @Override
+        public Graph getComparisonGraph(Graph dag) {
+            return SearchGraphUtils.patternForDag(dag);
+        }
+
+        private Graph convertBack(DataSet Dk, Graph p) {
+            Graph p2 = new EdgeListGraph(Dk.getVariables());
+
+            for (int i = 0; i < p.getNodes().size(); i++) {
+                for (int j = i + 1; j < p.getNodes().size(); j++) {
+                    Node v1 = p.getNodes().get(i);
+                    Node v2 = p.getNodes().get(j);
+
+                    Edge e = p.getEdge(v1, v2);
+
+                    if (e != null) {
+                        Node w1 = Dk.getVariable(e.getNode1().getName());
+                        Node w2 = Dk.getVariable(e.getNode2().getName());
+
+                        Edge e2 = new Edge(w1, w2, e.getEndpoint1(), e.getEndpoint2());
+
+                        p2.addEdge(e2);
+                    }
+                }
+            }
+            return p2;
+        }
+    }
+}

@@ -1,14 +1,13 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.LogisticRegression;
-import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.dist.Discrete;
 
 import java.util.*;
 
@@ -17,15 +16,15 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class WFgs implements GraphSearch {
+public class WGfci implements GraphSearch {
 
     private List<Node> searchVariables;
     private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
-    private Fgs fgs;
+    private GFci gfci;
     private double penaltyDiscount;
     private SemBicScore score;
 
-    public WFgs(DataSet data) {
+    public WGfci(DataSet data) {
         this.searchVariables = data.getVariables();
         DataSet internalData = data.copy();
 
@@ -40,7 +39,7 @@ public class WFgs implements GraphSearch {
 
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(internalData));
         this.score = score;
-        this.fgs = new Fgs(score);
+        this.gfci = new GFci(score);
     }
 
     private List<Node> expandVariable(DataSet dataSet, Node node) {
@@ -75,7 +74,7 @@ public class WFgs implements GraphSearch {
 
     public Graph search() {
         score.setPenaltyDiscount(penaltyDiscount);
-        Graph pattern = fgs.search();
+        Graph pattern = gfci.search();
 
         Graph out = new EdgeListGraph(searchVariables);
 
