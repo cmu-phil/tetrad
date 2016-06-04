@@ -18,7 +18,7 @@ public class ContinuousFci implements Algorithm {
     }
 
     public String getName() {
-        return "FCI-c";
+        return "c-FCI";
     }
 
     @Override

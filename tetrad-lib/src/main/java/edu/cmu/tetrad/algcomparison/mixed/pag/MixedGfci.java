@@ -18,7 +18,7 @@ public class MixedGfci implements Algorithm {
     }
 
     public String getName() {
-        return "GFCI-m";
+        return "m-GFCI";
     }
 
     @Override

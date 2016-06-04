@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.PointValuePair;
@@ -95,7 +96,7 @@ public class LogisticRegression2 implements TetradSerializable {
             );
 
             this.likelihood = pair.getValue();
-        } catch (Exception e) {
+        } catch (TooManyEvaluationsException e) {
             e.printStackTrace();
             this.likelihood = Double.NaN;
         }

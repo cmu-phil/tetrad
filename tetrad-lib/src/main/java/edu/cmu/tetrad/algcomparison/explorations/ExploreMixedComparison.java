@@ -80,10 +80,13 @@ public class ExploreMixedComparison {
         algorithms.add(new MixedPc());
         algorithms.add(new MixedPcs());
         algorithms.add(new MixedCpc());
-        algorithms.add(new MixedMGMFgs());
-        algorithms.add(new MixedMGMPc());
         algorithms.add(new MixedFci());
         algorithms.add(new MixedGfci());
+
+        // These can't be run on non-mixed data.
+        algorithms.add(new MixedMGMFgs());
+        algorithms.add(new MixedMGMPc());
+
 
 //        Simulation simulation = new LeeHastieSimulation();
         Simulation simulation = new SemThenDiscretizeHalfSimulation();

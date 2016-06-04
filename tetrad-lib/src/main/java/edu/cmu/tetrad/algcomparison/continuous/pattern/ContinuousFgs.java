@@ -15,12 +15,12 @@ public class ContinuousFgs implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         return fgs.search();
     }
 
     public String getName() {
-        return "FGS-c";
+        return "c-FGS";
     }
 
     public Graph getComparisonGraph(Graph dag) {

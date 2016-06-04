@@ -21,7 +21,7 @@ public class MixedPcs implements Algorithm {
     }
 
     public String getName() {
-        return "PCS-m";
+        return "m-PCS";
     }
 
     public Graph getComparisonGraph(Graph dag) {

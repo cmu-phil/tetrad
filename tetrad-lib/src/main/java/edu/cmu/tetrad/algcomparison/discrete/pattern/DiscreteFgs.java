@@ -15,12 +15,12 @@ public class DiscreteFgs implements Algorithm {
         BDeuScore score = new BDeuScore(dataSet);
         score.setSamplePrior(parameters.get("samplePrior").doubleValue());
         score.setSamplePrior(parameters.get("structurePrior").doubleValue());
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         return fgs.search();
     }
 
     public String getName() {
-        return "FGS-d";
+        return "d-FGS";
     }
 
     public Graph getComparisonGraph(Graph dag) {

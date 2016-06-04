@@ -19,7 +19,7 @@ public class MixedWgfci implements Algorithm {
     }
 
     public String getName() {
-        return "WGFCI-m";
+        return "m-WGFCI";
     }
 
     @Override

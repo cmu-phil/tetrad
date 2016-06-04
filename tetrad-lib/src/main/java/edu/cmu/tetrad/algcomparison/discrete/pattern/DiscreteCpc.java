@@ -18,7 +18,7 @@ public class DiscreteCpc implements Algorithm {
     }
 
     public String getName() {
-        return "Cpc-d";
+        return "d-Cpc";
     }
 
     public Graph getComparisonGraph(Graph dag) {

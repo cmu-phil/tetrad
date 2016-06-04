@@ -20,7 +20,7 @@ public class DiscreteGfci implements Algorithm {
     }
 
     public String getName() {
-        return "GFCI-d";
+        return "d-GFCI";
     }
 
     public Graph getComparisonGraph(Graph dag) {

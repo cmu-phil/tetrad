@@ -21,7 +21,7 @@ public class MixedCpc implements Algorithm {
     }
 
     public String getName() {
-        return "CPC-m";
+        return "m-CPC";
     }
 
     public Graph getComparisonGraph(Graph dag) {

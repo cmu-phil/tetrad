@@ -18,7 +18,7 @@ public class ContinuousRfci implements Algorithm {
     }
 
     public String getName() {
-        return "RFCI-c";
+        return "c-RFCI";
     }
 
     @Override

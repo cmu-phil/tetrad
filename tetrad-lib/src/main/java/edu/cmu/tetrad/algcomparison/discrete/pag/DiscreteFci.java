@@ -18,7 +18,7 @@ public class DiscreteFci implements Algorithm {
     }
 
     public String getName() {
-        return "FCI-d";
+        return "d-FCI";
     }
 
     @Override

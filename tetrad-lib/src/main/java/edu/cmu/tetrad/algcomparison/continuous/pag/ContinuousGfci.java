@@ -19,7 +19,7 @@ public class ContinuousGfci implements Algorithm {
     }
 
     public String getName() {
-        return "GFCI-c";
+        return "c-GFCI";
     }
 
     @Override

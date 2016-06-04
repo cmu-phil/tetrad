@@ -32,6 +32,10 @@ import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousCpc;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousFgs;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousPc;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousPcs;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousSemSimulation;
 
 import java.util.ArrayList;
@@ -54,7 +58,7 @@ public class ExploreContinuousComparison {
         parameters.put("numEdges", 10);
         parameters.put("sampleSize", 1000);
         parameters.put("minCategoriesForSearch", 2);
-        parameters.put("maxCategoriesForSearch", 4);
+        parameters.put("maxCategoriesForSearch", 2);
         parameters.put("numRuns", 5);
         parameters.put("alpha", 0.001);
         parameters.put("penaltyDiscount", 4);
@@ -85,6 +89,19 @@ public class ExploreContinuousComparison {
         algorithms.add(new ContinuousRfci());
         algorithms.add(new ContinuousCfci());
         algorithms.add(new ContinuousGfci());
+
+        // Fast mixed
+        algorithms.add(new MixedSemFgs());
+        algorithms.add(new MixedBdeuFgs());
+        algorithms.add(new MixedWfgs());
+        algorithms.add(new MixedWgfci());
+
+        // Slow mixed
+        algorithms.add(new MixedPc());
+        algorithms.add(new MixedPcs());
+        algorithms.add(new MixedCpc());
+        algorithms.add(new MixedFci());
+        algorithms.add(new MixedGfci());
 
 //        Simulation simulation = new LeeHastieSimulation();
         Simulation simulation = new ContinuousSemSimulation();

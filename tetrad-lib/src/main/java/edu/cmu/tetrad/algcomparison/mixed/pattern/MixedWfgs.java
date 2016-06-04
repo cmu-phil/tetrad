@@ -19,7 +19,7 @@ public class MixedWfgs implements Algorithm {
     }
 
     public String getName() {
-        return "WFGS-m";
+        return "m-WFGS";
     }
 
     public Graph getComparisonGraph(Graph dag) {

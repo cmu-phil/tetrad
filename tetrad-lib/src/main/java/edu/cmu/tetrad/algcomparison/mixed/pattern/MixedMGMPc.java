@@ -31,7 +31,7 @@ public class MixedMGMPc implements Algorithm {
     }
 
     public String getName() {
-        return "MGMPC-m";
+        return "m-MGMPC";
     }
 
     public Graph getComparisonGraph(Graph dag) {

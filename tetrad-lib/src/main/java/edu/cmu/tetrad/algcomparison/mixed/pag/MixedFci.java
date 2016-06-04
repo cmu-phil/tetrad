@@ -21,7 +21,7 @@ public class MixedFci implements Algorithm {
     }
 
     public String getName() {
-        return "FCI-m";
+        return "m-FCI";
     }
 
     @Override

@@ -18,7 +18,7 @@ public class DiscretePc implements Algorithm {
     }
 
     public String getName() {
-        return "PC-d";
+        return "d-PC";
     }
 
     public Graph getComparisonGraph(Graph dag) {

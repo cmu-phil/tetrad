@@ -40,7 +40,7 @@ public class MixedBdeuFgs implements Algorithm {
     }
 
     public String getName() {
-        return "FGS-d-m";
+        return "md-FGS";
     }
 
     @Override

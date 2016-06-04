@@ -340,6 +340,38 @@ public class Comparison {
             }
         }
 
+        NumberFormat nf = new DecimalFormat("0.00");
+
+        System.out.println();
+        System.out.println("DETAILS:");
+        System.out.println();
+        System.out.println("AVERAGE STATISTICS");
+
+        for (int u = 0; u < 4; u++) {
+            if (!graphTypeUsed[u]) continue;
+
+            for (int numCategories = parameters.get("minCategoriesForSearch").intValue();
+                 numCategories <= parameters.get("maxCategoriesForSearch").intValue(); numCategories++) {
+                parameters.put("numCategories", numCategories);
+
+                for (int t = 0; t < algorithms.size(); t++) {
+                    String algorithm = algorithms.get(t).getName();
+
+                    System.out.println();
+                    System.out.println(getHeader(u) + " # categories = " + numCategories + " Algorithm = " + algorithm);
+                    System.out.println();
+                    Set<String> keySet = stats.keySet();
+                    Iterator<String> iterator = keySet.iterator();
+
+                    for (int statIndex = 0; statIndex < allAllRet[numCategories - 2][0].length; statIndex++) {
+                        String statLabel = iterator.next();
+                        double stat = allAllRet[numCategories - 2][t][statIndex][u];
+                        System.out.println("\tAverage " + statLabel + " = " + nf.format(stat));
+                    }
+                }
+            }
+        }
+
         System.out.println();
         System.out.println("And the winners are... !");
 
@@ -348,13 +380,22 @@ public class Comparison {
                 continue;
             }
 
-            for (int numCategories = parameters.get("minCategoriesForSearch").intValue();
-                 numCategories <= parameters.get("maxCategoriesForSearch").intValue(); numCategories++) {
+            int minCategoriesForSearch = parameters.get("minCategoriesForSearch").intValue();
+            int maxCategoriesForSearch = parameters.get("maxCategoriesForSearch").intValue();
+            for (int numCategories = minCategoriesForSearch;
+                 numCategories <= maxCategoriesForSearch; numCategories++) {
                 parameters.put("numCategories", numCategories);
 
                 System.out.println();
-                System.out.println("====== " + getHeader(u) + " " + numCategories +
-                        " categories (listing high to low, top to top - 0.05)");
+
+                if (maxCategoriesForSearch > minCategoriesForSearch) {
+                    System.out.println("====== " + getHeader(u) + " " + numCategories +
+                            " categories (listing high to low, top to top - 0.05)");
+                } else {
+                    System.out.println("====== " + getHeader(u) +
+                            " (listing high to low, top to top - 0.05)");
+                }
+
                 System.out.println();
                 Set<String> keySet = stats.keySet();
                 int statIndex = -1;
@@ -366,7 +407,7 @@ public class Comparison {
                     List<Pair> algStats = new ArrayList<>();
 
                     for (int t = 0; t < algorithms.size(); t++) {
-                        double stat = allAllRet[numCategories - parameters.get("minCategoriesForSearch").intValue()]
+                        double stat = allAllRet[numCategories - minCategoriesForSearch]
                                 [t][statIndex][u];
                         if (!Double.isNaN(stat)) {
                             algStats.add(new Pair(algorithms.get(t), stat));
@@ -402,37 +443,7 @@ public class Comparison {
             }
         }
 
-        NumberFormat nf = new DecimalFormat("0.00");
 
-        System.out.println();
-        System.out.println("DETAILS:");
-        System.out.println();
-        System.out.println("AVERAGE STATISTICS");
-
-        for (int u = 0; u < 4; u++) {
-            if (!graphTypeUsed[u]) continue;
-
-            for (int numCategories = parameters.get("minCategoriesForSearch").intValue();
-                 numCategories <= parameters.get("maxCategoriesForSearch").intValue(); numCategories++) {
-                parameters.put("numCategories", numCategories);
-
-                for (int t = 0; t < algorithms.size(); t++) {
-                    String algorithm = algorithms.get(t).getName();
-
-                    System.out.println();
-                    System.out.println(getHeader(u) + " # categories = " + numCategories + " Algorithm = " + algorithm);
-                    System.out.println();
-                    Set<String> keySet = stats.keySet();
-                    Iterator<String> iterator = keySet.iterator();
-
-                    for (int statIndex = 0; statIndex < allAllRet[numCategories - 2][0].length; statIndex++) {
-                        String statLabel = iterator.next();
-                        double stat = allAllRet[numCategories - 2][t][statIndex][u];
-                        System.out.println("\tAverage " + statLabel + " = " + nf.format(stat));
-                    }
-                }
-            }
-        }
     }
 
     private class EdgeStats {

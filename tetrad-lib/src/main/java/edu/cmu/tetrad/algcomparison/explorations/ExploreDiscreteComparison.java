@@ -32,6 +32,10 @@ import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteCpc;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteFgs;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePc;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePcs;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.DiscreteBayesNetSimulation;
 
 import java.util.ArrayList;
@@ -85,6 +89,19 @@ public class ExploreDiscreteComparison {
         algorithms.add(new DiscreteRfci());
         algorithms.add(new DiscreteCfci());
         algorithms.add(new DiscreteGfci());
+
+        // Fast mixed
+        algorithms.add(new MixedSemFgs());
+        algorithms.add(new MixedBdeuFgs());
+        algorithms.add(new MixedWfgs());
+        algorithms.add(new MixedWgfci());
+
+        // Slow mixed
+//        algorithms.add(new MixedPc());
+//        algorithms.add(new MixedPcs());
+//        algorithms.add(new MixedCpc());
+//        algorithms.add(new MixedFci());
+        algorithms.add(new MixedGfci());
 
         Simulation simulation = new DiscreteBayesNetSimulation();
         new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation);

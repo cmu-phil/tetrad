@@ -37,7 +37,7 @@ public class MixedMGMFgs implements Algorithm {
     }
 
     public String getName() {
-        return "MGMFGS-m";
+        return "m-MGMFGS";
     }
 
     public Graph getComparisonGraph(Graph dag) {

@@ -18,7 +18,7 @@ public class ContinuousCpc implements Algorithm {
     }
 
     public String getName() {
-        return "Cpc-c";
+        return "c-Cpc";
     }
 
     public Graph getComparisonGraph(Graph dag) {

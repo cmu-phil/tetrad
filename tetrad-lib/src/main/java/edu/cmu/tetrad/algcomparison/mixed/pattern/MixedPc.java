@@ -24,7 +24,7 @@ public class MixedPc implements Algorithm {
     }
 
     public String getName() {
-        return "PC-m";
+        return "m-PC";
     }
 
     public Graph getComparisonGraph(Graph dag) {

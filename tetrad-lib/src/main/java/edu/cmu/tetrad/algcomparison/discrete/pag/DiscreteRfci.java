@@ -18,7 +18,7 @@ public class DiscreteRfci implements Algorithm {
     }
 
     public String getName() {
-        return "RFCI-d";
+        return "d-RFCI";
     }
 
     @Override

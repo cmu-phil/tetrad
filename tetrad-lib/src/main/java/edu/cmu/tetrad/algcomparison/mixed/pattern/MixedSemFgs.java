@@ -28,7 +28,7 @@ public class MixedSemFgs implements Algorithm {
     }
 
     public String getName() {
-        return "FGS-c-m";
+        return "mc-FGS";
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {
