@@ -66,4 +66,9 @@ public class MixedMGMFgs implements Algorithm {
         }
         return p2;
     }
+
+    public String getDescription() {
+        return "MGM-FGS, assuming the data are mixed. Uses the output of MGM as an intial graph " +
+                "for FGS.";
+    }
 }

@@ -14,4 +14,6 @@ public interface Algorithm {
     String getName();
 
     Graph getComparisonGraph(Graph dag);
+
+    String getDescription();
 }

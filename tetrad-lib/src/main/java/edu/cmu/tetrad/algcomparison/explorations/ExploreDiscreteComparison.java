@@ -32,7 +32,6 @@ import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteCpc;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteFgs;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePc;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePcs;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
@@ -49,13 +48,13 @@ import java.util.Map;
 public class ExploreDiscreteComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numMeasures", 10);
+        parameters.put("numMeasures", 20);
+        parameters.put("numEdges", 20);
         parameters.put("numLatents", 0);
         parameters.put("maxDegree", 10);
         parameters.put("maxIndegree", 10);
         parameters.put("maxOutdegree", 10);
         parameters.put("connected", 0);
-        parameters.put("numEdges", 10);
         parameters.put("sampleSize", 1000);
         parameters.put("minCategoriesForSearch", 2);
         parameters.put("maxCategoriesForSearch", 4);
@@ -101,10 +100,12 @@ public class ExploreDiscreteComparison {
 //        algorithms.add(new MixedPcs());
 //        algorithms.add(new MixedCpc());
 //        algorithms.add(new MixedFci());
-        algorithms.add(new MixedGfci());
+//        algorithms.add(new MixedGfci());
+
+        String baseFileName = "DiscreteComparison";
 
         Simulation simulation = new DiscreteBayesNetSimulation();
-        new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation);
+        new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation, baseFileName);
     }
 
 }

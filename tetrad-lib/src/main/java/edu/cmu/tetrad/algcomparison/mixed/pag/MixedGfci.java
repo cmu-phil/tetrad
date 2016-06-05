@@ -25,4 +25,8 @@ public class MixedGfci implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
+
+    public String getDescription() {
+        return "GFCI, assuming the data are mixed. Uses the Mixed BIC score.";
+    }
 }

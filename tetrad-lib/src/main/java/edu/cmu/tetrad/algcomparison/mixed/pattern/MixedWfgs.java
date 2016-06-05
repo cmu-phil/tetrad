@@ -25,4 +25,8 @@ public class MixedWfgs implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
+
+    public String getDescription() {
+        return "WFGS, assuming the data are mixed. Uses the SEM BIC score.";
+    }
 }

@@ -25,4 +25,8 @@ public class DiscreteCfci implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
+
+    public String getDescription() {
+        return "CFCI, assuming the data are discrete. Uses the Chi Square test.";
+    }
 }

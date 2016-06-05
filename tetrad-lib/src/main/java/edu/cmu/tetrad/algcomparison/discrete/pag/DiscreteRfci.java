@@ -25,4 +25,10 @@ public class DiscreteRfci implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
+
+    public String getDescription() {
+        return "RFCI, assuming the data are discrete. Uses the Chi Square test.";
+    }
+
+
 }

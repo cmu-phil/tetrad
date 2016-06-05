@@ -24,4 +24,7 @@ public class ContinuousPc implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
-}
+
+    public String getDescription() {
+        return "PC, assuming the data are continuous. Uses the Fisher Z test.";
+    }}

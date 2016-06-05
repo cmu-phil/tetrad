@@ -103,11 +103,13 @@ public class ExploreContinuousComparison {
         algorithms.add(new MixedFci());
         algorithms.add(new MixedGfci());
 
+        String baseFileName = "ContinuousComparison";
+
 //        Simulation simulation = new LeeHastieSimulation();
         Simulation simulation = new ContinuousSemSimulation();
 //        Simulation simulation = new SemThenDiscretizeHalfSimulation();
 
-        new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation);
+        new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation, baseFileName);
     }
 
 }

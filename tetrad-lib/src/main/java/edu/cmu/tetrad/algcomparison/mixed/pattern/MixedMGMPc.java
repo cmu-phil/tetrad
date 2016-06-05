@@ -37,4 +37,9 @@ public class MixedMGMPc implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
+
+    public String getDescription() {
+        return "MGM-PC, assuming the data are mixed. Uses the output of MGM as an intial graph " +
+                "for PC-Stable.";
+    }
 }

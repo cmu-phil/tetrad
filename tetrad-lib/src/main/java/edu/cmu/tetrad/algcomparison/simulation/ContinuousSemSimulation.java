@@ -47,6 +47,6 @@ public class ContinuousSemSimulation implements Simulation {
     }
 
     public String toString() {
-        return "Simulation SEM data";
+        return "SEM simulation";
     }
 }

@@ -28,6 +28,8 @@ import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
+import edu.cmu.tetrad.algcomparison.simulation.DiscreteBayesNetSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.SemThenDiscretizeHalfSimulation;
 
 import java.util.*;
@@ -38,8 +40,8 @@ import java.util.*;
 public class ExploreMixedComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numMeasures", 10);
-        parameters.put("numLatents", 3);
+        parameters.put("numMeasures", 15);
+        parameters.put("numLatents", 0);
         parameters.put("maxDegree", 10);
         parameters.put("maxIndegree", 10);
         parameters.put("maxOutdegree", 10);
@@ -48,13 +50,13 @@ public class ExploreMixedComparison {
         parameters.put("sampleSize", 1000);
         parameters.put("minCategoriesForSearch", 2);
         parameters.put("maxCategoriesForSearch", 4);
-        parameters.put("numRuns", 5);
+        parameters.put("numRuns", 10);
         parameters.put("alpha", 0.001);
         parameters.put("penaltyDiscount", 4);
         parameters.put("mgmParam1", 0.1);
         parameters.put("mgmParam2", 0.1);
         parameters.put("mgmParam3", 0.1);
-        parameters.put("ofInterestCutoff", 0.05);
+        parameters.put("ofInterestCutoff", 0.05     );
 
         Map<String, String> stats = new LinkedHashMap<>();
         stats.put("AP", "Adjacency Precision");
@@ -87,11 +89,13 @@ public class ExploreMixedComparison {
         algorithms.add(new MixedMGMFgs());
         algorithms.add(new MixedMGMPc());
 
+        String baseFileName = "MixedComparison";
 
 //        Simulation simulation = new LeeHastieSimulation();
         Simulation simulation = new SemThenDiscretizeHalfSimulation();
+//        Simulation simulation = new DiscreteBayesNetSimulation();
 
-        new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation);
+        new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation, baseFileName);
     }
 
 }

@@ -24,4 +24,8 @@ public class DiscretePc implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
+
+    public String getDescription() {
+        return "PC, assuming the data are discrete. Uses the Chi Square test.";
+    }
 }

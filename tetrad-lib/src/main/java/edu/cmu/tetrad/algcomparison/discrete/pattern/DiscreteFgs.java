@@ -26,4 +26,8 @@ public class DiscreteFgs implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
+
+    public String getDescription() {
+        return "FGS, assuming the data are discrete. Uses the BDeu score.";
+    }
 }

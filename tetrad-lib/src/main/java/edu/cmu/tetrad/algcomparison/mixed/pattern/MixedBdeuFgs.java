@@ -43,9 +43,16 @@ public class MixedBdeuFgs implements Algorithm {
         return "md-FGS";
     }
 
+
+
     @Override
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
+    }
+
+    @Override
+    public String getDescription() {
+        return "Discretizes the continuous variables in the data set and runs FGS using the BDeu score.";
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {

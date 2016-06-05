@@ -27,4 +27,8 @@ public class MixedCpc implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
+
+    public String getDescription() {
+        return "COC, assuming the data are mixed. Uses the Mixed LRT test.";
+    }
 }

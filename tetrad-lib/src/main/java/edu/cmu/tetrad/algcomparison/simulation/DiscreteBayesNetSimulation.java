@@ -46,6 +46,6 @@ public class DiscreteBayesNetSimulation implements Simulation {
     }
 
     public String toString() {
-        return "Simulation Bayes net data";
+        return "Bayes net simulation";
     }
 }

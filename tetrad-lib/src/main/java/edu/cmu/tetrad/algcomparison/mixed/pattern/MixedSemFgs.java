@@ -57,6 +57,10 @@ public class MixedSemFgs implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
+
+    public String getDescription() {
+        return "FGS, assuming the data are mixed. Treats all variables as continuous.";
+    }
 }
 
 

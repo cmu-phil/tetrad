@@ -26,4 +26,7 @@ public class ContinuousGfci implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
-}
+
+    public String getDescription() {
+        return "GFCI, assuming the data are continuous. Uses SEM BIC score.";
+    }}

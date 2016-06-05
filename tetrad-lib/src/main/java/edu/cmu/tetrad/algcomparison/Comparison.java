@@ -26,15 +26,22 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.Exchanger;
 
 /**
  * @author Joseph Ramsey
  */
 public class Comparison {
     private boolean[] graphTypeUsed;
+    private PrintStream keyOut;
+    private PrintStream detailsOut;
+    private PrintStream winnersOut;
 
     private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
         if (discrete1 && discrete2) {
@@ -87,71 +94,23 @@ public class Comparison {
         }
     }
 
-//    public void testAjData() {
-//        double penalty = 4;
-//
-//        try {
-//
-//            for (int i = 0; i < 50; i++) {
-//                File dataPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
-//                        "Simulated_data_for_Madelyn/simulation/data/DAG_" + i + "_data.txt");
-//                DataReader reader = new DataReader();
-//                DataSet Dk = reader.parseTabular(dataPath);
-//
-//                File graphPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
-//                        "Simulated_data_for_Madelyn/simulation/networks/DAG_" + i + "_graph.txt");
-//
-//                Graph dag = GraphUtils.loadGraphTxt(graphPath);
-//
-//                long start = System.currentTimeMillis();
-//
-////            Graph pattern = searchSemFgs(Dk);
-////            Graph pattern = searchBdeuFgs(Dk, k);
-////                Graph pattern = searchMixedFgs1(Dk, penalty);
-//
-//
-//                Map<String, Number> parameters = new LinkedHashMap<>();
-//                parameters.put("alpha", 0.001);
-//                parameters.put("penaltyDiscount", 4);
-//                parameters.put("mgmParam1", 0.1);
-//                parameters.put("mgmParam2", 0.1);
-//                parameters.put("mgmParam3", 0.1);
-//                parameters.put("OfInterestCutoff", 0.05);
-//
-//                Graph pattern = new MixedFgs().search(Dk, parameters);
-//
-//                long stop = System.currentTimeMillis();
-//
-//                long elapsed = stop - start;
-//                long elapsedSeconds = elapsed / 1000;
-//
-//                Graph truePattern = SearchGraphUtils.patternForDag(dag);
-//
-//                GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison3(pattern, truePattern, System.out);
-//                NumberFormat nf = new DecimalFormat("0.00");
-//
-//                System.out.println(i +
-//                        "\t" + nf.format(comparison.getAdjPrec()) +
-//                        "\t" + nf.format(comparison.getAdjRec()) +
-//                        "\t" + nf.format(comparison.getAhdPrec()) +
-//                        "\t" + nf.format(comparison.getAhdRec()) +
-//                        "\t" + elapsedSeconds);
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-
     public void testBestAlgorithms(Map<String, Number> parameters, Map<String, String> stats,
-                                   List<Algorithm> algorithms, Simulation simulation) {
+                                   List<Algorithm> algorithms, Simulation simulation, String baseFileName) {
 
+        try {
+            File dir = new File("comparison");
+            dir.mkdirs();
+            keyOut = new PrintStream(new FileOutputStream(new File("comparison", baseFileName + "-key.txt")));
+            winnersOut = new PrintStream(new FileOutputStream(new File("comparison", baseFileName + "-winners.txt")));
+            detailsOut = new PrintStream(new FileOutputStream(new File("comparison", baseFileName + "-details.txt")));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         int numCategoryLevels = parameters.get("maxCategoriesForSearch").intValue()
                 - parameters.get("minCategoriesForSearch").intValue() + 1;
         double[][][][] allAllRet = new double[numCategoryLevels][][][];
         int latentIndex = -1;
-
 
         for (int numCategories = parameters.get("minCategoriesForSearch").intValue();
              numCategories <= parameters.get("maxCategoriesForSearch").intValue();
@@ -166,26 +125,44 @@ public class Comparison {
         }
 
         System.out.println();
-        System.out.println("=======");
-        System.out.println();
-        System.out.println("Algorithms with max - " + parameters.get("ofInterestCutoff").doubleValue()
-                + " <= stat <= max.");
-        System.out.println();
-        for (String stat : stats.keySet()) {
-            System.out.println(stat + " = " + stats.get(stat));
+        keyOut.println("Algorithms:");
+        keyOut.println();
+
+        for (int i = 0; i < algorithms.size(); i++) {
+            keyOut.println((i + 1) + ". " /*+ algorithms.get(i).getName() + ". "*/ +
+                    algorithms.get(i).getDescription());
         }
 
-        System.out.println();
+        keyOut.println();
+        keyOut.println("Statistics:");
+        keyOut.println();
+
+        for (String stat : stats.keySet()) {
+            keyOut.println(stat + " = " + stats.get(stat));
+        }
 
         parameters.remove("numCategories");
+        keyOut.println();
+        keyOut.println("Parameters:");
+        keyOut.println();
 
         for (String param : parameters.keySet()) {
-            System.out.println(param + " = " + parameters.get(param));
+            keyOut.println(param + " = " + parameters.get(param));
         }
 
-        System.out.println("Simulation = " + simulation);
+        keyOut.println();
+        keyOut.println("Simulation:");
+        keyOut.println();
+        keyOut.println(simulation);
 
-        printBestStats(allAllRet, algorithms, stats, parameters);
+        keyOut.println();
+
+        keyOut.close();
+
+        printBestStats(allAllRet, algorithms, stats, parameters, simulation);
+
+        detailsOut.close();
+        winnersOut.close();
     }
 
     private double[][][] printStats(List<Algorithm> algorithms, Map<String, String> stats,
@@ -289,7 +266,7 @@ public class Comparison {
 
                 for (String statName : stats.keySet()) {
                     j++;
-                    String algorithm = algorithms.get(t).getName();
+                    String algorithm = "" + (t + 1);//algorithms.get(t).getName();
                     System.out.println(algorithm + " " + statName + " " + nf.format(avgStat[t][j][u]));
                 }
             }
@@ -321,17 +298,17 @@ public class Comparison {
     }
 
     private void printBestStats(double[][][][] allAllRet, List<Algorithm> algorithms, Map<String, String> stats,
-                                Map<String, Number> parameters) {
+                                Map<String, Number> parameters, Simulation simulation) {
         class Pair {
-            private Algorithm algorithm;
+            private int algorithm;
             private double stat;
 
-            public Pair(Algorithm algorithm, double stat) {
+            public Pair(int algorithm, double stat) {
                 this.algorithm = algorithm;
                 this.stat = stat;
             }
 
-            public Algorithm getAlgorithm() {
+            public int getAlgorithm() {
                 return algorithm;
             }
 
@@ -342,10 +319,10 @@ public class Comparison {
 
         NumberFormat nf = new DecimalFormat("0.00");
 
-        System.out.println();
-        System.out.println("DETAILS:");
-        System.out.println();
-        System.out.println("AVERAGE STATISTICS");
+//        System.out.println();
+        detailsOut.println("DETAILS:");
+        detailsOut.println();
+        detailsOut.println("AVERAGE STATISTICS");
 
         for (int u = 0; u < 4; u++) {
             if (!graphTypeUsed[u]) continue;
@@ -355,25 +332,24 @@ public class Comparison {
                 parameters.put("numCategories", numCategories);
 
                 for (int t = 0; t < algorithms.size(); t++) {
-                    String algorithm = algorithms.get(t).getName();
+                    String algorithm = "" + (t + 1);//algorithms.get(t).getName();
 
-                    System.out.println();
-                    System.out.println(getHeader(u) + " # categories = " + numCategories + " Algorithm = " + algorithm);
-                    System.out.println();
+                    detailsOut.println();
+                    detailsOut.println(getHeader(u) + " # categories = " + numCategories + " Algorithm = " + algorithm);
+                    detailsOut.println();
                     Set<String> keySet = stats.keySet();
                     Iterator<String> iterator = keySet.iterator();
 
                     for (int statIndex = 0; statIndex < allAllRet[numCategories - 2][0].length; statIndex++) {
                         String statLabel = iterator.next();
                         double stat = allAllRet[numCategories - 2][t][statIndex][u];
-                        System.out.println("\tAverage " + statLabel + " = " + nf.format(stat));
+                        detailsOut.println("\tAverage " + statLabel + " = " + nf.format(stat));
                     }
                 }
             }
         }
 
-        System.out.println();
-        System.out.println("And the winners are... !");
+        winnersOut.println("And the winners are... !");
 
         for (int u = 0; u < 4; u++) {
             if (!graphTypeUsed[u]) {
@@ -386,17 +362,19 @@ public class Comparison {
                  numCategories <= maxCategoriesForSearch; numCategories++) {
                 parameters.put("numCategories", numCategories);
 
-                System.out.println();
+                winnersOut.println();
 
                 if (maxCategoriesForSearch > minCategoriesForSearch) {
-                    System.out.println("====== " + getHeader(u) + " " + numCategories +
-                            " categories (listing high to low, top to top - 0.05)");
+                    winnersOut.println("====== " + getHeader(u) + " " + numCategories +
+                            " categories (listing high to low, top to top - " +
+                            parameters.get("ofInterestCutoff").doubleValue() + ")");
                 } else {
-                    System.out.println("====== " + getHeader(u) +
-                            " (listing high to low, top to top - 0.05)");
+                    winnersOut.println("====== " + getHeader(u) +
+                            " (listing high to low, top to top - "+
+                            parameters.get("ofInterestCutoff").doubleValue() + ")");
                 }
 
-                System.out.println();
+                winnersOut.println();
                 Set<String> keySet = stats.keySet();
                 int statIndex = -1;
 
@@ -410,7 +388,7 @@ public class Comparison {
                         double stat = allAllRet[numCategories - minCategoriesForSearch]
                                 [t][statIndex][u];
                         if (!Double.isNaN(stat)) {
-                            algStats.add(new Pair(algorithms.get(t), stat));
+                            algStats.add(new Pair(t + 1/*algorithms.get(t)*/, stat));
                         }
                     }
 
@@ -426,24 +404,24 @@ public class Comparison {
                         });
 
                         double maxStat = algStats.get(0).getStat();
-                        maxAlg = algStats.get(0).getAlgorithm().getName();
+                        maxAlg = "" + algStats.get(0).getAlgorithm()/*.getName()*/;
                         double ofInterest = maxStat - parameters.get("ofInterestCutoff").doubleValue();
 
                         for (int i = 1; i < algStats.size(); i++) {
                             if (algStats.get(i).getStat() == algStats.get(i - 1).getStat()) {
-                                maxAlg += "==" + algStats.get(i).getAlgorithm().getName();
+                                maxAlg += "==" + algStats.get(i).getAlgorithm()/*.getName()*/;
                             } else if (algStats.get(i).getStat() >= ofInterest) {
-                                maxAlg += "," + algStats.get(i).getAlgorithm().getName();
+                                maxAlg += "," + algStats.get(i).getAlgorithm()/*.getName()*/;
+                            } else {
+                                break;
                             }
                         }
                     }
 
-                    System.out.println(statName + ": " + maxAlg);
+                    winnersOut.println(statName + ": " + maxAlg);
                 }
             }
         }
-
-
     }
 
     private class EdgeStats {

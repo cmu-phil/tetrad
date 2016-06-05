@@ -28,4 +28,8 @@ public class MixedFci implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
+
+    public String getDescription() {
+        return "FCI, assuming the data are mixed. Uses the Mixed LRT test.";
+    }
 }

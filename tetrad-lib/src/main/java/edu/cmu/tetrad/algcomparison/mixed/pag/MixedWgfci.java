@@ -26,4 +26,8 @@ public class MixedWgfci implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
+
+    public String getDescription() {
+        return "WGFCI, assuming the data are mixed. Uses the SEM BIC score.";
+    }
 }

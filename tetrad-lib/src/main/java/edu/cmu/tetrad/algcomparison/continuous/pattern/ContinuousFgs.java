@@ -26,4 +26,7 @@ public class ContinuousFgs implements Algorithm {
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
-}
+
+    public String getDescription() {
+        return "FGS, assuming the data are continuous. Uses the SEM BIC score.";
+    }}
