@@ -48,4 +48,8 @@ public class DiscreteBayesNetSimulation implements Simulation {
     public String toString() {
         return "Bayes net simulation";
     }
+
+    public boolean isContinuous() {
+        return false;
+    }
 }

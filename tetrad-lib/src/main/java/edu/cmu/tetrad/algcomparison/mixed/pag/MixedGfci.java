@@ -17,16 +17,12 @@ public class MixedGfci implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "m-GFCI";
-    }
-
     @Override
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
 
     public String getDescription() {
-        return "GFCI, assuming the data are mixed. Uses the Mixed BIC score.";
+        return "GFCI using the Mixed BIC score.";
     }
 }

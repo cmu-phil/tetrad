@@ -17,10 +17,6 @@ public class ContinuousCfci implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "c-CFCI";
-    }
-
     @Override
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
@@ -28,6 +24,6 @@ public class ContinuousCfci implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CFCI, assuming the data are continuous. Uses the Fisher Z test.";
+        return "CFCI, using the Fisher Z test.";
     }
 }

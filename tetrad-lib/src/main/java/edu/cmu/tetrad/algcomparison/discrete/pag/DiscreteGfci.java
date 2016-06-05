@@ -19,15 +19,11 @@ public class DiscreteGfci implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "d-GFCI";
-    }
-
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
 
     public String getDescription() {
-        return "GFCI, assuming the data are discrete. Uses the BDeu score.";
+        return "GFCI using the BDeu score.";
     }
 }

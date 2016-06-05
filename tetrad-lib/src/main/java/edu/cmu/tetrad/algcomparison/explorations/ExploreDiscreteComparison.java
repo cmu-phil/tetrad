@@ -24,6 +24,7 @@ package edu.cmu.tetrad.algcomparison.explorations;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.Simulation;
+import edu.cmu.tetrad.algcomparison.discrete.cyclic_pag.DiscreteCcd;
 import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteCfci;
 import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFci;
 import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteGfci;
@@ -32,6 +33,7 @@ import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteCpc;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteFgs;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePc;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePcs;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
@@ -50,14 +52,14 @@ public class ExploreDiscreteComparison {
         Map<String, Number> parameters = new LinkedHashMap<>();
         parameters.put("numMeasures", 20);
         parameters.put("numEdges", 20);
-        parameters.put("numLatents", 0);
+        parameters.put("numLatents", 5);
         parameters.put("maxDegree", 10);
         parameters.put("maxIndegree", 10);
         parameters.put("maxOutdegree", 10);
         parameters.put("connected", 0);
         parameters.put("sampleSize", 1000);
-        parameters.put("minCategoriesForSearch", 2);
-        parameters.put("maxCategoriesForSearch", 4);
+        parameters.put("minCategoriesForSearch", 3);
+        parameters.put("maxCategoriesForSearch", 3);
         parameters.put("numRuns", 5);
         parameters.put("alpha", 0.001);
         parameters.put("penaltyDiscount", 4);
@@ -77,32 +79,38 @@ public class ExploreDiscreteComparison {
         stats.put("McOr", "Matthew's correlation coefficient for arrow");
         stats.put("F1Adj", "F1 statistic for adjacencies");
         stats.put("F1Or", "F1 statistic for arrows");
+        stats.put("SHD", "Structural Hamming Distance");
         stats.put("E", "Elapsed time in seconds");
 
         List<Algorithm> algorithms = new ArrayList<>();
+
+        // Pattern
         algorithms.add(new DiscretePc());
         algorithms.add(new DiscreteCpc());
         algorithms.add(new DiscreteFgs());
         algorithms.add(new DiscretePcs());
         algorithms.add(new DiscreteFci());
-        algorithms.add(new DiscreteRfci());
-        algorithms.add(new DiscreteCfci());
-        algorithms.add(new DiscreteGfci());
-
-        // Fast mixed
         algorithms.add(new MixedSemFgs());
         algorithms.add(new MixedBdeuFgs());
         algorithms.add(new MixedWfgs());
-        algorithms.add(new MixedWgfci());
 
-        // Slow mixed
+        // These won't run on all discrete
 //        algorithms.add(new MixedPc());
 //        algorithms.add(new MixedPcs());
 //        algorithms.add(new MixedCpc());
-//        algorithms.add(new MixedFci());
-//        algorithms.add(new MixedGfci());
 
-        String baseFileName = "DiscreteComparison";
+        // PAG
+        algorithms.add(new DiscreteRfci());
+        algorithms.add(new DiscreteCfci());
+        algorithms.add(new DiscreteGfci());
+        algorithms.add(new MixedWgfci());
+        algorithms.add(new MixedFci());
+        algorithms.add(new MixedGfci());
+
+        // Cyclic PAG
+        algorithms.add(new DiscreteCcd());
+
+        String baseFileName = "DiscreteComparisonWithLatents";
 
         Simulation simulation = new DiscreteBayesNetSimulation();
         new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation, baseFileName);

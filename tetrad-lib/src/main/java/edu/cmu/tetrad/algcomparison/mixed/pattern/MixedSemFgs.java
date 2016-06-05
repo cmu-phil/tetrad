@@ -27,10 +27,6 @@ public class MixedSemFgs implements Algorithm {
         return convertBack(Dk, p);
     }
 
-    public String getName() {
-        return "mc-FGS";
-    }
-
     private Graph convertBack(DataSet Dk, Graph p) {
         Graph p2 = new EdgeListGraph(Dk.getVariables());
 
@@ -59,7 +55,7 @@ public class MixedSemFgs implements Algorithm {
     }
 
     public String getDescription() {
-        return "FGS, assuming the data are mixed. Treats all variables as continuous.";
+        return "FGS, using the SEM BIC score, treating all variables as continuous.";
     }
 }
 

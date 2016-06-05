@@ -72,7 +72,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
 
         int depth = getParams().getIndTestParams().getDepth();
 
-        search = new Mmhc(getIndependenceTest());
+        search = new Mmhc(getIndependenceTest(), dataSet);
         search.setDepth(depth);
         search.setKnowledge(getParams().getKnowledge());
 

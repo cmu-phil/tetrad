@@ -17,17 +17,13 @@ public class DiscreteRfci implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "d-RFCI";
-    }
-
     @Override
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
 
     public String getDescription() {
-        return "RFCI, assuming the data are discrete. Uses the Chi Square test.";
+        return "RFCI using the Chi Square test.";
     }
 
 

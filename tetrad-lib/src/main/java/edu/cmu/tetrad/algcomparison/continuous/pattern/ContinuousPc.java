@@ -17,14 +17,10 @@ public class ContinuousPc implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "c-PC";
-    }
-
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {
-        return "PC, assuming the data are continuous. Uses the Fisher Z test.";
+        return "PC using the Fisher Z test.";
     }}

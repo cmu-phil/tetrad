@@ -11,8 +11,6 @@ import java.util.Map;
 public interface Algorithm {
     Graph search(DataSet dataSet, Map<String, Number> parameters);
 
-    String getName();
-
     Graph getComparisonGraph(Graph dag);
 
     String getDescription();

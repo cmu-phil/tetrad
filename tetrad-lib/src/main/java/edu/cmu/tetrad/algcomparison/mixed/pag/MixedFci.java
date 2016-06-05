@@ -20,16 +20,12 @@ public class MixedFci implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "m-FCI";
-    }
-
     @Override
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
 
     public String getDescription() {
-        return "FCI, assuming the data are mixed. Uses the Mixed LRT test.";
+        return "FCI using the Mixed LRT test.";
     }
 }

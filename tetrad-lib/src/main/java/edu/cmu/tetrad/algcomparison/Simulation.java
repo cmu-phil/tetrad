@@ -17,4 +17,5 @@ public interface Simulation {
 
     String toString();
 
+    boolean isContinuous();
 }

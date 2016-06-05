@@ -20,15 +20,11 @@ public class MixedPcs implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "m-PCS";
-    }
-
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {
-        return "PC-Stable, assuming the data are mixed. Uses the Mixed LRT test";
+        return "PC-Stable using the Mixed LRT test";
     }
 }

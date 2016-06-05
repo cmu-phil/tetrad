@@ -18,15 +18,11 @@ public class MixedWfgs implements Algorithm {
         return fgs.search();
     }
 
-    public String getName() {
-        return "m-WFGS";
-    }
-
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {
-        return "WFGS, assuming the data are mixed. Uses the SEM BIC score.";
+        return "WFGS using the SEM BIC score.";
     }
 }

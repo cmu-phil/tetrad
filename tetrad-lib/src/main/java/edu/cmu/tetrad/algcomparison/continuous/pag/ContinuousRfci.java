@@ -17,15 +17,11 @@ public class ContinuousRfci implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "c-RFCI";
-    }
-
     @Override
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
 
     public String getDescription() {
-        return "RFCI, assuming the data are continuous. Uses the Fisher Z test.";
+        return "RFCI using the Fisher Z test.";
     }}

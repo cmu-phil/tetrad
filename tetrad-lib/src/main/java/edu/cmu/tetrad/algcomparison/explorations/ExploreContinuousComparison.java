@@ -24,18 +24,17 @@ package edu.cmu.tetrad.algcomparison.explorations;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.Simulation;
+import edu.cmu.tetrad.algcomparison.continuous.cyclic_pag.ContinuousCcd;
 import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousCfci;
 import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousFci;
 import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousGfci;
 import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousRfci;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousCpc;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousFgs;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousPc;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousPcs;
+import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
+import edu.cmu.tetrad.algcomparison.simulation.ContinuousCyclicSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousSemSimulation;
 
 import java.util.ArrayList;
@@ -49,13 +48,13 @@ import java.util.Map;
 public class ExploreContinuousComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numMeasures", 10);
+        parameters.put("numMeasures", 20);
         parameters.put("numLatents", 0);
+        parameters.put("numEdges", 20);
         parameters.put("maxDegree", 10);
         parameters.put("maxIndegree", 10);
         parameters.put("maxOutdegree", 10);
         parameters.put("connected", 0);
-        parameters.put("numEdges", 10);
         parameters.put("sampleSize", 1000);
         parameters.put("minCategoriesForSearch", 2);
         parameters.put("maxCategoriesForSearch", 2);
@@ -78,35 +77,43 @@ public class ExploreContinuousComparison {
         stats.put("McOr", "Matthew's correlation coefficient for arrow");
         stats.put("F1Adj", "F1 statistic for adjacencies");
         stats.put("F1Or", "F1 statistic for arrows");
+        stats.put("SHD", "Structural Hamming Distance");
         stats.put("E", "Elapsed time in seconds");
 
         List<Algorithm> algorithms = new ArrayList<>();
+
+        // Pattern
         algorithms.add(new ContinuousPc());
         algorithms.add(new ContinuousCpc());
-        algorithms.add(new ContinuousFgs());
         algorithms.add(new ContinuousPcs());
         algorithms.add(new ContinuousFci());
-        algorithms.add(new ContinuousRfci());
-        algorithms.add(new ContinuousCfci());
-        algorithms.add(new ContinuousGfci());
-
-        // Fast mixed
         algorithms.add(new MixedSemFgs());
         algorithms.add(new MixedBdeuFgs());
         algorithms.add(new MixedWfgs());
-        algorithms.add(new MixedWgfci());
-
-        // Slow mixed
         algorithms.add(new MixedPc());
         algorithms.add(new MixedPcs());
         algorithms.add(new MixedCpc());
+        algorithms.add(new ContinuousFgs());
+        algorithms.add(new ContinuousMmhc());
+
+        // PAG
         algorithms.add(new MixedFci());
+        algorithms.add(new ContinuousRfci());
+        algorithms.add(new ContinuousCfci());
+        algorithms.add(new ContinuousGfci());
         algorithms.add(new MixedGfci());
+        algorithms.add(new MixedWgfci());
+
+        // Cyclic PAG
+        algorithms.add(new ContinuousCcd());
 
         String baseFileName = "ContinuousComparison";
 
 //        Simulation simulation = new LeeHastieSimulation();
-        Simulation simulation = new ContinuousSemSimulation();
+//        Simulation simulation = new ContinuousSemSimulation();
+        Simulation simulation = new ContinuousCyclicSemSimulation();
+//        Simulation simulation = new GeneralizedSemSimulation();
+//        Simulation simulation = new CyclicGeneralizedSemSimulation();
 //        Simulation simulation = new SemThenDiscretizeHalfSimulation();
 
         new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation, baseFileName);

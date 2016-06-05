@@ -30,16 +30,12 @@ public class MixedMGMPc implements Algorithm {
         return pcs.search();
     }
 
-    public String getName() {
-        return "m-MGMPC";
-    }
-
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {
-        return "MGM-PC, assuming the data are mixed. Uses the output of MGM as an intial graph " +
-                "for PC-Stable.";
+        return "MGM-PC: uses the output of MGM as an intial graph " +
+                "for PC-Stable, using the Mixed LRT test.";
     }
 }

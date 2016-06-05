@@ -17,14 +17,10 @@ public class ContinuousPcs implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "c-PCS";
-    }
-
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {
-        return "PC-Stable, assuming the data are continuous. Uses the Fisher Z test.";
+        return "PC-Stable using the Fisher Z test.";
     }}

@@ -17,15 +17,11 @@ public class ContinuousFci implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "c-FCI";
-    }
-
     @Override
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
 
     public String getDescription() {
-        return "FCI, assuming the data are continuous. Uses the Fisher Z test.";
+        return "FCI using the Fisher Z test.";
     }}

@@ -18,15 +18,11 @@ public class ContinuousGfci implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "c-GFCI";
-    }
-
     @Override
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
 
     public String getDescription() {
-        return "GFCI, assuming the data are continuous. Uses SEM BIC score.";
+        return "GFCI using the SEM BIC score.";
     }}

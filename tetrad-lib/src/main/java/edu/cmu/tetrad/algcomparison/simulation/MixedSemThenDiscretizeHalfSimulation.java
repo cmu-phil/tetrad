@@ -17,11 +17,11 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class SemThenDiscretizeHalfSimulation implements Simulation {
+public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
     private Graph graph;
     private DataSet dataSet;
 
-    public SemThenDiscretizeHalfSimulation() {
+    public MixedSemThenDiscretizeHalfSimulation() {
     }
 
     public void simulate(Map<String, Number> parameters) {
@@ -43,7 +43,7 @@ public class SemThenDiscretizeHalfSimulation implements Simulation {
 
         Discretizer discretizer = new Discretizer(continuousData);
 
-        for (int i = 0; i < shuffledNodes.size() / 2; i++) {
+        for (int i = 0; i < shuffledNodes.size() * parameters.get("percentDiscreteForMixedSimulation").doubleValue() * 0.01; i++) {
             discretizer.equalCounts(shuffledNodes.get(i), parameters.get("numCategories").intValue());
         }
 
@@ -59,6 +59,10 @@ public class SemThenDiscretizeHalfSimulation implements Simulation {
     }
 
     public String toString() {
-        return "Simulation SEM data then discretizing";
+        return "Simulation SEM data then discretizing some variables";
+    }
+
+    public boolean isContinuous() {
+        return false;
     }
 }

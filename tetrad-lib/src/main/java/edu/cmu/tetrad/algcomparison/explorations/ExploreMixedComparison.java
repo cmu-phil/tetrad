@@ -28,9 +28,7 @@ import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
-import edu.cmu.tetrad.algcomparison.simulation.DiscreteBayesNetSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.SemThenDiscretizeHalfSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
 
 import java.util.*;
 
@@ -40,13 +38,13 @@ import java.util.*;
 public class ExploreMixedComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numMeasures", 15);
-        parameters.put("numLatents", 0);
+        parameters.put("numMeasures", 20);
+        parameters.put("numEdges", 20);
+        parameters.put("numLatents", 5);
         parameters.put("maxDegree", 10);
         parameters.put("maxIndegree", 10);
         parameters.put("maxOutdegree", 10);
         parameters.put("connected", 0);
-        parameters.put("numEdges", 10);
         parameters.put("sampleSize", 1000);
         parameters.put("minCategoriesForSearch", 2);
         parameters.put("maxCategoriesForSearch", 4);
@@ -56,7 +54,8 @@ public class ExploreMixedComparison {
         parameters.put("mgmParam1", 0.1);
         parameters.put("mgmParam2", 0.1);
         parameters.put("mgmParam3", 0.1);
-        parameters.put("ofInterestCutoff", 0.05     );
+        parameters.put("percentDiscreteForMixedSimulation", 50);
+        parameters.put("ofInterestCutoff", 0.05);
 
         Map<String, String> stats = new LinkedHashMap<>();
         stats.put("AP", "Adjacency Precision");
@@ -67,34 +66,32 @@ public class ExploreMixedComparison {
         stats.put("McOr", "Matthew's correlation coefficient for arrow");
         stats.put("F1Adj", "F1 statistic for adjacencies");
         stats.put("F1Or", "F1 statistic for arrows");
+        stats.put("SHD", "Structural hamming distance");
         stats.put("E", "Elapsed time in seconds");
 
         List<Algorithm> algorithms = new ArrayList<>();
 
-        // Fast
+        // Pattern
+//        algorithms.add(new MixedSemFgs());
+//        algorithms.add(new MixedBdeuFgs());
+//        algorithms.add(new MixedWfgs());
+//        algorithms.add(new MixedPc());
+//        algorithms.add(new MixedPcs());
+//        algorithms.add(new MixedCpc());
+//        algorithms.add(new MixedMGMFgs());
+//        algorithms.add(new MixedMGMPc());
 
-        algorithms.add(new MixedSemFgs());
-        algorithms.add(new MixedBdeuFgs());
-        algorithms.add(new MixedWfgs());
+        // PAG
         algorithms.add(new MixedWgfci());
-
-        // Slow
-        algorithms.add(new MixedPc());
-        algorithms.add(new MixedPcs());
-        algorithms.add(new MixedCpc());
         algorithms.add(new MixedFci());
         algorithms.add(new MixedGfci());
 
-        // These can't be run on non-mixed data.
-        algorithms.add(new MixedMGMFgs());
-        algorithms.add(new MixedMGMPc());
-
-        String baseFileName = "MixedComparison";
-
-//        Simulation simulation = new LeeHastieSimulation();
-        Simulation simulation = new SemThenDiscretizeHalfSimulation();
+        Simulation simulation = new MixedLeeHastieSimulation();
+//        Simulation simulation = new SemThenDiscretizeHalfSimulation();
 //        Simulation simulation = new DiscreteBayesNetSimulation();
 
+
+        String baseFileName = "MixedComparisonWithLatents";
         new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation, baseFileName);
     }
 

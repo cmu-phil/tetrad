@@ -17,11 +17,11 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class LeeHastieSimulation implements Simulation {
+public class MixedLeeHastieSimulation implements Simulation {
     private Graph dag;
     private DataSet dataSet;
 
-    public LeeHastieSimulation() {
+    public MixedLeeHastieSimulation() {
     }
 
     public void simulate(Map<String, Number> parameters) {
@@ -40,7 +40,7 @@ public class LeeHastieSimulation implements Simulation {
         Collections.shuffle(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
-            if (i < nodes.size() / 2) {
+            if (i < nodes.size() * parameters.get("percentDiscreteForMixedSimulation").doubleValue() * 0.01) {
                 nd.put(nodes.get(i).getName(), parameters.get("numCategories").intValue());
             } else {
                 nd.put(nodes.get(i).getName(), 0);
@@ -66,5 +66,9 @@ public class LeeHastieSimulation implements Simulation {
 
     public String toString() {
         return "Lee & Hastie simulation";
+    }
+
+    public boolean isContinuous() {
+        return false;
     }
 }

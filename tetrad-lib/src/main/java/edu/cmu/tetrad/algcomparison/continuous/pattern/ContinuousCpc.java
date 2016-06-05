@@ -17,14 +17,10 @@ public class ContinuousCpc implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "c-Cpc";
-    }
-
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {
-        return "CPC, assuming the data are continuous. Uses the Fisher Z test.";
+        return "CPC using the Fisher Z test.";
     }}

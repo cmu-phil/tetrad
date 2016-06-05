@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,7 +33,6 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.Exchanger;
 
 /**
  * @author Joseph Ramsey
@@ -335,14 +335,19 @@ public class Comparison {
                     String algorithm = "" + (t + 1);//algorithms.get(t).getName();
 
                     detailsOut.println();
-                    detailsOut.println(getHeader(u) + " # categories = " + numCategories + " Algorithm = " + algorithm);
+
+                    if (graphTypeUsed[1]) {
+                        detailsOut.println(getHeader(u) + " Algorithm = " + algorithm + " # categories = " + numCategories);
+                    } else {
+                        detailsOut.println(getHeader(u) + " Algorithm = " + algorithm);
+                    }
                     detailsOut.println();
                     Set<String> keySet = stats.keySet();
                     Iterator<String> iterator = keySet.iterator();
 
-                    for (int statIndex = 0; statIndex < allAllRet[numCategories - 2][0].length; statIndex++) {
+                    for (int statIndex = 0; statIndex < allAllRet[0][0].length; statIndex++) {
                         String statLabel = iterator.next();
-                        double stat = allAllRet[numCategories - 2][t][statIndex][u];
+                        double stat = allAllRet[0][t][statIndex][u];
                         detailsOut.println("\tAverage " + statLabel + " = " + nf.format(stat));
                     }
                 }
@@ -351,10 +356,76 @@ public class Comparison {
 
         winnersOut.println("And the winners are... !");
 
-        for (int u = 0; u < 4; u++) {
-            if (!graphTypeUsed[u]) {
-                continue;
+        if (!simulation.isContinuous()) {
+            for (int u = 0; u < 4; u++) {
+                int minCategoriesForSearch = parameters.get("minCategoriesForSearch").intValue();
+                int maxCategoriesForSearch = parameters.get("maxCategoriesForSearch").intValue();
+                for (int numCategories = minCategoriesForSearch;
+                     numCategories <= maxCategoriesForSearch; numCategories++) {
+                    parameters.put("numCategories", numCategories);
+
+                    winnersOut.println();
+
+                    if (maxCategoriesForSearch > minCategoriesForSearch) {
+                        winnersOut.println("====== " + getHeader(u) + " " + numCategories +
+                                " categories (listing high to low, top to top - " +
+                                parameters.get("ofInterestCutoff").doubleValue() + ")");
+                    } else {
+                        winnersOut.println("====== " + getHeader(u) +
+                                " (listing high to low, top to top - " +
+                                parameters.get("ofInterestCutoff").doubleValue() + ")");
+                    }
+
+                    winnersOut.println();
+                    Set<String> keySet = stats.keySet();
+                    int statIndex = -1;
+
+                    for (String statName : keySet) {
+                        String maxAlg;
+                        statIndex++;
+
+                        List<Pair> algStats = new ArrayList<>();
+
+                        for (int t = 0; t < algorithms.size(); t++) {
+                            double stat = allAllRet[numCategories - minCategoriesForSearch]
+                                    [t][statIndex][u];
+                            if (!Double.isNaN(stat)) {
+                                algStats.add(new Pair(t + 1/*algorithms.get(t)*/, stat));
+                            }
+                        }
+
+                        if (algStats.isEmpty()) {
+                            maxAlg = "-";
+                        } else {
+                            Collections.sort(algStats, new Comparator<Pair>() {
+
+                                @Override
+                                public int compare(Pair o1, Pair o2) {
+                                    return -Double.compare(o1.getStat(), o2.getStat());
+                                }
+                            });
+
+                            double maxStat = algStats.get(0).getStat();
+                            maxAlg = "" + algStats.get(0).getAlgorithm()/*.getName()*/;
+                            double ofInterest = maxStat - parameters.get("ofInterestCutoff").doubleValue();
+
+                            for (int i = 1; i < algStats.size(); i++) {
+                                if (algStats.get(i).getStat() == algStats.get(i - 1).getStat()) {
+                                    maxAlg += "==" + algStats.get(i).getAlgorithm()/*.getName()*/;
+                                } else if (algStats.get(i).getStat() >= ofInterest) {
+                                    maxAlg += "," + algStats.get(i).getAlgorithm()/*.getName()*/;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+
+                        winnersOut.println(statName + ": " + maxAlg);
+                    }
+                }
             }
+        } else {
+            int u = 0;
 
             int minCategoriesForSearch = parameters.get("minCategoriesForSearch").intValue();
             int maxCategoriesForSearch = parameters.get("maxCategoriesForSearch").intValue();
@@ -364,15 +435,9 @@ public class Comparison {
 
                 winnersOut.println();
 
-                if (maxCategoriesForSearch > minCategoriesForSearch) {
-                    winnersOut.println("====== " + getHeader(u) + " " + numCategories +
-                            " categories (listing high to low, top to top - " +
-                            parameters.get("ofInterestCutoff").doubleValue() + ")");
-                } else {
-                    winnersOut.println("====== " + getHeader(u) +
-                            " (listing high to low, top to top - "+
-                            parameters.get("ofInterestCutoff").doubleValue() + ")");
-                }
+                winnersOut.println("====== " + getHeader(u) +
+                        " (listing high to low, top to top - " +
+                        parameters.get("ofInterestCutoff").doubleValue() + ")");
 
                 winnersOut.println();
                 Set<String> keySet = stats.keySet();
@@ -425,8 +490,8 @@ public class Comparison {
     }
 
     private class EdgeStats {
-        private Graph graph;
-        private Graph graph1;
+        private Graph est;
+        private Graph truth;
         private double adjPrecision;
         private double adjRecall;
         private double arrowPrecision;
@@ -435,11 +500,12 @@ public class Comparison {
         private double mcOr;
         private double f1Adj;
         private double f1Arrows;
+        private int shd;
         private double elapsed;
 
-        public EdgeStats(Graph graph, Graph graph1, long elapsed) {
-            this.graph = graph;
-            this.graph1 = graph1;
+        public EdgeStats(Graph est, Graph truth, long elapsed) {
+            this.est = est;
+            this.truth = truth;
             this.elapsed = elapsed / 1000.0;
         }
 
@@ -461,6 +527,8 @@ public class Comparison {
                     return f1Adj;
                 case "F1Or":
                     return f1Arrows;
+                case "SHD":
+                    return -shd;
                 case "E":
 
                     // Needs to sort high to low.
@@ -480,15 +548,15 @@ public class Comparison {
             int arrowsTn;
             int arrowsFn = 0;
 
-            for (Edge edge : graph.getEdges()) {
-                if (graph1.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            for (Edge edge : est.getEdges()) {
+                if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                     adjTp++;
                 } else {
                     adjFp++;
                 }
 
                 if (edge.isDirected()) {
-                    Edge _edge = graph1.getEdge(edge.getNode1(), edge.getNode2());
+                    Edge _edge = truth.getEdge(edge.getNode1(), edge.getNode2());
 
                     if (edge != null && edge.equals(_edge)) {
                         arrowsTp++;
@@ -498,28 +566,30 @@ public class Comparison {
                 }
             }
 
-            List<Node> nodes1 = graph1.getNodes();
+            GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison2(truth, est);
+
+            List<Node> nodes1 = truth.getNodes();
 
             for (int w = 0; w < nodes1.size(); w++) {
                 for (int s = w + 1; w < nodes1.size(); w++) {
                     Node W = nodes1.get(w);
                     Node S = nodes1.get(s);
 
-                    if (graph1.isAdjacentTo(W, S)) {
-                        if (!graph.isAdjacentTo(W, S)) {
+                    if (truth.isAdjacentTo(W, S)) {
+                        if (!est.isAdjacentTo(W, S)) {
                             adjFn++;
                         }
 
-                        Edge e1 = graph1.getEdge(W, S);
-                        Edge e2 = graph.getEdge(W, S);
+                        Edge e1 = truth.getEdge(W, S);
+                        Edge e2 = est.getEdge(W, S);
 
                         if (!(e2 != null && e2.equals(e1))) {
                             arrowsFn++;
                         }
                     }
 
-                    Edge e1 = graph1.getEdge(W, S);
-                    Edge e2 = graph.getEdge(W, S);
+                    Edge e1 = truth.getEdge(W, S);
+                    Edge e2 = est.getEdge(W, S);
 
                     if (!(e1 != null && e2 == null) || (e1 != null && e2 != null && !e1.equals(e2))) {
                         arrowsFn++;
@@ -527,7 +597,7 @@ public class Comparison {
                 }
             }
 
-            int allEdges = graph1.getNumNodes() * (graph1.getNumNodes() - 1);
+            int allEdges = truth.getNumNodes() * (truth.getNumNodes() - 1);
 
             adjTn = allEdges / 2 - (adjFn + adjFp + adjTp);
             arrowsTn = allEdges - (arrowsFn + arrowsFp + arrowsTp);
@@ -545,6 +615,9 @@ public class Comparison {
                             (arrowsTn + arrowsFp) * (arrowsTn + arrowsFn));
             f1Adj = 2 * (adjPrecision * adjRecall) / (adjPrecision + adjRecall);
             f1Arrows = 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);
+
+            shd = comparison.getShd();
+
             return this;
         }
     }

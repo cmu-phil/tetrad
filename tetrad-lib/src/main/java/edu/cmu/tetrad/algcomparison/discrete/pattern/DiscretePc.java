@@ -17,15 +17,11 @@ public class DiscretePc implements Algorithm {
         return pc.search();
     }
 
-    public String getName() {
-        return "d-PC";
-    }
-
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {
-        return "PC, assuming the data are discrete. Uses the Chi Square test.";
+        return "PC using the Chi Square test.";
     }
 }

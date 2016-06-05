@@ -36,10 +36,6 @@ public class MixedMGMFgs implements Algorithm {
         return convertBack(ds, p);
     }
 
-    public String getName() {
-        return "m-MGMFGS";
-    }
-
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
@@ -68,7 +64,7 @@ public class MixedMGMFgs implements Algorithm {
     }
 
     public String getDescription() {
-        return "MGM-FGS, assuming the data are mixed. Uses the output of MGM as an intial graph " +
-                "for FGS.";
+        return "MGM-FGS: uses the output of MGM as an intial graph for FGS, treating discrete " +
+                "variables as continuous.";
     }
 }

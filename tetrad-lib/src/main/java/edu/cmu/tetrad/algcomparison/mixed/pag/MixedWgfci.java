@@ -18,16 +18,12 @@ public class MixedWgfci implements Algorithm {
         return fgs.search();
     }
 
-    public String getName() {
-        return "m-WGFCI";
-    }
-
     @Override
     public Graph getComparisonGraph(Graph dag) {
         return new DagToPag(dag).convert();
     }
 
     public String getDescription() {
-        return "WGFCI, assuming the data are mixed. Uses the SEM BIC score.";
+        return "WGFCI using the SEM BIC score.";
     }
 }
