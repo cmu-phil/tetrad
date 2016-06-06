@@ -125,7 +125,7 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
 //        new ExploreKummerfeldRamseyTetradPaper().testOMS();
     }
 
-    public boolean isContinuous() {
-        return true;
+    public boolean isMixed() {
+        return false;
     }
 }

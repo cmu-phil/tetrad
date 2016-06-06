@@ -49,7 +49,7 @@ public class DiscreteBayesNetSimulation implements Simulation {
         return "Bayes net simulation";
     }
 
-    public boolean isContinuous() {
+    public boolean isMixed() {
         return false;
     }
 }

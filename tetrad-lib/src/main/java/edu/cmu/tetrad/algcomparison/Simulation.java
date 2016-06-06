@@ -17,5 +17,5 @@ public interface Simulation {
 
     String toString();
 
-    boolean isContinuous();
+    boolean isMixed();
 }

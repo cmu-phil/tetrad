@@ -62,7 +62,7 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
         return "Simulation SEM data then discretizing some variables";
     }
 
-    public boolean isContinuous() {
-        return false;
+    public boolean isMixed() {
+        return true;
     }
 }

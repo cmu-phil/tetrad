@@ -13,7 +13,8 @@ import java.util.Map;
  */
 public class ContinuousGfci implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-        Score score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
         GFci pc = new GFci(score);
         return pc.search();
     }

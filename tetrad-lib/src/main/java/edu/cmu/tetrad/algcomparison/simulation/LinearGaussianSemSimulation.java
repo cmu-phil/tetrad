@@ -17,11 +17,11 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class ContinuousSemSimulation implements Simulation {
+public class LinearGaussianSemSimulation implements Simulation {
     private Graph graph;
     private DataSet dataSet;
 
-    public ContinuousSemSimulation() {
+    public LinearGaussianSemSimulation() {
     }
 
     public void simulate(Map<String, Number> parameters) {
@@ -47,10 +47,10 @@ public class ContinuousSemSimulation implements Simulation {
     }
 
     public String toString() {
-        return "SEM simulation";
+        return "Linear, Gaussian SEM simulation";
     }
 
-    public boolean isContinuous() {
-        return true;
+    public boolean isMixed() {
+        return false;
     }
 }

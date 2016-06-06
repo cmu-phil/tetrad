@@ -68,7 +68,7 @@ public class MixedLeeHastieSimulation implements Simulation {
         return "Lee & Hastie simulation";
     }
 
-    public boolean isContinuous() {
-        return false;
+    public boolean isMixed() {
+        return true;
     }
 }

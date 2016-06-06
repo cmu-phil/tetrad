@@ -24,30 +24,21 @@ package edu.cmu.tetrad.algcomparison.explorations;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.Simulation;
-import edu.cmu.tetrad.algcomparison.discrete.cyclic_pag.DiscreteCcd;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteCfci;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFci;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteGfci;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteRfci;
-import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteCpc;
-import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteFgs;
-import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePc;
-import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePcs;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
-import edu.cmu.tetrad.algcomparison.simulation.DiscreteBayesNetSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.util.*;
 
 /**
  * @author Joseph Ramsey
  */
-public class ExploreDiscreteComparison {
+public class RunMixedComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
         parameters.put("numMeasures", 20);
@@ -58,17 +49,15 @@ public class ExploreDiscreteComparison {
         parameters.put("maxOutdegree", 10);
         parameters.put("connected", 0);
         parameters.put("sampleSize", 1000);
-        parameters.put("minCategoriesForSearch", 3);
-        parameters.put("maxCategoriesForSearch", 3);
-        parameters.put("numRuns", 5);
+        parameters.put("numCategories", 3);
+        parameters.put("numRuns", 10);
         parameters.put("alpha", 0.001);
         parameters.put("penaltyDiscount", 4);
         parameters.put("mgmParam1", 0.1);
         parameters.put("mgmParam2", 0.1);
         parameters.put("mgmParam3", 0.1);
+        parameters.put("percentDiscreteForMixedSimulation", 50);
         parameters.put("ofInterestCutoff", 0.05);
-        parameters.put("structurePrior", 1);
-        parameters.put("samplePrior", 1);
 
         Map<String, String> stats = new LinkedHashMap<>();
         stats.put("AP", "Adjacency Precision");
@@ -79,41 +68,47 @@ public class ExploreDiscreteComparison {
         stats.put("McOr", "Matthew's correlation coefficient for arrow");
         stats.put("F1Adj", "F1 statistic for adjacencies");
         stats.put("F1Or", "F1 statistic for arrows");
-        stats.put("SHD", "Structural Hamming Distance");
+        stats.put("SHD", "Structural hamming distance");
         stats.put("E", "Elapsed time in seconds");
 
         List<Algorithm> algorithms = new ArrayList<>();
 
         // Pattern
-        algorithms.add(new DiscretePc());
-        algorithms.add(new DiscreteCpc());
-        algorithms.add(new DiscreteFgs());
-        algorithms.add(new DiscretePcs());
-        algorithms.add(new DiscreteFci());
         algorithms.add(new MixedSemFgs());
         algorithms.add(new MixedBdeuFgs());
         algorithms.add(new MixedWfgs());
-
-        // These won't run on all discrete
-//        algorithms.add(new MixedPc());
-//        algorithms.add(new MixedPcs());
-//        algorithms.add(new MixedCpc());
+        algorithms.add(new MixedPc());
+        algorithms.add(new MixedPcs());
+        algorithms.add(new MixedCpc());
+        algorithms.add(new MixedMGMFgs());
+        algorithms.add(new MixedMGMPc());
 
         // PAG
-        algorithms.add(new DiscreteRfci());
-        algorithms.add(new DiscreteCfci());
-        algorithms.add(new DiscreteGfci());
         algorithms.add(new MixedWgfci());
         algorithms.add(new MixedFci());
         algorithms.add(new MixedGfci());
 
-        // Cyclic PAG
-        algorithms.add(new DiscreteCcd());
+        Simulation simulation = new MixedLeeHastieSimulation();
+//        Simulation simulation = new SemThenDiscretizeHalfSimulation();
+//        Simulation simulation = new DiscreteBayesNetSimulation();
 
-        String baseFileName = "DiscreteComparisonWithLatents";
+        String baseFileName = "Mixed";
 
-        Simulation simulation = new DiscreteBayesNetSimulation();
-        new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation, baseFileName);
+        try {
+            File dir = new File("comparison");
+            dir.mkdirs();
+
+            for (int index = 1; ; index++) {
+                File comparison = new File("comparison", baseFileName + "." + index + ".txt");
+                if (!comparison.exists()) {
+                    PrintStream out = new PrintStream(new FileOutputStream(comparison));
+                    new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation, out);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

@@ -45,7 +45,7 @@ public class ContinuousCyclicSemSimulation implements Simulation {
     }
 
     @Override
-    public boolean isContinuous() {
-        return true;
+    public boolean isMixed() {
+        return false;
     }
 }
