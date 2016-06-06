@@ -93,7 +93,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         }
 
         this.graph = graph;
-        this.knowledge = graph.getKnowlege();
+        this.knowledge = graph.getKnowledge();
     }
 
     public TimeLagGraphWrapper() {
@@ -173,7 +173,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
     }
 
     public IKnowledge getKnowledge() {
-        return graph.getKnowlege();
+        return graph.getKnowledge();
     }
 }
 

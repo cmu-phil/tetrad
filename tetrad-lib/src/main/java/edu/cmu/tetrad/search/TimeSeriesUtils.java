@@ -22,13 +22,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
 
@@ -456,8 +454,7 @@ public class TimeSeriesUtils {
         Node indexNode = new ContinuousVariable(name);
         indexNode.setName(name);
         newVariables.add(indexNode);
-        indexNode.setCenter(80 * 0 + 50, 80 * (numLags - 1) + 50);
-        //laggedNodes[lag][col] = indexNode;
+        indexNode.setCenter(50, 80 * (numLags - 1) + 50);
         knowledge.addToTier(0, indexNode.getName());
 
         DataSet laggedData = new ColtDataSet(laggedRows, newVariables);
@@ -479,15 +476,65 @@ public class TimeSeriesUtils {
         // fill indexNode with for loop over rows
         for (int row = 0; row < laggedRows; row++) {
             laggedData.setDouble(row, dataSize + numLags * dataSize, row+1);
-            // is "row" the right value, or is this reverse order?
-            // is dataSize + numLags + 1 the right column?
         }
 
         knowledge.setDefaultToKnowledgeLayout(true);
-//        knowledge.setLagged(true);
         laggedData.setKnowledge(knowledge);
-//        laggedData.setName(data.getNode());
         return laggedData;
+    }
+
+    public static TimeLagGraph GraphToLagGraph(Graph _graph){
+        TimeLagGraph graph = new TimeLagGraph();
+        int numLags = 1;
+
+        for (Node node : _graph.getNodes()) {
+            graph.addNode(node);
+
+            /* adding node from Lag 1 to Lag 0 for every node */
+            Node from = graph.getNode(node.getName(),1);
+            Node to = graph.getNode(node.getName(),0);
+            Edge edge = new Edge(from,to,Endpoint.TAIL,Endpoint.ARROW);
+            graph.addEdge(edge);
+            //graph.addDirectedEdge(from, to);
+        }
+
+        for (Edge edge : _graph.getEdges()) {
+            if (!Edges.isDirectedEdge(edge)) {
+                throw new IllegalArgumentException();
+            }
+
+            Node from = edge.getNode1();
+            Node to = edge.getNode2();
+            System.out.println("From node = " + from.getName());
+            System.out.println("To node = " + to.getName());
+            Node _from = graph.getNode(from.getName(), 0);
+            Node _to = graph.getNode(to.getName(), 0);
+            Edge edge1 = new Edge(_from,_to,Endpoint.TAIL,Endpoint.ARROW);
+            graph.addEdge(edge1);
+            //graph.addDirectedEdge(_from, _to);
+        }
+
+        //for lag
+        // for node
+        //  with probability 0.3 add edge from node to *random* node at lag0
+
+        for (int lag = 1; lag <= numLags; lag++) {
+            for (Node node1 : graph.getLag0Nodes()){
+                Node from = graph.getNode(node1.getName(),lag);
+                for (Node node2 : graph.getLag0Nodes()){
+                    Node to = graph.getNode(node2.getName(),0);
+                    if (node1.getName().equals(node2.getName())) continue;
+                    if (RandomUtil.getInstance().nextUniform(0,1)<=0.15){
+                        Edge edge = new Edge(from,to,Endpoint.TAIL,Endpoint.ARROW);
+                        graph.addEdge(edge);
+                        //graph.addDirectedEdge(from, to);
+                    }
+                } // for node at lag0 (to)
+            } // for node at lag (from)
+        } // for lag
+
+
+        return graph;
     }
 
 }

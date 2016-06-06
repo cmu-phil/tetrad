@@ -6,18 +6,21 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetrad.data.DataReader;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.io.*;
 
@@ -118,6 +121,8 @@ public class Comparison2 {
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true); //need lag version of this
+                trueDag = TimeSeriesUtils.GraphToLagGraph(trueDag);
+                System.out.println("Creating Time Lag Graph : " + trueDag);
             }
             /***************************/
 
@@ -169,8 +174,12 @@ public class Comparison2 {
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
                 if (test == null) throw new IllegalArgumentException("Test not set.");
                 TsFci search = new TsFci(test);
+                IKnowledge knowledge = getKnowledge(trueDag);
+                search.setKnowledge(knowledge);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new TsDagToPag(trueDag).convert());
+                System.out.println("Correct result for trial = " + result.getCorrectResult());
+                System.out.println("Search result for trial = " + result.getResultGraph());
             } else {
                 throw new IllegalArgumentException("Unrecognized algorithm.");
             }
@@ -368,6 +377,8 @@ public class Comparison2 {
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             TsFci search = new TsFci(test);
+            IKnowledge knowledge = getKnowledge(trueDag);
+            search.setKnowledge(knowledge);
             result.setResultGraph(search.search());
             result.setCorrectResult(new TsDagToPag(trueDag).convert());
         } else {
@@ -517,6 +528,43 @@ public class Comparison2 {
         table.setToken(dataSet.getNumRows() + 2 - 1, 0, "Avg");
 
         return table;
+    }
+
+    public static IKnowledge getKnowledge(Graph graph) {
+        int numLags = 1; // need to fix this!
+        List<Node> variables = graph.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge = new Knowledge2();
+        int lag;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+                laglist.add(lag);
+            }
+        }
+        numLags = Collections.max(laglist);
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+                laglist.add(lag);
+            }
+            knowledge.addToTier(numLags - lag, node.getName());
+        }
+
+        System.out.println("Knowledge in graph = " + knowledge);
+        return knowledge;
     }
 
     public enum TableColumn {AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,

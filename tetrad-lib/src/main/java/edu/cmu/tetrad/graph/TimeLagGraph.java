@@ -66,6 +66,24 @@ public class TimeLagGraph implements Graph {
         });
     }
 
+//    public TimeLagGraph(Graph graph) {
+//        //this.graph = new EdgeListGraph(graph);
+//        //this.lag0Nodes = graph.getNodes();
+//
+//        List<Node> Nodes = graph.getNodes();
+//        for(Node node : Nodes){
+//            this.graph.addNode(node);
+//        }
+//
+//        //need to add edges?
+//
+//        this.graph.addPropertyChangeListener(new PropertyChangeListener() {
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                getPcs().firePropertyChange(evt);
+//            }
+//        });
+//    }
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
@@ -371,7 +389,7 @@ public class TimeLagGraph implements Graph {
         return numInitialLags;
     }
 
-    public IKnowledge getKnowlege() {
+    public IKnowledge getKnowledge() {
         int numLags = 1; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
