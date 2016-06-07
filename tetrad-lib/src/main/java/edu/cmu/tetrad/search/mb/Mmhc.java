@@ -56,10 +56,10 @@ public class Mmhc implements GraphSearch {
 
     //=============================CONSTRUCTORS==========================//
 
-    public Mmhc(IndependenceTest test) {
+    public Mmhc(IndependenceTest test, DataSet dataSet) {
         this.depth = -1;
         this.independenceTest = test;
-        this.data = (DataSet) test.getData();
+        this.data = dataSet;
     }
 
     //==============================PUBLIC METHODS========================//
