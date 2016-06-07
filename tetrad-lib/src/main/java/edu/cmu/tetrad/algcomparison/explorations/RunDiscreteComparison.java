@@ -53,24 +53,10 @@ import java.util.Map;
 public class RunDiscreteComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numMeasures", 20);
-        parameters.put("numEdges", 20);
-        parameters.put("numLatents", 5);
-        parameters.put("maxDegree", 10);
-        parameters.put("maxIndegree", 10);
-        parameters.put("maxOutdegree", 10);
-        parameters.put("connected", 0);
-        parameters.put("sampleSize", 1000);
-        parameters.put("numCategories", 3);
-        parameters.put("numRuns", 5);
-        parameters.put("alpha", 0.001);
-        parameters.put("penaltyDiscount", 4);
-        parameters.put("mgmParam1", 0.1);
-        parameters.put("mgmParam2", 0.1);
-        parameters.put("mgmParam3", 0.1);
-        parameters.put("ofInterestCutoff", 0.05);
-        parameters.put("structurePrior", 1);
         parameters.put("samplePrior", 1);
+        parameters.put("structurePrior", 1);
+        parameters.put("numCategories", 5);
+        //        parameters.put("numCategories", 5);
 
         Map<String, String> stats = new LinkedHashMap<>();
         stats.put("AP", "Adjacency Precision");
@@ -106,7 +92,6 @@ public class RunDiscreteComparison {
         algorithms.add(new DiscreteCfci());
         algorithms.add(new DiscreteGfci());
         algorithms.add(new MixedWgfci());
-        algorithms.add(new MixedFci());
         algorithms.add(new MixedGfci());
 
         // Cyclic PAG

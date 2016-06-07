@@ -63,7 +63,7 @@ public class WFgs implements GraphSearch {
                 if (v == i) {
                     dataSet.setDouble(l, newVarIndex, 1);
                 } else {
-                    dataSet.setDouble(l, newVarIndex, -1);
+                    dataSet.setDouble(l, newVarIndex, 0);
                 }
             }
         }

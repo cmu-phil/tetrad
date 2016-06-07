@@ -50,24 +50,7 @@ import java.util.Map;
 public class RunContinuousComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numMeasures", 20);
-        parameters.put("numLatents", 5);
-        parameters.put("numEdges", 20);
-        parameters.put("maxDegree", 10);
-        parameters.put("maxIndegree", 10);
-        parameters.put("maxOutdegree", 10);
-        parameters.put("connected", 0);
-        parameters.put("sampleSize", 1000);
-        parameters.put("numCategories", 3);
-        parameters.put("numRuns", 5);
-        parameters.put("alpha", 0.001);
-        parameters.put("penaltyDiscount", 4);
-        parameters.put("mgmParam1", 0.1);
-        parameters.put("mgmParam2", 0.1);
-        parameters.put("mgmParam3", 0.1);
-        parameters.put("ofInterestCutoff", 0.05);
-        parameters.put("structurePrior", 1);
-        parameters.put("samplePrior", 1);
+        //        parameters.put("numCategories", 5);
 
         Map<String, String> stats = new LinkedHashMap<>();
         stats.put("AP", "Adjacency Precision");
@@ -88,19 +71,16 @@ public class RunContinuousComparison {
         algorithms.add(new ContinuousCpc());
         algorithms.add(new ContinuousPcs());
         algorithms.add(new MixedSemFgs());
-        algorithms.add(new MixedBdeuFgs());
         algorithms.add(new MixedWfgs());
         algorithms.add(new MixedPc());
         algorithms.add(new MixedPcs());
         algorithms.add(new MixedCpc());
         algorithms.add(new ContinuousFgs());
-        algorithms.add(new ContinuousMmhc());
 
         // PAG
         algorithms.add(new ContinuousFci());
         algorithms.add(new MixedFci());
         algorithms.add(new ContinuousRfci());
-        algorithms.add(new ContinuousCfci());
         algorithms.add(new ContinuousGfci());
         algorithms.add(new MixedGfci());
         algorithms.add(new MixedWgfci());
