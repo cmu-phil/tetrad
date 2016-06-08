@@ -377,6 +377,10 @@ public final class LargeSemSimulator {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    public double[][] getCoefs(){
+        return coefs;
+    }
 }
 
 

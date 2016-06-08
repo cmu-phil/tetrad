@@ -11,9 +11,11 @@ import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.io.VerticalTabularDiscreteDataReader;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
+import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
+import org.apache.commons.math3.linear.EigenDecomposition;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -224,6 +226,15 @@ public class Comparison2 {
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
+                /** added 6.08.16 for tsFCI **/
+                if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+                    trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                            nodes, 0, params.getNumEdges(), 10, 10, 10, false, true); //need lag version of this
+                    trueDag = TimeSeriesUtils.GraphToLagGraph(trueDag);
+                    System.out.println("Creating Time Lag Graph : " + trueDag);
+                }
+                /***************************/
+
                 if (params.getDataType() == null) {
                     throw new IllegalArgumentException("Data type not set or inferred.");
                 }
@@ -233,7 +244,28 @@ public class Comparison2 {
                 }
 
                 LargeSemSimulator sim = new LargeSemSimulator(trueDag);
+
+                /** added 6.08.16 for tsFCI **/
+                if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+                    sim.setCoefRange(0.2,0.6);
+                }
+                /***************************/
+
                 dataSet = sim.simulateDataAcyclic(params.getSampleSize());
+
+//                /** added 6.08.16 for tsFCI **/
+//                if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+//                    boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(sim.getCoefs()));
+//                         //this TetradMatrix needs to be the matrix of coefficients from the SEM!
+//                    if (!isStableTetradMatrix){
+//                        System.out.println("%%%%%%%%%% WARNING %%%%%%%%% not a stable set of eigenvalues for data generation");
+//                        System.out.println("Skipping this attempt!");
+//                        sim.setCoefRange(0.2,0.5);
+//                        dataSet = sim.simulateDataAcyclic(params.getSampleSize());
+//                    }
+//                }
+//                /***************************/
+
             } else if (params.getDataType() == ComparisonParameters.DataType.Discrete) {
                 List<Node> nodes = new ArrayList<>();
 
@@ -554,17 +586,50 @@ public class Comparison2 {
             String tmp;
             if(varName.indexOf(':')== -1){
                 lag = 0;
-                laglist.add(lag);
+//                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':')+1,varName.length());
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
+//                laglist.add(lag);
             }
             knowledge.addToTier(numLags - lag, node.getName());
         }
 
         System.out.println("Knowledge in graph = " + knowledge);
         return knowledge;
+    }
+
+    public static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {
+
+        EigenDecomposition dec = new EigenDecomposition(mat.getRealMatrix());
+        double[] realEigenvalues = dec.getRealEigenvalues();
+        double[] imagEigenvalues = dec.getImagEigenvalues();
+
+        double sum = 0.0;
+
+//        boolean allEigenvaluesSmallerThanOneInModulus = true;
+        for (int i = 0; i < realEigenvalues.length; i++) {
+            double realEigenvalue = realEigenvalues[i];
+            double imagEigenvalue = imagEigenvalues[i];
+            double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
+//			double argument = Math.atan(imagEigenvalue/realEigenvalue);
+//			double modulusCubed = Math.pow(modulus, 3);
+//			System.out.println("eigenvalue #"+i+" = " + realEigenvalue + "+" + imagEigenvalue + "i");
+//			System.out.println("eigenvalue #"+i+" has argument = " + argument);
+//			System.out.println("eigenvalue #"+i+" has modulus = " + modulus);
+//			System.out.println("eigenvalue #"+i+" has modulus^3 = " + modulusCubed);
+
+            sum += modulus;
+
+            if (modulus >= 1.5) {
+                return false;
+//                allEigenvaluesSmallerThanOneInModulus = false;
+            }
+        }
+        return true;
+//        return allEigenvaluesSmallerThanOneInModulus;
+
+//        return sum / realEigenvalues.size() < 1;
     }
 
     public enum TableColumn {AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,

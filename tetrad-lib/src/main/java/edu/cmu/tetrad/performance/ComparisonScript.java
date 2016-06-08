@@ -16,12 +16,12 @@ public class ComparisonScript {
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Continuous); // Continuous or Discrete
-        params.setNumVars(9); // number of variables
-        params.setNumEdges(9); // number of edges
+        params.setNumVars(8); // number of variables
+        params.setNumEdges(8); // number of edges
         int minSample = 100; // smallest sample size to generate
-        int maxSample = 2000; // largest sample size to generate
+        int maxSample = 1000; // largest sample size to generate
         int increment = 100; // ramp up sample size by this increment
-        int numTrials = 1000; // number of data sets to run for a particular sample size, results will be averaged
+        int numTrials = 100; // number of data sets to run for a particular sample size, results will be averaged
 
         /** If you want to run data sets from file instead of generating random graphs **/
         params.setDataFromFile(false); // set this to true
@@ -31,7 +31,7 @@ public class ComparisonScript {
         /** ******************** **/
 
         /** If you want to run on NO DATA, i.e., just run each algorithm directly on some random true graphs **/
-        params.setNoData(true); // set this to true
+        params.setNoData(false); // set this to true
         // note that the number of random graphs will be equal to numTrials, set above
         /** ******************** **/
 
@@ -50,7 +50,7 @@ public class ComparisonScript {
         List<ComparisonParameters.Algorithm> algList = new ArrayList<>();
 
         /** add algorithms to compare to the list algList. comment out those you don't want to consider. **/
-        algList.add(ComparisonParameters.Algorithm.PC);
+        //algList.add(ComparisonParameters.Algorithm.PC);
         //algList.add(ComparisonParameters.Algorithm.FGS);
         algList.add(ComparisonParameters.Algorithm.FCI);
         algList.add(ComparisonParameters.Algorithm.TsFCI);
