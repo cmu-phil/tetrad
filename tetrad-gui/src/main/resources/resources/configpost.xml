@@ -69,6 +69,15 @@
                 <editor-class>edu.cmu.tetradapp.editor.TimeLagGraphEditor
                 </editor-class>
             </model>
+            <!--<model name="Gene Graph" acronym="GeneGraph" help="gene_graph">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="graph" description="Graph" default="on"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradproj.gene.tetrad.gene.graph.ManualActiveLagGraph</model-class>-->
+            <!--<editor-class>edu.cmu.tetradproj.gene.tetradapp.gene.editor.LagGraphEditor-->
+            <!--</editor-class>-->
+            <!--</model>-->
         </models>
         <display-component image="graphIcon.gif"/>
         <model-chooser title="Graph Types"/>
@@ -183,17 +192,17 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor
                 </editor-class>
             </model>
-            <model name="Extract Markov Blanket" acronym="MB from Graph"
-                   help="graph">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.ExtractMarkovBlanketWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GraphEditor
-                </editor-class>
-            </model>
+            <!--<model name="Extract Markov Blanket" acronym="MB from Graph"-->
+            <!--help="graph">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="graph" description="Graph" default="on"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.ExtractMarkovBlanketWrapper-->
+            <!--</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.GraphEditor-->
+            <!--</editor-class>-->
+            <!--</model>-->
             <model name="Extract Structure Model" acronym="Extract Struct Model"
                    help="graph">
                 <logger>
@@ -266,6 +275,14 @@
                 <editor-class>edu.cmu.tetradapp.editor.GeneralizedSemPmEditor
                 </editor-class>
             </model>
+            <!--<model name="Boolean Glass Gene PM" acronym="Glass PM"-->
+            <!--help="glass_pm">-->
+            <!--<model-class>edu.cmu.tetradproj.gene.tetradapp.model.BooleanGlassGenePm-->
+            <!--</model-class>-->
+            <!--<editor-class>-->
+            <!--edu.cmu.tetradapp.gene.editor.BooleanGlassGenePmEditor-->
+            <!--</editor-class>-->
+            <!--</model>-->
         </models>
         <display-component image="pmIcon.gif"/>
         <model-chooser title="Types of Parameterized Models"/>
@@ -361,6 +378,14 @@
                 <model-class>edu.cmu.tetradapp.model.GeneralizedSemImWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GeneralizedSemImEditor</editor-class>
             </model>
+            <!--<model name="Boolean Glass Gene IM" acronym="Glass IM"-->
+            <!--heldp="glass_im">-->
+            <!--<model-class>edu.cmu.tetradproj.gene.tetradapp.model.BooleanGlassGeneIm-->
+            <!--</model-class>-->
+            <!--<editor-class>-->
+            <!--edu.cmu.tetradapp.gene.editor.BooleanGlassGeneImEditor-->
+            <!--</editor-class>-->
+            <!--</model>-->
         </models>
         <display-component image="imIcon.gif"/>
         <model-chooser title="Types of Instantiated Models"/>
@@ -435,6 +460,9 @@
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-class>edu.cmu.tetradapp.model.SemDataParams
                 </params-class>
+                <!--<params-editor-class>-->
+                <!--edu.cmu.tetradapp.editor.SemDataParamsEditor-->
+                <!--</params-editor-class>-->
             </model>
             <model name="Implied Covariance Matrix--All" acronym="Implied Covar All" help="data">
                 <logger>
@@ -446,6 +474,9 @@
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-class>edu.cmu.tetradapp.model.SemDataParams
                 </params-class>
+                <!--<params-editor-class>-->
+                <!--edu.cmu.tetradapp.editor.SemDataParamsEditor-->
+                <!--</params-editor-class>-->
             </model>
             <model name="Generalized SEM IM Simulated Data" acronym="Gen. SEM Data" help="data">
                 <logger>
@@ -461,6 +492,16 @@
                     edu.cmu.tetradapp.editor.SemDataParamsEditor
                 </params-editor-class>
             </model>
+            <!--<model name="SEM2 IM Simulated Data" acronym="SEM2 Data" help="data">-->
+            <!--<model-class>edu.cmu.tetradapp.model.Sem2DataWrapper-->
+            <!--</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--<params-class>edu.cmu.tetradapp.model.Sem2DataParams-->
+            <!--</params-class>-->
+            <!--<params-editor-class>-->
+            <!--edu.cmu.tetradapp.editor.Sem2DataParamsEditor-->
+            <!--</params-editor-class>-->
+            <!--</model>-->
         </models>
         <display-component image="dataIcon.gif"/>
         <model-chooser title="Types of data Objects"/>
@@ -704,6 +745,31 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
+            <model name="Nonparanormal Transform" acronym="NonPN"
+                   help="nonpn" category="Convert">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.NonparanormalTransform
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+            </model>
+            <!--<model name="Convert to Box Cox" acronym="Box Cox"-->
+            <!--help="data" category="Convert">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="data" description="Data"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.datamanip.BoxCoxWrapper-->
+            <!--</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--<params-class>edu.cmu.tetradapp.model.datamanip.BoxCoxParams-->
+            <!--</params-class>-->
+            <!--<params-editor-class>-->
+            <!--edu.cmu.tetradapp.editor.datamanip.BoxCoxParamsEditor-->
+            <!--</params-editor-class>-->
+            <!--</model>-->
             <model name="Convert to residuals" acronym="Residuals"
                    help="data" category="Convert">
                 <logger>
@@ -1036,6 +1102,17 @@
                 <params-class>edu.cmu.tetradapp.model.EmBayesEstimatorParams</params-class>
                 <params-editor-class>edu.cmu.tetradapp.editor.EMBayesEstimatorParamsEditor</params-editor-class>
             </model>
+            <!--<model name="Structural EM" acronym="Struct EM" help="struct_em">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="details" description="Details"/>-->
+            <!--<event id="im" description="Estimated Model"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.StructEmBayesSearchRunner</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.StructEmBayesSearchEditor</editor-class>-->
+            <!--<params-class>edu.cmu.tetradapp.model.StructEmBayesSearchParams</params-class>-->
+            <!--<params-editor-class>edu.cmu.tetradapp.editor.StructEMBayesSearchParamsEditor</params-editor-class>-->
+            <!--</model>-->
         </models>
         <display-component image="estimatorIcon.gif"/>
         <model-chooser title="Types of Estimators"/>
@@ -1188,23 +1265,23 @@
                 <params-class>edu.cmu.tetradapp.model.PcSearchParams
                 </params-class>
             </model>
-            <!--<model name="PCMax" acronym="PCMax" help="pcmax" category="Pattern Searches">-->
-                <!--<logger>-->
-                    <!--<event id="info" description="Information" default="on"/>-->
-                    <!--<event id="independencies" description="Independencies" default="on"/>-->
-                    <!--<event id="dependencies" description="Dependencies"/>-->
-                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
-                    <!--<event id="colliderOrientations"-->
-                           <!--description="Collider Orientations" default="on"/>-->
-                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
-                    <!--<event id="graph" description="Graph" default="on"/>-->
-                <!--</logger>-->
-                <!--<model-class>edu.cmu.tetradapp.model.PcMaxRunner</model-class>-->
-                <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor-->
-                <!--</editor-class>-->
-                <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
-                <!--</params-class>-->
-            <!--</model>-->
+            <model name="PC-Max" acronym="PC-Max" help="pcmax" category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations" default="on"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.PcMaxRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.PcSearchParams
+                </params-class>
+            </model>
             <model name="CPC" acronym="CPC" help="cpc"
                    category="Pattern Searches">
                 <logger>
@@ -1239,6 +1316,69 @@
                     <event id="patterns" description="Disambiguated Patterns" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.VcpcRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.PcSearchParams
+                </params-class>
+            </model>
+            <model name="sampleVCPC" acronym="sVCPC" help="samplevcpc"
+                   category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations" default="on"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                    <event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>
+                    <event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>
+                    <event id="patterns" description="Disambiguated Patterns" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.SampleVcpcRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.PcSearchParams
+                </params-class>
+            </model>
+            <model name="VCPCFast" acronym="fVCPC" help="fvcpc"
+                   category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations" default="on"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                    <event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>
+                    <event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>
+                    <event id="patterns" description="Disambiguated Patterns" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.VcpcFastRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.PcSearchParams
+                </params-class>
+            </model>
+            <model name="sampleVCPCFast" acronym="sfVCPC" help="samplevcpcFast"
+                   category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations" default="on"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                    <event id="apparentlyNonadjacencies" description="Apparently Nonadjacencies" default="on"/>
+                    <event id="definitelyNonadjacencies" description="Definitely Nonadjacencies" default="on"/>
+                    <event id="patterns" description="Disambiguated Patterns" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.SampleVcpcFastRunner</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.PcSearchParams
@@ -1282,7 +1422,14 @@
             <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
             <!--</params-class>-->
             <!--</model>-->
-            <!--<model name="PC Local" acronym="PCLocal" help="pclocal" category="Pattern Searches">-->
+            <!--<event id="edgeOriented" description="Edge Orientations"/>-->
+            <!--<event id="independencies" description="Independencies" default="on"/>-->
+            <!--<event id="dependencies" description="Dependencies"/>-->
+            <!--<event id="colliderOrientations"-->
+            <!--description="Collider Orientations"/>-->
+            <!--<event id="details" description="Misc Fine Details"/>-->
+            <!--</logger>-->
+            <!--<model name="PClocal" acronym="PCLocal" help="pclocal" category="Pattern Searches">-->
                 <!--<logger>-->
                     <!--<event id="info" description="Information" default="on"/>-->
                     <!--<event id="graph" description="Graph" default="on"/>-->
@@ -1339,7 +1486,7 @@
                 <!--<params-class>edu.cmu.tetradapp.model.PcLocalSearchParams-->
                 <!--</params-class>-->
             <!--</model>-->
-            <!--<model name="MMHC" acronym="MMHC" help="mmhc" category="Pattern Searches">-->
+            <!--&lt;!&ndash;<model name="MMHC" acronym="MMHC" help="mmhc" category="Pattern Searches">&ndash;&gt;-->
             <!--<model-class>edu.cmu.tetradapp.model.MmhcRunner</model-class>-->
             <!--<editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor</editor-class>-->
             <!--<params-class>edu.cmu.tetradapp.model.BasicSearchParams</params-class>-->
@@ -1363,47 +1510,33 @@
             <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
             <!--</params-class>-->
             <!--</model>-->
-            <!--<model name="LiNGAM" acronym="LiNGAM" help="lingam"-->
-                   <!--category="DAG Searches">-->
-                <!--<logger>-->
-                    <!--<event id="info" description="Information" default="on"/>-->
-                    <!--<event id="fastIcaDetails" description="FastICA Details" default="on"/>-->
-                    <!--<event id="lingamDetails" description="Lingam Details" default="on"/>-->
-                    <!--<event id="graph" description="Graph" default="on"/>-->
-                <!--</logger>-->
-                <!--<model-class>edu.cmu.tetradapp.model.LingamRunner</model-class>-->
-                <!--<editor-class>edu.cmu.tetradapp.editor.LingamSearchEditor-->
-                <!--</editor-class>-->
-                <!--<params-class>edu.cmu.tetradapp.model.LingamParams-->
-                <!--</params-class>-->
-            <!--</model>-->
-            <!--<model name="LiNG" acronym="LiNG" help="ling"-->
-                   <!--category="DG Searches">-->
-                <!--<logger>-->
-                    <!--<event id="info" description="Information" default="on"/>-->
-                    <!--<event id="fastIcaDetails" description="FastICA Details"/>-->
-                    <!--<event id="lingDetails" description="Ling Details"/>-->
-                    <!--<event id="stableGraphs" description="Stable Graphs" default="on"/>-->
-                    <!--<event id="unstableGraphs" description="Unstable Graphs"/>-->
-                    <!--<event id="wMatrices" description="W Matrices"/>-->
-                <!--</logger>-->
-                <!--<model-class>edu.cmu.tetradapp.model.LingRunner</model-class>-->
-                <!--<editor-class>edu.cmu.tetradapp.editor.LingSearchEditor-->
-                <!--</editor-class>-->
-            <!--</model>-->
-            <model name="PC LiNGAM" acronym="PC LiNGAM" help="pc_lingam"
+            <model name="LiNGAM" acronym="LiNGAM" help="lingam"
                    category="DAG Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
-                    <event id="normalityTests" description="Normality Tests" default="on"/>
-                    <event id="nongaussianOrientations" description="Nongaussian Orientations" default="on"/>
+                    <event id="fastIcaDetails" description="FastICA Details" default="on"/>
+                    <event id="lingamDetails" description="Lingam Details" default="on"/>
                     <event id="graph" description="Graph" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.LingamPatternRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
+                <model-class>edu.cmu.tetradapp.model.LingamRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.LingamSearchEditor
                 </editor-class>
-                <params-class>edu.cmu.tetradapp.model.PcSearchParams
+                <params-class>edu.cmu.tetradapp.model.LingamParams
                 </params-class>
+            </model>
+            <model name="LiNG" acronym="LiNG" help="ling"
+                   category="DG Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="fastIcaDetails" description="FastICA Details"/>
+                    <event id="lingDetails" description="Ling Details"/>
+                    <event id="stableGraphs" description="Stable Graphs" default="on"/>
+                    <event id="unstableGraphs" description="Unstable Graphs"/>
+                    <event id="wMatrices" description="W Matrices"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LingRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.LingSearchEditor
+                </editor-class>
             </model>
             <model name="LOFS" acronym="LOFS" help="lofs"
                    category="DAG Searches">
@@ -1450,6 +1583,23 @@
                 <params-class>edu.cmu.tetradapp.model.FciSearchParams
                 </params-class>
             </model>
+            <model name="GFCI" acronym="GFCI" help="gfci"
+                   category="PAG searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="tripleClassifications" description="Triple Classifications" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.GFciRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.GFciSearchParams
+                </params-class>
+            </model>
             <model name="ION" acronym="ION" help="ion" category="PAG searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1484,22 +1634,40 @@
                 <params-class>edu.cmu.tetradapp.model.BasicSearchParams
                 </params-class>
             </model>
-            <!--<model name="FGS" acronym="FGS" help="fgs" category="Unlisted">-->
-                   <!--&lt;!&ndash;category="Pattern Searches">&ndash;&gt;-->
+            <!--<model name="CCD2" acronym="CCD2" help="ccd2" category="PAG searches">-->
                 <!--<logger>-->
                     <!--<event id="info" description="Information" default="on"/>-->
-                    <!--<event id="insertedEdges" description="Inserted Edges" default="on"/>-->
-                    <!--<event id="deletedEdges" description="Deleted Edges" default="on"/>-->
-                    <!--<event id="directedEdges" description="Directed Edges" default="on"/>-->
-                    <!--<event id="edgeEvaluations" description="Edge Evaluations"/>-->
-                    <!--<event id="impliedOrientations" description="Implied Orientations"/>-->
-                    <!--<event id="rebuiltPatterns" description="Rebuilt Patterns"/>-->
+                    <!--<event id="independencies" description="Independencies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--&lt;!&ndash;<event id="knowledgeOrientations" description = "Knowledge orientations"/>&ndash;&gt;-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="underlines" description="Underlines" default="on"/>-->
                     <!--<event id="graph" description="Graph" default="on"/>-->
                 <!--</logger>-->
-                <!--<model-class>edu.cmu.tetradapp.model.FgsRunnerOld</model-class>-->
-                <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+                <!--<model-class>edu.cmu.tetradapp.model.CcdRunner2</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
                 <!--</editor-class>-->
-                <!--<params-class>edu.cmu.tetradapp.model.FgsParams</params-class>-->
+                <!--<params-class>edu.cmu.tetradapp.model.BasicSearchParams-->
+                <!--</params-class>-->
+            <!--</model>-->
+            <!--<model name="FGS" acronym="FGS" help="fgs" category="Unlisted">-->
+            <!--&lt;!&ndash;category="Pattern Searches">&ndash;&gt;-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="insertedEdges" description="Inserted Edges" default="on"/>-->
+            <!--<event id="deletedEdges" description="Deleted Edges" default="on"/>-->
+            <!--<event id="directedEdges" description="Directed Edges" default="on"/>-->
+            <!--<event id="edgeEvaluations" description="Edge Evaluations"/>-->
+            <!--<event id="impliedOrientations" description="Implied Orientations"/>-->
+            <!--<event id="rebuiltPatterns" description="Rebuilt Patterns"/>-->
+            <!--<event id="graph" description="Graph" default="on"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.FgsRunnerOld</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor-->
+            <!--</editor-class>-->
+            <!--<params-class>edu.cmu.tetradapp.model.FgsParams</params-class>-->
             <!--</model>-->
             <model name="FGS" acronym="FGS" help="fgs"
                    category="Pattern Searches">
@@ -1560,6 +1728,22 @@
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.MimBuildParams
                 </params-class>
+                <!--Need a params editor here.-->
+            </model>
+            <model name="MIMTrekBuild" acronym="MIMTrekBuild" help="mimbuild"
+                   category="Multiple Indicator Model searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="details" description="Misc Fine Details" default="on"/>
+                    <event id="maxmodel" description="Max P Value Model" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.MimBuildTrekRunner
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.MimbuildEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.MimBuildParams
+                </params-class>
+                <!--Need a params editor here.-->
             </model>
             <model name="Cluster Search" acronym="Cluster" help="cluster"
                    category="Multiple Indicator Model searches">
@@ -1653,6 +1837,28 @@
                     edu.cmu.tetradapp.editor.MbSearchParamEditor
                 </params-editor-class>
             </model>
+            <model name="FGSMB" acronym="FGSMB" help="fgsmb"
+                   category="Feature selection searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="tetrads" description="Tetrads"/>
+                    <event id="tripleClassifications" description="Triple Classifications" default="on"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.FgsMbRunner
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FgsParams
+                </params-class>
+                <!--<params-editor-class>-->
+                <!--edu.cmu.tetradapp.editor.MbSearchParamEditor-->
+                <!--</params-editor-class>-->
+            </model>
             <model name="CEFS" acronym="CEFS" help="cef"
                    category="Feature selection searches">
                 <logger>
@@ -1715,6 +1921,23 @@
                 <params-class>edu.cmu.tetradapp.model.GlassoSearchParams
                 </params-class>
             </model>
+            <!--<model name="INVCORR" acronym="INVCORR" help="invcorr" category="Undirected Graph Searches">-->
+            <!--<logger>-->
+            <!--<event id="info" description="Information" default="on"/>-->
+            <!--<event id="independencies" description="Independencies" default="on"/>-->
+            <!--<event id="dependencies" description="Dependencies"/>-->
+            <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+            <!--<event id="colliderOrientations"-->
+            <!--description="Collider Orientations" default="on"/>-->
+            <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+            <!--<event id="graph" description="Graph" default="on"/>-->
+            <!--</logger>-->
+            <!--<model-class>edu.cmu.tetradapp.model.InverseCorrelationRunner</model-class>-->
+            <!--<editor-class>edu.cmu.tetradapp.editor.GlassoSearchEditor-->
+            <!--</editor-class>-->
+            <!--<params-class>edu.cmu.tetradapp.model.GlassoSearchParams-->
+            <!--</params-class>-->
+            <!--</model>-->
         </models>
         <display-component image="searchIcon.gif"/>
         <model-chooser title="Types of Search Algorithms">
@@ -1769,6 +1992,26 @@
             ]]>
         </tooltip>
     </session-node>
+    <!--<session-node id="Knowledge">-->
+    <!--<models>-->
+    <!--<model name="Knowledge" acronym="Knowledge"-->
+    <!--help="knowledge">-->
+    <!--<model-class>edu.cmu.tetradapp.model.KnowledgeWrapper-->
+    <!--</model-class>-->
+    <!--<editor-class>edu.cmu.tetradapp.editor.KnowledgeEditor-->
+    <!--</editor-class>-->
+    <!--</model>-->
+    <!--</models>-->
+    <!--<display-component image="searchIcon.gif"/>-->
+    <!--<model-chooser title="Types of Regression"/>-->
+    <!--<tooltip>-->
+    <!--<![CDATA[-->
+    <!--<html> Allowable Input Nodes:-->
+    <!--<br> (1) Data (Continuous)-->
+    <!--</html>-->
+    <!--]]>-->
+    <!--</tooltip>-->
+    <!--</session-node>-->
     <session-node id="Classify">
         <models>
             <model name="Bayes Updater Classifier" acronym="BayesUpClass"
@@ -1817,7 +2060,8 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.TabularComparison
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+                <editor-class>edu.cmu.tetradapp.editor.TabularComparisonEditor</editor-class>
                 <params-class>edu.cmu.tetradapp.model.GraphComparisonParams
                 </params-class>
                 <params-editor-class>
@@ -1829,6 +2073,10 @@
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
+                    <event id="adjacenciesApp" description="Adj but marked App-Nonadj" default="on"/>
+                    <event id="adjacenciesDef" description="Adj but marked Def-Nonadj" default="on"/>
+                    <event id="nonadjacenciesApp" description="Non-Adj but marked App-Nonadj" default="on"/>
+                    <event id="nonadjacenciesDef" description="Non-Adj but marked Def-Nonadj" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.Misclassifications
                 </model-class>
@@ -1840,15 +2088,16 @@
                     edu.cmu.tetradapp.editor.GraphComparisonParamsEditor
                 </params-editor-class>
             </model>
-            <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
-                   help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
+            <model name="Graph Intersections" acronym="Intersections"
+                   help="intersections" category="Graph-Graph Comparisons">
                 <logger>
                     <event id="info" description="Information" default="on"/>
-                    <event id="comparison" description="Comparison" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.EdgeWeightComparison
+                <model-class>edu.cmu.tetradapp.editor.GraphAdjacencyIntersectionWrapper
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.EdgeWeightComparisonEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.GraphIntersectionsEditor
+                </editor-class>
             </model>
             <model name="Independence Facts" acronym="Ind Facts"
                    help="indep_facts" category="Independence Facts Comparison">
@@ -1859,6 +2108,16 @@
                 <model-class>edu.cmu.tetradapp.model.IndTestModel
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsEditor</editor-class>
+            </model>
+            <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
+                   help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.EdgeWeightComparison
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.EdgeWeightComparisonEditor</editor-class>
             </model>
         </models>
         <display-component image="graphIcon.gif"/>

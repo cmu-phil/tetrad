@@ -213,7 +213,7 @@ class FgsIndTestParamsEditor extends JComponent {
             b4b.add(Box.createHorizontalGlue());
             b4b.add(depth);
             add(b4b);
-        } else if (type == FgsRunner.Type.CONTINUOUS){
+        } else if (type == FgsRunner.Type.CONTINUOUS || type == FgsRunner.Type.MIXED){
             Box b7 = Box.createHorizontalBox();
             b7.add(new JLabel("Penalty Discount"));
             b7.add(Box.createHorizontalGlue());

@@ -54,7 +54,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
         super(dataWrapper, params, null);
     }
 
-    public CcdRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel,  BasicSearchParams params) {
+    public CcdRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, BasicSearchParams params) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -70,8 +70,8 @@ public class CcdRunner extends AbstractAlgorithmRunner
     public CcdRunner(GraphSource graphWrapper, PcSearchParams params) {
         super(graphWrapper.getGraph(), params, null);
     }
-    
-   
+
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
@@ -85,14 +85,14 @@ public class CcdRunner extends AbstractAlgorithmRunner
     public CcdRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, BasicSearchParams params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
-    
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
     public CcdRunner(DagWrapper dagWrapper, BasicSearchParams params) {
         super(dagWrapper.getDag(), params);
     }
-    
+
     public CcdRunner(SemGraphWrapper dagWrapper, BasicSearchParams params) {
         super(dagWrapper.getGraph(), params);
     }

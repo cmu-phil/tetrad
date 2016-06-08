@@ -1687,6 +1687,24 @@
                 <params-class>edu.cmu.tetradapp.model.BasicSearchParams
                 </params-class>
             </model>
+            <model name="CCD2" acronym="CCD2" help="ccd2" category="PAG searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <!--<event id="knowledgeOrientations" description = "Knowledge orientations"/>-->
+                    <event id="colliderOrientations"
+                           description="Collider Orientations" default="on"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="underlines" description="Underlines" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.CcdRunner2</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.BasicSearchParams
+                </params-class>
+            </model>
             <!--<model name="FGS" acronym="FGS" help="fgs" category="Unlisted">-->
             <!--&lt;!&ndash;category="Pattern Searches">&ndash;&gt;-->
             <!--<logger>-->
@@ -1720,6 +1738,23 @@
                 <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
+            </model>
+            <model name="WFGS" acronym="WFGS" help="wfgs" category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations" default="on"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.WFgsRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FgsParams
+                </params-class>
             </model>
             <model name="IMaGES" acronym="IMaGES" help="fgs"
                    category="Pattern Searches">

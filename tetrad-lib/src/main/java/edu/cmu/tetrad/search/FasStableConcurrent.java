@@ -112,6 +112,14 @@ public class FasStableConcurrent implements IFas {
         this.test = test;
     }
 
+    /**
+     * Constructs a new FastAdjacencySearch.
+     */
+    public FasStableConcurrent(Graph initialGraph, IndependenceTest test) {
+        this.test = test;
+        this.initialGraph = initialGraph;
+    }
+
     //==========================PUBLIC METHODS===========================//
 
     /**

@@ -73,7 +73,7 @@ public class LogisticRegressionEditor extends JPanel {
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 regRunner.execute();
-              //  modelParameters.setText(regRunner.getReport());
+                //  modelParameters.setText(regRunner.getReport());
                 print(regRunner.getResult(), regRunner.getAlpha());
                 Graph outGraph = regRunner.getOutGraph();
                 GraphUtils.circleLayout(outGraph, 200, 200, 150);
@@ -151,7 +151,7 @@ public class LogisticRegressionEditor extends JPanel {
         }
 
         text+= "\n\nIntercept = " + nf.format(result.getIntercept()) + "\n";
-        
+
         this.modelParameters.setText(text);
     }
 

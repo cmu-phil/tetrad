@@ -179,12 +179,7 @@ public final class Fci implements GraphSearch {
     }
 
     public Graph search() {
-        return search(getIndependenceTest().getVariables());
-    }
-
-    public Graph search(List<Node> nodes) {
         return search(new Fas(getIndependenceTest()));
-//        return search(new Fas(getIndependenceTest()));
     }
 
     public void setInitialGraph(Graph initialGraph) {
@@ -198,7 +193,6 @@ public final class Fci implements GraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(depth);
         fas.setVerbose(verbose);
-        fas.setInitialGraph(initialGraph);
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 

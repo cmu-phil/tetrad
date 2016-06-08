@@ -98,11 +98,10 @@ public final class Ccd implements GraphSearch {
         //Step A
         TetradLogger.getInstance().log("info", "\nStep A");
 
-        IFas search = new Fas(test);
+        IFas search = new Fas(initialGraph, test);
         search.setDepth(depth);
         search.setKnowledge(getKnowledge());
         search.setVerbose(verbose);
-        search.setInitialGraph(initialGraph);
         Graph psi = search.search();
         SepsetMap sepsetsFromFas = search.getSepsets();
 

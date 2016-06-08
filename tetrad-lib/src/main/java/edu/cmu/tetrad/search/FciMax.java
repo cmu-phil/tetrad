@@ -181,7 +181,7 @@ public final class FciMax implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        FasStableConcurrent fas = new FasStableConcurrent(getIndependenceTest());
+        FasStableConcurrent fas = new FasStableConcurrent(initialGraph, getIndependenceTest());
         fas.setVerbose(verbose);
         return search(fas);
 //        return search(new Fas(getIndependenceTest()));
@@ -199,7 +199,6 @@ public final class FciMax implements GraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(depth);
         fas.setVerbose(verbose);
-        fas.setInitialGraph(initialGraph);
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 

@@ -92,7 +92,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * containing either a DataSet or a DataSet as its selected model.
      */
     public LogisticRegressionRunner(DataWrapper dataWrapper,
-            LogisticRegressionParams params) {
+                                    LogisticRegressionParams params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }

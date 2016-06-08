@@ -22,6 +22,8 @@ import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
 import edu.cmu.tetrad.cli.util.Args;
 import edu.cmu.tetrad.cli.util.DateTime;
 import edu.cmu.tetrad.cli.util.FileIO;
+import edu.cmu.tetrad.cli.util.GraphmlSerializer;
+import edu.cmu.tetrad.cli.util.XmlPrint;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.NonZeroVariance;
 import edu.cmu.tetrad.cli.validation.TabularContinuousData;
@@ -87,7 +89,7 @@ public class FgsCli {
         MAIN_OPTIONS.addOption(null, "depth", true, "Search depth. Must be an integer >= -1 (-1 means unlimited). Default is -1.");
 
         // search options
-        MAIN_OPTIONS.addOption(null, "heuristic-speedup", false, "Heuristic speedup. Default is false.");
+        MAIN_OPTIONS.addOption(null, "disable-heuristic-speedup", false, "Disable heuristic speedup. Default is false.");
         MAIN_OPTIONS.addOption(null, "ignore-linear-dependence", false, "Ignore linear dependence.");
 
         // filter options
@@ -167,6 +169,10 @@ public class FgsCli {
 
             writer.println();
             writer.println(graph.toString());
+
+            if (graphML) {
+                writeOutGraphML(graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.txt"));
+            }
         } catch (IOException exception) {
             LOGGER.error("FGS failed.", exception);
             System.err.printf("%s: FGS failed.%n", DateTime.printNow());
@@ -175,6 +181,28 @@ public class FgsCli {
         }
         System.out.printf("%s: FGS finished!  Please see %s for details.%n", DateTime.printNow(), outputFile.getFileName().toString());
         LOGGER.info(String.format("FGS finished!  Please see %s for details.", outputFile.getFileName().toString()));
+    }
+
+    private static void writeOutGraphML(Graph graph, Path outputFile) {
+        if (graph == null) {
+            return;
+        }
+
+        try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+            String fileName = outputFile.getFileName().toString();
+
+            String msg = String.format("Writing out GraphML file '%s'.", fileName);
+            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+            LOGGER.info(msg);
+            XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
+            msg = String.format("Finished writing out GraphML file '%s'.", fileName);
+            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+            LOGGER.info(msg);
+        } catch (Throwable throwable) {
+            String errMsg = String.format("Failed when writting out GraphML file '%s'.", outputFile.getFileName().toString());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, throwable);
+        }
     }
 
     private static Graph runFgs(DataSet dataSet, PrintStream writer) throws IOException {
@@ -239,8 +267,8 @@ public class FgsCli {
         fmt.format("%n");
 
         fmt.format("Data Validations:%n");
-        fmt.format("skip unique variable name check = %s%n", skipUniqueVarName);
-        fmt.format("skip variables with zero variance check = %s%n", skipZeroVariance);
+        fmt.format("ensure variable names are unique = %s%n", !skipUniqueVarName);
+        fmt.format("ensure variables have non-zero variance = %s%n", !skipZeroVariance);
         fmt.format("%n");
 
         return fmt.toString();
@@ -351,7 +379,7 @@ public class FgsCli {
             delimiter = Args.getDelimiterForName(cmd.getOptionValue("delimiter", dataFile.getFileName().toString().endsWith(".csv") ? "comma" : "tab"));
             penaltyDiscount = Args.getDouble(cmd.getOptionValue("penalty-discount", "4.0"));
             depth = Args.getIntegerMin(cmd.getOptionValue("depth", "-1"), -1);
-            heuristicSpeedup = cmd.hasOption("heuristic-speedup");
+            heuristicSpeedup = !cmd.hasOption("disable-heuristic-speedup");
             ignoreLinearDependence = cmd.hasOption("ignore-linear-dependence");
             graphML = cmd.hasOption("graphml");
             verbose = cmd.hasOption("verbose");

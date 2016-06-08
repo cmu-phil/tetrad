@@ -177,6 +177,8 @@ public class Discretizer {
                     DiscreteVariable var = new DiscreteVariable(_node.getName(), cats);
                     replacementMapping.put(var, _node);
                     variables.add(var);
+                } else if (isVariablesCopied()) {
+                    variables.add(variable);
                 }
             } else if (isVariablesCopied()) {
                 variables.add(variable);

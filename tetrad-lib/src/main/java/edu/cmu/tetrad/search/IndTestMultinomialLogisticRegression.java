@@ -432,7 +432,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return 0;
     }
 
     /**

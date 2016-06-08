@@ -161,6 +161,10 @@ public final class PcSearchParams implements MeekSearchParams {
         }
 
         this.varNames = varNames;
+
+        for (String name : varNames) {
+            this.knowledge.addVariable(name);
+        }
     }
 
     public Graph getSourceGraph() {
