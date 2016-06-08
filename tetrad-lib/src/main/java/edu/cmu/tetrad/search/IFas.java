@@ -45,8 +45,6 @@ public interface IFas {
 
     SepsetMap getSepsets();
 
-    SepsetMap getSepsets2();
-
     int getDepth();
 
     void setDepth(int depth);

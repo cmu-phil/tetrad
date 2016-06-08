@@ -79,8 +79,6 @@ public class FasStableConcurrent implements IFas {
      */
     private SepsetMap sepsets = new SepsetMap();
 
-    private SepsetMap sepsets2 = new SepsetMap();
-
     /**
      * The depth 0 graph, specified initially.
      */
@@ -543,10 +541,6 @@ public class FasStableConcurrent implements IFas {
 
     public SepsetMap getSepsets() {
         return sepsets;
-    }
-
-    public SepsetMap getSepsets2() {
-        return sepsets2;
     }
 
     public void setInitialGraph(Graph initialGraph) {

@@ -59,8 +59,6 @@ public final class TsFciOrient {
      */
     private SepsetProducer sepsets;
 
-    private SepsetProducer sepsets2; // added 5.11.2016
-
     private IKnowledge knowledge = new Knowledge2();
 
     private boolean changeFlag = true;
@@ -99,10 +97,9 @@ public final class TsFciOrient {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public TsFciOrient(SepsetProducer sepsets, IndependenceTest independenceTest, SepsetProducer sepsets2) {
+    public TsFciOrient(SepsetProducer sepsets, IndependenceTest independenceTest) {
         this.sepsets = sepsets;
         this.independenceTest = independenceTest;
-        this.sepsets2 = sepsets2;
     }
 
     //========================PUBLIC METHODS==========================//
@@ -132,10 +129,6 @@ public final class TsFciOrient {
     public SepsetProducer getSepsets() {
         return this.sepsets;
     }
-
-    public SepsetProducer getSepsets2() {
-        return this.sepsets2;
-    } // added 5.11.2016
 
     /**
      * The background knowledge.
@@ -173,11 +166,6 @@ public final class TsFciOrient {
     private List<Node> getSepset(Node i, Node k) {
         return this.sepsets.getSepset(i, k);
     }
-
-    private List<Node> getSepset2(Node i, Node k) {
-        return this.sepsets2.getSepset(i, k);
-    }
-
 
     /**
      * Orients colliders in the graph.  (FCI Step C)
