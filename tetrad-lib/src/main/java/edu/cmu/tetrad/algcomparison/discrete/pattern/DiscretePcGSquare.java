@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class DiscretePc implements Algorithm {
+public class DiscretePcGSquare implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         IndependenceTest test = new IndTestChiSquare(dataSet, parameters.get("alpha").doubleValue());
         Pc pc = new Pc(test);

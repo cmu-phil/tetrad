@@ -24,19 +24,10 @@ package edu.cmu.tetrad.algcomparison.explorations;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.Simulation;
-import edu.cmu.tetrad.algcomparison.discrete.cyclic_pag.DiscreteCcd;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteCfci;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFci;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteGfci;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteRfci;
-import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteCpc;
-import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscreteFgs;
-import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePc;
-import edu.cmu.tetrad.algcomparison.discrete.pattern.DiscretePcs;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
-import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
+import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedBdeuFgs;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedSemFgs;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedWfgs;
 import edu.cmu.tetrad.algcomparison.simulation.DiscreteBayesNetSimulation;
 
 import java.io.File;
@@ -56,7 +47,6 @@ public class RunDiscreteComparison {
         parameters.put("samplePrior", 1);
         parameters.put("structurePrior", 1);
         parameters.put("numCategories", 5);
-        //        parameters.put("numCategories", 5);
 
         Map<String, String> stats = new LinkedHashMap<>();
         stats.put("AP", "Adjacency Precision");
@@ -73,29 +63,27 @@ public class RunDiscreteComparison {
         List<Algorithm> algorithms = new ArrayList<>();
 
         // Pattern
-        algorithms.add(new DiscretePc());
-        algorithms.add(new DiscreteCpc());
-        algorithms.add(new DiscreteFgs());
-        algorithms.add(new DiscretePcs());
-        algorithms.add(new DiscreteFci());
-        algorithms.add(new MixedSemFgs());
-        algorithms.add(new MixedBdeuFgs());
-        algorithms.add(new MixedWfgs());
-
-        // These won't run on all discrete
-//        algorithms.add(new MixedPc());
-//        algorithms.add(new MixedPcs());
-//        algorithms.add(new MixedCpc());
+//        algorithms.add(new DiscretePcChiSquare());
+//        algorithms.add(new DiscreteCpcChiSquare());
+//        algorithms.add(new DiscretePcGSquare());
+//        algorithms.add(new DiscreteCpcGSquare());
+        algorithms.add(new DiscreteFgsBdeu());
+        algorithms.add(new DiscreteFgsBic());
+//        algorithms.add(new DiscretePcs()); // crashes
+//        algorithms.add(new MixedSemFgs());
+//        algorithms.add(new MixedBdeuFgs());
+//        algorithms.add(new MixedWfgs());
 
         // PAG
-        algorithms.add(new DiscreteRfci());
-        algorithms.add(new DiscreteCfci());
-        algorithms.add(new DiscreteGfci());
-        algorithms.add(new MixedWgfci());
-        algorithms.add(new MixedGfci());
+//        algorithms.add(new DiscreteFci());
+//        algorithms.add(new DiscreteRfci());
+//        algorithms.add(new DiscreteCfci());
+//        algorithms.add(new DiscreteGfci());
+//        algorithms.add(new MixedWgfci());
+//        algorithms.add(new MixedGfci());
 
         // Cyclic PAG
-        algorithms.add(new DiscreteCcd());
+//        algorithms.add(new DiscreteCcd());
 
         String baseFileName = "Discrete";
 

@@ -10,9 +10,9 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class DiscreteFgs implements Algorithm {
+public class DiscreteFgsBic implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-        BDeuScore score = new BDeuScore(dataSet);
+        BicScore score = new BicScore(dataSet);
         score.setSamplePrior(parameters.get("samplePrior").doubleValue());
         score.setSamplePrior(parameters.get("structurePrior").doubleValue());
         Fgs2 fgs = new Fgs2(score);
@@ -24,6 +24,6 @@ public class DiscreteFgs implements Algorithm {
     }
 
     public String getDescription() {
-        return "FGS using the BDeu score.";
+        return "FGS using the BIC score.";
     }
 }

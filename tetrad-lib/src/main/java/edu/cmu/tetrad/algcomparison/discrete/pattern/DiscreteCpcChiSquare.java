@@ -3,14 +3,17 @@ package edu.cmu.tetrad.algcomparison.discrete.pattern;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Cpc;
+import edu.cmu.tetrad.search.IndTestChiSquare;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class DiscreteCpc implements Algorithm {
+public class DiscreteCpcChiSquare implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         IndependenceTest test = new IndTestChiSquare(dataSet, parameters.get("alpha").doubleValue());
         Cpc pc = new Cpc(test);

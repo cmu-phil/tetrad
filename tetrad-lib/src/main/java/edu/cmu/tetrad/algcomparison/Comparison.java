@@ -93,8 +93,8 @@ public class Comparison {
     public void testBestAlgorithms(Map<String, Number> _parameters, Map<String, String> stats,
                                    List<Algorithm> algorithms, Simulation simulation, PrintStream out) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numMeasures", 20);
-        parameters.put("numEdges", 20);
+        parameters.put("numMeasures", 100);
+        parameters.put("numEdges", 100);
         parameters.put("numLatents", 0);
         parameters.put("maxDegree", 10);
         parameters.put("maxIndegree", 10);
