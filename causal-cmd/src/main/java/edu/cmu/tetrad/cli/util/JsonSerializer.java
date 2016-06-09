@@ -1,0 +1,96 @@
+/*
+ * Copyright (C) 2016 University of Pittsburgh.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
+ */
+package edu.cmu.tetrad.cli.util;
+
+import com.google.gson.Gson;
+import edu.cmu.tetrad.cli.json.JsonEdge;
+import edu.cmu.tetrad.cli.json.JsonEdgeSet;
+import edu.cmu.tetrad.cli.json.JsonGraph;
+import edu.cmu.tetrad.cli.json.JsonNode;
+import edu.cmu.tetrad.graph.*;
+import org.graphdrawing.graphml.xmlns.*;
+import org.graphdrawing.graphml.xmlns.NodeType;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Last modified by Kevin Bui on Jan 12, 2016 2:54:32 PM.
+ *
+ * May 26, 2015 11:02:00 PM
+ *
+ * @author Jeremy Espino MD
+ */
+public class JsonSerializer {
+
+    public static String serialize(Graph graph, String graphId) throws JAXBException {
+        List<Node> nodes = graph.getNodes();
+        Set<Edge> edgesSet = graph.getEdges();
+
+        // declarte the output JSON object
+        JsonGraph jsonGraph = new JsonGraph();
+        jsonGraph.name = graphId;
+
+        for (Node node : nodes) {
+            jsonGraph.nodes.add(new JsonNode(node.getName()));
+        }
+
+        jsonGraph.edgeSets.add(new JsonEdgeSet());
+        List<Edge> edges = new ArrayList<>(edgesSet);
+        Edges.sortEdges(edges);
+        for (Edge edge : edges) {
+            JsonEdge jsonEdge = new JsonEdge();
+            jsonEdge.source = jsonGraph.nodes.indexOf(edge.getNode1().getName());
+            jsonEdge.target = jsonGraph.nodes.indexOf(edge.getNode2().getName());
+
+            if (edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.ARROW) {
+                jsonEdge.etype = "-->";
+            } else if (edge.getEndpoint1() == Endpoint.ARROW && edge.getEndpoint2() == Endpoint.TAIL) {
+                jsonEdge.etype = "<--";
+            } else if (edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL) {
+                jsonEdge.etype = "---";
+            } else if (edge.getEndpoint1() == Endpoint.CIRCLE && edge.getEndpoint2() == Endpoint.ARROW) {
+                jsonEdge.etype = "o->";
+            } else if (edge.getEndpoint1() == Endpoint.ARROW && edge.getEndpoint2() == Endpoint.CIRCLE) {
+                jsonEdge.etype = "<-o";
+            } else if (edge.getEndpoint1() == Endpoint.CIRCLE && edge.getEndpoint2() == Endpoint.CIRCLE) {
+                jsonEdge.etype = "o-o";
+            } else {
+                // cannot handle all edges yet
+                System.out.println("Encountered edge we currently don't handle when serializing to json: " + edge.toString());
+                jsonEdge.etype = null;
+            }
+            if (jsonEdge.etype != null) {
+                jsonGraph.edgeSets.get(0).edges.add(jsonEdge);
+            }
+        }
+
+        Gson gson = new Gson();
+
+        return gson.toJson(jsonGraph);
+    }
+
+}
