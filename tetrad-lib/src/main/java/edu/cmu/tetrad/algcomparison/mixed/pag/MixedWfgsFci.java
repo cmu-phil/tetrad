@@ -27,7 +27,7 @@ public class MixedWfgsFci implements Algorithm {
     }
 
     public String getDescription() {
-        return "WFGS-FCI: uses the output of WGFCI as an intial graph " +
+        return "WGFCI-FCI: uses the output of WGFCI as an intial graph " +
                 "for PC-Stable, using the Mixed LRT test.";
     }
 }

@@ -34,6 +34,8 @@ import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
+import edu.cmu.tetrad.algcomparison.simulation.ContinuousCyclicSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.ContinuousNonlinearNongaussianSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LinearGaussianSemSimulation;
 
 import java.io.File;
@@ -90,9 +92,9 @@ public class RunContinuousComparison {
 
         String baseFileName = "Continuous";
 
-        Simulation simulation = new LinearGaussianSemSimulation();
+//        Simulation simulation = new LinearGaussianSemSimulation();
 //        Simulation simulation = new ContinuousCyclicSemSimulation();
-//        Simulation simulation = new GeneralizedSemSimulation();
+        Simulation simulation = new ContinuousNonlinearNongaussianSimulation();
 //        Simulation simulation = new CyclicGeneralizedSemSimulation();
 
         try {

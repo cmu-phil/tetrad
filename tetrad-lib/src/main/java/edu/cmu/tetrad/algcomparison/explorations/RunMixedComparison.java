@@ -46,8 +46,11 @@ public class RunMixedComparison {
         parameters.put("mgmParam1", 0.01);
         parameters.put("mgmParam2", 0.01);
         parameters.put("mgmParam3", 0.01);
-//        parameters.put("numLatents", 5);
-//        parameters.put("alpha", .00001);
+        parameters.put("numLatents", 3);
+        parameters.put("numRuns", 1);
+        parameters.put("numSamples", 1000);
+        parameters.put("numMeasures", 50);
+        parameters.put("numEdges", 100);
 
         Map<String, String> stats = new LinkedHashMap<>();
         stats.put("AP", "Adjacency Precision");
@@ -64,21 +67,21 @@ public class RunMixedComparison {
         List<Algorithm> algorithms = new ArrayList<>();
 
         // Pattern
-//        algorithms.add(new MixedSemFgs());
-//        algorithms.add(new MixedBdeuFgs());
+        algorithms.add(new MixedSemFgs());
+        algorithms.add(new MixedBdeuFgs());
         algorithms.add(new MixedWfgs());
-//        algorithms.add(new MixedPc());
-//        algorithms.add(new MixedPcs());
-//        algorithms.add(new MixedCpc());
-//        algorithms.add(new MixedMGMFgs());
-//        algorithms.add(new MixedMGMPc());
-//        algorithms.add(new MixedWfgsFci());
-//        algorithms.add(new MixedWfgsPc());
+        algorithms.add(new MixedPc());
+        algorithms.add(new MixedPcs());
+        algorithms.add(new MixedCpc());
+        algorithms.add(new MixedMGMFgs());
+        algorithms.add(new MixedMGMPc());
+        algorithms.add(new MixedMGMCpc());
+        algorithms.add(new MixedWfgsFci());
 
         // PAG
-//        algorithms.add(new MixedWgfci());
-//        algorithms.add(new MixedFci());
-//        algorithms.add(new MixedGfci());
+        algorithms.add(new MixedWgfci());
+        algorithms.add(new MixedFci());
+        algorithms.add(new MixedGfci());
 
         Simulation simulation = new MixedLeeHastieSimulation();
 //        Simulation simulation = new SemThenDiscretizeHalfSimulation();
