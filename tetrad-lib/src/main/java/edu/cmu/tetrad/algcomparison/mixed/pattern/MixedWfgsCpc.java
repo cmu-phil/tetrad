@@ -10,13 +10,13 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedWfgsPc implements Algorithm {
+public class MixedWfgsCpc implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
         WFgs fgs = new WFgs(ds);
         fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
         Graph g =  fgs.search();
         IndependenceTest test = new IndTestMixedLrt(ds, parameters.get("alpha").doubleValue());
-        PcStable pc = new PcStable(test);
+        Cpc pc = new Cpc(test);
         pc.setInitialGraph(g);
         return pc.search();
     }
@@ -27,7 +27,7 @@ public class MixedWfgsPc implements Algorithm {
     }
 
     public String getDescription() {
-        return "WFGS-PC: uses the output of WFGS as an intial graph " +
-                "for PC-Stable, using the Mixed LRT test.";
+        return "WFGS-CPC: uses the output of WFGS as an intial graph " +
+                "for CPC, using the Mixed LRT test.";
     }
 }
