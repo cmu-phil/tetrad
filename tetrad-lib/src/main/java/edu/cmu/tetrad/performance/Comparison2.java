@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.io.*;
 
@@ -122,7 +123,7 @@ public class Comparison2 {
             /** added 5.25.16 for tsFCI **/
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true); //need lag version of this
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                 trueDag = TimeSeriesUtils.GraphToLagGraph(trueDag);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
@@ -563,6 +564,7 @@ public class Comparison2 {
     }
 
     public static IKnowledge getKnowledge(Graph graph) {
+        System.out.println("Entering getKnowledge ... ");
         int numLags = 1; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
@@ -581,6 +583,45 @@ public class Comparison2 {
             }
         }
         numLags = Collections.max(laglist);
+
+        System.out.println("Variable list before the sort = " + variables);
+        Collections.sort(variables, new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                String name1 = getNameNoLag(o1);
+                String name2 = getNameNoLag(o2);
+
+//                System.out.println("name 1 = " + name1);
+//                System.out.println("name 2 = " + name2);
+
+                String prefix1 = getPrefix(name1);
+                String prefix2 = getPrefix(name2);
+
+//                System.out.println("prefix 1 = " + prefix1);
+//                System.out.println("prefix 2 = " + prefix2);
+
+                int index1 = getIndex(name1);
+                int index2 = getIndex(name2);
+
+//                System.out.println("index 1 = " + index1);
+//                System.out.println("index 2 = " + index2);
+
+                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                    if (prefix1.compareTo(prefix2) == 0) {
+                        return Integer.compare(index1, index2);
+                    } else {
+                        return prefix1.compareTo(prefix2);
+                    }
+
+//                    return 0;
+                } else {
+                    return getLag(o1.getName())-getLag(o2.getName());
+                }
+            }
+        });
+
+        System.out.println("Variable list after the sort = " + variables);
+
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
@@ -595,8 +636,51 @@ public class Comparison2 {
             knowledge.addToTier(numLags - lag, node.getName());
         }
 
-        System.out.println("Knowledge in graph = " + knowledge);
+        //System.out.println("Knowledge in graph = " + knowledge);
         return knowledge;
+    }
+
+    public static String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
+        if(tempS.indexOf(':')== -1) {
+            return tempS;
+        } else return tempS.substring(0, tempS.indexOf(':'));
+    }
+
+    public static String getPrefix(String s) {
+//        int y = 0;
+//        for (int i = s.length() - 1; i >= 0; i--) {
+//            try {
+//                y = Integer.parseInt(s.substring(i));
+//            } catch (NumberFormatException e) {
+//                return s.substring(0, y);
+//            }
+//        }
+//
+//        throw new IllegalArgumentException("Not character prefix.");
+
+//        if(s.indexOf(':')== -1) return s;
+//        String tmp = s.substring(0,s.indexOf(':')-1);
+//        return tmp;
+        return s.substring(0,1);
+    }
+
+    public static int getIndex(String s) {
+        int y = 0;
+        for (int i = s.length() - 1; i >= 0; i--) {
+            try {
+                y = Integer.parseInt(s.substring(i));
+            } catch (NumberFormatException e) {
+                return y;
+            }
+        }
+        throw new IllegalArgumentException("Not integer suffix.");
+    }
+
+    public static int getLag(String s) {
+        if(s.indexOf(':')== -1) return 0;
+        String tmp = s.substring(s.indexOf(':')+1,s.length());
+        return (Integer.parseInt(tmp));
     }
 
     public static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {

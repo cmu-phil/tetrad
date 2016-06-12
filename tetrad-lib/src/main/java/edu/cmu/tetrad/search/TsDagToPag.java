@@ -120,7 +120,7 @@ public final class TsDagToPag {
 
     public Graph convert() {
         logger.log("info", "Starting DAG to PAG.");
-        System.out.println("Knowledge is = " + knowledge);
+//        System.out.println("Knowledge is = " + knowledge);
         if (verbose) {
             System.out.println("DAG to PAG: Starting adjacency search");
         }

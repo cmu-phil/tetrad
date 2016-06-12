@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+//import edu.cmu.tetrad.data.IKnowledge;
+//import edu.cmu.tetrad.data.Knowledge2;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -48,7 +48,7 @@ public class TimeLagGraph implements Graph {
     private int maxLag = 1;
     private int numInitialLags = 1;
     private List<Node> lag0Nodes = new ArrayList<>();
-    private IKnowledge knowledge;
+//    private IKnowledge knowledge;
 
     public TimeLagGraph() {
     }
@@ -387,43 +387,6 @@ public class TimeLagGraph implements Graph {
 
     public int getNumInitialLags() {
         return numInitialLags;
-    }
-
-    public IKnowledge getKnowledge() {
-        int numLags = 1; // need to fix this!
-        List<Node> variables = graph.getNodes();
-        List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge = new Knowledge2();
-        int lag;
-        for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
-            if(varName.indexOf(':')== -1){
-                lag = 0;
-                laglist.add(lag);
-            } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
-                lag = Integer.parseInt(tmp);
-                laglist.add(lag);
-            }
-        }
-        numLags = Collections.max(laglist);
-        for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
-            if(varName.indexOf(':')== -1){
-                lag = 0;
-                laglist.add(lag);
-            } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
-                lag = Integer.parseInt(tmp);
-                laglist.add(lag);
-            }
-            knowledge.addToTier(numLags - lag, node.getName());
-        }
-
-        System.out.println("Knowledge in graph = " + knowledge);
-        return knowledge;
     }
 
     public static class NodeId {

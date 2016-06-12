@@ -488,7 +488,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             buf.append("\n").append(i).append(forbiddenWithin).append(" ");
 
             List<String> tier = getTier(i);
-            Collections.sort(tier);
+//            Collections.sort(tier); // Do not sort!
 
             for (Object aTier : tier) {
                 String name = (String) aTier;
@@ -761,7 +761,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
     private void ensureTiers(int tier) {
         for (int i = tierSpecs.size(); i <= tier; i++) {
-            tierSpecs.add(new HashSet<MyNode>());
+            tierSpecs.add(new LinkedHashSet<MyNode>());
 
             for (int j = 0; j < i; j++) {
                 forbiddenRulesSpecs.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));

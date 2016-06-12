@@ -505,8 +505,8 @@ public class TimeSeriesUtils {
 
             Node from = edge.getNode1();
             Node to = edge.getNode2();
-            System.out.println("From node = " + from.getName());
-            System.out.println("To node = " + to.getName());
+//            System.out.println("From node = " + from.getName());
+//            System.out.println("To node = " + to.getName());
             Node _from = graph.getNode(from.getName(), 0);
             Node _to = graph.getNode(to.getName(), 0);
             Edge edge1 = new Edge(_from,_to,Endpoint.TAIL,Endpoint.ARROW);

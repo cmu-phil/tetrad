@@ -204,7 +204,7 @@ public final class TsFci implements GraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(depth);
         fas.setVerbose(verbose);
-        fas.setInitialGraph(initialGraph);
+        //fas.setInitialGraph(initialGraph);
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 
@@ -458,9 +458,9 @@ public final class TsFci implements GraphSearch {
             int indx_comp = -1;
             int indy_comp = -1;
             List tier_x = knowledge.getTier(indx_tier);
-            Collections.sort(tier_x);
+//            Collections.sort(tier_x);
             List tier_y = knowledge.getTier(indy_tier);
-            Collections.sort(tier_y);
+//            Collections.sort(tier_y);
 
             int i;
             for(i = 0; i < tier_x.size(); ++i) {
@@ -490,9 +490,9 @@ public final class TsFci implements GraphSearch {
                 Node y1;
                 if (indx_tier >= indy_tier) {
                     List tmp_tier1 = knowledge.getTier(i + tier_diff);
-                    Collections.sort(tmp_tier1);
+//                    Collections.sort(tmp_tier1);
                     List tmp_tier2 = knowledge.getTier(i);
-                    Collections.sort(tmp_tier2);
+//                    Collections.sort(tmp_tier2);
                     A = (String) tmp_tier1.get(indx_comp);
                     B = (String) tmp_tier2.get(indy_comp);
                     if (A.equals(B)) continue;
@@ -508,7 +508,7 @@ public final class TsFci implements GraphSearch {
                     for (Node tempNode : condSet) {
                         int ind_temptier = knowledge.isInWhichTier(tempNode);
                         List temptier = knowledge.getTier(ind_temptier);
-                        Collections.sort(temptier);
+//                        Collections.sort(temptier);
                         int ind_temp = -1;
                         for (int j = 0; j < temptier.size(); ++j) {
                             if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
@@ -535,7 +535,7 @@ public final class TsFci implements GraphSearch {
                             continue;
                         }
                         List new_tier = knowledge.getTier(condAB_tier);
-                        Collections.sort(new_tier);
+//                        Collections.sort(new_tier);
                         String tempNode1 = (String) new_tier.get(ind_temp);
                         System.out.println("adding variable " + tempNode1 + " to SepSet");
                         condSetAB.add(test.getVariable(tempNode1));
@@ -546,9 +546,9 @@ public final class TsFci implements GraphSearch {
                     //System.out.println("############## WARNING (removeSimilarPairs): did not catch x,y pair " + x + ", " + y);
                     //System.out.println();
                     List tmp_tier1 = knowledge.getTier(i);
-                    Collections.sort(tmp_tier1);
+//                    Collections.sort(tmp_tier1);
                     List tmp_tier2 = knowledge.getTier(i + tier_diff);
-                    Collections.sort(tmp_tier2);
+//                    Collections.sort(tmp_tier2);
                     A = (String) tmp_tier1.get(indx_comp);
                     B = (String) tmp_tier2.get(indy_comp);
                     if (A.equals(B)) continue;
@@ -564,7 +564,7 @@ public final class TsFci implements GraphSearch {
                     for (Node tempNode : condSet) {
                         int ind_temptier = knowledge.isInWhichTier(tempNode);
                         List temptier = knowledge.getTier(ind_temptier);
-                        Collections.sort(temptier);
+//                        Collections.sort(temptier);
                         int ind_temp = -1;
                         for (int j = 0; j < temptier.size(); ++j) {
                             if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
@@ -591,7 +591,7 @@ public final class TsFci implements GraphSearch {
                             continue;
                         }
                         List new_tier = knowledge.getTier(condAB_tier);
-                        Collections.sort(new_tier);
+//                        Collections.sort(new_tier);
                         String tempNode1 = (String) new_tier.get(ind_temp);
                         System.out.println("adding variable " + tempNode1 + " to SepSet");
                         condSetAB.add(test.getVariable(tempNode1));

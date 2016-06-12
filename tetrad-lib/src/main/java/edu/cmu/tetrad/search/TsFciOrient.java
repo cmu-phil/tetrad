@@ -1370,9 +1370,9 @@ public final class TsFciOrient {
         int indx_comp = -1;
         int indy_comp = -1;
         List tier_x = knowledge.getTier(indx_tier);
-        Collections.sort(tier_x);
+//        Collections.sort(tier_x);
         List tier_y = knowledge.getTier(indy_tier);
-        Collections.sort(tier_y);
+//        Collections.sort(tier_y);
 
         int i;
         for(i = 0; i < tier_x.size(); ++i) {
@@ -1400,9 +1400,9 @@ public final class TsFciOrient {
             Node y1;
             if (indx_tier >= indy_tier) {
                 List tmp_tier1 = knowledge.getTier(i + tier_diff);
-                Collections.sort(tmp_tier1);
+//                Collections.sort(tmp_tier1);
                 List tmp_tier2 = knowledge.getTier(i);
-                Collections.sort(tmp_tier2);
+//                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
