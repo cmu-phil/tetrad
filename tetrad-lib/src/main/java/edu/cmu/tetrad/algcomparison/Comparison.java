@@ -114,7 +114,6 @@ public class Comparison {
         double[][][] allRet = printStats(algorithms, stats, parameters, simulation);
 
 
-
         System.out.println();
         out.println("Algorithms:");
         out.println();
@@ -182,6 +181,9 @@ public class Comparison {
                 long stop = System.currentTimeMillis();
 
                 long elapsed = stop - start;
+
+                System.out.println(algorithms.get(t).getComparisonGraph(dag));
+                System.out.println(out);
 
                 out = GraphUtils.replaceNodes(out, dag.getNodes());
 

@@ -1030,7 +1030,7 @@ public final class DataUtils {
      */
     public static TetradVector means(double[][] data) {
         TetradVector means = new TetradVector(data.length);
-        int rows = data[0].length;
+        int rows = data.length;
 
         for (int j = 0; j < means.size(); j++) {
             double sum = 0.0;
