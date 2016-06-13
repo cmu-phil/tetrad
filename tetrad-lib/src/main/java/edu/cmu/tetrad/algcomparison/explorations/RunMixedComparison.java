@@ -27,7 +27,6 @@ import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfciFci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.MixedSemThenDiscretizeHalfSimulation;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,7 +42,7 @@ import java.util.Map;
 public class RunMixedComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numCategories", 2);
+        parameters.put("numCategories", 4);
         parameters.put("mgmParam1", 0.01);
         parameters.put("mgmParam2", 0.01);
         parameters.put("mgmParam3", 0.01);
@@ -51,7 +50,7 @@ public class RunMixedComparison {
         parameters.put("numRuns", 1);
         parameters.put("numSamples", 1000);
         parameters.put("numMeasures", 30);
-        parameters.put("numEdges", 30);
+        parameters.put("numEdges", 60);
         parameters.put("penaltyDiscount", 4);
         parameters.put("percentDiscreteForMixedSimulation", 50);
 
@@ -72,9 +71,8 @@ public class RunMixedComparison {
         // Pattern
 //        algorithms.add(new MixedSemFgs());
 //        algorithms.add(new MixedFgsMixedScore());
-        algorithms.add(new MixedFgsMixedScore2());
+        algorithms.add(new MixedFgsCondGaussianScore());
 //        algorithms.add(new MixedBdeuFgs());
-//        algorithms.add(new MixedWfgs());
 //        algorithms.add(new MixedWfgs());
 //        algorithms.add(new MixedPc());
 //        algorithms.add(new MixedPcs());
@@ -114,6 +112,8 @@ public class RunMixedComparison {
 //                }
 //            }
 
+            File dir = new File("comparison");
+            dir.mkdirs();
             File comparison = new File("comparison", baseFileName + ".txt");
             PrintStream out = new PrintStream(new FileOutputStream(comparison));
             new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation, out);

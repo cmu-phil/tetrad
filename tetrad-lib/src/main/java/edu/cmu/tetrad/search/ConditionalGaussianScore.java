@@ -30,12 +30,11 @@ import org.apache.commons.math3.stat.correlation.Covariance;
 import java.util.*;
 
 /**
- * Implements the continuous BIC score for FGS.
+ * Implements a conditional Gaussian BIC score for FGS.
  *
  * @author Joseph Ramsey
- * @deprecated Doesn't work.
  */
-public class MixedBicScore2 implements Score {
+public class ConditionalGaussianScore implements Score {
 
     // The covariance matrix.
     private DataSet dataSet;
@@ -45,22 +44,19 @@ public class MixedBicScore2 implements Score {
     // The variables of the continuousData set.
     private List<Node> variables;
 
-    private double penaltyDiscount = 2.0;
-
     // True if verbose output should be sent to out.
     private boolean verbose = false;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public MixedBicScore2(DataSet dataSet) {
+    public ConditionalGaussianScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-        this.penaltyDiscount = 4;
 
         _data = dataSet.getDoubleData();
     }
@@ -97,7 +93,7 @@ public class MixedBicScore2 implements Score {
 
         int N = dataSet.getNumRows();
 
-        double C = .5 * N * (1.0 + Math.log(2 * Math.PI));
+        double C =   .5 * N * 8 + .5 * N * Math.log(2 * Math.PI);
 
         if (numeratorContinuous.isEmpty()) {
 
@@ -106,8 +102,6 @@ public class MixedBicScore2 implements Score {
             Ret ret = getProb((DiscreteVariable) target, denominatorDiscrete);
             double lik = ret.getLik();
             double dof = ret.getDof();
-
-//            lik += C;
 
             return lik - dof * Math.log(N);
         } else {
@@ -118,8 +112,6 @@ public class MixedBicScore2 implements Score {
                 double dof = ret1.getDof();
                 double lik = ret1.getLik();
 
-                lik -= C;
-
                 return lik - dof * Math.log(N);
             } else if (numeratorContinuous.size() == denominatorContinuous.size()) {
 
@@ -129,8 +121,6 @@ public class MixedBicScore2 implements Score {
                 double dof = ret1.getDof() - ret2.getDof();
                 double lik = ret1.getLik() - ret2.getLik();
 
-                lik -= C;
-
                 return lik - dof * Math.log(N);
             } else if (numeratorDiscrete.size() == denominatorDiscrete.size()) {
 
@@ -139,8 +129,6 @@ public class MixedBicScore2 implements Score {
                 Ret ret2 = getProb(denominatorContinuous, denominatorDiscrete);
                 double dof = ret1.getDof() - ret2.getDof();
                 double lik = ret1.getLik() - ret2.getLik();
-
-                lik -= C;
 
                 return lik - dof * Math.log(N);
             } else {
@@ -212,10 +200,14 @@ public class MixedBicScore2 implements Score {
             if (n > p) {
                 TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
                         false).getCovarianceMatrix());
+                lik -= 0.5 * n * p * Math.log(2 * Math.PI);
+                lik -= 0.5 * n * p;
                 lik -= 0.5 * n * Math.log(Sigma.det());
             } else {
                 System.out.println("Skipped " + n);
             }
+
+            lik -= 2 * n * p;
 
             dof += p * (p + 1);
         }
@@ -336,10 +328,6 @@ public class MixedBicScore2 implements Score {
         return localScore(i, new int[0]);
     }
 
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
     public int getSampleSize() {
         return dataSet.getNumRows();
     }
@@ -347,10 +335,6 @@ public class MixedBicScore2 implements Score {
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
     }
 
     public boolean isVerbose() {
@@ -373,12 +357,12 @@ public class MixedBicScore2 implements Score {
 
     @Override
     public double getParameter1() {
-        return penaltyDiscount;
+        return 0;
     }
 
     @Override
     public void setParameter1(double alpha) {
-        this.penaltyDiscount = alpha;
+
     }
 
     @Override

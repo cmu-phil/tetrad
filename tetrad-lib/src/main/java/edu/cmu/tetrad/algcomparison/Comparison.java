@@ -80,8 +80,8 @@ public class Comparison {
                     newGraph.addEdge(edge);
                 }
 
-                if (node2 instanceof ContinuousVariable &&
-                        node1 instanceof DiscreteVariable) {
+                if (node1 instanceof ContinuousVariable &&
+                        node2 instanceof DiscreteVariable) {
                     newGraph.addEdge(edge);
                 }
             }
