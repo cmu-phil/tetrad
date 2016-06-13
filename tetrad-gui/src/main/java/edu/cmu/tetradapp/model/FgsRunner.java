@@ -388,8 +388,6 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         fgs.setKnowledge(getParams().getKnowledge());
         fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
         fgs.setVerbose(true);
-//        fgs.setHeuristicSpeedup(true);
-//        fgs.setDepth(3);
         fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
         Graph graph = fgs.search();
 
