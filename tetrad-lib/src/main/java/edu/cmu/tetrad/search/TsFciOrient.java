@@ -1362,7 +1362,7 @@ public final class TsFciOrient {
         if(x.getName().equals("time") || y.getName().equals("time")){
             return;
         }
-        System.out.println("orienting similar pairs for x and y: " + x + ", " + y);
+        System.out.println("Entering orient similar pairs method for x and y: " + x + ", " + y);
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
         int indy_tier = knowledge.isInWhichTier(y);
@@ -1422,7 +1422,7 @@ public final class TsFciOrient {
                     System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
                 }
             } else {
-                System.out.println("############## WARNING (orientSimilarPairs): did not catch x,y pair " + x + ", " + y);
+//                System.out.println("############## WARNING (orientSimilarPairs): did not catch x,y pair " + x + ", " + y);
             }
         }
 

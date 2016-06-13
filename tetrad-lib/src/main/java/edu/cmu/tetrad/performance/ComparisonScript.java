@@ -16,12 +16,12 @@ public class ComparisonScript {
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Continuous); // Continuous or Discrete
-        params.setNumVars(10); // number of variables
-        params.setNumEdges(10); // number of edges
+        params.setNumVars(15); // number of variables
+        params.setNumEdges(15); // number of edges
         int minSample = 100; // smallest sample size to generate
         int maxSample = 1000; // largest sample size to generate
         int increment = 100; // ramp up sample size by this increment
-        int numTrials = 10; // number of data sets to run for a particular sample size, results will be averaged
+        int numTrials = 100; // number of data sets to run for a particular sample size, results will be averaged
 
         /** If you want to run data sets from file instead of generating random graphs **/
         params.setDataFromFile(false); // set this to true
@@ -52,7 +52,7 @@ public class ComparisonScript {
         /** add algorithms to compare to the list algList. comment out those you don't want to consider. **/
         //algList.add(ComparisonParameters.Algorithm.PC);
         //algList.add(ComparisonParameters.Algorithm.FGS);
-        algList.add(ComparisonParameters.Algorithm.FCI);
+        //algList.add(ComparisonParameters.Algorithm.FCI);
         algList.add(ComparisonParameters.Algorithm.TsFCI);
 
         /** User shouldn't need to change anything below this line **/

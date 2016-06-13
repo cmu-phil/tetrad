@@ -683,7 +683,7 @@ public class Fasts implements IFas {
         if(x.getName().equals("time") || y.getName().equals("time")){
             return new ArrayList<List<Node>>();
         }
-        System.out.println("Knowledge within returnSimilar : " + knowledge);
+//        System.out.println("Knowledge within returnSimilar : " + knowledge);
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
         int indy_tier = knowledge.isInWhichTier(y);
