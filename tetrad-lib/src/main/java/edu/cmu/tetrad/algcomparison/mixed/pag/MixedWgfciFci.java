@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedWfgsFci implements Algorithm {
+public class MixedWgfciFci implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
         WGfci fgs = new WGfci(ds);
         fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());

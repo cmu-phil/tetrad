@@ -23,41 +23,32 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.LogisticRegression2;
 import edu.cmu.tetrad.util.CombinationIterator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
-import edu.cmu.tetrad.util.dist.Discrete;
+import org.apache.commons.math3.stat.correlation.Covariance;
 
-import java.io.PrintStream;
 import java.util.*;
-
-import static java.lang.Math.sqrt;
 
 /**
  * Implements the continuous BIC score for FGS.
  *
  * @author Joseph Ramsey
+ * @deprecated Doesn't work.
  */
 public class MixedBicScore2 implements Score {
 
     // The covariance matrix.
     private DataSet dataSet;
 
+    private TetradMatrix _data;
+
     // The variables of the continuousData set.
     private List<Node> variables;
 
     private double penaltyDiscount = 2.0;
 
-    // True if linear dependencies should return NaN for the score, and hence be
-    // ignored by FGS
-    private boolean ignoreLinearDependent = false;
-
     // True if verbose output should be sent to out.
     private boolean verbose = false;
-
-    private BicScore bicScore;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -70,7 +61,8 @@ public class MixedBicScore2 implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.penaltyDiscount = 4;
-        bicScore = new BicScore(dataSet);
+
+        _data = dataSet.getDoubleData();
     }
 
     /**
@@ -79,21 +71,21 @@ public class MixedBicScore2 implements Score {
     public double localScore(int i, int... parents) {
         Node target = variables.get(i);
 
-        List<ContinuousVariable> numeratorContinuous = new ArrayList<>();
-        List<DiscreteVariable> numeratorDiscrete = new ArrayList<>();
+        List<ContinuousVariable> denominatorContinuous = new ArrayList<>();
+        List<DiscreteVariable> denominatorDiscrete = new ArrayList<>();
 
         for (int parent1 : parents) {
             Node parent = variables.get(parent1);
 
             if (parent instanceof ContinuousVariable) {
-                numeratorContinuous.add((ContinuousVariable) parent);
+                denominatorContinuous.add((ContinuousVariable) parent);
             } else {
-                numeratorDiscrete.add((DiscreteVariable) parent);
+                denominatorDiscrete.add((DiscreteVariable) parent);
             }
         }
 
-        List<ContinuousVariable> denominatorContinuous = new ArrayList<>(numeratorContinuous);
-        List<DiscreteVariable> denominatorDiscrete = new ArrayList<>(numeratorDiscrete);
+        List<ContinuousVariable> numeratorContinuous = new ArrayList<>(denominatorContinuous);
+        List<DiscreteVariable> numeratorDiscrete = new ArrayList<>(denominatorDiscrete);
 
         if (target instanceof ContinuousVariable) {
             numeratorContinuous.add((ContinuousVariable) target);
@@ -103,28 +95,63 @@ public class MixedBicScore2 implements Score {
             throw new IllegalStateException();
         }
 
-        double score;
+        int N = dataSet.getNumRows();
+
+        double C = .5 * N * (1.0 + Math.log(2 * Math.PI));
 
         if (numeratorContinuous.isEmpty()) {
-            score = bicScore.localScore(i, parents);
+
+            // Discrete target, discrete predictors.
+            if (!(target instanceof DiscreteVariable)) throw new IllegalStateException();
+            Ret ret = getProb((DiscreteVariable) target, denominatorDiscrete);
+            double lik = ret.getLik();
+            double dof = ret.getDof();
+
+//            lik += C;
+
+            return lik - dof * Math.log(N);
         } else {
-            double numerator = getProb(numeratorContinuous, numeratorDiscrete);
-            double denominator = getProb(denominatorContinuous, denominatorDiscrete);
+            if (denominatorContinuous.isEmpty()) {
 
-            int c = numeratorContinuous.size();
-            int d = numeratorDiscrete.size();
-            int N = dataSet.getNumRows();
-            double dof = getDof(numeratorContinuous, numeratorDiscrete);
-            double lik = numerator - denominator;
+                // Continuous target, all discrete predictors.
+                Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
+                double dof = ret1.getDof();
+                double lik = ret1.getLik();
 
-            score = 2 * lik - dof * Math.log(N);
+                lik -= C;
+
+                return lik - dof * Math.log(N);
+            } else if (numeratorContinuous.size() == denominatorContinuous.size()) {
+
+                // Discrete target, mixed predictors.
+                Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
+                Ret ret2 = getProb(denominatorContinuous, denominatorDiscrete);
+                double dof = ret1.getDof() - ret2.getDof();
+                double lik = ret1.getLik() - ret2.getLik();
+
+                lik -= C;
+
+                return lik - dof * Math.log(N);
+            } else if (numeratorDiscrete.size() == denominatorDiscrete.size()) {
+
+                // Continuous target, mixed predictors.
+                Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
+                Ret ret2 = getProb(denominatorContinuous, denominatorDiscrete);
+                double dof = ret1.getDof() - ret2.getDof();
+                double lik = ret1.getLik() - ret2.getLik();
+
+                lik -= C;
+
+                return lik - dof * Math.log(N);
+            } else {
+                throw new IllegalStateException();
+            }
         }
-
-        return score;
     }
 
-    private double getProb(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
-        if (continuous.isEmpty()) return 0;
+    private Ret getProb(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
+        if (continuous.isEmpty()) throw new IllegalArgumentException();
+        int dof = 0;
 
         // For each combination of values for the discrete guys extract a subset of the data.
         List<Node> variables = dataSet.getVariables();
@@ -133,30 +160,27 @@ public class MixedBicScore2 implements Score {
             throw new IllegalArgumentException();
         }
 
-        int[] dims = new int[discrete.size()];
-        int[] cols = new int[continuous.size()];
+        int p = continuous.size();
+        int d = discrete.size();
 
-        for (int i = 0; i < discrete.size(); i++) {
+        int[] cols = new int[p];
+        int[] dims = new int[d];
+
+        for (int i = 0; i < d; i++) {
             dims[i] = discrete.get(i).getNumCategories();
         }
 
-        for (int j = 0; j < continuous.size(); j++) {
+        for (int j = 0; j < p; j++) {
             cols[j] = variables.indexOf(continuous.get(j));
-        }
-
-        if (cols.length == 0) {
-            throw new IllegalArgumentException();
         }
 
         CombinationIterator iterator = new CombinationIterator(dims);
         int[] comb;
 
-        TetradMatrix _data = dataSet.getDoubleData();
+        int[] _cols = new int[d];
+        for (int i = 0; i < d; i++) _cols[i] = dataSet.getColumn(discrete.get(i));
 
-        double SUM = 0;
-
-        int[] _cols = new int[discrete.size()];
-        for (int i = 0; i < discrete.size(); i++) _cols[i] = dataSet.getColumn(discrete.get(i));
+        double lik = 0;
 
         while (iterator.hasNext()) {
             comb = iterator.next();
@@ -183,55 +207,103 @@ public class MixedBicScore2 implements Score {
             for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
 
             TetradMatrix subset = _data.getSelection(_rows, cols);
-            int n = subset.rows();
-            int p = subset.columns();
+            int n = rows.size();
 
-            TetradMatrix Sigma = DataUtils.cov2(subset);
+            if (n > p) {
+                TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
+                        false).getCovarianceMatrix());
+                lik -= 0.5 * n * Math.log(Sigma.det());
+            } else {
+                System.out.println("Skipped " + n);
+            }
 
-            SUM += -.5 * n * Math.log(Sigma.det());
-            SUM += -.5 * n * Sigma.times(Sigma.inverse()).trace();
-            SUM += -.5 * n * p * Math.log(2 * Math.PI);
+            dof += p * (p + 1);
         }
 
-        return SUM;
+        return new Ret(lik, dof);
     }
 
-    private double getDof(List<ContinuousVariable> c, List<DiscreteVariable> d) {
-        int[] dims = new int[d.size()];
+    private Ret getProb(DiscreteVariable target, List<DiscreteVariable> parents) {
+        if (parents.contains(target)) throw new IllegalArgumentException();
 
-        for (int i = 0; i < d.size(); i++) {
-            dims[i] = d.get(i).getNumCategories();
+        int dof = 0;
+        int numCategories = target.getNumCategories();
+
+        int d = parents.size();
+        int[] dims = new int[d];
+
+        for (int i = 0; i < d; i++) {
+            dims[i] = parents.get(i).getNumCategories();
         }
 
         CombinationIterator iterator = new CombinationIterator(dims);
+        int[] comb;
 
-        int dof = 0;
-        int p = c.size();
+        int[] _cols = new int[d];
+        for (int i = 0; i < d; i++) _cols[i] = dataSet.getColumn(parents.get(i));
+
+        double lik = 0;
 
         while (iterator.hasNext()) {
-            iterator.next();
-            dof += p * (p + 1) / 2;
-        }
+            comb = iterator.next();
+            List<Integer> rows = new ArrayList<>();
 
-        return dof;
-    }
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                boolean addRow = true;
 
-    private TetradVector getAvg(TetradMatrix X) {
-        TetradVector avg = new TetradVector(X.columns());
+                for (int c = 0; c < comb.length; c++) {
+                    if (comb[c] != dataSet.getInt(i, _cols[c])) {
+                        addRow = false;
+                        break;
+                    }
+                }
 
-        for (int j = 0; j < X.columns(); j++) {
-            double sum = 0.0;
-
-            for (int i = 0; i < X.rows(); i++) {
-                sum += X.get(i, j);
+                if (addRow) {
+                    rows.add(i);
+                }
             }
 
-            double _avg = sum / X.rows();
+            double[] counts = new double[numCategories];
+            double cellPrior = 0;
+            Arrays.fill(counts, cellPrior);
+            double r = cellPrior * counts.length;
 
-            avg.set(j, _avg);
+            for (int row : rows) {
+                int value = dataSet.getInt(row, dataSet.getColumn(target));
+                counts[value]++;
+                r++;
+            }
+
+            for (int c = 0; c < numCategories; c++) {
+                double count = counts[c];
+
+                if (count > 0) {
+                    lik += count * Math.log(count / (double) r);
+                }
+            }
+
+            dof += numCategories - 1;
         }
 
-        return avg;
+        return new Ret(lik, dof);
+    }
+
+    private class Ret {
+        private double lik;
+        private int dof;
+
+        public Ret(double lik, int dof) {
+            this.lik = lik;
+            this.dof = dof;
+        }
+
+        public double getLik() {
+            return lik;
+        }
+
+        public int getDof() {
+            return dof;
+        }
     }
 
     public double localScoreDiff(int x, int y, int[] z) {
@@ -262,17 +334,6 @@ public class MixedBicScore2 implements Score {
      */
     public double localScore(int i) {
         return localScore(i, new int[0]);
-    }
-
-    /**
-     * True iff edges that cause linear dependence are ignored.
-     */
-    public boolean isIgnoreLinearDependent() {
-        return ignoreLinearDependent;
-    }
-
-    public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
-        this.ignoreLinearDependent = ignoreLinearDependent;
     }
 
     public double getPenaltyDiscount() {

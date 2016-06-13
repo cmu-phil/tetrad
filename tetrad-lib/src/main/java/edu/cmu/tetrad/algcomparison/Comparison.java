@@ -182,9 +182,6 @@ public class Comparison {
 
                 long elapsed = stop - start;
 
-                System.out.println(algorithms.get(t).getComparisonGraph(dag));
-                System.out.println(out);
-
                 out = GraphUtils.replaceNodes(out, dag.getNodes());
 
                 Graph[] est = new Graph[numGraphTypes];

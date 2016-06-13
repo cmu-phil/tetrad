@@ -21,13 +21,10 @@
 
 package edu.cmu.tetrad.algcomparison.explorations;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Simulation;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfci;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWfgsFci;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfciFci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.MixedSemThenDiscretizeHalfSimulation;
@@ -35,7 +32,10 @@ import edu.cmu.tetrad.algcomparison.simulation.MixedSemThenDiscretizeHalfSimulat
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Joseph Ramsey
@@ -50,10 +50,10 @@ public class RunMixedComparison {
         parameters.put("numLatents", 0);
         parameters.put("numRuns", 1);
         parameters.put("numSamples", 1000);
-        parameters.put("numMeasures", 10);
-        parameters.put("numEdges", 10);
+        parameters.put("numMeasures", 30);
+        parameters.put("numEdges", 30);
         parameters.put("penaltyDiscount", 4);
-        parameters.put("percentDiscreteForMixedSimulation", 0);
+        parameters.put("percentDiscreteForMixedSimulation", 50);
 
         Map<String, String> stats = new LinkedHashMap<>();
         stats.put("AP", "Adjacency Precision");
@@ -82,12 +82,18 @@ public class RunMixedComparison {
 //        algorithms.add(new MixedMGMFgs());
 //        algorithms.add(new MixedMGMPc());
 //        algorithms.add(new MixedMGMCpc());
-//        algorithms.add(new MixedWfgsFci());
-//
-//         PAG
-//        algorithms.add(new MixedWgfci());
-//        algorithms.add(new MixedFci());
-//        algorithms.add(new MixedGfci());
+//        algorithms.add(new MixedWgfciFci());
+
+
+        //
+
+        //PAG
+
+        //algorithms.add(new MixedWgfci());
+
+        //algorithms.add(new MixedFci());
+
+        //algorithms.add(new MixedGfci());
 
         Simulation simulation = new MixedLeeHastieSimulation();
 //        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation();
