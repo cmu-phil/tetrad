@@ -564,7 +564,7 @@ public class Comparison2 {
     }
 
     public static IKnowledge getKnowledge(Graph graph) {
-        System.out.println("Entering getKnowledge ... ");
+//        System.out.println("Entering getKnowledge ... ");
         int numLags = 1; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
@@ -584,7 +584,7 @@ public class Comparison2 {
         }
         numLags = Collections.max(laglist);
 
-        System.out.println("Variable list before the sort = " + variables);
+//        System.out.println("Variable list before the sort = " + variables);
         Collections.sort(variables, new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
@@ -612,15 +612,13 @@ public class Comparison2 {
                     } else {
                         return prefix1.compareTo(prefix2);
                     }
-
-//                    return 0;
                 } else {
                     return getLag(o1.getName())-getLag(o2.getName());
                 }
             }
         });
 
-        System.out.println("Variable list after the sort = " + variables);
+//        System.out.println("Variable list after the sort = " + variables);
 
         for (Node node : variables) {
             String varName = node.getName();

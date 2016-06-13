@@ -519,11 +519,14 @@ public class Fasts implements IFas {
     // removeSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
     private void removeSimilarPairs(Map<Node, Set<Node>> adjacencies, final IndependenceTest test, Node x, Node y, List<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
+        System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
         if(x.getName().equals("time") || y.getName().equals("time")){
+            System.out.println("Not removing similar pairs b/c variable pair includes time.");
             return;
         }
         for (Node tempNode : condSet) {
             if (tempNode.getName().equals("time")) {
+                System.out.println("Not removing similar pairs b/c conditioning set includes time.");
                 return;
             }
         }
@@ -553,8 +556,6 @@ public class Fasts implements IFas {
                 break;
             }
         }
-
-        System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
 
         if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
         if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");

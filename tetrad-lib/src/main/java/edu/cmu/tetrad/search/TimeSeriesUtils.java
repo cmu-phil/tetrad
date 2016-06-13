@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.TetradVector;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -386,9 +387,62 @@ public class TimeSeriesUtils {
                 newVariables.add(laggedNode);
                 laggedNode.setCenter(80 * col + 50, 80 * (numLags - lag) + 50);
                 laggedNodes[lag][col] = laggedNode;
-                knowledge.addToTier(numLags - lag, laggedNode.getName());
+//                knowledge.addToTier(numLags - lag, laggedNode.getName());
             }
         }
+
+//        System.out.println("Variable list before the sort = " + newVariables);
+        Collections.sort(newVariables, new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                String name1 = getNameNoLag(o1);
+                String name2 = getNameNoLag(o2);
+
+//                System.out.println("name 1 = " + name1);
+//                System.out.println("name 2 = " + name2);
+
+                String prefix1 = getPrefix(name1);
+                String prefix2 = getPrefix(name2);
+
+//                System.out.println("prefix 1 = " + prefix1);
+//                System.out.println("prefix 2 = " + prefix2);
+
+                int index1 = getIndex(name1);
+                int index2 = getIndex(name2);
+
+//                System.out.println("index 1 = " + index1);
+//                System.out.println("index 2 = " + index2);
+
+                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                    if (prefix1.compareTo(prefix2) == 0) {
+                        return Integer.compare(index1, index2);
+                    } else {
+                        return prefix1.compareTo(prefix2);
+                    }
+
+                } else {
+                    return getLag(o1.getName())-getLag(o2.getName());
+                }
+            }
+        });
+
+//        System.out.println("Variable list after the sort = " + newVariables);
+
+        for (Node node : newVariables) {
+            String varName = node.getName();
+            String tmp;
+            int lag;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+//                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+//                laglist.add(lag);
+            }
+            knowledge.addToTier(numLags - lag, node.getName());
+        }
+
         DataSet laggedData = new ColtDataSet(laggedRows, newVariables);
         for (int lag = 0; lag <= numLags; lag++) {
             for (int col = 0; col < dataSize; col++) {
@@ -446,7 +500,7 @@ public class TimeSeriesUtils {
                 newVariables.add(laggedNode);
                 laggedNode.setCenter(80 * col + 50, 80 * (numLags - lag) + 50);
                 laggedNodes[lag][col] = laggedNode;
-                knowledge.addToTier(numLags - lag + 1, laggedNode.getName());
+//                knowledge.addToTier(numLags - lag + 1, laggedNode.getName());
             }
         }
 
@@ -456,6 +510,59 @@ public class TimeSeriesUtils {
         newVariables.add(indexNode);
         indexNode.setCenter(50, 80 * (numLags - 1) + 50);
         knowledge.addToTier(0, indexNode.getName());
+
+        //        System.out.println("Variable list before the sort = " + variables);
+        Collections.sort(newVariables, new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                String name1 = getNameNoLag(o1);
+                String name2 = getNameNoLag(o2);
+
+//                System.out.println("name 1 = " + name1);
+//                System.out.println("name 2 = " + name2);
+
+                String prefix1 = getPrefix(name1);
+                String prefix2 = getPrefix(name2);
+
+//                System.out.println("prefix 1 = " + prefix1);
+//                System.out.println("prefix 2 = " + prefix2);
+
+                int index1 = getIndex(name1);
+                int index2 = getIndex(name2);
+
+//                System.out.println("index 1 = " + index1);
+//                System.out.println("index 2 = " + index2);
+
+                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                    if (prefix1.compareTo(prefix2) == 0) {
+                        return Integer.compare(index1, index2);
+                    } else {
+                        return prefix1.compareTo(prefix2);
+                    }
+
+                } else {
+                    return getLag(o1.getName())-getLag(o2.getName());
+                }
+            }
+        });
+
+//        System.out.println("Variable list after the sort = " + variables);
+
+        for (Node node : newVariables) {
+            String varName = node.getName();
+            if (varName.equals("time")) continue;
+            String tmp;
+            int lag;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+//                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+//                laglist.add(lag);
+            }
+            knowledge.addToTier(numLags - lag + 1, node.getName());
+        }
 
         DataSet laggedData = new ColtDataSet(laggedRows, newVariables);
         for (int lag = 0; lag <= numLags; lag++) {
@@ -480,6 +587,7 @@ public class TimeSeriesUtils {
 
         knowledge.setDefaultToKnowledgeLayout(true);
         laggedData.setKnowledge(knowledge);
+        System.out.println("Knowledge set to : " + knowledge);
         return laggedData;
     }
 
@@ -537,6 +645,48 @@ public class TimeSeriesUtils {
         return graph;
     }
 
+    public static String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
+        if(tempS.indexOf(':')== -1) {
+            return tempS;
+        } else return tempS.substring(0, tempS.indexOf(':'));
+    }
+
+    public static String getPrefix(String s) {
+//        int y = 0;
+//        for (int i = s.length() - 1; i >= 0; i--) {
+//            try {
+//                y = Integer.parseInt(s.substring(i));
+//            } catch (NumberFormatException e) {
+//                return s.substring(0, y);
+//            }
+//        }
+//
+//        throw new IllegalArgumentException("Not character prefix.");
+
+//        if(s.indexOf(':')== -1) return s;
+//        String tmp = s.substring(0,s.indexOf(':')-1);
+//        return tmp;
+        return s.substring(0,1);
+    }
+
+    public static int getIndex(String s) {
+        int y = 0;
+        for (int i = s.length() - 1; i >= 0; i--) {
+            try {
+                y = Integer.parseInt(s.substring(i));
+            } catch (NumberFormatException e) {
+                return y;
+            }
+        }
+        throw new IllegalArgumentException("Not integer suffix.");
+    }
+
+    public static int getLag(String s) {
+        if(s.indexOf(':')== -1) return 0;
+        String tmp = s.substring(s.indexOf(':')+1,s.length());
+        return (Integer.parseInt(tmp));
+    }
 }
 
 
