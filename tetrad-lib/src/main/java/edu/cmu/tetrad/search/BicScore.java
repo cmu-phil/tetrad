@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.dist.Discrete;
 import org.apache.commons.math3.special.Gamma;
 
 import java.util.Arrays;
@@ -78,16 +79,34 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         final List<Node> variables = dataSet.getVariables();
         numCategories = new int[variables.size()];
         for (int i = 0; i < variables.size(); i++) {
-            numCategories[i] = (getVariable(i)).getNumCategories();
+            DiscreteVariable variable = getVariable(i);
+
+            if (variable != null) {
+                numCategories[i] = variable.getNumCategories();
+            }
         }
     }
 
     private DiscreteVariable getVariable(int i) {
-        return (DiscreteVariable) variables.get(i);
+        if (variables.get(i) instanceof DiscreteVariable) {
+            return (DiscreteVariable) variables.get(i);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public double localScore(int node, int parents[]) {
+
+        if (!(variables.get(node) instanceof  DiscreteVariable)) {
+            throw new IllegalArgumentException("Not discrete: " + variables.get(node));
+        }
+
+        for (int t : parents) {
+            if (!(variables.get(t) instanceof  DiscreteVariable)) {
+                throw new IllegalArgumentException("Not discrete: " + variables.get(t));
+            }
+        }
 
         // Number of categories for node.
         int c = numCategories[node];

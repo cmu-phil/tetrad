@@ -18,7 +18,7 @@
             <directory>${project.build.directory}${file.separator}dist</directory>
             <outputDirectory>${file.separator}</outputDirectory>
             <includes>
-                <include>*.sh</include>
+                <include>causal-cmd</include>
             </includes>
             <fileMode>0755</fileMode>
         </fileSet>
@@ -29,7 +29,7 @@
                 <include>*</include>
             </includes>
             <excludes>
-                <exclude>*.sh</exclude>
+                <exclude>causal-cmd</exclude>
             </excludes>
         </fileSet>
         <fileSet>

@@ -6,4 +6,4 @@
 tetrad-gui/tetrad-gui.iml
 tetrad-lib/tetrad-lib.iml
 tetrad-cli/tetrad-cli.iml
-tetrad.iml
+*.iml
