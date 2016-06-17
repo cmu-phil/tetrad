@@ -22,5 +22,5 @@ public class ContinuousPcs implements Algorithm {
     }
 
     public String getDescription() {
-        return "PC-Stable using the Fisher Z test.";
+        return "PC-Stable using the Fisher Z test";
     }}

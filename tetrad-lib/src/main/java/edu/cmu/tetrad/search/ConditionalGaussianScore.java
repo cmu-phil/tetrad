@@ -67,6 +67,12 @@ public class ConditionalGaussianScore implements Score {
     public double localScore(int i, int... parents) {
         Node target = variables.get(i);
 
+        // With fgs2 this fails for some reason...need to debug.
+        int b = Arrays.binarySearch(parents, i);
+        if (b >= 0) {
+            throw new IllegalArgumentException();
+        }
+
         List<ContinuousVariable> denominatorContinuous = new ArrayList<>();
         List<DiscreteVariable> denominatorDiscrete = new ArrayList<>();
 
@@ -77,6 +83,12 @@ public class ConditionalGaussianScore implements Score {
                 denominatorContinuous.add((ContinuousVariable) parent);
             } else {
                 denominatorDiscrete.add((DiscreteVariable) parent);
+            }
+        }
+
+        if (target instanceof DiscreteVariable) {
+            if (denominatorDiscrete.contains(target)) {
+                throw new IllegalArgumentException();
             }
         }
 
@@ -93,7 +105,7 @@ public class ConditionalGaussianScore implements Score {
 
         int N = dataSet.getNumRows();
 
-        double C =   .5 * N * 8 + .5 * N * Math.log(2 * Math.PI);
+        double C = .5 * N * (1 + Math.log(2 * Math.PI));
 
         if (numeratorContinuous.isEmpty()) {
 
@@ -102,6 +114,8 @@ public class ConditionalGaussianScore implements Score {
             Ret ret = getProb((DiscreteVariable) target, denominatorDiscrete);
             double lik = ret.getLik();
             double dof = ret.getDof();
+
+//            lik += C;
 
             return lik - dof * Math.log(N);
         } else {
@@ -112,6 +126,8 @@ public class ConditionalGaussianScore implements Score {
                 double dof = ret1.getDof();
                 double lik = ret1.getLik();
 
+                lik -= C;
+
                 return lik - dof * Math.log(N);
             } else if (numeratorContinuous.size() == denominatorContinuous.size()) {
 
@@ -121,6 +137,8 @@ public class ConditionalGaussianScore implements Score {
                 double dof = ret1.getDof() - ret2.getDof();
                 double lik = ret1.getLik() - ret2.getLik();
 
+                lik -= C;  // Weird.
+
                 return lik - dof * Math.log(N);
             } else if (numeratorDiscrete.size() == denominatorDiscrete.size()) {
 
@@ -129,6 +147,8 @@ public class ConditionalGaussianScore implements Score {
                 Ret ret2 = getProb(denominatorContinuous, denominatorDiscrete);
                 double dof = ret1.getDof() - ret2.getDof();
                 double lik = ret1.getLik() - ret2.getLik();
+
+                lik -= C;
 
                 return lik - dof * Math.log(N);
             } else {
@@ -200,14 +220,14 @@ public class ConditionalGaussianScore implements Score {
             if (n > p) {
                 TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
                         false).getCovarianceMatrix());
-                lik -= 0.5 * n * p * Math.log(2 * Math.PI);
-                lik -= 0.5 * n * p;
+//                lik -= 0.5 * n * p * Math.log(2 * Math.PI);
+//                lik -= 0.5 * n * p;
                 lik -= 0.5 * n * Math.log(Sigma.det());
             } else {
                 System.out.println("Skipped " + n);
             }
 
-            lik -= 2 * n * p;
+//            lik -= 2 * n * p;
 
             dof += p * (p + 1);
         }

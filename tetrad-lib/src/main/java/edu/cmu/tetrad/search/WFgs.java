@@ -21,9 +21,10 @@ public class WFgs implements GraphSearch {
 
     private List<Node> searchVariables;
     private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
-    private Fgs2 fgs;
+    private Fgs fgs;
     private double penaltyDiscount;
     private SemBicScore score;
+    private int depth;
 
     public WFgs(DataSet data) {
         this.searchVariables = data.getVariables();
@@ -40,7 +41,9 @@ public class WFgs implements GraphSearch {
 
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(internalData));
         this.score = score;
-        this.fgs = new Fgs2(score);
+        this.fgs = new Fgs(score);
+        fgs.setDepth(depth);
+
     }
 
     private List<Node> expandVariable(DataSet dataSet, Node node) {
@@ -103,11 +106,15 @@ public class WFgs implements GraphSearch {
                 }
 
                 if (numEdges > 0) {
-                    if (numLeft > 0 && numRight == 0) out.addDirectedEdge(y, x);
-                    else if (numRight > 0 && numLeft == 0) out.addDirectedEdge(x, y);
-                    else {
-                        out.addUndirectedEdge(x, y);
-                    }
+//                    if (numLeft > 0 && numRight == 0) out.addDirectedEdge(y, x);
+//                    else if (numRight > 0 && numLeft == 0) out.addDirectedEdge(x, y);
+//                    else {
+//                        out.addUndirectedEdge(x, y);
+//                    }
+
+                    if (numLeft == numEdges) {out.addDirectedEdge(y, x);}
+                    else if (numRight == numEdges) {out.addDirectedEdge(x, y);}
+                    else {out.addUndirectedEdge(x, y);}
                 }
             }
         }
@@ -122,5 +129,9 @@ public class WFgs implements GraphSearch {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 }

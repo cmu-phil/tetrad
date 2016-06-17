@@ -68,10 +68,10 @@ public final class Ccd2 implements GraphSearch {
     public Graph search() {
         Map<Triple, List<Node>> supSepsets = new HashMap<>();
 
-        Fgs2 fgs = new Fgs2(score);
+        Fgs fgs = new Fgs(score);
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
-        fgs.setFaithfulnessAssumed(true);
+        fgs.setHeuristicSpeedup(false);
         Graph graph = fgs.search();
 
         SepsetsGreedy sepsets = new SepsetsGreedy(graph, test, null, -1);
@@ -83,11 +83,13 @@ public final class Ccd2 implements GraphSearch {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         modifiedR0(graph, sepsets);
-//        stepC(graph, sepsets, null);
+        stepC(graph, sepsets, null);
         stepD(graph, sepsets, supSepsets, null);
         if (stepE(supSepsets, graph)) return graph;
         stepF(graph, sepsets, supSepsets);
 
+        // Applies R1 recursively so long as it doesn't create new
+        // colliders.
         if (applyR1) {
             for (Node node : nodes) {
                 orientR1(node, graph, new LinkedList<Node>());
@@ -527,14 +529,14 @@ public final class Ccd2 implements GraphSearch {
         return local;
     }
 
-    private void orientR1(Node B, Graph graph, List<Node> path) {
-        if (path.contains(B)) return;
+    private boolean orientR1(Node B, Graph graph, List<Node> path) {
+        if (path.contains(B)) return true;
         path.add(B);
 
         List<Node> adj = graph.getAdjacentNodes(B);
 
         if (adj.size() < 2) {
-            return;
+            return true;
         }
 
         ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
@@ -545,13 +547,24 @@ public final class Ccd2 implements GraphSearch {
             Node C = adj.get(combination[1]);
 
             if (ruleR1(A, B, C, graph)) {
-                orientR1(C, graph, path);
+                if (!orientR1(C, graph, path)) {
+                    graph.removeEdge(B, C);
+                    graph.addUndirectedEdge(B, C);
+                    return false;
+                }
             }
 
             if (ruleR1(C, B, A, graph)) {
-                orientR1(A, graph, path);
+                if (!orientR1(A, graph, path)) {
+                    graph.removeEdge(B, C);
+                    graph.addUndirectedEdge(B, C);
+                    return false;
+                }
+            } else {
             }
         }
+
+        return true;
     }
 
     private boolean ruleR1(Node a, Node b, Node c, Graph graph) {
@@ -564,6 +577,13 @@ public final class Ccd2 implements GraphSearch {
 
             if (!graph.isUnderlineTriple(a, b, c)) {
                 return false;
+            }
+
+            for (Node n : graph.getAdjacentNodes(c)) {
+                if (n == b) continue;
+                if (graph.isUnderlineTriple(b, c, n)) {
+                    return false;
+                }
             }
 
             graph.removeEdge(b, c);

@@ -25,6 +25,6 @@ public class MixedCpc implements Algorithm {
     }
 
     public String getDescription() {
-        return "CPC using the Mixed LRT test.";
+        return "CPC using the Mixed LRT test";
     }
 }

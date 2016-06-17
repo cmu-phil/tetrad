@@ -55,7 +55,7 @@ public class MixedSemFgs implements Algorithm {
     }
 
     public String getDescription() {
-        return "FGS, using the SEM BIC score, treating all variables as continuous.";
+        return "FGS, using the SEM BIC score, treating all variables as continuous";
     }
 }
 

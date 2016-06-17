@@ -23,6 +23,7 @@ public class MixedFgsMixedScore implements Algorithm {
     public Graph search(DataSet Dk, Map<String, Number> parameters) {
         MixedBicScore score = new MixedBicScore(Dk);
         Fgs fgs = new Fgs(score);
+        fgs.setDepth(parameters.get("fgsDepth").intValue());
         return fgs.search();
     }
 
@@ -34,7 +35,6 @@ public class MixedFgsMixedScore implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "Runs FGS using a mixed BIC score that uses logistic regression for discrete targets and " +
-                "linear regression for continuous targets.";
+        return "FGS using a mixed BIC score";
     }
 }

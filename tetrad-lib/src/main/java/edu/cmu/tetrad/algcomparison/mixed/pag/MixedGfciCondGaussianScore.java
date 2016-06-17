@@ -1,33 +1,29 @@
-package edu.cmu.tetrad.algcomparison.mixed.pattern;
+package edu.cmu.tetrad.algcomparison.mixed.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.ConditionalGaussianScore;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 
 import java.util.Map;
 
 /**
  * @author jdramsey
  */
-public class MixedFgsCondGaussianScore implements Algorithm {
+public class MixedGfciCondGaussianScore implements Algorithm {
     public Graph search(DataSet Dk, Map<String, Number> parameters) {
         ConditionalGaussianScore score = new ConditionalGaussianScore(Dk);
-        Fgs fgs = new Fgs(score);
-        fgs.setDepth(parameters.get("fgsDepth").intValue());
+        GFci fgs = new GFci(score);
         return fgs.search();
     }
 
-
     @Override
     public Graph getComparisonGraph(Graph dag) {
-        return SearchGraphUtils.patternForDag(dag);
+        return new DagToPag(dag).convert();
     }
 
     @Override
     public String getDescription() {
-        return "FGS using the conditional Gaussian BIC score";
+        return "GFCI using a conditional Gaussian BIC score";
     }
 }

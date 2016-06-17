@@ -47,7 +47,7 @@ public class MixedBdeuFgs implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "Discretizes the continuous variables in the data set, then runs FGS using the BDeu score.";
+        return "FGS with BDeu after discretizing the continuous variables in the data set";
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {

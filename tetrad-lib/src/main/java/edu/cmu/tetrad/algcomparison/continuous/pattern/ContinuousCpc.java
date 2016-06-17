@@ -22,5 +22,5 @@ public class ContinuousCpc implements Algorithm {
     }
 
     public String getDescription() {
-        return "CPC using the Fisher Z test.";
+        return "CPC using the Fisher Z test";
     }}

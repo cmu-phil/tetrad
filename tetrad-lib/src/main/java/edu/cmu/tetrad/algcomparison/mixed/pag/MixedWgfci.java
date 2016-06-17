@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.search.WGfci;
 
 import java.util.Map;
@@ -20,10 +21,10 @@ public class MixedWgfci implements Algorithm {
 
     @Override
     public Graph getComparisonGraph(Graph dag) {
-        return new DagToPag(dag).convert();
+        return new DagToPag2(dag).convert();
     }
 
     public String getDescription() {
-        return "WGFCI using the SEM BIC score.";
+        return "WGFCI using the SEM BIC score";
     }
 }

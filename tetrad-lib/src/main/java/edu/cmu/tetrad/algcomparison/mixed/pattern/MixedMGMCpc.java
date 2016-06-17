@@ -32,7 +32,6 @@ public class MixedMGMCpc implements Algorithm {
     }
 
     public String getDescription() {
-        return "MGM-CPC: uses the output of MGM as an intial graph " +
-                "for CPC-Stable, using the Mixed LRT test.";
+        return "CPC-Stable, using the Mixed LRT test, with the output of MGM as an intial graph";
     }
 }

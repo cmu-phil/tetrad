@@ -22,6 +22,6 @@ public class DiscretePcGSquare implements Algorithm {
     }
 
     public String getDescription() {
-        return "PC using the Chi Square test.";
+        return "PC using the Chi Square test";
     }
 }

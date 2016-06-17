@@ -14,6 +14,7 @@ import java.util.Map;
 public class MixedWfgs implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         WFgs fgs = new WFgs(dataSet);
+        fgs.setDepth(parameters.get("fgsDepth").intValue());
         fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
         return fgs.search();
     }
@@ -23,6 +24,6 @@ public class MixedWfgs implements Algorithm {
     }
 
     public String getDescription() {
-        return "WFGS using the SEM BIC score.";
+        return "WFGS using the SEM BIC score";
     }
 }

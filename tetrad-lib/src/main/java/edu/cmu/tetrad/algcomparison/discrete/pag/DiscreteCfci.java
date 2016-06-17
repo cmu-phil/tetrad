@@ -23,6 +23,6 @@ public class DiscreteCfci implements Algorithm {
     }
 
     public String getDescription() {
-        return "CFCI ising the Chi Square test.";
+        return "CFCI ising the Chi Square test";
     }
 }

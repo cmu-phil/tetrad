@@ -26,6 +26,6 @@ public class MixedFci implements Algorithm {
     }
 
     public String getDescription() {
-        return "FCI using the Mixed LRT test.";
+        return "FCI using the Mixed LRT test";
     }
 }

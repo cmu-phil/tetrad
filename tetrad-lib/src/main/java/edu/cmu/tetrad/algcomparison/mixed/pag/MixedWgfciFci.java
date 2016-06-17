@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.mixed.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -15,7 +16,7 @@ public class MixedWgfciFci implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
         WGfci fgs = new WGfci(ds);
         fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        Graph g =  fgs.search();
+        Graph g = fgs.search();
         IndependenceTest test = new IndTestMixedLrt(ds, parameters.get("alpha").doubleValue());
         Fci pc = new Fci(test);
         pc.setInitialGraph(g);
@@ -23,11 +24,10 @@ public class MixedWgfciFci implements Algorithm {
     }
 
     public Graph getComparisonGraph(Graph dag) {
-        return SearchGraphUtils.patternForDag(dag);
+        return new DagToPag(dag).convert();
     }
 
     public String getDescription() {
-        return "WGFCI-FCI: uses the output of WGFCI as an intial graph " +
-                "for PC-Stable, using the Mixed LRT test.";
+        return "FCI, using the Mixed LRT test, using the output of WGFCI as an intial graph";
     }
 }

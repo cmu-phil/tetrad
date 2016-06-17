@@ -22,6 +22,6 @@ public class DiscreteCpcGSquare implements Algorithm {
     }
 
     public String getDescription() {
-        return "CPC using the G Square test.";
+        return "CPC using the G Square test";
     }
 }

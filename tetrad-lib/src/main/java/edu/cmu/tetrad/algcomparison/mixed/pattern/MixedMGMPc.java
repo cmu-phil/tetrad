@@ -35,7 +35,6 @@ public class MixedMGMPc implements Algorithm {
     }
 
     public String getDescription() {
-        return "MGM-PC: uses the output of MGM as an intial graph " +
-                "for PC-Stable, using the Mixed LRT test.";
+        return "PC, using the Mixed LRT test, with the output of MGM as an intial graph";
     }
 }

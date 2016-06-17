@@ -25,5 +25,5 @@ public class ContinuousCcd implements Algorithm {
     }
 
     public String getDescription() {
-        return "CCD using the SEM BIC score.";
+        return "CCD using the SEM BIC score";
     }}

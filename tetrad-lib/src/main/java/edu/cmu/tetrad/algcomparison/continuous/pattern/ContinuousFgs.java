@@ -15,7 +15,8 @@ public class ContinuousFgs implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        Fgs2 fgs = new Fgs2(score);
+        Fgs fgs = new Fgs(score);
+        fgs.setDepth(parameters.get("fgsDepth").intValue());
         return fgs.search();
     }
 
@@ -24,5 +25,5 @@ public class ContinuousFgs implements Algorithm {
     }
 
     public String getDescription() {
-        return "FGS using the SEM BIC score.";
+        return "FGS using the SEM BIC score";
     }}

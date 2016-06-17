@@ -25,6 +25,6 @@ public class DiscreteCpcChiSquare implements Algorithm {
     }
 
     public String getDescription() {
-        return "CPC using the Chi Square test.";
+        return "CPC using the Chi Square test";
     }
 }

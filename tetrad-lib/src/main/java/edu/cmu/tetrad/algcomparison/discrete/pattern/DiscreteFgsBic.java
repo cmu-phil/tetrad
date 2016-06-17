@@ -15,7 +15,8 @@ public class DiscreteFgsBic implements Algorithm {
         BicScore score = new BicScore(dataSet);
         score.setSamplePrior(parameters.get("samplePrior").doubleValue());
         score.setSamplePrior(parameters.get("structurePrior").doubleValue());
-        Fgs2 fgs = new Fgs2(score);
+        Fgs fgs = new Fgs(score);
+        fgs.setDepth(parameters.get("fgsDepth").intValue());
         return fgs.search();
     }
 
@@ -24,6 +25,6 @@ public class DiscreteFgsBic implements Algorithm {
     }
 
     public String getDescription() {
-        return "FGS using the BIC score.";
+        return "FGS using the BIC score";
     }
 }

@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedGfci implements Algorithm {
+public class MixedGfciMixedScore implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         MixedBicScore score = new MixedBicScore(dataSet);
         GFci pc = new GFci(score);
@@ -23,6 +23,6 @@ public class MixedGfci implements Algorithm {
     }
 
     public String getDescription() {
-        return "GFCI using the Mixed BIC score.";
+        return "GFCI using the Mixed BIC score";
     }
 }

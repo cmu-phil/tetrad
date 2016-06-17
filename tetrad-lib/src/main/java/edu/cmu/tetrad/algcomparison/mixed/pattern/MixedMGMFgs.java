@@ -64,7 +64,6 @@ public class MixedMGMFgs implements Algorithm {
     }
 
     public String getDescription() {
-        return "MGM-FGS: uses the output of MGM as an intial graph for FGS, treating discrete " +
-                "variables as continuous.";
+        return "FGS, with SEM BIC score, with output of MGM as an initial graph";
     }
 }

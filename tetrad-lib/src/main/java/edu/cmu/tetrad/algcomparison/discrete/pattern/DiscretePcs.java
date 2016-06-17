@@ -22,6 +22,6 @@ public class DiscretePcs implements Algorithm {
     }
 
     public String getDescription() {
-        return "PC-Stable using the Chi Square test.";
+        return "PC-Stable using the Chi Square test";
     }
 }
