@@ -1315,6 +1315,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
         }
 
         if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) return false;
+        if (knowledge != null && knowledge.isForbidden(x.getName(), y.getName())) return false;
 
         graph.addDirectedEdge(x, y);
 
@@ -1339,6 +1340,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
         for (Node _t : T) {
             graph.removeEdge(_t, y);
             if (boundGraph != null && !boundGraph.isAdjacentTo(_t, y)) continue;
+            if (knowledge != null && knowledge.isForbidden(y.getName(), _t.getName())) continue;
 
             graph.addDirectedEdge(_t, y);
 
@@ -1468,6 +1470,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
             Node nodeB = graph.getNode(next.getTo());
 
             if (!graph.isAncestorOf(nodeB, nodeA)) {
+                if (knowledge != null && knowledge.isForbidden(nodeA.getName(), nodeB.getName()));
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
                 TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
@@ -1484,6 +1487,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
+                        if (knowledge != null && knowledge.isForbidden(nodeB.getName(), nodeA.getName()));
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1492,6 +1496,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
+                        if (knowledge != null && knowledge.isForbidden(nodeB.getName(), nodeA.getName()));
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1504,6 +1509,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
+                        if (knowledge != null && knowledge.isForbidden(nodeB.getName(), nodeA.getName()));
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1511,6 +1517,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
+                        if (knowledge != null && knowledge.isForbidden(nodeA.getName(), nodeB.getName()));
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
