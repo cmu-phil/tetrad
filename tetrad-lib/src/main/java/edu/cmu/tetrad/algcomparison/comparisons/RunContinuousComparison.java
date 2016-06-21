@@ -70,7 +70,7 @@ public class RunContinuousComparison {
         parameters.put("mgmParam3", 0.1);
         parameters.put("numLatents", 0);
         parameters.put("numRuns", 5);
-        parameters.put("sampleSize", 1000);
+        parameters.put("sampleSize", 200);
         parameters.put("numMeasures", 30);
         parameters.put("numEdges", 60);
         parameters.put("penaltyDiscount", 4);
@@ -92,44 +92,44 @@ public class RunContinuousComparison {
         List<Algorithm> algorithms = new ArrayList<>();
 
         // Pattern
-        algorithms.add(new ContinuousPc());
-        algorithms.add(new ContinuousCpc());
-        algorithms.add(new ContinuousPcs());
-        algorithms.add(new ContinuousFgs());
-        algorithms.add(new ContinuousFgsPc());
-        algorithms.add(new ContinuousFgsCpc());
-        algorithms.add(new ContinuousGpc());
-
-        algorithms.add(new ContinuousPcSemBic());
-        algorithms.add(new ContinuousCpcSemBic());
-        algorithms.add(new ContinuousPcsSemBic());
-
-//        // PAG
-        algorithms.add(new ContinuousFci());
-        algorithms.add(new ContinuousRfci());
-        algorithms.add(new ContinuousGfci());
-        algorithms.add(new ContinuousRfciSemBic());
-        algorithms.add(new ContinuousFciSemBic());
-
-        // Cyclic PAG
+//        algorithms.add(new ContinuousPc());
+//        algorithms.add(new ContinuousCpc());
+//        algorithms.add(new ContinuousPcs());
+//        algorithms.add(new ContinuousFgs());
+//        algorithms.add(new ContinuousFgsPc());
+//        algorithms.add(new ContinuousFgsCpc());
+//        algorithms.add(new ContinuousGpc());
+//
+//        algorithms.add(new ContinuousPcSemBic());
+//        algorithms.add(new ContinuousCpcSemBic());
+//        algorithms.add(new ContinuousPcsSemBic());
+//
+////         PAG
+//        algorithms.add(new ContinuousFci());
+//        algorithms.add(new ContinuousRfci());
+//        algorithms.add(new ContinuousGfci());
+//        algorithms.add(new ContinuousRfciSemBic());
+//        algorithms.add(new ContinuousFciSemBic());
+//
+//         Cyclic PAG
 //        algorithms.add(new ContinuousCcd());
-
-        // Mixed algorithms that work on continuous data.
-
-        // Pattern
-        algorithms.add(new MixedFgsSem());
-        algorithms.add(new MixedFgsBdeu());
-        algorithms.add(new MixedFgsMS());
-        algorithms.add(new MixedFgsCG());
-        algorithms.add(new MixedWfgs());
-        algorithms.add(new MixedCpcWfgs());
-        algorithms.add(new MixedPc());
-        algorithms.add(new MixedPcs());
-        algorithms.add(new MixedCpc());
+//
+////         Mixed algorithms that work on continuous data.
+//
+////         Pattern
+//        algorithms.add(new MixedFgsSem());
+//        algorithms.add(new MixedFgsBdeu());
+//        algorithms.add(new MixedFgsMS());
+//        algorithms.add(new MixedFgsCG());
+//        algorithms.add(new MixedWfgs());
+//        algorithms.add(new MixedCpcWfgs());
+//        algorithms.add(new MixedPc());
+//        algorithms.add(new MixedPcs());
+//        algorithms.add(new MixedCpc());
 //        algorithms.add(new MixedMGMFgs());
 //        algorithms.add(new MixedMGMPc());
 //        algorithms.add(new MixedMGMCpc());
-        algorithms.add(new MixedWgfci());
+//        algorithms.add(new MixedWgfci());
 
 //        PAG
         algorithms.add(new MixedFciWfgs());

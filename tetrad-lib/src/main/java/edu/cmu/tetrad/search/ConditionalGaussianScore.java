@@ -105,33 +105,25 @@ public class ConditionalGaussianScore implements Score {
             Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
             dof = ret1.getDof();
             lik = ret1.getLik();
-//                lik = Double.NEGATIVE_INFINITY;
+//            lik = Double.NEGATIVE_INFINITY;
         } else if (numeratorContinuous.size() == denominatorContinuous.size()) {
-
-            if (numeratorDiscrete.size() <= denominatorDiscrete.size()) {
-                throw new IllegalArgumentException();
-            }
 
             // Discrete target, mixed predictors.
             Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
             Ret ret2 = getProb(numeratorContinuous, denominatorDiscrete);
             dof = ret1.getDof() - ret2.getDof();
-            lik = ret2.getLik() - ret1.getLik();
+            lik = ret1.getLik() - ret2.getLik();
 
             lik -= 0.5 * N * numeratorContinuous.size() * (1.0 + Math.log(2.0 * Math.PI));
-        } else if (numeratorDiscrete.size() == denominatorDiscrete.size()) {
-
-            if (numeratorContinuous.size() <= denominatorContinuous.size()) {
-                throw new IllegalArgumentException();
-            }
+//            lik = Double.NEGATIVE_INFINITY;
+        } else {
 
             // Continuous target, mixed predictors.
             Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
             Ret ret2 = getProb(denominatorContinuous, numeratorDiscrete);
             dof = ret1.getDof() - ret2.getDof();
             lik = ret1.getLik() - ret2.getLik();
-        } else {
-            throw new IllegalStateException();
+//            lik = Double.NEGATIVE_INFINITY;
         }
 
         return lik - dof * Math.log(N);
