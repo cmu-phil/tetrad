@@ -22,13 +22,17 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -46,9 +50,9 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
     }
 
     private transient List<PropertyChangeListener> listeners;
-    private List<ScoredGraph> topGraphs;
+    private List<ScoredGraph> topGraphs = new LinkedList<>();
     private int index;
-    private transient Fgs fgs;
+    private transient TsGFci fgs;
     private Graph graph;
     private FgsRunner.Type type;
 
@@ -309,28 +313,28 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
-            fgs = new Fgs(gesScore);
+            fgs = new TsGFci(gesScore);
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
                 gesScore.setPenaltyDiscount(params.getComplexityPenalty());
-                fgs = new Fgs(gesScore);
+                fgs = new TsGFci(gesScore);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = ((FgsParams) getParams()).getSamplePrior();
                 double structurePrior = ((FgsParams) getParams()).getStructurePrior();
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
-                fgs = new Fgs(score);
+                fgs = new TsGFci(score);
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
-            fgs = new Fgs(gesScore);
+            fgs = new TsGFci(gesScore);
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
@@ -355,11 +359,11 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                 if (indTestParams.isFirstNontriangular()) {
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
-                    fgs = new Fgs(fgsScore);
+                    fgs = new TsGFci(fgsScore);
                 } else {
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
-                    fgs = new Fgs(fgsScore);
+                    fgs = new TsGFci(fgsScore);
                 }
             } else if (allDiscrete(list)) {
                 double structurePrior = ((FgsParams) getParams()).getStructurePrior();
@@ -370,9 +374,9 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                 fgsScore.setStructurePrior(structurePrior);
 
                 if (indTestParams.isFirstNontriangular()) {
-                    fgs = new Fgs(fgsScore);
+                    fgs = new TsGFci(fgsScore);
                 } else {
-                    fgs = new Fgs(fgsScore);
+                    fgs = new TsGFci(fgsScore);
                 }
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
@@ -382,8 +386,8 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
         }
 
         fgs.setKnowledge(getParams().getKnowledge());
-        fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-        fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+//        fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave()); // removed for TsGFci
+//        fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed()); // removed for TsGFci
         fgs.setVerbose(true);
         Graph graph = fgs.search();
 
@@ -397,13 +401,13 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 
         setResultGraph(graph);
 
-        this.topGraphs = new ArrayList<>(fgs.getTopGraphs());
+        this.topGraphs = new ArrayList<>(getTopGraphs());
 
         if (topGraphs.isEmpty()) {
             topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
         }
 
-        this.topGraphs = new ArrayList<>(fgs.getTopGraphs());
+        this.topGraphs = new ArrayList<>(getTopGraphs());
 
         if (this.topGraphs.isEmpty()) {
             this.topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
@@ -554,17 +558,21 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
         return this.topGraphs;
     }
 
-    public String getBayesFactorsReport(Graph dag) {
-        if (fgs == null) {
-            return "Please re-run IMaGES.";
-        } else {
-            return fgs.logEdgeBayesFactorsString(dag);
-        }
-    }
+    // never gets used, commented out
+//    public String getBayesFactorsReport(Graph dag) {
+//        if (fgs == null) {
+//            return "Please re-run IMaGES.";
+//        } else {
+//            return fgs.logEdgeBayesFactorsString(dag);
+//        }
+//    }
 
-    public GraphScorer getGraphScorer() {
+//    public GraphScorer getGraphScorer() {
+//        return fgs;
+//    }
+    public TsGFci getGraphScorer() {
         return fgs;
-    }
+    } // changed return type for TsGFci
 
 }
 

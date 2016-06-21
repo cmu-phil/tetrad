@@ -89,6 +89,10 @@ public class FgsSearchEditor extends AbstractSearchEditor
         super(runner, "Result Pattern");
     }
 
+    public FgsSearchEditor(TsImagesRunner runner) {
+        super(runner, "Result Pattern");
+    }
+
     //=============================== Public Methods ==================================//
 
     public Graph getGraph() {

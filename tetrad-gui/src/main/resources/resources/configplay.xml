@@ -1807,6 +1807,23 @@
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
             </model>
+            <model name="TsIMaGES" acronym="TsIMaGES" help="fgs"
+                   category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="insertedEdges" description="Inserted Edges" default="on"/>
+                    <event id="deletedEdges" description="Deleted Edges" default="on"/>
+                    <event id="directedEdges" description="Directed Edges" default="on"/>
+                    <event id="edgeEvaluations" description="Edge Evaluations"/>
+                    <event id="impliedOrientations" description="Implied Orientations"/>
+                    <event id="rebuiltPatterns" description="Rebuilt Patterns"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.TsImagesRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
+            </model>
             <!--Heuristic Best Significant Model Search-->
             <model name="BFF" acronym="BFF" help="bff"
                    category="Pattern Searches">
