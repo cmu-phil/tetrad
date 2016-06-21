@@ -28,9 +28,9 @@ import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFci;
 import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteGfci;
 import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteRfci;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFciWfgs;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfciMixedScore;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWfgsFci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
 
@@ -110,7 +110,7 @@ public class RunDiscreteComparison {
         algorithms.add(new MixedWgfci());
 
 //        PAG
-        algorithms.add(new MixedWfgsFci());
+        algorithms.add(new MixedFciWfgs());
 //        algorithms.add(new MixedFci());
         algorithms.add(new MixedGfciMixedScore());
 

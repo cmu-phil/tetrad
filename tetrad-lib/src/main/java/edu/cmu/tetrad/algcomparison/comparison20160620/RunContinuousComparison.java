@@ -19,14 +19,17 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.comparisons;
+package edu.cmu.tetrad.algcomparison.comparison20160620;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.continuous.pag.*;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
-import edu.cmu.tetrad.algcomparison.mixed.pag.*;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFciWfgs;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfciMixedScore;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
 

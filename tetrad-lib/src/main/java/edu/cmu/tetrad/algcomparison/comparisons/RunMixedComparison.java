@@ -94,7 +94,7 @@ public class RunMixedComparison {
         algorithms.add(new MixedWgfci());
 
 //        PAG
-        algorithms.add(new MixedWfgsFci());
+        algorithms.add(new MixedFciWfgs());
         algorithms.add(new MixedFci());
         algorithms.add(new MixedGfciMixedScore());
         algorithms.add(new MixedGfciCG());

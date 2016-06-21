@@ -19,13 +19,11 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.comparisons;
+package edu.cmu.tetrad.algcomparison.comparison20160620;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Simulation;
-import edu.cmu.tetrad.algcomparison.continuous.pag.*;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
@@ -41,29 +39,9 @@ import java.util.Map;
 /**
  * @author Joseph Ramsey
  */
-public class RunContinuousComparison {
+public class RunMixedComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        //        parameters.put("numCategories", 5);
-
-        Map<String, String> stats = new LinkedHashMap<>();
-        stats.put("AP", "Adjacency Precision");
-        stats.put("AR", "Adjacency Recall");
-        stats.put("OP", "Orientation (Arrow) precision");
-        stats.put("OR", "Orientation (Arrow) recall");
-        stats.put("McAdj", "Matthew's correlation coeffficient for adjacencies");
-        stats.put("McOr", "Matthew's correlation coefficient for arrow");
-        stats.put("F1Adj", "F1 statistic for adjacencies");
-        stats.put("F1Or", "F1 statistic for arrows");
-        stats.put("SHD", "Structural Hamming Distance");
-        stats.put("E", "Elapsed time in seconds");
-
-        parameters.put("scaleFreeAlpha", .1);
-        parameters.put("scaleFreeBeta", .8);
-        parameters.put("scaleFreeDeltaIn", 3.0);
-        parameters.put("scaleFreeDeltaOut", 3.0);
-        parameters.put("percentDiscreteForMixedSimulation", 0);
-
         parameters.put("numCategories", 4);
         parameters.put("mgmParam1", 0.1);
         parameters.put("mgmParam2", 0.1);
@@ -75,7 +53,7 @@ public class RunContinuousComparison {
         parameters.put("numEdges", 60);
         parameters.put("penaltyDiscount", 4);
         parameters.put("fgsDepth", -1);
-        parameters.put("percentDiscreteForMixedSimulation", 0);
+        parameters.put("percentDiscreteForMixedSimulation", 50);
 
         Map<String, Double> statWeights = new LinkedHashMap<>();
         statWeights.put("AP", 2.0);
@@ -87,63 +65,40 @@ public class RunContinuousComparison {
 //        statWeights.put("F1Adj", 1.0);
 //        statWeights.put("F1Or", 0.5);
 //        statWeights.put("SHD", 0.5);
-//        statWeights.put("E", 1.0);
+//        statWeights.put("E", .2);
 
         List<Algorithm> algorithms = new ArrayList<>();
-
-        // Pattern
-        algorithms.add(new ContinuousPc());
-        algorithms.add(new ContinuousCpc());
-        algorithms.add(new ContinuousPcs());
-        algorithms.add(new ContinuousFgs());
-        algorithms.add(new ContinuousFgsPc());
-        algorithms.add(new ContinuousFgsCpc());
-        algorithms.add(new ContinuousGpc());
-
-        algorithms.add(new ContinuousPcSemBic());
-        algorithms.add(new ContinuousCpcSemBic());
-        algorithms.add(new ContinuousPcsSemBic());
-
-//        // PAG
-        algorithms.add(new ContinuousFci());
-        algorithms.add(new ContinuousRfci());
-        algorithms.add(new ContinuousGfci());
-        algorithms.add(new ContinuousRfciSemBic());
-        algorithms.add(new ContinuousFciSemBic());
-
-        // Cyclic PAG
-//        algorithms.add(new ContinuousCcd());
-
-        // Mixed algorithms that work on continuous data.
 
         // Pattern
         algorithms.add(new MixedFgsSem());
         algorithms.add(new MixedFgsBdeu());
         algorithms.add(new MixedFgsMS());
         algorithms.add(new MixedFgsCG());
+        algorithms.add(new MixedFgsMgm());
         algorithms.add(new MixedWfgs());
-        algorithms.add(new MixedCpcWfgs());
         algorithms.add(new MixedPc());
+        algorithms.add(new MixedPcWfgs());
+        algorithms.add(new MixedPcWGfci());
         algorithms.add(new MixedPcs());
+        algorithms.add(new MixedPcsMgm());
+        algorithms.add(new MixedPcsWfgs());
         algorithms.add(new MixedCpc());
-//        algorithms.add(new MixedMGMFgs());
-//        algorithms.add(new MixedMGMPc());
-//        algorithms.add(new MixedMGMCpc());
+        algorithms.add(new MixedCpcMgm());
+        algorithms.add(new MixedCpcWfgs());
+        algorithms.add(new MixedCpcWGfci());
         algorithms.add(new MixedWgfci());
 
 //        PAG
         algorithms.add(new MixedFciWfgs());
         algorithms.add(new MixedFci());
         algorithms.add(new MixedGfciMixedScore());
-
-        String baseFileName = "Continuous";
+        algorithms.add(new MixedGfciCG());
 
         Simulation simulation = new MixedLeeHastieSimulation();
-//        Simulation simulation = new LinearGaussianSemSimulation();
-//        Simulation simulation = new LinearGaussianSemSimulationScaleFree();
-//        Simulation simulation = new ContinuousCyclicSemSimulation();
-//        Simulation simulation = new ContinuousNonlinearNongaussianSimulation();
-//        Simulation simulation = new CyclicGeneralizedSemSimulation();
+//        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation();
+//        Simulation simulation = new DiscreteBayesNetSimulation();
+
+        String baseFileName = "Mixed";
 
         try {
             File dir = new File("comparison");
@@ -154,8 +109,6 @@ public class RunContinuousComparison {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
 }

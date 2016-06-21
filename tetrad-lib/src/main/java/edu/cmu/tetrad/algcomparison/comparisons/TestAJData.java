@@ -43,12 +43,12 @@ public class TestAJData {
         try {
 
             for (int i = 0; i < 50; i++) {
-                File dataPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
+                File dataPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.comparison20160620/2016.05.25/" +
                         "Simulated_data_for_Madelyn/simulation/data/DAG_" + i + "_data.txt");
                 DataReader reader = new DataReader();
                 DataSet Dk = reader.parseTabular(dataPath);
 
-                File graphPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
+                File graphPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.comparison20160620/2016.05.25/" +
                         "Simulated_data_for_Madelyn/simulation/networks/DAG_" + i + "_graph.txt");
 
                 Graph dag = GraphUtils.loadGraphTxt(graphPath);

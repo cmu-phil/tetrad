@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedWfgsFci implements Algorithm {
+public class MixedFciWfgs implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
         WFgs fgs = new WFgs(ds);
         fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
