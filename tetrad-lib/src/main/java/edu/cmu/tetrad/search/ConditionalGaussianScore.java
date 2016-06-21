@@ -36,16 +36,12 @@ import java.util.*;
  */
 public class ConditionalGaussianScore implements Score {
 
-    // The covariance matrix.
     private DataSet dataSet;
 
     private TetradMatrix _data;
 
     // The variables of the continuousData set.
     private List<Node> variables;
-
-    // True if verbose output should be sent to out.
-    private boolean verbose = false;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -67,12 +63,6 @@ public class ConditionalGaussianScore implements Score {
     public double localScore(int i, int... parents) {
         Node target = variables.get(i);
 
-        // With fgs2 this fails for some reason...need to debug.
-        int b = Arrays.binarySearch(parents, i);
-        if (b >= 0) {
-            throw new IllegalArgumentException();
-        }
-
         List<ContinuousVariable> denominatorContinuous = new ArrayList<>();
         List<DiscreteVariable> denominatorDiscrete = new ArrayList<>();
 
@@ -83,12 +73,6 @@ public class ConditionalGaussianScore implements Score {
                 denominatorContinuous.add((ContinuousVariable) parent);
             } else {
                 denominatorDiscrete.add((DiscreteVariable) parent);
-            }
-        }
-
-        if (target instanceof DiscreteVariable) {
-            if (denominatorDiscrete.contains(target)) {
-                throw new IllegalArgumentException();
             }
         }
 
@@ -105,70 +89,128 @@ public class ConditionalGaussianScore implements Score {
 
         int N = dataSet.getNumRows();
 
-        double C = .5 * N * (1 + Math.log(2 * Math.PI));
+        double lik;
+        double dof;
 
         if (numeratorContinuous.isEmpty()) {
 
             // Discrete target, discrete predictors.
             if (!(target instanceof DiscreteVariable)) throw new IllegalStateException();
             Ret ret = getProb((DiscreteVariable) target, denominatorDiscrete);
-            double lik = ret.getLik();
-            double dof = ret.getDof();
+            lik = ret.getLik();
+            dof = ret.getDof();
+        } else if (denominatorContinuous.isEmpty()) {
 
-//            lik += C;
+            // Continuous target, all discrete predictors.
+            Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
+            dof = ret1.getDof();
+            lik = ret1.getLik();
+//                lik = Double.NEGATIVE_INFINITY;
+        } else if (numeratorContinuous.size() == denominatorContinuous.size()) {
 
-            return lik - dof * Math.log(N);
-        } else {
-            if (denominatorContinuous.isEmpty()) {
-
-                // Continuous target, all discrete predictors.
-                Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
-                double dof = ret1.getDof();
-                double lik = ret1.getLik();
-
-                lik -= C;
-
-                return lik - dof * Math.log(N);
-            } else if (numeratorContinuous.size() == denominatorContinuous.size()) {
-
-                // Discrete target, mixed predictors.
-                Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
-                Ret ret2 = getProb(denominatorContinuous, denominatorDiscrete);
-                double dof = ret1.getDof() - ret2.getDof();
-                double lik = ret1.getLik() - ret2.getLik();
-
-                lik -= C;  // Weird.
-
-                return lik - dof * Math.log(N);
-            } else if (numeratorDiscrete.size() == denominatorDiscrete.size()) {
-
-                // Continuous target, mixed predictors.
-                Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
-                Ret ret2 = getProb(denominatorContinuous, denominatorDiscrete);
-                double dof = ret1.getDof() - ret2.getDof();
-                double lik = ret1.getLik() - ret2.getLik();
-
-                lik -= C;
-
-                return lik - dof * Math.log(N);
-            } else {
-                throw new IllegalStateException();
+            if (numeratorDiscrete.size() <= denominatorDiscrete.size()) {
+                throw new IllegalArgumentException();
             }
+
+            // Discrete target, mixed predictors.
+            Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
+            Ret ret2 = getProb(numeratorContinuous, denominatorDiscrete);
+            dof = ret1.getDof() - ret2.getDof();
+            lik = ret2.getLik() - ret1.getLik();
+
+            lik -= 0.5 * N * numeratorContinuous.size() * (1.0 + Math.log(2.0 * Math.PI));
+        } else if (numeratorDiscrete.size() == denominatorDiscrete.size()) {
+
+            if (numeratorContinuous.size() <= denominatorContinuous.size()) {
+                throw new IllegalArgumentException();
+            }
+
+            // Continuous target, mixed predictors.
+            Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
+            Ret ret2 = getProb(denominatorContinuous, numeratorDiscrete);
+            dof = ret1.getDof() - ret2.getDof();
+            lik = ret1.getLik() - ret2.getLik();
+        } else {
+            throw new IllegalStateException();
         }
+
+        return lik - dof * Math.log(N);
+    }
+
+    private Ret getProb(DiscreteVariable target, List<DiscreteVariable> parents) {
+        if (parents.contains(target)) throw new IllegalArgumentException();
+        int p = target.getNumCategories();
+
+        int d = parents.size();
+        int[] dims = new int[d];
+
+        for (int i = 0; i < d; i++) {
+            dims[i] = parents.get(i).getNumCategories();
+        }
+
+        CombinationIterator iterator = new CombinationIterator(dims);
+        int[] comb;
+
+        int[] _cols = new int[d];
+        for (int i = 0; i < d; i++) _cols[i] = dataSet.getColumn(parents.get(i));
+
+        double lik = 0;
+        int t = p - 1;
+        int s = 0;
+
+        while (iterator.hasNext()) {
+            comb = iterator.next();
+            List<Integer> rows = new ArrayList<>();
+
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                boolean addRow = true;
+
+                for (int c = 0; c < comb.length; c++) {
+                    if (comb[c] != dataSet.getInt(i, _cols[c])) {
+                        addRow = false;
+                        break;
+                    }
+                }
+
+                if (addRow) {
+                    rows.add(i);
+                }
+            }
+
+            double[] counts = new double[p];
+            int r = 0;
+
+            for (int row : rows) {
+                int value = dataSet.getInt(row, dataSet.getColumn(target));
+                counts[value]++;
+                r++;
+            }
+
+            for (int c = 0; c < p; c++) {
+                double count = counts[c];
+
+                if (count > 0) {
+                    lik += count * Math.log(count / (double) r);
+                }
+            }
+
+            s++;
+        }
+
+        int dof = s * t;
+
+        return new Ret(lik, dof);
     }
 
     private Ret getProb(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
         if (continuous.isEmpty()) throw new IllegalArgumentException();
-        int dof = 0;
+        int p = continuous.size();
+        int t = p * (p + 1) / 2;
+        int s = 0;
 
         // For each combination of values for the discrete guys extract a subset of the data.
         List<Node> variables = dataSet.getVariables();
 
-        if (continuous.isEmpty()) {
-            throw new IllegalArgumentException();
-        }
-
-        int p = continuous.size();
         int d = discrete.size();
 
         int[] cols = new int[p];
@@ -219,92 +261,27 @@ public class ConditionalGaussianScore implements Score {
 
             if (n > p) {
                 TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
-                        false).getCovarianceMatrix());
-//                lik -= 0.5 * n * p * Math.log(2 * Math.PI);
-//                lik -= 0.5 * n * p;
-                lik -= 0.5 * n * Math.log(Sigma.det());
+                        true).getCovarianceMatrix());
+                double det = Sigma.det();
+
+                lik -= 0.5 * n * Math.log(det);
             } else {
-                System.out.println("Skipped " + n);
+                lik -= 0.5 * n * Math.log(2);
             }
 
-//            lik -= 2 * n * p;
-
-            dof += p * (p + 1);
+            s++;
         }
 
-        return new Ret(lik, dof);
-    }
-
-    private Ret getProb(DiscreteVariable target, List<DiscreteVariable> parents) {
-        if (parents.contains(target)) throw new IllegalArgumentException();
-
-        int dof = 0;
-        int numCategories = target.getNumCategories();
-
-        int d = parents.size();
-        int[] dims = new int[d];
-
-        for (int i = 0; i < d; i++) {
-            dims[i] = parents.get(i).getNumCategories();
-        }
-
-        CombinationIterator iterator = new CombinationIterator(dims);
-        int[] comb;
-
-        int[] _cols = new int[d];
-        for (int i = 0; i < d; i++) _cols[i] = dataSet.getColumn(parents.get(i));
-
-        double lik = 0;
-
-        while (iterator.hasNext()) {
-            comb = iterator.next();
-            List<Integer> rows = new ArrayList<>();
-
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
-                boolean addRow = true;
-
-                for (int c = 0; c < comb.length; c++) {
-                    if (comb[c] != dataSet.getInt(i, _cols[c])) {
-                        addRow = false;
-                        break;
-                    }
-                }
-
-                if (addRow) {
-                    rows.add(i);
-                }
-            }
-
-            double[] counts = new double[numCategories];
-            double cellPrior = 0;
-            Arrays.fill(counts, cellPrior);
-            double r = cellPrior * counts.length;
-
-            for (int row : rows) {
-                int value = dataSet.getInt(row, dataSet.getColumn(target));
-                counts[value]++;
-                r++;
-            }
-
-            for (int c = 0; c < numCategories; c++) {
-                double count = counts[c];
-
-                if (count > 0) {
-                    lik += count * Math.log(count / (double) r);
-                }
-            }
-
-            dof += numCategories - 1;
-        }
+        double dof = s * t + s - 1;
 
         return new Ret(lik, dof);
     }
 
     private class Ret {
         private double lik;
-        private int dof;
+        private double dof;
 
-        public Ret(double lik, int dof) {
+        public Ret(double lik, double dof) {
             this.lik = lik;
             this.dof = dof;
         }
@@ -313,7 +290,7 @@ public class ConditionalGaussianScore implements Score {
             return lik;
         }
 
-        public int getDof() {
+        public double getDof() {
             return dof;
         }
     }
@@ -354,15 +331,7 @@ public class ConditionalGaussianScore implements Score {
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
-    }
-
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
+        return bump > -100;
     }
 
     @Override

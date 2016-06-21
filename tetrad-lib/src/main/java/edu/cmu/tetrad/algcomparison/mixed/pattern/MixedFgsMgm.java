@@ -3,28 +3,41 @@ package edu.cmu.tetrad.algcomparison.mixed.pattern;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.SemBicScore2;
+import edu.pitt.csb.mgm.MGM;
+import edu.pitt.csb.mgm.MixedUtils;
 
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedSemFgs implements Algorithm {
-    public Graph search(DataSet Dk, Map<String, Number> parameters) {
-        Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(Dk));
+public class MixedFgsMgm implements Algorithm {
+    public Graph search(DataSet ds, Map<String, Number> parameters) {
+        MGM m = new MGM(ds, new double[]{
+                parameters.get("mgmParam1").doubleValue(),
+                parameters.get("mgmParam2").doubleValue(),
+                parameters.get("mgmParam3").doubleValue()
+        });
+        Graph gm = m.search();
+        DataSet dataSet = MixedUtils.makeContinuousData(ds);
+        SemBicScore2 score = new SemBicScore2(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        Fgs fgs = new Fgs(score);
-        Graph p = fgs.search();
-        return convertBack(Dk, p);
+        Fgs fg = new Fgs(score);
+        fg.setBoundGraph(gm);
+        fg.setVerbose(false);
+        Graph p = fg.search();
+        return convertBack(ds, p);
+    }
+
+    public Graph getComparisonGraph(Graph dag) {
+        return SearchGraphUtils.patternForDag(dag);
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {
@@ -50,13 +63,7 @@ public class MixedSemFgs implements Algorithm {
         return p2;
     }
 
-    public Graph getComparisonGraph(Graph dag) {
-        return SearchGraphUtils.patternForDag(dag);
-    }
-
     public String getDescription() {
-        return "FGS, using the SEM BIC score, treating all variables as continuous";
+        return "FGS, with SEM BIC score, with output of MGM as an initial graph";
     }
 }
-
-

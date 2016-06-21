@@ -690,6 +690,8 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
 
                         for (Node n : graph.getAdjacentNodes(y)) {
                             for (Node m : graph.getAdjacentNodes(n)) {
+                                if (m == y) continue;
+
                                 if (graph.isAdjacentTo(y, m)) {
                                     continue;
                                 }
@@ -703,6 +705,8 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                         }
 
                         for (Node x : g) {
+                            if (x == y) throw new IllegalArgumentException();
+
                             if (existsKnowledge()) {
                                 if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
                                     continue;
@@ -1099,6 +1103,8 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
         if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) return;
         this.neighbors.put(b, getNeighbors(b));
 
+        if (a == b) throw new IllegalArgumentException();
+
         if (existsKnowledge()) {
             if (getKnowledge().isForbidden(a.getName(), b.getName())) {
                 return;
@@ -1389,6 +1395,7 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
     // Evaluate the Insert(X, Y, T) operator (Definition 12 from Chickering, 2002).
     private double insertEval(Node x, Node y, Set<Node> t, Set<Node> naYX,
                               Map<Node, Integer> hashIndices) {
+        if (x == y) throw new IllegalArgumentException();
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
         set.addAll(graph.getParents(y));
@@ -1820,7 +1827,8 @@ public final class Fgs2 implements GraphSearch, GraphScorer {
                                     Node x, Map<Node, Integer> hashIndices) {
         int yIndex = hashIndices.get(y);
 
-        if (parents.contains(x)) return Double.NaN;//throw new IllegalArgumentException();
+        if (x == y) throw new IllegalArgumentException();
+        if (parents.contains(y)) throw new IllegalArgumentException();
 
         int[] parentIndices = new int[parents.size()];
 

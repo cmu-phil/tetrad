@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.algcomparison.comparisons;
 
-import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedSemFgs;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedFgsSem;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
@@ -68,7 +68,7 @@ public class TestAJData {
                 parameters.put("mgmParam3", 0.1);
                 parameters.put("OfInterestCutoff", 0.05);
 
-                Graph pattern = new MixedSemFgs().search(Dk, parameters);
+                Graph pattern = new MixedFgsSem().search(Dk, parameters);
 
                 long stop = System.currentTimeMillis();
 

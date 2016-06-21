@@ -162,6 +162,10 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result Graph");
     }
 
+    public PcGesSearchEditor(RandomMixedRunner runner) {
+        super(runner, "Result Graph");
+    }
+
 //    public PcGesSearchEditor(GlassoRunner runner) {
 //        super(runner, "Result Graph");
 //    }

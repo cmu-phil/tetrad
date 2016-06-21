@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedFgsMixedScore implements Algorithm {
+public class MixedFgsMS implements Algorithm {
     public Graph search(DataSet Dk, Map<String, Number> parameters) {
         MixedBicScore score = new MixedBicScore(Dk);
         Fgs fgs = new Fgs(score);

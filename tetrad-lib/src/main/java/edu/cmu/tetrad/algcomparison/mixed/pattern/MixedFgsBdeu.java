@@ -1,43 +1,53 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SemBicScore2;
-import edu.pitt.csb.mgm.MGM;
-import edu.pitt.csb.mgm.MixedUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedMGMFgs implements Algorithm {
-    public Graph search(DataSet ds, Map<String, Number> parameters) {
-        MGM m = new MGM(ds, new double[]{
-                parameters.get("mgmParam1").doubleValue(),
-                parameters.get("mgmParam2").doubleValue(),
-                parameters.get("mgmParam3").doubleValue()
-        });
-        Graph gm = m.search();
-        DataSet dataSet = MixedUtils.makeContinuousData(ds);
-        SemBicScore2 score = new SemBicScore2(new CovarianceMatrixOnTheFly(dataSet));
-        score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        Fgs fg = new Fgs(score);
-        fg.setBoundGraph(gm);
-        fg.setVerbose(false);
-        Graph p = fg.search();
-        return convertBack(ds, p);
+public class MixedFgsBdeu implements Algorithm {
+    public Graph search(DataSet Dk, Map<String, Number> parameters) {
+        Discretizer discretizer = new Discretizer(Dk);
+        List<Node> nodes = Dk.getVariables();
+
+        for (Node node : nodes) {
+            if (node instanceof ContinuousVariable) {
+                discretizer.equalIntervals(node, parameters.get("numCategories").intValue());
+            }
+        }
+
+        Dk = discretizer.discretize();
+
+        BDeuScore score = new BDeuScore(Dk);
+        score.setSamplePrior(1.0);
+        score.setStructurePrior(1.0);
+        Fgs fgs = new Fgs(score);
+        Graph p = fgs.search();
+        return convertBack(Dk, p);
     }
 
+
+    @Override
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
+    }
+
+    @Override
+    public String getDescription() {
+        return "FGS with BDeu after discretizing the continuous variables in the data set";
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {
@@ -61,9 +71,5 @@ public class MixedMGMFgs implements Algorithm {
             }
         }
         return p2;
-    }
-
-    public String getDescription() {
-        return "FGS, with SEM BIC score, with output of MGM as an initial graph";
     }
 }

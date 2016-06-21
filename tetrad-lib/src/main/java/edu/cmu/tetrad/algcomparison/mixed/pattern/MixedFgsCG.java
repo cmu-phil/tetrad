@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.ConditionalGaussianScore;
+import edu.cmu.tetrad.search.Fgs2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.Map;
@@ -12,11 +13,12 @@ import java.util.Map;
 /**
  * @author jdramsey
  */
-public class MixedFgsCondGaussianScore implements Algorithm {
+public class MixedFgsCG implements Algorithm {
     public Graph search(DataSet Dk, Map<String, Number> parameters) {
         ConditionalGaussianScore score = new ConditionalGaussianScore(Dk);
-        Fgs fgs = new Fgs(score);
-        fgs.setDepth(parameters.get("fgsDepth").intValue());
+        Fgs2 fgs = new Fgs2(score);
+//        fgs.setHeuristicSpeedup(false);
+//        fgs.setDepth(parameters.get("fgsDepth").intValue());
         return fgs.search();
     }
 

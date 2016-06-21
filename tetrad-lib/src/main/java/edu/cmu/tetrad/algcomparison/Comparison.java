@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.io.PrintStream;
@@ -121,28 +122,28 @@ public class Comparison {
 
         parameters.putAll(_parameters);
 
-        Map<String, String> statsDescriptions = new LinkedHashMap<>();
-        statsDescriptions.put("AP", "Adjacency Precision");
-        statsDescriptions.put("AR", "Adjacency Recall");
-        statsDescriptions.put("OP", "Orientation (Arrow) precision");
-        statsDescriptions.put("OR", "Orientation (Arrow) recall");
-        statsDescriptions.put("McAdj", "Matthew's correlation coeffficient for adjacencies");
-        statsDescriptions.put("McOr", "Matthew's correlation coefficient for arrow");
-        statsDescriptions.put("F1Adj", "F1 statistic for adjacencies");
-        statsDescriptions.put("F1Or", "F1 statistic for arrows");
-        statsDescriptions.put("SHD", "Structural Hamming Distance");
-        statsDescriptions.put("E", "Elapsed time in seconds");
-        statsDescriptions.put("W", "Utility of algorithm (a weighted sum of the sorted indices of algorithms on statistics)");
+        Map<String, String> statDescriptions = new LinkedHashMap<>();
+        statDescriptions.put("AP", "Adjacency Precision");
+        statDescriptions.put("AR", "Adjacency Recall");
+        statDescriptions.put("OP", "Orientation (Arrow) precision");
+        statDescriptions.put("OR", "Orientation (Arrow) recall");
+        statDescriptions.put("McAdj", "Matthew's correlation coeffficient for adjacencies");
+        statDescriptions.put("McOr", "Matthew's correlation coefficient for arrow");
+        statDescriptions.put("F1Adj", "F1 statistic for adjacencies");
+        statDescriptions.put("F1Or", "F1 statistic for arrows");
+        statDescriptions.put("SHD", "Structural Hamming Distance");
+        statDescriptions.put("E", "Elapsed time in seconds");
+        statDescriptions.put("W", "Utility of algorithm (a weighted sum of the sorted indices of algorithms on statistics)");
 
         this.out = out;
-        double[][][][] allStats = printStats(algorithms, statsDescriptions, parameters, simulation);
+        double[][][][] allStats = calcStats(algorithms, statDescriptions, parameters, simulation);
 
         out.println();
         out.println("Statistics:");
         out.println();
 
-        for (String stat : statsDescriptions.keySet()) {
-            out.println(stat + " = " + statsDescriptions.get(stat));
+        for (String stat : statDescriptions.keySet()) {
+            out.println(stat + " = " + statDescriptions.get(stat));
         }
 
         out.println();
@@ -159,33 +160,93 @@ public class Comparison {
         out.println(simulation);
         out.println();
 
-        printStats(allStats, algorithms, statsDescriptions, parameters, simulation, statWeights,
-                Mode.Average);
-        printStats(allStats, algorithms, statsDescriptions, parameters, simulation, statWeights,
-                Mode.WorstCase);
+        int numTables = allStats.length;
+        int numAlgorithms = allStats[0].length;
+        int numStats = allStats[0][0].length - 1;
+
+        double[][][] statTables = calcStatTables(allStats, Mode.Average, numTables, numAlgorithms, numStats);
+        double[] utilities = calcUtilities(statDescriptions, statWeights, numAlgorithms, numStats, statTables[0]);
+
+        // Add utilities to table as the last column.
+        for (int u = 0; u < numTables; u++) {
+            for (int t1 = 0; t1 < numAlgorithms; t1++) {
+                statTables[u][t1][numStats] = utilities[t1];
+            }
+        }
+
+        int[] newOrder = sort(algorithms, utilities);
+
+        out.println("Algorithms (sorted high to low by W for average statistics):");
+        out.println();
+
+        for (int t = 0; t < algorithms.size(); t++) {
+            out.println((t + 1) + ". " + algorithms.get(newOrder[t]).getDescription());
+        }
+
+        out.println();
+        out.println("Weighting of statistics:\n");
+        out.print("W = ");
+
+        Iterator it0 = statDescriptions.keySet().iterator();
+
+        while (it0.hasNext()) {
+            String statName = (String) it0.next();
+            Double weight = statWeights.get(statName);
+            if (weight != null) {
+                out.println(weight + " * Index(" + statName + ")");
+                break;
+            }
+        }
+
+        while (it0.hasNext()) {
+            String statName = (String) it0.next();
+            Double weight = statWeights.get(statName);
+            if (weight != null) {
+                out.println("    " + weight + " * Index(" + statName + ")");
+            }
+        }
+
+        out.println();
+
+
+        // Add utilities to table as the last column.
+
+        for (int u = 0; u < numTables; u++) {
+            for (int t = 0; t < numAlgorithms; t++) {
+                statTables[u][t][numStats] = utilities[t];
+            }
+        }
+
+        printStats(statTables, statDescriptions, Mode.Average, newOrder, utilities);
+
+        statTables = calcStatTables(allStats, Mode.StandardDeviation, numTables, numAlgorithms, numStats);
+
+        printStats(statTables, statDescriptions, Mode.StandardDeviation, newOrder, utilities);
+
+        statTables = calcStatTables(allStats, Mode.WorstCase, numTables, numAlgorithms, numStats);
+
+        // Add utilities to table as the last column.
+        for (int u = 0; u < numTables; u++) {
+            for (int t1 = 0; t1 < numAlgorithms; t1++) {
+                statTables[u][t1][numStats] = utilities[t1];
+            }
+        }
+
+        printStats(statTables, statDescriptions, Mode.WorstCase, newOrder, utilities);
 
         out.close();
     }
 
-    private double[][][][] printStats(List<Algorithm> algorithms, Map<String, String> stats,
-                                      Map<String, Number> parameters, Simulation simulation) {
+    private double[][][][] calcStats(List<Algorithm> algorithms, Map<String, String> stats,
+                                     Map<String, Number> parameters, Simulation simulation) {
         int numGraphTypes = 4;
 
         graphTypeUsed = new boolean[4];
+        int numRuns = parameters.get("numRuns").intValue();
 
-        double[][][] statSums = new double[algorithms.size()][stats.size()][4];
-        double[][][] worstStats = new double[algorithms.size()][stats.size()][4];
-        int[][][] countStat = new int[algorithms.size()][stats.size()][4];
+        double[][][][] allStats = new double[4][algorithms.size()][stats.size()][numRuns];
 
-        for (int t = 0; t < algorithms.size(); t++) {
-            for (int u = 0; u < 4; u++) {
-                for (int j = 0; j < stats.size(); j++) {
-                    worstStats[t][j][u] = Double.POSITIVE_INFINITY;
-                }
-            }
-        }
-
-        for (int i = 0; i < parameters.get("numRuns").intValue(); i++) {
+        for (int i = 0; i < numRuns; i++) {
             System.out.println();
             System.out.println("Run " + (i + 1));
             System.out.println();
@@ -249,48 +310,17 @@ public class Comparison {
                         double stat = edgeStats.getStat(statName);
 
                         if (!Double.isNaN(stat)) {
-                            statSums[t][j][u] += stat;
-                            countStat[t][j][u]++;
-                            if (stat < worstStats[t][j][u]) {
-                                worstStats[t][j][u] = stat;
-                            }
+                            allStats[u][t][j][i] = stat;
                         }
                     }
                 }
             }
         }
 
-        double[][][] avgStats = new double[algorithms.size()][stats.size()][numGraphTypes];
-
-        for (int t = 0; t < algorithms.size(); t++) {
-            for (int u = 0; u < 4; u++) {
-                for (int j = 0; j < stats.size(); j++) {
-                    avgStats[t][j][u] = statSums[t][j][u] / (double) countStat[t][j][u];
-                }
-            }
-        }
-
-        double[][][][] ret = new double[2][][][];
-        ret[0] = avgStats;
-        ret[1] = worstStats;
-
-        ret[0] = avgStats;
-        ret[1] = worstStats;
-
-        return ret;
+        return allStats;
     }
 
-    public Mode getMode() {
-        return mode;
-    }
-
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
-
-    private enum Mode {Average, WorstCase}
-
-    private Mode mode = Mode.WorstCase;
+    private enum Mode {Average, StandardDeviation, WorstCase}
 
     private String getHeader(int u) {
         String header;
@@ -314,63 +344,92 @@ public class Comparison {
         return header;
     }
 
-    // allallret[alg index][stat index][table index].
-    private void printStats(double[][][][] allStats, List<Algorithm> algorithms, Map<String, String> stats,
-                            Map<String, Number> parameters, Simulation simulation,
-                            Map<String, Double> statWeights, Mode mode) {
+    private double[][][] calcStatTables(double[][][][] allStats, Mode mode, int numTables, int numAlgorithms, int numStats) {
+        double[][][] statTables = new double[numTables][numAlgorithms][numStats + 1];
+
+        for (int u = 0; u < numTables; u++) {
+            for (int i = 0; i < numAlgorithms; i++) {
+                for (int j = 0; j < numStats; j++) {
+                    if (mode == Mode.Average) {
+                        statTables[u][i][j] = StatUtils.mean(allStats[u][i][j]);
+                    } else if (mode == Mode.WorstCase) {
+                        statTables[u][i][j] = StatUtils.min(allStats[u][i][j]);
+                    } else if (mode == Mode.StandardDeviation) {
+                        statTables[u][i][j] = StatUtils.sd(allStats[u][i][j]);
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                }
+            }
+        }
+
+        return statTables;
+    }
+
+    private void printStats(double[][][] statTables, Map<String, String> statDescriptions,
+                            Mode mode, int[] newOrder, double[] utilities) {
 
         if (mode == Mode.Average) {
             out.println("AVERAGE STATISTICS");
-        } else {
-            out.println("WORST CASE STATISTICS");
-        }
-
-
-        double[][][] _stats;
-
-        if (mode == Mode.Average) {
-            _stats = allStats[0];
+        } else if (mode == Mode.StandardDeviation) {
+            out.println("STANDARD DEVIATIONS");
         } else if (mode == Mode.WorstCase) {
-            _stats = allStats[1];
+            out.println("WORST CASE");
         } else {
             throw new IllegalStateException();
         }
 
-        double[] utilities = new double[algorithms.size()];
+        int numTables = statTables.length;
+        int numAlgorithms = statTables[0].length;
+        int numStats = statTables[0][0].length - 1;
 
-        out.println();
-        out.println("Weighting of statistics:\n");
-        out.print("W = ");
 
-        Iterator it0 = stats.keySet().iterator();
-
-        while (it0.hasNext()) {
-            String statName = (String) it0.next();
-            Double weight = statWeights.get(statName);
-            if (weight != null) {
-                out.println(weight + " * Index(" + statName + ")");
-                break;
-            }
-        }
-
-        while (it0.hasNext()) {
-            String statName = (String) it0.next();
-            Double weight = statWeights.get(statName);
-            if (weight != null) {
-                out.println("    " + weight + " * Index(" + statName + ")");
-            }
-        }
+        NumberFormat nf = new DecimalFormat("0.00");
 
         out.println();
 
+        for (int u = 0; u < numTables; u++) {
+            if (!graphTypeUsed[u]) continue;
+
+            TextTable table = new TextTable(numAlgorithms + 1, numStats + 2);
+
+            table.setToken(0, 0, "Alg");
+
+            for (int t = 0; t < numAlgorithms; t++) {
+                table.setToken(t + 1, 0, "" + (t + 1));
+            }
+
+            Set<String> keySet = statDescriptions.keySet();
+            Iterator<String> iterator = keySet.iterator();
+
+            for (int statIndex = 0; statIndex < numStats + 1; statIndex++) {
+                String statLabel = iterator.next();
+                table.setToken(0, statIndex + 1, statLabel);
+            }
+
+            for (int t = 0; t < numAlgorithms; t++) {
+                for (int statIndex = 0; statIndex < numStats + 1; statIndex++) {
+                    double stat = statTables[u][newOrder[t]][statIndex];
+                    table.setToken(t + 1, statIndex + 1, nf.format(Math.abs(stat)));
+                }
+            }
+
+            out.println(getHeader(u));
+            out.println();
+            out.println(table);
+        }
+    }
+
+    private double[] calcUtilities(Map<String, String> statDescriptions, Map<String, Double> statWeights,
+                                   int numAlgorithms, int numStats, double[][] stats) {
         List<List<Double>> all = new ArrayList<>();
 
-        for (int m = 0; m < _stats[0].length; m++) {
+        for (int m = 0; m < numStats; m++) {
             ArrayList<Double> list = new ArrayList<>();
 
             try {
-                for (int t = 0; t < algorithms.size(); t++) {
-                    list.add(_stats[t][m][0]);
+                for (int t = 0; t < numAlgorithms; t++) {
+                    list.add(stats[t][m]);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -381,12 +440,14 @@ public class Comparison {
             all.add(list);
         }
 
+        // Calculate utilities for the first table.
+        double[] utilities = new double[numAlgorithms];
 
-        for (int t = 0; t < algorithms.size(); t++) {
+        for (int t = 0; t < numAlgorithms; t++) {
             double sum = 0.0;
             int j = -1;
 
-            Iterator it2 = stats.keySet().iterator();
+            Iterator it2 = statDescriptions.keySet().iterator();
             int count = 0;
 
             while (it2.hasNext()) {
@@ -396,8 +457,8 @@ public class Comparison {
                 Double weight = statWeights.get(statName);
 
                 if (weight != null) {
-                    double stat = _stats[t][j][0];
-                    double orderStat = all.get(j).indexOf(stat) + 1;
+                    double _stat = stats[t][j];
+                    double orderStat = all.get(j).indexOf(_stat) + 1;
 
                     sum += weight * orderStat;
                     count++;
@@ -407,212 +468,7 @@ public class Comparison {
 
             utilities[t] = sum / count;
         }
-
-        for (int t = 0; t < algorithms.size(); t++) {
-            for (int u = 0; u < _stats[t][0].length; u++) {
-                _stats[t][_stats[t].length - 1][u] = utilities[t];
-            }
-        }
-
-        int[] newOrder = sort(algorithms, utilities);
-
-        out.println("Algorithms:");
-        out.println();
-
-        for (int t = 0; t < algorithms.size(); t++) {
-            out.println((t + 1) + ". " + algorithms.get(newOrder[t]).getDescription());
-        }
-
-        class Pair {
-            private int algorithm;
-            private double stat;
-
-            public Pair(int algorithm, double stat) {
-                this.algorithm = algorithm;
-                this.stat = stat;
-            }
-
-            public int getAlgorithm() {
-                return algorithm;
-            }
-
-            public double getStat() {
-                return stat;
-            }
-        }
-
-        if (parameters.get("printWinners").intValue() == 1) {
-            out.println("And the winners are... !");
-
-            if (simulation.isMixed()) {
-                for (int u = 0; u < 4; u++) {
-                    out.println();
-
-                    out.println("====== " + getHeader(u) +
-                            " (listing high to low, top to top - " +
-                            parameters.get("ofInterestCutoff").doubleValue() + ")");
-
-                    out.println();
-                    Set<String> keySet = stats.keySet();
-                    int statIndex = -1;
-
-                    for (String statName : keySet) {
-                        String maxAlg;
-                        statIndex++;
-
-                        List<Pair> algStats = new ArrayList<>();
-
-                        for (int t = 0; t < algorithms.size(); t++) {
-                            double stat = _stats[t][statIndex][u];
-                            if (!Double.isNaN(stat)) {
-                                algStats.add(new Pair(t + 1, stat));
-                            }
-                        }
-
-                        if (algStats.isEmpty()) {
-                            maxAlg = "-";
-                        } else {
-                            Collections.sort(algStats, new Comparator<Pair>() {
-
-                                @Override
-                                public int compare(Pair o1, Pair o2) {
-                                    return -Double.compare(o1.getStat(), o2.getStat());
-                                }
-                            });
-
-                            double maxStat = algStats.get(0).getStat();
-                            maxAlg = "" + algStats.get(0).getAlgorithm()/*.getName()*/;
-                            double ofInterest = maxStat - parameters.get("ofInterestCutoff").doubleValue();
-
-                            for (int i = 1; i < algStats.size(); i++) {
-                                if (algStats.get(i).getStat() == algStats.get(i - 1).getStat()) {
-                                    maxAlg += "==" + algStats.get(i).getAlgorithm();
-                                } else if (algStats.get(i).getStat() >= ofInterest) {
-                                    maxAlg += "," + algStats.get(i).getAlgorithm();
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-
-                        out.println(statName + ": " + maxAlg);
-                    }
-                }
-            } else {
-                int u = 0;
-                out.println();
-
-                out.println("====== " + getHeader(u) +
-                        " (listing high to low, top to top - " +
-                        parameters.get("ofInterestCutoff").doubleValue() + ")");
-
-                out.println();
-                Set<String> keySet = stats.keySet();
-                int statIndex = -1;
-
-                for (String statName : keySet) {
-                    String maxAlg;
-                    statIndex++;
-
-                    List<Pair> algStats = new ArrayList<>();
-
-                    for (int t = 0; t < algorithms.size(); t++) {
-                        double stat = _stats[t][statIndex][u];
-                        if (!Double.isNaN(stat)) {
-                            algStats.add(new Pair(t + 1, stat));
-                        }
-                    }
-
-                    if (algStats.isEmpty()) {
-                        maxAlg = "-";
-                    } else {
-                        Collections.sort(algStats, new Comparator<Pair>() {
-
-                            @Override
-                            public int compare(Pair o1, Pair o2) {
-                                return -Double.compare(o1.getStat(), o2.getStat());
-                            }
-                        });
-
-                        double maxStat = algStats.get(0).getStat();
-                        maxAlg = "" + algStats.get(0).getAlgorithm()/*.getName()*/;
-                        double ofInterest = maxStat - parameters.get("ofInterestCutoff").doubleValue();
-
-                        for (int i = 1; i < algStats.size(); i++) {
-                            if (algStats.get(i).getStat() == algStats.get(i - 1).getStat()) {
-                                maxAlg += "==" + algStats.get(i).getAlgorithm();
-                            } else if (algStats.get(i).getStat() >= ofInterest) {
-                                maxAlg += "," + algStats.get(i).getAlgorithm();
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-
-                    out.println(statName + ": " + maxAlg);
-                }
-            }
-        }
-
-
-        NumberFormat nf = new DecimalFormat("0.00");
-
-        if (parameters.get("printAverages").intValue() == 1) {
-            for (int u = 0; u < 4; u++) {
-                if (!graphTypeUsed[u]) continue;
-
-                for (int t = 0; t < algorithms.size(); t++) {
-                    String algorithm = "" + (t + 1);
-                    out.println();
-
-                    out.println(getHeader(u) + " Algorithm = " + algorithm);
-                    out.println();
-                    Set<String> keySet = stats.keySet();
-                    Iterator<String> iterator = keySet.iterator();
-
-                    for (int statIndex = 0; statIndex < stats.size(); statIndex++) {
-                        String statLabel = iterator.next();
-                        double stat = _stats[t][statIndex][u];
-                        out.println("\tAverage " + statLabel + " = " + nf.format(stat));
-                    }
-                }
-            }
-        }
-
-        if (parameters.get("printAverageTables").intValue() == 1) {
-            out.println();
-
-            for (int u = 0; u < 4; u++) {
-                if (!graphTypeUsed[u]) continue;
-
-                TextTable table = new TextTable(algorithms.size() + 1, stats.size() + 1);
-
-                table.setToken(0, 0, "Alg");
-
-                for (int t = 0; t < algorithms.size(); t++) {
-                    table.setToken(t + 1, 0, "" + (t + 1));
-                }
-
-                Set<String> keySet = stats.keySet();
-                Iterator<String> iterator = keySet.iterator();
-
-                for (int statIndex = 0; statIndex < stats.size(); statIndex++) {
-                    String statLabel = iterator.next();
-                    table.setToken(0, statIndex + 1, statLabel);
-                }
-
-                for (int t = 0; t < algorithms.size(); t++) {
-                    for (int statIndex = 0; statIndex < stats.size(); statIndex++) {
-                        double stat = _stats[newOrder[t]][statIndex][u];
-                        table.setToken(t + 1, statIndex + 1, nf.format(Math.abs(stat)));
-                    }
-                }
-
-                out.println(getHeader(u));
-                out.println();
-                out.println(table);
-            }
-        }
+        return utilities;
     }
 
     private int[] sort(final List<Algorithm> algorithms, final double[] utilities) {

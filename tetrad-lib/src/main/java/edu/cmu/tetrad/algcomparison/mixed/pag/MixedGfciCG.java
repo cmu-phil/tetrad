@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * @author jdramsey
  */
-public class MixedGfciCondGaussianScore implements Algorithm {
+public class MixedGfciCG implements Algorithm {
     public Graph search(DataSet Dk, Map<String, Number> parameters) {
         ConditionalGaussianScore score = new ConditionalGaussianScore(Dk);
         GFci fgs = new GFci(score);

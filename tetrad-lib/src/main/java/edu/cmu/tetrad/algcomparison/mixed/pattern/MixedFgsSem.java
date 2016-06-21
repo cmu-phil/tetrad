@@ -1,53 +1,30 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
-import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.Discretizer;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SemBicScore;
 
-import java.util.List;
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedBdeuFgs implements Algorithm {
+public class MixedFgsSem implements Algorithm {
     public Graph search(DataSet Dk, Map<String, Number> parameters) {
-        Discretizer discretizer = new Discretizer(Dk);
-        List<Node> nodes = Dk.getVariables();
-
-        for (Node node : nodes) {
-            if (node instanceof ContinuousVariable) {
-                discretizer.equalIntervals(node, parameters.get("numCategories").intValue());
-            }
-        }
-
-        Dk = discretizer.discretize();
-
-        BDeuScore score = new BDeuScore(Dk);
-        score.setSamplePrior(1.0);
-        score.setStructurePrior(1.0);
+        Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(Dk));
+        score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
         Fgs fgs = new Fgs(score);
         Graph p = fgs.search();
         return convertBack(Dk, p);
-    }
-
-
-    @Override
-    public Graph getComparisonGraph(Graph dag) {
-        return SearchGraphUtils.patternForDag(dag);
-    }
-
-    @Override
-    public String getDescription() {
-        return "FGS with BDeu after discretizing the continuous variables in the data set";
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {
@@ -72,4 +49,14 @@ public class MixedBdeuFgs implements Algorithm {
         }
         return p2;
     }
+
+    public Graph getComparisonGraph(Graph dag) {
+        return SearchGraphUtils.patternForDag(dag);
+    }
+
+    public String getDescription() {
+        return "FGS, using the SEM BIC score, treating all variables as continuous";
+    }
 }
+
+

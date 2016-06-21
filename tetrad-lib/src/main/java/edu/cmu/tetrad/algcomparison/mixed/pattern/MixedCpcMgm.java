@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedMGMCpc implements Algorithm {
+public class MixedCpcMgm implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
         MGM m = new MGM(ds, new double[]{
                 parameters.get("mgmParam1").doubleValue(),
@@ -32,6 +32,6 @@ public class MixedMGMCpc implements Algorithm {
     }
 
     public String getDescription() {
-        return "CPC-Stable, using the Mixed LRT test, with the output of MGM as an intial graph";
+        return "CPC, using the Mixed LRT test, with the output of MGM as an intial graph";
     }
 }

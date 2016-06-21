@@ -24,13 +24,11 @@ package edu.cmu.tetrad.algcomparison.comparisons;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.Simulation;
-import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousFci;
-import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousGfci;
-import edu.cmu.tetrad.algcomparison.continuous.pag.ContinuousRfci;
+import edu.cmu.tetrad.algcomparison.continuous.pag.*;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
-import edu.cmu.tetrad.algcomparison.simulation.LinearGaussianSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -60,20 +58,24 @@ public class RunContinuousComparison {
         stats.put("SHD", "Structural Hamming Distance");
         stats.put("E", "Elapsed time in seconds");
 
+        parameters.put("scaleFreeAlpha", .1);
+        parameters.put("scaleFreeBeta", .8);
+        parameters.put("scaleFreeDeltaIn", 3.0);
+        parameters.put("scaleFreeDeltaOut", 3.0);
+        parameters.put("percentDiscreteForMixedSimulation", 0);
+
         parameters.put("numCategories", 4);
         parameters.put("mgmParam1", 0.1);
         parameters.put("mgmParam2", 0.1);
         parameters.put("mgmParam3", 0.1);
         parameters.put("numLatents", 0);
         parameters.put("numRuns", 5);
-        parameters.put("sampleSize", 500);
+        parameters.put("sampleSize", 1000);
         parameters.put("numMeasures", 30);
         parameters.put("numEdges", 60);
         parameters.put("penaltyDiscount", 4);
-        parameters.put("fgsDepth", 3);
-        parameters.put("depth", -1);
-        parameters.put("percentDiscreteForMixedSimulation", 50);
-        parameters.put("printWinners", 0);
+        parameters.put("fgsDepth", -1);
+        parameters.put("percentDiscreteForMixedSimulation", 0);
 
         Map<String, Double> statWeights = new LinkedHashMap<>();
         statWeights.put("AP", 2.0);
@@ -96,52 +98,54 @@ public class RunContinuousComparison {
         algorithms.add(new ContinuousFgs());
         algorithms.add(new ContinuousFgsPc());
         algorithms.add(new ContinuousFgsCpc());
+        algorithms.add(new ContinuousGpc());
 
         algorithms.add(new ContinuousPcSemBic());
         algorithms.add(new ContinuousCpcSemBic());
         algorithms.add(new ContinuousPcsSemBic());
 
-        algorithms.add(new MixedPc());
-        algorithms.add(new MixedPcs());
-        algorithms.add(new MixedCpc());
-        algorithms.add(new MixedSemFgs());
-        algorithms.add(new MixedWfgs());
-        algorithms.add(new MixedFgsCondGaussianScore());
-
-        // PAG
+//        // PAG
         algorithms.add(new ContinuousFci());
         algorithms.add(new ContinuousRfci());
         algorithms.add(new ContinuousGfci());
-
-        algorithms.add(new MixedWgfci());
-        algorithms.add(new MixedWgfciFci());
-        algorithms.add(new MixedFci());
-        algorithms.add(new MixedGfciMixedScore());
-        algorithms.add(new MixedGfciCondGaussianScore());
+        algorithms.add(new ContinuousRfciSemBic());
+        algorithms.add(new ContinuousFciSemBic());
 
         // Cyclic PAG
 //        algorithms.add(new ContinuousCcd());
 
+        // Mixed algorithms that work on continuous data.
+
+        // Pattern
+        algorithms.add(new MixedFgsSem());
+        algorithms.add(new MixedFgsBdeu());
+        algorithms.add(new MixedFgsMS());
+        algorithms.add(new MixedFgsCG());
+        algorithms.add(new MixedWfgs());
+        algorithms.add(new MixedCpcWfgs());
+        algorithms.add(new MixedPc());
+        algorithms.add(new MixedPcs());
+        algorithms.add(new MixedCpc());
+//        algorithms.add(new MixedMGMFgs());
+//        algorithms.add(new MixedMGMPc());
+//        algorithms.add(new MixedMGMCpc());
+        algorithms.add(new MixedWgfci());
+
+//        PAG
+        algorithms.add(new MixedWfgsFci());
+        algorithms.add(new MixedFci());
+        algorithms.add(new MixedGfciMixedScore());
+
         String baseFileName = "Continuous";
 
-        Simulation simulation = new LinearGaussianSemSimulation();
+        Simulation simulation = new MixedLeeHastieSimulation();
+//        Simulation simulation = new LinearGaussianSemSimulation();
+//        Simulation simulation = new LinearGaussianSemSimulationScaleFree();
 //        Simulation simulation = new ContinuousCyclicSemSimulation();
 //        Simulation simulation = new ContinuousNonlinearNongaussianSimulation();
 //        Simulation simulation = new CyclicGeneralizedSemSimulation();
 
         try {
-//            File dir = new File("comparison");
-//            dir.mkdirs();
-//
-//            for (int index = 1; ; index++) {
-//                File comparison = new File("comparison", baseFileName + "." + index + ".txt");
-//                if (!comparison.exists()) {
-//                    PrintStream out = new PrintStream(new FileOutputStream(comparison));
-//                    new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation, out);
-//                    break;
-//                }
-//            }
-
             File dir = new File("comparison");
             dir.mkdirs();
             File comparison = new File("comparison", baseFileName + ".txt");

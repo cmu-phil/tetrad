@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedMGMPc implements Algorithm {
+public class MixedPcsMgm implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
         MGM m = new MGM(ds, new double[]{
                 parameters.get("mgmParam1").doubleValue(),
@@ -35,6 +35,6 @@ public class MixedMGMPc implements Algorithm {
     }
 
     public String getDescription() {
-        return "PC, using the Mixed LRT test, with the output of MGM as an intial graph";
+        return "PC-Stable, using the Mixed LRT test, with the output of MGM as an intial graph";
     }
 }

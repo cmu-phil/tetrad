@@ -10,10 +10,10 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedWfgsCpc implements Algorithm {
+public class MixedCpcWGfci implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
-        WFgs fgs = new WFgs(ds);
-        fgs.setDepth(parameters.get("fgsDepth").intValue());
+        WGfci fgs = new WGfci(ds);
+//        fgs.setDepth(parameters.get("fgsDepth").intValue());
         fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
         Graph g =  fgs.search();
         IndependenceTest test = new IndTestMixedLrt(ds, parameters.get("alpha").doubleValue());
@@ -23,12 +23,10 @@ public class MixedWfgsCpc implements Algorithm {
     }
 
     public Graph getComparisonGraph(Graph dag) {
-        return new Pc(new IndTestDSep(dag)).search();
-//        return SearchGraphUtils.patternForDag(dag);
+        return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {
-        return "WFGS-CPC: uses the output of WFGS as an intial graph " +
-                "for CPC, using the Mixed LRT test";
+        return "CPC with the mixed LRT test, using the output of WGFCI as an intial graph";
     }
 }
