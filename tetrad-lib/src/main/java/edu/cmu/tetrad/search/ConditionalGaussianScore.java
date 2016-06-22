@@ -124,28 +124,27 @@ public class ConditionalGaussianScore implements Score {
 
             // Discrete target, discrete predictors.
             if (!(target instanceof DiscreteVariable)) throw new IllegalStateException();
-            Ret ret = getProb((DiscreteVariable) target, denominatorDiscrete);
+            Ret ret = getLikelihood((DiscreteVariable) target, denominatorDiscrete);
             lik = ret.getLik();
             dof = ret.getDof();
         } else if (denominatorContinuous.isEmpty()) {
 
             // Continuous target, all discrete predictors.
-            Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
+            Ret ret1 = getLikelihood(numeratorContinuous, numeratorDiscrete);
             dof = ret1.getDof();
             lik = ret1.getLik();
         } else if (numeratorContinuous.size() == denominatorContinuous.size()) {
 
             // Discrete target, mixed predictors.
-            Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
-            Ret ret2 = getProb(numeratorContinuous, denominatorDiscrete);
+            Ret ret1 = getLikelihood(numeratorContinuous, numeratorDiscrete);
+            Ret ret2 = getLikelihood(numeratorContinuous, denominatorDiscrete);
             dof = ret1.getDof() - ret2.getDof();
             lik = ret1.getLik() - ret2.getLik();
-            lik -= 0.5 * N * (1.0 + Math.log(2.0 * Math.PI));
         } else {
 
             // Continuous target, mixed predictors.
-            Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
-            Ret ret2 = getProb(denominatorContinuous, numeratorDiscrete);
+            Ret ret1 = getLikelihood(numeratorContinuous, numeratorDiscrete);
+            Ret ret2 = getLikelihood(denominatorContinuous, numeratorDiscrete);
             dof = ret1.getDof() - ret2.getDof();
             lik = ret1.getLik() - ret2.getLik();
         }
@@ -153,7 +152,8 @@ public class ConditionalGaussianScore implements Score {
         return lik - dof * Math.log(N);
     }
 
-    private Ret getProb(DiscreteVariable target, List<DiscreteVariable> parents) {
+    private Ret getLikelihood(DiscreteVariable target, List<DiscreteVariable> parents) {
+
         if (parents.contains(target)) throw new IllegalArgumentException();
         int p = target.getNumCategories();
 
@@ -204,13 +204,19 @@ public class ConditionalGaussianScore implements Score {
                 r++;
             }
 
+            double l = 0;
+
             for (int c = 0; c < p; c++) {
                 double count = counts[c];
 
                 if (count > 0) {
-                    lik += count * Math.log(count / (double) r) + Math.log(r / (double) N);
+                    l += count * (Math.log(count) - Math.log(r));
+                    l += (Math.log(r) - Math.log(N));
                 }
             }
+
+
+            lik += l;
 
             s++;
         }
@@ -220,12 +226,10 @@ public class ConditionalGaussianScore implements Score {
         return new Ret(lik, dof);
     }
 
-    private Ret getProb(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
+    private Ret getLikelihood(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
         if (continuous.isEmpty()) throw new IllegalArgumentException();
         int p = continuous.size();
         int d = discrete.size();
-
-        int N = dataSet.getNumRows();
 
         // For each combination of values for the discrete guys extract a subset of the data.
         List<Node> variables = dataSet.getVariables();
@@ -289,12 +293,23 @@ public class ConditionalGaussianScore implements Score {
                 TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
                         true).getCovarianceMatrix());
                 lik -= 0.5 * n * Math.log(Sigma.det());
-                lik += Math.log(n / (double) N);
+                lik += Math.log(n);
             } else {
                 lik -= 0.5 * n * Math.log(p + 2); // guestimate--not enough data.
-                lik += Math.log(n / (double) N);
+                lik += Math.log(n);
             }
         }
+
+        List<DiscreteVariable> condDiscrete = new ArrayList<>(discrete);
+
+        double prob = 0.0;
+
+        for (DiscreteVariable t : new ArrayList<>(condDiscrete)) {
+            condDiscrete.remove(t);
+            prob += getLikelihood(t, condDiscrete).getLik();
+        }
+
+        lik += prob;
 
         int s = rows.size();
         int t = p * (p + 1) / 2;
@@ -304,7 +319,7 @@ public class ConditionalGaussianScore implements Score {
         return new Ret(lik, dof);
     }
 
-    private Ret getProb2(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
+    private Ret getLikelihood2(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
         if (continuous.isEmpty()) throw new IllegalArgumentException();
         int p = continuous.size();
         int d = discrete.size();
