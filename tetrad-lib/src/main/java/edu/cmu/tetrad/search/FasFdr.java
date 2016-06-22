@@ -471,7 +471,7 @@ public class FasFdr implements IFas {
 
             Node x = nodes.get(i);
 
-//            if (missingCol(test.getData(), x)) {
+//            if (missingCol(test.getContinuousData(), x)) {
 //                continue;
 //            }
 
@@ -479,7 +479,7 @@ public class FasFdr implements IFas {
 
                 Node y = nodes.get(j);
 
-//                if (missingCol(test.getData(), y)) {
+//                if (missingCol(test.getContinuousData(), y)) {
 //                    continue;
 //                }
 

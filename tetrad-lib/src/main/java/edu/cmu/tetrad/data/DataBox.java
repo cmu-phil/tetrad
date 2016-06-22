@@ -64,11 +64,13 @@ public interface DataBox extends TetradSerializable {
     DataBox copy();
 
     /**
-     * @return a new data box of the same type as this one with the given
-     * dimensions.
+     * @return this data box, restricted to the given rows and columns.
      */
-    DataBox like(int rows, int cols);
+    DataBox viewSelection(int[] rows, int[] cols);
+
+    DataBox like();
 }
+
 
 
 

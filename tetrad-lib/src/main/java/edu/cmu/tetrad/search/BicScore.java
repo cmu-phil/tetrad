@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.dist.Discrete;
-import org.apache.commons.math3.special.Gamma;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -222,11 +219,6 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
      */
     public boolean isEffectEdge(double bump) {
         return bump > 0;//lastBumpThreshold;
-    }
-
-    @Override
-    public boolean isDiscrete() {
-        return true;
     }
 
     @Override

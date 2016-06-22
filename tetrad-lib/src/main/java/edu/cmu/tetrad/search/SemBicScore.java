@@ -248,11 +248,6 @@ public class SemBicScore implements Score {
     }
 
     @Override
-    public boolean isDiscrete() {
-        return false;
-    }
-
-    @Override
     public double getParameter1() {
         return penaltyDiscount;
     }

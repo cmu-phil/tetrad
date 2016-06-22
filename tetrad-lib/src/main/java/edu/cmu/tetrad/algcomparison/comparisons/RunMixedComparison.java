@@ -52,10 +52,10 @@ public class RunMixedComparison {
         parameters.put("mgmParam2", 0.1);
         parameters.put("mgmParam3", 0.1);
         parameters.put("numLatents", 0);
-        parameters.put("numRuns", 5);
-        parameters.put("sampleSize", 1000);
+        parameters.put("numRuns", 1);
+        parameters.put("sampleSize", 5000);
         parameters.put("numMeasures", 30);
-        parameters.put("numEdges", 60);
+        parameters.put("numEdges", 30);
         parameters.put("penaltyDiscount", 4);
         parameters.put("fgsDepth", -1);
         parameters.put("percentDiscreteForMixedSimulation", 50);
@@ -90,11 +90,11 @@ public class RunMixedComparison {
         // Pattern
         algorithms.add(new MixedFgsSem());
         algorithms.add(new MixedFgsBdeu());
-        algorithms.add(new MixedFgsMS());
+//        algorithms.add(new MixedFgsMS());
         algorithms.add(new MixedFgsCG());
 //        algorithms.add(new MixedFgsMgm());
 //        algorithms.add(new MixedWfgs());
-//        algorithms.add(new MixedPc());
+        algorithms.add(new MixedPc());
 //        algorithms.add(new MixedPcWfgs());
 //        algorithms.add(new MixedPcWGfci());
 //        algorithms.add(new MixedPcs());

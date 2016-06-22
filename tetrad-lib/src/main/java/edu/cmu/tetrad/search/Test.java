@@ -21,36 +21,71 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.CombinationIterator;
+import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.stat.correlation.Covariance;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
- * Interface for a score suitable for FGS
+ * Implements a conditional Gaussian BIC score for FGS.
+ *
+ * @author Joseph Ramsey
  */
-public interface Score {
-    double localScore(int node, int...parents);
+public class Test {
 
-    double localScoreDiff(int x, int y, int[] z);
+    // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
+    private double logOfSum(List<Double> logs) {
 
-    double localScoreDiff(int x, int y);
+        Collections.sort(logs, new Comparator<Double>() {
+            @Override
+            public int compare(Double o1, Double o2) {
+                return -Double.compare(o1, o2);
+            }
+        });
 
-    double localScore(int node, int parent);
+        double sum = 0.0;
+        int N = logs.size() - 1;
+        double loga0 = logs.get(0);
 
-    double localScore(int node);
+        for (int i = 1; i <= N; i++) {
+            sum += Math.exp(logs.get(i) - loga0);
+        }
 
-    List<Node> getVariables();
+        sum += 1;
 
-    boolean isEffectEdge(double bump);
+        return loga0 + Math.log(sum);
+    }
 
-    double getParameter1();
+    @org.junit.Test
+    public void test() {
+        double[] a = {.3, .03, .01};
 
-    void setParameter1(double alpha);
+        List<Double> logs = new ArrayList<>();
 
-    int getSampleSize();
+        for (double _a : a) {
+            logs.add(Math.log(_a));
+        }
 
-    Node getVariable(String targetName);
+        double sum = 0.0;
 
-    int getMaxIndegree();
+        for (double _a : a) {
+            sum += _a;
+        }
+
+        double logsum = logOfSum(logs);
+
+        System.out.println(Math.exp(logsum) + " " + sum);
+    }
+
 }
+
+
 

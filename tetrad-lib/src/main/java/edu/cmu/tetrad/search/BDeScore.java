@@ -196,11 +196,6 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     @Override
-    public boolean isDiscrete() {
-        return true;
-    }
-
-    @Override
     public double getParameter1() {
         return 0;
     }

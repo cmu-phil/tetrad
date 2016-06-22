@@ -134,11 +134,6 @@ public class ScoredIndTest implements Score {
         return 0;
     }
 
-    @Override
-    public boolean isDiscrete() {
-        return false;
-    }
-
     public double getParameter1() {
         return test.getAlpha();
     }

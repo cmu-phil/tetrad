@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.CombinationIterator;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
+import org.junit.Test;
 
 import java.util.*;
 
@@ -38,10 +39,14 @@ public class ConditionalGaussianScore implements Score {
 
     private DataSet dataSet;
 
-    private TetradMatrix _data;
-
     // The variables of the continuousData set.
     private List<Node> variables;
+
+    // Continuous data only.
+    private double[][] continuousData;
+
+    // Discrete data only.
+    private int[][] discreteData;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -54,7 +59,30 @@ public class ConditionalGaussianScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
 
-        _data = dataSet.getDoubleData();
+        continuousData = new double[dataSet.getNumColumns()][];
+        discreteData = new int[dataSet.getNumColumns()][];
+
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            Node v = dataSet.getVariable(j);
+
+            if (v instanceof ContinuousVariable) {
+                double[] col = new double[dataSet.getNumRows()];
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    col[i] = dataSet.getDouble(i, j);
+                }
+
+                continuousData[j] = col;
+            } else if (v instanceof DiscreteVariable) {
+                int[] col = new int[dataSet.getNumRows()];
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    col[i] = dataSet.getInt(i, j);
+                }
+
+                discreteData[j] = col;
+            }
+        }
     }
 
     /**
@@ -105,7 +133,6 @@ public class ConditionalGaussianScore implements Score {
             Ret ret1 = getProb(numeratorContinuous, numeratorDiscrete);
             dof = ret1.getDof();
             lik = ret1.getLik();
-//            lik = Double.NEGATIVE_INFINITY;
         } else if (numeratorContinuous.size() == denominatorContinuous.size()) {
 
             // Discrete target, mixed predictors.
@@ -113,9 +140,7 @@ public class ConditionalGaussianScore implements Score {
             Ret ret2 = getProb(numeratorContinuous, denominatorDiscrete);
             dof = ret1.getDof() - ret2.getDof();
             lik = ret1.getLik() - ret2.getLik();
-
-            lik -= 0.5 * N * numeratorContinuous.size() * (1.0 + Math.log(2.0 * Math.PI));
-//            lik = Double.NEGATIVE_INFINITY;
+            lik -= 0.5 * N * (1.0 + Math.log(2.0 * Math.PI));
         } else {
 
             // Continuous target, mixed predictors.
@@ -123,7 +148,6 @@ public class ConditionalGaussianScore implements Score {
             Ret ret2 = getProb(denominatorContinuous, numeratorDiscrete);
             dof = ret1.getDof() - ret2.getDof();
             lik = ret1.getLik() - ret2.getLik();
-//            lik = Double.NEGATIVE_INFINITY;
         }
 
         return lik - dof * Math.log(N);
@@ -135,6 +159,7 @@ public class ConditionalGaussianScore implements Score {
 
         int d = parents.size();
         int[] dims = new int[d];
+        int targetCol = dataSet.getColumn(target);
 
         for (int i = 0; i < d; i++) {
             dims[i] = parents.get(i).getNumCategories();
@@ -149,6 +174,7 @@ public class ConditionalGaussianScore implements Score {
         double lik = 0;
         int t = p - 1;
         int s = 0;
+        int N = dataSet.getNumRows();
 
         while (iterator.hasNext()) {
             comb = iterator.next();
@@ -158,7 +184,7 @@ public class ConditionalGaussianScore implements Score {
                 boolean addRow = true;
 
                 for (int c = 0; c < comb.length; c++) {
-                    if (comb[c] != dataSet.getInt(i, _cols[c])) {
+                    if (comb[c] != discreteData[_cols[c]][i]) {
                         addRow = false;
                         break;
                     }
@@ -173,7 +199,7 @@ public class ConditionalGaussianScore implements Score {
             int r = 0;
 
             for (int row : rows) {
-                int value = dataSet.getInt(row, dataSet.getColumn(target));
+                int value = discreteData[targetCol][row];
                 counts[value]++;
                 r++;
             }
@@ -182,14 +208,14 @@ public class ConditionalGaussianScore implements Score {
                 double count = counts[c];
 
                 if (count > 0) {
-                    lik += count * Math.log(count / (double) r);
+                    lik += count * Math.log(count / (double) r) + Math.log(r / (double) N);
                 }
             }
 
             s++;
         }
 
-        int dof = s * t;
+        int dof = s * t + s - 1;
 
         return new Ret(lik, dof);
     }
@@ -197,13 +223,99 @@ public class ConditionalGaussianScore implements Score {
     private Ret getProb(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
         if (continuous.isEmpty()) throw new IllegalArgumentException();
         int p = continuous.size();
-        int t = p * (p + 1) / 2;
-        int s = 0;
+        int d = discrete.size();
+
+        int N = dataSet.getNumRows();
 
         // For each combination of values for the discrete guys extract a subset of the data.
         List<Node> variables = dataSet.getVariables();
 
+        int[] cols = new int[p];
+        int[] dims = new int[d];
+
+        for (int i = 0; i < d; i++) {
+            dims[i] = discrete.get(i).getNumCategories();
+        }
+
+        for (int j = 0; j < p; j++) {
+            cols[j] = variables.indexOf(continuous.get(j));
+        }
+
+        CombinationIterator iterator = new CombinationIterator(dims);
+
+        int[] _cols = new int[d];
+        for (int i = 0; i < d; i++) _cols[i] = dataSet.getColumn(discrete.get(i));
+
+        List<int[]> combs = new ArrayList<>();
+
+        while (iterator.hasNext()) {
+            combs.add(iterator.next());
+        }
+
+        List<List<Integer>> rows = new ArrayList<>();
+
+        for (int i = 0; i < combs.size(); i++) {
+            rows.add(new ArrayList<Integer>());
+        }
+
+        int[] values = new int[dims.length];
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < dims.length; j++) {
+                values[j] = discreteData[_cols[j]][i];
+            }
+
+            int rowIndex = getRowIndex(values, dims);
+
+            rows.get(rowIndex).add(i);
+        }
+
+        double lik = 0;
+
+        for (int k = 0; k < rows.size(); k++) {
+            if (rows.get(k).isEmpty()) continue;
+
+            TetradMatrix subset = new TetradMatrix(rows.get(k).size(), cols.length);
+
+            for (int i = 0; i < rows.get(k).size(); i++) {
+                for (int j = 0; j < cols.length; j++) {
+                    subset.set(i, j, continuousData[cols[j]][rows.get(k).get(i)]);
+                }
+            }
+
+            int n = rows.get(k).size();
+
+            if (n > p) {
+                TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
+                        true).getCovarianceMatrix());
+                lik -= 0.5 * n * Math.log(Sigma.det());
+                lik += Math.log(n / (double) N);
+            } else {
+                lik -= 0.5 * n * Math.log(p + 2); // guestimate--not enough data.
+                lik += Math.log(n / (double) N);
+            }
+        }
+
+        int s = rows.size();
+        int t = p * (p + 1) / 2;
+
+        double dof = s * t + s - 1;
+
+        return new Ret(lik, dof);
+    }
+
+    private Ret getProb2(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
+        if (continuous.isEmpty()) throw new IllegalArgumentException();
+        int p = continuous.size();
         int d = discrete.size();
+
+        int t = p * (p + 1) / 2;
+        int s = 0;
+
+        int N = dataSet.getNumRows();
+
+        // For each combination of values for the discrete guys extract a subset of the data.
+        List<Node> variables = dataSet.getVariables();
 
         int[] cols = new int[p];
         int[] dims = new int[d];
@@ -221,48 +333,51 @@ public class ConditionalGaussianScore implements Score {
 
         int[] _cols = new int[d];
         for (int i = 0; i < d; i++) _cols[i] = dataSet.getColumn(discrete.get(i));
-
-        double lik = 0;
+        List<Double> logs = new ArrayList<>();
 
         while (iterator.hasNext()) {
             comb = iterator.next();
             List<Integer> rows = new ArrayList<>();
 
+            ROWS:
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                boolean addRow = true;
-
                 for (int c = 0; c < comb.length; c++) {
-                    if (comb[c] != dataSet.getInt(i, _cols[c])) {
-                        addRow = false;
-                        break;
+                    if (comb[c] != discreteData[_cols[c]][i]) {
+                        continue ROWS;
                     }
                 }
 
-                if (addRow) {
-                    rows.add(i);
-                }
+                rows.add(i);
             }
 
             if (rows.isEmpty()) continue;
 
-            int[] _rows = new int[rows.size()];
-            for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
+            TetradMatrix subset = new TetradMatrix(rows.size(), cols.length);
 
-            TetradMatrix subset = _data.getSelection(_rows, cols);
+            for (int i = 0; i < rows.size(); i++) {
+                for (int j = 0; j < cols.length; j++) {
+                    subset.set(i, j, continuousData[cols[j]][rows.get(i)]);
+                }
+            }
+
             int n = rows.size();
 
             if (n > p) {
                 TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
                         true).getCovarianceMatrix());
-                double det = Sigma.det();
-
-                lik -= 0.5 * n * Math.log(det);
+                double l = -0.5 * n * Math.log(Sigma.det()) - 0.5 * p * n * (1.0 + Math.log(2 * Math.PI));
+                l += Math.log(n / (double) N);
+                logs.add(l);
             } else {
-                lik -= 0.5 * n * Math.log(2);
+                double l = -0.5 * n * Math.log(1.4) - 0.5 * p * n * (1.0 - Math.log(2 * Math.PI));
+                l += Math.log(n / (double) N);
+                logs.add(l);
             }
 
             s++;
         }
+
+        double lik = logOfSum(logs);
 
         double dof = s * t + s - 1;
 
@@ -332,11 +447,6 @@ public class ConditionalGaussianScore implements Score {
     }
 
     @Override
-    public boolean isDiscrete() {
-        return false;
-    }
-
-    @Override
     public double getParameter1() {
         return 0;
     }
@@ -360,6 +470,57 @@ public class ConditionalGaussianScore implements Score {
     @Override
     public int getMaxIndegree() {
         return (int) Math.ceil(Math.log(dataSet.getNumRows()));
+    }
+
+    // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
+    private double logOfSum(List<Double> logs) {
+
+        Collections.sort(logs, new Comparator<Double>() {
+            @Override
+            public int compare(Double o1, Double o2) {
+                return -Double.compare(o1, o2);
+            }
+        });
+
+        double sum = 0.0;
+        int N = logs.size() - 1;
+        double loga0 = logs.get(0);
+
+        for (int i = 1; i <= N; i++) {
+            sum += Math.exp(logs.get(i) - loga0);
+        }
+
+        sum += 1;
+
+        return loga0 + Math.log(sum);
+    }
+
+    @Test
+    public void test() {
+        double a = .9;
+        double b = .9;
+
+        double loga = Math.log(a);
+        double logb = Math.log(b);
+
+        List<Double> logs = new ArrayList<>();
+        logs.add(loga);
+        logs.add(logb);
+
+        double sum = logOfSum(logs);
+
+        System.out.println(sum);
+    }
+
+    public int getRowIndex(int[] values, int[] dims) {
+        int rowIndex = 0;
+
+        for (int i = 0; i < dims.length; i++) {
+            rowIndex *= dims[i];
+            rowIndex += values[i];
+        }
+
+        return rowIndex;
     }
 }
 

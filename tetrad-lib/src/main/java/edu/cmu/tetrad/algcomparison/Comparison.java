@@ -93,7 +93,8 @@ public class Comparison {
     }
 
     public void testBestAlgorithms(Map<String, Number> _parameters, Map<String, Double> statWeights,
-                                   List<Algorithm> algorithms, Simulation simulation, PrintStream out) {
+                                   List<Algorithm> algorithms, List<String> stats,
+                                   Simulation simulation, PrintStream out) {
         if (statWeights.keySet().contains("W")) {
             throw new IllegalArgumentException("The utility function may not refer to W.");
 
@@ -122,18 +123,24 @@ public class Comparison {
 
         parameters.putAll(_parameters);
 
+        Map<String, String> allStatDescriptions = new LinkedHashMap<>();
+        allStatDescriptions.put("AP", "Adjacency Precision");
+        allStatDescriptions.put("AR", "Adjacency Recall");
+        allStatDescriptions.put("OP", "Orientation (Arrow) precision");
+        allStatDescriptions.put("OR", "Orientation (Arrow) recall");
+        allStatDescriptions.put("McAdj", "Matthew's correlation coeffficient for adjacencies");
+        allStatDescriptions.put("McOr", "Matthew's correlation coefficient for arrow");
+        allStatDescriptions.put("F1Adj", "F1 statistic for adjacencies");
+        allStatDescriptions.put("F1Or", "F1 statistic for arrows");
+        allStatDescriptions.put("SHD", "Structural Hamming Distance");
+        allStatDescriptions.put("E", "Elapsed time in seconds");
+        allStatDescriptions.put("W", "Utility of algorithm (a weighted sum of the sorted indices of algorithms on statistics)");
+
         Map<String, String> statDescriptions = new LinkedHashMap<>();
-        statDescriptions.put("AP", "Adjacency Precision");
-        statDescriptions.put("AR", "Adjacency Recall");
-        statDescriptions.put("OP", "Orientation (Arrow) precision");
-        statDescriptions.put("OR", "Orientation (Arrow) recall");
-        statDescriptions.put("McAdj", "Matthew's correlation coeffficient for adjacencies");
-        statDescriptions.put("McOr", "Matthew's correlation coefficient for arrow");
-        statDescriptions.put("F1Adj", "F1 statistic for adjacencies");
-        statDescriptions.put("F1Or", "F1 statistic for arrows");
-        statDescriptions.put("SHD", "Structural Hamming Distance");
-        statDescriptions.put("E", "Elapsed time in seconds");
-        statDescriptions.put("W", "Utility of algorithm (a weighted sum of the sorted indices of algorithms on statistics)");
+
+        for (String s : stats) {
+            statDescriptions.put(s, allStatDescriptions.get(s));
+        }
 
         this.out = out;
         double[][][][] allStats = calcStats(algorithms, statDescriptions, parameters, simulation);

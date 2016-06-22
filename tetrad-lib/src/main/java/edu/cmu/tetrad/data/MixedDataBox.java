@@ -21,44 +21,44 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
- * Stores a 2D array of float data. Note that the missing value marker for this
- * box is Float.NaN.
+ * Stores a 2D array of double continuousData. Note that the missing value marker for this
+ * box is -99.
  */
-public class FloatDataBox implements DataBox {
+public class MixedDataBox implements DataBox {
     static final long serialVersionUID = 23L;
 
-    /**
-     * The stored float data.
-     */
-    private final float[][] data;
+    private final List<Node> variables;
+    private final int numRows;
+    private double[][] continuousData;
+    private int[][] discreteData;
 
     /**
-     * Constructs an 2D float array consisting entirely of missing values (-99).
+     * The variables here are used only to determine which columns are discrete and which
+     * are continuous; bounds checking is not done.
      */
-    private FloatDataBox(int rows, int cols) {
-        this.data = new float[rows][cols];
+    public MixedDataBox(List<Node> variables, int numRows) {
+        this.variables = variables;
+        this.numRows = numRows;
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                data[i][j] = Float.NaN;
+        this.continuousData = new double[variables.size()][];
+        this.discreteData = new int[variables.size()][];
+
+        for (int j = 0; j < variables.size(); j++) {
+            if (variables.get(j) instanceof ContinuousVariable) {
+                continuousData[j] = new double[numRows];
+                Arrays.fill(continuousData[j], Double.NaN);
+            } else if (variables.get(j) instanceof DiscreteVariable) {
+                discreteData[j] = new int[numRows];
+                Arrays.fill(discreteData[j], -99);
             }
         }
-    }
-
-    /**
-     * Constructs a new data box using the given 2D float data array as data.
-     */
-    public FloatDataBox(float[][] data) {
-        int length = data[0].length;
-
-        for (float[] datum : data) {
-            if (datum.length != length) {
-                throw new IllegalArgumentException("All rows must have same length.");
-            }
-        }
-
-        this.data = data;
     }
 
     /**
@@ -69,32 +69,30 @@ public class FloatDataBox implements DataBox {
     }
 
     /**
-     * @return the number of rows in this data box.
+     * @return the number of rows in this continuousData box.
      */
     public int numRows() {
-        return data.length;
+        return numRows;
     }
 
     /**
-     * @return the number of columns in this data box.n
+     * @return the number of columns in this continuousData box.
      */
     public int numCols() {
-        return data[0].length;
+        return variables.size();
     }
 
     /**
      * Sets the value at the given row/column to the given Number value.
-     * The value used is number.floatValue().
+     * The value used is number.doubleValue().
      */
     public void set(int row, int col, Number value) {
-        if (value == null) {
-            synchronized (data) {
-                data[row][col] = Float.NaN;
-            }
+        if (continuousData[col] != null) {
+            continuousData[col][row] = value.doubleValue();
+        } else if (discreteData[col] != null) {
+            discreteData[col][row] = value.intValue();
         } else {
-            synchronized (data) {
-                data[row][col] = value.floatValue();
-            }
+            throw new IllegalArgumentException("Indices out of bounds or null value.");
         }
     }
 
@@ -103,20 +101,22 @@ public class FloatDataBox implements DataBox {
      * is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
-        float datum = data[row][col];
-
-        if (datum == Float.NaN) {
-            return null;
-        } else {
-            return datum;
+        if (continuousData[col] != null) {
+            double v = continuousData[col][row];
+            return v == Double.NaN ? null : v;
+        } else if (discreteData[col] != null) {
+            double v = discreteData[col][row];
+            return v == -99 ? null : v;
         }
+
+        throw new IllegalArgumentException("Indices out of range.");
     }
 
     /**
-     * @return a copy of this data box.
+     * @return a copy of this continuousData box.
      */
     public DataBox copy() {
-        FloatDataBox box = new FloatDataBox(numRows(), numCols());
+        MixedDataBox box = new MixedDataBox(variables, numRows());
 
         for (int i = 0; i < numRows(); i++) {
             for (int j = 0; j < numCols(); j++) {
@@ -128,7 +128,7 @@ public class FloatDataBox implements DataBox {
     }
 
     /**
-     * @return a DataBox of type FloatDataBox, but with the given dimensions.
+     * @return a DataBox of type DoubleDataBox, but with the given dimensions.
      */
     public DataBox like() {
         int[] rows = new int[numRows()];
@@ -140,9 +140,30 @@ public class FloatDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
+    public void addVariable(Node variable) {
+        variables.add(variable);
+
+        continuousData = Arrays.copyOf(continuousData, continuousData.length + 1);
+        discreteData = Arrays.copyOf(discreteData, discreteData.length + 1);
+
+        if (variable instanceof ContinuousVariable) {
+            continuousData[continuousData.length - 1] = new double[numRows];
+        } else if (variable instanceof DiscreteVariable) {
+            discreteData[discreteData.length - 1] = new int[numRows];
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
-        DataBox _dataBox = new FloatDataBox(rows.length, cols.length);
+        List<Node> newVars = new ArrayList<>();
+
+        for (int c : cols) {
+            newVars.add(variables.get(c));
+        }
+
+        DataBox _dataBox = new MixedDataBox(newVars, numRows);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
@@ -153,6 +174,5 @@ public class FloatDataBox implements DataBox {
         return _dataBox;
     }
 }
-
 
 

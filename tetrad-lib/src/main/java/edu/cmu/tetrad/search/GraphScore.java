@@ -192,11 +192,6 @@ public class GraphScore implements Score {
         return 0;
     }
 
-    @Override
-    public boolean isDiscrete() {
-        return false;
-    }
-
     public double getParameter1() {
         throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
     }

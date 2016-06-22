@@ -44,7 +44,7 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
         Discretizer discretizer = new Discretizer(continuousData);
 
         for (int i = 0; i < shuffledNodes.size() * parameters.get("percentDiscreteForMixedSimulation").doubleValue() * 0.01; i++) {
-            discretizer.equalCounts(shuffledNodes.get(i), parameters.get("numCategories").intValue());
+            discretizer.equalIntervals(shuffledNodes.get(i), parameters.get("numCategories").intValue());
         }
 
         this.dataSet = discretizer.discretize();
