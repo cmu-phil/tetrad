@@ -55,6 +55,19 @@ public class RunMixedComparison {
         parameters.put("fgsDepth", -1);
         parameters.put("percentDiscreteForMixedSimulation", 50);
 
+        List<String> stats = new ArrayList<>();
+        stats.add("AP");
+        stats.add("AR");
+        stats.add("OP");
+        stats.add("OR");
+        stats.add("McAdj");
+        stats.add("McOr");
+        stats.add("F1Adj");
+        stats.add("F1Or");
+        stats.add("SHD");
+        stats.add("E");
+        stats.add("W");
+
         Map<String, Double> statWeights = new LinkedHashMap<>();
         statWeights.put("AP", 2.0);
         statWeights.put("AR", 1.0);
@@ -105,7 +118,7 @@ public class RunMixedComparison {
             dir.mkdirs();
             File comparison = new File("comparison", baseFileName + ".txt");
             PrintStream out = new PrintStream(new FileOutputStream(comparison));
-            new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, simulation, out);
+            new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation, out);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -49,18 +49,6 @@ public class RunContinuousComparison {
         Map<String, Number> parameters = new LinkedHashMap<>();
         //        parameters.put("numCategories", 5);
 
-        Map<String, String> stats = new LinkedHashMap<>();
-        stats.put("AP", "Adjacency Precision");
-        stats.put("AR", "Adjacency Recall");
-        stats.put("OP", "Orientation (Arrow) precision");
-        stats.put("OR", "Orientation (Arrow) recall");
-        stats.put("McAdj", "Matthew's correlation coeffficient for adjacencies");
-        stats.put("McOr", "Matthew's correlation coefficient for arrow");
-        stats.put("F1Adj", "F1 statistic for adjacencies");
-        stats.put("F1Or", "F1 statistic for arrows");
-        stats.put("SHD", "Structural Hamming Distance");
-        stats.put("E", "Elapsed time in seconds");
-
         parameters.put("scaleFreeAlpha", .1);
         parameters.put("scaleFreeBeta", .8);
         parameters.put("scaleFreeDeltaIn", 3.0);
@@ -79,6 +67,19 @@ public class RunContinuousComparison {
         parameters.put("penaltyDiscount", 4);
         parameters.put("fgsDepth", -1);
         parameters.put("percentDiscreteForMixedSimulation", 0);
+
+        List<String> stats = new ArrayList<>();
+        stats.add("AP");
+        stats.add("AR");
+        stats.add("OP");
+        stats.add("OR");
+        stats.add("McAdj");
+        stats.add("McOr");
+        stats.add("F1Adj");
+        stats.add("F1Or");
+        stats.add("SHD");
+        stats.add("E");
+        stats.add("W");
 
         Map<String, Double> statWeights = new LinkedHashMap<>();
         statWeights.put("AP", 2.0);
@@ -153,7 +154,7 @@ public class RunContinuousComparison {
             dir.mkdirs();
             File comparison = new File("comparison", baseFileName + ".txt");
             PrintStream out = new PrintStream(new FileOutputStream(comparison));
-            new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, simulation, out);
+            new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation, out);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
