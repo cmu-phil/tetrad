@@ -24,10 +24,7 @@ package edu.cmu.tetrad.algcomparison.comparisons;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.Simulation;
-import edu.cmu.tetrad.algcomparison.continuous.pag.*;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
-import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
 
 import java.io.File;
@@ -134,7 +131,7 @@ public class RunContinuousComparison {
 
 //        PAG
         algorithms.add(new MixedFciWfgs());
-        algorithms.add(new MixedFci());
+        algorithms.add(new MixedFciLrt());
         algorithms.add(new MixedGfciMixedScore());
 
         String baseFileName = "Continuous";

@@ -129,21 +129,21 @@ public class MixedUtils {
             }
         }
 
-        MixedDataBox box = new MixedDataBox(mixVars, dsCont.getNumRows());
-
-        for (int i = 0; i < box.numRows(); i++) {
-            for (int j = 0; j < box.numCols(); j++) {
-                if (mixVars.get(j) instanceof ContinuousVariable) {
-                    box.set(i, j, dsCont.getDouble(i, j));
-                } else {
-                    box.set(i, j, (int) Math.round(dsCont.getDouble(i, j)));
-                }
-            }
-        }
-
-        return new BoxDataSet(box, mixVars);
+//        MixedDataBox box = new MixedDataBox(mixVars, dsCont.getNumRows());
 //
-//        return ColtDataSet.makeData(mixVars, dsCont.getDoubleData());
+//        for (int i = 0; i < box.numRows(); i++) {
+//            for (int j = 0; j < box.numCols(); j++) {
+//                if (mixVars.get(j) instanceof ContinuousVariable) {
+//                    box.set(i, j, dsCont.getDouble(i, j));
+//                } else {
+//                    box.set(i, j, (int) Math.round(dsCont.getDouble(i, j)));
+//                }
+//            }
+//        }
+
+//        return new BoxDataSet(box, mixVars);
+
+        return ColtDataSet.makeData(mixVars, dsCont.getDoubleData());
     }
 
     /**

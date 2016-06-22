@@ -26,7 +26,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.continuous.pag.*;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFci;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFciLrt;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFciWfgs;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfciMixedScore;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
@@ -127,9 +127,9 @@ public class RunContinuousComparison {
         algorithms.add(new MixedFgsCG());
         algorithms.add(new MixedWfgs());
         algorithms.add(new MixedCpcWfgs());
-        algorithms.add(new MixedPc());
-        algorithms.add(new MixedPcs());
-        algorithms.add(new MixedCpc());
+        algorithms.add(new MixedPcLrt());
+        algorithms.add(new MixedPcsLrt());
+        algorithms.add(new MixedCpcLrt());
 //        algorithms.add(new MixedMGMFgs());
 //        algorithms.add(new MixedMGMPc());
 //        algorithms.add(new MixedMGMCpc());
@@ -137,7 +137,7 @@ public class RunContinuousComparison {
 
 //        PAG
         algorithms.add(new MixedFciWfgs());
-        algorithms.add(new MixedFci());
+        algorithms.add(new MixedFciLrt());
         algorithms.add(new MixedGfciMixedScore());
 
         String baseFileName = "Continuous";

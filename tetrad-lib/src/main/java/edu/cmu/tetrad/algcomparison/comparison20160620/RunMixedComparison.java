@@ -89,13 +89,13 @@ public class RunMixedComparison {
         algorithms.add(new MixedFgsCG());
         algorithms.add(new MixedFgsMgm());
         algorithms.add(new MixedWfgs());
-        algorithms.add(new MixedPc());
+        algorithms.add(new MixedPcLrt());
         algorithms.add(new MixedPcWfgs());
         algorithms.add(new MixedPcWGfci());
-        algorithms.add(new MixedPcs());
+        algorithms.add(new MixedPcsLrt());
         algorithms.add(new MixedPcsMgm());
         algorithms.add(new MixedPcsWfgs());
-        algorithms.add(new MixedCpc());
+        algorithms.add(new MixedCpcLrt());
         algorithms.add(new MixedCpcMgm());
         algorithms.add(new MixedCpcWfgs());
         algorithms.add(new MixedCpcWGfci());
@@ -103,7 +103,7 @@ public class RunMixedComparison {
 
 //        PAG
         algorithms.add(new MixedFciWfgs());
-        algorithms.add(new MixedFci());
+        algorithms.add(new MixedFciLrt());
         algorithms.add(new MixedGfciMixedScore());
         algorithms.add(new MixedGfciCG());
 

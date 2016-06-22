@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.CombinationIterator;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.junit.Test;
@@ -211,17 +212,91 @@ public class ConditionalGaussianScore implements Score {
 
                 if (count > 0) {
                     l += count * (Math.log(count) - Math.log(r));
-                    l += (Math.log(r) - Math.log(N));
+                    l += Math.log(r) - Math.log(N);
                 }
             }
 
-
             lik += l;
-
             s++;
         }
 
-        int dof = s * t + s - 1;
+        int dof = s * t;
+
+        return new Ret(lik, dof);
+    }
+
+    private Ret getLikelihood2(DiscreteVariable target, List<DiscreteVariable> parents) {
+        if (parents.contains(target)) throw new IllegalArgumentException();
+        int p = target.getNumCategories();
+        int d = parents.size();
+        int targetCol = dataSet.getColumn(target);
+
+        int[] dims = new int[d];
+
+        for (int i = 0; i < d; i++) {
+            dims[i] = parents.get(i).getNumCategories();
+        }
+
+        CombinationIterator iterator = new CombinationIterator(dims);
+
+        int[] _cols = new int[d];
+        for (int i = 0; i < d; i++) _cols[i] = dataSet.getColumn(parents.get(i));
+
+        List<int[]> combs = new ArrayList<>();
+
+        while (iterator.hasNext()) {
+            combs.add(iterator.next());
+        }
+
+        List<List<Integer>> rows = new ArrayList<>();
+
+        for (int i = 0; i < combs.size(); i++) {
+            rows.add(new ArrayList<Integer>());
+        }
+
+        int[] values = new int[dims.length];
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < dims.length; j++) {
+                values[j] = discreteData[_cols[j]][i];
+            }
+
+            int rowIndex = getRowIndex(values, dims);
+            rows.get(rowIndex).add(i);
+        }
+
+        double lik = 0;
+        int N = dataSet.getNumRows();
+
+        for (int k = 0; k < rows.size(); k++) {
+            if (rows.get(k).isEmpty()) continue;
+
+            double[] counts = new double[p];
+
+            for (int row : rows.get(k)) {
+                int value = discreteData[targetCol][row];
+                counts[value]++;
+            }
+
+            int r = rows.get(k).size();
+            double l = 0;
+
+            for (int c = 0; c < p; c++) {
+                double count = counts[c];
+
+                if (count > 0) {
+                    l += count * (Math.log(count) - Math.log(N));
+                    l += Math.log(r) - Math.log(N);
+                }
+            }
+
+            lik += l;
+        }
+
+        int s = rows.size();
+        int t = p - 1;
+
+        double dof = s * t;
 
         return new Ret(lik, dof);
     }
@@ -314,87 +389,7 @@ public class ConditionalGaussianScore implements Score {
         int s = rows.size();
         int t = p * (p + 1) / 2;
 
-        double dof = s * t + s - 1;
-
-        return new Ret(lik, dof);
-    }
-
-    private Ret getLikelihood2(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
-        if (continuous.isEmpty()) throw new IllegalArgumentException();
-        int p = continuous.size();
-        int d = discrete.size();
-
-        int t = p * (p + 1) / 2;
-        int s = 0;
-
-        int N = dataSet.getNumRows();
-
-        // For each combination of values for the discrete guys extract a subset of the data.
-        List<Node> variables = dataSet.getVariables();
-
-        int[] cols = new int[p];
-        int[] dims = new int[d];
-
-        for (int i = 0; i < d; i++) {
-            dims[i] = discrete.get(i).getNumCategories();
-        }
-
-        for (int j = 0; j < p; j++) {
-            cols[j] = variables.indexOf(continuous.get(j));
-        }
-
-        CombinationIterator iterator = new CombinationIterator(dims);
-        int[] comb;
-
-        int[] _cols = new int[d];
-        for (int i = 0; i < d; i++) _cols[i] = dataSet.getColumn(discrete.get(i));
-        List<Double> logs = new ArrayList<>();
-
-        while (iterator.hasNext()) {
-            comb = iterator.next();
-            List<Integer> rows = new ArrayList<>();
-
-            ROWS:
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
-                for (int c = 0; c < comb.length; c++) {
-                    if (comb[c] != discreteData[_cols[c]][i]) {
-                        continue ROWS;
-                    }
-                }
-
-                rows.add(i);
-            }
-
-            if (rows.isEmpty()) continue;
-
-            TetradMatrix subset = new TetradMatrix(rows.size(), cols.length);
-
-            for (int i = 0; i < rows.size(); i++) {
-                for (int j = 0; j < cols.length; j++) {
-                    subset.set(i, j, continuousData[cols[j]][rows.get(i)]);
-                }
-            }
-
-            int n = rows.size();
-
-            if (n > p) {
-                TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
-                        true).getCovarianceMatrix());
-                double l = -0.5 * n * Math.log(Sigma.det()) - 0.5 * p * n * (1.0 + Math.log(2 * Math.PI));
-                l += Math.log(n / (double) N);
-                logs.add(l);
-            } else {
-                double l = -0.5 * n * Math.log(1.4) - 0.5 * p * n * (1.0 - Math.log(2 * Math.PI));
-                l += Math.log(n / (double) N);
-                logs.add(l);
-            }
-
-            s++;
-        }
-
-        double lik = logOfSum(logs);
-
-        double dof = s * t + s - 1;
+        double dof = s * t;
 
         return new Ret(lik, dof);
     }
@@ -485,46 +480,6 @@ public class ConditionalGaussianScore implements Score {
     @Override
     public int getMaxIndegree() {
         return (int) Math.ceil(Math.log(dataSet.getNumRows()));
-    }
-
-    // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
-    private double logOfSum(List<Double> logs) {
-
-        Collections.sort(logs, new Comparator<Double>() {
-            @Override
-            public int compare(Double o1, Double o2) {
-                return -Double.compare(o1, o2);
-            }
-        });
-
-        double sum = 0.0;
-        int N = logs.size() - 1;
-        double loga0 = logs.get(0);
-
-        for (int i = 1; i <= N; i++) {
-            sum += Math.exp(logs.get(i) - loga0);
-        }
-
-        sum += 1;
-
-        return loga0 + Math.log(sum);
-    }
-
-    @Test
-    public void test() {
-        double a = .9;
-        double b = .9;
-
-        double loga = Math.log(a);
-        double logb = Math.log(b);
-
-        List<Double> logs = new ArrayList<>();
-        logs.add(loga);
-        logs.add(logb);
-
-        double sum = logOfSum(logs);
-
-        System.out.println(sum);
     }
 
     public int getRowIndex(int[] values, int[] dims) {

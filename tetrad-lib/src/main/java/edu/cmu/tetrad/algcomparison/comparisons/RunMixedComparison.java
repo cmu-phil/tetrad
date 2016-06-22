@@ -27,11 +27,6 @@ import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.MixedSemThenDiscretizeHalfSimulation;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -47,13 +42,13 @@ import java.util.Map;
 public class RunMixedComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numCategories", 4);
+        parameters.put("numCategories", 3);
         parameters.put("mgmParam1", 0.1);
         parameters.put("mgmParam2", 0.1);
         parameters.put("mgmParam3", 0.1);
         parameters.put("numLatents", 0);
         parameters.put("numRuns", 1);
-        parameters.put("sampleSize", 1000);
+        parameters.put("sampleSize", 900);
         parameters.put("numMeasures", 30);
         parameters.put("numEdges", 30);
         parameters.put("penaltyDiscount", 4);
@@ -94,13 +89,15 @@ public class RunMixedComparison {
         algorithms.add(new MixedFgsCG());
 //        algorithms.add(new MixedFgsMgm());
 //        algorithms.add(new MixedWfgs());
-//        algorithms.add(new MixedPc());
+//        algorithms.add(new MixedPcLrt());
+        algorithms.add(new MixedPcCg());
 //        algorithms.add(new MixedPcWfgs());
 //        algorithms.add(new MixedPcWGfci());
-//        algorithms.add(new MixedPcs());
+//        algorithms.add(new MixedPcsLrt());
 //        algorithms.add(new MixedPcsMgm());
 //        algorithms.add(new MixedPcsWfgs());
-//        algorithms.add(new MixedCpc());
+//        algorithms.add(new MixedCpcLrt());
+        algorithms.add(new MixedCpcCg());
 //        algorithms.add(new MixedCpcMgm());
 //        algorithms.add(new MixedCpcWfgs());
 //        algorithms.add(new MixedCpcWGfci());
@@ -108,7 +105,7 @@ public class RunMixedComparison {
 
 //        PAG
 //        algorithms.add(new MixedFciWfgs());
-//        algorithms.add(new MixedFci());
+//        algorithms.add(new MixedFciLrt());
 //        algorithms.add(new MixedGfciMixedScore());
 //        algorithms.add(new MixedGfciCG());
 
