@@ -55,10 +55,23 @@ public class RunMixedComparison {
         parameters.put("numRuns", 5);
         parameters.put("sampleSize", 1000);
         parameters.put("numMeasures", 30);
-        parameters.put("numEdges", 30);
+        parameters.put("numEdges", 60);
         parameters.put("penaltyDiscount", 4);
         parameters.put("fgsDepth", -1);
         parameters.put("percentDiscreteForMixedSimulation", 50);
+
+        List<String> stats = new ArrayList<>();
+        stats.add("AP");
+        stats.add("AR");
+        stats.add("OP");
+        stats.add("OR");
+        stats.add("McAdj");
+        stats.add("McOr");
+        stats.add("F1Adj");
+        stats.add("F1Or");
+        stats.add("SHD");
+        stats.add("E");
+        stats.add("W");
 
         Map<String, Double> statWeights = new LinkedHashMap<>();
         statWeights.put("AP", 2.0);
@@ -75,9 +88,9 @@ public class RunMixedComparison {
         List<Algorithm> algorithms = new ArrayList<>();
 
         // Pattern
-//        algorithms.add(new MixedFgsSem());
-//        algorithms.add(new MixedFgsBdeu());
-//        algorithms.add(new MixedFgsMS());
+        algorithms.add(new MixedFgsSem());
+        algorithms.add(new MixedFgsBdeu());
+        algorithms.add(new MixedFgsMS());
         algorithms.add(new MixedFgsCG());
 //        algorithms.add(new MixedFgsMgm());
 //        algorithms.add(new MixedWfgs());
@@ -110,7 +123,7 @@ public class RunMixedComparison {
             dir.mkdirs();
             File comparison = new File("comparison", baseFileName + ".txt");
             PrintStream out = new PrintStream(new FileOutputStream(comparison));
-            new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, simulation, out);
+            new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation, out);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
