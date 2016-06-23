@@ -42,13 +42,13 @@ import java.util.Map;
 public class RunMixedComparison {
     public static void main(String... args) {
         Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numCategories", 3);
+        parameters.put("numCategories", 2);
         parameters.put("mgmParam1", 0.1);
         parameters.put("mgmParam2", 0.1);
         parameters.put("mgmParam3", 0.1);
         parameters.put("numLatents", 0);
         parameters.put("numRuns", 1);
-        parameters.put("sampleSize", 900);
+        parameters.put("sampleSize", 1000);
         parameters.put("numMeasures", 30);
         parameters.put("numEdges", 30);
         parameters.put("penaltyDiscount", 4);
@@ -90,17 +90,20 @@ public class RunMixedComparison {
 //        algorithms.add(new MixedFgsMgm());
 //        algorithms.add(new MixedWfgs());
 //        algorithms.add(new MixedPcLrt());
-        algorithms.add(new MixedPcCg());
+//        algorithms.add(new MixedPcCg());
 //        algorithms.add(new MixedPcWfgs());
 //        algorithms.add(new MixedPcWGfci());
 //        algorithms.add(new MixedPcsLrt());
+//        algorithms.add(new MixedPcMlrw());
 //        algorithms.add(new MixedPcsMgm());
 //        algorithms.add(new MixedPcsWfgs());
+//        algorithms.add(new MixedPcsMlrw());
 //        algorithms.add(new MixedCpcLrt());
-        algorithms.add(new MixedCpcCg());
+//        algorithms.add(new MixedCpcCg());
 //        algorithms.add(new MixedCpcMgm());
 //        algorithms.add(new MixedCpcWfgs());
 //        algorithms.add(new MixedCpcWGfci());
+//        algorithms.add(new MixedCpcMlrw());
 //        algorithms.add(new MixedWgfci());
 
 //        PAG
@@ -108,6 +111,8 @@ public class RunMixedComparison {
 //        algorithms.add(new MixedFciLrt());
 //        algorithms.add(new MixedGfciMixedScore());
 //        algorithms.add(new MixedGfciCG());
+//        algorithms.add(new MixedFciCG());
+//        algorithms.add(new MixedFciMlrw());
 
         Simulation simulation = new MixedLeeHastieSimulation();
 //        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation();
