@@ -34,4 +34,9 @@ public class MixedCpcMgm implements Algorithm {
     public String getDescription() {
         return "CPC, using the Mixed LRT test, with the output of MGM as an intial graph";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

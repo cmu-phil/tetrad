@@ -37,4 +37,9 @@ public class MixedFgsMS implements Algorithm {
     public String getDescription() {
         return "FGS using a mixed BIC score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

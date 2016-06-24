@@ -35,4 +35,10 @@ public class ContinuousFgsPc implements Algorithm {
     public String getDescription() {
         return "PC using the graph from FGS as an initial graph, SEM BIC used throughout";
     }
+
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
 }

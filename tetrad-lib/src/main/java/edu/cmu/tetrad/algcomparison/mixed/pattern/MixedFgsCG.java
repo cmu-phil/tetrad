@@ -32,4 +32,9 @@ public class MixedFgsCG implements Algorithm {
     public String getDescription() {
         return "FGS using the conditional Gaussian BIC score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

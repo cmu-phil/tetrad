@@ -25,6 +25,11 @@ public class MixedCpcMlrw implements Algorithm {
 
 
     public String getDescription() {
-        return "CPC using the Multinomial Logistic Regresion Wald Test";
+        return "CPC using the Multinomial Logistic Regression Wald Test";
+    }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
     }
 }

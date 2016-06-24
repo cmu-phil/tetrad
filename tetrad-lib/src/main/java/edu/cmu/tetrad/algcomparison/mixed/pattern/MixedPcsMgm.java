@@ -37,4 +37,9 @@ public class MixedPcsMgm implements Algorithm {
     public String getDescription() {
         return "PC-Stable, using the Mixed LRT test, with the output of MGM as an intial graph";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

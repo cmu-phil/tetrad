@@ -66,4 +66,9 @@ public class MixedFgsMgm implements Algorithm {
     public String getDescription() {
         return "FGS, with SEM BIC score, with output of MGM as an initial graph";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

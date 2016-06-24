@@ -24,4 +24,9 @@ public class DiscretePcs implements Algorithm {
     public String getDescription() {
         return "PC-Stable using the Chi Square test";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Discrete;
+    }
 }

@@ -72,4 +72,9 @@ public class MixedFgsBdeu implements Algorithm {
         }
         return p2;
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

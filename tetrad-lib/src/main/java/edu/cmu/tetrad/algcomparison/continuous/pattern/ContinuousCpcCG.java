@@ -26,4 +26,10 @@ public class ContinuousCpcCG implements Algorithm {
     public String getDescription() {
         return "PC using the Conditional Gaussian score";
     }
+
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
 }

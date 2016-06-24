@@ -27,4 +27,9 @@ public class DiscreteFgsBdeu implements Algorithm {
     public String getDescription() {
         return "FGS using the BDeu score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Discrete;
+    }
 }

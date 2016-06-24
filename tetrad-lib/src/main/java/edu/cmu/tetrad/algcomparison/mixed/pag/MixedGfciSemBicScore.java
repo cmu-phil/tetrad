@@ -31,4 +31,9 @@ public class MixedGfciSemBicScore implements Algorithm {
     public String getDescription() {
         return "GFCI using the SEM BIC score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

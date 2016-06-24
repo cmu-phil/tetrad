@@ -27,4 +27,9 @@ public class DiscretePcChiSquare implements Algorithm {
     public String getDescription() {
         return "PC using the G Square test";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Discrete;
+    }
 }

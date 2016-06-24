@@ -24,4 +24,9 @@ public class MixedPcCg implements Algorithm {
     public String getDescription() {
         return "PC with the conditional Gaussian score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

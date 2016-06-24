@@ -29,4 +29,9 @@ public class MixedPcWGfci implements Algorithm {
     public String getDescription() {
         return "PC with the mixed LRT test, using the output of WGFCI as an intial graph";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

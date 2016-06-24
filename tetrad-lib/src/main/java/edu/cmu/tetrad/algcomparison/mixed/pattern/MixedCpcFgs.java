@@ -32,4 +32,9 @@ public class MixedCpcFgs implements Algorithm {
     public String getDescription() {
         return "CPC with the mixed LRT test, using the output of FGS as input, treating all discrete as continuous";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

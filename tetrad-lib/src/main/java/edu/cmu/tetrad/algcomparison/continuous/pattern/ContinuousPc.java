@@ -23,4 +23,11 @@ public class ContinuousPc implements Algorithm {
 
     public String getDescription() {
         return "PC using the Fisher Z test";
-    }}
+    }
+
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
+}

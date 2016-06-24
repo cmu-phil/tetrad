@@ -24,4 +24,11 @@ public class ContinuousRfci implements Algorithm {
 
     public String getDescription() {
         return "RFCI using the Fisher Z test.";
-    }}
+    }
+
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
+}

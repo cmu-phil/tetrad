@@ -24,4 +24,9 @@ public class DiscreteCpcGSquare implements Algorithm {
     public String getDescription() {
         return "CPC using the G Square test";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Discrete;
+    }
 }

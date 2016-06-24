@@ -28,4 +28,9 @@ public class ContinuousMmhc implements Algorithm {
     public String getDescription() {
         return "MMHC using the SEM BIC score. (Not optimized.)";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
 }

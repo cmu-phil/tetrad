@@ -27,4 +27,9 @@ public class MixedPcsLrt implements Algorithm {
     public String getDescription() {
         return "PC-Stable using the Mixed LRT test";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

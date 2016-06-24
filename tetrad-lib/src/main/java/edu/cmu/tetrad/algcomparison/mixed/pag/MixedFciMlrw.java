@@ -30,4 +30,9 @@ public class MixedFciMlrw implements Algorithm {
     public String getDescription() {
         return "FCI using the Multinomial Logistic Regression Wald Test";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

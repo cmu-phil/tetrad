@@ -26,4 +26,11 @@ public class ContinuousFgs implements Algorithm {
 
     public String getDescription() {
         return "FGS using the SEM BIC score";
-    }}
+    }
+
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
+}

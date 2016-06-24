@@ -26,4 +26,10 @@ public class ContinuousCfci implements Algorithm {
     public String getDescription() {
         return "CFCI, using the Fisher Z test.";
     }
+
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
 }

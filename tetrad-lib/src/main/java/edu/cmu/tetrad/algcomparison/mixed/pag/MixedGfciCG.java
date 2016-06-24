@@ -26,4 +26,9 @@ public class MixedGfciCG implements Algorithm {
     public String getDescription() {
         return "GFCI using a conditional Gaussian BIC score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

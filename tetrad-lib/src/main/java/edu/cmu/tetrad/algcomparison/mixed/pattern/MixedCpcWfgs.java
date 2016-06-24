@@ -29,4 +29,9 @@ public class MixedCpcWfgs implements Algorithm {
     public String getDescription() {
         return "CPC with the mixed LRT test, using the output of WFGS as an intial graph";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

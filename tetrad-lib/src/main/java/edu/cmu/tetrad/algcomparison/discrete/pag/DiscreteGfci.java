@@ -26,4 +26,9 @@ public class DiscreteGfci implements Algorithm {
     public String getDescription() {
         return "GFCI using the BDeu score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Discrete;
+    }
 }

@@ -26,4 +26,10 @@ public class ContinuousPcSemBic implements Algorithm {
 
     public String getDescription() {
         return "PC using the SEM BIC score";
-    }}
+    }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
+}

@@ -25,4 +25,11 @@ public class DiscreteCcd implements Algorithm {
 
     public String getDescription() {
         return "CCD using the BDeu score (incorrect)";
-    }}
+    }
+
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Discrete;
+    }
+}

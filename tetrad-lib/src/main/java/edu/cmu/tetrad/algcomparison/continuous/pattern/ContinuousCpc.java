@@ -23,4 +23,11 @@ public class ContinuousCpc implements Algorithm {
 
     public String getDescription() {
         return "CPC using the Fisher Z test";
-    }}
+    }
+
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Continuous;
+    }
+}

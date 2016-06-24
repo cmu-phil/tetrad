@@ -26,5 +26,11 @@ public class MixedCpcCg implements Algorithm {
     public String getDescription() {
         return "CPC with the conditional Gaussian score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
+
 }
 

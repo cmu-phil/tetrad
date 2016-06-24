@@ -50,7 +50,7 @@ public class RunMixedComparison {
         parameters.put("numRuns", 1);
         parameters.put("sampleSize", 1000);
         parameters.put("numMeasures", 30);
-        parameters.put("numEdges", 30);
+        parameters.put("numEdges", 60);
         parameters.put("penaltyDiscount", 4);
         parameters.put("fgsDepth", -1);
         parameters.put("percentDiscreteForMixedSimulation", 50);
@@ -83,28 +83,38 @@ public class RunMixedComparison {
         List<Algorithm> algorithms = new ArrayList<>();
 
         // Pattern
-//        algorithms.add(new MixedFgsSem());
-//        algorithms.add(new MixedFgsBdeu());
-//        algorithms.add(new MixedFgsMS());
+        algorithms.add(new MixedFgsSem());
+        algorithms.add(new MixedFgsBdeu());
+
+        algorithms.add(new MixedWfgs());
+        algorithms.add(new MixedWgfci());
+
+        algorithms.add(new MixedCpcWfgs());
+        algorithms.add(new MixedPcWGfci());
+
+        algorithms.add(new MixedCpcWGfci());
+
+        algorithms.add(new MixedFgsMS());
+        algorithms.add(new MixedPcWfgs());
+        algorithms.add(new MixedPcsWfgs());
+
         algorithms.add(new MixedFgsCG());
-//        algorithms.add(new MixedFgsMgm());
-//        algorithms.add(new MixedWfgs());
-//        algorithms.add(new MixedPcLrt());
-//        algorithms.add(new MixedPcCg());
-//        algorithms.add(new MixedPcWfgs());
-//        algorithms.add(new MixedPcWGfci());
-//        algorithms.add(new MixedPcsLrt());
-//        algorithms.add(new MixedPcMlrw());
-//        algorithms.add(new MixedPcsMgm());
-//        algorithms.add(new MixedPcsWfgs());
-//        algorithms.add(new MixedPcsMlrw());
-//        algorithms.add(new MixedCpcLrt());
-//        algorithms.add(new MixedCpcCg());
-//        algorithms.add(new MixedCpcMgm());
-//        algorithms.add(new MixedCpcWfgs());
-//        algorithms.add(new MixedCpcWGfci());
-//        algorithms.add(new MixedCpcMlrw());
-//        algorithms.add(new MixedWgfci());
+        algorithms.add(new MixedPcCg());
+        algorithms.add(new MixedCpcCg());
+
+
+        algorithms.add(new MixedFgsMgm());
+        algorithms.add(new MixedPcsMgm());
+        algorithms.add(new MixedCpcMgm());
+
+        algorithms.add(new MixedPcMlrw());
+        algorithms.add(new MixedCpcMlrw());
+        algorithms.add(new MixedPcsMlrw());
+
+        algorithms.add(new MixedPcLrt());
+        algorithms.add(new MixedPcsLrt());
+        algorithms.add(new MixedCpcLrt());
+
 
 //        PAG
 //        algorithms.add(new MixedFciWfgs());

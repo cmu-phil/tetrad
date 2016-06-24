@@ -26,4 +26,9 @@ public class MixedWfgs implements Algorithm {
     public String getDescription() {
         return "WFGS using the SEM BIC score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

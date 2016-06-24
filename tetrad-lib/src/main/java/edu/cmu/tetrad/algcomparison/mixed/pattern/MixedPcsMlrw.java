@@ -30,4 +30,9 @@ public class MixedPcsMlrw implements Algorithm {
     public String getDescription() {
         return "PCS using the Multinomial Logistic Regression Wald Test";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

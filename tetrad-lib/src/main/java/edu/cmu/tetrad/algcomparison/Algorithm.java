@@ -9,9 +9,13 @@ import java.util.Map;
  * Created by jdramsey on 6/4/16.
  */
 public interface Algorithm {
+    public enum DataType {Continuous, Discrete, Mixed}
+
     Graph search(DataSet dataSet, Map<String, Number> parameters);
 
     Graph getComparisonGraph(Graph dag);
 
     String getDescription();
+
+    DataType getDataType();
 }

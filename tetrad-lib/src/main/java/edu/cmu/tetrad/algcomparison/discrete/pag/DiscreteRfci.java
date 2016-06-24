@@ -26,5 +26,10 @@ public class DiscreteRfci implements Algorithm {
         return "RFCI using the Chi Square test.";
     }
 
+    @Override
+    public DataType getDataType() {
+        return DataType.Discrete;
+    }
+
 
 }

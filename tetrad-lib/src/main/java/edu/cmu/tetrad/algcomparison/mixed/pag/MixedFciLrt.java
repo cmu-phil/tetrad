@@ -28,4 +28,9 @@ public class MixedFciLrt implements Algorithm {
     public String getDescription() {
         return "FCI using the Mixed LRT test";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

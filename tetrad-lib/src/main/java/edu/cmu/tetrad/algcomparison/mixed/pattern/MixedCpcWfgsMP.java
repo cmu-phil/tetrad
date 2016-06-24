@@ -56,4 +56,9 @@ public class MixedCpcWfgsMP implements Algorithm {
     public String getDescription() {
         return "CPC with the mixed LRT test, using the output of WFGS as an intial graph, marrying parents of WFGS";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

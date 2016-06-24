@@ -27,4 +27,9 @@ public class DiscreteFgsBic implements Algorithm {
     public String getDescription() {
         return "FGS using the BIC score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Discrete;
+    }
 }

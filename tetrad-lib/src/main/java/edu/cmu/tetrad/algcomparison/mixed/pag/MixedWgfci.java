@@ -26,4 +26,9 @@ public class MixedWgfci implements Algorithm {
     public String getDescription() {
         return "WGFCI using the SEM BIC score (oriented assuming no latents)";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

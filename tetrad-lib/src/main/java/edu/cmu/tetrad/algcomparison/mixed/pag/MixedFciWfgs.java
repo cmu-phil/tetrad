@@ -28,4 +28,9 @@ public class MixedFciWfgs implements Algorithm {
     public String getDescription() {
         return "FCI, using the Mixed LRT test, using the output of WFGS as an intial graph";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

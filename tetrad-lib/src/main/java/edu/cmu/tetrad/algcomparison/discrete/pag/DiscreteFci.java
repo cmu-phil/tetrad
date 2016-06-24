@@ -25,4 +25,9 @@ public class DiscreteFci implements Algorithm {
     public String getDescription() {
         return "FCI using the Chi Square test.";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Discrete;
+    }
 }

@@ -27,4 +27,9 @@ public class MixedCpcLrt implements Algorithm {
     public String getDescription() {
         return "CPC using the Mixed LRT test";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

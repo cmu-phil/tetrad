@@ -25,4 +25,9 @@ public class MixedGfciMixedScore implements Algorithm {
     public String getDescription() {
         return "GFCI using the Mixed BIC score";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }

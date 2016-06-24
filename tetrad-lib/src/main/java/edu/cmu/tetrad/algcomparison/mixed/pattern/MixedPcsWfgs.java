@@ -29,4 +29,9 @@ public class MixedPcsWfgs implements Algorithm {
     public String getDescription() {
         return "PC-Stable with the mixed LRT test, using the output of WFGS as an intial graph";
     }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
 }
