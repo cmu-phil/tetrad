@@ -10,10 +10,10 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class ContinuousFci implements Algorithm {
+public class ContinuousRfciFz implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         IndependenceTest test = new IndTestFisherZ(dataSet, parameters.get("alpha").doubleValue());
-        Fci pc = new Fci(test);
+        Rfci pc = new Rfci(test);
         return pc.search();
     }
 
@@ -23,7 +23,7 @@ public class ContinuousFci implements Algorithm {
     }
 
     public String getDescription() {
-        return "FCI using the Fisher Z test.";
+        return "RFCI using the Fisher Z test.";
     }
 
 

@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.continuous.pag;
+package edu.cmu.tetrad.algcomparison.discrete.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.DataSet;
@@ -10,25 +10,23 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class ContinuousRfci implements Algorithm {
+public class DiscretePcsGSquare implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-        IndependenceTest test = new IndTestFisherZ(dataSet, parameters.get("alpha").doubleValue());
-        Rfci pc = new Rfci(test);
+        IndependenceTest test = new IndTestGSquare(dataSet, parameters.get("alpha").doubleValue());
+        PcStable pc = new PcStable(test);
         return pc.search();
     }
 
-    @Override
     public Graph getComparisonGraph(Graph dag) {
-        return new DagToPag(dag).convert();
+        return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {
-        return "RFCI using the Fisher Z test.";
+        return "PC using the G Square test";
     }
-
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Discrete;
     }
 }

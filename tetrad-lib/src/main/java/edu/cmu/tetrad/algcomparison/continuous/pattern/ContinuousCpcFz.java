@@ -10,10 +10,10 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class ContinuousPc implements Algorithm {
+public class ContinuousCpcFz implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         IndependenceTest test = new IndTestFisherZ(dataSet, parameters.get("alpha").doubleValue());
-        Pc pc = new Pc(test);
+        Cpc pc = new Cpc(test);
         return pc.search();
     }
 
@@ -22,7 +22,7 @@ public class ContinuousPc implements Algorithm {
     }
 
     public String getDescription() {
-        return "PC using the Fisher Z test";
+        return "CPC using the Fisher Z test";
     }
 
 

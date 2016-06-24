@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.discrete.pattern;
+package edu.cmu.tetrad.algcomparison.discrete.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.DataSet;
@@ -10,19 +10,20 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class DiscretePcs implements Algorithm {
+public class DiscreteFciCs implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         IndependenceTest test = new IndTestChiSquare(dataSet, parameters.get("alpha").doubleValue());
-        PcStable pc = new PcStable(test);
+        Fci pc = new Fci(test);
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph dag) {
-        return SearchGraphUtils.patternForDag(dag);
+        return new DagToPag(dag).convert();
     }
 
     public String getDescription() {
-        return "PC-Stable using the Chi Square test";
+        return "FCI using the Chi Square test.";
     }
 
     @Override

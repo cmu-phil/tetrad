@@ -1,23 +1,20 @@
-package edu.cmu.tetrad.algcomparison.mixed.pattern;
+package edu.cmu.tetrad.algcomparison.continuous.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.WFgs;
+import edu.cmu.tetrad.search.*;
 
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedWfgs
-        implements Algorithm {
+public class ContinuousPcFz implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-        WFgs fgs = new WFgs(dataSet);
-        fgs.setDepth(parameters.get("fgsDepth").intValue());
-        fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        return fgs.search();
+        IndependenceTest test = new IndTestFisherZ(dataSet, parameters.get("alpha").doubleValue());
+        Pc pc = new Pc(test);
+        return pc.search();
     }
 
     public Graph getComparisonGraph(Graph dag) {
@@ -25,11 +22,12 @@ public class MixedWfgs
     }
 
     public String getDescription() {
-        return "WFGS using the SEM BIC score";
+        return "PC using the Fisher Z test";
     }
+
 
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Continuous;
     }
 }

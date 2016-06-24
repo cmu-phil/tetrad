@@ -1,23 +1,23 @@
-package edu.cmu.tetrad.algcomparison.mixed.pattern;
+package edu.cmu.tetrad.algcomparison.discrete.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.IndTestChiSquare;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.WFgs;
 
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedWfgs
-        implements Algorithm {
+public class DiscretePcsChiSquare implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-        WFgs fgs = new WFgs(dataSet);
-        fgs.setDepth(parameters.get("fgsDepth").intValue());
-        fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        return fgs.search();
+        IndependenceTest test = new IndTestChiSquare(dataSet, parameters.get("alpha").doubleValue());
+        Pc pc = new Pc(test);
+        return pc.search();
     }
 
     public Graph getComparisonGraph(Graph dag) {
@@ -25,11 +25,11 @@ public class MixedWfgs
     }
 
     public String getDescription() {
-        return "WFGS using the SEM BIC score";
+        return "PC using the Ghi Square test";
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Discrete;
     }
 }

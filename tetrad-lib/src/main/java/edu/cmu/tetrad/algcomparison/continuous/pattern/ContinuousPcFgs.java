@@ -11,17 +11,14 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class ContinuousFgsCpc implements Algorithm {
+public class ContinuousPcFgs implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(ds));
         score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
         Fgs fgs = new Fgs(score);
-        fgs.setDepth(parameters.get("fgsDepth").intValue());
-        Graph g =  fgs.search();
+        Graph g = fgs.search();
         IndependenceTest test = new IndTestScore(score);
-
-//        IndependenceTest test = new IndTestFisherZ(ds, parameters.get("alpha").doubleValue());
-        Cpc pc = new Cpc(test);
+        Pc pc = new Pc(test);
         pc.setInitialGraph(g);
         pc.setDepth(parameters.get("depth").intValue());
         return pc.search();
@@ -33,7 +30,7 @@ public class ContinuousFgsCpc implements Algorithm {
     }
 
     public String getDescription() {
-        return "CPC using the graph from FGS as an initial graph, SEM BIC used throughout";
+        return "PC using the graph from FGS as an initial graph, SEM BIC used throughout";
     }
 
 

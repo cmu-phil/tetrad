@@ -93,11 +93,25 @@ public class Comparison {
     }
 
     public void testBestAlgorithms(Map<String, Number> _parameters, Map<String, Double> statWeights,
-                                   List<Algorithm> algorithms, List<String> stats,
-                                   Simulation simulation, PrintStream out) {
+                                   List<Algorithm> allAlgorithms, List<String> stats,
+                                   Simulation simulation, PrintStream out, Algorithm.DataType dataType) {
         if (statWeights.keySet().contains("W")) {
             throw new IllegalArgumentException("The utility function may not refer to W.");
 
+        }
+
+        // Only consider the algorithms for the given data type. Mixed data types can go either way.
+        // MGM algorithms won't run on continuous data or discrete data.
+        List<Algorithm> algorithms = new ArrayList<>();
+
+        for (Algorithm algorithm : allAlgorithms) {
+            if (algorithm.getDescription().contains("MGM") && algorithm.getDataType() != Algorithm.DataType.Mixed) {
+                continue;
+            }
+
+            if (algorithm.getDataType() == dataType || algorithm.getDataType() == Algorithm.DataType.Mixed) {
+                algorithms.add(algorithm);
+            }
         }
 
         Map<String, Number> parameters = new LinkedHashMap<>();
@@ -268,8 +282,14 @@ public class Comparison {
                 System.out.println((t + 1) + ". " + algorithms.get(t).getDescription());
 
                 long start = System.currentTimeMillis();
+                Graph out;
 
-                Graph out = algorithms.get(t).search(data, parameters);
+                try {
+                    out = algorithms.get(t).search(data, parameters);
+                } catch (Exception e) {
+                    System.out.println("Could not run " + algorithms.get(t).getDescription());
+                    continue;
+                }
 
                 long stop = System.currentTimeMillis();
 

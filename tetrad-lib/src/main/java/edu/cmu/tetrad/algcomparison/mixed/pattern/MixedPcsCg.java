@@ -10,14 +10,10 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedPcsWfgs implements Algorithm {
+public class MixedPcsCg implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
-        WFgs fgs = new WFgs(ds);
-        fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        Graph g =  fgs.search();
-        IndependenceTest test = new IndTestMixedLrt(ds, parameters.get("alpha").doubleValue());
+        IndependenceTest test = new IndTestScore(new ConditionalGaussianScore(ds));
         PcStable pc = new PcStable(test);
-        pc.setInitialGraph(g);
         return pc.search();
     }
 
@@ -26,7 +22,7 @@ public class MixedPcsWfgs implements Algorithm {
     }
 
     public String getDescription() {
-        return "CPC with the mixed LRT test, using the output of WFGS as an intial graph";
+        return "PC with the conditional Gaussian score";
     }
 
     @Override

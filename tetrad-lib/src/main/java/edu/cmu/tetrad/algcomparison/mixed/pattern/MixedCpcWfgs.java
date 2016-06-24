@@ -13,7 +13,6 @@ import java.util.Map;
 public class MixedCpcWfgs implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
         WFgs fgs = new WFgs(ds);
-//        fgs.setDepth(parameters.get("fgsDepth").intValue());
         fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
         Graph g =  fgs.search();
         IndependenceTest test = new IndTestMixedLrt(ds, parameters.get("alpha").doubleValue());

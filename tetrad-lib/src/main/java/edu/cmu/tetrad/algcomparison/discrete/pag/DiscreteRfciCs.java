@@ -10,10 +10,10 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class DiscreteFci implements Algorithm {
+public class DiscreteRfciCs implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         IndependenceTest test = new IndTestChiSquare(dataSet, parameters.get("alpha").doubleValue());
-        Fci pc = new Fci(test);
+        Rfci pc = new Rfci(test);
         return pc.search();
     }
 
@@ -23,11 +23,13 @@ public class DiscreteFci implements Algorithm {
     }
 
     public String getDescription() {
-        return "FCI using the Chi Square test.";
+        return "RFCI using the Chi Square test.";
     }
 
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
+
+
 }
