@@ -95,6 +95,8 @@ public class Comparison {
     public void testBestAlgorithms(Map<String, Number> _parameters, Map<String, Double> statWeights,
                                    List<Algorithm> allAlgorithms, List<String> stats,
                                    Simulation simulation, PrintStream out, Algorithm.DataType dataType) {
+        out.println(new Date());
+
         if (statWeights.keySet().contains("W")) {
             throw new IllegalArgumentException("The utility function may not refer to W.");
 
@@ -238,11 +240,11 @@ public class Comparison {
             }
         }
 
-        printStats(statTables, statDescriptions, Mode.Average, newOrder, utilities);
+        printStats(statTables, statDescriptions, Mode.Average, newOrder);
 
         statTables = calcStatTables(allStats, Mode.StandardDeviation, numTables, numAlgorithms, numStats);
 
-        printStats(statTables, statDescriptions, Mode.StandardDeviation, newOrder, utilities);
+        printStats(statTables, statDescriptions, Mode.StandardDeviation, newOrder);
 
         statTables = calcStatTables(allStats, Mode.WorstCase, numTables, numAlgorithms, numStats);
 
@@ -253,7 +255,7 @@ public class Comparison {
             }
         }
 
-        printStats(statTables, statDescriptions, Mode.WorstCase, newOrder, utilities);
+        printStats(statTables, statDescriptions, Mode.WorstCase, newOrder);
 
         out.close();
     }
@@ -285,7 +287,8 @@ public class Comparison {
                 Graph out;
 
                 try {
-                    out = algorithms.get(t).search(data, parameters);
+                    DataSet copy = data.copy();
+                    out = algorithms.get(t).search(copy, parameters);
                 } catch (Exception e) {
                     System.out.println("Could not run " + algorithms.get(t).getDescription());
                     continue;
@@ -394,7 +397,7 @@ public class Comparison {
     }
 
     private void printStats(double[][][] statTables, Map<String, String> statDescriptions,
-                            Mode mode, int[] newOrder, double[] utilities) {
+                            Mode mode, int[] newOrder) {
 
         if (mode == Mode.Average) {
             out.println("AVERAGE STATISTICS");

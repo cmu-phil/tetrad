@@ -30,7 +30,7 @@ public class MixedFgsCG implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS using the conditional Gaussian BIC score";
+        return "FGS with the conditional Gaussian score";
     }
 
     @Override

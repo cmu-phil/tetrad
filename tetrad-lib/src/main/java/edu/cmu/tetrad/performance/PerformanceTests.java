@@ -800,7 +800,7 @@ public class PerformanceTests {
 
             System.out.println(new Date());
 
-//            System.out.println("Replacing nodes");
+//            System.out.println("Replacing nodes");d
 //
 //            estPattern = GraphUtils.replaceNodes(estPattern, dag.getNodes());
 

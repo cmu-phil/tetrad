@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.CombinationIterator;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
@@ -100,221 +99,73 @@ public class ConditionalGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        Node target = variables.get(i);
+        Node b = variables.get(i);
 
-        List<ContinuousVariable> denominatorContinuous = new ArrayList<>();
-        List<DiscreteVariable> denominatorDiscrete = new ArrayList<>();
+        List<ContinuousVariable> X = new ArrayList<>();
+        List<DiscreteVariable> A = new ArrayList<>();
 
         for (int parent1 : parents) {
             Node parent = variables.get(parent1);
 
             if (parent instanceof ContinuousVariable) {
-                denominatorContinuous.add((ContinuousVariable) parent);
+                X.add((ContinuousVariable) parent);
             } else {
-                denominatorDiscrete.add((DiscreteVariable) parent);
+                A.add((DiscreteVariable) parent);
             }
         }
 
-        List<ContinuousVariable> numeratorContinuous = new ArrayList<>(denominatorContinuous);
-        List<DiscreteVariable> numeratorDiscrete = new ArrayList<>(denominatorDiscrete);
+        List<ContinuousVariable> C2 = new ArrayList<>(X);
+        List<DiscreteVariable> D2 = new ArrayList<>(A);
 
-        if (target instanceof ContinuousVariable) {
-            numeratorContinuous.add((ContinuousVariable) target);
-        } else if (target instanceof DiscreteVariable) {
-            numeratorDiscrete.add((DiscreteVariable) target);
-        } else {
-            throw new IllegalStateException();
+        if (b instanceof ContinuousVariable) {
+            C2.add((ContinuousVariable) b);
+        } else if (b instanceof DiscreteVariable) {
+            D2.add((DiscreteVariable) b);
         }
+
+        Ret ret1 = getJointLikelihood(C2, D2);
+        Ret ret2 = getJointLikelihood(X, A);
+
+        double lik = ret1.getLik() - ret2.getLik();
+        double dof = ret1.getDof() + ret2.getDof();
 
         int N = dataSet.getNumRows();
 
-        double lik;
-        double dof;
+//        int dof;
+//
+//        if (b instanceof ContinuousVariable) {
+//            dof = f(A) * g(X);
+//        } else if (b instanceof  DiscreteVariable) {
+//            List<DiscreteVariable> _b = Collections.singletonList((DiscreteVariable) b);
+//            dof = f(A) * (f(_b) - 1) + f(A) * f(_b) * h(X);
+//        } else {
+//            throw new IllegalStateException();
+//        }
 
-        if (numeratorContinuous.isEmpty()) {
-
-            // Discrete target, discrete predictors.
-            if (!(target instanceof DiscreteVariable)) throw new IllegalStateException();
-            Ret ret = getLikelihood((DiscreteVariable) target, denominatorDiscrete);
-            lik = ret.getLik();
-            dof = ret.getDof();
-        } else if (denominatorContinuous.isEmpty()) {
-
-            // Continuous target, all discrete predictors.
-            Ret ret1 = getLikelihood(numeratorContinuous, numeratorDiscrete);
-            dof = ret1.getDof();
-            lik = ret1.getLik();
-        } else if (numeratorContinuous.size() == denominatorContinuous.size()) {
-
-            // Discrete target, mixed predictors.
-            Ret ret1 = getLikelihood(numeratorContinuous, numeratorDiscrete);
-            Ret ret2 = getLikelihood(numeratorContinuous, denominatorDiscrete);
-            dof = ret1.getDof() - ret2.getDof();
-            lik = ret1.getLik() - ret2.getLik();
-        } else {
-
-            // Continuous target, mixed predictors.
-            Ret ret1 = getLikelihood(numeratorContinuous, numeratorDiscrete);
-            Ret ret2 = getLikelihood(denominatorContinuous, numeratorDiscrete);
-            dof = ret1.getDof() - ret2.getDof();
-            lik = ret1.getLik() - ret2.getLik();
-        }
-
-        return lik - dof * Math.log(N);
+        return 2 * lik - dof * Math.log(N);
     }
 
-    private Ret getLikelihood1(DiscreteVariable target, List<DiscreteVariable> parents) {
+    // The likelihood of the joint over all of these variables, continuous and discrete.
+    private Ret getJointLikelihood(List<ContinuousVariable> C, List<DiscreteVariable> D) {
+        int c = C.size();
+        int d = D.size();
 
-        if (parents.contains(target)) throw new IllegalArgumentException();
-        int p = target.getNumCategories();
-        int targetCol = nodesHash.get(target);
+        if (c == 0 && d == 0) return new Ret(0, 0);
 
-        int d = parents.size();
-        int[] dims = new int[d];
-
-        for (int i = 0; i < d; i++) {
-            dims[i] = parents.get(i).getNumCategories();
-        }
-
-        CombinationIterator iterator = new CombinationIterator(dims);
-        int[] comb;
-
-        int[] parentCols = new int[d];
-        for (int i = 0; i < d; i++) parentCols[i] = dataSet.getColumn(parents.get(i));
-
-        double lik = 0;
-        int s = 0;
-        int N = dataSet.getNumRows();
-
-        while (iterator.hasNext()) {
-            comb = iterator.next();
-            List<Integer> rows = new ArrayList<>();
-
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
-                boolean addRow = true;
-
-                for (int c = 0; c < comb.length; c++) {
-                    if (comb[c] != discreteData[parentCols[c]][i]) {
-                        addRow = false;
-                        break;
-                    }
-                }
-
-                if (addRow) {
-                    rows.add(i);
-                }
-            }
-
-            double[] counts = new double[p];
-            int r = 0;
-
-            for (int row : rows) {
-                int value = discreteData[targetCol][row];
-                counts[value]++;
-                r++;
-            }
-
-            double l = 0;
-
-            for (int c = 0; c < p; c++) {
-                double count = counts[c];
-
-                if (count > 0) {
-                    l += count * (Math.log(count) - Math.log(r));
-                    l += Math.log(r) - Math.log(N);
-                }
-            }
-
-            lik += l;
-            s++;
-        }
-
-        int t = p - 1;
-        int dof = s * t;
-
-        return new Ret(lik, dof);
-    }
-
-    private Ret getLikelihood(DiscreteVariable target, List<DiscreteVariable> parents) {
-        if (parents.contains(target)) throw new IllegalArgumentException();
-
-        int p = target.getNumCategories();
-        int targetCol = nodesHash.get(target);
-
-        int d = parents.size();
-        int[] dims = new int[d];
-        for (int i = 0; i < d; i++) dims[i] = parents.get(i).getNumCategories();
-
-        int[] parentCols = new int[d];
-        for (int i = 0; i < d; i++) parentCols[i] = nodesHash.get(parents.get(i));
-
-        int numRows = 1;
-        for (int dim : dims) numRows *= dim;
-        List<List<Integer>> rows = new ArrayList<>();
-        for (int i = 0; i < numRows; i++) rows.add(new ArrayList<Integer>());
-
-        int[] values = new int[dims.length];
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < dims.length; j++) {
-                values[j] = discreteData[parentCols[j]][i];
-            }
-
-            int rowIndex = getRowIndex(values, dims);
-            rows.get(rowIndex).add(i);
-        }
-
-        double lik = 0;
-        int N = dataSet.getNumRows();
-
-        for (int k = 0; k < rows.size(); k++) {
-            if (rows.get(k).isEmpty()) continue;
-
-            double[] counts = new double[p];
-
-            for (int row : rows.get(k)) {
-                int value = discreteData[targetCol][row];
-                counts[value]++;
-            }
-
-            int r = rows.get(k).size();
-
-            for (int c = 0; c < p; c++) {
-                double count = counts[c];
-
-                if (count > 0) {
-                    lik += count * (Math.log(count) - Math.log(r));// + Math.log(r) - Math.log(N);
-                }
-            }
-        }
-
-        int s = rows.size();
-        int t = p;
-
-        double dof = s * t;
-
-        return new Ret(lik, dof);
-    }
-
-    private Ret getLikelihood(List<ContinuousVariable> continuous, List<DiscreteVariable> discrete) {
-        if (continuous.isEmpty()) throw new IllegalArgumentException();
-        int p = continuous.size();
-        int d = discrete.size();
-
-        // For each combination of values for the discrete guys extract a subset of the data.
+        // For each combination of values for the D guys extract a subset of the data.
         int[] discreteCols = new int[d];
-        int[] continuousCols = new int[p];
+        int[] continuousCols = new int[c];
         int[] dims = new int[d];
 
-        for (int i = 0; i < d; i++) discreteCols[i] = nodesHash.get(discrete.get(i));
-        for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous.get(j));
-        for (int i = 0; i < d; i++) dims[i] = discrete.get(i).getNumCategories();
+        for (int i = 0; i < d; i++) discreteCols[i] = nodesHash.get(D.get(i));
+        for (int j = 0; j < c; j++) continuousCols[j] = nodesHash.get(C.get(j));
+        for (int i = 0; i < d; i++) dims[i] = D.get(i).getNumCategories();
 
-        int numRows = 1;
-        for (int dim : dims) numRows *= dim;
-        List<List<Integer>> rows = new ArrayList<>();
-        for (int i = 0; i < numRows; i++) {
-            rows.add(new ArrayList<Integer>());
+        int s = 1;
+        for (int dim : dims) s *= dim;
+        List<List<Integer>> cells = new ArrayList<>();
+        for (int i = 0; i < s; i++) {
+            cells.add(new ArrayList<Integer>());
         }
 
         int[] values = new int[dims.length];
@@ -325,52 +176,78 @@ public class ConditionalGaussianScore implements Score {
             }
 
             int rowIndex = getRowIndex(values, dims);
-            rows.get(rowIndex).add(i);
+            cells.get(rowIndex).add(i);
         }
+
+        int N = dataSet.getNumRows();
 
         double lik = 0;
-        int s = 0;
-        double C = 0.5 * p * (.5 + Math.log(2 * Math.PI));
 
-        for (int k = 0; k < rows.size(); k++) {
-            if (rows.get(k).isEmpty()) continue;
+        for (int k = 0; k < cells.size(); k++) {
+            if (cells.get(k).isEmpty()) continue;
 
-            int n = rows.get(k).size();
+            int r = cells.get(k).size();
 
-            TetradMatrix subset = new TetradMatrix(rows.get(k).size(), continuousCols.length);
+            if (r > 0) {
+                double prob = r / (double) N;
+                lik += r * Math.log(prob);
+            }
+        }
 
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < p; j++) {
-                    subset.set(i, j, continuousData[continuousCols[j]][rows.get(k).get(i)] );
+        // The likelihood of the joint of the discrete variables.
+        if (C.size() > 0) {
+            for (int k = 0; k < cells.size(); k++) {
+                if (cells.get(k).isEmpty()) continue;
+
+                int r = cells.get(k).size();
+
+                if (r > c) {
+                    TetradMatrix subset = new TetradMatrix(r, c);
+
+                    for (int i = 0; i < r; i++) {
+                        for (int j = 0; j < c; j++) {
+                            subset.set(i, j, continuousData[continuousCols[j]][cells.get(k).get(i)]);
+                        }
+                    }
+
+                    TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
+                            false).getCovarianceMatrix());
+                    lik -= 0.5 * r * Math.log(Sigma.det());
+                    lik -= 0.5 * r * c * (1.0 + Math.log(2.0 * Math.PI));
+                } else {
+                    lik -= 0.5 * r * Math.log(c);
+                    lik -= 0.5 * r * c * (1.0 + Math.log(2.0 * Math.PI));
                 }
             }
-
-            if (n > p) {
-                TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
-                        false).getCovarianceMatrix());
-                lik -= 0.5 * n * Math.log(Sigma.det());
-                lik -= n * C;
-                s++;
-            } else {
-                lik -= 0.5 * n * Math.log(p + 2); // guestimate--not enough data.
-                lik -= n * C;
-                s++;
-            }
         }
 
-        int t = p * (p + 1) / 2;
-        double dof = s * t;
-
-        List<DiscreteVariable> condDiscrete = new ArrayList<>(discrete);
-
-        for (DiscreteVariable f : new ArrayList<>(condDiscrete)) {
-            condDiscrete.remove(f);
-            Ret ret = getLikelihood(f, condDiscrete);
-            lik += ret.getLik();
-            dof += ret.getDof();
-        }
+        int t = c == 0 ? 1 : c * (c + 1) / 2;
+        double dof = s * t + s * c - 1;
 
         return new Ret(lik, dof);
+    }
+
+    private int f(List<DiscreteVariable> A) {
+        int f = 1;
+
+        for (DiscreteVariable V : A) {
+            f *= V.getNumCategories();
+        }
+
+        return f;
+    }
+
+    private int g(List<ContinuousVariable> X) {
+        if (X.isEmpty()) {
+            return 1;
+        } else {
+            return X.size();
+        }
+    }
+
+    private int h(List<ContinuousVariable> X) {
+        int p = X.size();
+        return p * (p + 1) / 2;
     }
 
     private class Ret {
@@ -389,6 +266,11 @@ public class ConditionalGaussianScore implements Score {
         public double getDof() {
             return dof;
         }
+
+        public String toString() {
+            return "lik = " + lik + " dof = " + dof;
+        }
+
     }
 
     public double localScoreDiff(int x, int y, int[] z) {

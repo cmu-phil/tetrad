@@ -24,7 +24,6 @@ package edu.cmu.tetrad.algcomparison.comparisons;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Simulation;
-import edu.cmu.tetrad.algcomparison.continuous.cyclic_pag.ContinuousCcd;
 import edu.cmu.tetrad.algcomparison.continuous.pag.*;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
 import edu.cmu.tetrad.algcomparison.discrete.pag.*;
@@ -32,9 +31,7 @@ import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
-import org.relaxng.datatype.Datatype;
 
-import javax.xml.crypto.Data;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -56,7 +53,6 @@ public class RunComparison {
         parameters.put("scaleFreeBeta", .8);
         parameters.put("scaleFreeDeltaIn", 3.0);
         parameters.put("scaleFreeDeltaOut", 3.0);
-        parameters.put("percentDiscreteForMixedSimulation", 0);
         parameters.put("samplePrior", 1);
         parameters.put("structurePrior", 1);
         parameters.put("numCategories", 4);
@@ -94,8 +90,8 @@ public class RunComparison {
 
         Map<String, Double> statWeights = new LinkedHashMap<>();
         statWeights.put("AP", 2.0);
-        statWeights.put("AR", 1.0);
-        statWeights.put("OP", 2.0);
+        statWeights.put("AR", 2.0);
+        statWeights.put("OP", 1.0);
         statWeights.put("OR", 1.0);
 //        statWeights.put("McAdj", 1.0);
 //        statWeights.put("McOr", 0.5);
@@ -104,6 +100,46 @@ public class RunComparison {
 //        statWeights.put("SHD", 0.5);
 //        statWeights.put("E", .2);
 
+//        List<Algorithm> algorithms = getFullAlgorithmsList();
+        List<Algorithm> algorithms = getSpecialSet();
+
+
+        Simulation simulation = new MixedLeeHastieSimulation();
+//        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation();
+//        Simulation simulation = new DiscreteBayesNetSimulation();
+
+        try {
+            File dir = new File("comparison");
+            dir.mkdirs();
+            File comparison = new File("comparison", dataType + ".txt");
+            PrintStream out = new PrintStream(new FileOutputStream(comparison));
+            new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation,
+                    out, dataType);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static List<Algorithm> getSpecialSet() {
+        List<Algorithm> algorithms = new ArrayList<>();
+
+        algorithms.add(new MixedFgsSem());
+        algorithms.add(new MixedFgsBdeu());
+
+        algorithms.add(new MixedWfgs());
+
+        algorithms.add(new MixedFgsCG());
+
+        algorithms.add(new MixedPcCg());
+        algorithms.add(new MixedPcsCg());
+        algorithms.add(new MixedCpcCg());
+
+//        algorithms.add(new MixedCpcLrt());
+
+        return algorithms;
+    }
+
+    private static List<Algorithm> getFullAlgorithmsList() {
         List<Algorithm> algorithms = new ArrayList<>();
 
 //        // Pattern
@@ -141,14 +177,14 @@ public class RunComparison {
 
         algorithms.add(new MixedWfgs());
         algorithms.add(new MixedWgfci());
-
-        algorithms.add(new MixedPcWfgs());
-        algorithms.add(new MixedPcsWfgs());
+//
+        algorithms.add(new MixedPcLrtWfgs());
+        algorithms.add(new MixedPcsLrtWfgs());
         algorithms.add(new MixedCpcWfgs());
-
-        algorithms.add(new MixedPcWGfci());
-        algorithms.add(new MixedPcsWfgs());
-        algorithms.add(new MixedCpcWGfci());
+//
+        algorithms.add(new MixedPcLrtWGfci());
+        algorithms.add(new MixedPcsLrtWfgs());
+        algorithms.add(new MixedCpcLrtWGfci());
 
         algorithms.add(new MixedFgsMS());
 
@@ -163,15 +199,15 @@ public class RunComparison {
         algorithms.add(new MixedPcMgm());
         algorithms.add(new MixedPcsMgm());
         algorithms.add(new MixedCpcMgm());
-
+//
         algorithms.add(new MixedPcMlrw());
         algorithms.add(new MixedCpcMlrw());
         algorithms.add(new MixedPcsMlrw());
-
+//
         algorithms.add(new MixedPcLrt());
         algorithms.add(new MixedPcsLrt());
         algorithms.add(new MixedCpcLrt());
-
+//
 //        PAG
         algorithms.add(new ContinuousFciFz());
         algorithms.add(new ContinuousFciMaxFz());
@@ -190,30 +226,16 @@ public class RunComparison {
 
         algorithms.add(new DiscreteGfci());
 
-        algorithms.add(new MixedFciWfgs());
-        algorithms.add(new MixedFciLrt());
-        algorithms.add(new MixedGfciMixedScore());
+//        algorithms.add(new MixedFciLrtWfgs());
+//        algorithms.add(new MixedFciLrt());
+//        algorithms.add(new MixedGfciMixedScore());
 //        algorithms.add(new MixedGfciCG());
         algorithms.add(new MixedFciCG());
-        algorithms.add(new MixedFciMlrw());
+//        algorithms.add(new MixedFciMlrw());
 
 //        Cyclic PAG
 //        algorithms.add(new ContinuousCcd());
-
-        Simulation simulation = new MixedLeeHastieSimulation();
-//        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation();
-//        Simulation simulation = new DiscreteBayesNetSimulation();
-
-        try {
-            File dir = new File("comparison");
-            dir.mkdirs();
-            File comparison = new File("comparison", dataType + ".txt");
-            PrintStream out = new PrintStream(new FileOutputStream(comparison));
-            new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation,
-                    out, dataType);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return algorithms;
     }
 
 }

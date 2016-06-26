@@ -22,7 +22,7 @@ public class MixedPcsCg implements Algorithm {
     }
 
     public String getDescription() {
-        return "PC with the conditional Gaussian score";
+        return "PCS with the conditional Gaussian score";
     }
 
     @Override

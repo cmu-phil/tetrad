@@ -25,7 +25,7 @@ public class MixedFciCG implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS using the conditional Gaussian BIC score";
+        return "FCI using the conditional Gaussian score";
     }
 
     @Override

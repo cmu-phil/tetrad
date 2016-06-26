@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.mixed.pag;
+package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.DataSet;
@@ -10,23 +10,24 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedFciWfgs implements Algorithm {
+public class MixedCpcLrtWGfci implements Algorithm {
     public Graph search(DataSet ds, Map<String, Number> parameters) {
-        WFgs fgs = new WFgs(ds);
+        WGfci fgs = new WGfci(ds);
+//        fgs.setDepth(parameters.get("fgsDepth").intValue());
         fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        Graph g = fgs.search();
+        Graph g =  fgs.search();
         IndependenceTest test = new IndTestMixedLrt(ds, parameters.get("alpha").doubleValue());
-        Fci pc = new Fci(test);
+        Cpc pc = new Cpc(test);
         pc.setInitialGraph(g);
         return pc.search();
     }
 
     public Graph getComparisonGraph(Graph dag) {
-        return new DagToPag(dag).convert();
+        return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {
-        return "FCI, using the Mixed LRT test, using the output of WFGS as an intial graph";
+        return "CPC with the mixed LRT test, using the output of WGFCI as an intial graph";
     }
 
     @Override
