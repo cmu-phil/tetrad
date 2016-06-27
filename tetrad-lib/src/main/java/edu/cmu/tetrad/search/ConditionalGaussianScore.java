@@ -21,12 +21,11 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import edu.cmu.tetrad.util.TetradVector;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.util.*;
@@ -62,6 +61,11 @@ public class ConditionalGaussianScore implements Score {
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
+
+        // For double checking the continuous case.
+        if (dataSet.isContinuous()) {
+            this.covariances = new CovarianceMatrix(dataSet);
+        }
 
         continuousData = new double[dataSet.getNumColumns()][];
         discreteData = new int[dataSet.getNumColumns()][];
@@ -100,7 +104,7 @@ public class ConditionalGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        Node b = variables.get(i);
+        Node target = variables.get(i);
 
         List<ContinuousVariable> X = new ArrayList<>();
         List<DiscreteVariable> A = new ArrayList<>();
@@ -115,45 +119,59 @@ public class ConditionalGaussianScore implements Score {
             }
         }
 
-        List<ContinuousVariable> X2 = new ArrayList<>(X);
-        List<DiscreteVariable> A2 = new ArrayList<>(A);
+        List<ContinuousVariable> XPlus = new ArrayList<>(X);
+        List<DiscreteVariable> APlus = new ArrayList<>(A);
 
-        if (b instanceof ContinuousVariable) {
-            X2.add((ContinuousVariable) b);
-        } else if (b instanceof DiscreteVariable) {
-            A2.add((DiscreteVariable) b);
+        if (target instanceof ContinuousVariable) {
+            XPlus.add((ContinuousVariable) target);
+        } else if (target instanceof DiscreteVariable) {
+            APlus.add((DiscreteVariable) target);
         }
 
-        Ret ret1 = getJointLikelihood(X2, A2);
-        Ret ret2 = getJointLikelihood(X, A);
+        double lik1 = getJointLikelihood(XPlus, APlus);
+        double lik2 = getJointLikelihood(X, A);
 
-        double lik = ret1.getLik() - ret2.getLik();
-        double dof = ret1.getDof() - ret2.getDof();
-//        double dof = Math.max(ret1.getDof(), ret2.getDof());
-//        double dof = ret1.getDof();
+        double lik = lik1 - lik2;
+//        int dof = ret1.getDof() - ret2.getDof();
 
         int N = dataSet.getNumRows();
+        int dof;
 
-//        if (b instanceof ContinuousVariable) {
-//            dof = f(A) * g(X);
-//        } else if (b instanceof  DiscreteVariable) {
-//            List<DiscreteVariable> _b = Collections.singletonList((DiscreteVariable) b);
-//            dof = f(A) * (f(_b) - 1) + f(A) * f(_b) * h(X);
-//        } else {
-//            throw new IllegalStateException();
+        if (target instanceof ContinuousVariable) {
+            dof = f(A) * g(X);
+        } else if (target instanceof DiscreteVariable) {
+            List<DiscreteVariable> b = Collections.singletonList((DiscreteVariable) target);
+            dof = f(A) * (f(b) - 1) + f(A) * f(b) * h(X);
+        } else {
+            throw new IllegalStateException();
+        }
+
+//        if (covariances != null) {
+//            System.out.println();
+//            System.out.print("mixed lik = " + lik + " dof = " + dof);
+//
+//            Ret continuousRet = localScoreContinuous(i, parents);
+//
+//            System.out.print(" continuous lik = " + continuousRet.getLik() +
+//                    " dof = " + continuousRet.getDof());
+//
+//            lik = continuousRet.lik;
+//
 //        }
 
-//        return new ChiSquaredDistribution(dof).cumulativeProbability(lik) - 0.001;
-//
-        return 2 * lik - dof * Math.log(N);
+        int i2 = parents.length;
+        int n = dataSet.getNumColumns();
+        double p = 2 / (double) n;
+
+        return 2.0 * lik - dof * Math.log(N)
+                - (i2 * Math.log(p) + (n - i2) * Math.log(1.0 - p))
+                ;
     }
 
     // The likelihood of the joint over all of these variables, continuous and discrete.
-    private Ret getJointLikelihood(List<ContinuousVariable> C, List<DiscreteVariable> D) {
+    private double getJointLikelihood(List<ContinuousVariable> C, List<DiscreteVariable> D) {
         int c = C.size();
         int d = D.size();
-
-        if (c == 0 && d == 0) return new Ret(0, 0);
 
         // For each combination of values for the D guys extract a subset of the data.
         int[] discreteCols = new int[d];
@@ -164,17 +182,17 @@ public class ConditionalGaussianScore implements Score {
         for (int j = 0; j < c; j++) continuousCols[j] = nodesHash.get(C.get(j));
         for (int i = 0; i < d; i++) dims[i] = D.get(i).getNumCategories();
 
-        int s = 1;
-        for (int dim : dims) s *= dim;
+        int N = dataSet.getNumRows();
+
         List<List<Integer>> cells = new ArrayList<>();
-        for (int i = 0; i < s; i++) {
+        for (int i = 0; i < f(D); i++) {
             cells.add(new ArrayList<Integer>());
         }
 
-        int[] values = new int[dims.length];
+        int[] values = new int[D.size()];
 
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < dims.length; j++) {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < D.size(); j++) {
                 values[j] = discreteData[discreteCols[j]][i];
             }
 
@@ -182,10 +200,9 @@ public class ConditionalGaussianScore implements Score {
             cells.get(rowIndex).add(i);
         }
 
-        int N = dataSet.getNumRows();
-
         double lik = 0;
 
+        // The likelihood of the joint of the discrete variables.
         for (int k = 0; k < cells.size(); k++) {
             if (cells.get(k).isEmpty()) continue;
 
@@ -197,11 +214,13 @@ public class ConditionalGaussianScore implements Score {
             }
         }
 
-        // The likelihood of the joint of the discrete variables.
+        // The likelihood of the joint of the continuous variables conditional on the discrete.
+        double sum = 0.0;
+        int count = 0;
+        int missingRows = 0;
+
         if (C.size() > 0) {
             for (int k = 0; k < cells.size(); k++) {
-                if (cells.get(k).isEmpty()) continue;
-
                 int r = cells.get(k).size();
 
                 if (r > c) {
@@ -215,21 +234,21 @@ public class ConditionalGaussianScore implements Score {
 
                     TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
                             false).getCovarianceMatrix());
-                    lik -= 0.5 * r * Math.log(Sigma.det());
-                    lik -= 0.5 * r * c * (1.0 + Math.log(2.0 * Math.PI));
+                    double det = Sigma.det();
+                    lik -= 0.5 * r * Math.log(det);
+                    sum += det;
+                    count++;
                 } else {
-                    lik -= 0.5 * r * Math.log(c);
-                    lik -= 0.5 * r * c * (1.0 + Math.log(2.0 * Math.PI));
+//                    lik -= 0.5 * r * Math.log(50 * c);
+                    missingRows += r;
                 }
             }
+
+            lik -= 0.5 * missingRows * Math.log(sum / count);
+            lik -= 0.5 * N * c * (1.0 + Math.log(2.0 * Math.PI));
         }
 
-        int t = c == 0 ? 1 : c * (c + 1) / 2;
-        double dof = t;// + s * c - 1;
-
-//        dof = t;
-
-        return new Ret(lik, dof);
+        return lik;
     }
 
     private int f(List<DiscreteVariable> A) {
@@ -243,11 +262,7 @@ public class ConditionalGaussianScore implements Score {
     }
 
     private int g(List<ContinuousVariable> X) {
-        if (X.isEmpty()) {
-            return 1;
-        } else {
-            return X.size();
-        }
+        return X.size() + 1;
     }
 
     private int h(List<ContinuousVariable> X) {
@@ -257,9 +272,9 @@ public class ConditionalGaussianScore implements Score {
 
     private class Ret {
         private double lik;
-        private double dof;
+        private int dof;
 
-        public Ret(double lik, double dof) {
+        public Ret(double lik, int dof) {
             this.lik = lik;
             this.dof = dof;
         }
@@ -268,7 +283,7 @@ public class ConditionalGaussianScore implements Score {
             return lik;
         }
 
-        public double getDof() {
+        public int getDof() {
             return dof;
         }
 
@@ -357,6 +372,49 @@ public class ConditionalGaussianScore implements Score {
         }
 
         return rowIndex;
+    }
+
+    private ICovarianceMatrix covariances;
+
+
+    /**
+     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     */
+    public Ret localScoreContinuous(int i, int... parents) {
+
+        double residualVariance = covariances.getValue(i, i);
+        int n = getSampleSize();
+        int p = parents.length;
+        TetradMatrix covxx = getSelection1(covariances, parents);
+
+        try {
+            TetradMatrix covxxInv = covxx.inverse();
+
+            TetradVector covxy = getSelection2(covariances, parents, i);
+            TetradVector b = covxxInv.times(covxy);
+            residualVariance -= covxy.dotProduct(b);
+
+            if (residualVariance <= 0) {
+                return new Ret(Double.NaN, 0);
+            }
+
+            return new Ret(-(n / 2.0) * Math.log(residualVariance), p + 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Ret(Double.NaN, 0);
+        }
+    }
+
+    private double score(double residualVariance, int n, double logn, int p, double c) {
+        return -n * Math.log(residualVariance) - c * (p + 1) * logn;
+    }
+
+    private TetradMatrix getSelection1(ICovarianceMatrix cov, int[] rows) {
+        return cov.getSelection(rows, rows);
+    }
+
+    private TetradVector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
+        return cov.getSelection(rows, new int[]{k}).getColumn(0);
     }
 }
 

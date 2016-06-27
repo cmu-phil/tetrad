@@ -31,6 +31,7 @@ import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.MixedSemThenDiscretizeHalfSimulation;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,7 +46,7 @@ import java.util.Map;
  */
 public class RunComparison {
     public static void main(String... args) {
-        Algorithm.DataType dataType = Algorithm.DataType.Continuous;
+        Algorithm.DataType dataType = Algorithm.DataType.Mixed;
 
         Map<String, Number> parameters = new LinkedHashMap<>();
 
@@ -61,9 +62,9 @@ public class RunComparison {
         parameters.put("mgmParam3", 0.1);
         parameters.put("numLatents", 0);
         parameters.put("numRuns", 1);
-        parameters.put("sampleSize", 1000);
-        parameters.put("numMeasures", 30);
-        parameters.put("numEdges", 60);
+        parameters.put("sampleSize", 90000);
+        parameters.put("numMeasures", 10);
+        parameters.put("numEdges", 20);
         parameters.put("penaltyDiscount", 4);
         parameters.put("fgsDepth", -1);
 
@@ -133,9 +134,9 @@ public class RunComparison {
 //        algorithms.add(new MixedPcCg());
 //        algorithms.add(new MixedPcsCg());
 //        algorithms.add(new MixedCpcCg());
-//
+
 //        algorithms.add(new MixedCpcLrt());
-//
+
 //        algorithms.add(new MixedWgfci());
 //
 //        algorithms.add(new MixedGfciCG());

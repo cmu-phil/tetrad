@@ -291,6 +291,7 @@ public class Comparison {
                     out = algorithms.get(t).search(copy, parameters);
                 } catch (Exception e) {
                     System.out.println("Could not run " + algorithms.get(t).getDescription());
+                    e.printStackTrace();
                     continue;
                 }
 
