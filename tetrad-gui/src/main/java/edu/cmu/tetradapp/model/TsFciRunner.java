@@ -130,7 +130,9 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         Graph graph;
 
         if (indTestParams.isRFCI_Used()) {
-            Rfci fci = new Rfci(getIndependenceTest());
+            System.out.println("WARNING: there is no RFCI option for tsFCI! Just using tsFCI.");
+//            Rfci fci = new Rfci(getIndependenceTest());
+            TsFci fci = new TsFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
             fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
