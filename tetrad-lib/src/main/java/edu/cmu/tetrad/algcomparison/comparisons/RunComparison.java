@@ -31,7 +31,6 @@ import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.MixedSemThenDiscretizeHalfSimulation;
 
 import java.io.File;
 import java.io.FileOutputStream;
