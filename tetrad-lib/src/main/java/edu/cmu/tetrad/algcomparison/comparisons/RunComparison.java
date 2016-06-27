@@ -62,7 +62,7 @@ public class RunComparison {
         parameters.put("mgmParam3", 0.1);
         parameters.put("numLatents", 0);
         parameters.put("numRuns", 1);
-        parameters.put("sampleSize", 90000);
+        parameters.put("sampleSize", 1000);
         parameters.put("numMeasures", 10);
         parameters.put("numEdges", 20);
         parameters.put("penaltyDiscount", 4);
