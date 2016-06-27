@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.util.*;
@@ -114,25 +115,25 @@ public class ConditionalGaussianScore implements Score {
             }
         }
 
-        List<ContinuousVariable> C2 = new ArrayList<>(X);
-        List<DiscreteVariable> D2 = new ArrayList<>(A);
+        List<ContinuousVariable> X2 = new ArrayList<>(X);
+        List<DiscreteVariable> A2 = new ArrayList<>(A);
 
         if (b instanceof ContinuousVariable) {
-            C2.add((ContinuousVariable) b);
+            X2.add((ContinuousVariable) b);
         } else if (b instanceof DiscreteVariable) {
-            D2.add((DiscreteVariable) b);
+            A2.add((DiscreteVariable) b);
         }
 
-        Ret ret1 = getJointLikelihood(C2, D2);
+        Ret ret1 = getJointLikelihood(X2, A2);
         Ret ret2 = getJointLikelihood(X, A);
 
         double lik = ret1.getLik() - ret2.getLik();
-        double dof = ret1.getDof() + ret2.getDof();
+        double dof = ret1.getDof() - ret2.getDof();
+//        double dof = Math.max(ret1.getDof(), ret2.getDof());
+//        double dof = ret1.getDof();
 
         int N = dataSet.getNumRows();
 
-//        int dof;
-//
 //        if (b instanceof ContinuousVariable) {
 //            dof = f(A) * g(X);
 //        } else if (b instanceof  DiscreteVariable) {
@@ -142,6 +143,8 @@ public class ConditionalGaussianScore implements Score {
 //            throw new IllegalStateException();
 //        }
 
+//        return new ChiSquaredDistribution(dof).cumulativeProbability(lik) - 0.001;
+//
         return 2 * lik - dof * Math.log(N);
     }
 
@@ -222,7 +225,9 @@ public class ConditionalGaussianScore implements Score {
         }
 
         int t = c == 0 ? 1 : c * (c + 1) / 2;
-        double dof = s * t + s * c - 1;
+        double dof = t;// + s * c - 1;
+
+//        dof = t;
 
         return new Ret(lik, dof);
     }

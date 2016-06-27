@@ -45,7 +45,7 @@ import java.util.Map;
  */
 public class RunComparison {
     public static void main(String... args) {
-        Algorithm.DataType dataType = Algorithm.DataType.Mixed;
+        Algorithm.DataType dataType = Algorithm.DataType.Continuous;
 
         Map<String, Number> parameters = new LinkedHashMap<>();
 
@@ -123,18 +123,22 @@ public class RunComparison {
     private static List<Algorithm> getSpecialSet() {
         List<Algorithm> algorithms = new ArrayList<>();
 
-        algorithms.add(new MixedFgsSem());
-        algorithms.add(new MixedFgsBdeu());
-
-        algorithms.add(new MixedWfgs());
+//        algorithms.add(new MixedFgsSem());
+//        algorithms.add(new MixedFgsBdeu());
+//
+//        algorithms.add(new MixedWfgs());
 
         algorithms.add(new MixedFgsCG());
 
-        algorithms.add(new MixedPcCg());
-        algorithms.add(new MixedPcsCg());
-        algorithms.add(new MixedCpcCg());
-
+//        algorithms.add(new MixedPcCg());
+//        algorithms.add(new MixedPcsCg());
+//        algorithms.add(new MixedCpcCg());
+//
 //        algorithms.add(new MixedCpcLrt());
+//
+//        algorithms.add(new MixedWgfci());
+//
+//        algorithms.add(new MixedGfciCG());
 
         return algorithms;
     }
