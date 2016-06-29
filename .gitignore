@@ -6,4 +6,5 @@
 tetrad-gui/tetrad-gui.iml
 tetrad-lib/tetrad-lib.iml
 tetrad-cli/tetrad-cli.iml
+causal-cmd/causal-cmd.iml
 tetrad.iml

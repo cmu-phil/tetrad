@@ -19,28 +19,26 @@
 package edu.cmu.tetrad.cli.util;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.cli.json.JsonEdge;
 import edu.cmu.tetrad.cli.json.JsonEdgeSet;
 import edu.cmu.tetrad.cli.json.JsonGraph;
 import edu.cmu.tetrad.cli.json.JsonNode;
 import edu.cmu.tetrad.graph.*;
-import org.graphdrawing.graphml.xmlns.*;
-import org.graphdrawing.graphml.xmlns.NodeType;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import java.io.StringWriter;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Last modified by Kevin Bui on Jan 12, 2016 2:54:32 PM.
  *
- * May 26, 2015 11:02:00 PM
+ * Outputs a json version of the graph
+ *
  *
  * @author Jeremy Espino MD
  */
@@ -49,13 +47,17 @@ public class JsonSerializer {
     public static String serialize(Graph graph, String graphId) throws JAXBException {
         List<Node> nodes = graph.getNodes();
         Set<Edge> edgesSet = graph.getEdges();
+        HashMap<Node, Integer> nodeIndexMap = new HashMap<Node, Integer>();
 
-        // declarte the output JSON object
+        // declare the output JSON object
         JsonGraph jsonGraph = new JsonGraph();
         jsonGraph.name = graphId;
 
+        int index = 0;
         for (Node node : nodes) {
             jsonGraph.nodes.add(new JsonNode(node.getName()));
+            nodeIndexMap.put(node, index);
+            index++;
         }
 
         jsonGraph.edgeSets.add(new JsonEdgeSet());
@@ -63,8 +65,8 @@ public class JsonSerializer {
         Edges.sortEdges(edges);
         for (Edge edge : edges) {
             JsonEdge jsonEdge = new JsonEdge();
-            jsonEdge.source = jsonGraph.nodes.indexOf(edge.getNode1().getName());
-            jsonEdge.target = jsonGraph.nodes.indexOf(edge.getNode2().getName());
+            jsonEdge.source = nodeIndexMap.get(edge.getNode1());
+            jsonEdge.target = nodeIndexMap.get(edge.getNode2());
 
             if (edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.ARROW) {
                 jsonEdge.etype = "-->";
@@ -88,9 +90,16 @@ public class JsonSerializer {
             }
         }
 
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
 
         return gson.toJson(jsonGraph);
+    }
+
+
+    public static void writeToStream(String json, PrintStream writer) throws IllegalArgumentException, TransformerException, TransformerFactoryConfigurationError {
+        writer.print(json);
+        writer.close();
     }
 
 }

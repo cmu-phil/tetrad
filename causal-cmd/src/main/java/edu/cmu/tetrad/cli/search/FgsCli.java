@@ -220,10 +220,13 @@ public class FgsCli {
             String msg = String.format("Writing out Json file '%s'.", fileName);
             System.out.printf("%s: %s%n", DateTime.printNow(), msg);
             LOGGER.info(msg);
-            XmlPrint.printPretty(JsonSerializer.serialize(graph, outputPrefix), graphWriter);
+
+            JsonSerializer.writeToStream(JsonSerializer.serialize(graph, outputPrefix), graphWriter);
+
             msg = String.format("Finished writing out Json file '%s'.", fileName);
             System.out.printf("%s: %s%n", DateTime.printNow(), msg);
             LOGGER.info(msg);
+
         } catch (Throwable throwable) {
             String errMsg = String.format("Failed when writing out Json file '%s'.", outputFile.getFileName().toString());
             System.err.println(errMsg);

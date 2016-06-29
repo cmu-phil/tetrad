@@ -73,6 +73,7 @@ public final class TetradCmd {
     private boolean nodsep = false;
     private boolean useCovariance = true;
     private boolean silent = false;
+    private boolean useConditionalCorrelation = false;
 
     public TetradCmd(String[] argv) {
         readArguments(new StringArrayTokenizer(argv));
@@ -366,6 +367,8 @@ public final class TetradCmd {
                 this.nodsep = true;            } 
             else if ("-silent".equalsIgnoreCase(token)) {
                 this.silent = true;
+            } else if ("-condcorr".equalsIgnoreCase(token)) {
+                this.useConditionalCorrelation = true;
             } else {
                 throw new IllegalArgumentException(
                         "Unexpected argument: " + token);
@@ -946,7 +949,17 @@ public final class TetradCmd {
             if (this.data.isDiscrete()) {
                 independence = new IndTestChiSquare(data, significance);
             } else if (this.data.isContinuous()) {
-                independence = new IndTestFisherZ(data, significance);
+                if (useConditionalCorrelation) {
+
+                    independence = new IndTestConditionalCorrelation(data, significance);
+                    System.err.println("Using Conditional Correlation");
+
+                } else {
+
+                    independence = new IndTestFisherZ(data, significance);
+                }
+
+
             } else {
                 throw new IllegalStateException(
                         "Data must be either continuous or " + "discrete.");
