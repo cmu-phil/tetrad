@@ -1,0 +1,11 @@
+/knowledge
+addtemporal
+1 spending_per_stdt fac_salary stdt_tchr_ratio 
+2 rjct_rate stdt_accept_rate 
+3 tst_scores stdt_clss_stndng 
+4* grad_rate 
+
+
+forbiddirect
+
+requiredirect

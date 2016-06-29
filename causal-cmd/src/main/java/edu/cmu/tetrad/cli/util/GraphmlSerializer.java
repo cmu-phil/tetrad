@@ -118,6 +118,7 @@ public class GraphmlSerializer {
         marshaller.marshal(root, sw);
 
         return sw.toString();
+        //return "";
     }
 
 }

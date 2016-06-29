@@ -63,7 +63,7 @@ public class CombinationIterator implements Iterator {
     /**
      * @return an int[] array with the next combination.
      */
-    public Object next() {
+    public int[] next() {
         int[] clone = new int[numValues];
         System.arraycopy(values, 0, clone, 0, numValues);
 

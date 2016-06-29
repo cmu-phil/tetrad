@@ -310,9 +310,6 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             fgs = new Fgs(gesScore);
-            fgs.setKnowledge(getParams().getKnowledge());
-            fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-            fgs.setVerbose(true);
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
 
@@ -320,10 +317,6 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) model));
                 gesScore.setPenaltyDiscount(params.getComplexityPenalty());
                 fgs = new Fgs(gesScore);
-                fgs.setKnowledge(getParams().getKnowledge());
-                fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-                fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
-                fgs.setVerbose(true);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = ((FgsParams) getParams()).getSamplePrior();
                 double structurePrior = ((FgsParams) getParams()).getStructurePrior();
@@ -331,10 +324,6 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
                 fgs = new Fgs(score);
-                fgs.setVerbose(true);
-                fgs.setKnowledge(getParams().getKnowledge());
-                fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-                fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
@@ -342,10 +331,6 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
             gesScore.setPenaltyDiscount(params.getComplexityPenalty());
             fgs = new Fgs(gesScore);
-            fgs.setKnowledge(getParams().getKnowledge());
-            fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
-            fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
-            fgs.setVerbose(true);
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
@@ -396,6 +381,10 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
             System.out.println("No viable input.");
         }
 
+        fgs.setKnowledge(getParams().getKnowledge());
+        fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+        fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+        fgs.setVerbose(true);
         Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {
