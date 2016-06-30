@@ -4,10 +4,7 @@ import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.Fgs2;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.*;
 
 import java.util.Map;
 
@@ -24,7 +21,7 @@ public class ContinuousFgs2 implements Algorithm {
     }
 
     public Graph getComparisonGraph(Graph dag) {
-        return new DagToPag(dag).convert();
+        return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {

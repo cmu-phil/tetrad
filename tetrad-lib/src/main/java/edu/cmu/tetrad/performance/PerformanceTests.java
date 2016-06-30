@@ -977,7 +977,7 @@ public class PerformanceTests {
             fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
-//            fgs.setFaithfulnessAssumed(faithfulness);
+//            fgs.setHeuristicSpeedup(faithfulness);
             fgs.setMaxIndegree(maxIndegree);
             fgs.setCycleBound(-1);
         } else {
@@ -1022,7 +1022,7 @@ public class PerformanceTests {
             fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
-//            fgs.setFaithfulnessAssumed(faithfulness);
+//            fgs.setHeuristicSpeedup(faithfulness);
             fgs.setMaxIndegree(maxIndegree);
             fgs.setCycleBound(-1);
 

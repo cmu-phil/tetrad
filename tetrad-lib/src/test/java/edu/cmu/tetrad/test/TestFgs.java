@@ -268,7 +268,7 @@ public class TestFgs {
 
         Graph pattern1 = new Pc(new IndTestDSep(g)).search();
         FgsMb2 fgs = new FgsMb2(new GraphScore(g));
-//        fgs.setFaithfulnessAssumed(false);
+//        fgs.setHeuristicSpeedup(false);
         Graph pattern2 = fgs.search(x1);
 
 //        System.out.println(pattern1);

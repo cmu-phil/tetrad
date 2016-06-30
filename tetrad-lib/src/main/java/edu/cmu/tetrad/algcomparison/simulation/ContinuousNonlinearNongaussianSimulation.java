@@ -22,11 +22,13 @@ import java.util.*;
 public class ContinuousNonlinearNongaussianSimulation implements Simulation {
     private Graph graph;
     private DataSet dataSet;
+    private int numDataSets;
 
-    public ContinuousNonlinearNongaussianSimulation() {
+    public ContinuousNonlinearNongaussianSimulation(int numDataSets) {
+        this.numDataSets = numDataSets;
     }
 
-    public void simulate(Map<String, Number> parameters) {
+    public DataSet getDataSet(int i, Map<String, Number> parameters) {
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.get("numMeasures").intValue(),
                 parameters.get("numLatents").intValue(),
@@ -38,6 +40,7 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
         GeneralizedSemPm pm = getPm(graph);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         this.dataSet = im.simulateData(parameters.get("sampleSize").intValue(), false);
+        return this.dataSet;
     }
 
     public Graph getDag() {
@@ -127,5 +130,10 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
 
     public boolean isMixed() {
         return false;
+    }
+
+    @Override
+    public int getNumDataSets() {
+        return numDataSets;
     }
 }

@@ -18,11 +18,13 @@ import java.util.Map;
 public class DiscreteBayesNetSimulation implements Simulation {
     private Graph graph;
     private DataSet dataSet;
+    private int numDataSets;
 
-    public DiscreteBayesNetSimulation() {
+    public DiscreteBayesNetSimulation(int numDataSets) {
+        this.numDataSets = numDataSets;
     }
 
-    public void simulate(Map<String, Number> parameters) {
+    public DataSet getDataSet(int index, Map<String, Number> parameters) {
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.get("numMeasures").intValue(),
                 parameters.get("numLatents").intValue(),
@@ -35,6 +37,7 @@ public class DiscreteBayesNetSimulation implements Simulation {
         BayesPm pm = new BayesPm(graph, numCategories, numCategories);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
         this.dataSet = im.simulateData(parameters.get("sampleSize").intValue(), false);
+        return this.dataSet;
     }
 
     public Graph getDag() {
@@ -51,5 +54,10 @@ public class DiscreteBayesNetSimulation implements Simulation {
 
     public boolean isMixed() {
         return false;
+    }
+
+    @Override
+    public int getNumDataSets() {
+        return numDataSets;
     }
 }

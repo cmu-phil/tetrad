@@ -30,6 +30,8 @@ import edu.cmu.tetrad.algcomparison.discrete.pag.*;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
+import edu.cmu.tetrad.algcomparison.simulation.LinearGaussianSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LoadDataFromFileWithoutGraph;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
 
 import java.io.File;
@@ -45,7 +47,7 @@ import java.util.Map;
  */
 public class RunComparison {
     public static void main(String... args) {
-        Algorithm.DataType dataType = Algorithm.DataType.Mixed;
+        Algorithm.DataType dataType = Algorithm.DataType.Continuous;
 
         Map<String, Number> parameters = new LinkedHashMap<>();
 
@@ -55,17 +57,21 @@ public class RunComparison {
         parameters.put("scaleFreeDeltaOut", 3.0);
         parameters.put("samplePrior", 1);
         parameters.put("structurePrior", 1);
+
         parameters.put("numCategories", 4);
         parameters.put("mgmParam1", 0.1);
         parameters.put("mgmParam2", 0.1);
         parameters.put("mgmParam3", 0.1);
         parameters.put("numLatents", 0);
+
         parameters.put("numRuns", 1);
-        parameters.put("sampleSize", 1000);
-        parameters.put("numMeasures", 10);
-        parameters.put("numEdges", 20);
-        parameters.put("penaltyDiscount", 4);
-        parameters.put("fgsDepth", -1);
+        parameters.put("sampleSize", 5180);
+//        parameters.put("numMeasures", 570);
+//        parameters.put("sampleSize", 1000);
+        parameters.put("numMeasures", 100);
+        parameters.put("numEdges", 3 * parameters.get("numMeasures").intValue());
+        parameters.put("penaltyDiscount", 5);
+        parameters.put("fgsDepth", 10);
 
         if (dataType == Algorithm.DataType.Continuous) {
             parameters.put("percentDiscreteForMixedSimulation", 0);
@@ -90,8 +96,8 @@ public class RunComparison {
 
         Map<String, Double> statWeights = new LinkedHashMap<>();
         statWeights.put("AP", 2.0);
-        statWeights.put("AR", 2.0);
-        statWeights.put("OP", 1.0);
+        statWeights.put("AR", 1.0);
+        statWeights.put("OP", 2.0);
         statWeights.put("OR", 1.0);
 //        statWeights.put("McAdj", 1.0);
 //        statWeights.put("McOr", 0.5);
@@ -100,13 +106,17 @@ public class RunComparison {
 //        statWeights.put("SHD", 0.5);
 //        statWeights.put("E", .2);
 
-//        List<Algorithm> algorithms = getFullAlgorithmsList();
-        List<Algorithm> algorithms = getSpecialSet();
+        List<Algorithm> algorithms = getFullAlgorithmsList();
+//        List<Algorithm> algorithms = getSpecialSet();
 
+        Simulation simulation = new MixedLeeHastieSimulation(parameters.get("numRuns").intValue());
+//        Simulation simulation = new LinearGaussianSemSimulation(parameters.get("numRuns").intValue());
+//        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation(parameters.get("numRuns").intValue());
+//        Simulation simulation = new DiscreteBayesNetSimulation(parameters.get("numRuns").intValue());
+//        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/Downloads/data1.1.txt");
 
-        Simulation simulation = new MixedLeeHastieSimulation();
-//        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation();
-//        Simulation simulation = new DiscreteBayesNetSimulation();
+//        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_first10.txt");
+//        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_last10.txt");
 
         try {
             File dir = new File("comparison");
@@ -123,16 +133,17 @@ public class RunComparison {
     private static List<Algorithm> getSpecialSet() {
         List<Algorithm> algorithms = new ArrayList<>();
 
-//        algorithms.add(new MixedFgsSem());
-//        algorithms.add(new MixedFgsBdeu());
+        algorithms.add(new MixedFgsSem());
+        algorithms.add(new MixedFgsBdeu());
 //
-//        algorithms.add(new MixedWfgs());
+        algorithms.add(new MixedWfgs());
 
+//        algorithms.add(new ContinuousFgs());
         algorithms.add(new MixedFgsCG());
 
-//        algorithms.add(new MixedPcCg());
-//        algorithms.add(new MixedPcsCg());
-//        algorithms.add(new MixedCpcCg());
+        algorithms.add(new MixedPcCg());
+        algorithms.add(new MixedPcsCg());
+        algorithms.add(new MixedCpcCg());
 
 //        algorithms.add(new MixedCpcLrt());
 
@@ -147,94 +158,97 @@ public class RunComparison {
         List<Algorithm> algorithms = new ArrayList<>();
 
 //        // Pattern
-        algorithms.add(new ContinuousPcFz());
-        algorithms.add(new ContinuousCpcFz());
-        algorithms.add(new ContinuousPcsFz());
+//        algorithms.add(new ContinuousPcFz());
+//        algorithms.add(new ContinuousCpcFz());
+//        algorithms.add(new ContinuousPcsFz());
+//        algorithms.add(new ContinuousCpcsFz());
+//
+//        algorithms.add(new ContinuousFgs());
+//        algorithms.add(new ContinuousFgs2());
+//
+//        algorithms.add(new ContinuousPcFgs());
+//        algorithms.add(new ContinuousPcsFgs());
+//        algorithms.add(new ContinuousCpcFgs());
 
-        algorithms.add(new ContinuousPcFgs());
-        algorithms.add(new ContinuousPcsFgs());
-        algorithms.add(new ContinuousCpcFgs());
-
-        algorithms.add(new ContinuousPcSemBic());
+//        algorithms.add(new ContinuousPcSemBic());
         algorithms.add(new ContinuousCpcSemBic());
-        algorithms.add(new ContinuousPcsSemBic());
+//        algorithms.add(new ContinuousPcsSemBic());
+        algorithms.add(new ContinuousCpcsSemBic());
+////
+//
+//        algorithms.add(new ContinuousGpc());
 
-        algorithms.add(new ContinuousFgs());
-        algorithms.add(new ContinuousFgs2());
-
-        algorithms.add(new ContinuousGpc());
-
-        algorithms.add(new DiscretePcChiSquare());
-        algorithms.add(new DiscretePcsChiSquare());
-        algorithms.add(new DiscreteCpcChiSquare());
-
-        algorithms.add(new DiscretePcGSquare());
-        algorithms.add(new DiscretePcsGSquare());
-        algorithms.add(new DiscreteCpcGSquare());
-
-        algorithms.add(new DiscreteFgsBdeu());
-        algorithms.add(new DiscreteFgsBic());
+//        algorithms.add(new DiscretePcChiSquare());
+//        algorithms.add(new DiscretePcsChiSquare());
+//        algorithms.add(new DiscreteCpcChiSquare());
+//
+//        algorithms.add(new DiscretePcGSquare());
+//        algorithms.add(new DiscretePcsGSquare());
+//        algorithms.add(new DiscreteCpcGSquare());
+//
+//        algorithms.add(new DiscreteFgsBdeu());
+//        algorithms.add(new DiscreteFgsBic());
 
         //21
-        algorithms.add(new MixedFgsSem());
-        algorithms.add(new MixedFgsBdeu());
-
-        algorithms.add(new MixedWfgs());
-        algorithms.add(new MixedWgfci());
+//        algorithms.add(new MixedFgsSem());
+//        algorithms.add(new MixedFgsBdeu());
 //
-        algorithms.add(new MixedPcLrtWfgs());
-        algorithms.add(new MixedPcsLrtWfgs());
-        algorithms.add(new MixedCpcWfgs());
+//        algorithms.add(new MixedWfgs());
+//        algorithms.add(new MixedWgfci());
+////
+//        algorithms.add(new MixedPcLrtWfgs());
+//        algorithms.add(new MixedPcsLrtWfgs());
+//        algorithms.add(new MixedCpcWfgs());
+////
+//        algorithms.add(new MixedPcLrtWGfci());
+//        algorithms.add(new MixedPcsLrtWfgs());
+//        algorithms.add(new MixedCpcLrtWGfci());
 //
-        algorithms.add(new MixedPcLrtWGfci());
-        algorithms.add(new MixedPcsLrtWfgs());
-        algorithms.add(new MixedCpcLrtWGfci());
-
-        algorithms.add(new MixedFgsMS());
-
-        algorithms.add(new MixedFgsCG());
-
-        algorithms.add(new MixedPcCg());
-        algorithms.add(new MixedPcsCg());
-        algorithms.add(new MixedCpcCg());
-
-        algorithms.add(new MixedFgsMgm());
-
-        algorithms.add(new MixedPcMgm());
-        algorithms.add(new MixedPcsMgm());
-        algorithms.add(new MixedCpcMgm());
+//        algorithms.add(new MixedFgsMS());
 //
-        algorithms.add(new MixedPcMlrw());
-        algorithms.add(new MixedCpcMlrw());
-        algorithms.add(new MixedPcsMlrw());
+//        algorithms.add(new MixedFgsCG());
 //
-        algorithms.add(new MixedPcLrt());
-        algorithms.add(new MixedPcsLrt());
-        algorithms.add(new MixedCpcLrt());
+//        algorithms.add(new MixedPcCg());
+//        algorithms.add(new MixedPcsCg());
+//        algorithms.add(new MixedCpcCg());
+//
+//        algorithms.add(new MixedFgsMgm());
+//
+//        algorithms.add(new MixedPcMgm());
+//        algorithms.add(new MixedPcsMgm());
+//        algorithms.add(new MixedCpcMgm());
+////
+//        algorithms.add(new MixedPcMlrw());
+//        algorithms.add(new MixedCpcMlrw());
+//        algorithms.add(new MixedPcsMlrw());
+////
+//        algorithms.add(new MixedPcLrt());
+//        algorithms.add(new MixedPcsLrt());
+//        algorithms.add(new MixedCpcLrt());
 //
 //        PAG
-        algorithms.add(new ContinuousFciFz());
-        algorithms.add(new ContinuousFciMaxFz());
-        algorithms.add(new ContinuousRfciFz());
-
-        algorithms.add(new ContinuousFciSemBic());
-        algorithms.add(new ContinuousRfciSemBic());
-
-        algorithms.add(new ContinuousGfci());
-
-        algorithms.add(new DiscreteFciCs());
-        algorithms.add(new DiscreteFciGs());
-
-        algorithms.add(new DiscreteFciCs());
-        algorithms.add(new DiscreteRfciGs());
-
-        algorithms.add(new DiscreteGfci());
+//        algorithms.add(new ContinuousFciFz());
+//        algorithms.add(new ContinuousFciMaxFz());
+//        algorithms.add(new ContinuousRfciFz());
+//
+//        algorithms.add(new ContinuousFciSemBic());
+//        algorithms.add(new ContinuousRfciSemBic());
+//
+//        algorithms.add(new ContinuousGfci());
+////
+//        algorithms.add(new DiscreteFciCs());
+//        algorithms.add(new DiscreteFciGs());
+//
+//        algorithms.add(new DiscreteFciCs());
+//        algorithms.add(new DiscreteRfciGs());
+//
+//        algorithms.add(new DiscreteGfci());
 
 //        algorithms.add(new MixedFciLrtWfgs());
 //        algorithms.add(new MixedFciLrt());
 //        algorithms.add(new MixedGfciMixedScore());
 //        algorithms.add(new MixedGfciCG());
-        algorithms.add(new MixedFciCG());
+//        algorithms.add(new MixedFciCG());
 //        algorithms.add(new MixedFciMlrw());
 
 //        Cyclic PAG

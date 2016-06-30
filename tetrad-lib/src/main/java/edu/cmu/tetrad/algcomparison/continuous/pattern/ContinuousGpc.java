@@ -16,6 +16,8 @@ public class ContinuousGpc implements Algorithm {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
         GPc pc = new GPc(score);
+        pc.setHeuristicSpeedup(true);
+        pc.setFgsDepth(parameters.get("depth").intValue());
         return pc.search();
     }
 

@@ -29,6 +29,8 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -161,12 +163,14 @@ public class Comparison {
         this.out = out;
         double[][][][] allStats = calcStats(algorithms, statDescriptions, parameters, simulation);
 
-        out.println();
-        out.println("Statistics:");
-        out.println();
+        if (allStats != null) {
+            out.println();
+            out.println("Statistics:");
+            out.println();
 
-        for (String stat : statDescriptions.keySet()) {
-            out.println(stat + " = " + statDescriptions.get(stat));
+            for (String stat : statDescriptions.keySet()) {
+                out.println(stat + " = " + statDescriptions.get(stat));
+            }
         }
 
         out.println();
@@ -183,79 +187,81 @@ public class Comparison {
         out.println(simulation);
         out.println();
 
-        int numTables = allStats.length;
-        int numAlgorithms = allStats[0].length;
-        int numStats = allStats[0][0].length - 1;
+        if (allStats != null) {
+            int numTables = allStats.length;
+            int numAlgorithms = allStats[0].length;
+            int numStats = allStats[0][0].length - 1;
 
-        double[][][] statTables = calcStatTables(allStats, Mode.Average, numTables, numAlgorithms, numStats);
-        double[] utilities = calcUtilities(statDescriptions, statWeights, numAlgorithms, numStats, statTables[0]);
+            double[][][] statTables = calcStatTables(allStats, Mode.Average, numTables, numAlgorithms, numStats);
+            double[] utilities = calcUtilities(statDescriptions, statWeights, numAlgorithms, numStats, statTables[0]);
 
-        // Add utilities to table as the last column.
-        for (int u = 0; u < numTables; u++) {
-            for (int t1 = 0; t1 < numAlgorithms; t1++) {
-                statTables[u][t1][numStats] = utilities[t1];
+            // Add utilities to table as the last column.
+            for (int u = 0; u < numTables; u++) {
+                for (int t1 = 0; t1 < numAlgorithms; t1++) {
+                    statTables[u][t1][numStats] = utilities[t1];
+                }
             }
-        }
 
-        int[] newOrder = sort(algorithms, utilities);
+            int[] newOrder = sort(algorithms, utilities);
 
-        out.println("Algorithms (sorted high to low by W for average statistics):");
-        out.println();
+            out.println("Algorithms (sorted high to low by W for average statistics):");
+            out.println();
 
-        for (int t = 0; t < algorithms.size(); t++) {
-            out.println((t + 1) + ". " + algorithms.get(newOrder[t]).getDescription());
-        }
-
-        out.println();
-        out.println("Weighting of statistics:\n");
-        out.print("W = ");
-
-        Iterator it0 = statDescriptions.keySet().iterator();
-
-        while (it0.hasNext()) {
-            String statName = (String) it0.next();
-            Double weight = statWeights.get(statName);
-            if (weight != null) {
-                out.println(weight + " * Index(" + statName + ")");
-                break;
+            for (int t = 0; t < algorithms.size(); t++) {
+                out.println((t + 1) + ". " + algorithms.get(newOrder[t]).getDescription());
             }
-        }
 
-        while (it0.hasNext()) {
-            String statName = (String) it0.next();
-            Double weight = statWeights.get(statName);
-            if (weight != null) {
-                out.println("    " + weight + " * Index(" + statName + ")");
+            out.println();
+            out.println("Weighting of statistics:\n");
+            out.print("W = ");
+
+            Iterator it0 = statDescriptions.keySet().iterator();
+
+            while (it0.hasNext()) {
+                String statName = (String) it0.next();
+                Double weight = statWeights.get(statName);
+                if (weight != null) {
+                    out.println(weight + " * Index(" + statName + ")");
+                    break;
+                }
             }
-        }
 
-        out.println();
-
-
-        // Add utilities to table as the last column.
-
-        for (int u = 0; u < numTables; u++) {
-            for (int t = 0; t < numAlgorithms; t++) {
-                statTables[u][t][numStats] = utilities[t];
+            while (it0.hasNext()) {
+                String statName = (String) it0.next();
+                Double weight = statWeights.get(statName);
+                if (weight != null) {
+                    out.println("    " + weight + " * Index(" + statName + ")");
+                }
             }
-        }
 
-        printStats(statTables, statDescriptions, Mode.Average, newOrder);
+            out.println();
 
-        statTables = calcStatTables(allStats, Mode.StandardDeviation, numTables, numAlgorithms, numStats);
 
-        printStats(statTables, statDescriptions, Mode.StandardDeviation, newOrder);
+            // Add utilities to table as the last column.
 
-        statTables = calcStatTables(allStats, Mode.WorstCase, numTables, numAlgorithms, numStats);
-
-        // Add utilities to table as the last column.
-        for (int u = 0; u < numTables; u++) {
-            for (int t1 = 0; t1 < numAlgorithms; t1++) {
-                statTables[u][t1][numStats] = utilities[t1];
+            for (int u = 0; u < numTables; u++) {
+                for (int t = 0; t < numAlgorithms; t++) {
+                    statTables[u][t][numStats] = utilities[t];
+                }
             }
-        }
 
-        printStats(statTables, statDescriptions, Mode.WorstCase, newOrder);
+            printStats(statTables, statDescriptions, Mode.Average, newOrder);
+
+            statTables = calcStatTables(allStats, Mode.StandardDeviation, numTables, numAlgorithms, numStats);
+
+            printStats(statTables, statDescriptions, Mode.StandardDeviation, newOrder);
+
+            statTables = calcStatTables(allStats, Mode.WorstCase, numTables, numAlgorithms, numStats);
+
+            // Add utilities to table as the last column.
+            for (int u = 0; u < numTables; u++) {
+                for (int t1 = 0; t1 < numAlgorithms; t1++) {
+                    statTables[u][t1][numStats] = utilities[t1];
+                }
+            }
+
+            printStats(statTables, statDescriptions, Mode.WorstCase, newOrder);
+        }
 
         out.close();
     }
@@ -269,14 +275,15 @@ public class Comparison {
 
         double[][][][] allStats = new double[4][algorithms.size()][stats.size()][numRuns];
 
+        boolean didAnalysis = false;
+
         for (int i = 0; i < numRuns; i++) {
             System.out.println();
             System.out.println("Run " + (i + 1));
             System.out.println();
 
-            simulation.simulate(parameters);
+            DataSet data = simulation.getDataSet(i, parameters);
             Graph dag = simulation.getDag();
-            DataSet data = simulation.getData();
 
             boolean isMixed = data.isMixed();
 
@@ -295,16 +302,27 @@ public class Comparison {
                     continue;
                 }
 
+                if (dag == null && simulation instanceof SimulationPath) {
+                    printGraph(((SimulationPath) simulation).getPath(), out, i, algorithms.get(t));
+                } else {
+                    printGraph(null, out, i, algorithms.get(t));
+                }
+
                 long stop = System.currentTimeMillis();
 
                 long elapsed = stop - start;
 
-                out = GraphUtils.replaceNodes(out, dag.getNodes());
+                if (dag != null) {
+                    out = GraphUtils.replaceNodes(out, dag.getNodes());
+                }
 
                 Graph[] est = new Graph[numGraphTypes];
 
-                Graph comparisonGraph = algorithms.get(t).getComparisonGraph(dag);
-                dag = GraphUtils.replaceNodes(dag, out.getNodes());
+                Graph comparisonGraph = dag == null ? null : algorithms.get(t).getComparisonGraph(dag);
+
+                if (dag != null && out != null) {
+                    dag = GraphUtils.replaceNodes(dag, out.getNodes());
+                }
 
                 est[0] = out;
                 graphTypeUsed[0] = true;
@@ -323,32 +341,56 @@ public class Comparison {
 
                 truth[0] = comparisonGraph;
 
-                if (isMixed) {
+                if (isMixed && comparisonGraph != null) {
                     truth[1] = getSubgraph(comparisonGraph, true, true, data);
                     truth[2] = getSubgraph(comparisonGraph, true, false, data);
                     truth[3] = getSubgraph(comparisonGraph, false, false, data);
                 }
 
-                for (int u = 0; u < numGraphTypes; u++) {
-                    if (!graphTypeUsed[u]) continue;
+                if (comparisonGraph != null) {
+                    for (int u = 0; u < numGraphTypes; u++) {
+                        if (!graphTypeUsed[u]) continue;
 
-                    EdgeStats edgeStats = new EdgeStats(est[u], truth[u], elapsed).invoke();
+                        EdgeStats edgeStats = new EdgeStats(est[u], truth[u], elapsed).invoke();
 
-                    int j = -1;
+                        int j = -1;
 
-                    for (String statName : stats.keySet()) {
-                        j++;
-                        double stat = edgeStats.getStat(statName);
+                        for (String statName : stats.keySet()) {
+                            j++;
+                            double stat = edgeStats.getStat(statName);
 
-                        if (!Double.isNaN(stat)) {
-                            allStats[u][t][j][i] = stat;
+                            if (!Double.isNaN(stat)) {
+                                allStats[u][t][j][i] = stat;
+                            }
                         }
+
+                        didAnalysis = true;
                     }
                 }
             }
         }
 
-        return allStats;
+        return didAnalysis ? allStats : null;
+    }
+
+    private void printGraph(String path, Graph graph, int i, Algorithm algorithm) {
+        try {
+            String description = algorithm.getDescription();
+            File file;
+
+            if (path != null) {
+                File _path = new File(path);
+                file = new File("comparison/" + _path.getName() + "." + description + ".graph" + "." + (i + 1) + ".txt");
+            } else {
+                file = new File("comparison/" + description + ".graph" + "." + (i + 1) + ".txt");
+            }
+
+            PrintStream out = new PrintStream(file);
+            System.out.println("Printing graph # " + (i + 1) + " to " + file.getAbsolutePath());
+            out.println(graph);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private enum Mode {Average, StandardDeviation, WorstCase}

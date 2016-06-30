@@ -20,11 +20,17 @@ import java.util.Map;
 public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
     private Graph graph;
     private DataSet dataSet;
+    private int numDataSets;
 
-    public MixedSemThenDiscretizeHalfSimulation() {
+    public MixedSemThenDiscretizeHalfSimulation(int numDataSets) {
+        this.numDataSets = numDataSets;
     }
 
-    public void simulate(Map<String, Number> parameters) {
+    public DataSet getDataSet() {
+        return dataSet;
+    }
+
+    public DataSet getDataSet(int index, Map<String, Number> parameters) {
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.get("numMeasures").intValue(),
                 parameters.get("numLatents").intValue(),
@@ -48,6 +54,7 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
         }
 
         this.dataSet = discretizer.discretize();
+        return this.dataSet;
     }
 
     public Graph getDag() {
@@ -64,5 +71,10 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
 
     public boolean isMixed() {
         return true;
+    }
+
+    @Override
+    public int getNumDataSets() {
+        return numDataSets;
     }
 }

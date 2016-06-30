@@ -9,13 +9,13 @@ import java.util.Map;
  * Created by jdramsey on 6/4/16.
  */
 public interface Simulation {
-    void simulate(Map<String, Number> parameters);
+    DataSet getDataSet(int i, Map<String, Number> parameters);
 
     Graph getDag();
-
-    DataSet getData();
 
     String toString();
 
     boolean isMixed();
+
+    int getNumDataSets();
 }

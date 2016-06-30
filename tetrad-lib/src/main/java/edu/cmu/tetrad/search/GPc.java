@@ -110,13 +110,14 @@ public final class GPc implements GraphSearch {
     private PrintStream out = System.out;
 
     // True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches. By default false.
-    private boolean faithfulnessAssumed = true;
+    private boolean heuristicSpeedup = true;
 
     // The score.
     private Score score;
 
     private SepsetProducer sepsets;
     private long elapsedTime;
+    private int fgsDepth = -1;
 
     //============================CONSTRUCTORS============================//
 
@@ -155,8 +156,10 @@ public final class GPc implements GraphSearch {
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
-//        fgs.setFaithfulnessAssumed(faithfulnessAssumed);
+        fgs.setHeuristicSpeedup(heuristicSpeedup);
+        fgs.setDepth(fgsDepth);
         graph = fgs.search();
+
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
 //        System.out.println("GFCI: FGS done");
@@ -170,27 +173,91 @@ public final class GPc implements GraphSearch {
 //
 //        System.out.println("GFCI: Look inside triangles starting");
 
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+//        for (Node b : nodes) {
+//            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
+//
+//            if (adjacentNodes.size() < 2) {
+//                continue;
+//            }
+//
+//            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+//            int[] combination;
+//
+//            while ((combination = cg.next()) != null) {
+//                Node a = adjacentNodes.get(combination[0]);
+//                Node c = adjacentNodes.get(combination[1]);
+//
+//                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
+//                    if (sepsets.getSepset(a, c) != null) {
+//                        graph.removeEdge(a, c);
+//                    }
+//                }
+//            }
+//        }
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
+        for (int d = 0; d < 100; d++) {
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
+            LOOP:
+            for (Edge edge : graph.getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
+                List<Node> adjx = fgsGraph.getAdjacentNodes(x);
+                List<Node> adjy = fgsGraph.getAdjacentNodes(y);
 
-                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
-                    if (sepsets.getSepset(a, c) != null) {
-                        graph.removeEdge(a, c);
+                adjx.remove(y);
+                adjy.remove(x);
+
+                Set<Node> intersection = new HashSet<>(adjx);
+                intersection.retainAll(new HashSet<>(adjy));
+
+                if (intersection.isEmpty()) continue LOOP;
+
+                if (adjx.size() < d) continue LOOP;
+
+                ChoiceGenerator gen = new ChoiceGenerator(adjx.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> _adj = GraphUtils.asList(choice, adjx);
+
+                    if (independenceTest.isIndependent(x, y, _adj)) {
+                        graph.removeEdge(edge);
+                        continue LOOP;
+                    }
+                }
+
+                if (adjy.size() < d) continue LOOP;
+
+                ChoiceGenerator gen2 = new ChoiceGenerator(adjy.size(), d);
+                int[] choice2;
+
+                while ((choice2 = gen2.next()) != null) {
+                    List<Node> _adj = GraphUtils.asList(choice2, adjy);
+
+                    if (independenceTest.isIndependent(x, y, _adj)) {
+                        graph.removeEdge(edge);
+                        continue LOOP;
                     }
                 }
             }
         }
+
+//        for (Edge edge : graph.getEdges()) {
+//            System.out.println(edge);
+//
+//            Node a = edge.getNode1();
+//            Node c = edge.getNode2();
+//
+//            Set<Node> x = new HashSet<>(fgsGraph.getAdjacentNodes(a));
+//            x.retainAll(fgsGraph.getAdjacentNodes(c));
+//
+//            if (!x.isEmpty()) {
+//                if (sepsets.getSepset(a, c) != null) {
+//                    graph.removeEdge(a, c);
+//                }
+//            }
+//        }
 
         modifiedR0(fgsGraph);
 
@@ -261,8 +328,8 @@ public final class GPc implements GraphSearch {
 
     // Due to Spirtes.
     public void modifiedR0(Graph fgsGraph) {
-        graph.reorientAllWith(Endpoint.CIRCLE);
-        fciOrientbk(knowledge, graph, graph.getNodes());
+        graph.reorientAllWith(Endpoint.TAIL);
+        pcOrientBk(knowledge, graph, graph.getNodes());
 
         List<Node> nodes = graph.getNodes();
 
@@ -391,8 +458,8 @@ public final class GPc implements GraphSearch {
         this.independenceTest = independenceTest;
     }
 
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
+    public void setHeuristicSpeedup(boolean heuristicSpeedup) {
+        this.heuristicSpeedup = heuristicSpeedup;
     }
 
     //===========================================PRIVATE METHODS=======================================//
@@ -410,7 +477,7 @@ public final class GPc implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
+    private void pcOrientBk(IKnowledge knowledge, Graph graph, List<Node> variables) {
         logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -431,7 +498,7 @@ public final class GPc implements GraphSearch {
 
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+            graph.setEndpoint(from, to, Endpoint.TAIL);
             logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
@@ -464,6 +531,14 @@ public final class GPc implements GraphSearch {
 
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
+    }
+
+    public int getFgsDepth() {
+        return fgsDepth;
+    }
+
+    public void setFgsDepth(int fgsDepth) {
+        this.fgsDepth = fgsDepth;
     }
 }
 

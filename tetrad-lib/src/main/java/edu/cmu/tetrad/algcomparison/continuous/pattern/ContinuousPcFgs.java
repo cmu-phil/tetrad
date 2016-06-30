@@ -16,6 +16,7 @@ public class ContinuousPcFgs implements Algorithm {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(ds));
         score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
         Fgs fgs = new Fgs(score);
+        fgs.setDepth(parameters.get("fgsDepth").intValue());
         Graph g = fgs.search();
         IndependenceTest test = new IndTestScore(score);
         Pc pc = new Pc(test);
@@ -25,8 +26,8 @@ public class ContinuousPcFgs implements Algorithm {
     }
 
     public Graph getComparisonGraph(Graph dag) {
-        return new Pc(new IndTestDSep(dag)).search();
-//        return SearchGraphUtils.patternForDag(dag);
+//        return new Pc(new IndTestDSep(dag)).search();
+        return SearchGraphUtils.patternForDag(dag);
     }
 
     public String getDescription() {

@@ -173,7 +173,7 @@ public final class GFci implements GraphSearch {
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
-//        fgs.setFaithfulnessAssumed(faithfulnessAssumed);
+//        fgs.setHeuristicSpeedup(faithfulnessAssumed);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 

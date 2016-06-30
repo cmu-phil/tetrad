@@ -11,13 +11,13 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class ContinuousFgs implements Algorithm {
+public class ContinuousCpcsSemBic implements Algorithm {
     public Graph search(DataSet dataSet, Map<String, Number> parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
-        Fgs fgs = new Fgs(score);
-        fgs.setDepth(parameters.get("fgsDepth").intValue());
-        return fgs.search();
+        IndependenceTest test = new IndTestScore(score);
+        CpcStable pc = new CpcStable(test);
+        return pc.search();
     }
 
     public Graph getComparisonGraph(Graph dag) {
@@ -25,7 +25,7 @@ public class ContinuousFgs implements Algorithm {
     }
 
     public String getDescription() {
-        return "FGS using the SEM BIC score";
+        return "CPC-Stable using the SEM BIC score";
     }
 
 

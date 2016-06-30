@@ -16,11 +16,13 @@ import java.util.Map;
 public class ContinuousCyclicSemSimulation implements Simulation {
     private Graph graph;
     private DataSet dataSet;
+    private int numDataSets;
 
-    public ContinuousCyclicSemSimulation() {
+    public ContinuousCyclicSemSimulation(int numDataSets) {
+        this.numDataSets = numDataSets;
     }
 
-    public void simulate(Map<String, Number> parameters) {
+    public DataSet getDataSet(int index, Map<String, Number> parameters) {
         this.graph = GraphUtils.cyclicGraph2(parameters.get("numMeasures").intValue(),
                 parameters.get("numEdges").intValue());
         SemPm pm = new SemPm(graph);
@@ -30,6 +32,7 @@ public class ContinuousCyclicSemSimulation implements Simulation {
         params.setCoefSymmetric(true);
         SemIm im = new SemIm(pm, params);
         this.dataSet = im.simulateData(parameters.get("sampleSize").intValue(), false);
+        return this.dataSet;
     }
 
     public Graph getDag() {
@@ -47,5 +50,10 @@ public class ContinuousCyclicSemSimulation implements Simulation {
     @Override
     public boolean isMixed() {
         return false;
+    }
+
+    @Override
+    public int getNumDataSets() {
+        return numDataSets;
     }
 }

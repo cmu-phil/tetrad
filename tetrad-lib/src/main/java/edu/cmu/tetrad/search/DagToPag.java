@@ -84,6 +84,8 @@ public final class DagToPag {
     //========================PUBLIC METHODS==========================//
 
     public Graph convert() {
+        if (dag == null) throw new NullPointerException();
+
         logger.log("info", "Starting DAG to PAG.");
 
         if (verbose) {

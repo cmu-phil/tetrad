@@ -310,7 +310,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //            fci.setSamplePrior(indTestParams.getSamplePrior());
 //            fci.setStructurePrior(indTestParams.getStructurePrior());
 //            fci.setCompleteRuleSetUsed(false);
-//            fci.setFaithfulnessAssumed(indTestParams.isFaithfulnessAssumed());
+//            fci.setHeuristicSpeedup(indTestParams.isFaithfulnessAssumed());
 //            graph = fci.search();
 //        }
 //
@@ -346,7 +346,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         }
 
         BasicIndTestParams indTestParams = (BasicIndTestParams) getParams().getIndTestParams();
-        double penaltyDiscount = 2.0;//indTestParams.getPenaltyDiscount();
+        double penaltyDiscount = 20.0;//indTestParams.getPenaltyDiscount();
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
@@ -432,7 +432,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         ccd.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
 //        gfci.setDepth(3);
-//        ccd.setFaithfulnessAssumed(indTestParams.isFaithfulnessAssumed());
+//        ccd.setHeuristicSpeedup(indTestParams.isFaithfulnessAssumed());
         Graph graph = ccd.search();
 
         if (getSourceGraph() != null) {

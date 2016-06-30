@@ -20,11 +20,13 @@ import java.util.Map;
 public class MixedLeeHastieSimulation implements Simulation {
     private Graph dag;
     private DataSet dataSet;
+    private int numDataSets = 0;
 
-    public MixedLeeHastieSimulation() {
+    public MixedLeeHastieSimulation(int numDataSets) {
+        this.numDataSets = numDataSets;
     }
 
-    public void simulate(Map<String, Number> parameters) {
+    public DataSet getDataSet(int index, Map<String, Number> parameters) {
         this.dag = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.get("numMeasures").intValue(), parameters.get("numLatents").intValue(),
                 parameters.get("numEdges").intValue(),
@@ -54,8 +56,10 @@ public class MixedLeeHastieSimulation implements Simulation {
 
         DataSet ds = im.simulateDataAvoidInfinity(parameters.get("sampleSize").intValue(), false);
         this.dataSet = MixedUtils.makeMixedData(ds, nd);
+        return this.dataSet;
     }
 
+    @Override
     public Graph getDag() {
         return dag;
     }
@@ -70,5 +74,10 @@ public class MixedLeeHastieSimulation implements Simulation {
 
     public boolean isMixed() {
         return true;
+    }
+
+    @Override
+    public int getNumDataSets() {
+        return numDataSets;
     }
 }
