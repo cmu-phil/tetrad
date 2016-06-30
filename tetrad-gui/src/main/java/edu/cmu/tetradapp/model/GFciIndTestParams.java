@@ -45,7 +45,7 @@ public class GFciIndTestParams implements IndTestParams {
      */
     private int depth = -1;
 
-    private double penaltyDiscount = 2;
+    private double penaltyDiscount = 1;
 
     private double samplePrior = 10;
 
@@ -54,7 +54,7 @@ public class GFciIndTestParams implements IndTestParams {
     /**
      * True iff the complete rule set should be used.
      */
-    private boolean completeRuleSetUsed = false;
+    private boolean completeRuleSetUsed = true;
 
     /**
      * True iff the possible dsep step should be done.

@@ -1,15 +1,10 @@
 package edu.cmu.tetrad.analysis;
 
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
+import cern.colt.function.DoubleFunction;
 import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.AbstractMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.io.TabularContinuousDataReader;
 import edu.cmu.tetrad.search.*;
@@ -17,7 +12,6 @@ import edu.cmu.tetrad.sem.Ricf;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -36,7 +30,7 @@ import java.util.concurrent.ForkJoinPool;
  *
  * @author dmalinsky 2016.06.22
  */
-public class AnalysisScriptAlpha {
+public class TestFunctions {
 
     DataSet lagdata;
     ICovarianceMatrix cov;
@@ -58,64 +52,34 @@ public class AnalysisScriptAlpha {
         File[] files = dir.listFiles();
 
         if (files == null) throw new NullPointerException("No files in " + path);
-        DataSet dataSet = null;
         for (File file : files) {
 
-            if (file.getName().startsWith("data") && file.getName().endsWith(".txt")) {
-                Path dataFile = Paths.get(path.concat("/").concat(file.getName()));
-                Character delimiter = '\t';
+            if (file.getName().startsWith("1data") && file.getName().endsWith("moth.txt")) {
+//                Path dataFile = Paths.get(path.concat("/").concat(file.getName()));
+//                Character delimiter = '\t';
                 try {
-                    edu.cmu.tetrad.io.DataReader dataReader = new TabularContinuousDataReader(dataFile, delimiter);
-                    dataSet = dataReader.readInData();
-                    System.out.println("Using data file : " + file.getName());
+                    DataReader reader = new DataReader();
+                    cov = reader.parseCovariance(file);
+                    System.out.println("Using covariance matrix from data file : " + file.getName());
                     break;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
-        lagdata = TimeSeriesUtils.createLagData(dataSet, 1);
-//        cov = new CovarianceMatrixOnTheFly(lagdata);
-        cov = new CovarianceMatrix(lagdata);
-        List<Double> alphas = new ArrayList(Arrays.asList(0.25,0.20,0.19,0.18,0.17,0.16,0.15,0.14,0.13,0.12,
-                0.11,0.10,0.09,0.08,0.07,0.06,0.05,0.04,0.03,0.02,0.01,0.009,0.008,0.007,0.006,0.005,0.004,0.003,0.002,0.001));
-        ArrayList<Graph> graphlist = new ArrayList<>();
-        ArrayList<Double> scorelist = new ArrayList<>();
-        ArrayList<Double> alphalist = new ArrayList<>();
-        for(double alpha : alphas) {
-            IndependenceTest test = new IndTestFisherZ(lagdata, alpha);
-            TsFci fci = new TsFci(test);
-            fci.setKnowledge(lagdata.getKnowledge());
-            fci.setCompleteRuleSetUsed(true);
-            fci.setPossibleDsepSearchDone(true);
-            fci.setMaxPathLength(-1);
-            fci.setDepth(-1);
-            Graph graph = fci.search();
-            System.out.println("Alpha set to : " + alpha);
-            System.out.println("Search result : " + graph);
-            alphalist.add(alpha);
-            graphlist.add(graph);
-            Graph mag = MagInPag(graph);
-            double score = scoreMag(mag);
-            System.out.println("Score is : " + score);
-            scorelist.add(score);
-        }
+        System.out.println("Covariance matrix is : " + cov);
+        List<Node> nodes = cov.getVariables();
+        Graph mag = new EdgeListGraphSingleConnections(nodes);
+        mag.addDirectedEdge(nodes.get(2),nodes.get(3));
+        mag.addDirectedEdge(nodes.get(3),nodes.get(4));
+        mag.addUndirectedEdge(nodes.get(1),nodes.get(2));
+        mag.addBidirectedEdge(nodes.get(3),nodes.get(0));
+        mag.addBidirectedEdge(nodes.get(4),nodes.get(0));
 
-        double maxScore = Collections.min(scorelist);
-        int index = scorelist.indexOf(maxScore);
-        double maxAlpha = alphalist.get(index);
-        Graph bestGraph = graphlist.get(index);
+        System.out.println("Mag is : " + mag);
 
-        System.out.println("Best alpha value : " + maxAlpha);
-        System.out.println("index is : " + index);
-        System.out.println("Best graph : " + bestGraph);
-
-        System.out.println("score list : " + scorelist);
-        System.out.println("likelihood list : " + likList);
-        System.out.println("n list : " + nlist);
-        System.out.println("p list : " + plist);
-        System.out.println("numVar list : " + numVarlist);
-//        System.out.println("graph list : " + graphlist);
+        double score = scoreMag(mag);
+        System.out.println("Score is : " + score);
     }
 
     /** Creates a MAG in the equivalence class represented by a PAG.
@@ -185,13 +149,15 @@ public class AnalysisScriptAlpha {
 
     public Double scoreMag(Graph mag){
         if (cov == null) throw new NullPointerException("No covariance matrix");
-        int n = lagdata.getNumRows();
+//        int n = lagdata.getNumRows();
+        int n = cov.getSampleSize();
         double logn = Math.log(n);
-        int p = lagdata.getNumColumns();
+//        int p = lagdata.getNumColumns();
+        int p = cov.getDimension();
         Ricf.RicfResult result = new Ricf().ricf2(mag, cov, 0.001);
         DoubleMatrix2D Shat = result.getShat();
-//        System.out.println("Sigma hat is : " + Shat);
-//        System.out.println("Number of non-zero entries = " + numNonZero(Shat));
+        System.out.println("Sigma hat is : " + Shat);
+        System.out.println("Number of non-zero entries = " + numNonZero(Shat));
         int numVar = numNonZero(Shat);
         return score(Shat, n, logn, p, numVar);
     }
@@ -203,9 +169,14 @@ public class AnalysisScriptAlpha {
     private double score(DoubleMatrix2D Shat, int n, double logn, int p, int numVar) {
 //        DoubleMatrix2D S = cov(lagdata.getDoubleData());
         DoubleMatrix2D mat = new DenseDoubleMatrix2D(cov.getMatrix().toArray());
+        System.out.println("mat is : " + mat);
         double factor = ((double) n-1)/n;
         DoubleMatrix2D S = scatter(mat,factor);
+        System.out.println("S is : " + S);
         double logL = loglik(S, Shat, n);
+        System.out.println("n is " + n);
+        System.out.println("logn is " + logn);
+        System.out.println("p is " + p);
         System.out.println("Likelihood is : " + logL);
         nlist.add(n);
         plist.add(p);
@@ -215,12 +186,20 @@ public class AnalysisScriptAlpha {
 
     ArrayList<Double> likList = new ArrayList<>();
     private double loglik(DoubleMatrix2D S, DoubleMatrix2D Shat, int n) {
+//        double factor = (n-1)/n;
+//        TetradMatrix Snew = cov.getMatrix().scalarMult(factor);
+//        DoubleMatrix2D Snew2 = new DenseDoubleMatrix2D(Snew.toArray());
         Algebra algebra = new Algebra();
         DoubleMatrix2D Si = algebra.inverse(Shat);
         DoubleMatrix2D SiS = algebra.mult(Si, S);
-        double con = n * lagdata.getNumColumns() * 0.5 * Math.log(2 * Math.PI);
-//        double con = 0.0;
+//        double con = n * lagdata.getNumColumns() * 0.5 * Math.log(2 * Math.PI);
+        double con = 0.0;
         likList.add(-(n * 0.5) * Math.log(algebra.det(Shat)) - (n * 0.5) * algebra.trace(SiS) - con);
+        System.out.println("First term in loglik : " + -(n * 0.5) * Math.log(algebra.det(Shat)));
+        System.out.println("Second term in loglik : " + -(n * 0.5) * algebra.trace(SiS));
+        System.out.println("Sigma hat inverse : " + Si);
+        System.out.println("Si*S : " + SiS);
+        System.out.println("Scatter matrix : " + S);
         return (-(n * 0.5) * Math.log(algebra.det(Shat)) - (n * 0.5) * algebra.trace(SiS) - con); // add constant?
     }
 
@@ -235,15 +214,100 @@ public class AnalysisScriptAlpha {
     }
 
     public static DoubleMatrix2D scatter(DoubleMatrix2D data, double factor) {
+        System.out.println("data = " + data);
         for (int i = 0; i < data.rows(); i++) {
             for (int j = 0; j < data.columns(); j++) {
+                System.out.println("data.get(i,j) = " + data.get(i,j));
+                System.out.println("factor = " + factor);
                 data.set(i, j, data.get(i, j) * factor);
+                System.out.println("Setting element : " + data.get(i,j) + " to : " + data.get(i, j) * factor);
             }
         }
         return data;
     }
 
+
+//    public static DoubleMatrix2D cov(TetradMatrix data) {
+//        for (int j = 0; j < data.columns(); j++) {
+//            double sum = 0.0;
+//
+//            for (int i = 0; i < data.rows(); i++) {
+//                sum += data.get(i, j);
+//            }
+//
+//            double mean = sum / data.rows();
+//
+//            for (int i = 0; i < data.rows(); i++) {
+//                data.set(i, j, data.get(i, j) - mean);
+//            }
+//        }
+//
+//        RealMatrix q = data.getRealMatrix();
+//
+//        RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
+//        RealMatrix q2 = times(q1, q);
+////        DoubleMatrix2D prod = new DoubleMatrix2D(q2, q.getColumnDimension(), q.getColumnDimension());
+//        DoubleMatrix2D prod = new DenseDoubleMatrix2D(q2.getData());
+//
+//        double factor = 1.0 / (data.rows()); // removed -1 so it is 1/n not 1/(n-1)
+//
+//        for (int i = 0; i < prod.rows(); i++) {
+//            for (int j = 0; j < prod.columns(); j++) {
+//                prod.set(i, j, prod.get(i, j) * factor);
+//            }
+//        }
+//
+//        return prod;
+//    }
+//
+//    private static RealMatrix times(final RealMatrix m, final RealMatrix n) {
+//        if (m.getColumnDimension() != n.getRowDimension()) throw new IllegalArgumentException("Incompatible matrices.");
+//
+//        final int rowDimension = m.getRowDimension();
+//        final int columnDimension = n.getColumnDimension();
+//
+//        final RealMatrix out = new BlockRealMatrix(rowDimension, columnDimension);
+//
+//        final int NTHREADS = Runtime.getRuntime().availableProcessors();
+//
+//        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+//
+//        for (int t = 0; t < NTHREADS; t++) {
+//            final int _t = t;
+//
+//            Runnable worker = new Runnable() {
+//                @Override
+//                public void run() {
+//                    int chunk = rowDimension / NTHREADS + 1;
+//                    for (int row = _t * chunk; row < Math.min((_t + 1) * chunk, rowDimension); row++) {
+//                        if ((row + 1) % 100 == 0) System.out.println(row + 1);
+//
+//                        for (int col = 0; col < columnDimension; ++col) {
+//                            double sum = 0.0D;
+//
+//                            int commonDimension = m.getColumnDimension();
+//
+//                            for (int i = 0; i < commonDimension; ++i) {
+//                                sum += m.getEntry(row, i) * n.getEntry(i, col);
+//                            }
+//
+////                            double sum = m.getRowVector(row).dotProduct(n.getColumnVector(col));
+//                            out.setEntry(row, col, sum);
+//                        }
+//                    }
+//                }
+//            };
+//
+//            pool.submit(worker);
+//        }
+//
+//        while (!pool.isQuiescent()) {
+//        }
+//
+//        return out;
+//    }
+
     public static void main(String... args) {
-        new AnalysisScriptAlpha().runOnData();
+        new TestFunctions().runOnData();
     }
 }

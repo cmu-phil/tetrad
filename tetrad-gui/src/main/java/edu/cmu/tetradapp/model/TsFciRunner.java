@@ -134,14 +134,14 @@ public class TsFciRunner extends AbstractAlgorithmRunner
 //            Rfci fci = new Rfci(getIndependenceTest());
             TsFci fci = new TsFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
-            fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
+            fci.setCompleteRuleSetUsed(true);
             fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
             fci.setDepth(indTestParams.getDepth());
             graph = fci.search();
         } else {
             TsFci fci = new TsFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
-            fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
+            fci.setCompleteRuleSetUsed(true);
             fci.setPossibleDsepSearchDone(indTestParams.isPossibleDsepDone());
             fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
             fci.setDepth(indTestParams.getDepth());
