@@ -95,13 +95,14 @@ public final class DagToPag2 {
         }
 
         orientUnshieldedColliders2(graph, dag);
-
+//
         if (verbose) {
             System.out.println("DAG to PAG: Starting final orientation");
         }
 
         final FciOrient fciOrient = new FciOrient(new DagSepsets(dag));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.skipDiscriminatingPathRule(false);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.doFinalOrientation(graph);
@@ -239,7 +240,7 @@ public final class DagToPag2 {
     }
 
     private void orientUnshieldedColliders2(Graph graph, Graph dag) {
-        graph.reorientAllWith(Endpoint.CIRCLE);
+//        graph.reorientAllWith(Endpoint.CIRCLE);
 
         List<Node> allNodes = dag.getNodes();
         List<Node> measured = new ArrayList<Node>();
@@ -260,13 +261,13 @@ public final class DagToPag2 {
                     Node a = adjb.get(i);
                     Node c = adjb.get(j);
 
-                    List<Node> d = new ArrayList<>();
-                    d.add(a);
-                    d.add(c);
+//                    List<Node> d = new ArrayList<>();
+//                    d.add(a);
+//                    d.add(c);
+//
+//                    List<Node> anc = dag.getAncestors(d);
 
-                    List<Node> anc = dag.getAncestors(d);
-
-                    if (!graph.isAdjacentTo(a, c) && !anc.contains(b)) {
+                    if (!graph.isAdjacentTo(a, c) && !dag.isAncestorOf(b, a) && !dag.isAncestorOf(b, c)) {// !anc.contains(b)) {
 
 //                        if (verbose) {
 //                            System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);

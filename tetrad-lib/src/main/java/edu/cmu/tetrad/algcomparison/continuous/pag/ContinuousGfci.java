@@ -21,7 +21,7 @@ public class ContinuousGfci implements Algorithm {
 
     @Override
     public Graph getComparisonGraph(Graph dag) {
-        return new DagToPag(dag).convert();
+        return new DagToPag2(dag).convert();
     }
 
     public String getDescription() {

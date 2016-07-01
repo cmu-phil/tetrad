@@ -21,12 +21,14 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.DagScorer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -85,6 +87,7 @@ public final class FciOrient {
 
     private Graph truePag;
     private Graph dag;
+    private boolean skipDiscriminatingPathRule;
 
     //============================CONSTRUCTORS============================//
 
@@ -96,6 +99,9 @@ public final class FciOrient {
 
         if (sepsets instanceof SepsetsGreedy) {
             SepsetsGreedy _sepsets = (SepsetsGreedy) sepsets;
+            this.dag = _sepsets.getDag();
+        } else if (sepsets instanceof  DagSepsets) {
+            DagSepsets _sepsets = (DagSepsets) sepsets;
             this.dag = _sepsets.getDag();
         }
     }
@@ -666,6 +672,8 @@ public final class FciOrient {
      * This is Zhang's rule R4, discriminating undirectedPaths.
      */
     public void ruleR4B(Graph graph) {
+        if (skipDiscriminatingPathRule) return;
+
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
@@ -1362,6 +1370,10 @@ public final class FciOrient {
      */
     public boolean isChangeFlag() {
         return changeFlag;
+    }
+
+    public void skipDiscriminatingPathRule(boolean skip) {
+        this.skipDiscriminatingPathRule = skip;
     }
 }
 

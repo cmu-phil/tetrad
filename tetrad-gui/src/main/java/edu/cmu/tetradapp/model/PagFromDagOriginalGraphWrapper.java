@@ -24,22 +24,23 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
  * @author Tyler Gibson
  */
-public class PagFromDagGraphWrapper extends GraphWrapper {
+public class PagFromDagOriginalGraphWrapper extends GraphWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public PagFromDagGraphWrapper(GraphSource source) {
+    public PagFromDagOriginalGraphWrapper(GraphSource source) {
         this(source.getGraph());
     }
 
 
-    public PagFromDagGraphWrapper(Graph graph) {
+    public PagFromDagOriginalGraphWrapper(Graph graph) {
         super(new EdgeListGraph());
 
         // make sure the given graph is a dag.
@@ -49,7 +50,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper {
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        DagToPag2 p = new DagToPag2(graph);
+        DagToPag p = new DagToPag(graph);
         Graph pag = p.convert();
         setGraph(pag);
 
@@ -57,8 +58,8 @@ public class PagFromDagGraphWrapper extends GraphWrapper {
         TetradLogger.getInstance().log("pattern", pag + "");
     }
 
-    public static PagFromDagGraphWrapper serializableInstance() {
-        return new PagFromDagGraphWrapper(EdgeListGraph.serializableInstance());
+    public static PagFromDagOriginalGraphWrapper serializableInstance() {
+        return new PagFromDagOriginalGraphWrapper(EdgeListGraph.serializableInstance());
     }
 
     //======================== Private Method ======================//

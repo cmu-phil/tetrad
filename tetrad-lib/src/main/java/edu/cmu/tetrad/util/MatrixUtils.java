@@ -719,7 +719,7 @@ public final class MatrixUtils {
 
             for (int i = 0; i < m.length; i++) {
                 for (int j = 0; j < m[0].length; j++) {
-                    textTable.setToken(i + 1, j, nf.format(m[i][j]));
+                    textTable.setToken(i + 1, j, m[i][j] == 0 ? " " : nf.format(m[i][j]));
                 }
             }
 

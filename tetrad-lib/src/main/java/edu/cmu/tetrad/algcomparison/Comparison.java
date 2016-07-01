@@ -386,7 +386,7 @@ public class Comparison {
             }
 
             PrintStream out = new PrintStream(file);
-            System.out.println("Printing graph # " + (i + 1) + " to " + file.getAbsolutePath());
+            System.out.println("Printing graph to " + file.getAbsolutePath());
             out.println(graph);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

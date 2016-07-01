@@ -70,7 +70,7 @@ public class RunComparison {
 //        parameters.put("sampleSize", 1000);
         parameters.put("numMeasures", 100);
         parameters.put("numEdges", 3 * parameters.get("numMeasures").intValue());
-        parameters.put("penaltyDiscount", 5);
+        parameters.put("penaltyDiscount", 20);
         parameters.put("fgsDepth", 10);
 
         if (dataType == Algorithm.DataType.Continuous) {
@@ -171,9 +171,9 @@ public class RunComparison {
 //        algorithms.add(new ContinuousCpcFgs());
 
 //        algorithms.add(new ContinuousPcSemBic());
-        algorithms.add(new ContinuousCpcSemBic());
+//        algorithms.add(new ContinuousCpcSemBic());
 //        algorithms.add(new ContinuousPcsSemBic());
-        algorithms.add(new ContinuousCpcsSemBic());
+//        algorithms.add(new ContinuousCpcsSemBic());
 ////
 //
 //        algorithms.add(new ContinuousGpc());
@@ -234,8 +234,8 @@ public class RunComparison {
 //        algorithms.add(new ContinuousFciSemBic());
 //        algorithms.add(new ContinuousRfciSemBic());
 //
-//        algorithms.add(new ContinuousGfci());
-////
+        algorithms.add(new ContinuousGfci());
+////qq
 //        algorithms.add(new DiscreteFciCs());
 //        algorithms.add(new DiscreteFciGs());
 //
