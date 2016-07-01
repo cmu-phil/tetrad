@@ -20,7 +20,7 @@ public class MixedFciCG implements Algorithm {
 
     @Override
     public Graph getComparisonGraph(Graph dag) {
-        return new DagToPag2(dag).convert();
+        return new DagToPag(dag).convert();
     }
 
     @Override
