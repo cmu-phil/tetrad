@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
@@ -49,7 +49,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper {
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        DagToPag2 p = new DagToPag2(graph);
+        DagToPag p = new DagToPag(graph);
         Graph pag = p.convert();
         setGraph(pag);
 
