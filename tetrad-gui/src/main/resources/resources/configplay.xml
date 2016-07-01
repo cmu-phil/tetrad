@@ -137,17 +137,6 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor
                 </editor-class>
             </model>
-            <model name="Generate PAG from Dag Original" acronym="PAG from Dag"
-                   help="graph">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="pag" description="PAG" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.PagFromDagOriginalGraphWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GraphEditor
-                </editor-class>
-            </model>
             <model name="Make Bidirected Edges Undirected" acronym="Make bidirected undirected"
                    help="graph">
                 <logger>
