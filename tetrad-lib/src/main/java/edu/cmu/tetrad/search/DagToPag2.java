@@ -149,7 +149,7 @@ public final class DagToPag2 {
     }
 
     public static void collectInducedNodesVisit2(Graph dag, Node x, Node b, LinkedList<Node> path,
-                                                    Graph builtGraph) {
+                                                 Graph builtGraph) {
 
         if (path.contains(b)) {
             return;

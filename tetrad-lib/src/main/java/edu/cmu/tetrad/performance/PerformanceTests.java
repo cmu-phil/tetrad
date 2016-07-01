@@ -1422,55 +1422,6 @@ public class PerformanceTests {
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
 
-    @Test
-    public void testDagToPagOnly() {
-        int numVars = 20;
-        double edgeFactor = 1.0;
-        int numLatents = 5;
-
-        System.out.println("Making list of vars");
-
-        List<Node> vars = new ArrayList<Node>();
-
-        for (int i = 0; i < numVars; i++) {
-            vars.add(new ContinuousVariable("X" + i));
-        }
-
-        System.out.println("Finishing list of vars");
-
-        System.out.println("Making graph");
-
-        System.out.println("Finishing list of vars");
-
-//        Graph dag = DataGraphUtils.randomDagQuick2(vars, 0, (int) (vars.size() * edgeFactor));
-        Dag dag = new Dag(getLatentGraph(vars, edgeFactor, numLatents));
-
-        System.out.println(dag);
-
-        System.out.println("Graph done");
-
-        long time2a = System.currentTimeMillis();
-
-        final DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(true);
-        Graph left = dagToPag.convert();
-
-        final DagToPag2 dagToPag2 = new DagToPag2(dag);
-        dagToPag2.setCompleteRuleSetUsed(true);
-        Graph top = dagToPag2.convert();
-
-        long time2b = System.currentTimeMillis();
-
-//        top = DataGraphUtils.replaceNodes(top, left.getNodes());
-
-//        int[][] counts = edgeMisclassificationCounts(left, top);
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
-        System.out.println(GraphUtils.edgeMisclassifications(counts));
-
-//        System.out.println("Elapsed fci = " + (time1b - time1a) + " ms");
-        System.out.println("Elapsed dagtopag = " + (time2b - time2a) + " ms");
-    }
-
 //    public void testIcaOutputForDan() {
 //        int numRuns = 100;
 //
