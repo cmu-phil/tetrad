@@ -9,7 +9,7 @@ import java.util.Map;
  * Created by jdramsey on 6/4/16.
  */
 public interface Simulation {
-    DataSet getDataSet(int i, Map<String, Number> parameters);
+    DataSet getDataSet(int i, Parameters parameters);
 
     Graph getDag();
 

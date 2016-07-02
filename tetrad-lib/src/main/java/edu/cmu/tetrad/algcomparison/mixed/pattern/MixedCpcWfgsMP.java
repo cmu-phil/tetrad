@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -15,10 +16,9 @@ import java.util.Map;
  * Created by jdramsey on 6/4/16.
  */
 public class MixedCpcWfgsMP implements Algorithm {
-    public Graph search(DataSet ds, Map<String, Number> parameters) {
+    public Graph search(DataSet ds, Parameters parameters) {
         WFgs fgs = new WFgs(ds);
-        fgs.setDepth(parameters.get("fgsDepth").intValue());
-        fgs.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
+        fgs.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         Graph g =  fgs.search();
 
 //        List<Node> nodes = g.getNodes();
@@ -43,7 +43,7 @@ public class MixedCpcWfgsMP implements Algorithm {
 //
 //        }
 
-        IndependenceTest test = new IndTestMixedLrt(ds, parameters.get("alpha").doubleValue());
+        IndependenceTest test = new IndTestMixedLrt(ds, parameters.getDouble("alpha"));
         Cpc pc = new Cpc(test);
         pc.setInitialGraph(g);
         return pc.search();

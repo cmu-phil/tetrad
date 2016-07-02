@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -21,18 +22,18 @@ public class LinearGaussianSemSimulationScaleFree implements Simulation {
         this.numDataSets = numDataSets;
     }
 
-    public DataSet getDataSet(int index, Map<String, Number> parameters) {
+    public DataSet getDataSet(int index, Parameters parameters) {
         this.graph = GraphUtils.scaleFreeGraph(
-                parameters.get("numMeasures").intValue(),
-                parameters.get("numLatents").intValue(),
-                parameters.get("scaleFreeAlpha").doubleValue(),
-                parameters.get("scaleFreeBeta").doubleValue(),
-                parameters.get("scaleFreeDeltaIn").doubleValue(),
-                parameters.get("scaleFreeDeltaOut").doubleValue()
+                parameters.getInt("numMeasures"),
+                parameters.getInt("numLatents"),
+                parameters.getDouble("scaleFreeAlpha"),
+                parameters.getDouble("scaleFreeBeta"),
+                parameters.getDouble("scaleFreeDeltaIn"),
+                parameters.getInt("scaleFreeDeltaOut")
         );
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        this.dataSet = im.simulateData(parameters.get("sampleSize").intValue(), false);
+        this.dataSet = im.simulateData(parameters.getInt("sampleSize"), false);
         return this.dataSet;
     }
 

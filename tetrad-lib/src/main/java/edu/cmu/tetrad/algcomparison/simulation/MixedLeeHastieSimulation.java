@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -26,14 +27,14 @@ public class MixedLeeHastieSimulation implements Simulation {
         this.numDataSets = numDataSets;
     }
 
-    public DataSet getDataSet(int index, Map<String, Number> parameters) {
+    public DataSet getDataSet(int index, Parameters parameters) {
         this.dag = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.get("numMeasures").intValue(), parameters.get("numLatents").intValue(),
-                parameters.get("numEdges").intValue(),
-                parameters.get("maxDegree").intValue(),
-                parameters.get("maxIndegree").intValue(),
-                parameters.get("maxOutdegree").intValue(),
-                parameters.get("connected").intValue() == 1);
+                parameters.getInt("numMeasures"), parameters.getInt("numLatents"),
+                parameters.getInt("numEdges"),
+                parameters.getInt("maxDegree"),
+                parameters.getInt("maxIndegree"),
+                parameters.getInt("maxOutdegree"),
+                parameters.getInt("connected") == 1);
 
         HashMap<String, Integer> nd = new HashMap<>();
 
@@ -42,8 +43,8 @@ public class MixedLeeHastieSimulation implements Simulation {
         Collections.shuffle(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
-            if (i < nodes.size() * parameters.get("percentDiscreteForMixedSimulation").doubleValue() * 0.01) {
-                nd.put(nodes.get(i).getName(), parameters.get("numCategories").intValue());
+            if (i < nodes.size() * parameters.getDouble("percentDiscreteForMixedSimulation") * 0.01) {
+                nd.put(nodes.get(i).getName(), parameters.getInt("numCategories"));
             } else {
                 nd.put(nodes.get(i).getName(), 0);
             }
@@ -54,7 +55,7 @@ public class MixedLeeHastieSimulation implements Simulation {
         GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
         GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 
-        DataSet ds = im.simulateDataAvoidInfinity(parameters.get("sampleSize").intValue(), false);
+        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), false);
         this.dataSet = MixedUtils.makeMixedData(ds, nd);
         return this.dataSet;
     }

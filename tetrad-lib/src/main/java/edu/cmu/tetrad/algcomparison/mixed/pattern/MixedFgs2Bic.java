@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Discretizer;
@@ -8,9 +9,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.BDeuScore;
-import edu.cmu.tetrad.search.Fgs;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 
 import java.util.List;
 import java.util.Map;
@@ -18,23 +17,23 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedFgsBdeu implements Algorithm {
-    public Graph search(DataSet Dk, Map<String, Number> parameters) {
+public class MixedFgs2Bic implements Algorithm {
+    public Graph search(DataSet Dk, Parameters parameters) {
         Discretizer discretizer = new Discretizer(Dk);
         List<Node> nodes = Dk.getVariables();
 
         for (Node node : nodes) {
             if (node instanceof ContinuousVariable) {
-                discretizer.equalIntervals(node, parameters.get("numCategories").intValue());
+                discretizer.equalIntervals(node, parameters.getInt("numCategories"));
             }
         }
 
         Dk = discretizer.discretize();
 
-        BDeuScore score = new BDeuScore(Dk);
+        BicScore score = new BicScore(Dk);
         score.setSamplePrior(1.0);
         score.setStructurePrior(1.0);
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         Graph p = fgs.search();
         return convertBack(Dk, p);
     }

@@ -21,7 +21,8 @@
 
 package edu.cmu.tetrad.algcomparison.comparisons;
 
-import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedFgsSem;
+import edu.cmu.tetrad.algcomparison.Parameters;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedFgs2Sem;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
@@ -60,15 +61,15 @@ public class TestAJData {
 //                Graph pattern = searchMixedFgs1(Dk, penalty);
 
 
-                Map<String, Number> parameters = new LinkedHashMap<>();
-                parameters.put("alpha", 0.001);
-                parameters.put("penaltyDiscount", 4);
-                parameters.put("mgmParam1", 0.1);
-                parameters.put("mgmParam2", 0.1);
-                parameters.put("mgmParam3", 0.1);
-                parameters.put("OfInterestCutoff", 0.05);
+                Parameters parameters = new Parameters();
+                parameters.putDouble("alpha", 0.001);
+                parameters.putDouble("penaltyDiscount", 4);
+                parameters.putDouble("mgmParam1", 0.1);
+                parameters.putDouble("mgmParam2", 0.1);
+                parameters.putDouble("mgmParam3", 0.1);
+                parameters.putDouble("OfInterestCutoff", 0.05);
 
-                Graph pattern = new MixedFgsSem().search(Dk, parameters);
+                Graph pattern = new MixedFgs2Sem().search(Dk, parameters);
 
                 long stop = System.currentTimeMillis();
 

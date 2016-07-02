@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Discretizer;
@@ -19,11 +20,11 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedFgsMS implements Algorithm {
-    public Graph search(DataSet Dk, Map<String, Number> parameters) {
+public class MixedFgs2MS implements Algorithm {
+    public Graph search(DataSet Dk, Parameters parameters) {
         MixedBicScore score = new MixedBicScore(Dk);
         Fgs fgs = new Fgs(score);
-        fgs.setDepth(parameters.get("fgsDepth").intValue());
+        fgs.setDepth(parameters.getInt("fgsDepth"));
         return fgs.search();
     }
 
@@ -35,7 +36,7 @@ public class MixedFgsMS implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS using a mixed BIC score";
+        return "FGS2 using a mixed BIC score";
     }
 
     @Override

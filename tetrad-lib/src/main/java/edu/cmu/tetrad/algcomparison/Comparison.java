@@ -94,7 +94,7 @@ public class Comparison {
         }
     }
 
-    public void testBestAlgorithms(Map<String, Number> _parameters, Map<String, Double> statWeights,
+    public void testBestAlgorithms(Parameters parameters, Map<String, Double> statWeights,
                                    List<Algorithm> allAlgorithms, List<String> stats,
                                    Simulation simulation, PrintStream out, Algorithm.DataType dataType) {
         out.println(new Date());
@@ -117,29 +117,6 @@ public class Comparison {
                 algorithms.add(algorithm);
             }
         }
-
-        Map<String, Number> parameters = new LinkedHashMap<>();
-        parameters.put("numMeasures", 100);
-        parameters.put("numEdges", 100);
-        parameters.put("numLatents", 0);
-        parameters.put("maxDegree", 10);
-        parameters.put("maxIndegree", 10);
-        parameters.put("maxOutdegree", 10);
-        parameters.put("connected", 0);
-        parameters.put("sampleSize", 1000);
-        parameters.put("numRuns", 5);
-        parameters.put("alpha", 0.001);
-        parameters.put("penaltyDiscount", 4);
-        parameters.put("fgsDepth", -1);
-        parameters.put("depth", -1);
-        parameters.put("printWinners", 0);
-        parameters.put("printAverages", 0);
-        parameters.put("printAverageTables", 1);
-
-        parameters.put("percentDiscreteForMixedSimulation", 50);
-        parameters.put("ofInterestCutoff", 0.05);
-
-        parameters.putAll(_parameters);
 
         Map<String, String> allStatDescriptions = new LinkedHashMap<>();
         allStatDescriptions.put("AP", "Adjacency Precision");
@@ -175,12 +152,7 @@ public class Comparison {
 
         out.println();
         out.println("Parameters:");
-        out.println();
-
-        for (String param : parameters.keySet()) {
-            out.println(param + " = " + parameters.get(param));
-        }
-
+        out.println(parameters);
         out.println();
         out.println("Simulation:");
         out.println();
@@ -267,11 +239,11 @@ public class Comparison {
     }
 
     private double[][][][] calcStats(List<Algorithm> algorithms, Map<String, String> stats,
-                                     Map<String, Number> parameters, Simulation simulation) {
+                                     Parameters parameters, Simulation simulation) {
         int numGraphTypes = 4;
 
         graphTypeUsed = new boolean[4];
-        int numRuns = parameters.get("numRuns").intValue();
+        int numRuns = parameters.getInt("numRuns");
 
         double[][][][] allStats = new double[4][algorithms.size()][stats.size()][numRuns];
 
@@ -303,9 +275,9 @@ public class Comparison {
                 }
 
                 if (dag == null && simulation instanceof SimulationPath) {
-                    printGraph(((SimulationPath) simulation).getPath(), out, i, algorithms.get(t));
+                    printGraph(((SimulationPath) simulation).getPath(), out, i, algorithms.get(t), parameters);
                 } else {
-                    printGraph(null, out, i, algorithms.get(t));
+                    printGraph(null, out, i, algorithms.get(t), parameters);
                 }
 
                 long stop = System.currentTimeMillis();
@@ -373,7 +345,11 @@ public class Comparison {
         return didAnalysis ? allStats : null;
     }
 
-    private void printGraph(String path, Graph graph, int i, Algorithm algorithm) {
+    private void printGraph(String path, Graph graph, int i, Algorithm algorithm, Parameters parameters) {
+        if (parameters.getInt("printGraphs") != 1) {
+            return;
+        }
+
         try {
             String description = algorithm.getDescription();
             File file;
@@ -502,7 +478,11 @@ public class Comparison {
 
             try {
                 for (int t = 0; t < numAlgorithms; t++) {
-                    list.add(stats[t][m]);
+                    double _stat = stats[t][m];
+
+                    if (!list.contains(_stat)) {
+                        list.add(_stat);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -531,9 +511,15 @@ public class Comparison {
 
                 if (weight != null) {
                     double _stat = stats[t][j];
-                    double orderStat = all.get(j).indexOf(_stat) + 1;
+                    double utility;
 
-                    sum += weight * orderStat;
+                    if (statName.equals("E") || statName.equals("SHD")) {
+                        utility = all.get(j).indexOf(_stat) / (double) all.get(j).size();
+                    } else {
+                        utility = _stat;
+                    }
+
+                    sum += weight * utility;
                     count++;
                 }
 
@@ -689,10 +675,10 @@ public class Comparison {
 
             GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison3(est, truth, System.out);
 
-            int allEdges = truth.getNumNodes() * (truth.getNumNodes() - 1);
+            int allEdges = truth.getNumNodes() * (truth.getNumNodes() - 1) / 2;
 
-            int adjTn = allEdges / 2 - (adjFn + adjFp + adjTp);
-            int arrowsTn = allEdges / 2 - (arrowsFn + arrowsFp + arrowsTp);
+            int adjTn = allEdges - adjFn;
+            int arrowsTn = allEdges - arrowsFn;
 
             adjPrecision = adjTp / (double) (adjTp + adjFp);
             adjRecall = adjTp / (double) (adjTp + adjFn);
@@ -711,7 +697,7 @@ public class Comparison {
             return this;
         }
 
-        private double mcc(int adjTp, int adjFp, int adjTn, int adjFn) {
+        private double mcc(double adjTp, double adjFp, double adjTn, double adjFn) {
             double a = adjTp * adjTn - adjFp * adjFn;
             double b = (adjTp + adjFp) * (adjTp + adjFn) * (adjTn + adjFp) * (adjTn + adjFn);
 

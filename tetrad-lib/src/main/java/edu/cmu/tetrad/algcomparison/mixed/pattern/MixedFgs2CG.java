@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fgs;
@@ -13,12 +14,12 @@ import java.util.Map;
 /**
  * @author jdramsey
  */
-public class MixedFgsCG implements Algorithm {
-    public Graph search(DataSet Dk, Map<String, Number> parameters) {
+public class MixedFgs2CG implements Algorithm {
+    public Graph search(DataSet Dk, Parameters parameters) {
         ConditionalGaussianScore score = new ConditionalGaussianScore(Dk);
         Fgs2 fgs = new Fgs2(score);
 //        fgs.setHeuristicSpeedup(false);
-//        fgs.setDepth(parameters.get("fgsDepth").intValue());
+//        fgs.setDepth(parameters.get("fgsDepth"));
         return fgs.search();
     }
 
@@ -30,7 +31,7 @@ public class MixedFgsCG implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS with the conditional Gaussian score";
+        return "FGS2 with the conditional Gaussian score";
     }
 
     @Override

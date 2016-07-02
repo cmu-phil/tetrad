@@ -169,7 +169,7 @@ public final class GFci implements GraphSearch {
             setScore();
         }
 
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);

@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.discrete.cyclic_pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -12,7 +13,7 @@ import java.util.Map;
  * Created by jdramsey on 6/4/16.
  */
 public class DiscreteCcd implements Algorithm {
-    public Graph search(DataSet dataSet, Map<String, Number> parameters) {
+    public Graph search(DataSet dataSet, Parameters parameters) {
         Score score = new BDeScore(dataSet);
         Ccd2 pc = new Ccd2(score);
         return pc.search();

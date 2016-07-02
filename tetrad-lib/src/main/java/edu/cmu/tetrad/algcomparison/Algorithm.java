@@ -11,7 +11,7 @@ import java.util.Map;
 public interface Algorithm {
     public enum DataType {Continuous, Discrete, Mixed}
 
-    Graph search(DataSet dataSet, Map<String, Number> parameters);
+    Graph search(DataSet dataSet, Parameters parameters);
 
     Graph getComparisonGraph(Graph dag);
 

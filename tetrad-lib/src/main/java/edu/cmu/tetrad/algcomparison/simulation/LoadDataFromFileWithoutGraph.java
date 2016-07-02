@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.SimulationPath;
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -33,7 +34,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
         return null;
     }
 
-    public DataSet getDataSet(int i, Map<String, Number> parameters) {
+    public DataSet getDataSet(int i, Parameters parameters) {
         try {
             File file = new File(path);
             System.out.println("Loading data from " + file.getAbsolutePath());

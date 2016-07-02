@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.discrete.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -10,13 +11,13 @@ import java.util.Map;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class DiscreteFgsBic implements Algorithm {
-    public Graph search(DataSet dataSet, Map<String, Number> parameters) {
-        BicScore score = new BicScore(dataSet);
-        score.setSamplePrior(parameters.get("samplePrior").doubleValue());
-        score.setSamplePrior(parameters.get("structurePrior").doubleValue());
-        Fgs fgs = new Fgs(score);
-        fgs.setDepth(parameters.get("fgsDepth").intValue());
+public class DiscreteFgs2Bdeu implements Algorithm {
+    public Graph search(DataSet dataSet, Parameters parameters) {
+        BDeuScore score = new BDeuScore(dataSet);
+        score.setSamplePrior(parameters.getInt("samplePrior"));
+        score.setSamplePrior(parameters.getInt("structurePrior"));
+        Fgs2 fgs = new Fgs2(score);
+//        fgs.setDepth(parameters.get("fgsDepth"));
         return fgs.search();
     }
 
@@ -25,7 +26,7 @@ public class DiscreteFgsBic implements Algorithm {
     }
 
     public String getDescription() {
-        return "FGS using the BIC score";
+        return "FGS2 using the BDeu score";
     }
 
     @Override

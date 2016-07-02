@@ -152,12 +152,12 @@ public final class GPc implements GraphSearch {
             setScore();
         }
 
-        Fgs fgs = new Fgs(score);
+        Fgs2 fgs = new Fgs2(score);
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
-        fgs.setHeuristicSpeedup(heuristicSpeedup);
-        fgs.setDepth(fgsDepth);
+//        fgs.setHeuristicSpeedup(heuristicSpeedup);
+//        fgs.setDepth(fgsDepth);
         graph = fgs.search();
 
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
@@ -173,91 +173,91 @@ public final class GPc implements GraphSearch {
 //
 //        System.out.println("GFCI: Look inside triangles starting");
 
-//        for (Node b : nodes) {
-//            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
-//
-//            if (adjacentNodes.size() < 2) {
-//                continue;
-//            }
-//
-//            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-//            int[] combination;
-//
-//            while ((combination = cg.next()) != null) {
-//                Node a = adjacentNodes.get(combination[0]);
-//                Node c = adjacentNodes.get(combination[1]);
-//
-//                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
-//                    if (sepsets.getSepset(a, c) != null) {
-//                        graph.removeEdge(a, c);
-//                    }
-//                }
-//            }
-//        }
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
 
-        for (int d = 0; d < 100; d++) {
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
 
-            LOOP:
-            for (Edge edge : graph.getEdges()) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
 
-                List<Node> adjx = fgsGraph.getAdjacentNodes(x);
-                List<Node> adjy = fgsGraph.getAdjacentNodes(y);
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
 
-                adjx.remove(y);
-                adjy.remove(x);
-
-                Set<Node> intersection = new HashSet<>(adjx);
-                intersection.retainAll(new HashSet<>(adjy));
-
-                if (intersection.isEmpty()) continue LOOP;
-
-                if (adjx.size() < d) continue LOOP;
-
-                ChoiceGenerator gen = new ChoiceGenerator(adjx.size(), d);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    List<Node> _adj = GraphUtils.asList(choice, adjx);
-
-                    if (independenceTest.isIndependent(x, y, _adj)) {
-                        graph.removeEdge(edge);
-                        continue LOOP;
-                    }
-                }
-
-                if (adjy.size() < d) continue LOOP;
-
-                ChoiceGenerator gen2 = new ChoiceGenerator(adjy.size(), d);
-                int[] choice2;
-
-                while ((choice2 = gen2.next()) != null) {
-                    List<Node> _adj = GraphUtils.asList(choice2, adjy);
-
-                    if (independenceTest.isIndependent(x, y, _adj)) {
-                        graph.removeEdge(edge);
-                        continue LOOP;
+                if (graph.isAdjacentTo(a, c) && fgsGraph.isAdjacentTo(a, c)) {
+                    if (sepsets.getSepset(a, c) != null) {
+                        graph.removeEdge(a, c);
                     }
                 }
             }
         }
 
-//        for (Edge edge : graph.getEdges()) {
-//            System.out.println(edge);
+//        for (int d = 0; d < 100; d++) {
 //
-//            Node a = edge.getNode1();
-//            Node c = edge.getNode2();
+//            LOOP:
+//            for (Edge edge : graph.getEdges()) {
+//                Node x = edge.getNode1();
+//                Node y = edge.getNode2();
 //
-//            Set<Node> x = new HashSet<>(fgsGraph.getAdjacentNodes(a));
-//            x.retainAll(fgsGraph.getAdjacentNodes(c));
+//                List<Node> adjx = fgsGraph.getAdjacentNodes(x);
+//                List<Node> adjy = fgsGraph.getAdjacentNodes(y);
 //
-//            if (!x.isEmpty()) {
-//                if (sepsets.getSepset(a, c) != null) {
-//                    graph.removeEdge(a, c);
+//                adjx.remove(y);
+//                adjy.remove(x);
+//
+//                Set<Node> intersection = new HashSet<>(adjx);
+//                intersection.retainAll(new HashSet<>(adjy));
+//
+//                if (intersection.isEmpty()) continue LOOP;
+//
+//                if (adjx.size() < d) continue LOOP;
+//
+//                ChoiceGenerator gen = new ChoiceGenerator(adjx.size(), d);
+//                int[] choice;
+//
+//                while ((choice = gen.next()) != null) {
+//                    List<Node> _adj = GraphUtils.asList(choice, adjx);
+//
+//                    if (independenceTest.isIndependent(x, y, _adj)) {
+//                        graph.removeEdge(edge);
+//                        continue LOOP;
+//                    }
+//                }
+//
+//                if (adjy.size() < d) continue LOOP;
+//
+//                ChoiceGenerator gen2 = new ChoiceGenerator(adjy.size(), d);
+//                int[] choice2;
+//
+//                while ((choice2 = gen2.next()) != null) {
+//                    List<Node> _adj = GraphUtils.asList(choice2, adjy);
+//
+//                    if (independenceTest.isIndependent(x, y, _adj)) {
+//                        graph.removeEdge(edge);
+//                        continue LOOP;
+//                    }
 //                }
 //            }
 //        }
+//
+////        for (Edge edge : graph.getEdges()) {
+////            System.out.println(edge);
+////
+////            Node a = edge.getNode1();
+////            Node c = edge.getNode2();
+////
+////            Set<Node> x = new HashSet<>(fgsGraph.getAdjacentNodes(a));
+////            x.retainAll(fgsGraph.getAdjacentNodes(c));
+////
+////            if (!x.isEmpty()) {
+////                if (sepsets.getSepset(a, c) != null) {
+////                    graph.removeEdge(a, c);
+////                }
+////            }
+////        }
 
         modifiedR0(fgsGraph);
 

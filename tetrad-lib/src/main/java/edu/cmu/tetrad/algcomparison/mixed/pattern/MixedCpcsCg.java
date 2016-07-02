@@ -5,33 +5,31 @@ import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
-import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
 import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class MixedCpcMlrw implements Algorithm {
-    public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(
-                dataSet, parameters.getDouble("alpha"), false);
-        Cpc pc = new Cpc(test);
+public class MixedCpcsCg implements Algorithm {
+    public Graph search(DataSet ds, Parameters parameters) {
+        IndependenceTest test = new IndTestScore(new ConditionalGaussianScore(ds));
+        CpcStable pc = new CpcStable(test);
         return pc.search();
     }
-
 
     public Graph getComparisonGraph(Graph dag) {
         return SearchGraphUtils.patternForDag(dag);
     }
 
-
     public String getDescription() {
-        return "CPC using the Multinomial Logistic Regression Wald Test";
+        return "CPC-Stable with the conditional Gaussian score";
     }
 
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
+
 }
+

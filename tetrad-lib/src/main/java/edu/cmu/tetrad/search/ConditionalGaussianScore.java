@@ -99,6 +99,8 @@ public class ConditionalGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
+        if (parents.length > 3) return Double.NEGATIVE_INFINITY;
+
         Node target = variables.get(i);
 
         List<ContinuousVariable> X = new ArrayList<>();
@@ -146,7 +148,7 @@ public class ConditionalGaussianScore implements Score {
         double p = 2 / (double) n;
 
         return 2.0 * lik - dof * Math.log(N)
-//                - (i2 * Math.log(p) + (n - i2) * Math.log(1.0 - p))
+//                  + (i2 * Math.log(p) + (n - i2) * Math.log(1.0 - p))
                 ;
     }
 
@@ -183,6 +185,7 @@ public class ConditionalGaussianScore implements Score {
         }
 
         double lik = 0;
+        int M = 0;
 
         // The likelihood of the joint of the discrete variables.
         for (int k = 0; k < cells.size(); k++) {
@@ -213,33 +216,37 @@ public class ConditionalGaussianScore implements Score {
                     }
 
                     TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
-                            false).getCovarianceMatrix());
+                            true).getCovarianceMatrix());
                     double det = Sigma.det();
                     lik -= 0.5 * n * Math.log(det);
+                    M += n;
                 } else {
                     sparseRows.addAll(cells.get(k));
                 }
             }
 
-            if (sparseRows.size() > p) {
-                TetradMatrix subset = new TetradMatrix(sparseRows.size(), p);
+//            if (sparseRows.size() > p) {
+//                TetradMatrix subset = new TetradMatrix(sparseRows.size(), p);
+//
+//                for (int i = 0; i < sparseRows.size(); i++) {
+//                    for (int j = 0; j < p; j++) {
+//                        subset.set(i, j, continuousData[continuousCols[j]][sparseRows.get(i)]);
+//                    }
+//                }
+//
+//                TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
+//                        false).getCovarianceMatrix());
+//                double det = Sigma.det();
+//                lik -= 0.5 * sparseRows.size() * Math.log(det);
+//                M += sparseRows.size();
+//            }
 
-                for (int i = 0; i < sparseRows.size(); i++) {
-                    for (int j = 0; j < p; j++) {
-                        subset.set(i, j, continuousData[continuousCols[j]][sparseRows.get(i)]);
-                    }
-                }
-
-                TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
-                        false).getCovarianceMatrix());
-                double det = Sigma.det();
-                lik -= 0.5 * sparseRows.size() * Math.log(det);
-            }
+            lik *= N / (double) M;
 
             lik -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
         }
 
-        int dof = f(A) * h(X) + f(A) * g(X);
+        int dof = f(A) * (h(X) + g(X));
         return new Ret(lik, dof);
     }
 

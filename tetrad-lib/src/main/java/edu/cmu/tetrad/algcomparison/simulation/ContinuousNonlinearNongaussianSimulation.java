@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
@@ -28,18 +29,18 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
         this.numDataSets = numDataSets;
     }
 
-    public DataSet getDataSet(int i, Map<String, Number> parameters) {
+    public DataSet getDataSet(int i, Parameters parameters) {
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.get("numMeasures").intValue(),
-                parameters.get("numLatents").intValue(),
-                parameters.get("numEdges").intValue(),
-                parameters.get("maxDegree").intValue(),
-                parameters.get("maxIndegree").intValue(),
-                parameters.get("maxOutdegree").intValue(),
-                parameters.get("connected").intValue() == 1);
+                parameters.getInt("numMeasures"),
+                parameters.getInt("numLatents"),
+                parameters.getInt("numEdges"),
+                parameters.getInt("maxDegree"),
+                parameters.getInt("maxIndegree"),
+                parameters.getInt("maxOutdegree"),
+                parameters.getInt("connected") == 1);
         GeneralizedSemPm pm = getPm(graph);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
-        this.dataSet = im.simulateData(parameters.get("sampleSize").intValue(), false);
+        this.dataSet = im.simulateData(parameters.getInt("sampleSize"), false);
         return this.dataSet;
     }
 

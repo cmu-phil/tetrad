@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.continuous.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -12,9 +13,9 @@ import java.util.Map;
  * Created by jdramsey on 6/4/16.
  */
 public class ContinuousFciSemBic implements Algorithm {
-    public Graph search(DataSet dataSet, Map<String, Number> parameters) {
+    public Graph search(DataSet dataSet, Parameters parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        score.setPenaltyDiscount(parameters.get("penaltyDiscount").doubleValue());
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         IndependenceTest test = new IndTestScore(score);
         Fci pc = new Fci(test);
         return pc.search();

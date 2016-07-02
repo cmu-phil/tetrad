@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Discretizer;
@@ -30,27 +31,27 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
         return dataSet;
     }
 
-    public DataSet getDataSet(int index, Map<String, Number> parameters) {
+    public DataSet getDataSet(int index, Parameters parameters) {
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.get("numMeasures").intValue(),
-                parameters.get("numLatents").intValue(),
-                parameters.get("numEdges").intValue(),
-                parameters.get("maxDegree").intValue(),
-                parameters.get("maxIndegree").intValue(),
-                parameters.get("maxOutdegree").intValue(),
-                parameters.get("connected").intValue() == 1);
+                parameters.getInt("numMeasures"),
+                parameters.getInt("numLatents"),
+                parameters.getInt("numEdges"),
+                parameters.getInt("maxDegree"),
+                parameters.getInt("maxIndegree"),
+                parameters.getInt("maxOutdegree"),
+                parameters.getInt("connected") == 1);
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet continuousData = im.simulateData(parameters.get("sampleSize").intValue(), false);
+        DataSet continuousData = im.simulateData(parameters.getInt("sampleSize"), false);
 
         List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
         Collections.shuffle(shuffledNodes);
 
         Discretizer discretizer = new Discretizer(continuousData);
 
-        for (int i = 0; i < shuffledNodes.size() * parameters.get("percentDiscreteForMixedSimulation").doubleValue() * 0.01; i++) {
-            discretizer.equalIntervals(shuffledNodes.get(i), parameters.get("numCategories").intValue());
+        for (int i = 0; i < shuffledNodes.size() * parameters.getDouble("percentDiscreteForMixedSimulation") * 0.01; i++) {
+            discretizer.equalIntervals(shuffledNodes.get(i), parameters.getInt("numCategories"));
         }
 
         this.dataSet = discretizer.discretize();

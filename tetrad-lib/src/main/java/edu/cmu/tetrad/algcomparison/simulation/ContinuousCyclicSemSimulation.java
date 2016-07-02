@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -22,16 +23,16 @@ public class ContinuousCyclicSemSimulation implements Simulation {
         this.numDataSets = numDataSets;
     }
 
-    public DataSet getDataSet(int index, Map<String, Number> parameters) {
-        this.graph = GraphUtils.cyclicGraph2(parameters.get("numMeasures").intValue(),
-                parameters.get("numEdges").intValue());
+    public DataSet getDataSet(int index, Parameters parameters) {
+        this.graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
+                parameters.getInt("numEdges"));
         SemPm pm = new SemPm(graph);
 
         SemImInitializationParams params = new SemImInitializationParams();
         params.setCoefRange(.2, .9);
         params.setCoefSymmetric(true);
         SemIm im = new SemIm(pm, params);
-        this.dataSet = im.simulateData(parameters.get("sampleSize").intValue(), false);
+        this.dataSet = im.simulateData(parameters.getInt("sampleSize"), false);
         return this.dataSet;
     }
 
