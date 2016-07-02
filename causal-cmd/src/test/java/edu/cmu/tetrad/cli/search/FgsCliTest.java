@@ -73,7 +73,7 @@ public class FgsCliTest {
             "--graphml",
             "--output-prefix", outputPrefix
         };
-        FgsCli.main(args);
+        FgsContinuous.main(args);
 
         Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
         String errMsg = outFile.getFileName().toString() + " does not exist.";
@@ -103,7 +103,7 @@ public class FgsCliTest {
             "--verbose",
             "--output-prefix", outputPrefix
         };
-        FgsCli.main(args);
+        FgsContinuous.main(args);
 
         Path outFile = Paths.get(dirOut, outputPrefix + ".txt");
         String errMsg = outFile.getFileName().toString() + " does not exist.";

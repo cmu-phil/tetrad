@@ -61,9 +61,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class FgsCli {
+public class FgsContinuous extends FgsAbstract {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FgsCli.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FgsContinuous.class);
 
     private static final Options MAIN_OPTIONS = new Options();
 
@@ -123,7 +123,7 @@ public class FgsCli {
     private static int numOfThreads;
 
     private static Path dirOut;
-    private static String outputPrefix;
+
     private static boolean validationOutput;
 
     private static boolean skipUniqueVarName;
@@ -187,52 +187,7 @@ public class FgsCli {
         LOGGER.info(String.format("FGS finished!  Please see %s for details.", outputFile.getFileName().toString()));
     }
 
-    private static void writeOutGraphML(Graph graph, Path outputFile) {
-        if (graph == null) {
-            return;
-        }
 
-        try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-            String fileName = outputFile.getFileName().toString();
-
-            String msg = String.format("Writing out GraphML file '%s'.", fileName);
-            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
-            LOGGER.info(msg);
-            XmlPrint.printPretty(GraphmlSerializer.serialize(graph, outputPrefix), graphWriter);
-            msg = String.format("Finished writing out GraphML file '%s'.", fileName);
-            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
-            LOGGER.info(msg);
-        } catch (Throwable throwable) {
-            String errMsg = String.format("Failed when writting out GraphML file '%s'.", outputFile.getFileName().toString());
-            System.err.println(errMsg);
-            LOGGER.error(errMsg, throwable);
-        }
-    }
-
-    private static void writeOutJson(Graph graph, Path outputFile) {
-        if (graph == null) {
-            return;
-        }
-
-        try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
-            String fileName = outputFile.getFileName().toString();
-
-            String msg = String.format("Writing out Json file '%s'.", fileName);
-            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
-            LOGGER.info(msg);
-
-            JsonSerializer.writeToStream(JsonSerializer.serialize(graph, outputPrefix), graphWriter);
-
-            msg = String.format("Finished writing out Json file '%s'.", fileName);
-            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
-            LOGGER.info(msg);
-
-        } catch (Throwable throwable) {
-            String errMsg = String.format("Failed when writing out Json file '%s'.", outputFile.getFileName().toString());
-            System.err.println(errMsg);
-            LOGGER.error(errMsg, throwable);
-        }
-    }
 
     private static Graph runFgs(DataSet dataSet, PrintStream writer) throws IOException {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));

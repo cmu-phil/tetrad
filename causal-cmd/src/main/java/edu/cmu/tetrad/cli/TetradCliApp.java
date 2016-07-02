@@ -18,7 +18,7 @@
  */
 package edu.cmu.tetrad.cli;
 
-import edu.cmu.tetrad.cli.search.FgsCli;
+import edu.cmu.tetrad.cli.search.FgsContinuous;
 import edu.cmu.tetrad.cli.search.FgsDiscrete;
 import edu.cmu.tetrad.cli.util.Args;
 import java.io.IOException;
@@ -72,7 +72,7 @@ public class TetradCliApp {
                 args = Args.removeOption(args, "algorithm");
                 switch (algorithm) {
                     case "fgs":
-                        FgsCli.main(args);
+                        FgsContinuous.main(args);
                         break;
                     case "fgs-discrete":
                         FgsDiscrete.main(args);
