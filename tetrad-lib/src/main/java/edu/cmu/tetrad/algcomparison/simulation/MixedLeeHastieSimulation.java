@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
@@ -80,5 +81,10 @@ public class MixedLeeHastieSimulation implements Simulation {
     @Override
     public int getNumDataSets() {
         return numDataSets;
+    }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
     }
 }

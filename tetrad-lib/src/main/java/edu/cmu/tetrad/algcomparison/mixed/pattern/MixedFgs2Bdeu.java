@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
@@ -10,12 +11,10 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.BDeuScore;
-import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.Fgs2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.

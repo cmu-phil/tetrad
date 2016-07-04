@@ -23,9 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.util.*;
@@ -129,26 +127,27 @@ public class ConditionalGaussianScore implements Score {
         Ret ret2 = getJointLikelihood(X, A);
 
         double lik = ret1.getLik() - ret2.getLik();
-        int dof = ret1.getDof() - ret2.getDof();
+        int dof1 = ret1.getDof() - ret2.getDof();
 
         int N = dataSet.getNumRows();
-//        int dof;
-//
-//        if (target instanceof ContinuousVariable) {
-//            dof = f(A) * g(X);
-//        } else if (target instanceof DiscreteVariable) {
-//            List<DiscreteVariable> b = Collections.singletonList((DiscreteVariable) target);
-//            dof = f(A) * (f(b) - 1) + f(A) * f(b) * h(X);
-//        } else {
-//            throw new IllegalStateException();
-//        }
+
+        int dof2;
+
+        if (target instanceof ContinuousVariable) {
+            dof2 = f(A) * g(X);
+        } else if (target instanceof DiscreteVariable) {
+            List<DiscreteVariable> b = Collections.singletonList((DiscreteVariable) target);
+            dof2 = f(A) * (f(b) - 1) + f(A) * f(b) * h(X);
+        } else {
+            throw new IllegalStateException();
+        }
 
         int i2 = parents.length;
-        int n = dataSet.getNumColumns();
-        double p = 2 / (double) n;
+        int v = dataSet.getNumColumns();
+        double q = 3 / (double) v;
 
-        return 2.0 * lik - dof * Math.log(N)
-//                  + (i2 * Math.log(p) + (n - i2) * Math.log(1.0 - p))
+        return 2.0 * lik - dof1 * Math.log(N)
+                  + (i2 * Math.log(q) + (v - i2) * Math.log(1.0 - q))
                 ;
     }
 
@@ -185,31 +184,22 @@ public class ConditionalGaussianScore implements Score {
         }
 
         double lik = 0;
-        int M = 0;
 
         // The likelihood of the joint of the discrete variables.
         for (int k = 0; k < cells.size(); k++) {
-            if (cells.get(k).isEmpty()) continue;
-
             int r = cells.get(k).size();
 
             if (r > 0) {
                 double prob = r / (double) N;
                 lik += r * Math.log(prob);
             }
-        }
 
-        // The likelihood of the joint of the continuous variables conditional on the discrete.
-        List<Integer> sparseRows = new ArrayList<>();
+            // The likelihood of the joint of the continuous variables conditional on the discrete.
+            if (X.size() > 0) {
+                if (r > 3 * p) {
+                    TetradMatrix subset = new TetradMatrix(r, p);
 
-        if (X.size() > 0) {
-            for (int k = 0; k < cells.size(); k++) {
-                int n = cells.get(k).size();
-
-                if (n > 10 * p) {
-                    TetradMatrix subset = new TetradMatrix(n, p);
-
-                    for (int i = 0; i < n; i++) {
+                    for (int i = 0; i < r; i++) {
                         for (int j = 0; j < p; j++) {
                             subset.set(i, j, continuousData[continuousCols[j]][cells.get(k).get(i)]);
                         }
@@ -218,35 +208,20 @@ public class ConditionalGaussianScore implements Score {
                     TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
                             true).getCovarianceMatrix());
                     double det = Sigma.det();
-                    lik -= 0.5 * n * Math.log(det);
-                    M += n;
-                } else {
-                    sparseRows.addAll(cells.get(k));
+                    lik -= 0.5 * r * Math.log(det);
                 }
             }
-
-//            if (sparseRows.size() > p) {
-//                TetradMatrix subset = new TetradMatrix(sparseRows.size(), p);
-//
-//                for (int i = 0; i < sparseRows.size(); i++) {
-//                    for (int j = 0; j < p; j++) {
-//                        subset.set(i, j, continuousData[continuousCols[j]][sparseRows.get(i)]);
-//                    }
-//                }
-//
-//                TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
-//                        false).getCovarianceMatrix());
-//                double det = Sigma.det();
-//                lik -= 0.5 * sparseRows.size() * Math.log(det);
-//                M += sparseRows.size();
-//            }
-
-            lik *= N / (double) M;
-
-            lik -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
         }
 
-        int dof = f(A) * (h(X) + g(X));
+        lik -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
+        int dof;
+
+        if (A.isEmpty()) {
+            dof = h(X);
+        } else {
+            dof = f(A) * (h(X) + 1);
+        }
+
         return new Ret(lik, dof);
     }
 
@@ -285,6 +260,16 @@ public class ConditionalGaussianScore implements Score {
     private int h(List<ContinuousVariable> X) {
         int p = X.size();
         return p * (p + 1) / 2;
+    }
+
+    private int j(List<DiscreteVariable> A) {
+        int v = 1;
+
+        for (DiscreteVariable a : A) {
+            v *= a.getNumCategories() - 1;
+        }
+
+        return v;
     }
 
     public double localScoreDiff(int x, int y, int[] z) {

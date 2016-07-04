@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
@@ -12,7 +13,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
@@ -46,7 +46,7 @@ public class MixedFgs2Bic implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS with BDeu after discretizing the continuous variables in the data set";
+        return "FGS with BIC after discretizing the continuous variables in the data set";
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {

@@ -278,8 +278,8 @@ public class SemBicScore2 implements Score {
         int cols = covarianceMatrix.getDimension();
         double q = 2 / (double) cols;
         double bic = -n * Math.log(residualVariance) - c * (p + 1) * logn;
-        double structPrior = (p * Math.log(q) + (n - p) * Math.log(1.0 - q));
-        return bic + structPrior;
+        double structPrior = (p * Math.log(q) + (cols - p) * Math.log(1.0 - q));
+        return bic ;//+ structPrior;
     }
 
     private Matrix getSelection1(Matrix cov, int[] rows) {

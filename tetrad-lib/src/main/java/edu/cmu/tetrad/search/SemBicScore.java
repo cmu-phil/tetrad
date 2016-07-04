@@ -262,8 +262,8 @@ public class SemBicScore implements Score {
         int cols = getCovariances().getDimension();
         double q = 2 / (double) cols;
         double bic = -n * Math.log(residualVariance) - c * (p + 1) * logn;
-        double structPrior = (p * Math.log(q) + (n - p) * Math.log(1.0 - q));
-        return bic + structPrior;
+        double structPrior = (p * Math.log(q) + (cols - p) * Math.log(1.0 - q));
+        return bic ;//+ structPrior;
     }
 
     // Calculates the BIC score.

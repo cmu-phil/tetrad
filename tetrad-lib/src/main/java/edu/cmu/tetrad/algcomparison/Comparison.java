@@ -96,7 +96,7 @@ public class Comparison {
 
     public void testBestAlgorithms(Parameters parameters, Map<String, Double> statWeights,
                                    List<Algorithm> allAlgorithms, List<String> stats,
-                                   Simulation simulation, PrintStream out, Algorithm.DataType dataType) {
+                                   Simulation simulation, PrintStream out, DataType dataType) {
         out.println(new Date());
 
         if (statWeights.keySet().contains("W")) {
@@ -109,11 +109,11 @@ public class Comparison {
         List<Algorithm> algorithms = new ArrayList<>();
 
         for (Algorithm algorithm : allAlgorithms) {
-            if (algorithm.getDescription().contains("MGM") && algorithm.getDataType() != Algorithm.DataType.Mixed) {
+            if (algorithm.getDescription().contains("MGM") && simulation.getDataType() != DataType.Mixed) {
                 continue;
             }
 
-            if (algorithm.getDataType() == dataType || algorithm.getDataType() == Algorithm.DataType.Mixed) {
+            if (simulation.getDataType() == dataType || simulation.getDataType() == DataType.Mixed) {
                 algorithms.add(algorithm);
             }
         }

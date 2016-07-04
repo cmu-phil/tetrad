@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
@@ -8,14 +9,11 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.Fgs2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore2;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
-
-import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.

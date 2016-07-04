@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -9,8 +10,6 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.PcStable;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.pitt.csb.mgm.MGM;
-
-import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
