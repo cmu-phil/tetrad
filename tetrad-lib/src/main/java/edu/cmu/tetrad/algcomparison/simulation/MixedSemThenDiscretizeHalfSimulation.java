@@ -14,7 +14,6 @@ import edu.cmu.tetrad.sem.SemPm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
@@ -81,7 +80,15 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
     }
 
     @Override
-    public DataType getDataType() {
-        return DataType.Mixed;
+    public DataType getDataType(Parameters parameters) {
+        double percent = parameters.getDouble("percentDiscreteForMixedSimulation");
+
+        if (percent == 0) {
+            return DataType.Continuous;
+        } else if (percent == 100) {
+            return DataType.Discrete;
+        } else {
+            return DataType.Mixed;
+        }
     }
 }

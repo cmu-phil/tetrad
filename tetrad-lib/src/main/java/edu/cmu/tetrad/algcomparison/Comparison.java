@@ -109,11 +109,7 @@ public class Comparison {
         List<Algorithm> algorithms = new ArrayList<>();
 
         for (Algorithm algorithm : allAlgorithms) {
-            if (algorithm.getDescription().contains("MGM") && simulation.getDataType() != DataType.Mixed) {
-                continue;
-            }
-
-            if (simulation.getDataType() == dataType || simulation.getDataType() == DataType.Mixed) {
+            if (algorithm.getDataType() == simulation.getDataType(parameters) || algorithm.getDataType() == DataType.Mixed) {
                 algorithms.add(algorithm);
             }
         }

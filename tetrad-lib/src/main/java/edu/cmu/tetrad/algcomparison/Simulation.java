@@ -17,5 +17,5 @@ public interface Simulation {
 
     int getNumDataSets();
 
-    DataType getDataType();
+    DataType getDataType(Parameters parameters);
 }

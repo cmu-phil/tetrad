@@ -5,16 +5,8 @@ import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.BuildPureClusters;
-import edu.cmu.tetrad.search.FindOneFactorClusters;
-import edu.cmu.tetrad.search.MimUtils;
-import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.sem.*;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.*;
 
@@ -140,7 +132,7 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
     }
 
     @Override
-    public DataType getDataType() {
+    public DataType getDataType(Parameters parameters) {
         return DataType.Continuous;
     }
 }

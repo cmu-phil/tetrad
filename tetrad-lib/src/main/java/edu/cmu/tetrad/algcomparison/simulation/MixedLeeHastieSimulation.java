@@ -14,7 +14,6 @@ import edu.pitt.csb.mgm.MixedUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
@@ -58,6 +57,7 @@ public class MixedLeeHastieSimulation implements Simulation {
 
         DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), false);
         this.dataSet = MixedUtils.makeMixedData(ds, nd);
+
         return this.dataSet;
     }
 
@@ -84,7 +84,15 @@ public class MixedLeeHastieSimulation implements Simulation {
     }
 
     @Override
-    public DataType getDataType() {
-        return DataType.Mixed;
+    public DataType getDataType(Parameters parameters) {
+        double percent = parameters.getDouble("percentDiscreteForMixedSimulation");
+
+        if (percent == 0) {
+            return DataType.Continuous;
+        } else if (percent == 100) {
+            return DataType.Discrete;
+        } else {
+            return DataType.Mixed;
+        }
     }
 }

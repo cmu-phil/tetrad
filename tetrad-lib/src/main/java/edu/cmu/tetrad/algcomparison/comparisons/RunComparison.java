@@ -28,10 +28,7 @@ import edu.cmu.tetrad.algcomparison.discrete.pag.*;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
-import edu.cmu.tetrad.algcomparison.simulation.DiscreteBayesNetSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.LinearGaussianSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.MixedSemThenDiscretizeHalfSimulation;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -63,7 +60,6 @@ public class RunComparison {
         parameters.putInt("printGraphs", 0);
 
         parameters.putDouble("alpha", 0.001);
-        parameters.putInt("penaltyDiscount", 4);
 
         parameters.putDouble("scaleFreeAlpha", .1);
         parameters.putDouble("scaleFreeBeta", .8);
@@ -76,6 +72,7 @@ public class RunComparison {
         parameters.putDouble("mgmParam2", 0.1);
         parameters.putDouble("mgmParam3", 0.1);
 
+        parameters.putDouble("percentDiscreteForMixedSimulation", 100);
 
         List<String> stats = new ArrayList<>();
         stats.add("AP");
@@ -102,11 +99,11 @@ public class RunComparison {
 //        statWeights.put("SHD", 1.0);
 //        statWeights.put("E", .2);
 
-//        List<Algorithm> algorithms = getFullAlgorithmsList();
-        List<Algorithm> algorithms = getSpecialSet();
+        List<Algorithm> algorithms = getFullAlgorithmsList();
+//        List<Algorithm> algorithms = getSpecialSet();
 
-//        Simulation simulation = new MixedLeeHastieSimulation(parameters.getInt("numRuns"));
-        Simulation simulation = new LinearGaussianSemSimulation(parameters.getInt("numRuns"));
+        Simulation simulation = new MixedLeeHastieSimulation(parameters.getInt("numRuns"));
+//        Simulation simulation = new LinearGaussianSemSimulation(parameters.getInt("numRuns"));
 //        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation(parameters.getInt("numRuns"));
 //        Simulation simulation = new DiscreteBayesNetSimulation(parameters.getInt("numRuns"));
 
@@ -114,7 +111,7 @@ public class RunComparison {
 //        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_first10.txt");
 //        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_last10.txt");
 
-        DataType dataType = simulation.getDataType();
+        DataType dataType = simulation.getDataType(parameters);
 
 
         try {

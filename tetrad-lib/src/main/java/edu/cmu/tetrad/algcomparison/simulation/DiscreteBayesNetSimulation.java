@@ -9,10 +9,6 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
-
-import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
@@ -64,7 +60,7 @@ public class DiscreteBayesNetSimulation implements Simulation {
     }
 
     @Override
-    public DataType getDataType() {
+    public DataType getDataType(Parameters parameters) {
         return DataType.Discrete;
     }
 }

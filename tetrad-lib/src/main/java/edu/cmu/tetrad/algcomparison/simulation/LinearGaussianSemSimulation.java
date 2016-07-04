@@ -4,17 +4,10 @@ import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jdramsey on 6/4/16.
@@ -65,7 +58,7 @@ public class LinearGaussianSemSimulation implements Simulation {
     }
 
     @Override
-    public DataType getDataType() {
+    public DataType getDataType(Parameters parameters) {
         return DataType.Continuous;
     }
 }

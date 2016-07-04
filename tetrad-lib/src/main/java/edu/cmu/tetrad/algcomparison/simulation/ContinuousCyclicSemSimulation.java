@@ -10,8 +10,6 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
 
-import java.util.Map;
-
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -60,7 +58,7 @@ public class ContinuousCyclicSemSimulation implements Simulation {
     }
 
     @Override
-    public DataType getDataType() {
+    public DataType getDataType(Parameters parameters) {
         return DataType.Continuous;
     }
 }
