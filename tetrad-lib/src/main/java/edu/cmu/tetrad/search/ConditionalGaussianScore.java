@@ -40,14 +40,8 @@ public class ConditionalGaussianScore implements Score {
     // The variables of the continuousData set.
     private List<Node> variables;
 
-    // Continuous data only.
-    private double[][] continuousData;
-
-    // Discrete data only.
-    private int[][] discreteData;
-
-    // Indices of variables.
-    private Map<Node, Integer> nodesHash;
+    // Likelihood function
+    private ConditionalGaussianLikelihood likelihood;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -60,37 +54,7 @@ public class ConditionalGaussianScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
 
-        continuousData = new double[dataSet.getNumColumns()][];
-        discreteData = new int[dataSet.getNumColumns()][];
-
-        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            Node v = dataSet.getVariable(j);
-
-            if (v instanceof ContinuousVariable) {
-                double[] col = new double[dataSet.getNumRows()];
-
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    col[i] = dataSet.getDouble(i, j);
-                }
-
-                continuousData[j] = col;
-            } else if (v instanceof DiscreteVariable) {
-                int[] col = new int[dataSet.getNumRows()];
-
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    col[i] = dataSet.getInt(i, j);
-                }
-
-                discreteData[j] = col;
-            }
-        }
-
-        nodesHash = new HashMap<>();
-
-        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            Node v = dataSet.getVariable(j);
-            nodesHash.put(v, j);
-        }
+        this.likelihood = new ConditionalGaussianLikelihood(dataSet);
     }
 
     /**
@@ -99,177 +63,19 @@ public class ConditionalGaussianScore implements Score {
     public double localScore(int i, int... parents) {
         if (parents.length > 3) return Double.NEGATIVE_INFINITY;
 
-        Node target = variables.get(i);
-
-        List<ContinuousVariable> X = new ArrayList<>();
-        List<DiscreteVariable> A = new ArrayList<>();
-
-        for (int parent1 : parents) {
-            Node parent = variables.get(parent1);
-
-            if (parent instanceof ContinuousVariable) {
-                X.add((ContinuousVariable) parent);
-            } else {
-                A.add((DiscreteVariable) parent);
-            }
-        }
-
-        List<ContinuousVariable> XPlus = new ArrayList<>(X);
-        List<DiscreteVariable> APlus = new ArrayList<>(A);
-
-        if (target instanceof ContinuousVariable) {
-            XPlus.add((ContinuousVariable) target);
-        } else if (target instanceof DiscreteVariable) {
-            APlus.add((DiscreteVariable) target);
-        }
-
-        Ret ret1 = getJointLikelihood(XPlus, APlus);
-        Ret ret2 = getJointLikelihood(X, A);
-
-        double lik = ret1.getLik() - ret2.getLik();
-        int dof1 = ret1.getDof() - ret2.getDof();
+        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihoodRatio(i, parents);
 
         int N = dataSet.getNumRows();
-
-        int dof2;
-
-        if (target instanceof ContinuousVariable) {
-            dof2 = f(A) * g(X);
-        } else if (target instanceof DiscreteVariable) {
-            List<DiscreteVariable> b = Collections.singletonList((DiscreteVariable) target);
-            dof2 = f(A) * (f(b) - 1) + f(A) * f(b) * h(X);
-        } else {
-            throw new IllegalStateException();
-        }
 
         int i2 = parents.length;
         int v = dataSet.getNumColumns();
-        double q = 3 / (double) v;
+        double q = 2 / (double) v;
 
-        return 2.0 * lik - dof1 * Math.log(N)
-                  + (i2 * Math.log(q) + (v - i2) * Math.log(1.0 - q))
-                ;
-    }
+        double lik = ret.getLik();
+        int k = ret.getDof();
+        double structurePrior = i2 * Math.log(q) + (v - i2) * Math.log(1.0 - q);
 
-    // The likelihood of the joint over all of these variables, continuous and discrete.
-    private Ret getJointLikelihood(List<ContinuousVariable> X, List<DiscreteVariable> A) {
-        int p = X.size();
-        int d = A.size();
-
-        // For each combination of values for the A guys extract a subset of the data.
-        int[] discreteCols = new int[d];
-        int[] continuousCols = new int[p];
-        int[] dims = new int[d];
-
-        for (int i = 0; i < d; i++) discreteCols[i] = nodesHash.get(A.get(i));
-        for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(X.get(j));
-        for (int i = 0; i < d; i++) dims[i] = A.get(i).getNumCategories();
-
-        int N = dataSet.getNumRows();
-
-        List<List<Integer>> cells = new ArrayList<>();
-        for (int i = 0; i < f(A); i++) {
-            cells.add(new ArrayList<Integer>());
-        }
-
-        int[] values = new int[A.size()];
-
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < A.size(); j++) {
-                values[j] = discreteData[discreteCols[j]][i];
-            }
-
-            int rowIndex = getRowIndex(values, dims);
-            cells.get(rowIndex).add(i);
-        }
-
-        double lik = 0;
-
-        // The likelihood of the joint of the discrete variables.
-        for (int k = 0; k < cells.size(); k++) {
-            int r = cells.get(k).size();
-
-            if (r > 0) {
-                double prob = r / (double) N;
-                lik += r * Math.log(prob);
-            }
-
-            // The likelihood of the joint of the continuous variables conditional on the discrete.
-            if (X.size() > 0) {
-                if (r > 3 * p) {
-                    TetradMatrix subset = new TetradMatrix(r, p);
-
-                    for (int i = 0; i < r; i++) {
-                        for (int j = 0; j < p; j++) {
-                            subset.set(i, j, continuousData[continuousCols[j]][cells.get(k).get(i)]);
-                        }
-                    }
-
-                    TetradMatrix Sigma = new TetradMatrix(new Covariance(subset.getRealMatrix(),
-                            true).getCovarianceMatrix());
-                    double det = Sigma.det();
-                    lik -= 0.5 * r * Math.log(det);
-                }
-            }
-        }
-
-        lik -= 0.5 * N * p * (1.0 + Math.log(2.0 * Math.PI));
-        int dof;
-
-        if (A.isEmpty()) {
-            dof = h(X);
-        } else {
-            dof = f(A) * (h(X) + 1);
-        }
-
-        return new Ret(lik, dof);
-    }
-
-    private class Ret {
-        private double lik;
-        private int dof;
-
-        public Ret(double lik, int dof) {
-            this.lik = lik;
-            this.dof = dof;
-        }
-
-        public double getLik() {
-            return lik;
-        }
-
-        public int getDof() {
-            return dof;
-        }
-    }
-
-    private int f(List<DiscreteVariable> A) {
-        int f = 1;
-
-        for (DiscreteVariable V : A) {
-            f *= V.getNumCategories();
-        }
-
-        return f;
-    }
-
-    private int g(List<ContinuousVariable> X) {
-        return X.size() + 1;
-    }
-
-    private int h(List<ContinuousVariable> X) {
-        int p = X.size();
-        return p * (p + 1) / 2;
-    }
-
-    private int j(List<DiscreteVariable> A) {
-        int v = 1;
-
-        for (DiscreteVariable a : A) {
-            v *= a.getNumCategories() - 1;
-        }
-
-        return v;
+        return 2.0 * lik - k * Math.log(N) + structurePrior;
     }
 
     public double localScoreDiff(int x, int y, int[] z) {

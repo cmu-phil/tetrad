@@ -24,9 +24,14 @@ package edu.cmu.tetrad.algcomparison.comparisons;
 import edu.cmu.tetrad.algcomparison.*;
 import edu.cmu.tetrad.algcomparison.continuous.pag.*;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
-import edu.cmu.tetrad.algcomparison.discrete.pag.*;
+import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFciCs;
+import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFciGs;
+import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteGfci;
+import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteRfciGs;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
-import edu.cmu.tetrad.algcomparison.mixed.pag.*;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFciCG;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfciCG;
+import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.LoadDataFromFileWithoutGraph;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
@@ -42,24 +47,24 @@ import java.util.Map;
 /**
  * @author Joseph Ramsey
  */
-public class RunComparison {
+public class RunComparisonFmri {
     public static void main(String... args) {
 
         Parameters parameters = new Parameters();
 
         parameters.putInt("numRuns", 1);
-//        parameters.putInt("sampleSize", 5180);
-//        parameters.putInt("numMeasures", 570);
-        parameters.putInt("sampleSize", 300);
-        parameters.putInt("numMeasures", 50);
-        parameters.putInt("numEdges", 2 * parameters.getInt("numMeasures"));
+        parameters.putInt("sampleSize", 5180);
+        parameters.putInt("numMeasures", 570);
+//        parameters.putInt("sampleSize", 150);
+//        parameters.putInt("numMeasures", 80);
+        parameters.putInt("numEdges", 3 * parameters.getInt("numMeasures"));
         parameters.putInt("numLatents", 0);
         parameters.putDouble("numCategories", 4);
 
 //        parameters.putDouble("alpha", 5e-3);
-        parameters.putDouble("alpha", 1e-3);
+        parameters.putDouble("alpha", .001);
 
-        parameters.putInt("penaltyDiscount", 4);
+        parameters.putInt("penaltyDiscount", 40);
 
         parameters.putInt("fgsDepth", -1);
         parameters.putInt("printGraphs", 0);
@@ -75,8 +80,8 @@ public class RunComparison {
         parameters.putDouble("mgmParam2", 0.1);
         parameters.putDouble("mgmParam3", 0.1);
 
-        parameters.putDouble("percentDiscreteForMixedSimulation", 50);
-//        parameters.putInt("printGraphs", 1);
+        parameters.putDouble("percentDiscreteForMixedSimulation", 0);
+        parameters.putInt("printGraphs", 1);
 
         List<String> stats = new ArrayList<>();
         stats.add("AP");
@@ -134,7 +139,7 @@ public class RunComparison {
         List<Algorithm> algorithms = new ArrayList<>();
 
 //        algorithms.add(new MixedFgs2Sem());
-        algorithms.add(new MixedFgs2CG());
+//        algorithms.add(new MixedFgs2CG());
 //
 //        algorithms.add(new MixedFgs2Bdeu());
 //        algorithms.add(new MixedFgs2Bic());
@@ -144,20 +149,20 @@ public class RunComparison {
 //        algorithms.add(new MixedPcCg());
 //        algorithms.add(new MixedCpcCg());
 //
-        algorithms.add(new MixedCpcLrt()); //*
+//        algorithms.add(new MixedCpcLrt()); //*
 ////
 //        algorithms.add(new MixedGfciCG());
 //
 //        algorithms.add(new MixedGpcCg());
 //        algorithms.add(new MixedPcCgLrtTest());
-        algorithms.add(new MixedCpcCgLrtTest()); //*
+//        algorithms.add(new MixedCpcCgLrtTest()); //*
 //        algorithms.add(new MixedPcsCgLrtTest());
 //        algorithms.add(new MixedCpcsCgLrtTest());
 //        algorithms.add(new MixedFciCgLrtTest());
 
 
 //        algorithms.add(new ContinuousCpcFgs());
-//        algorithms.add(new ContinuousFgs2());
+        algorithms.add(new ContinuousFgs2());
 
 
         return algorithms;
