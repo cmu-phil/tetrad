@@ -64,7 +64,7 @@ public class RunComparisonFmri {
 //        parameters.putDouble("alpha", 5e-3);
         parameters.putDouble("alpha", .001);
 
-        parameters.putInt("penaltyDiscount", 40);
+        parameters.putInt("penaltyDiscount", 30);
 
         parameters.putInt("fgsDepth", -1);
         parameters.putInt("printGraphs", 0);
@@ -111,13 +111,13 @@ public class RunComparisonFmri {
 //        List<Algorithm> algorithms = getFullAlgorithmsList();
         List<Algorithm> algorithms = getSpecialSet();
 //
-        Simulation simulation = new MixedLeeHastieSimulation(parameters.getInt("numRuns"));
+//        Simulation simulation = new MixedLeeHastieSimulation(parameters.getInt("numRuns"));
 //        Simulation simulation = new LinearGaussianSemSimulation(parameters.getInt("numRuns"));
 //        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation(parameters.getInt("numRuns"));
 //        Simulation simulation = new DiscreteBayesNetSimulation(parameters.getInt("numRuns"));
 
 //        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/Downloads/data1.1.txt");
-//        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_first10.txt");
+        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_first10.txt");
 //        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_last10.txt");
 
         DataType dataType = simulation.getDataType(parameters);

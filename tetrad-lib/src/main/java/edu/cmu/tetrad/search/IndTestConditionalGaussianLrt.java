@@ -110,6 +110,8 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         double lik = ret1.getLik() - ret2.getLik();
         double dof = ret1.getDof() - ret2.getDof();
 
+        if (dof <= 0) dof = 0;
+
         double p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(2.0 * lik);
 
         return p > alpha;

@@ -36,7 +36,7 @@ import java.util.List;
  * Implements the Washdown algorithm,
  * <p>
  * Initialization: Current Model = M1 := single factor pure model in
- * which L1 is a cause of all Vi in V
+ * which L1 is a cause of all Vi in v
  * <p>
  * 1) Purify step:  run Purify on getModel model.
  * 2) Create new model: for each indicator Vi in Vdiscard (variables
@@ -47,7 +47,7 @@ import java.util.List;
  * passes, else getModel model:= new model, and go to step 1.
  * <p>
  * Purify
- * 1) Vkeep := V, Vdiscard := null set
+ * 1) Vkeep := v, Vdiscard := null set
  * 2) Do goodness-of-fit test on getModel model Mc, stop if Mc passes,
  * return Vkeep and Vdiscard
  * 2) For each indicator Vi, do goodness-of-fit test on Mc - Vi, store

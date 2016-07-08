@@ -820,7 +820,7 @@ public class PurifyScoreBased implements IPurify {
             if (i < 4)
                 v[i] = new GraphNode("L" + (i + 1));
             else
-                v[i] = new GraphNode("V" + (i - 3));
+                v[i] = new GraphNode("v" + (i - 3));
             newGraph.addNode(v[i]);
         }
         for (int l = 0; l < numLatent; l++) {

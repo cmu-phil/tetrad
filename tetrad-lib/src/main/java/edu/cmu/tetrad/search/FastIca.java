@@ -427,7 +427,7 @@ public class FastIca {
         }
 
         TetradMatrix V = X.times(X.transpose()).scalarMult(1.0 / n);
-//        V.scalarMult(1.0 / n);
+//        v.scalarMult(1.0 / n);
 
         SingularValueDecomposition s = new SingularValueDecomposition(V.getRealMatrix());
         TetradMatrix D = new TetradMatrix(s.getS());

@@ -23,8 +23,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.util.*;
 
@@ -61,21 +59,22 @@ public class ConditionalGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        if (parents.length > 3) return Double.NEGATIVE_INFINITY;
-
         ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihoodRatio(i, parents);
 
         int N = dataSet.getNumRows();
 
-        int i2 = parents.length;
-        int v = dataSet.getNumColumns();
-        double q = 2 / (double) v;
-
         double lik = ret.getLik();
         int k = ret.getDof();
-        double structurePrior = i2 * Math.log(q) + (v - i2) * Math.log(1.0 - q);
+        double prior = getStructurePrior(parents);
 
-        return 2.0 * lik - k * Math.log(N) + structurePrior;
+        return 2.0 * lik - k * Math.log(N);// + prior;
+    }
+
+    private double getStructurePrior(int[] parents) {
+        int i = parents.length + 1;
+        int c = dataSet.getNumColumns();
+        double p = 2 / (double) c;
+        return i * Math.log(p) + (c - i) * Math.log(1.0 - p);
     }
 
     public double localScoreDiff(int x, int y, int[] z) {
@@ -114,7 +113,7 @@ public class ConditionalGaussianScore implements Score {
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > -100;
+        return bump > 0;
     }
 
     @Override
@@ -146,17 +145,6 @@ public class ConditionalGaussianScore implements Score {
     @Override
     public int getMaxIndegree() {
         return (int) Math.ceil(Math.log(dataSet.getNumRows()));
-    }
-
-    public int getRowIndex(int[] values, int[] dims) {
-        int rowIndex = 0;
-
-        for (int i = 0; i < dims.length; i++) {
-            rowIndex *= dims[i];
-            rowIndex += values[i];
-        }
-
-        return rowIndex;
     }
 }
 
