@@ -28,7 +28,6 @@ import edu.cmu.tetrad.algcomparison.discrete.pag.*;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
-import edu.cmu.tetrad.algcomparison.simulation.LoadDataFromFileWithoutGraph;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
 
 import java.io.File;
@@ -242,7 +241,7 @@ public class RunComparison {
 //
 //        PAG
         algorithms.add(new ContinuousFciFz());
-        algorithms.add(new ContinuousFciMaxFz());
+        algorithms.add(new ContinuousfciMaxFz());
         algorithms.add(new ContinuousRfciFz());
 
         algorithms.add(new ContinuousFciSemBic());

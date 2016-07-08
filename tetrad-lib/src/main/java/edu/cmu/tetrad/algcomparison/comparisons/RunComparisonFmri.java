@@ -34,7 +34,6 @@ import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfciCG;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.LoadDataFromFileWithoutGraph;
-import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -248,7 +247,7 @@ public class RunComparisonFmri {
 //
 //        PAG
         algorithms.add(new ContinuousFciFz());
-        algorithms.add(new ContinuousFciMaxFz());
+        algorithms.add(new ContinuousfciMaxFz());
         algorithms.add(new ContinuousRfciFz());
 
         algorithms.add(new ContinuousFciSemBic());

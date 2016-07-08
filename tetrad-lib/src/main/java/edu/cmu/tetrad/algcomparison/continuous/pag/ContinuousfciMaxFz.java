@@ -10,7 +10,7 @@ import edu.cmu.tetrad.search.*;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class ContinuousFciMaxFz implements Algorithm {
+public class ContinuousfciMaxFz implements Algorithm {
     public Graph search(DataSet dataSet, Parameters parameters) {
         IndependenceTest test = new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
         FciMax pc = new FciMax(test);
