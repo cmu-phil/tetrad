@@ -50,14 +50,14 @@ public class RunComparison {
         parameters.putInt("numRuns", 1);
 //        parameters.putInt("sampleSize", 5180);
 //        parameters.putInt("numMeasures", 570);
-        parameters.putInt("sampleSize", 30000);
-        parameters.putInt("numMeasures", 20);
+        parameters.putInt("sampleSize", 1000);
+        parameters.putInt("numMeasures", 100);
         parameters.putInt("numEdges", 2 * parameters.getInt("numMeasures"));
         parameters.putInt("numLatents", 0);
         parameters.putDouble("numCategories", 4);
 
 //        parameters.putDouble("alpha", 5e-3);
-        parameters.putDouble("alpha", 1e-15);
+        parameters.putDouble("alpha", 1e-6);
 
         parameters.putInt("penaltyDiscount", 4);
 
@@ -134,7 +134,7 @@ public class RunComparison {
         List<Algorithm> algorithms = new ArrayList<>();
 
 //        algorithms.add(new MixedFgs2Sem());
-        algorithms.add(new MixedFgs2CG());
+        algorithms.add(new MixedFgs2CG()); //*
 
 //        algorithms.add(new MixedFgs2Bdeu());
 //        algorithms.add(new MixedFgs2Bic());
@@ -150,7 +150,7 @@ public class RunComparison {
 //
 //        algorithms.add(new MixedGpcCg());
 //        algorithms.add(new MixedPcCgLrtTest());
-//        algorithms.add(new MixedCpcCgLrtTest()); //*
+        algorithms.add(new MixedCpcCgLrtTest()); //*
 //        algorithms.add(new MixedPcsCgLrtTest());
 //        algorithms.add(new MixedCpcsCgLrtTest());
 //        algorithms.add(new MixedFciCgLrtTest());
@@ -178,12 +178,11 @@ public class RunComparison {
         algorithms.add(new ContinuousPcFgs());
         algorithms.add(new ContinuousPcsFgs());
         algorithms.add(new ContinuousCpcFgs());
-//
+
         algorithms.add(new ContinuousPcSemBic());
         algorithms.add(new ContinuousCpcSemBic());
         algorithms.add(new ContinuousPcsSemBic());
         algorithms.add(new ContinuousCpcsSemBic());
-//
 
         algorithms.add(new ContinuousGpc());
 

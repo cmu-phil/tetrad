@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.util.*;
@@ -95,6 +94,8 @@ public class ConditionalGaussianLikelihood {
             Node v = dataSet.getVariable(j);
             nodesHash.put(v, j);
         }
+
+        this.adTree = new AdLeafTree(dataSet);
     }
 
     private int getDof2(int i, int[] parents) {
@@ -167,7 +168,7 @@ public class ConditionalGaussianLikelihood {
         int p = X.size();
 
 //        List<List<Integer>> cells = getCellsOriginal(A);
-        List<List<Integer>> cells = getCellsADTreeStyle(A);
+        List<List<Integer>> cells = adTree.getCellLeaves(A);
 
         int[] continuousCols = new int[p];
         for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(X.get(j));
@@ -204,17 +205,7 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
-        int dof;
-
-        if (!A.isEmpty() && !X.isEmpty()) {
-            dof = f(A) * h(X) + j(A);
-        } else if (!A.isEmpty()) {
-            dof = j(A);
-        } else if (!X.isEmpty()) {
-            dof = h(X);
-        } else {
-            dof = 0;
-        }
+        int dof = f(A) * h(X) + (!A.isEmpty() ? f(A) : 0);
 
         return new Ret(lik, dof);
     }
@@ -249,116 +240,7 @@ public class ConditionalGaussianLikelihood {
         return cells;
     }
 
-    List<Vary> baseCase;
-
-    private List<List<Integer>> getCellsADTreeStyle(List<DiscreteVariable> A) {
-        int d = A.size();
-
-//        // For each combination of values for the A guys extract a subset of the data.
-//        int[] discreteCols = new int[d];
-//        int[] dims = new int[d];
-//        int n = dataSet.getNumRows();
-
-        if (baseCase == null) {
-            Vary vary = new Vary();
-            this.baseCase = new ArrayList<>();
-            baseCase.add(vary);
-        }
-
-        List<Vary> varies = baseCase;
-
-        for (DiscreteVariable v : A) {
-            varies = getVaries(varies, nodesHash.get(v));
-        }
-
-        List<List<Integer>> rows = new ArrayList<>();
-
-        for (Vary vary : varies) {
-            rows.addAll(vary.getRows());
-        }
-
-        return rows;
-    }
-
-    private List<Vary> getVaries(List<Vary> varies, int v) {
-        List<Vary> _varies = new ArrayList<>();
-
-        for (Vary vary : varies) {
-            for (int i = 0; i < vary.getNumCategories(); i++) {
-                _varies.add(vary.getSubvary(v, i));
-            }
-        }
-
-        return _varies;
-    }
-
-    private class Vary {
-        int col;
-        int numCategories;
-        List<List<Integer>> rows = new ArrayList<>();
-        List<Map<Integer, Vary>> subVaries = new ArrayList<>();
-
-        // Base case.
-        public Vary() {
-            List<Integer> _rows = new ArrayList<>();
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
-                _rows.add(i);
-            }
-
-            subVaries.add(new HashMap<Integer, Vary>());
-
-            for (Node node : dataSet.getVariables()) {
-                if (node instanceof DiscreteVariable) {
-                    DiscreteVariable d = (DiscreteVariable) node;
-                    int col = nodesHash.get(d);
-                    subVaries.get(0).put(col, new Vary(col, d.getNumCategories(), _rows, discreteData));
-                }
-            }
-
-            numCategories = 1;
-            rows.add(_rows);
-            subVaries = new ArrayList<>();
-            subVaries.add(new HashedMap<Integer, Vary>());
-        }
-
-        public Vary(int col, int numCategories, List<Integer> supRows, int[][] discreteData) {
-            this.col = col;
-            this.numCategories = numCategories;
-
-            for (int i = 0; i < numCategories; i++) {
-                rows.add(new ArrayList<Integer>());
-            }
-
-            for (int i = 0; i < numCategories; i++) {
-                subVaries.add(new HashedMap<Integer, Vary>());
-            }
-
-            for (int i : supRows) {
-                int index = discreteData[col][i];
-                rows.get(index).add(i);
-            }
-        }
-
-        public List<List<Integer>> getRows() {
-            return rows;
-        }
-
-        public Vary getSubvary(int w, int cat) {
-            Vary vary = subVaries.get(cat).get(w);
-
-            if (vary == null) {
-                DiscreteVariable v = (DiscreteVariable) dataSet.getVariable(w);
-                vary = new Vary(w, v.getNumCategories(), rows.get(cat), discreteData);
-                subVaries.get(cat).put(w, vary);
-            }
-
-            return vary;
-        }
-
-        public int getNumCategories() {
-            return numCategories;
-        }
-    }
+    private AdLeafTree adTree;
 
     public class Ret {
         private double lik;
