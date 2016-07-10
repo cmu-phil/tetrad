@@ -36,7 +36,7 @@ public class LinearGaussianSemSimulation implements Simulation {
         return this.dataSet;
     }
 
-    public Graph getDag() {
+    public Graph getTrueGraph() {
         return graph;
     }
 
@@ -44,12 +44,8 @@ public class LinearGaussianSemSimulation implements Simulation {
         return dataSet;
     }
 
-    public String toString() {
+    public String getDescription() {
         return "Linear, Gaussian SEM simulation";
-    }
-
-    public boolean isMixed() {
-        return false;
     }
 
     @Override

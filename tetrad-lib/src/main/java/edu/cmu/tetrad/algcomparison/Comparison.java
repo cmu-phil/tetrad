@@ -21,16 +21,17 @@
 
 package edu.cmu.tetrad.algcomparison;
 
+import edu.cmu.tetrad.algcomparison.statistic.ElapsedTimeStat;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -95,8 +96,15 @@ public class Comparison {
     }
 
     public void testBestAlgorithms(Parameters parameters, Map<String, Double> statWeights,
-                                   List<Algorithm> allAlgorithms, List<String> stats,
-                                   Simulation simulation, PrintStream out, DataType dataType) {
+                                   List<Algorithm> allAlgorithms, List<Statistic> statistics,
+                                   Simulation simulation, String path) {
+        try {
+            File comparison = new File(path);
+            this.out = new PrintStream(new FileOutputStream(comparison));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         out.println(new Date());
 
         if (statWeights.keySet().contains("W")) {
@@ -114,35 +122,15 @@ public class Comparison {
             }
         }
 
-        Map<String, String> allStatDescriptions = new LinkedHashMap<>();
-        allStatDescriptions.put("AP", "Adjacency Precision");
-        allStatDescriptions.put("AR", "Adjacency Recall");
-        allStatDescriptions.put("OP", "Orientation (Arrow) precision");
-        allStatDescriptions.put("OR", "Orientation (Arrow) recall");
-        allStatDescriptions.put("McAdj", "Matthew's correlation coeffficient for adjacencies");
-        allStatDescriptions.put("McOr", "Matthew's correlation coefficient for arrow");
-        allStatDescriptions.put("F1Adj", "F1 statistic for adjacencies");
-        allStatDescriptions.put("F1Or", "F1 statistic for arrows");
-        allStatDescriptions.put("SHD", "Structural Hamming Distance");
-        allStatDescriptions.put("E", "Elapsed time in seconds");
-        allStatDescriptions.put("W", "Utility of algorithm (a weighted sum of the sorted indices of algorithms on statistics)");
-
-        Map<String, String> statDescriptions = new LinkedHashMap<>();
-
-        for (String s : stats) {
-            statDescriptions.put(s, allStatDescriptions.get(s));
-        }
-
-        this.out = out;
-        double[][][][] allStats = calcStats(algorithms, statDescriptions, parameters, simulation);
+        double[][][][] allStats = calcStats(algorithms, statistics, parameters, simulation);
 
         if (allStats != null) {
             out.println();
             out.println("Statistics:");
             out.println();
 
-            for (String stat : statDescriptions.keySet()) {
-                out.println(stat + " = " + statDescriptions.get(stat));
+            for (Statistic stat : statistics) {
+                out.println(stat.getAbbreviation() + " = " + stat.getDescription());
             }
         }
 
@@ -152,7 +140,7 @@ public class Comparison {
         out.println();
         out.println("Simulation:");
         out.println();
-        out.println(simulation);
+        out.println(simulation.getDescription());
         out.println();
 
         if (allStats != null) {
@@ -161,7 +149,7 @@ public class Comparison {
             int numStats = allStats[0][0].length - 1;
 
             double[][][] statTables = calcStatTables(allStats, Mode.Average, numTables, numAlgorithms, numStats);
-            double[] utilities = calcUtilities(statDescriptions, statWeights, numAlgorithms, numStats, statTables[0]);
+            double[] utilities = calcUtilities(statistics, statWeights, numAlgorithms, numStats, statTables[0]);
 
             // Add utilities to table as the last column.
             for (int u = 0; u < numTables; u++) {
@@ -183,22 +171,13 @@ public class Comparison {
             out.println("Weighting of statistics:\n");
             out.print("W = ");
 
-            Iterator it0 = statDescriptions.keySet().iterator();
+            Iterator it0 = statistics.iterator();
 
-            while (it0.hasNext()) {
-                String statName = (String) it0.next();
+            for (Statistic stat : statistics) {
+                String statName = stat.getAbbreviation();
                 Double weight = statWeights.get(statName);
                 if (weight != null) {
-                    out.println(weight + " * Index(" + statName + ")");
-                    break;
-                }
-            }
-
-            while (it0.hasNext()) {
-                String statName = (String) it0.next();
-                Double weight = statWeights.get(statName);
-                if (weight != null) {
-                    out.println("    " + weight + " * Index(" + statName + ")");
+                    out.println("    " + weight + " * Utility(" + statName + ")");
                 }
             }
 
@@ -213,11 +192,11 @@ public class Comparison {
                 }
             }
 
-            printStats(statTables, statDescriptions, Mode.Average, newOrder);
+            printStats(statTables, statistics, Mode.Average, newOrder);
 
             statTables = calcStatTables(allStats, Mode.StandardDeviation, numTables, numAlgorithms, numStats);
 
-            printStats(statTables, statDescriptions, Mode.StandardDeviation, newOrder);
+            printStats(statTables, statistics, Mode.StandardDeviation, newOrder);
 
             statTables = calcStatTables(allStats, Mode.WorstCase, numTables, numAlgorithms, numStats);
 
@@ -228,20 +207,20 @@ public class Comparison {
                 }
             }
 
-            printStats(statTables, statDescriptions, Mode.WorstCase, newOrder);
+            printStats(statTables, statistics, Mode.WorstCase, newOrder);
         }
 
         out.close();
     }
 
-    private double[][][][] calcStats(List<Algorithm> algorithms, Map<String, String> stats,
+    private double[][][][] calcStats(List<Algorithm> algorithms, List<Statistic> statistics,
                                      Parameters parameters, Simulation simulation) {
         int numGraphTypes = 4;
 
         graphTypeUsed = new boolean[4];
         int numRuns = parameters.getInt("numRuns");
 
-        double[][][][] allStats = new double[4][algorithms.size()][stats.size()][numRuns];
+        double[][][][] allStats = new double[4][algorithms.size()][statistics.size() + 1][numRuns];
 
         boolean didAnalysis = false;
 
@@ -251,7 +230,7 @@ public class Comparison {
             System.out.println();
 
             DataSet data = simulation.getDataSet(i, parameters);
-            Graph dag = simulation.getDag();
+            Graph trueGraph = simulation.getTrueGraph();
 
             boolean isMixed = data.isMixed();
 
@@ -270,7 +249,7 @@ public class Comparison {
                     continue;
                 }
 
-                if (dag == null && simulation instanceof SimulationPath) {
+                if (trueGraph == null && simulation instanceof SimulationPath) {
                     printGraph(((SimulationPath) simulation).getPath(), out, i, algorithms.get(t), parameters);
                 } else {
                     printGraph(null, out, i, algorithms.get(t), parameters);
@@ -280,16 +259,16 @@ public class Comparison {
 
                 long elapsed = stop - start;
 
-                if (dag != null) {
-                    out = GraphUtils.replaceNodes(out, dag.getNodes());
+                if (trueGraph != null) {
+                    out = GraphUtils.replaceNodes(out, trueGraph.getNodes());
                 }
 
                 Graph[] est = new Graph[numGraphTypes];
 
-                Graph comparisonGraph = dag == null ? null : algorithms.get(t).getComparisonGraph(dag);
+                Graph comparisonGraph = trueGraph == null ? null : algorithms.get(t).getComparisonGraph(trueGraph);
 
-                if (dag != null && out != null) {
-                    dag = GraphUtils.replaceNodes(dag, out.getNodes());
+                if (trueGraph != null && out != null) {
+                    trueGraph = GraphUtils.replaceNodes(trueGraph, out.getNodes());
                 }
 
                 est[0] = out;
@@ -319,13 +298,18 @@ public class Comparison {
                     for (int u = 0; u < numGraphTypes; u++) {
                         if (!graphTypeUsed[u]) continue;
 
-                        EdgeStats edgeStats = new EdgeStats(est[u], truth[u], elapsed).invoke();
-
                         int j = -1;
 
-                        for (String statName : stats.keySet()) {
+                        for (Statistic _stat : statistics) {
                             j++;
-                            double stat = edgeStats.getStat(statName);
+
+                            double stat;
+
+                            if (_stat instanceof ElapsedTimeStat) {
+                                stat = elapsed / 1000.0;
+                            } else {
+                                stat = _stat.getValue(truth[u], est[u]);
+                            }
 
                             if (!Double.isNaN(stat)) {
                                 allStats[u][t][j][i] = stat;
@@ -411,7 +395,7 @@ public class Comparison {
         return statTables;
     }
 
-    private void printStats(double[][][] statTables, Map<String, String> statDescriptions,
+    private void printStats(double[][][] statTables, List<Statistic> statistics,
                             Mode mode, int[] newOrder) {
 
         if (mode == Mode.Average) {
@@ -442,15 +426,17 @@ public class Comparison {
 
             for (int t = 0; t < numAlgorithms; t++) {
                 table.setToken(t + 1, 0, "" + (t + 1));
+
             }
 
-            Set<String> keySet = statDescriptions.keySet();
-            Iterator<String> iterator = keySet.iterator();
+            Iterator<Statistic> iterator = statistics.iterator();
 
-            for (int statIndex = 0; statIndex < numStats + 1; statIndex++) {
-                String statLabel = iterator.next();
+            for (int statIndex = 0; statIndex < numStats; statIndex++) {
+                String statLabel = iterator.next().getAbbreviation();
                 table.setToken(0, statIndex + 1, statLabel);
             }
+
+            table.setToken(0, numStats + 1, "W");
 
             for (int t = 0; t < numAlgorithms; t++) {
                 for (int statIndex = 0; statIndex < numStats + 1; statIndex++) {
@@ -465,7 +451,7 @@ public class Comparison {
         }
     }
 
-    private double[] calcUtilities(Map<String, String> statDescriptions, Map<String, Double> statWeights,
+    private double[] calcUtilities(List<Statistic> statistics, Map<String, Double> statWeights,
                                    int numAlgorithms, int numStats, double[][] stats) {
         List<List<Double>> all = new ArrayList<>();
 
@@ -496,20 +482,20 @@ public class Comparison {
             double sum = 0.0;
             int j = -1;
 
-            Iterator it2 = statDescriptions.keySet().iterator();
+            Iterator it2 = statistics.iterator();
             int count = 0;
 
             while (it2.hasNext()) {
-                String statName = (String) it2.next();
+                Statistic statName = (Statistic) it2.next();
                 j++;
 
-                Double weight = statWeights.get(statName);
+                Double weight = statWeights.get(statName.getAbbreviation());
 
                 if (weight != null) {
                     double _stat = stats[t][j];
                     double utility;
 
-                    if (statName.equals("E") || statName.equals("SHD")) {
+                    if (statName.getAbbreviation().equals("E") || statName.getAbbreviation().equals("SHD")) {
                         utility = all.get(j).indexOf(_stat) / (double) all.get(j).size();
                     } else {
                         utility = _stat;
@@ -543,165 +529,6 @@ public class Comparison {
         return newOrder;
     }
 
-    private class EdgeStats {
-        private Graph est;
-        private Graph truth;
-        private double adjPrecision;
-        private double adjRecall;
-        private double arrowPrecision;
-        private double arrowRecall;
-        private double mcAdj;
-        private double mcOr;
-        private double f1Adj;
-        private double f1Arrows;
-        private int shd;
-        private double elapsed;
-
-        public EdgeStats(Graph est, Graph truth, long elapsed) {
-            this.est = est;
-            this.truth = GraphUtils.replaceNodes(truth, est.getNodes());
-            this.elapsed = elapsed / 1000.0;
-        }
-
-        public double getStat(String stat) {
-            switch (stat) {
-                case "AP":
-                    return adjPrecision;
-                case "AR":
-                    return adjRecall;
-                case "OP":
-                    return arrowPrecision;
-                case "OR":
-                    return arrowRecall;
-                case "McAdj":
-                    return mcAdj;
-                case "McOr":
-                    return mcOr;
-                case "F1Adj":
-                    return f1Adj;
-                case "F1Or":
-                    return f1Arrows;
-                case "SHD":
-                    return -shd;
-                case "E":
-                    return -elapsed;
-                case "W":
-                    return Double.NaN;
-                default:
-                    throw new IllegalArgumentException("No such stat: " + stat);
-            }
-        }
-
-        public EdgeStats invoke() {
-            int adjTp = 0;
-            int adjFp = 0;
-            int adjFn = 0;
-            int arrowsTp = 0;
-            int arrowsFp = 0;
-            int arrowsFn = 0;
-
-            Set<Edge> allUnoriented = new HashSet<>();
-            for (Edge edge : truth.getEdges()) {
-                allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-            }
-
-            for (Edge edge : est.getEdges()) {
-                allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-            }
-
-            for (Edge edge : allUnoriented) {
-                if (est.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
-                        !truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                    adjFp++;
-                }
-
-                if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
-                        !est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                    adjFn++;
-                }
-
-                if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
-                        est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                    adjTp++;
-                }
-            }
-
-            Set<Edge> allOriented = new HashSet<>();
-            allOriented.addAll(truth.getEdges());
-            allOriented.addAll(est.getEdges());
-
-            for (Edge edge : allOriented) {
-                Endpoint e1Est = edge.getProximalEndpoint(edge.getNode1());
-                Endpoint e2Est = edge.getProximalEndpoint(edge.getNode2());
-
-                Edge edge2 = truth.getEdge(edge.getNode1(), edge.getNode2());
-
-                Endpoint e1True = null;
-                Endpoint e2True = null;
-
-                if (edge2 != null) {
-                    e1True = edge2.getProximalEndpoint(edge.getNode1());
-                    e2True = edge2.getProximalEndpoint(edge.getNode2());
-                }
-
-                if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
-                    arrowsFp++;
-                }
-
-                if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW) {
-                    arrowsFp++;
-                }
-
-                if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW) {
-                    arrowsFn++;
-                }
-
-                if (e2True == Endpoint.ARROW && e2Est != Endpoint.ARROW) {
-                    arrowsFn++;
-                }
-
-                if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW) {
-                    arrowsTp++;
-                }
-
-                if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW) {
-                    arrowsTp++;
-                }
-            }
-
-            GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison3(est, truth, System.out);
-
-            int allEdges = truth.getNumNodes() * (truth.getNumNodes() - 1) / 2;
-
-            int adjTn = allEdges - adjFn;
-            int arrowsTn = allEdges - arrowsFn;
-
-            adjPrecision = adjTp / (double) (adjTp + adjFp);
-            adjRecall = adjTp / (double) (adjTp + adjFn);
-
-            arrowPrecision = arrowsTp / (double) (arrowsTp + arrowsFp);
-            arrowRecall = arrowsTp / (double) (arrowsTp + arrowsFn);
-
-            mcAdj = mcc(adjTp, adjFp, adjTn, adjFn);
-            mcOr = mcc(arrowsTp, arrowsFp, arrowsTn, arrowsFn);
-
-            f1Adj = 2 * (adjPrecision * adjRecall) / (adjPrecision + adjRecall);
-            f1Arrows = 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);
-
-            shd = comparison.getShd();
-
-            return this;
-        }
-
-        private double mcc(double adjTp, double adjFp, double adjTn, double adjFn) {
-            double a = adjTp * adjTn - adjFp * adjFn;
-            double b = (adjTp + adjFp) * (adjTp + adjFn) * (adjTn + adjFp) * (adjTn + adjFn);
-
-            if (b == 0) b = 1;
-
-            return a / Math.sqrt(b);
-        }
-    }
 }
 
 

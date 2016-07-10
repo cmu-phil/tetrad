@@ -7,15 +7,9 @@ import edu.cmu.tetrad.graph.Graph;
  * Created by jdramsey on 6/4/16.
  */
 public interface Simulation {
-    DataSet getDataSet(int i, Parameters parameters);
-
-    Graph getDag();
-
-    String toString();
-
-    boolean isMixed();
-
+    Graph getTrueGraph();
     int getNumDataSets();
-
+    DataSet getDataSet(int i, Parameters parameters);
     DataType getDataType(Parameters parameters);
+    String getDescription();
 }

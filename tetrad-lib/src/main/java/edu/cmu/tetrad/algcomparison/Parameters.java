@@ -33,6 +33,7 @@ public class Parameters {
         parameters.put("printGraph", 0);
         parameters.put("percentDiscreteForMixedSimulation", 50);
         parameters.put("ofInterestCutoff", 0.05);
+        parameters.put("printGraphs", 0);
     }
 
     public String toString() {

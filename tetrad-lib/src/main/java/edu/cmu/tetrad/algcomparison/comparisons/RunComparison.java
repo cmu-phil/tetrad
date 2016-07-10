@@ -29,6 +29,8 @@ import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.MixedSemThenDiscretizeHalfSimulation;
+import edu.cmu.tetrad.algcomparison.statistic.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -50,13 +52,13 @@ public class RunComparison {
 //        parameters.putInt("sampleSize", 5180);
 //        parameters.putInt("numMeasures", 570);
         parameters.putInt("sampleSize", 1000);
-        parameters.putInt("numMeasures", 100);
+        parameters.putInt("numMeasures", 500);
         parameters.putInt("numEdges", 2 * parameters.getInt("numMeasures"));
         parameters.putInt("numLatents", 0);
         parameters.putDouble("numCategories", 4);
 
 //        parameters.putDouble("alpha", 5e-3);
-        parameters.putDouble("alpha", 1e-6);
+        parameters.putDouble("alpha", 1e-4);
 
         parameters.putInt("penaltyDiscount", 4);
 
@@ -77,18 +79,18 @@ public class RunComparison {
         parameters.putDouble("percentDiscreteForMixedSimulation", 50);
 //        parameters.putInt("printGraphs", 1);
 
-        List<String> stats = new ArrayList<>();
-        stats.add("AP");
-        stats.add("AR");
-        stats.add("OP");
-        stats.add("OR");
-        stats.add("McAdj");
-        stats.add("McOr");
-        stats.add("F1Adj");
-        stats.add("F1Or");
-        stats.add("SHD");
-        stats.add("E");
-        stats.add("W");
+        List<Statistic> stats = new ArrayList<>();
+
+        stats.add(new AdjacencyPrecisionStat());
+        stats.add(new AdjacencyRecallStat());
+        stats.add(new ArrowPrecisionStat());
+        stats.add(new ArrowRecallStat());
+        stats.add(new MathewsCorrAdjStat());
+        stats.add(new MathewsCorrArrowStat());
+        stats.add(new F1AdjStat());
+        stats.add(new F1ArrowStat());
+        stats.add(new ShdStat());
+        stats.add(new ElapsedTimeStat());
 
         Map<String, Double> statWeights = new LinkedHashMap<>();
 //        statWeights.put("AP", 1.0);
@@ -114,19 +116,8 @@ public class RunComparison {
 //        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_first10.txt");
 //        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_last10.txt");
 
-        DataType dataType = simulation.getDataType(parameters);
-
-
-        try {
-            File dir = new File("comparison");
-            dir.mkdirs();
-            File comparison = new File("comparison", "Comparison.txt");
-            PrintStream out = new PrintStream(new FileOutputStream(comparison));
-            new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation,
-                    out, dataType);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation,
+                "comparison/Comparison.txt");
     }
 
     private static List<Algorithm> getSpecialSet() {

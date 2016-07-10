@@ -35,7 +35,7 @@ public class ContinuousCyclicSemSimulation implements Simulation {
         return this.dataSet;
     }
 
-    public Graph getDag() {
+    public Graph getTrueGraph() {
         return graph;
     }
 
@@ -43,13 +43,8 @@ public class ContinuousCyclicSemSimulation implements Simulation {
         return dataSet;
     }
 
-    public String toString() {
+    public String getDescription() {
         return "Cyclic SEM simulation";
-    }
-
-    @Override
-    public boolean isMixed() {
-        return false;
     }
 
     @Override

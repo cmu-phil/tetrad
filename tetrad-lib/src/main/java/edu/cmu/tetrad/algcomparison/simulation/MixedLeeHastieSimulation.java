@@ -62,7 +62,7 @@ public class MixedLeeHastieSimulation implements Simulation {
     }
 
     @Override
-    public Graph getDag() {
+    public Graph getTrueGraph() {
         return dag;
     }
 
@@ -70,12 +70,8 @@ public class MixedLeeHastieSimulation implements Simulation {
         return dataSet;
     }
 
-    public String toString() {
+    public String getDescription() {
         return "Lee & Hastie simulation";
-    }
-
-    public boolean isMixed() {
-        return true;
     }
 
     @Override

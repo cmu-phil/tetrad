@@ -38,7 +38,7 @@ public class DiscreteBayesNetSimulation implements Simulation {
         return this.dataSet;
     }
 
-    public Graph getDag() {
+    public Graph getTrueGraph() {
         return graph;
     }
 
@@ -46,12 +46,8 @@ public class DiscreteBayesNetSimulation implements Simulation {
         return dataSet;
     }
 
-    public String toString() {
+    public String getDescription() {
         return "Bayes net simulation";
-    }
-
-    public boolean isMixed() {
-        return false;
     }
 
     @Override

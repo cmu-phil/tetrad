@@ -58,7 +58,7 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
         return this.dataSet;
     }
 
-    public Graph getDag() {
+    public Graph getTrueGraph() {
         return graph;
     }
 
@@ -66,12 +66,8 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
         return dataSet;
     }
 
-    public String toString() {
+    public String getDescription() {
         return "Simulation SEM data then discretizing some variables";
-    }
-
-    public boolean isMixed() {
-        return true;
     }
 
     @Override

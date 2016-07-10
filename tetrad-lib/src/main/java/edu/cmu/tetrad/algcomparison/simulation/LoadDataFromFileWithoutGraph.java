@@ -24,7 +24,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
         this.path = path;
     }
 
-    public Graph getDag() {
+    public Graph getTrueGraph() {
         return null;
     }
 
@@ -42,12 +42,8 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
         return dataSet;
     }
 
-    public String toString() {
+    public String getDescription() {
         return "Load single file to run.";
-    }
-
-    public boolean isMixed() {
-        return false;
     }
 
     @Override

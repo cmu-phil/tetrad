@@ -37,7 +37,7 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
         return this.dataSet;
     }
 
-    public Graph getDag() {
+    public Graph getTrueGraph() {
         return graph;
     }
 
@@ -45,7 +45,7 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
         return dataSet;
     }
 
-    public String toString() {
+    public String getDescription() {
         return "Nonlinear, non-Gaussian SEM simulation";
     }
 
@@ -120,10 +120,6 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
 //        new ExploreKummerfeldRamseyTetradPaper().loop1c();
 //        new ExploreKummerfeldRamseyTetradPaper2().testOMSSpecial();
 //        new ExploreKummerfeldRamseyTetradPaper().testOMS();
-    }
-
-    public boolean isMixed() {
-        return false;
     }
 
     @Override
