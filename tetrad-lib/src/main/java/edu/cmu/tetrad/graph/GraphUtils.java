@@ -2327,7 +2327,7 @@ public final class GraphUtils {
         Graph graph = new EdgeListGraph();
 
         while (!(line = in.readLine().trim()).equals("")) {
-            String[] tokens = line.split(" ");
+            String[] tokens = line.split(",");
 
             for (String token : tokens) {
                 graph.addNode(new GraphNode(token));

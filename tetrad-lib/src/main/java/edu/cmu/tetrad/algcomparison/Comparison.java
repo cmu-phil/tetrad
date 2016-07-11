@@ -24,15 +24,13 @@ package edu.cmu.tetrad.algcomparison;
 import edu.cmu.tetrad.algcomparison.statistic.ElapsedTimeStat;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -229,8 +227,8 @@ public class Comparison {
             System.out.println("Run " + (i + 1));
             System.out.println();
 
-            DataSet data = simulation.getDataSet(i, parameters);
-            Graph trueGraph = simulation.getTrueGraph();
+            DataSet data = simulation.getDataSet(i);
+            Graph trueGraph = simulation.getTrueGraph(i);
 
             boolean isMixed = data.isMixed();
 
@@ -345,6 +343,37 @@ public class Comparison {
             System.out.println("Printing graph to " + file.getAbsolutePath());
             out.println(graph);
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void printDataSetAndGraphs(Simulation simulation, String path, Parameters parameters) {
+        try {
+            File dir = new File(path);
+            dir.mkdirs();
+            dir.delete();
+            dir.mkdirs();
+
+            new File(dir, "data").mkdir();
+            new File(dir, "graph").mkdir();
+
+            for (int i = 0; i < simulation.getNumDataSets(); i++) {
+                File file = new File(dir + "/data/data." + (i + 1));
+                Writer out = new FileWriter(file);
+                DataSet dataSet = simulation.getDataSet(i);
+                DataWriter.writeRectangularData(dataSet, out, '\t');
+                out.close();
+
+                File file2 = new File(dir + "/graph/graph." + (i + 1));
+                GraphUtils.saveGraph(simulation.getTrueGraph(i), file2, false);
+            }
+
+            PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+            out.println(simulation.getDescription());
+            out.println();
+            out.println(parameters);
+            out.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

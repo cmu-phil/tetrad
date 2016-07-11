@@ -9,41 +9,50 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by jdramsey on 6/4/16.
  */
 public class DiscreteBayesNetSimulation implements Simulation {
-    private Graph graph;
-    private DataSet dataSet;
-    private int numDataSets;
+    private List<DataSet> dataSets;
+    private List<Graph> graphs;
 
-    public DiscreteBayesNetSimulation(int numDataSets) {
-        this.numDataSets = numDataSets;
+    public DiscreteBayesNetSimulation(Parameters parameters) {
+       for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+
+           Graph graph = GraphUtils.randomGraphRandomForwardEdges(
+                   parameters.getInt("numMeasures"),
+                   parameters.getInt("numLatents"),
+                   parameters.getInt("numEdges"),
+                   parameters.getInt("maxDegree"),
+                   parameters.getInt("maxIndegree"),
+                   parameters.getInt("maxOutdegree"),
+                   parameters.getInt("connected") == 1);
+           DataSet dataSet = simulate(graph, parameters);
+
+           graphs.add(graph);
+           dataSets.add(dataSet);
+       }
     }
 
-    public DataSet getDataSet(int index, Parameters parameters) {
-        this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("numEdges"),
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+    public DataSet getDataSet(int index) {
+        return dataSets.get(index);
+    }
+
+    private DataSet simulate(Graph graph, Parameters parameters) {
         int numCategories = parameters.getInt("numCategories");
         BayesPm pm = new BayesPm(graph, numCategories, numCategories);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-        this.dataSet = im.simulateData(parameters.getInt("sampleSize"), false);
-        return this.dataSet;
+        return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 
-    public Graph getTrueGraph() {
-        return graph;
-    }
-
-    public DataSet getData() {
-        return dataSet;
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     public String getDescription() {
@@ -52,7 +61,7 @@ public class DiscreteBayesNetSimulation implements Simulation {
 
     @Override
     public int getNumDataSets() {
-        return numDataSets;
+        return dataSets.size();
     }
 
     @Override

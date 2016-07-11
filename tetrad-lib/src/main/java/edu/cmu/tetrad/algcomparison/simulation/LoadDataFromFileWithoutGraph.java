@@ -24,11 +24,11 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
         this.path = path;
     }
 
-    public Graph getTrueGraph() {
+    public Graph getTrueGraph(int index) {
         return null;
     }
 
-    public DataSet getDataSet(int i, Parameters parameters) {
+    public DataSet getDataSet(int i) {
         try {
             File file = new File(path);
             System.out.println("Loading data from " + file.getAbsolutePath());

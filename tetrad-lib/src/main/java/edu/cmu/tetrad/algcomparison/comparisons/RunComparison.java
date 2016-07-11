@@ -28,8 +28,7 @@ import edu.cmu.tetrad.algcomparison.discrete.pag.*;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pag.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
-import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.MixedSemThenDiscretizeHalfSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 import java.io.File;
@@ -107,17 +106,12 @@ public class RunComparison {
 //        List<Algorithm> algorithms = getFullAlgorithmsList();
         List<Algorithm> algorithms = getSpecialSet();
 //
-        Simulation simulation = new MixedLeeHastieSimulation(parameters.getInt("numRuns"));
-//        Simulation simulation = new LinearGaussianSemSimulation(parameters.getInt("numRuns"));
-//        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation(parameters.getInt("numRuns"));
-//        Simulation simulation = new DiscreteBayesNetSimulation(parameters.getInt("numRuns"));
+//        Simulation simulation = new MixedLeeHastieSimulation(parameters);
+        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation(parameters);
 
-//        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/Downloads/data1.1.txt");
-//        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_first10.txt");
-//        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_last10.txt");
-
-        new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation,
-                "comparison/Comparison.txt");
+//        new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation,
+//                "comparison/Comparison.txt");
+        new Comparison().printDataSetAndGraphs(simulation, "comparison/save1", parameters);
     }
 
     private static List<Algorithm> getSpecialSet() {

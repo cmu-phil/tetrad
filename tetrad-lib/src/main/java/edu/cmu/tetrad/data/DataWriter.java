@@ -53,7 +53,7 @@ public final class DataWriter {
 
         boolean isCaseMultipliersCollapsed = dataSet.isMulipliersCollapsed();
 
-        if (!isCaseMultipliersCollapsed) {
+        if (isCaseMultipliersCollapsed) {
             buf.append("MULT").append(separator);
         }
 
@@ -74,7 +74,7 @@ public final class DataWriter {
         for (int row = 0; row < dataSet.getNumRows(); row++) {
             buf.append("\n");
 
-            if (!isCaseMultipliersCollapsed) {
+            if (isCaseMultipliersCollapsed) {
                 int multiplier = dataSet.getMultiplier(row);
                 buf.append(multiplier).append(separator);
             }

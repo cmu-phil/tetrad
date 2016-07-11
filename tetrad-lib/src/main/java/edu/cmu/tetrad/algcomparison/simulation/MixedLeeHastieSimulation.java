@@ -9,8 +9,11 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.pitt.csb.mgm.MixedUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -19,23 +22,30 @@ import java.util.List;
  * Created by jdramsey on 6/4/16.
  */
 public class MixedLeeHastieSimulation implements Simulation {
-    private Graph dag;
-    private DataSet dataSet;
-    private int numDataSets = 0;
+    private List<DataSet> dataSets;
+    private List<Graph> graphs;
 
-    public MixedLeeHastieSimulation(int numDataSets) {
-        this.numDataSets = numDataSets;
+    public MixedLeeHastieSimulation(Parameters parameters) {
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
+
+        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            Graph dag = GraphUtils.randomGraphRandomForwardEdges(
+                    parameters.getInt("numMeasures"), parameters.getInt("numLatents"),
+                    parameters.getInt("numEdges"),
+                    parameters.getInt("maxDegree"),
+                    parameters.getInt("maxIndegree"),
+                    parameters.getInt("maxOutdegree"),
+                    parameters.getInt("connected") == 1);
+
+            DataSet dataSet = simulate(dag, parameters);
+
+            dataSets.add(dataSet);
+            graphs.add(dag);
+        }
     }
 
-    public DataSet getDataSet(int index, Parameters parameters) {
-        this.dag = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"), parameters.getInt("numLatents"),
-                parameters.getInt("numEdges"),
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
-
+    private DataSet simulate(Graph dag, Parameters parameters) {
         HashMap<String, Integer> nd = new HashMap<>();
 
         List<Node> nodes = dag.getNodes();
@@ -56,18 +66,16 @@ public class MixedLeeHastieSimulation implements Simulation {
         GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 
         DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), false);
-        this.dataSet = MixedUtils.makeMixedData(ds, nd);
-
-        return this.dataSet;
+        return MixedUtils.makeMixedData(ds, nd);
     }
 
     @Override
-    public Graph getTrueGraph() {
-        return dag;
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
-    public DataSet getData() {
-        return dataSet;
+    public DataSet getDataSet(int index) {
+        return dataSets.get(index);
     }
 
     public String getDescription() {
@@ -76,7 +84,7 @@ public class MixedLeeHastieSimulation implements Simulation {
 
     @Override
     public int getNumDataSets() {
-        return numDataSets;
+        return dataSets.size();
     }
 
     @Override

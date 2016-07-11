@@ -22,24 +22,13 @@
 package edu.cmu.tetrad.algcomparison.comparisons;
 
 import edu.cmu.tetrad.algcomparison.*;
-import edu.cmu.tetrad.algcomparison.continuous.pag.*;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFciCs;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFciGs;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteGfci;
-import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteRfciGs;
-import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFciCG;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfciCG;
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
-import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
-import edu.cmu.tetrad.algcomparison.simulation.LinearGaussianSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.MixedLeeHastieSimulation;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedCpcCgLrtTest;
+import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedFgs2CG;
+import edu.cmu.tetrad.algcomparison.simulation.ContinuousNonlinearNongaussianSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDatasetsAndGraphsFromDirectory;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,9 +41,9 @@ public class ExampleComparison {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.putInt("numRuns", 10);
-        parameters.putInt("numMeasures", 500);
-        parameters.putInt("numEdges", 2 * parameters.getInt("numMeasures"));
+        parameters.putInt("numRuns", 2);
+        parameters.putInt("numMeasures", 100);
+        parameters.putInt("numEdges", parameters.getInt("numMeasures"));
         parameters.putInt("sampleSize", 1000);
         parameters.putDouble("alpha", 1e-4);
 
@@ -81,10 +70,33 @@ public class ExampleComparison {
         algorithms.add(new ContinuousPcsFz());
         algorithms.add(new ContinuousCpcsFz());
 
-        Simulation simulation = new LinearGaussianSemSimulation(parameters.getInt("numRuns"));
+        //        algorithms.add(new MixedFgs2Sem());
+//        algorithms.add(new MixedFgs2CG()); //*
 
-        new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats,
-                simulation, "comparison/Comparison.txt");
+//        algorithms.add(new MixedFgs2Bdeu());
+//        algorithms.add(new MixedFgs2Bic());
+//
+//        algorithms.add(new MixedWfgs());
+
+//        algorithms.add(new MixedPcCg());
+//        algorithms.add(new MixedCpcCg());
+
+//        algorithms.add(new MixedCpcLrt()); //*
+//
+//        algorithms.add(new MixedGfciCG());
+//
+//        algorithms.add(new MixedGpcCg());
+//        algorithms.add(new MixedPcCgLrtTest());
+//        algorithms.add(new MixedCpcCgLrtTest()); //*
+//        algorithms.add(new MixedPcsCgLrtTest());
+//        algorithms.add(new MixedCpcsCgLrtTest());
+//        algorithms.add(new MixedFciCgLrtTest());
+
+        Simulation simulation = new ContinuousNonlinearNongaussianSimulation(parameters);
+//        Simulation simulation = new LoadContinuousDatasetsAndGraphsFromDirectory("comparison/save1", parameters);
+
+        new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation,
+                "comparison/Comparison.txt");
     }
 }
 

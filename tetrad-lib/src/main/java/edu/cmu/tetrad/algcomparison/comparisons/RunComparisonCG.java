@@ -111,7 +111,7 @@ public class RunComparisonCG {
 //        List<Algorithm> algorithms = getFullAlgorithmsList();
         List<Algorithm> algorithms = getSpecialSet();
 //
-        Simulation simulation = new MixedLeeHastieSimulation(parameters.getInt("numRuns"));
+        Simulation simulation = new MixedLeeHastieSimulation(parameters);
 //        Simulation simulation = new LinearGaussianSemSimulation(parameters.getInt("numRuns"));
 //        Simulation simulation = new MixedSemThenDiscretizeHalfSimulation(parameters.getInt("numRuns"));
 //        Simulation simulation = new DiscreteBayesNetSimulation(parameters.getInt("numRuns"));

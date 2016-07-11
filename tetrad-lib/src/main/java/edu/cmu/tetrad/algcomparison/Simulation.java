@@ -7,9 +7,9 @@ import edu.cmu.tetrad.graph.Graph;
  * Created by jdramsey on 6/4/16.
  */
 public interface Simulation {
-    Graph getTrueGraph();
     int getNumDataSets();
-    DataSet getDataSet(int i, Parameters parameters);
+    Graph getTrueGraph(int index);
+    DataSet getDataSet(int i);
     DataType getDataType(Parameters parameters);
     String getDescription();
 }

@@ -19,51 +19,30 @@ import java.util.List;
  * Created by jdramsey on 6/4/16.
  */
 public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
-    private Graph graph;
-    private DataSet dataSet;
-    private int numDataSets;
+    private List<DataSet> dataSets;
+    private List<Graph> graphs;
 
-    public MixedSemThenDiscretizeHalfSimulation(int numDataSets) {
-        this.numDataSets = numDataSets;
-    }
+    public MixedSemThenDiscretizeHalfSimulation(Parameters parameters) {
+        dataSets = new ArrayList<>();
+        graphs = new ArrayList<>();
 
-    public DataSet getDataSet() {
-        return dataSet;
-    }
+        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            Graph graph = GraphUtils.scaleFreeGraph(
+                    parameters.getInt("numMeasures"),
+                    parameters.getInt("numLatents"),
+                    parameters.getDouble("scaleFreeAlpha"),
+                    parameters.getDouble("scaleFreeBeta"),
+                    parameters.getDouble("scaleFreeDeltaIn"),
+                    parameters.getInt("scaleFreeDeltaOut")
+            );
 
-    public DataSet getDataSet(int index, Parameters parameters) {
-        this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("numEdges"),
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
-
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet continuousData = im.simulateData(parameters.getInt("sampleSize"), false);
-
-        List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
-        Collections.shuffle(shuffledNodes);
-
-        Discretizer discretizer = new Discretizer(continuousData);
-
-        for (int i = 0; i < shuffledNodes.size() * parameters.getDouble("percentDiscreteForMixedSimulation") * 0.01; i++) {
-            discretizer.equalIntervals(shuffledNodes.get(i), parameters.getInt("numCategories"));
+            graphs.add(graph);
+            dataSets.add(simulate(graph, parameters));
         }
-
-        this.dataSet = discretizer.discretize();
-        return this.dataSet;
     }
 
-    public Graph getTrueGraph() {
-        return graph;
-    }
-
-    public DataSet getData() {
-        return dataSet;
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     public String getDescription() {
@@ -72,7 +51,12 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
 
     @Override
     public int getNumDataSets() {
-        return numDataSets;
+        return dataSets.size();
+    }
+
+    @Override
+    public DataSet getDataSet(int i) {
+        return dataSets.get(i);
     }
 
     @Override
@@ -86,5 +70,22 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
         } else {
             return DataType.Mixed;
         }
+    }
+
+    private DataSet simulate(Graph graph, Parameters parameters) {
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet continuousData = im.simulateData(parameters.getInt("sampleSize"), false);
+
+        List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
+        Collections.shuffle(shuffledNodes);
+
+        Discretizer discretizer = new Discretizer(continuousData);
+
+        for (int i = 0; i < shuffledNodes.size() * parameters.getDouble("percentDiscreteForMixedSimulation") * 0.01; i++) {
+            discretizer.equalIntervals(shuffledNodes.get(i), parameters.getInt("numCategories"));
+        }
+
+        return discretizer.discretize();
     }
 }

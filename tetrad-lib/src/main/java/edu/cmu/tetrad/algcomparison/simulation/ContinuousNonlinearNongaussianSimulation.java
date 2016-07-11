@@ -14,35 +14,53 @@ import java.util.*;
  * Created by jdramsey on 6/4/16.
  */
 public class ContinuousNonlinearNongaussianSimulation implements Simulation {
-    private Graph graph;
-    private DataSet dataSet;
-    private int numDataSets;
+    private List<DataSet> dataSets;
+    private List<Graph> graphs;
 
-    public ContinuousNonlinearNongaussianSimulation(int numDataSets) {
-        this.numDataSets = numDataSets;
+    public ContinuousNonlinearNongaussianSimulation(Parameters parameters) {
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
+
+        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            Graph graph = GraphUtils.randomGraphRandomForwardEdges(
+                    parameters.getInt("numMeasures"),
+                    parameters.getInt("numLatents"),
+                    parameters.getInt("numEdges"),
+                    parameters.getInt("maxDegree"),
+                    parameters.getInt("maxIndegree"),
+                    parameters.getInt("maxOutdegree"),
+                    parameters.getInt("connected") == 1);
+
+            DataSet dataSet = simulate(graph, parameters);
+
+            this.graphs.add(graph);
+            this.dataSets.add(dataSet);
+        }
     }
 
-    public DataSet getDataSet(int i, Parameters parameters) {
-        this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("numEdges"),
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+    private DataSet simulate(Graph graph, Parameters parameters) {
         GeneralizedSemPm pm = getPm(graph);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
-        this.dataSet = im.simulateData(parameters.getInt("sampleSize"), false);
-        return this.dataSet;
+        return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 
-    public Graph getTrueGraph() {
-        return graph;
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
-    public DataSet getData() {
-        return dataSet;
+    @Override
+    public int getNumDataSets() {
+        return dataSets.size();
+    }
+
+    @Override
+    public DataSet getDataSet(int i) {
+        return dataSets.get(i);
+    }
+
+    @Override
+    public DataType getDataType(Parameters parameters) {
+        return DataType.Continuous;
     }
 
     public String getDescription() {
@@ -103,32 +121,5 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
         }
 
         return pm;
-    }
-
-    private Graph getMim(Graph structuralGraph, int clusterSize, int numClusters) {
-
-        //        addImpurities(numClusters, clusterSize, impuritiesOption, graph);
-        return DataGraphUtils.randomMim(structuralGraph, clusterSize, 0, 0, 0, true);
-    }
-
-    private Graph getStructuralGraph(int numClusters) {
-        return new Dag(GraphUtils.randomGraph(numClusters, 0, numClusters, 30, 15, 15, false));
-    }
-
-
-    public static void main(String[] args) {
-//        new ExploreKummerfeldRamseyTetradPaper().loop1c();
-//        new ExploreKummerfeldRamseyTetradPaper2().testOMSSpecial();
-//        new ExploreKummerfeldRamseyTetradPaper().testOMS();
-    }
-
-    @Override
-    public int getNumDataSets() {
-        return numDataSets;
-    }
-
-    @Override
-    public DataType getDataType(Parameters parameters) {
-        return DataType.Continuous;
     }
 }
