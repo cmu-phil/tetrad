@@ -7,6 +7,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -28,5 +30,10 @@ public class MixedPcCg implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        return null;
     }
 }

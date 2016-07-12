@@ -10,6 +10,9 @@ import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.IndTestMixedLrt;
 import edu.cmu.tetrad.search.IndependenceTest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -32,5 +35,12 @@ public class MixedFciLrt implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("alpha");
+        return parameters;
     }
 }

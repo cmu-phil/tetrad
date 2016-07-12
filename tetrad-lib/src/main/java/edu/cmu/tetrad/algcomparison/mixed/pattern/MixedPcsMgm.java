@@ -11,6 +11,9 @@ import edu.cmu.tetrad.search.PcStable;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.pitt.csb.mgm.MGM;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -41,5 +44,14 @@ public class MixedPcsMgm implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("mgmParam1");
+        parameters.add("mgmParam2");
+        parameters.add("mgmParam3");
+        return parameters;
     }
 }

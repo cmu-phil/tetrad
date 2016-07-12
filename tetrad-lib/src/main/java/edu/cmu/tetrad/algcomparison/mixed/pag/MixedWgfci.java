@@ -8,6 +8,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.WGfci;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -30,5 +33,10 @@ public class MixedWgfci implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        return Collections.singletonList("penaltyDiscount");
     }
 }

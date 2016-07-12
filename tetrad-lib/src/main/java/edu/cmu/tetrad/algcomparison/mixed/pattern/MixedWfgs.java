@@ -8,6 +8,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.WFgs;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -29,5 +32,12 @@ public class MixedWfgs implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("penaltyDisount");
+        return parameters;
     }
 }

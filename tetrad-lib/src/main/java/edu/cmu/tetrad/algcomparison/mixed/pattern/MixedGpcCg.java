@@ -9,6 +9,9 @@ import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.GPc;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -32,5 +35,12 @@ public class MixedGpcCg implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("depth");
+        return parameters;
     }
 }

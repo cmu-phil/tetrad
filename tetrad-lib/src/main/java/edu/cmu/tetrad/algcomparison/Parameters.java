@@ -51,15 +51,16 @@ public class Parameters {
     }
 
     public int getInt(String name) {
+        usedParameters.add(name);
         return parameters.get(name).intValue();
     }
 
     public double getDouble(String name) {
+        usedParameters.add(name);
         return parameters.get(name).doubleValue();
     }
 
     public void put(String name, Number n) {
         parameters.put(name, n);
-        usedParameters.add(name);
     }
 }

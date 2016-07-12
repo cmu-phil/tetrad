@@ -14,6 +14,9 @@ import edu.cmu.tetrad.search.Fgs2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -62,6 +65,13 @@ public class MixedFgs2Sem implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("penaltyDiscount");
+        return parameters;
     }
 }
 

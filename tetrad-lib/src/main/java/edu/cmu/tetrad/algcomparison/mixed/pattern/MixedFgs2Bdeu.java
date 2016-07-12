@@ -14,6 +14,7 @@ import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fgs2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,8 +34,8 @@ public class MixedFgs2Bdeu implements Algorithm {
         Dk = discretizer.discretize();
 
         BDeuScore score = new BDeuScore(Dk);
-        score.setSamplePrior(1.0);
-        score.setStructurePrior(1.0);
+        score.setSamplePrior(parameters.getInt("samplePrior"));
+        score.setStructurePrior(parameters.getInt("structurePrior"));
         Fgs2 fgs = new Fgs2(score);
         Graph p = fgs.search();
         return convertBack(Dk, p);
@@ -77,5 +78,14 @@ public class MixedFgs2Bdeu implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("numCategories");
+        parameters.add("samplePrior");
+        parameters.add("structurePrior");
+        return parameters;
     }
 }

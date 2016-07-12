@@ -9,6 +9,9 @@ import edu.cmu.tetrad.search.Fgs;
 import edu.cmu.tetrad.search.MixedBicScore;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -34,5 +37,12 @@ public class MixedFgs2MS implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("fgsDepth");
+        return parameters;
     }
 }

@@ -9,6 +9,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.mb.Mmhc;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -32,5 +35,10 @@ public class ContinuousMmhc implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        return Collections.singletonList("alpha");
     }
 }

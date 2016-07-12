@@ -7,6 +7,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -30,4 +33,11 @@ public class ContinuousCpcsFz implements Algorithm {
     public DataType getDataType() {
         return DataType.Continuous;
     }
-}
+
+    @Override
+    public List<String> usesParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("alpha");
+        parameters.add("depth");
+        return parameters;
+    }}

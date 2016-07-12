@@ -7,6 +7,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author jdramsey
  */
@@ -30,5 +33,10 @@ public class MixedGfciCG implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        return new ArrayList<>();
     }
 }

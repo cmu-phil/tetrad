@@ -10,6 +10,9 @@ import edu.cmu.tetrad.search.PcStable;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by jdramsey on 6/4/16.
  */
@@ -33,5 +36,12 @@ public class MixedPcsMlrw implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("alpha");
+        return parameters;
     }
 }

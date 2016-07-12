@@ -9,6 +9,9 @@ import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.Fgs2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author jdramsey
  */
@@ -35,5 +38,10 @@ public class MixedFgs2CG implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
+    }
+
+    @Override
+    public List<String> usesParameters() {
+        return new ArrayList<>();
     }
 }
