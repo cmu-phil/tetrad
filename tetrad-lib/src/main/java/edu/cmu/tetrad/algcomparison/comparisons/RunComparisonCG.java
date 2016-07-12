@@ -49,36 +49,36 @@ public class RunComparisonCG {
 
         Parameters parameters = new Parameters();
 
-        parameters.putInt("numRuns", 10);
-//        parameters.putInt("sampleSize", 5180);
-//        parameters.putInt("numMeasures", 570);
-        parameters.putInt("sampleSize", 500);
-        parameters.putInt("numMeasures", 100);
-        parameters.putInt("numEdges", 2 * parameters.getInt("numMeasures"));
-        parameters.putInt("numLatents", 0);
-        parameters.putDouble("numCategories", 4);
+        parameters.put("numRuns", 10);
+//        parameters.put("sampleSize", 5180);
+//        parameters.put("numMeasures", 570);
+        parameters.put("sampleSize", 500);
+        parameters.put("numMeasures", 100);
+        parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
+        parameters.put("numLatents", 0);
+        parameters.put("numCategories", 4);
 
 //        parameters.putDouble("alpha", 5e-3);
-        parameters.putDouble("alpha", 1e-4);
+        parameters.put("alpha", 1e-4);
 
-        parameters.putInt("penaltyDiscount", 4);
+        parameters.put("penaltyDiscount", 4);
 
-        parameters.putInt("fgsDepth", -1);
-        parameters.putInt("printGraphs", 0);
+        parameters.put("fgsDepth", -1);
+        parameters.put("printGraphs", 0);
 
-        parameters.putDouble("scaleFreeAlpha", .1);
-        parameters.putDouble("scaleFreeBeta", .8);
-        parameters.putDouble("scaleFreeDeltaIn", 3.0);
-        parameters.putDouble("scaleFreeDeltaOut", 3.0);
-        parameters.putDouble("samplePrior", 1);
-        parameters.putDouble("structurePrior", 1);
+        parameters.put("scaleFreeAlpha", .1);
+        parameters.put("scaleFreeBeta", .8);
+        parameters.put("scaleFreeDeltaIn", 3.0);
+        parameters.put("scaleFreeDeltaOut", 3.0);
+        parameters.put("samplePrior", 1);
+        parameters.put("structurePrior", 1);
 
-        parameters.putDouble("mgmParam1", 0.1);
-        parameters.putDouble("mgmParam2", 0.1);
-        parameters.putDouble("mgmParam3", 0.1);
+        parameters.put("mgmParam1", 0.1);
+        parameters.put("mgmParam2", 0.1);
+        parameters.put("mgmParam3", 0.1);
 
-        parameters.putDouble("percentDiscreteForMixedSimulation", 50);
-//        parameters.putInt("printGraphs", 1);
+        parameters.put("percentDiscreteForMixedSimulation", 50);
+        //        parameters.put("printGraphs", 1);
 
         Statistics stats = new Statistics();
 
@@ -116,8 +116,8 @@ public class RunComparisonCG {
 //        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_first10.txt");
 //        Simulation simulation = new LoadDataFromFileWithoutGraph("/Users/jdramsey/BitTorrent Sync/Joe_hipp_voxels/Hipp_L_last10.txt");
 
-        new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation,
-                "comparison/Comparison.txt");
+        new Comparison().compareAlgorithms("comparison/Comparison.txt", simulation, algorithms, stats, parameters
+        );
     }
 
     private static Algorithms getSpecialSet() {

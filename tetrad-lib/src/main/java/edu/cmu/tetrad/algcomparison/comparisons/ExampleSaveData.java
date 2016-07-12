@@ -32,14 +32,14 @@ public class ExampleSaveData {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.putInt("numRuns", 2);
-        parameters.putInt("numMeasures", 100);
-        parameters.putInt("numEdges", parameters.getInt("numMeasures"));
-        parameters.putInt("sampleSize", 1000);
+        parameters.put("numRuns", 2);
+        parameters.put("numMeasures", 100);
+        parameters.put("numEdges", parameters.getInt("numMeasures"));
+        parameters.put("sampleSize", 1000);
 
         Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
 
-        new Comparison().printDataSetAndGraphs(simulation, "comparison/save1", parameters);
+        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
     }
 }
 

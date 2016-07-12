@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by jdramsey on 7/12/16.
+ * A list of statistics and their utility weights.
+ * @author Joseph Ramsey
  */
 public class Statistics {
     private List<Statistic> statistics = new ArrayList<>();
@@ -16,10 +17,19 @@ public class Statistics {
 
     public Statistics(){}
 
+    /**
+     * Adds a statistic.
+     * @param statistic The statistic to add.
+     */
     public void add(Statistic statistic) {
         this.statistics.add(statistic);
     }
 
+    /**
+     * Sets the utility weight of the statistic by the given name.
+     * @param abbrebiation The abbreviation set in the statistic.
+     * @param weight The utility weight for that statistic.
+     */
     public void setWeight(String abbrebiation, double weight) {
         boolean set = false;
 
@@ -36,10 +46,19 @@ public class Statistics {
         }
     }
 
+    /**
+     * Return the list of statistics.
+     * @return A copy of this list, in the order added.
+     */
     public List<Statistic> getStatistics() {
         return new ArrayList<>(statistics);
     }
 
+    /**
+     * The utility weight for the statistic.
+     * @param statistic The statistic.
+     * @return The utility weight for it.
+     */
     public double getWeight(Statistic statistic) {
         if (weights.keySet().contains(statistic)) {
             return weights.get(statistic);
@@ -48,6 +67,10 @@ public class Statistics {
         }
     }
 
+    /**
+     * The number of statistics.
+     * @return This number.
+     */
     public int size() {
         return statistics.size();
     }

@@ -53,11 +53,11 @@ public class LoadContinuousDatasetsAndGraphsFromDirectory implements Simulation 
                         String[] tokens = line.split(" = ");
                         String key = tokens[0];
                         String value = tokens[1];
-                        parameters.putDouble(key, Double.parseDouble(value));
+                        parameters.put(key, Double.parseDouble(value));
                     }
                 }
 
-                parameters.putInt("numRuns", numDataSets);
+                parameters.put("numRuns", numDataSets);
             } catch (IOException e) {
                 e.printStackTrace();
             }

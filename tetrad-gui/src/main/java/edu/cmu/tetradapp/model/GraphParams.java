@@ -89,49 +89,49 @@ public class GraphParams implements Params {
 //            numEdges = maxNumEdges;
 //        }
 //
-//        Preferences.userRoot().putInt("newGraphNumEdges", numEdges);
+//        Preferences.userRoot().put("newGraphNumEdges", numEdges);
 //    }
 
     //    public void setMaxDegree(int maxDegree) {
 //        if (!isConnected() && maxDegree < 1) {
-//            Preferences.userRoot().putInt("randomGraphMaxDegree", 1);
+//            Preferences.userRoot().put("randomGraphMaxDegree", 1);
 //            return;
 //        }
 //
 //        if (isConnected() && maxDegree < 3) {
-//            Preferences.userRoot().putInt("randomGraphMaxDegree", 3);
+//            Preferences.userRoot().put("randomGraphMaxDegree", 3);
 //            return;
 //        }
 //
-//        Preferences.userRoot().putInt("randomGraphMaxDegree", maxDegree);
+//        Preferences.userRoot().put("randomGraphMaxDegree", maxDegree);
 //    }
 
     //    public void setMaxIndegree(int maxIndegree) {
 //        if (!isConnected() && maxIndegree < 1) {
-//            Preferences.userRoot().putInt("randomGraphMaxIndegree", 1);
+//            Preferences.userRoot().put("randomGraphMaxIndegree", 1);
 //            return;
 //        }
 //
 //        if (isConnected() && maxIndegree < 2) {
-//            Preferences.userRoot().putInt("randomGraphMaxIndegree", 2);
+//            Preferences.userRoot().put("randomGraphMaxIndegree", 2);
 //            return;
 //        }
 //
-//        Preferences.userRoot().putInt("randomGraphMaxIndegree", maxIndegree);
+//        Preferences.userRoot().put("randomGraphMaxIndegree", maxIndegree);
 //    }
 
     //    public void setMaxOutdegree(int maxOutDegree) {
 //        if (!isConnected() && maxOutDegree < 1) {
-//            Preferences.userRoot().putInt("randomGraphMaxOutdegree", 1);
+//            Preferences.userRoot().put("randomGraphMaxOutdegree", 1);
 //            return;
 //        }
 //
 //        if (isConnected() && maxOutDegree < 2) {
-//            Preferences.userRoot().putInt("randomGraphMaxOutdegree", 2);
+//            Preferences.userRoot().put("randomGraphMaxOutdegree", 2);
 //            return;
 //        }
 //
-//        Preferences.userRoot().putInt("randomGraphMaxOutdegree", maxOutDegree);
+//        Preferences.userRoot().put("randomGraphMaxOutdegree", maxOutDegree);
 //    }
 
 //    public void setConnected(boolean connected) {

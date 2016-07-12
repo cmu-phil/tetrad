@@ -41,66 +41,25 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
+ * Script to do a comparison of a list of algorithms using a list of statistics and a list
+ * of parameters and their values.
+ *
  * @author Joseph Ramsey
  */
 public class Comparison {
     private boolean[] graphTypeUsed;
     private PrintStream out;
 
-    private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
-        if (discrete1 && discrete2) {
-            Graph newGraph = new EdgeListGraph(graph.getNodes());
-
-            for (Edge edge : graph.getEdges()) {
-                Node node1 = dataSet.getVariable(edge.getNode1().getName());
-                Node node2 = dataSet.getVariable(edge.getNode2().getName());
-
-                if (node1 instanceof DiscreteVariable &&
-                        node2 instanceof DiscreteVariable) {
-                    newGraph.addEdge(edge);
-                }
-            }
-
-            return newGraph;
-        } else if (!discrete1 && !discrete2) {
-            Graph newGraph = new EdgeListGraph(graph.getNodes());
-
-            for (Edge edge : graph.getEdges()) {
-                Node node1 = dataSet.getVariable(edge.getNode1().getName());
-                Node node2 = dataSet.getVariable(edge.getNode2().getName());
-
-                if (node1 instanceof ContinuousVariable &&
-                        node2 instanceof ContinuousVariable) {
-                    newGraph.addEdge(edge);
-                }
-            }
-
-            return newGraph;
-        } else {
-            Graph newGraph = new EdgeListGraph(graph.getNodes());
-
-            for (Edge edge : graph.getEdges()) {
-                Node node1 = dataSet.getVariable(edge.getNode1().getName());
-                Node node2 = dataSet.getVariable(edge.getNode2().getName());
-
-                if (node1 instanceof DiscreteVariable &&
-                        node2 instanceof ContinuousVariable) {
-                    newGraph.addEdge(edge);
-                }
-
-                if (node1 instanceof ContinuousVariable &&
-                        node2 instanceof DiscreteVariable) {
-                    newGraph.addEdge(edge);
-                }
-            }
-
-            return newGraph;
-        }
-    }
-
-    public void testBestAlgorithms(Parameters parameters, Statistics statistics,
-                                   Algorithms allAlgorithms,
-                                   Simulation simulation, String path) {
+    /**
+     * Compares algorithms.
+     * @param path Path to the file where the output should be printed.
+     * @param simulation The simulation that is used to generate graphs and data for the comparison.
+     * @param algorithms The list of algorithms to be compared.
+     * @param statistics The list of statistics on which to compare the algorithms, and their utility weights.
+     * @param parameters The list of parameters and their values.
+     */
+    public void compareAlgorithms(String path, Simulation simulation, Algorithms algorithms, Statistics statistics,
+                                  Parameters parameters) {
         try {
             File comparison = new File(path);
             this.out = new PrintStream(new FileOutputStream(comparison));
@@ -112,15 +71,18 @@ public class Comparison {
 
         // Only consider the algorithms for the given data type. Mixed data types can go either way.
         // MGM algorithms won't run on continuous data or discrete data.
-        List<Algorithm> algorithms = new ArrayList<>();
+        List<Algorithm> _algorithms = new ArrayList<>();
 
-        for (Algorithm algorithm : allAlgorithms.getAlgorithms()) {
-            if (algorithm.getDataType() == simulation.getDataType(parameters) || algorithm.getDataType() == DataType.Mixed) {
-                algorithms.add(algorithm);
+        for (Algorithm algorithm : algorithms.getAlgorithms()) {
+            if (algorithm.getDataType() == simulation.getDataType(parameters)
+                    || algorithm.getDataType() == DataType.Mixed) {
+                _algorithms.add(algorithm);
+            } else {
+                System.out.println("Data type mismatch for " + algorithm.getDescription() + "; skipping.");
             }
         }
 
-        double[][][][] allStats = calcStats(algorithms, statistics, parameters, simulation);
+        double[][][][] allStats = calcStats(_algorithms, statistics, parameters, simulation);
 
         if (allStats != null) {
             out.println();
@@ -156,13 +118,13 @@ public class Comparison {
                 }
             }
 
-            int[] newOrder = sort(algorithms, utilities);
+            int[] newOrder = sort(_algorithms, utilities);
 
             out.println("Algorithms (sorted high to low by W for average statistics):");
             out.println();
 
-            for (int t = 0; t < algorithms.size(); t++) {
-                out.println((t + 1) + ". " + algorithms.get(newOrder[t]).getDescription());
+            for (int t = 0; t < _algorithms.size(); t++) {
+                out.println((t + 1) + ". " + _algorithms.get(newOrder[t]).getDescription());
             }
 
             out.println();
@@ -208,6 +170,44 @@ public class Comparison {
 
         out.close();
     }
+
+    /**
+     * Saves simulation data.
+     * @param path The path to the directory where the simulation data should be saved.
+     * @param simulation The simulate used to generate the graphs and data.
+     * @param parameters The parameters to be used in the simulation.
+     */
+    public void saveDataSetAndGraphs(String path, Simulation simulation, Parameters parameters) {
+        try {
+            File dir = new File(path);
+            dir.mkdirs();
+            dir.delete();
+            dir.mkdirs();
+
+            new File(dir, "data").mkdir();
+            new File(dir, "graph").mkdir();
+
+            for (int i = 0; i < simulation.getNumDataSets(); i++) {
+                File file = new File(dir + "/data/data." + (i + 1));
+                Writer out = new FileWriter(file);
+                DataSet dataSet = simulation.getDataSet(i);
+                DataWriter.writeRectangularData(dataSet, out, '\t');
+                out.close();
+
+                File file2 = new File(dir + "/graph/graph." + (i + 1));
+                GraphUtils.saveGraph(simulation.getTrueGraph(i), file2, false);
+            }
+
+            PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+            out.println(simulation.getDescription());
+            out.println();
+            out.println(parameters);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private double[][][][] calcStats(List<Algorithm> algorithms, Statistics statistics,
                                      Parameters parameters, Simulation simulation) {
@@ -341,37 +341,6 @@ public class Comparison {
             System.out.println("Printing graph to " + file.getAbsolutePath());
             out.println(graph);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void printDataSetAndGraphs(Simulation simulation, String path, Parameters parameters) {
-        try {
-            File dir = new File(path);
-            dir.mkdirs();
-            dir.delete();
-            dir.mkdirs();
-
-            new File(dir, "data").mkdir();
-            new File(dir, "graph").mkdir();
-
-            for (int i = 0; i < simulation.getNumDataSets(); i++) {
-                File file = new File(dir + "/data/data." + (i + 1));
-                Writer out = new FileWriter(file);
-                DataSet dataSet = simulation.getDataSet(i);
-                DataWriter.writeRectangularData(dataSet, out, '\t');
-                out.close();
-
-                File file2 = new File(dir + "/graph/graph." + (i + 1));
-                GraphUtils.saveGraph(simulation.getTrueGraph(i), file2, false);
-            }
-
-            PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
-            out.println(simulation.getDescription());
-            out.println();
-            out.println(parameters);
-            out.close();
-        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -553,6 +522,57 @@ public class Comparison {
         for (int i = 0; i < order.size(); i++) newOrder[i] = order.get(i);
 
         return newOrder;
+    }
+
+    private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
+        if (discrete1 && discrete2) {
+            Graph newGraph = new EdgeListGraph(graph.getNodes());
+
+            for (Edge edge : graph.getEdges()) {
+                Node node1 = dataSet.getVariable(edge.getNode1().getName());
+                Node node2 = dataSet.getVariable(edge.getNode2().getName());
+
+                if (node1 instanceof DiscreteVariable &&
+                        node2 instanceof DiscreteVariable) {
+                    newGraph.addEdge(edge);
+                }
+            }
+
+            return newGraph;
+        } else if (!discrete1 && !discrete2) {
+            Graph newGraph = new EdgeListGraph(graph.getNodes());
+
+            for (Edge edge : graph.getEdges()) {
+                Node node1 = dataSet.getVariable(edge.getNode1().getName());
+                Node node2 = dataSet.getVariable(edge.getNode2().getName());
+
+                if (node1 instanceof ContinuousVariable &&
+                        node2 instanceof ContinuousVariable) {
+                    newGraph.addEdge(edge);
+                }
+            }
+
+            return newGraph;
+        } else {
+            Graph newGraph = new EdgeListGraph(graph.getNodes());
+
+            for (Edge edge : graph.getEdges()) {
+                Node node1 = dataSet.getVariable(edge.getNode1().getName());
+                Node node2 = dataSet.getVariable(edge.getNode2().getName());
+
+                if (node1 instanceof DiscreteVariable &&
+                        node2 instanceof ContinuousVariable) {
+                    newGraph.addEdge(edge);
+                }
+
+                if (node1 instanceof ContinuousVariable &&
+                        node2 instanceof DiscreteVariable) {
+                    newGraph.addEdge(edge);
+                }
+            }
+
+            return newGraph;
+        }
     }
 
 }

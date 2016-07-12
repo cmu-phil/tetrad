@@ -23,13 +23,9 @@ package edu.cmu.tetrad.algcomparison.comparisons;
 
 import edu.cmu.tetrad.algcomparison.*;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
-import edu.cmu.tetrad.algcomparison.interfaces.Algorithm;
 import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
-import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDatasetsAndGraphsFromDirectory;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Joseph Ramsey
@@ -38,11 +34,11 @@ public class ExampleComparison {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.putInt("numRuns", 2);
-        parameters.putInt("numMeasures", 100);
-        parameters.putInt("numEdges", 2 * parameters.getInt("numMeasures"));
-        parameters.putInt("sampleSize", 1000);
-        parameters.putDouble("alpha", 1e-4);
+        parameters.put("numRuns", 10);
+        parameters.put("numMeasures", 100);
+        parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
+        parameters.put("sampleSize", 1000);
+        parameters.put("alpha", 1e-4);
 
         Statistics statistics = new Statistics();
 
@@ -58,6 +54,7 @@ public class ExampleComparison {
         statistics.add(new ElapsedTimeStat());
 
         statistics.setWeight("AP", 1.0);
+        statistics.setWeight("AR", 0.5);
 
         Algorithms algorithms = new Algorithms();
 
@@ -66,12 +63,12 @@ public class ExampleComparison {
         algorithms.add(new ContinuousPcsFz());
         algorithms.add(new ContinuousCpcsFz());
 
-//        Simulation simulation = new ContinuousNonlinearNongaussianSimulation(parameters);
-        Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
-//        Simulation simulation = new LoadContinuousDatasetsAndGraphsFromDirectory("comparison/save1", parameters);
+//        Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
+        Simulation simulation = new LoadContinuousDatasetsAndGraphsFromDirectory("comparison/save1", parameters);
 
-        new Comparison().testBestAlgorithms(parameters, statistics, algorithms, simulation,
-                "comparison/Comparison.txt");
+        new Comparison().compareAlgorithms("comparison/Comparison.txt", simulation, algorithms,
+                statistics, parameters);
+//        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
     }
 }
 

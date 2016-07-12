@@ -50,36 +50,36 @@ public class RunComparisonFmri {
 
         Parameters parameters = new Parameters();
 
-        parameters.putInt("numRuns", 1);
-        parameters.putInt("sampleSize", 5180);
-        parameters.putInt("numMeasures", 570);
-//        parameters.putInt("sampleSize", 150);
-//        parameters.putInt("numMeasures", 80);
-        parameters.putInt("numEdges", 3 * parameters.getInt("numMeasures"));
-        parameters.putInt("numLatents", 0);
-        parameters.putDouble("numCategories", 4);
+        parameters.put("numRuns", 1);
+        parameters.put("sampleSize", 5180);
+        parameters.put("numMeasures", 570);
+//        parameters.put("sampleSize", 150);
+//        parameters.put("numMeasures", 80);
+        parameters.put("numEdges", 3 * parameters.getInt("numMeasures"));
+        parameters.put("numLatents", 0);
+        parameters.put("numCategories", 4);
 
 //        parameters.putDouble("alpha", 5e-3);
-        parameters.putDouble("alpha", .001);
+        parameters.put("alpha", .001);
 
-        parameters.putInt("penaltyDiscount", 30);
+        parameters.put("penaltyDiscount", 30);
 
-        parameters.putInt("fgsDepth", -1);
-        parameters.putInt("printGraphs", 0);
+        parameters.put("fgsDepth", -1);
+        parameters.put("printGraphs", 0);
 
-        parameters.putDouble("scaleFreeAlpha", .1);
-        parameters.putDouble("scaleFreeBeta", .8);
-        parameters.putDouble("scaleFreeDeltaIn", 3.0);
-        parameters.putDouble("scaleFreeDeltaOut", 3.0);
-        parameters.putDouble("samplePrior", 1);
-        parameters.putDouble("structurePrior", 1);
+        parameters.put("scaleFreeAlpha", .1);
+        parameters.put("scaleFreeBeta", .8);
+        parameters.put("scaleFreeDeltaIn", 3.0);
+        parameters.put("scaleFreeDeltaOut", 3.0);
+        parameters.put("samplePrior", 1);
+        parameters.put("structurePrior", 1);
 
-        parameters.putDouble("mgmParam1", 0.1);
-        parameters.putDouble("mgmParam2", 0.1);
-        parameters.putDouble("mgmParam3", 0.1);
+        parameters.put("mgmParam1", 0.1);
+        parameters.put("mgmParam2", 0.1);
+        parameters.put("mgmParam3", 0.1);
 
-        parameters.putDouble("percentDiscreteForMixedSimulation", 0);
-        parameters.putInt("printGraphs", 1);
+        parameters.put("percentDiscreteForMixedSimulation", 0);
+        parameters.put("printGraphs", 1);
 
         Statistics stats = new Statistics();
 
@@ -120,8 +120,8 @@ public class RunComparisonFmri {
         DataType dataType = simulation.getDataType(parameters);
 
 
-        new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation,
-                "comparison/Comparison.txt");
+        new Comparison().compareAlgorithms("comparison/Comparison.txt", simulation, algorithms, stats, parameters
+        );
     }
 
     private static Algorithms getSpecialSet() {

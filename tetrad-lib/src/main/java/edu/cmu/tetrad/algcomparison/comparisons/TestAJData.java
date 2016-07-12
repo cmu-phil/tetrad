@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
 
 /**
  * @author Joseph Ramsey
@@ -62,12 +61,12 @@ public class TestAJData {
 
 
                 Parameters parameters = new Parameters();
-                parameters.putDouble("alpha", 0.001);
-                parameters.putDouble("penaltyDiscount", 4);
-                parameters.putDouble("mgmParam1", 0.1);
-                parameters.putDouble("mgmParam2", 0.1);
-                parameters.putDouble("mgmParam3", 0.1);
-                parameters.putDouble("OfInterestCutoff", 0.05);
+                parameters.put("alpha", 0.001);
+                parameters.put("penaltyDiscount", 4);
+                parameters.put("mgmParam1", 0.1);
+                parameters.put("mgmParam2", 0.1);
+                parameters.put("mgmParam3", 0.1);
+                parameters.put("OfInterestCutoff", 0.05);
 
                 Graph pattern = new MixedFgs2Sem().search(Dk, parameters);
 

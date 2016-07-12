@@ -1,11 +1,15 @@
 package edu.cmu.tetrad.algcomparison;
 
-import edu.cmu.tetrad.sem.Parameter;
-
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Created by jdramsey on 7/2/16.
+ * Stores a list of named parameters with their values. Stores default values for known
+ * parameters. Returns a list of parameters with their values, for the parameters whose
+ * values have been retrieved, using the toString method.
+ * @author Joseph Ramsey
  */
 public class Parameters {
     private Map<String, Number> parameters = new LinkedHashMap<>();
@@ -40,7 +44,7 @@ public class Parameters {
         StringBuilder builder = new StringBuilder();
 
         for (String param : usedParameters) {
-            builder.append("\n" + param + " = " + parameters.get(param));
+            builder.append("\n").append(param).append(" = ").append(parameters.get(param));
         }
 
         return builder.toString();
@@ -54,13 +58,8 @@ public class Parameters {
         return parameters.get(name).doubleValue();
     }
 
-    public void putInt(String name, int i) {
-        parameters.put(name, i);
-        usedParameters.add(name);
-    }
-
-    public void putDouble(String name, double d) {
-        parameters.put(name, d);
+    public void put(String name, Number n) {
+        parameters.put(name, n);
         usedParameters.add(name);
     }
 }
