@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.*;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedCpcCgLrtTest;
 import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedFgs2CG;
+import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousNonlinearNongaussianSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDatasetsAndGraphsFromDirectory;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -43,25 +44,24 @@ public class ExampleComparison {
 
         parameters.putInt("numRuns", 2);
         parameters.putInt("numMeasures", 100);
-        parameters.putInt("numEdges", parameters.getInt("numMeasures"));
+        parameters.putInt("numEdges", 2 * parameters.getInt("numMeasures"));
         parameters.putInt("sampleSize", 1000);
         parameters.putDouble("alpha", 1e-4);
 
-        List<Statistic> stats = new ArrayList<>();
+        Statistics statistics = new Statistics();
 
-        stats.add(new AdjacencyPrecisionStat());
-        stats.add(new AdjacencyRecallStat());
-        stats.add(new ArrowPrecisionStat());
-        stats.add(new ArrowRecallStat());
-        stats.add(new MathewsCorrAdjStat());
-        stats.add(new MathewsCorrArrowStat());
-        stats.add(new F1AdjStat());
-        stats.add(new F1ArrowStat());
-        stats.add(new ShdStat());
-        stats.add(new ElapsedTimeStat());
+        statistics.add(new AdjacencyPrecisionStat());
+        statistics.add(new AdjacencyRecallStat());
+        statistics.add(new ArrowPrecisionStat());
+        statistics.add(new ArrowRecallStat());
+        statistics.add(new MathewsCorrAdjStat());
+        statistics.add(new MathewsCorrArrowStat());
+        statistics.add(new F1AdjStat());
+        statistics.add(new F1ArrowStat());
+        statistics.add(new ShdStat());
+        statistics.add(new ElapsedTimeStat());
 
-        Map<String, Double> statWeights = new LinkedHashMap<>();
-        statWeights.put("AP", 1.0);
+        statistics.setWeight("AP", 1.0);
 
         List<Algorithm> algorithms = new ArrayList<>();
 
@@ -70,32 +70,11 @@ public class ExampleComparison {
         algorithms.add(new ContinuousPcsFz());
         algorithms.add(new ContinuousCpcsFz());
 
-        //        algorithms.add(new MixedFgs2Sem());
-//        algorithms.add(new MixedFgs2CG()); //*
-
-//        algorithms.add(new MixedFgs2Bdeu());
-//        algorithms.add(new MixedFgs2Bic());
-//
-//        algorithms.add(new MixedWfgs());
-
-//        algorithms.add(new MixedPcCg());
-//        algorithms.add(new MixedCpcCg());
-
-//        algorithms.add(new MixedCpcLrt()); //*
-//
-//        algorithms.add(new MixedGfciCG());
-//
-//        algorithms.add(new MixedGpcCg());
-//        algorithms.add(new MixedPcCgLrtTest());
-//        algorithms.add(new MixedCpcCgLrtTest()); //*
-//        algorithms.add(new MixedPcsCgLrtTest());
-//        algorithms.add(new MixedCpcsCgLrtTest());
-//        algorithms.add(new MixedFciCgLrtTest());
-
-        Simulation simulation = new ContinuousNonlinearNongaussianSimulation(parameters);
+//        Simulation simulation = new ContinuousNonlinearNongaussianSimulation(parameters);
+        Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
 //        Simulation simulation = new LoadContinuousDatasetsAndGraphsFromDirectory("comparison/save1", parameters);
 
-        new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation,
+        new Comparison().testBestAlgorithms(parameters, statistics, algorithms, simulation,
                 "comparison/Comparison.txt");
     }
 }

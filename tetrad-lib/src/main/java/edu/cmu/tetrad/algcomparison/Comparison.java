@@ -93,8 +93,8 @@ public class Comparison {
         }
     }
 
-    public void testBestAlgorithms(Parameters parameters, Map<String, Double> statWeights,
-                                   List<Algorithm> allAlgorithms, List<Statistic> statistics,
+    public void testBestAlgorithms(Parameters parameters, Statistics statistics,
+                                   List<Algorithm> allAlgorithms,
                                    Simulation simulation, String path) {
         try {
             File comparison = new File(path);
@@ -104,11 +104,6 @@ public class Comparison {
         }
 
         out.println(new Date());
-
-        if (statWeights.keySet().contains("W")) {
-            throw new IllegalArgumentException("The utility function may not refer to W.");
-
-        }
 
         // Only consider the algorithms for the given data type. Mixed data types can go either way.
         // MGM algorithms won't run on continuous data or discrete data.
@@ -127,7 +122,7 @@ public class Comparison {
             out.println("Statistics:");
             out.println();
 
-            for (Statistic stat : statistics) {
+            for (Statistic stat : statistics.getStatistics()) {
                 out.println(stat.getAbbreviation() + " = " + stat.getDescription());
             }
         }
@@ -147,7 +142,7 @@ public class Comparison {
             int numStats = allStats[0][0].length - 1;
 
             double[][][] statTables = calcStatTables(allStats, Mode.Average, numTables, numAlgorithms, numStats);
-            double[] utilities = calcUtilities(statistics, statWeights, numAlgorithms, numStats, statTables[0]);
+            double[] utilities = calcUtilities(statistics, numAlgorithms, numStats, statTables[0]);
 
             // Add utilities to table as the last column.
             for (int u = 0; u < numTables; u++) {
@@ -167,14 +162,12 @@ public class Comparison {
 
             out.println();
             out.println("Weighting of statistics:\n");
-            out.print("W = ");
+            out.println("W = ");
 
-            Iterator it0 = statistics.iterator();
-
-            for (Statistic stat : statistics) {
+            for (Statistic stat : statistics.getStatistics()) {
                 String statName = stat.getAbbreviation();
-                Double weight = statWeights.get(statName);
-                if (weight != null) {
+                double weight = statistics.getWeight(stat);
+                if (weight != 0.0) {
                     out.println("    " + weight + " * Utility(" + statName + ")");
                 }
             }
@@ -211,7 +204,7 @@ public class Comparison {
         out.close();
     }
 
-    private double[][][][] calcStats(List<Algorithm> algorithms, List<Statistic> statistics,
+    private double[][][][] calcStats(List<Algorithm> algorithms, Statistics statistics,
                                      Parameters parameters, Simulation simulation) {
         int numGraphTypes = 4;
 
@@ -298,7 +291,7 @@ public class Comparison {
 
                         int j = -1;
 
-                        for (Statistic _stat : statistics) {
+                        for (Statistic _stat : statistics.getStatistics()) {
                             j++;
 
                             double stat;
@@ -424,7 +417,7 @@ public class Comparison {
         return statTables;
     }
 
-    private void printStats(double[][][] statTables, List<Statistic> statistics,
+    private void printStats(double[][][] statTables, Statistics statistics,
                             Mode mode, int[] newOrder) {
 
         if (mode == Mode.Average) {
@@ -458,7 +451,7 @@ public class Comparison {
 
             }
 
-            Iterator<Statistic> iterator = statistics.iterator();
+            Iterator<Statistic> iterator = statistics.getStatistics().iterator();
 
             for (int statIndex = 0; statIndex < numStats; statIndex++) {
                 String statLabel = iterator.next().getAbbreviation();
@@ -480,8 +473,8 @@ public class Comparison {
         }
     }
 
-    private double[] calcUtilities(List<Statistic> statistics, Map<String, Double> statWeights,
-                                   int numAlgorithms, int numStats, double[][] stats) {
+    private double[] calcUtilities(Statistics statistics, int numAlgorithms, int numStats,
+                                   double[][] stats) {
         List<List<Double>> all = new ArrayList<>();
 
         for (int m = 0; m < numStats; m++) {
@@ -511,20 +504,20 @@ public class Comparison {
             double sum = 0.0;
             int j = -1;
 
-            Iterator it2 = statistics.iterator();
+            Iterator it2 = statistics.getStatistics().iterator();
             int count = 0;
 
             while (it2.hasNext()) {
-                Statistic statName = (Statistic) it2.next();
+                Statistic stat = (Statistic) it2.next();
                 j++;
 
-                Double weight = statWeights.get(statName.getAbbreviation());
+                double weight = statistics.getWeight(stat);
 
-                if (weight != null) {
+                if (weight != 0.0) {
                     double _stat = stats[t][j];
                     double utility;
 
-                    if (statName.getAbbreviation().equals("E") || statName.getAbbreviation().equals("SHD")) {
+                    if (stat.getAbbreviation().equals("E") || stat.getAbbreviation().equals("SHD")) {
                         utility = all.get(j).indexOf(_stat) / (double) all.get(j).size();
                     } else {
                         utility = _stat;
@@ -533,7 +526,6 @@ public class Comparison {
                     sum += weight * utility;
                     count++;
                 }
-
             }
 
             utilities[t] = sum / count;

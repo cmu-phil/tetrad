@@ -83,7 +83,7 @@ public class RunComparisonFmri {
         parameters.putDouble("percentDiscreteForMixedSimulation", 0);
         parameters.putInt("printGraphs", 1);
 
-        List<Statistic> stats = new ArrayList<>();
+        Statistics stats = new Statistics();
 
         stats.add(new AdjacencyPrecisionStat());
         stats.add(new AdjacencyRecallStat());
@@ -96,17 +96,16 @@ public class RunComparisonFmri {
         stats.add(new ShdStat());
         stats.add(new ElapsedTimeStat());
 
-        Map<String, Double> statWeights = new LinkedHashMap<>();
-//        statWeights.put("AP", 1.0);
-//        statWeights.put("AR", 1.0);
-//        statWeights.put("OP", 1.0);
-//        statWeights.put("OR", 1.0);
-//        statWeights.put("McAdj", 1.0);
-//        statWeights.put("McOr", 0.5);
-        statWeights.put("F1Adj", 1.0);
-        statWeights.put("F1Or", 0.5);
-//        statWeights.put("SHD", 1.0);
-//        statWeights.put("E", .2);
+//        stats.put("AP", 1.0);
+//        stats.put("AR", 1.0);
+//        stats.put("OP", 1.0);
+//        stats.put("OR", 1.0);
+//        stats.put("McAdj", 1.0);
+//        stats.put("McOr", 0.5);
+        stats.setWeight("F1Adj", 1.0);
+        stats.setWeight("F1Or", 0.5);
+//        stats.put("SHD", 1.0);
+//        stats.put("E", .2);
 
 //        List<Algorithm> algorithms = getFullAlgorithmsList();
         List<Algorithm> algorithms = getSpecialSet();
@@ -123,7 +122,7 @@ public class RunComparisonFmri {
         DataType dataType = simulation.getDataType(parameters);
 
 
-        new Comparison().testBestAlgorithms(parameters, statWeights, algorithms, stats, simulation,
+        new Comparison().testBestAlgorithms(parameters, stats, algorithms, simulation,
                 "comparison/Comparison.txt");
     }
 
