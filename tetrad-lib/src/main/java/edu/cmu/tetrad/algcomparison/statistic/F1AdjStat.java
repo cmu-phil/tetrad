@@ -10,7 +10,7 @@ import edu.cmu.tetrad.graph.Graph;
 public class F1AdjStat implements Statistic {
     @Override
     public String getAbbreviation() {
-        return "F1Adj ";
+        return "F1Adj";
     }
 
     @Override
