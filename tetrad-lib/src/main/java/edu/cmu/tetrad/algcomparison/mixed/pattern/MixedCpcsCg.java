@@ -34,7 +34,7 @@ public class MixedCpcsCg implements Algorithm {
     }
 
     @Override
-    public List<String> usesParameters() {
+    public List<String> getParameters() {
         return new ArrayList<>();
     }
 

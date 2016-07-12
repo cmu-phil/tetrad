@@ -47,7 +47,7 @@ public class MixedPcsMgm implements Algorithm {
     }
 
     @Override
-    public List<String> usesParameters() {
+    public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("mgmParam1");
         parameters.add("mgmParam2");

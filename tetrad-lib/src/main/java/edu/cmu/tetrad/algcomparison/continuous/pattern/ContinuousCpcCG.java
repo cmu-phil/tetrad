@@ -36,7 +36,7 @@ public class ContinuousCpcCG implements Algorithm {
     }
 
     @Override
-    public List<String> usesParameters() {
+    public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         return parameters;
     }

@@ -36,7 +36,7 @@ public class MixedWgfci implements Algorithm {
     }
 
     @Override
-    public List<String> usesParameters() {
+    public List<String> getParameters() {
         return Collections.singletonList("penaltyDiscount");
     }
 }

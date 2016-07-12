@@ -40,7 +40,7 @@ public class MixedPcsWGfci implements Algorithm {
     }
 
     @Override
-    public List<String> usesParameters() {
+    public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         parameters.add("alpha");

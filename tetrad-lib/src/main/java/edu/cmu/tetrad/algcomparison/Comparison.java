@@ -32,6 +32,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
 
@@ -49,6 +50,7 @@ import java.util.*;
 public class Comparison {
     private boolean[] graphTypeUsed;
     private PrintStream out;
+    private boolean tabDelimitedTables = false;
 
     /**
      * Compares algorithms.
@@ -71,18 +73,51 @@ public class Comparison {
 
         // Only consider the algorithms for the given data type. Mixed data types can go either way.
         // MGM algorithms won't run on continuous data or discrete data.
-        List<Algorithm> _algorithms = new ArrayList<>();
+        List<AlgorithmWrapper> algorithmWrappers = new ArrayList<>();
 
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
             if (algorithm.getDataType() == simulation.getDataType(parameters)
                     || algorithm.getDataType() == DataType.Mixed) {
-                _algorithms.add(algorithm);
+                List<String> algParameters = algorithm.getParameters();
+                List<Integer> _dims = new ArrayList<>();
+                List<String> varyingParameters = new ArrayList<>();
+
+                for (String parameter : algParameters) {
+                    if (parameters.getNumValues(parameter) > 1) {
+                        _dims.add(parameters.getNumValues(parameter));
+                        varyingParameters.add(parameter);
+                    }
+                }
+
+                if (varyingParameters.isEmpty()) {
+                    algorithmWrappers.add(new AlgorithmWrapper(algorithm));
+                } else {
+
+                    int[] dims = new int[_dims.size()];
+                    for (int i = 0; i < _dims.size(); i++) dims[i] = _dims.get(i);
+
+                    CombinationGenerator gen = new CombinationGenerator(dims);
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        AlgorithmWrapper wrapper = new AlgorithmWrapper(algorithm);
+
+                        for (int h = 0; h < dims.length; h++) {
+                            String p = varyingParameters.get(h);
+                            Number[] values = parameters.getValues(p);
+                            Number value = values[choice[h]];
+                            wrapper.setValue(p, value);
+                        }
+
+                        algorithmWrappers.add(wrapper);
+                    }
+                }
             } else {
                 System.out.println("Data type mismatch for " + algorithm.getDescription() + "; skipping.");
             }
         }
 
-        double[][][][] allStats = calcStats(_algorithms, statistics, parameters, simulation);
+        double[][][][] allStats = calcStats(algorithmWrappers, statistics, parameters, simulation);
 
         if (allStats != null) {
             out.println();
@@ -118,13 +153,22 @@ public class Comparison {
                 }
             }
 
-            int[] newOrder = sort(_algorithms, utilities);
+            int[] newOrder;
+
+            if (statistics.isSortByUtility()) {
+                newOrder = sort(algorithmWrappers, utilities);
+            } else {
+                newOrder = new int[algorithmWrappers.size()];
+                for (int q = 0; q < algorithmWrappers.size(); q++) {
+                    newOrder[q] = q;
+                }
+            }
 
             out.println("Algorithms (sorted high to low by W for average statistics):");
             out.println();
 
-            for (int t = 0; t < _algorithms.size(); t++) {
-                out.println((t + 1) + ". " + _algorithms.get(newOrder[t]).getDescription());
+            for (int t = 0; t < algorithmWrappers.size(); t++) {
+                out.println((t + 1) + ". " + algorithmWrappers.get(newOrder[t]).getDescription());
             }
 
             out.println();
@@ -209,14 +253,14 @@ public class Comparison {
     }
 
 
-    private double[][][][] calcStats(List<Algorithm> algorithms, Statistics statistics,
+    private double[][][][] calcStats(List<AlgorithmWrapper> algorithmWrappers, Statistics statistics,
                                      Parameters parameters, Simulation simulation) {
         int numGraphTypes = 4;
 
         graphTypeUsed = new boolean[4];
         int numRuns = parameters.getInt("numRuns");
 
-        double[][][][] allStats = new double[4][algorithms.size()][statistics.size() + 1][numRuns];
+        double[][][][] allStats = new double[4][algorithmWrappers.size()][statistics.size() + 1][numRuns];
 
         boolean didAnalysis = false;
 
@@ -230,25 +274,32 @@ public class Comparison {
 
             boolean isMixed = data.isMixed();
 
-            for (int t = 0; t < algorithms.size(); t++) {
-                System.out.println((t + 1) + ". " + algorithms.get(t).getDescription());
+            for (int t = 0; t < algorithmWrappers.size(); t++) {
+                System.out.println((t + 1) + ". " + algorithmWrappers.get(t).getDescription());
 
                 long start = System.currentTimeMillis();
                 Graph out;
 
                 try {
                     DataSet copy = data.copy();
-                    out = algorithms.get(t).search(copy, parameters);
+
+                    for (String p : algorithmWrappers.get(t).getOverriddenParameters()) {
+                        parameters.setValue(p, algorithmWrappers.get(t).getValue(p));
+                    }
+
+                    parameters.setOverriddenParameters(algorithmWrappers.get(t).getOverriddenParametersMap());
+
+                    out = algorithmWrappers.get(t).search(copy, parameters);
                 } catch (Exception e) {
-                    System.out.println("Could not run " + algorithms.get(t).getDescription());
+                    System.out.println("Could not run " + algorithmWrappers.get(t).getDescription());
                     e.printStackTrace();
                     continue;
                 }
 
                 if (trueGraph == null && simulation instanceof SimulationPath) {
-                    printGraph(((SimulationPath) simulation).getPath(), out, i, algorithms.get(t), parameters);
+                    printGraph(((SimulationPath) simulation).getPath(), out, i, algorithmWrappers.get(t), parameters);
                 } else {
-                    printGraph(null, out, i, algorithms.get(t), parameters);
+                    printGraph(null, out, i, algorithmWrappers.get(t), parameters);
                 }
 
                 long stop = System.currentTimeMillis();
@@ -261,7 +312,7 @@ public class Comparison {
 
                 Graph[] est = new Graph[numGraphTypes];
 
-                Graph comparisonGraph = trueGraph == null ? null : algorithms.get(t).getComparisonGraph(trueGraph);
+                Graph comparisonGraph = trueGraph == null ? null : algorithmWrappers.get(t).getComparisonGraph(trueGraph);
 
                 if (trueGraph != null && out != null) {
                     trueGraph = GraphUtils.replaceNodes(trueGraph, out.getNodes());
@@ -345,6 +396,21 @@ public class Comparison {
         }
     }
 
+    /**
+     * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
+     */
+    public boolean isTabDelimitedTables() {
+        return tabDelimitedTables;
+    }
+
+    /**
+     * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy
+     *                           pasting into Excel).
+     */
+    public void setTabDelimitedTables(boolean tabDelimitedTables) {
+        this.tabDelimitedTables = tabDelimitedTables;
+    }
+
     private enum Mode {Average, StandardDeviation, WorstCase}
 
     private String getHeader(int u) {
@@ -416,7 +482,9 @@ public class Comparison {
         for (int u = 0; u < numTables; u++) {
             if (!graphTypeUsed[u]) continue;
 
-            TextTable table = new TextTable(numAlgorithms + 1, numStats + 2);
+            TextTable table = new TextTable(numAlgorithms + 1, numStats + 1 +
+                    (statistics.isShowUtilities() ? 1 : 0));
+            table.setTabDelimited(isTabDelimitedTables());
 
             table.setToken(0, 0, "Alg");
 
@@ -432,10 +500,13 @@ public class Comparison {
                 table.setToken(0, statIndex + 1, statLabel);
             }
 
-            table.setToken(0, numStats + 1, "W");
+            if (statistics.isShowUtilities()) {
+                table.setToken(0, numStats + 1, "W");
+            }
 
             for (int t = 0; t < numAlgorithms; t++) {
-                for (int statIndex = 0; statIndex < numStats + 1; statIndex++) {
+                for (int statIndex = 0; statIndex < numStats + (statistics.isShowUtilities() ? 1 : 0)
+                        ; statIndex++) {
                     double stat = statTables[u][newOrder[t]][statIndex];
                     table.setToken(t + 1, statIndex + 1, nf.format(Math.abs(stat)));
                 }
@@ -507,7 +578,7 @@ public class Comparison {
         return utilities;
     }
 
-    private int[] sort(final List<Algorithm> algorithms, final double[] utilities) {
+    private int[] sort(final List<AlgorithmWrapper> algorithms, final double[] utilities) {
         List<Integer> order = new ArrayList<>();
         for (int i = 0; i < algorithms.size(); i++) order.add(i);
 
@@ -575,6 +646,64 @@ public class Comparison {
         }
     }
 
+    private class AlgorithmWrapper implements Algorithm {
+        private Algorithm algorithm;
+        private Map<String, Number> overriddenParameters = new LinkedHashMap<>();
+
+        public AlgorithmWrapper(Algorithm algorithm) {
+            this.algorithm = algorithm;
+        }
+
+        @Override
+        public Graph search(DataSet dataSet, Parameters parameters) {
+            return algorithm.search(dataSet, parameters);
+        }
+
+        @Override
+        public Graph getComparisonGraph(Graph dag) {
+            return algorithm.getComparisonGraph(dag);
+        }
+
+        @Override
+        public String getDescription() {
+            StringBuilder description = new StringBuilder();
+            description.append(algorithm.getDescription());
+
+            if (overriddenParameters.size() > 0) {
+                for (String parameter : overriddenParameters.keySet()) {
+                    description.append(", " + parameter + " = " + overriddenParameters.get(parameter));
+                }
+            }
+
+            return description.toString();
+        }
+
+        @Override
+        public DataType getDataType() {
+            return algorithm.getDataType();
+        }
+
+        @Override
+        public List<String> getParameters() {
+            return algorithm.getParameters();
+        }
+
+        public List<String> getOverriddenParameters() {
+            return new ArrayList<>(overriddenParameters.keySet());
+        }
+
+        public void setValue(String parameter, Number value) {
+            this.overriddenParameters.put(parameter, value);
+        }
+
+        public Number getValue(String parameter) {
+            return overriddenParameters.get(parameter);
+        }
+
+        public Map<String,Number> getOverriddenParametersMap() {
+            return overriddenParameters;
+        }
+    }
 }
 
 

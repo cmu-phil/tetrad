@@ -38,7 +38,7 @@ public class ContinuousMmhc implements Algorithm {
     }
 
     @Override
-    public List<String> usesParameters() {
+    public List<String> getParameters() {
         return Collections.singletonList("alpha");
     }
 }

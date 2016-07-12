@@ -66,9 +66,10 @@ public class ExampleComparisonParameterVariation {
         algorithms.add(new ContinuousPcsFz());
         algorithms.add(new ContinuousCpcsFz());
 
+        Simulation simulation = new LoadContinuousDatasetsAndGraphsFromDirectory("comparison/save1", parameters);
+
         for (double alpha : new double[]{0.001, 0.01, 0.05}) {
             parameters.put("alpha", alpha);
-            Simulation simulation = new LoadContinuousDatasetsAndGraphsFromDirectory("comparison/save1", parameters);
             new Comparison().compareAlgorithms("comparison/Comparison." + alpha + ".txt", simulation, algorithms,
                     statistics, parameters);
         }

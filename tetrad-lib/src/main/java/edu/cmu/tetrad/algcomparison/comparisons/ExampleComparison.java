@@ -39,7 +39,7 @@ public class ExampleComparison {
         parameters.put("numMeasures", 100);
         parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
         parameters.put("sampleSize", 1000);
-        parameters.put("alpha", 1e-4);
+        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
 
@@ -57,6 +57,9 @@ public class ExampleComparison {
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
 
+        statistics.setSortByUtility(true);
+        statistics.setShowUtilities(true);
+
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new ContinuousPcFz());
@@ -64,12 +67,12 @@ public class ExampleComparison {
         algorithms.add(new ContinuousPcsFz());
         algorithms.add(new ContinuousCpcsFz());
 
-        Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
-//        Simulation simulation = new LoadContinuousDatasetsAndGraphsFromDirectory("comparison/save1", parameters);
+//        Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
+        Simulation simulation = new LoadContinuousDatasetsAndGraphsFromDirectory("comparison/save1", parameters);
 
-//        new Comparison().compareAlgorithms("comparison/Comparison.txt", simulation, algorithms,
-//                statistics, parameters);
-        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
+        new Comparison().compareAlgorithms("comparison/Comparison.txt", simulation, algorithms,
+                statistics, parameters);
+//        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
     }
 }
 

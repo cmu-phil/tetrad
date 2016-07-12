@@ -14,5 +14,5 @@ public interface Algorithm {
     Graph getComparisonGraph(Graph dag);
     String getDescription();
     DataType getDataType();
-    List<String> usesParameters();
+    List<String> getParameters();
 }

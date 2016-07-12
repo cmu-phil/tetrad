@@ -1,9 +1,8 @@
 package edu.cmu.tetrad.algcomparison;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import edu.cmu.tetrad.algcomparison.interfaces.Algorithm;
+
+import java.util.*;
 
 /**
  * Stores a list of named parameters with their values. Stores default values for known
@@ -12,32 +11,33 @@ import java.util.Set;
  * @author Joseph Ramsey
  */
 public class Parameters {
-    private Map<String, Number> parameters = new LinkedHashMap<>();
+    private Map<String, Number[]> parameters = new LinkedHashMap<>();
     private Set<String> usedParameters = new LinkedHashSet<>();
+    private Map<String, Number> overriddenParameter = new HashMap<>();
 
     public Parameters() {
 
         // Defaults
-        parameters.put("numMeasures", 100);
-        parameters.put("numEdges", 100);
-        parameters.put("numLatents", 0);
-        parameters.put("maxDegree", 10);
-        parameters.put("maxIndegree", 10);
-        parameters.put("maxOutdegree", 10);
-        parameters.put("connected", 0);
-        parameters.put("sampleSize", 1000);
-        parameters.put("numRuns", 5);
-        parameters.put("alpha", 0.001);
-        parameters.put("penaltyDiscount", 4);
-        parameters.put("fgsDepth", -1);
-        parameters.put("depth", -1);
-        parameters.put("printWinners", 0);
-        parameters.put("printAverages", 0);
-        parameters.put("printAverageTables", 1);
-        parameters.put("printGraph", 0);
-        parameters.put("percentDiscreteForMixedSimulation", 50);
-        parameters.put("ofInterestCutoff", 0.05);
-        parameters.put("printGraphs", 0);
+        put("numMeasures", 100);
+        put("numEdges", 100);
+        put("numLatents", 0);
+        put("maxDegree", 10);
+        put("maxIndegree", 10);
+        put("maxOutdegree", 10);
+        put("connected", 0);
+        put("sampleSize", 1000);
+        put("numRuns", 5);
+        put("alpha", 0.001);
+        put("penaltyDiscount", 4);
+        put("fgsDepth", -1);
+        put("depth", -1);
+        put("printWinners", 0);
+        put("printAverages", 0);
+        put("printAverageTables", 1);
+        put("printGraph", 0);
+        put("percentDiscreteForMixedSimulation", 50);
+        put("ofInterestCutoff", 0.05);
+        put("printGraphs", 0);
     }
 
     public String toString() {
@@ -51,16 +51,70 @@ public class Parameters {
     }
 
     public int getInt(String name) {
+        if (overriddenParameter.containsKey(name)) {
+            return overriddenParameter.get(name).intValue();
+        }
+
+        if (getNumValues(name) != 1) {
+            throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+        }
         usedParameters.add(name);
-        return parameters.get(name).intValue();
+        return parameters.get(name)[0].intValue();
     }
 
     public double getDouble(String name) {
+        if (overriddenParameter.containsKey(name)) {
+            return overriddenParameter.get(name).doubleValue();
+        }
+
+        if (getNumValues(name) != 1) {
+            throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+        }
         usedParameters.add(name);
-        return parameters.get(name).doubleValue();
+        return parameters.get(name)[0].doubleValue();
     }
 
-    public void put(String name, Number n) {
+    public void put(String name, Number...n) {
         parameters.put(name, n);
+    }
+
+    public int getNumValues(String name) {
+        return  parameters.get(name).length;
+    }
+
+    public int[] getInts(String name) {
+        usedParameters.add(name);
+
+        int[] values = new int[parameters.get(name).length];
+
+        for (int i = 0; i < values.length; i++) {
+            values[i] = parameters.get(name)[i].intValue();
+        }
+
+        return values;
+    }
+
+    public double[] getDoubles(String name) {
+        usedParameters.add(name);
+
+        double[] values = new double[parameters.get(name).length];
+
+        for (int i = 0; i < values.length; i++) {
+            values[i] = parameters.get(name)[i].intValue();
+        }
+
+        return values;
+    }
+
+    public Number[] getValues(String parameter) {
+        return parameters.get(parameter);
+    }
+
+    public void setValue(String p, Number value) {
+        parameters.put(p, new Number[]{value});
+    }
+
+    public void setOverriddenParameters(Map<String, Number> parameters) {
+        this.overriddenParameter = parameters;
     }
 }

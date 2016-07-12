@@ -33,7 +33,7 @@ public class MixedPcCg implements Algorithm {
     }
 
     @Override
-    public List<String> usesParameters() {
+    public List<String> getParameters() {
         return null;
     }
 }
