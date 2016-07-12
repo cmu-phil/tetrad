@@ -82,30 +82,6 @@ public class Parameters {
         return  parameters.get(name).length;
     }
 
-    public int[] getInts(String name) {
-        usedParameters.add(name);
-
-        int[] values = new int[parameters.get(name).length];
-
-        for (int i = 0; i < values.length; i++) {
-            values[i] = parameters.get(name)[i].intValue();
-        }
-
-        return values;
-    }
-
-    public double[] getDoubles(String name) {
-        usedParameters.add(name);
-
-        double[] values = new double[parameters.get(name).length];
-
-        for (int i = 0; i < values.length; i++) {
-            values[i] = parameters.get(name)[i].intValue();
-        }
-
-        return values;
-    }
-
     public Number[] getValues(String parameter) {
         return parameters.get(parameter);
     }
