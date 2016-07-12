@@ -22,17 +22,8 @@
 package edu.cmu.tetrad.algcomparison.comparisons;
 
 import edu.cmu.tetrad.algcomparison.*;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousCpcFz;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousCpcsFz;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousPcFz;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.ContinuousPcsFz;
+import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
-import edu.cmu.tetrad.algcomparison.statistic.*;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Joseph Ramsey

@@ -29,6 +29,9 @@ import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteFciGs;
 import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteGfci;
 import edu.cmu.tetrad.algcomparison.discrete.pag.DiscreteRfciGs;
 import edu.cmu.tetrad.algcomparison.discrete.pattern.*;
+import edu.cmu.tetrad.algcomparison.interfaces.Algorithm;
+import edu.cmu.tetrad.algcomparison.interfaces.DataType;
+import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedFciCG;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedGfciCG;
 import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
@@ -36,13 +39,8 @@ import edu.cmu.tetrad.algcomparison.mixed.pattern.*;
 import edu.cmu.tetrad.algcomparison.simulation.LoadDataFromFileWithoutGraph;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Joseph Ramsey
@@ -108,7 +106,7 @@ public class RunComparisonFmri {
 //        stats.put("E", .2);
 
 //        List<Algorithm> algorithms = getFullAlgorithmsList();
-        List<Algorithm> algorithms = getSpecialSet();
+        Algorithms algorithms = getSpecialSet();
 //
 //        Simulation simulation = new MixedLeeHastieSimulation(parameters.getInt("numRuns"));
 //        Simulation simulation = new LinearGaussianSemSimulation(parameters.getInt("numRuns"));
@@ -126,8 +124,8 @@ public class RunComparisonFmri {
                 "comparison/Comparison.txt");
     }
 
-    private static List<Algorithm> getSpecialSet() {
-        List<Algorithm> algorithms = new ArrayList<>();
+    private static Algorithms getSpecialSet() {
+        Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new MixedFgs2Sem());
 //        algorithms.add(new MixedFgs2CG());

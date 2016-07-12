@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison;
+package edu.cmu.tetrad.algcomparison.interfaces;
 
 /**
  * Created by jdramsey on 7/4/16.

@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison;
+package edu.cmu.tetrad.algcomparison.interfaces;
 
 import edu.cmu.tetrad.graph.Graph;
 

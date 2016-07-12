@@ -23,17 +23,13 @@ package edu.cmu.tetrad.algcomparison.comparisons;
 
 import edu.cmu.tetrad.algcomparison.*;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
-import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedCpcCgLrtTest;
-import edu.cmu.tetrad.algcomparison.mixed.pattern.MixedFgs2CG;
+import edu.cmu.tetrad.algcomparison.interfaces.Algorithm;
+import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.ContinuousNonlinearNongaussianSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDatasetsAndGraphsFromDirectory;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Joseph Ramsey
@@ -63,7 +59,7 @@ public class ExampleComparison {
 
         statistics.setWeight("AP", 1.0);
 
-        List<Algorithm> algorithms = new ArrayList<>();
+        Algorithms algorithms = new Algorithms();
 
         algorithms.add(new ContinuousPcFz());
         algorithms.add(new ContinuousCpcFz());

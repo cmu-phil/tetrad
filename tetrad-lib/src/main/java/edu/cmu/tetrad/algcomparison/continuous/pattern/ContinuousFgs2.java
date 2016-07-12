@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.continuous.pattern;
 
-import edu.cmu.tetrad.algcomparison.Algorithm;
-import edu.cmu.tetrad.algcomparison.DataType;
+import edu.cmu.tetrad.algcomparison.interfaces.Algorithm;
+import edu.cmu.tetrad.algcomparison.interfaces.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;

@@ -21,7 +21,12 @@
 
 package edu.cmu.tetrad.algcomparison;
 
+import edu.cmu.tetrad.algcomparison.interfaces.Algorithm;
+import edu.cmu.tetrad.algcomparison.interfaces.DataType;
+import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
+import edu.cmu.tetrad.algcomparison.interfaces.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.ElapsedTimeStat;
+import edu.cmu.tetrad.algcomparison.statistic.utilities.SimulationPath;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataWriter;
@@ -94,7 +99,7 @@ public class Comparison {
     }
 
     public void testBestAlgorithms(Parameters parameters, Statistics statistics,
-                                   List<Algorithm> allAlgorithms,
+                                   Algorithms allAlgorithms,
                                    Simulation simulation, String path) {
         try {
             File comparison = new File(path);
@@ -109,7 +114,7 @@ public class Comparison {
         // MGM algorithms won't run on continuous data or discrete data.
         List<Algorithm> algorithms = new ArrayList<>();
 
-        for (Algorithm algorithm : allAlgorithms) {
+        for (Algorithm algorithm : allAlgorithms.getAlgorithms()) {
             if (algorithm.getDataType() == simulation.getDataType(parameters) || algorithm.getDataType() == DataType.Mixed) {
                 algorithms.add(algorithm);
             }

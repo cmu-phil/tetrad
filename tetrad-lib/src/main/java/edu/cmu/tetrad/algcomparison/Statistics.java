@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.algcomparison;
 
+import edu.cmu.tetrad.algcomparison.interfaces.Statistic;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
