@@ -11,23 +11,27 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * PC using the Fisher Z test.
+ * @author jdramsey
  */
 public class ContinuousPcFz implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
         IndependenceTest test = new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
         Pc pc = new Pc(test);
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
         return "PC using the Fisher Z test";
     }
-
 
     @Override
     public DataType getDataType() {

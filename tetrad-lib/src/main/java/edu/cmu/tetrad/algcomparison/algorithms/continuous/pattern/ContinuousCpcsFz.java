@@ -11,9 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * CPC-Stable using the Fisher Z test.
+ * @author jdramsey
  */
 public class ContinuousCpcsFz implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
         IndependenceTest test = new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
         CpcStable pc = new CpcStable(test);
@@ -21,10 +24,12 @@ public class ContinuousCpcsFz implements Algorithm {
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
         return "CPC-Stable using the Fisher Z test";
     }

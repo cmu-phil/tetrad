@@ -12,9 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * CPC using the SEM BIC score as an independence test.
+ * @author jdramsey
  */
 public class ContinuousCpcsSemBic implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
@@ -23,14 +26,15 @@ public class ContinuousCpcsSemBic implements Algorithm {
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
         return "CPC-Stable using the SEM BIC score";
     }
-
 
     @Override
     public DataType getDataType() {

@@ -12,25 +12,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * FGS (the heuristic version).
+ * @author jdramsey
  */
 public class ContinuousFgs implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         Fgs fgs = new Fgs(score);
+        fgs.setHeuristicSpeedup(true);
         fgs.setDepth(parameters.getInt("fgsDepth"));
         return fgs.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
         return "FGS using the SEM BIC score";
     }
-
 
     @Override
     public DataType getDataType() {

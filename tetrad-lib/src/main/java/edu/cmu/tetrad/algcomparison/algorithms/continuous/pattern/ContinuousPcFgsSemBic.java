@@ -12,14 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * PC usign the output of FGS as an initial graph. SEM BIC .
  */
-public class ContinuousPcFgs implements Algorithm {
+public class ContinuousPcFgsSemBic implements Algorithm {
+
+    @Override
     public Graph search(DataSet ds, Parameters parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(ds));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        Fgs fgs = new Fgs(score);
-        fgs.setDepth(parameters.getInt("fgsDepth"));
+        Fgs2 fgs = new Fgs2(score);
         Graph g = fgs.search();
         IndependenceTest test = new IndTestScore(score);
         Pc pc = new Pc(test);
@@ -28,15 +29,15 @@ public class ContinuousPcFgs implements Algorithm {
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
-//        return new Pc(new IndTestDSep(dag)).search();
         return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
         return "PC using the graph from FGS as an initial graph, SEM BIC used throughout";
     }
-
 
     @Override
     public DataType getDataType() {
@@ -47,7 +48,6 @@ public class ContinuousPcFgs implements Algorithm {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
-        parameters.add("fgsDepth");
         parameters.add("depth");
         return parameters;
     }

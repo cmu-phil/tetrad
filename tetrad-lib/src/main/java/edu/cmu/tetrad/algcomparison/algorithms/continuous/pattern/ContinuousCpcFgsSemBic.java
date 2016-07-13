@@ -12,9 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * CPC using the output of FGS as an initial graph, using SEM BIC througout.
+ * @author jdramsey
  */
-public class ContinuousCpcFgs implements Algorithm {
+public class ContinuousCpcFgsSemBic implements Algorithm {
+
+    @Override
     public Graph search(DataSet ds, Parameters parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(ds));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
@@ -28,15 +31,15 @@ public class ContinuousCpcFgs implements Algorithm {
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
-//        return new Pc(new IndTestDSep(dag)).search();
         return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
         return "CPC using the graph from FGS as an initial graph, SEM BIC used throughout";
     }
-
 
     @Override
     public DataType getDataType() {
