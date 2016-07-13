@@ -26,9 +26,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -96,7 +94,7 @@ public final class DagToPag {
             System.out.println("DAG to PAG: Starting collider orientation");
         }
 
-        orientUnshieldedColliders(graph, dag);
+        orientUnshieldedColliders2(graph, dag);
 
         if (verbose) {
             System.out.println("DAG to PAG: Starting final orientation");
@@ -104,6 +102,7 @@ public final class DagToPag {
 
         final FciOrient fciOrient = new FciOrient(new DagSepsets(dag));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.skipDiscriminatingPathRule(false);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.doFinalOrientation(graph);
@@ -128,22 +127,71 @@ public final class DagToPag {
         Graph graph = new EdgeListGraphSingleConnections(measured);
 
         for (int i = 0; i < measured.size(); i++) {
-            for (int j = i + 1; j < measured.size(); j++) {
-                Node n1 = measured.get(i);
-                Node n2 = measured.get(j);
-
-                final List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, dag);
-
-                boolean exists = inducingPath != null;
-
-                if (exists) {
-                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
-                }
-            }
+            addAdjacencies(measured.get(i), dag, graph);
         }
 
         return graph;
     }
+
+    public static Set<Node> addAdjacencies(Node x, Graph dag, Graph builtGraph) {
+        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+
+        final LinkedList<Node> path = new LinkedList<>();
+        path.add(x);
+
+        Set<Node> induced = new HashSet<>();
+
+        for (Node b : dag.getAdjacentNodes(x)) {
+            collectInducedNodesVisit2(dag, x, b, path, builtGraph);
+        }
+
+        return induced;
+    }
+
+    public static void collectInducedNodesVisit2(Graph dag, Node x, Node b, LinkedList<Node> path,
+                                                 Graph builtGraph) {
+
+        if (path.contains(b)) {
+            return;
+        }
+
+        path.addLast(b);
+
+        if (b.getNodeType() == NodeType.MEASURED && path.size() >= 2) {
+            Node y = path.getLast();
+
+            for (int i = 0; i < path.size() - 2; i++) {
+                Node _a = path.get(i);
+                Node _b = path.get(i + 1);
+                Node _c = path.get(i + 2);
+
+                if (_b.getNodeType() == NodeType.MEASURED) {
+                    if (!dag.isDefCollider(_a, _b, _c)) {
+                        path.removeLast();
+                        return;
+                    }
+                }
+
+                if (dag.isDefCollider(_a, _b, _c)) {
+                    if (!(dag.isAncestorOf(_b, x) || dag.isAncestorOf(_b, y))) {
+                        path.removeLast();
+                        return;
+                    }
+                }
+            }
+
+            if (!builtGraph.isAdjacentTo(x, b)) {
+                builtGraph.addEdge(Edges.nondirectedEdge(x, b));
+            }
+        }
+
+        for (Node c : dag.getAdjacentNodes(b)) {
+            collectInducedNodesVisit2(dag, x, c, path, builtGraph);
+        }
+
+        path.removeLast();
+    }
+
 
     private void orientUnshieldedColliders(Graph graph, Graph dag) {
         graph.reorientAllWith(Endpoint.CIRCLE);
@@ -182,6 +230,48 @@ public final class DagToPag {
                         if (verbose) {
                             System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
                         }
+
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
+    }
+
+    private void orientUnshieldedColliders2(Graph graph, Graph dag) {
+//        graph.reorientAllWith(Endpoint.CIRCLE);
+
+        List<Node> allNodes = dag.getNodes();
+        List<Node> measured = new ArrayList<Node>();
+
+        for (Node node : allNodes) {
+            if (node.getNodeType() == NodeType.MEASURED) {
+                measured.add(node);
+            }
+        }
+
+        for (Node b : measured) {
+            List<Node> adjb = graph.getAdjacentNodes(b);
+
+            if (adjb.size() < 2) continue;
+
+            for (int i = 0; i < adjb.size(); i++) {
+                for (int j = i + 1; j < adjb.size(); j++) {
+                    Node a = adjb.get(i);
+                    Node c = adjb.get(j);
+
+//                    List<Node> d = new ArrayList<>();
+//                    d.add(a);
+//                    d.add(c);
+//
+//                    List<Node> anc = dag.getAncestors(d);
+
+                    if (!graph.isAdjacentTo(a, c) && !dag.isAncestorOf(b, a) && !dag.isAncestorOf(b, c)) {// !anc.contains(b)) {
+
+//                        if (verbose) {
+//                            System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
+//                        }
 
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
