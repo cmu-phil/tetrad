@@ -11,9 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * RFCI using the Chi Square independence test.
+ * @author jdramsey
  */
 public class DiscreteRfciCs implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
         IndependenceTest test = new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
         Rfci pc = new Rfci(test);
@@ -25,6 +28,7 @@ public class DiscreteRfciCs implements Algorithm {
         return new DagToPag(graph).convert();
     }
 
+    @Override
     public String getDescription() {
         return "RFCI using the Chi Square test.";
     }

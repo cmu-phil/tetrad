@@ -1,34 +1,36 @@
-package edu.cmu.tetrad.algcomparison.algorithms.discrete.pattern;
+package edu.cmu.tetrad.algcomparison.algorithms.discrete.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IndTestChiSquare;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * CFCI using the Chi Square independence test.
+ * @author jdramsey
  */
-public class DiscretePcChiSquare implements Algorithm {
+public class DiscreteCfciGs implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
-        Pc pc = new Pc(test);
+        IndependenceTest test = new IndTestGSquare(dataSet, parameters.getDouble("alpha"));
+        Cfci pc = new Cfci(test);
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(graph);
+        return new DagToPag(graph).convert();
     }
 
+    @Override
     public String getDescription() {
-        return "PC using the Chi Square test";
+        return "CFCI ising the Chi Square test";
     }
 
     @Override

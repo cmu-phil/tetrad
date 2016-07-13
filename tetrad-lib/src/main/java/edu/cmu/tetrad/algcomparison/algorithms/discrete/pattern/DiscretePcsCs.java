@@ -5,27 +5,35 @@ import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.IndTestChiSquare;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * PC-Stable using the Chi Square independence test.
+ * @author jdramsey
  */
-public class DiscretePcGSquare implements Algorithm {
+public class DiscretePcsCs implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestGSquare(dataSet, parameters.getDouble("alpha"));
+        IndependenceTest test = new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
         Pc pc = new Pc(test);
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
-        return "PC using the G Square test";
+        return "PC using the Ghi Square test";
     }
 
     @Override

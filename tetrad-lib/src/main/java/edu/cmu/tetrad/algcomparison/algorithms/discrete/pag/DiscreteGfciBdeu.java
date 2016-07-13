@@ -11,9 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * GFCI using the BDEU score.
+ * @author jdramsey
  */
-public class DiscreteGfci implements Algorithm {
+public class DiscreteGfciBdeu implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
         BDeuScore score = new BDeuScore(dataSet);
         score.setSamplePrior(parameters.getDouble("samplePrior"));
@@ -22,10 +25,12 @@ public class DiscreteGfci implements Algorithm {
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return new DagToPag(graph).convert();
     }
 
+    @Override
     public String getDescription() {
         return "GFCI using the BDeu score";
     }

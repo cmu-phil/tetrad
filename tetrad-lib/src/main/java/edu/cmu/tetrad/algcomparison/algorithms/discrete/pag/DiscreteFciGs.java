@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * FCI using the G Square independence test.
  */
 public class DiscreteFciGs implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
         IndependenceTest test = new IndTestGSquare(dataSet, parameters.getDouble("alpha"));
         Fci pc = new Fci(test);
@@ -25,6 +27,7 @@ public class DiscreteFciGs implements Algorithm {
         return new DagToPag(graph).convert();
     }
 
+    @Override
     public String getDescription() {
         return "FCI using the Chi Square test.";
     }

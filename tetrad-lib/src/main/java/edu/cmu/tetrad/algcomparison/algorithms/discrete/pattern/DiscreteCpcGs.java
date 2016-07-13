@@ -5,30 +5,32 @@ import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Cpc;
-import edu.cmu.tetrad.search.IndTestChiSquare;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * CPC using the G Square independence test.
+ * @author jdramsey
  */
-public class DiscreteCpcChiSquare implements Algorithm {
+public class DiscreteCpcGs implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
+        IndependenceTest test = new IndTestGSquare(dataSet, parameters.getDouble("alpha"));
         Cpc pc = new Cpc(test);
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
-        return "CPC using the Chi Square test";
+        return "CPC using the G Square test";
     }
 
     @Override

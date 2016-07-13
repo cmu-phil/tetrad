@@ -14,21 +14,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * PC using the Chi Square independence test.
+ * @author jdramsey
  */
-public class DiscretePcsChiSquare implements Algorithm {
+public class DiscretePcCs implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
         IndependenceTest test = new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
         Pc pc = new Pc(test);
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
-        return "PC using the Ghi Square test";
+        return "PC using the Chi Square test";
     }
 
     @Override

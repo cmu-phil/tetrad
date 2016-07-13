@@ -5,21 +5,26 @@ import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.BDeuScore;
+import edu.cmu.tetrad.search.BicScore;
+import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.GFci;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FCI using the Chi Square independence test.
+ * GFCI using the BDEU score.
  * @author jdramsey
  */
-public class DiscreteFciCs implements Algorithm {
+public class DiscreteGfciBic implements Algorithm {
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
-        Fci pc = new Fci(test);
+        BicScore score = new BicScore(dataSet);
+        score.setSamplePrior(parameters.getDouble("samplePrior"));
+        score.setSamplePrior(parameters.getDouble("structurePrior"));
+        GFci pc = new GFci(score);
         return pc.search();
     }
 
@@ -30,7 +35,7 @@ public class DiscreteFciCs implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FCI using the Chi Square test.";
+        return "GFCI using the BDeu score";
     }
 
     @Override
@@ -41,7 +46,8 @@ public class DiscreteFciCs implements Algorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
+        parameters.add("samplePrior");
+        parameters.add("structurePrior");
         return parameters;
     }
 }

@@ -11,9 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * FGS2 using the BDeu Score.
+ * @author jdramsey
  */
 public class DiscreteFgs2Bdeu implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
         BDeuScore score = new BDeuScore(dataSet);
         score.setSamplePrior(parameters.getInt("samplePrior"));
@@ -23,10 +26,12 @@ public class DiscreteFgs2Bdeu implements Algorithm {
         return fgs.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return new DagToPag(graph).convert();
     }
 
+    @Override
     public String getDescription() {
         return "FGS2 using the BDeu score";
     }

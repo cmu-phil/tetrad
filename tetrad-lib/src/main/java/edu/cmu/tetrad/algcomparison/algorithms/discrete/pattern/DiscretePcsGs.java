@@ -11,21 +11,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * PC-Stable using the G Square independence test.
+ * @author jdramsey
  */
-public class DiscreteCpcGSquare implements Algorithm {
+public class DiscretePcsGs implements Algorithm {
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
         IndependenceTest test = new IndTestGSquare(dataSet, parameters.getDouble("alpha"));
-        Cpc pc = new Cpc(test);
+        PcStable pc = new PcStable(test);
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
-        return "CPC using the G Square test";
+        return "PC using the G Square test";
     }
 
     @Override
