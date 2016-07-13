@@ -14,7 +14,7 @@ import java.util.List;
  * FCI Max using the Fisher Z independence test.
  * @author jdramsey
  */
-public class ContinuousFciMax implements Algorithm {
+public class ContinuousFciMaxFz implements Algorithm {
     public Graph search(DataSet dataSet, Parameters parameters) {
         IndependenceTest test = new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
         FciMax pc = new FciMax(test);
