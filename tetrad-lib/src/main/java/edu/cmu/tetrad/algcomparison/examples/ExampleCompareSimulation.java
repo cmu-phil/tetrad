@@ -21,16 +21,18 @@
 
 package edu.cmu.tetrad.algcomparison.examples;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.Parameters;
+import edu.cmu.tetrad.algcomparison.*;
+import edu.cmu.tetrad.algcomparison.algorithms.continuous.pattern.*;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
+import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
  * An example comparison script.
  * @author Joseph Ramsey
  */
-public class ExampleSaveData {
+public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
@@ -38,9 +40,39 @@ public class ExampleSaveData {
         parameters.put("numMeasures", 100);
         parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
         parameters.put("sampleSize", 1000);
+//        parameters.put("alpha", 1e-4);
+        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
+
+        Statistics statistics = new Statistics();
+
+        statistics.add(new AdjacencyPrecisionStat());
+        statistics.add(new AdjacencyRecallStat());
+        statistics.add(new ArrowPrecisionStat());
+        statistics.add(new ArrowRecallStat());
+        statistics.add(new MathewsCorrAdjStat());
+        statistics.add(new MathewsCorrArrowStat());
+        statistics.add(new F1AdjStat());
+        statistics.add(new F1ArrowStat());
+        statistics.add(new ShdStat());
+        statistics.add(new ElapsedTimeStat());
+
+        statistics.setWeight("AP", 1.0);
+        statistics.setWeight("AR", 0.5);
+
+        statistics.setSortByUtility(true);
+        statistics.setShowUtilities(true);
+
+        Algorithms algorithms = new Algorithms();
+
+        algorithms.add(new ContinuousPcFz());
+        algorithms.add(new ContinuousCpcFz());
+        algorithms.add(new ContinuousPcsFz());
+        algorithms.add(new ContinuousCpcsFz());
 
         Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
-        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
+
+        new Comparison().compareAlgorithms("comparison/Comparison.txt",
+                simulation, algorithms, statistics, parameters);
     }
 }
 
