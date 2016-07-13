@@ -29,7 +29,6 @@ public class ContinuousRfciFz implements Algorithm {
         return "RFCI using the Fisher Z test.";
     }
 
-
     @Override
     public DataType getDataType() {
         return DataType.Continuous;

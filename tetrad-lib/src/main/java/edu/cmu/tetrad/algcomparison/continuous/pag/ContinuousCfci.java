@@ -30,7 +30,6 @@ public class ContinuousCfci implements Algorithm {
         return "CFCI, using the Fisher Z test.";
     }
 
-
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
@@ -41,4 +40,5 @@ public class ContinuousCfci implements Algorithm {
         List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
         return parameters;
-    }}
+    }
+}

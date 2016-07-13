@@ -31,7 +31,6 @@ public class ContinuousRfciSemBic implements Algorithm {
         return "PC using the SEM BIC score";
     }
 
-
     @Override
     public DataType getDataType() {
         return DataType.Continuous;

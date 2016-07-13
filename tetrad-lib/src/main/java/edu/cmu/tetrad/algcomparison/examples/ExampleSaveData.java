@@ -19,35 +19,28 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.comparisons;
+package edu.cmu.tetrad.algcomparison.examples;
 
-import edu.cmu.tetrad.algcomparison.*;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
+import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
-import edu.cmu.tetrad.algcomparison.simulation.LoadDataFromFileWithoutGraph;
+import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
 
 /**
+ * An example comparison script.
  * @author Joseph Ramsey
  */
-public class RunComparisonFmri {
+public class ExampleSaveData {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("penaltyDiscount", 40);
-        parameters.put("fgsDepth", -1);
+        parameters.put("numRuns", 10);
+        parameters.put("numMeasures", 100);
+        parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
+        parameters.put("sampleSize", 1000);
 
-        Statistics statistics = new Statistics(); // Just need a blank one--no graphs are provided.
-
-        Algorithms algorithms = new Algorithms(); // Just need the one algorithm.f
-        algorithms.add(new ContinuousFgs2());
-
-        Simulation simulation = new LoadDataFromFileWithoutGraph(
-                "/Users/jdramsey/BitTorrent Sync/418_datapoints/Hipp_L_first10_480.txt");
-
-        Comparison comparison = new Comparison();
-        comparison.setSaveGraphs(true);
-        comparison.compareAlgorithms("comparison/Comparison.40.txt", simulation, algorithms,
-                statistics, parameters);
+        Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
+        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
     }
 }
 

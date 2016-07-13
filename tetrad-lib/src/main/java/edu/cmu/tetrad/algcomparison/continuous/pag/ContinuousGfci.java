@@ -31,7 +31,6 @@ public class ContinuousGfci implements Algorithm {
         return "GFCI using the SEM BIC score.";
     }
 
-
     @Override
     public DataType getDataType() {
         return DataType.Continuous;

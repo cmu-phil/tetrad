@@ -30,7 +30,6 @@ public class ContinuousFciFz implements Algorithm {
         return "FCI using the Fisher Z test.";
     }
 
-
     @Override
     public DataType getDataType() {
         return DataType.Continuous;

@@ -21,12 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.algcomparison.mixed.pag.MixedWgfci;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.pitt.csb.mgm.MGM;
 
 import java.util.*;
 
