@@ -11,9 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * Conserative FCI using the Fisher Z independence test.
+ * @author jdramsey
  */
-public class ContinuousCfci implements Algorithm {
+public class ContinuousCfciFz implements Algorithm {
     public Graph search(DataSet dataSet, Parameters parameters) {
         IndependenceTest test = new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
         Cfci pc = new Cfci(test);

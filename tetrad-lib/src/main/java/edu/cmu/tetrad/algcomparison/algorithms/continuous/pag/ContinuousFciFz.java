@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * FCI using the Fisher Z independence test.
+ * @author jdramsey
  */
 public class ContinuousFciFz implements Algorithm {
     public Graph search(DataSet dataSet, Parameters parameters) {

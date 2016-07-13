@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * RFCI using the SEM BIC score as an independence test.
+ * @author jdramsey
  */
 public class ContinuousRfciSemBic implements Algorithm {
     public Graph search(DataSet dataSet, Parameters parameters) {

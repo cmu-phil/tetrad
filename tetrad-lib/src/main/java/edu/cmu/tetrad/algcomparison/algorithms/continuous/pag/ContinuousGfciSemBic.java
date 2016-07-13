@@ -12,9 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * GFCI using the Sem BIC score.
+ * @author jdramsey
  */
-public class ContinuousGfci implements Algorithm {
+public class ContinuousGfciSemBic implements Algorithm {
     public Graph search(DataSet dataSet, Parameters parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));

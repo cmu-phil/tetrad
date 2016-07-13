@@ -12,24 +12,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FCI using the SEM BIC score as an independence test.
+ * GFCI using Fisher Z test (with SEM BIC for the FGS part).
  * @author jdramsey
  */
-public class ContinuousFciSemBic implements Algorithm {
+public class ContinuousGfciSemBicFz implements Algorithm {
     public Graph search(DataSet dataSet, Parameters parameters) {
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        IndependenceTest test = new IndTestScore(score);
-        Fci pc = new Fci(test);
+        IndependenceTest test = new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
+        GFci pc = new GFci(test);
+        pc.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         return pc.search();
     }
 
+    @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(graph);
+        return new DagToPag(graph).convert();
     }
 
     public String getDescription() {
-        return "PC using the SEM BIC score";
+        return "GFCI using the SEM BIC score.";
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ContinuousFciSemBic implements Algorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
+        parameters.add("alpha");
         return parameters;
     }
 }
