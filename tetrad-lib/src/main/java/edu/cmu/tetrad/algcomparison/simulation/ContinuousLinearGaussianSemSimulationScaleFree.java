@@ -16,27 +16,24 @@ import java.util.List;
  * Created by jdramsey on 6/4/16.
  */
 public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulation {
-    private int numDataSets;
     private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private Graph graph;
 
     public ContinuousLinearGaussianSemSimulationScaleFree(Parameters parameters) {
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graph = GraphUtils.scaleFreeGraph(
+                parameters.getInt("numMeasures"),
+                parameters.getInt("numLatents"),
+                parameters.getDouble("scaleFreeAlpha"),
+                parameters.getDouble("scaleFreeBeta"),
+                parameters.getDouble("scaleFreeDeltaIn"),
+                parameters.getInt("scaleFreeDeltaOut")
+        );
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
-            Graph graph = GraphUtils.scaleFreeGraph(
-                    parameters.getInt("numMeasures"),
-                    parameters.getInt("numLatents"),
-                    parameters.getDouble("scaleFreeAlpha"),
-                    parameters.getDouble("scaleFreeBeta"),
-                    parameters.getDouble("scaleFreeDeltaIn"),
-                    parameters.getInt("scaleFreeDeltaOut")
-            );
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
-            graphs.add(graph);
         }
     }
 
@@ -44,8 +41,8 @@ public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulatio
         return dataSets.get(index);
     }
 
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph() {
+        return graph;
     }
 
     public String getDescription() {
@@ -55,7 +52,7 @@ public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulatio
     @Override
     public int getNumDataSets() {
         return dataSets.size();
-    }   private Graph graph;
+    }
 
     @Override
     public DataType getDataType() {

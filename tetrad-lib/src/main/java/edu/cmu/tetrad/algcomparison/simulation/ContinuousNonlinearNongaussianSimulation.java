@@ -15,25 +15,21 @@ import java.util.*;
  */
 public class ContinuousNonlinearNongaussianSimulation implements Simulation {
     private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private Graph graph;
 
     public ContinuousNonlinearNongaussianSimulation(Parameters parameters) {
         this.dataSets = new ArrayList<>();
-        this.graphs = new ArrayList<>();
+        this.graph = GraphUtils.randomGraphRandomForwardEdges(
+                parameters.getInt("numMeasures"),
+                parameters.getInt("numLatents"),
+                parameters.getInt("numEdges"),
+                parameters.getInt("maxDegree"),
+                parameters.getInt("maxIndegree"),
+                parameters.getInt("maxOutdegree"),
+                parameters.getInt("connected") == 1);
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
-            Graph graph = GraphUtils.randomGraphRandomForwardEdges(
-                    parameters.getInt("numMeasures"),
-                    parameters.getInt("numLatents"),
-                    parameters.getInt("numEdges"),
-                    parameters.getInt("maxDegree"),
-                    parameters.getInt("maxIndegree"),
-                    parameters.getInt("maxOutdegree"),
-                    parameters.getInt("connected") == 1);
-
             DataSet dataSet = simulate(graph, parameters);
-
-            this.graphs.add(graph);
             this.dataSets.add(dataSet);
         }
     }
@@ -44,8 +40,8 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
         return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph() {
+        return graph;
     }
 
     @Override

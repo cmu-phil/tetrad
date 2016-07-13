@@ -18,29 +18,27 @@ import java.util.List;
 public class LoadContinuousDataAndGraphs implements Simulation {
     private String path;
     private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private Graph graph;
 
     public LoadContinuousDataAndGraphs(String filesPath, Parameters parameters) {
         this.path = filesPath;
         this.dataSets = new ArrayList<>();
-        this.graphs = new ArrayList<>();
 
         if (new File(filesPath + "/data").exists()) {
             int numDataSets = new File(filesPath + "/data").listFiles().length;
 
+            File file2 = new File(filesPath + "/graph/graph.txt");
+            System.out.println("Loading graph from " + file2.getAbsolutePath());
+            this.graph = GraphUtils.loadGraphTxt(file2);
+
             try {
                 for (int i = 0; i < numDataSets; i++) {
-                    File file1 = new File(filesPath + "/data/data." + (i + 1));
+                    File file1 = new File(filesPath + "/data/data." + (i + 1) + ".txt");
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
                     DataReader reader = new DataReader();
                     reader.setVariablesSupplied(true);
                     dataSets.add(reader.parseTabular(file1));
-
-                    File file2 = new File(filesPath + "/graph/graph." + (i + 1));
-                    System.out.println("Loading graph from " + file2.getAbsolutePath());
-                    Graph graph = GraphUtils.loadGraphTxt(file2);
-                    graphs.add(graph);
                 }
 
                 File file = new File(path, "parameters.txt");
@@ -64,8 +62,8 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         }
     }
 
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph() {
+        return graph;
     }
 
     public DataSet getDataSet(int index) {

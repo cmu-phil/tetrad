@@ -21,25 +21,21 @@ import java.util.List;
  */
 public class MixedLeeHastieSimulation implements Simulation {
     private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private Graph graph;
 
     public MixedLeeHastieSimulation(Parameters parameters) {
         this.dataSets = new ArrayList<>();
-        this.graphs = new ArrayList<>();
+        this.graph = GraphUtils.randomGraphRandomForwardEdges(
+                parameters.getInt("numMeasures"), parameters.getInt("numLatents"),
+                parameters.getInt("numEdges"),
+                parameters.getInt("maxDegree"),
+                parameters.getInt("maxIndegree"),
+                parameters.getInt("maxOutdegree"),
+                parameters.getInt("connected") == 1);
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
-            Graph dag = GraphUtils.randomGraphRandomForwardEdges(
-                    parameters.getInt("numMeasures"), parameters.getInt("numLatents"),
-                    parameters.getInt("numEdges"),
-                    parameters.getInt("maxDegree"),
-                    parameters.getInt("maxIndegree"),
-                    parameters.getInt("maxOutdegree"),
-                    parameters.getInt("connected") == 1);
-
-            DataSet dataSet = simulate(dag, parameters);
-
+            DataSet dataSet = simulate(graph, parameters);
             dataSets.add(dataSet);
-            graphs.add(dag);
         }
     }
 
@@ -68,8 +64,8 @@ public class MixedLeeHastieSimulation implements Simulation {
     }
 
     @Override
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph() {
+        return graph;
     }
 
     public DataSet getDataSet(int index) {

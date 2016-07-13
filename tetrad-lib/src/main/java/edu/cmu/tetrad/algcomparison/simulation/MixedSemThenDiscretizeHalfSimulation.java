@@ -20,29 +20,27 @@ import java.util.List;
  */
 public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
     private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private Graph graph;
 
     public MixedSemThenDiscretizeHalfSimulation(Parameters parameters) {
+        Graph graph = GraphUtils.scaleFreeGraph(
+                parameters.getInt("numMeasures"),
+                parameters.getInt("numLatents"),
+                parameters.getDouble("scaleFreeAlpha"),
+                parameters.getDouble("scaleFreeBeta"),
+                parameters.getDouble("scaleFreeDeltaIn"),
+                parameters.getInt("scaleFreeDeltaOut")
+        );
+
         dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
-            Graph graph = GraphUtils.scaleFreeGraph(
-                    parameters.getInt("numMeasures"),
-                    parameters.getInt("numLatents"),
-                    parameters.getDouble("scaleFreeAlpha"),
-                    parameters.getDouble("scaleFreeBeta"),
-                    parameters.getDouble("scaleFreeDeltaIn"),
-                    parameters.getInt("scaleFreeDeltaOut")
-            );
-
-            graphs.add(graph);
             dataSets.add(simulate(graph, parameters));
         }
     }
 
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph() {
+        return graph;
     }
 
     public String getDescription() {

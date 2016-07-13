@@ -18,22 +18,21 @@ import java.util.List;
  */
 public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
     private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private Graph graph;
 
     public ContinuousLinearCyclicGaussianSemSimulation(Parameters parameters) {
+
         dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        Graph graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
+                parameters.getInt("numEdges"));
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
-            Graph graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
-                    parameters.getInt("numEdges"));
             SemPm pm = new SemPm(graph);
             SemImInitializationParams params = new SemImInitializationParams();
             params.setCoefRange(.2, .9);
             params.setCoefSymmetric(true);
             SemIm im = new SemIm(pm, params);
             dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
-            graphs.add(graph);
         }
     }
 
@@ -41,8 +40,8 @@ public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
         return dataSets.get(index);
     }
 
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph() {
+        return graph;
     }
 
     public String getDescription() {

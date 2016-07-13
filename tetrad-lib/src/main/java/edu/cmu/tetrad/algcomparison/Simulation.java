@@ -15,10 +15,9 @@ public interface Simulation {
     int getNumDataSets();
 
     /**
-     * @param index The index of the desired true graph.
      * @return That graph.
      */
-    Graph getTrueGraph(int index);
+    Graph getTrueGraph();
 
     /**
      * @param i The index of the desired simulated data set.

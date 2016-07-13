@@ -23,7 +23,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
         this.path = path;
     }
 
-    public Graph getTrueGraph(int index) {
+    public Graph getTrueGraph() {
         return null;
     }
 

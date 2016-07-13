@@ -25,8 +25,8 @@ import edu.cmu.tetrad.algcomparison.*;
 import edu.cmu.tetrad.algcomparison.algorithms.continuous.pattern.*;
 import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.search.IndTestType;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -64,10 +64,10 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new ContinuousPcFz());
-        algorithms.add(new ContinuousCpcFz());
-        algorithms.add(new ContinuousPcsFz());
-        algorithms.add(new ContinuousCpcsFz());
+        algorithms.add(new ContinuousPc(IndTestType.FISHER_Z));
+        algorithms.add(new ContinuousCpc(IndTestType.FISHER_Z));
+        algorithms.add(new ContinuousPcs(IndTestType.FISHER_Z));
+        algorithms.add(new ContinuousCpcs(IndTestType.FISHER_Z));
 
         Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
 

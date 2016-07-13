@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithms.continuous.pattern;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
+import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -11,15 +12,20 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * PC-Stable using the Fisher Z test.
+ * PC using the Fisher Z test.
  * @author jdramsey
  */
-public class ContinuousPcsFz implements Algorithm {
+public class ContinuousCpc implements Algorithm {
+    private IndTestType type;
+
+    public ContinuousCpc(IndTestType type) {
+        this.type = type;
+    }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
-        PcStable pc = new PcStable(test);
+        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
+        Cpc pc = new Cpc(test);
         return pc.search();
     }
 
@@ -30,7 +36,7 @@ public class ContinuousPcsFz implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "PC-Stable using the Fisher Z test";
+        return "CPC using the " + type + " test";
     }
 
     @Override

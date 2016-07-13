@@ -3,24 +3,29 @@ package edu.cmu.tetrad.algcomparison.algorithms.continuous.pattern;
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
+import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * CPC-Stable using the Fisher Z test.
+ * PC using the Fisher Z test.
  * @author jdramsey
  */
-public class ContinuousCpcsFz implements Algorithm {
+public class ContinuousPcs implements Algorithm {
+    private IndTestType type;
+
+    public ContinuousPcs(IndTestType type) {
+        this.type = type;
+    }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
-        CpcStable pc = new CpcStable(test);
-        pc.setDepth(parameters.getInt("depth"));
+        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
+        PcStable pc = new PcStable(test);
         return pc.search();
     }
 
@@ -31,7 +36,7 @@ public class ContinuousCpcsFz implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CPC-Stable using the Fisher Z test";
+        return "PC-Stable using the " + type + " test";
     }
 
     @Override
@@ -41,8 +46,6 @@ public class ContinuousCpcsFz implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        parameters.add("depth");
-        return parameters;
-    }}
+        return Collections.singletonList("alpha");
+    }
+}

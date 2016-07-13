@@ -16,29 +16,24 @@ import java.util.List;
  * Created by jdramsey on 6/4/16.
  */
 public class ContinuousLinearGaussianSemSimulation implements Simulation {
-    private int numDataSets;
     private List<DataSet> dataSets;
-    private List<Graph> graphs;
+    private Graph graph;
 
     public ContinuousLinearGaussianSemSimulation(Parameters parameters) {
-        this.numDataSets = numDataSets;
-
         dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.graph = GraphUtils.randomGraphRandomForwardEdges(
+                parameters.getInt("numMeasures"),
+                parameters.getInt("numLatents"),
+                parameters.getInt("numEdges"),
+                parameters.getInt("maxDegree"),
+                parameters.getInt("maxIndegree"),
+                parameters.getInt("maxOutdegree"),
+                parameters.getInt("connected") == 1);
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
-            Graph graph = GraphUtils.randomGraphRandomForwardEdges(
-                    parameters.getInt("numMeasures"),
-                    parameters.getInt("numLatents"),
-                    parameters.getInt("numEdges"),
-                    parameters.getInt("maxDegree"),
-                    parameters.getInt("maxIndegree"),
-                    parameters.getInt("maxOutdegree"),
-                    parameters.getInt("connected") == 1);
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
-            graphs.add(graph);
         }
     }
 
@@ -46,8 +41,8 @@ public class ContinuousLinearGaussianSemSimulation implements Simulation {
         return dataSets.get(index);
     }
 
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph() {
+        return graph;
     }
 
     public String getDescription() {

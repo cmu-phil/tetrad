@@ -228,15 +228,15 @@ public class Comparison {
             new File(dir, "data").mkdir();
             new File(dir, "graph").mkdir();
 
+            File file2 = new File(dir + "/graph/graph.txt");
+            GraphUtils.saveGraph(simulation.getTrueGraph(), file2, false);
+
             for (int i = 0; i < simulation.getNumDataSets(); i++) {
-                File file = new File(dir + "/data/data." + (i + 1));
+                File file = new File(dir + "/data/data." + (i + 1) + ".txt");
                 Writer out = new FileWriter(file);
                 DataSet dataSet = simulation.getDataSet(i);
                 DataWriter.writeRectangularData(dataSet, out, '\t');
                 out.close();
-
-                File file2 = new File(dir + "/graph/graph." + (i + 1));
-                GraphUtils.saveGraph(simulation.getTrueGraph(i), file2, false);
             }
 
             PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
@@ -267,7 +267,7 @@ public class Comparison {
             System.out.println();
 
             DataSet data = simulation.getDataSet(i);
-            Graph trueGraph = simulation.getTrueGraph(i);
+            Graph trueGraph = simulation.getTrueGraph();
 
             boolean isMixed = data.isMixed();
 
