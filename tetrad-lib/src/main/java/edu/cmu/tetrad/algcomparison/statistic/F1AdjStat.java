@@ -15,7 +15,7 @@ public class F1AdjStat implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Matthew's correlation coeffficient for adjacencies";
+        return "F1 statistic for adjacencies";
     }
 
     @Override

@@ -51,6 +51,7 @@ public class Comparison {
     private boolean[] graphTypeUsed;
     private PrintStream out;
     private boolean tabDelimitedTables = false;
+    private boolean saveGraphs = false;
 
     /**
      * Compares algorithms.
@@ -373,7 +374,7 @@ public class Comparison {
     }
 
     private void printGraph(String path, Graph graph, int i, Algorithm algorithm, Parameters parameters) {
-        if (parameters.getInt("printGraphs") != 1) {
+        if (!saveGraphs) {
             return;
         }
 
@@ -409,6 +410,20 @@ public class Comparison {
      */
     public void setTabDelimitedTables(boolean tabDelimitedTables) {
         this.tabDelimitedTables = tabDelimitedTables;
+    }
+
+    /**
+     * @param saveGraphs True if all graphs should be saved to files.
+     */
+    public void setSaveGraphs(boolean saveGraphs) {
+        this.saveGraphs = saveGraphs;
+    }
+
+    /**
+     * @return True if all graphs should be saved to files.
+     */
+    public boolean isSaveGraphs() {
+        return saveGraphs;
     }
 
     private enum Mode {Average, StandardDeviation, WorstCase}

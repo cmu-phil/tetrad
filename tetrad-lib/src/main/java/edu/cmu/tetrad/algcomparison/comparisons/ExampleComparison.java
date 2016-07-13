@@ -24,11 +24,11 @@ package edu.cmu.tetrad.algcomparison.comparisons;
 import edu.cmu.tetrad.algcomparison.*;
 import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
 import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
-import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDatasetsAndGraphsFromDirectory;
+import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
+ * An example comparison script.
  * @author Joseph Ramsey
  */
 public class ExampleComparison {
@@ -39,6 +39,7 @@ public class ExampleComparison {
         parameters.put("numMeasures", 100);
         parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
         parameters.put("sampleSize", 1000);
+//        parameters.put("alpha", 1e-4);
         parameters.put("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
@@ -67,12 +68,10 @@ public class ExampleComparison {
         algorithms.add(new ContinuousPcsFz());
         algorithms.add(new ContinuousCpcsFz());
 
-//        Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
-        Simulation simulation = new LoadContinuousDatasetsAndGraphsFromDirectory("comparison/save1", parameters);
-
-        new Comparison().compareAlgorithms("comparison/Comparison.txt", simulation, algorithms,
-                statistics, parameters);
-//        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
+        Simulation simulation = new LoadContinuousDataAndGraphs(
+                "comparison/save1", parameters);
+        new Comparison().compareAlgorithms("comparison/Comparison.txt",
+                simulation, algorithms, statistics, parameters);
     }
 }
 

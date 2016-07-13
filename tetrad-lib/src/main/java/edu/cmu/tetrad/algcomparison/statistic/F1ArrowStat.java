@@ -15,7 +15,7 @@ public class F1ArrowStat implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Matthew's correlation coeffficient for arrowacencies";
+        return "F1 statistic for arrows";
     }
 
     @Override

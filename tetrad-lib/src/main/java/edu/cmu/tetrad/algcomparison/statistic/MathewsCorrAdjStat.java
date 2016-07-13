@@ -15,7 +15,7 @@ public class MathewsCorrAdjStat implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Matthew's correlation coeffficient for adjacencies";
+        return "Matthew's correlation coefficient for adjacencies";
     }
 
     @Override

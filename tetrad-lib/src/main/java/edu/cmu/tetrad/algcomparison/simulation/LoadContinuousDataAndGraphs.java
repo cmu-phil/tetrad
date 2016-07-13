@@ -15,12 +15,12 @@ import java.util.List;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class LoadContinuousDatasetsAndGraphsFromDirectory implements Simulation {
+public class LoadContinuousDataAndGraphs implements Simulation {
     private String path;
     private List<DataSet> dataSets;
     private List<Graph> graphs;
 
-    public LoadContinuousDatasetsAndGraphsFromDirectory(String filesPath, Parameters parameters) {
+    public LoadContinuousDataAndGraphs(String filesPath, Parameters parameters) {
         this.path = filesPath;
         this.dataSets = new ArrayList<>();
         this.graphs = new ArrayList<>();

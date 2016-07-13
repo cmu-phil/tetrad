@@ -18,15 +18,15 @@ public class Parameters {
     public Parameters() {
 
         // Defaults
-        put("numMeasures", 100);
-        put("numEdges", 100);
+        put("numMeasures", 10);
+        put("numEdges", 10);
         put("numLatents", 0);
         put("maxDegree", 10);
         put("maxIndegree", 10);
         put("maxOutdegree", 10);
         put("connected", 0);
         put("sampleSize", 1000);
-        put("numRuns", 5);
+        put("numRuns", 1);
         put("alpha", 0.001);
         put("penaltyDiscount", 4);
         put("fgsDepth", -1);
@@ -44,7 +44,7 @@ public class Parameters {
         StringBuilder builder = new StringBuilder();
 
         for (String param : usedParameters) {
-            builder.append("\n").append(param).append(" = ").append(parameters.get(param));
+            builder.append("\n").append(param).append(" = ").append(parameters.get(param)[0]);
         }
 
         return builder.toString();
