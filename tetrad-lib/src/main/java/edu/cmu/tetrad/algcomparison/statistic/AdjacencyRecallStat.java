@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @author jdramsey
  */
 public class AdjacencyRecallStat implements Statistic {
+
     @Override
     public String getAbbreviation() {
         return "AR";

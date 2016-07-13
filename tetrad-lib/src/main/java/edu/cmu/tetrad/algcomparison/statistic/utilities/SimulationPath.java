@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.algcomparison.statistic.utilities;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * Some simulations may wish to implement this interface to specify a simulation
+ * path, which will be printed in the output.
+ * @author jdramsey
  */
 public interface SimulationPath {
     String getPath();

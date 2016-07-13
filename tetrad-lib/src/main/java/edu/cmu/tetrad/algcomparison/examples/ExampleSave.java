@@ -27,7 +27,7 @@ import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
 
 /**
- * An example comparison script.
+ * An example script to save out data files and graphs from a simulation.
  * @author jdramsey
  */
 public class ExampleSave {

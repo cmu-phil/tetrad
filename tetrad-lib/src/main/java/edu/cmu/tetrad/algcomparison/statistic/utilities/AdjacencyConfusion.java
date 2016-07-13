@@ -8,7 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by jdramsey on 7/10/16.
+ * A confusion matrix for adjacencies--i.e. TP, FP, TN, FN for counts of adjacencies.
+ * @author jdramsey
  */
 public class AdjacencyConfusion {
     private Graph truth;

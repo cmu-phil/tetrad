@@ -12,6 +12,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @author jdramsey
  */
 public class ArrowPrecisionStat implements Statistic {
+
     @Override
     public String getAbbreviation() {
         return "OP";

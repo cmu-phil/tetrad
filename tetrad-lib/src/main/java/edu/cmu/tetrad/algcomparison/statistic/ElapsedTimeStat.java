@@ -10,9 +10,6 @@ import edu.cmu.tetrad.graph.Graph;
  */
 public class ElapsedTimeStat implements Statistic {
 
-    public ElapsedTimeStat() {
-    }
-
     @Override
     public String getAbbreviation() {
         return "E";
