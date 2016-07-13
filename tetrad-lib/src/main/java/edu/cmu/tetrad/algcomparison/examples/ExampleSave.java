@@ -28,7 +28,7 @@ import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimula
 
 /**
  * An example comparison script.
- * @author Joseph Ramsey
+ * @author jdramsey
  */
 public class ExampleSave {
     public static void main(String... args) {

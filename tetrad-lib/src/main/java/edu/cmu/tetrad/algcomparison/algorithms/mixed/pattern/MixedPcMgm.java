@@ -30,8 +30,8 @@ public class MixedPcMgm implements Algorithm {
         return pcs.search();
     }
 
-    public Graph getComparisonGraph(Graph dag) {
-        return SearchGraphUtils.patternForDag(dag);
+    public Graph getComparisonGraph(Graph graph) {
+        return SearchGraphUtils.patternForDag(graph);
     }
 
     public String getDescription() {

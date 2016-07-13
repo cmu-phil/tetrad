@@ -3,7 +3,10 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Created by jdramsey on 7/10/16.
+ * Records the elapsed time of the algorithm in seconds. This is a placeholder, really;
+ * the elapsed time is calculated by the comparison class and recorded if this statistic is
+ * used.
+ * @author jdramsey
  */
 public class ElapsedTimeStat implements Statistic {
 
@@ -27,6 +30,6 @@ public class ElapsedTimeStat implements Statistic {
 
     @Override
     public double getUtility(double value) {
-        return -value;
+        return 1 - value;
     }
 }

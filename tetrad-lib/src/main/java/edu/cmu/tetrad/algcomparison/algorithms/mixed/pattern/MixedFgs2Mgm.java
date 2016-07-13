@@ -39,8 +39,8 @@ public class MixedFgs2Mgm implements Algorithm {
         return convertBack(ds, p);
     }
 
-    public Graph getComparisonGraph(Graph dag) {
-        return SearchGraphUtils.patternForDag(dag);
+    public Graph getComparisonGraph(Graph graph) {
+        return SearchGraphUtils.patternForDag(graph);
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {

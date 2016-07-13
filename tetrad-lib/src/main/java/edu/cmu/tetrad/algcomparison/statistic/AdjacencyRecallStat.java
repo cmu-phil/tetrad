@@ -4,7 +4,9 @@ import edu.cmu.tetrad.algcomparison.statistic.utilities.AdjacencyConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Created by jdramsey on 7/10/16.
+ * The adjacency recall. The true positives are the number of adjacencies in both
+ * the true and estimated graphs.
+ * @author jdramsey
  */
 public class AdjacencyRecallStat implements Statistic {
     @Override

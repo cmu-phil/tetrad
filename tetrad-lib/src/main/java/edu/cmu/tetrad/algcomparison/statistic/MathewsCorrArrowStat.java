@@ -4,7 +4,17 @@ import edu.cmu.tetrad.algcomparison.statistic.utilities.ArrowConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Created by jdramsey on 7/10/16.
+ * Calculates the Matthew's correlation coefficient for adjacencies. See this page in
+ * Wikipedia:
+ * </p>
+ * https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
+ * </p>
+ * We calculate the correlation directly from the confusion matrix.
+ * </p>
+ * if the true contains X*->Y and estimated graph either does not contain an edge from
+ * X to Y or else does not contain an arrowhead at X for an edge from X to Y, one false
+ * positive is counted. Similarly for false negatives
+ * @author jdramsey
  */
 public class MathewsCorrArrowStat implements Statistic {
     @Override
@@ -29,7 +39,7 @@ public class MathewsCorrArrowStat implements Statistic {
 
     @Override
     public double getUtility(double value) {
-        return value;
+        return 1.0 - 0.5 * value;
     }
 
     private double mcc(double adjTp, double adjFp, double adjTn, double adjFn) {

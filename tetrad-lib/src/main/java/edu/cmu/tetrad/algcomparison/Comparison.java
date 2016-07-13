@@ -41,8 +41,7 @@ import java.util.*;
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics and a list
  * of parameters and their values.
- *
- * @author Joseph Ramsey
+ * @author jdramsey
  */
 public class Comparison {
     private boolean[] graphTypeUsed;
@@ -672,8 +671,8 @@ public class Comparison {
         }
 
         @Override
-        public Graph getComparisonGraph(Graph dag) {
-            return algorithm.getComparisonGraph(dag);
+        public Graph getComparisonGraph(Graph graph) {
+            return algorithm.getComparisonGraph(graph);
         }
 
         @Override

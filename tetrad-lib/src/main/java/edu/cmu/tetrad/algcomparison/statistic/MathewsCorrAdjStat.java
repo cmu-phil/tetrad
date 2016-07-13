@@ -4,7 +4,13 @@ import edu.cmu.tetrad.algcomparison.statistic.utilities.AdjacencyConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Created by jdramsey on 7/10/16.
+ * Calculates the Matthew's correlation coefficient for adjacencies. See this page in
+ * Wikipedia:
+ * </p>
+ * https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
+ * </p>
+ * We calculate the correlation directly from the confusion matrix.
+ * @author jdramsey
  */
 public class MathewsCorrAdjStat implements Statistic {
     @Override
@@ -29,7 +35,7 @@ public class MathewsCorrAdjStat implements Statistic {
 
     @Override
     public double getUtility(double value) {
-        return value;
+        return 1.0 - 0.5 * value;
     }
 
     private double mcc(double adjTp, double adjFp, double adjTn, double adjFn) {

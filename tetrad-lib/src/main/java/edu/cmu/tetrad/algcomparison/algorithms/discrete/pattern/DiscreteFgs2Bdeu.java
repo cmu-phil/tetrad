@@ -23,8 +23,8 @@ public class DiscreteFgs2Bdeu implements Algorithm {
         return fgs.search();
     }
 
-    public Graph getComparisonGraph(Graph dag) {
-        return new DagToPag(dag).convert();
+    public Graph getComparisonGraph(Graph graph) {
+        return new DagToPag(graph).convert();
     }
 
     public String getDescription() {

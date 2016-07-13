@@ -22,8 +22,8 @@ public class DiscreteGfci implements Algorithm {
         return pc.search();
     }
 
-    public Graph getComparisonGraph(Graph dag) {
-        return new DagToPag(dag).convert();
+    public Graph getComparisonGraph(Graph graph) {
+        return new DagToPag(graph).convert();
     }
 
     public String getDescription() {

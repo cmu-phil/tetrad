@@ -23,8 +23,8 @@ public class ContinuousCcd implements Algorithm {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph dag) {
-        return dag;
+    public Graph getComparisonGraph(Graph graph) {
+        return graph;
     }
 
     public String getDescription() {

@@ -4,9 +4,15 @@ import edu.cmu.tetrad.algcomparison.statistic.utilities.AdjacencyConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Created by jdramsey on 7/10/16.
+ * Calculates the F1 statistic for adjacencies. See
+ * </p>
+ * https://en.wikipedia.org/wiki/F1_score
+ * </p>
+ * We use what's on this page called the "traditional" F1 statistic.
+ * @author Joseh Ramsey
  */
 public class F1AdjStat implements Statistic {
+
     @Override
     public String getAbbreviation() {
         return "F1Adj";

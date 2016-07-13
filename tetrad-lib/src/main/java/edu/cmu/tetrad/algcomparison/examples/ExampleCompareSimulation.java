@@ -30,7 +30,7 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
  * An example comparison script.
- * @author Joseph Ramsey
+ * @author jdramsey
  */
 public class ExampleCompareSimulation {
     public static void main(String... args) {

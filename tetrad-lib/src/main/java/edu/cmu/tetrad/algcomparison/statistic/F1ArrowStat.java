@@ -4,7 +4,15 @@ import edu.cmu.tetrad.algcomparison.statistic.utilities.ArrowConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Created by jdramsey on 7/10/16.
+ * Calculates the F1 statistic for arrowheads. See
+ * </p>
+ * https://en.wikipedia.org/wiki/F1_score
+ * </p>
+ * We use what's on this page called the "traditional" F1 statistic. If the true contains
+ * X*->Y and estimated graph either does not contain an edge from X to Y or else does not
+ * contain an arrowhead at X for an edge from X to Y, one false positive is counted.
+ * Similarly for false negatives
+ * @author Joseh Ramsey
  */
 public class F1ArrowStat implements Statistic {
     @Override

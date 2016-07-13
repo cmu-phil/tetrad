@@ -5,7 +5,9 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 /**
- * Created by jdramsey on 7/10/16.
+ * Calculates the structural Hamming distance (SHD) between the estimated graph and
+ * the true graph.
+ * @author jdramsey
  */
 public class ShdStat implements Statistic {
 
@@ -26,7 +28,10 @@ public class ShdStat implements Statistic {
     }
 
     @Override
+    /**
+     * This will be given the index of the SHD stat.
+     */
     public double getUtility(double value) {
-        return -value;
+        return 1.0 - value;
     }
 }

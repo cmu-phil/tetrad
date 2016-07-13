@@ -21,8 +21,8 @@ public class ContinuousCpcsFz implements Algorithm {
         return pc.search();
     }
 
-    public Graph getComparisonGraph(Graph dag) {
-        return SearchGraphUtils.patternForDag(dag);
+    public Graph getComparisonGraph(Graph graph) {
+        return SearchGraphUtils.patternForDag(graph);
     }
 
     public String getDescription() {

@@ -28,9 +28,9 @@ public class ContinuousCpcFgs implements Algorithm {
         return pc.search();
     }
 
-    public Graph getComparisonGraph(Graph dag) {
+    public Graph getComparisonGraph(Graph graph) {
 //        return new Pc(new IndTestDSep(dag)).search();
-        return SearchGraphUtils.patternForDag(dag);
+        return SearchGraphUtils.patternForDag(graph);
     }
 
     public String getDescription() {
