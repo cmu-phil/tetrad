@@ -42,13 +42,6 @@ public class AnalysisScriptAlpha {
     ICovarianceMatrix cov;
 
     private void runOnData() {
-        // specify data directory like in Comparison2, load in data
-        // create lag data from input data
-        // run algorithm on lag data with proper settings, alpha = high
-        // find MAG in PAG
-        // score MAG
-        // repeat, decreasing alpha level
-        // return model and alpha with best score
 
         /** Set path to the data directory **/
 //        String path = "/Users/dmalinsky/Documents/research/data/garmit";
@@ -77,7 +70,7 @@ public class AnalysisScriptAlpha {
         lagdata = TimeSeriesUtils.createLagData(dataSet, 1);
 //        cov = new CovarianceMatrixOnTheFly(lagdata);
         cov = new CovarianceMatrix(lagdata);
-        List<Double> alphas = new ArrayList(Arrays.asList(0.25,0.20,0.19,0.18,0.17,0.16,0.15,0.14,0.13,0.12,
+        List<Double> alphas = new ArrayList(Arrays.asList(0.50,0.45,0.40,0.35,0.30,0.25,0.20,0.19,0.18,0.17,0.16,0.15,0.14,0.13,0.12,
                 0.11,0.10,0.09,0.08,0.07,0.06,0.05,0.04,0.03,0.02,0.01,0.009,0.008,0.007,0.006,0.005,0.004,0.003,0.002,0.001));
         ArrayList<Graph> graphlist = new ArrayList<>();
         ArrayList<Double> scorelist = new ArrayList<>();
@@ -101,8 +94,8 @@ public class AnalysisScriptAlpha {
             scorelist.add(score);
         }
 
-        double maxScore = Collections.min(scorelist);
-        int index = scorelist.indexOf(maxScore);
+        double minScore = Collections.min(scorelist);
+        int index = scorelist.indexOf(minScore);
         double maxAlpha = alphalist.get(index);
         Graph bestGraph = graphlist.get(index);
 
@@ -115,7 +108,6 @@ public class AnalysisScriptAlpha {
         System.out.println("n list : " + nlist);
         System.out.println("p list : " + plist);
         System.out.println("numVar list : " + numVarlist);
-//        System.out.println("graph list : " + graphlist);
     }
 
     /** Creates a MAG in the equivalence class represented by a PAG.
@@ -193,6 +185,7 @@ public class AnalysisScriptAlpha {
 //        System.out.println("Sigma hat is : " + Shat);
 //        System.out.println("Number of non-zero entries = " + numNonZero(Shat));
         int numVar = numNonZero(Shat);
+//        int numVar = mag.getEdges().size();
         return score(Shat, n, logn, p, numVar);
     }
 
@@ -206,11 +199,11 @@ public class AnalysisScriptAlpha {
         double factor = ((double) n-1)/n;
         DoubleMatrix2D S = scatter(mat,factor);
         double logL = loglik(S, Shat, n);
-        System.out.println("Likelihood is : " + logL);
+        System.out.println("Loglikelihood is : " + logL);
         nlist.add(n);
         plist.add(p);
         numVarlist.add(numVar);
-        return (-2 * logL + (numVar + p + 1) * logn);
+        return (-2.0 * logL + 1.0 * (numVar + p + 1.0) * logn); // increased penalty by factor of 10
     }
 
     ArrayList<Double> likList = new ArrayList<>();
@@ -221,7 +214,7 @@ public class AnalysisScriptAlpha {
         double con = n * lagdata.getNumColumns() * 0.5 * Math.log(2 * Math.PI);
 //        double con = 0.0;
         likList.add(-(n * 0.5) * Math.log(algebra.det(Shat)) - (n * 0.5) * algebra.trace(SiS) - con);
-        return (-(n * 0.5) * Math.log(algebra.det(Shat)) - (n * 0.5) * algebra.trace(SiS) - con); // add constant?
+        return (-(n * 0.5) * Math.log(algebra.det(Shat)) - (n * 0.5) * algebra.trace(SiS) - con);
     }
 
     private int numNonZero(DoubleMatrix2D m){

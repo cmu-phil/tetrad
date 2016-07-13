@@ -181,7 +181,7 @@ public class TestFunctions {
         nlist.add(n);
         plist.add(p);
         numVarlist.add(numVar);
-        return (-2 * logL + (numVar + p + 1) * logn);
+        return (-2.0 * logL + (numVar + p + 1.0) * logn);
     }
 
     ArrayList<Double> likList = new ArrayList<>();
@@ -192,7 +192,7 @@ public class TestFunctions {
         Algebra algebra = new Algebra();
         DoubleMatrix2D Si = algebra.inverse(Shat);
         DoubleMatrix2D SiS = algebra.mult(Si, S);
-//        double con = n * lagdata.getNumColumns() * 0.5 * Math.log(2 * Math.PI);
+//        double con = n * cov.getDimension() * 0.5 * Math.log(2 * Math.PI);
         double con = 0.0;
         likList.add(-(n * 0.5) * Math.log(algebra.det(Shat)) - (n * 0.5) * algebra.trace(SiS) - con);
         System.out.println("First term in loglik : " + -(n * 0.5) * Math.log(algebra.det(Shat)));
