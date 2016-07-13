@@ -21,11 +21,8 @@
 
 package edu.cmu.tetrad.algcomparison;
 
-import edu.cmu.tetrad.algcomparison.interfaces.Algorithm;
-import edu.cmu.tetrad.algcomparison.interfaces.DataType;
-import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
-import edu.cmu.tetrad.algcomparison.interfaces.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.ElapsedTimeStat;
+import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utilities.SimulationPath;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
@@ -77,7 +74,7 @@ public class Comparison {
         List<AlgorithmWrapper> algorithmWrappers = new ArrayList<>();
 
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
-            if (algorithm.getDataType() == simulation.getDataType(parameters)
+            if (algorithm.getDataType() == simulation.getDataType()
                     || algorithm.getDataType() == DataType.Mixed) {
                 List<String> algParameters = algorithm.getParameters();
                 List<Integer> _dims = new ArrayList<>();

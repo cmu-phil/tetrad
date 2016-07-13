@@ -1,8 +1,8 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.algcomparison.interfaces.DataType;
+import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
+import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
@@ -62,7 +62,7 @@ public class DiscreteBayesNetSimulation implements Simulation {
     }
 
     @Override
-    public DataType getDataType(Parameters parameters) {
+    public DataType getDataType() {
         return DataType.Discrete;
     }
 }

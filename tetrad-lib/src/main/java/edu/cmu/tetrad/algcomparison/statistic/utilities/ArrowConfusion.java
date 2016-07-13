@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic.utilities;
 
 import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 

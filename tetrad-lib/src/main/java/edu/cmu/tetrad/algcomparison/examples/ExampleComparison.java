@@ -22,8 +22,8 @@
 package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.*;
-import edu.cmu.tetrad.algcomparison.continuous.pattern.*;
-import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
+import edu.cmu.tetrad.algcomparison.algorithms.continuous.pattern.*;
+import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 

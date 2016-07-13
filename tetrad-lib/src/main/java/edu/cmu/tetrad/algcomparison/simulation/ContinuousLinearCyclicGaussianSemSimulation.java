@@ -1,8 +1,8 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.algcomparison.interfaces.DataType;
+import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
+import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -55,7 +55,7 @@ public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
     }
 
     @Override
-    public DataType getDataType(Parameters parameters) {
+    public DataType getDataType() {
         return DataType.Continuous;
     }
 }

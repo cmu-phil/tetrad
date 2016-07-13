@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
+import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
 
 /**

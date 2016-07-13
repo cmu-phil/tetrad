@@ -149,7 +149,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
     private Graph adjacencies = null;
 
     // True if it is assumed that zero effect adjacencies are not in the graph.
-    private boolean heuristicSpeedup = true;
+    private boolean heuristicSpeedup = false;
 
     // The graph being constructed.
     private Graph graph;

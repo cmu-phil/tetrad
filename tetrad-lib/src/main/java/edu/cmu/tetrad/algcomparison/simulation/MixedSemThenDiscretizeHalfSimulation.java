@@ -1,8 +1,8 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.algcomparison.interfaces.DataType;
+import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.interfaces.Simulation;
+import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
@@ -60,16 +60,8 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
     }
 
     @Override
-    public DataType getDataType(Parameters parameters) {
-        double percent = parameters.getDouble("percentDiscreteForMixedSimulation");
-
-        if (percent == 0) {
-            return DataType.Continuous;
-        } else if (percent == 100) {
-            return DataType.Discrete;
-        } else {
-            return DataType.Mixed;
-        }
+    public DataType getDataType() {
+        return DataType.Mixed;
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
