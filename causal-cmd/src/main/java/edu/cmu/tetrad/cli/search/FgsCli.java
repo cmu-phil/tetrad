@@ -19,11 +19,7 @@
 package edu.cmu.tetrad.cli.search;
 
 import edu.cmu.tetrad.cli.data.IKnowledgeFactory;
-import edu.cmu.tetrad.cli.util.Args;
-import edu.cmu.tetrad.cli.util.DateTime;
-import edu.cmu.tetrad.cli.util.FileIO;
-import edu.cmu.tetrad.cli.util.GraphmlSerializer;
-import edu.cmu.tetrad.cli.util.XmlPrint;
+import edu.cmu.tetrad.cli.util.*;
 import edu.cmu.tetrad.cli.validation.DataValidation;
 import edu.cmu.tetrad.cli.validation.NonZeroVariance;
 import edu.cmu.tetrad.cli.validation.TabularContinuousData;
@@ -102,6 +98,8 @@ public class FgsCli {
 
         // output results
         MAIN_OPTIONS.addOption(null, "graphml", false, "Create graphML output.");
+        MAIN_OPTIONS.addOption(null, "json", false, "Create JSON output.");
+
 
         // output
         MAIN_OPTIONS.addOption("o", "out", true, "Output directory.");
@@ -120,6 +118,7 @@ public class FgsCli {
     private static boolean heuristicSpeedup;
     private static boolean ignoreLinearDependence;
     private static boolean graphML;
+    private static boolean isSerializeJson;
     private static boolean verbose;
     private static int numOfThreads;
 
@@ -173,6 +172,11 @@ public class FgsCli {
             if (graphML) {
                 writeOutGraphML(graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.txt"));
             }
+
+            if (isSerializeJson) {
+                writeOutJson(graph,Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
+            }
+
         } catch (IOException exception) {
             LOGGER.error("FGS failed.", exception);
             System.err.printf("%s: FGS failed.%n", DateTime.printNow());
@@ -200,6 +204,31 @@ public class FgsCli {
             LOGGER.info(msg);
         } catch (Throwable throwable) {
             String errMsg = String.format("Failed when writting out GraphML file '%s'.", outputFile.getFileName().toString());
+            System.err.println(errMsg);
+            LOGGER.error(errMsg, throwable);
+        }
+    }
+
+    private static void writeOutJson(Graph graph, Path outputFile) {
+        if (graph == null) {
+            return;
+        }
+
+        try (PrintStream graphWriter = new PrintStream(new BufferedOutputStream(Files.newOutputStream(outputFile, StandardOpenOption.CREATE)))) {
+            String fileName = outputFile.getFileName().toString();
+
+            String msg = String.format("Writing out Json file '%s'.", fileName);
+            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+            LOGGER.info(msg);
+
+            JsonSerializer.writeToStream(JsonSerializer.serialize(graph, outputPrefix), graphWriter);
+
+            msg = String.format("Finished writing out Json file '%s'.", fileName);
+            System.out.printf("%s: %s%n", DateTime.printNow(), msg);
+            LOGGER.info(msg);
+
+        } catch (Throwable throwable) {
+            String errMsg = String.format("Failed when writing out Json file '%s'.", outputFile.getFileName().toString());
             System.err.println(errMsg);
             LOGGER.error(errMsg, throwable);
         }
@@ -382,6 +411,7 @@ public class FgsCli {
             heuristicSpeedup = !cmd.hasOption("disable-heuristic-speedup");
             ignoreLinearDependence = cmd.hasOption("ignore-linear-dependence");
             graphML = cmd.hasOption("graphml");
+            isSerializeJson = cmd.hasOption("json");
             verbose = cmd.hasOption("verbose");
             numOfThreads = Args.getInteger(cmd.getOptionValue("thread", Integer.toString(Runtime.getRuntime().availableProcessors())));
             dirOut = Args.getPathDir(cmd.getOptionValue("out", "."), false);
