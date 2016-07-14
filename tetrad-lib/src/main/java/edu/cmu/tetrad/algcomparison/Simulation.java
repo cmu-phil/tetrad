@@ -10,7 +10,7 @@ import edu.cmu.tetrad.graph.Graph;
 public interface Simulation {
 
     /**
-     * @return The numeer of data sets to simulate.
+     * @return The number of data sets to simulate.
      */
     int getNumDataSets();
 
@@ -20,10 +20,10 @@ public interface Simulation {
     Graph getTrueGraph();
 
     /**
-     * @param i The index of the desired simulated data set.
+     * @param index The index of the desired simulated data set.
      * @return That data set.
      */
-    DataSet getDataSet(int i);
+    DataSet getDataSet(int index);
 
     /**
      * @return Returns the type of the data, continuous, discrete or mixed.

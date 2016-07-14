@@ -27,7 +27,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
         return null;
     }
 
-    public DataSet getDataSet(int i) {
+    public DataSet getDataSet(int index) {
         try {
             File file = new File(path);
             System.out.println("Loading data from " + file.getAbsolutePath());

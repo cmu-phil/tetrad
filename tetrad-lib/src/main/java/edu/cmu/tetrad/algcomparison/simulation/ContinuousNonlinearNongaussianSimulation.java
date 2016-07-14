@@ -50,8 +50,8 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
     }
 
     @Override
-    public DataSet getDataSet(int i) {
-        return dataSets.get(i);
+    public DataSet getDataSet(int index) {
+        return dataSets.get(index);
     }
 
     @Override
