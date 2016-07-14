@@ -22,8 +22,11 @@
 package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.*;
-import edu.cmu.tetrad.algcomparison.algorithms.continuous.pattern.*;
 import edu.cmu.tetrad.algcomparison.Simulation;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpc;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpcs;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pc;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pcs;
 import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.search.IndTestType;
@@ -64,10 +67,10 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new ContinuousPc(IndTestType.FISHER_Z));
-        algorithms.add(new ContinuousCpc(IndTestType.FISHER_Z));
-        algorithms.add(new ContinuousPcs(IndTestType.FISHER_Z));
-        algorithms.add(new ContinuousCpcs(IndTestType.FISHER_Z));
+        algorithms.add(new Pc(IndTestType.FISHER_Z));
+        algorithms.add(new Cpc(IndTestType.FISHER_Z));
+        algorithms.add(new Pcs(IndTestType.FISHER_Z));
+        algorithms.add(new Cpcs(IndTestType.FISHER_Z));
 
         Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
 

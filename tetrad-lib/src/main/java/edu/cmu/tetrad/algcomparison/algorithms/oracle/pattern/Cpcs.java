@@ -1,49 +1,51 @@
-package edu.cmu.tetrad.algcomparison.algorithms.discrete.pag;
+package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
+import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * RFCI using the Chi Square independence test.
+ * PC using the Fisher Z test.
  * @author jdramsey
  */
-public class DiscreteRfciCs implements Algorithm {
+public class Cpcs implements Algorithm {
+    private IndTestType type;
+
+    public Cpcs(IndTestType type) {
+        this.type = type;
+    }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
-        Rfci pc = new Rfci(test);
+        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
+        CpcStable pc = new CpcStable(test);
         return pc.search();
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(graph).convert();
+        return SearchGraphUtils.patternForDag(graph);
     }
 
     @Override
     public String getDescription() {
-        return "RFCI using the Chi Square test.";
+        return "CPC-Stable using the " + type + " test";
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.Discrete;
+        return DataType.Continuous;
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        return parameters;
+        return Collections.singletonList("alpha");
     }
-
-
 }

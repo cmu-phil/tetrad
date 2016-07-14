@@ -1,8 +1,9 @@
-package edu.cmu.tetrad.algcomparison.algorithms.discrete.pag;
+package edu.cmu.tetrad.algcomparison.algorithms.continuous.cyclic_pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -11,37 +12,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FCI using the Chi Square independence test.
- * @author jdramsey
+ * Created by jdramsey on 6/4/16.
  */
-public class DiscreteFciCs implements Algorithm {
-
-    @Override
+public class ContinuousCcd2 implements Algorithm {
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
-        Fci pc = new Fci(test);
+        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        Ccd2 pc = new Ccd2(score);
         return pc.search();
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(graph).convert();
+        return graph;
     }
 
-    @Override
     public String getDescription() {
-        return "FCI using the Chi Square test.";
+        return "CCD using the SEM BIC score";
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.Discrete;
+        return DataType.Continuous;
     }
 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
+        parameters.add("penaltyDiscount");
         return parameters;
-    }
-}
+    }}

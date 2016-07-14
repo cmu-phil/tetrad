@@ -41,11 +41,11 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Linear Regression");
     public static final IndTestType CONDITIONAL_CORRELATION =
             new IndTestType("Conditional Correlation Test");
-    public static final IndTestType BIC_BUMP =
-            new IndTestType("BIC Bump");
+    public static final IndTestType SEM_BIC =
+            new IndTestType("SEM BIC used as a Test");
     public static final IndTestType LOGISTIC_REGRESSION =
             new IndTestType("Logistic Regression");
-    public static final IndTestType MULTINOMIAL_LOGISTIC_REGRESSION =
+    public static final IndTestType MIXED_MLR =
             new IndTestType("Multinomial Logistic Regression");
     public static final IndTestType FISHER_ZD =
             new IndTestType("Fisher's Z (Deterministic)");
@@ -63,6 +63,8 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Fisher Z Pooled Residuals");
     public static final IndTestType FISHER = new IndTestType("Fisher (Fisher Z)");
     public static final IndTestType TIPPETT = new IndTestType("Tippett (Fisher Z)");
+    public static final IndTestType MIXED_REGR_LRT = new IndTestType("Mixed Regression Likelihood Ratio Test");
+    public static final IndTestType MIXED_CG_LRT = new IndTestType("Mixed Conditional Gaussian Likelihood Ratio Test");
 
     /**
      * The name of this type.
@@ -94,8 +96,8 @@ public final class IndTestType implements TetradSerializable {
     private static int nextOrdinal = 0;
     private final int ordinal = nextOrdinal++;
     private static final IndTestType[] TYPES = {DEFAULT, CORRELATION_T, FISHER_Z,
-            LINEAR_REGRESSION, CONDITIONAL_CORRELATION, BIC_BUMP, LOGISTIC_REGRESSION,
-            MULTINOMIAL_LOGISTIC_REGRESSION, FISHER_ZD,
+            LINEAR_REGRESSION, CONDITIONAL_CORRELATION, SEM_BIC, LOGISTIC_REGRESSION,
+            MIXED_MLR, FISHER_ZD,
             FISHER_Z_BOOTSTRAP,
             G_SQUARE, CHI_SQUARE,
             D_SEPARATION, TIME_SERIES,

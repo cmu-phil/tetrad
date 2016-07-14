@@ -35,6 +35,7 @@ import java.util.List;
  * tests as oracles can use these. The type of test must of course be matched to the type
  * of data; continuous tests can only be used with continuous data, discrete test with
  * discrete data. Mixed tests can be used with any type o data.
+ *
  * @author jdramsey
  */
 public final class IndTestChooser {
@@ -108,8 +109,12 @@ public final class IndTestChooser {
 
     private IndependenceTest getMixedTest(DataSet dataSet,
                                           Parameters params, IndTestType testType) {
-        if (IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION == testType) {
+        if (IndTestType.MIXED_MLR == testType) {
             return new IndTestMultinomialLogisticRegressionWald(dataSet, params.getDouble("alpha"), false);
+        } else if (IndTestType.MIXED_REGR_LRT == testType) {
+            return new IndTestMixedLrt(dataSet, params.getDouble("alpha"));
+        } else if (IndTestType.MIXED_CG_LRT == testType) {
+            return new IndTestConditionalGaussianLrt(dataSet, params.getDouble("alpha"));
         } else if (IndTestType.LINEAR_REGRESSION == testType) {
             return new IndTestRegression(dataSet, params.getDouble("alpha"));
         } else {
@@ -134,7 +139,7 @@ public final class IndTestChooser {
 //            return new IndTestBicBump(dataSet, indTestParams.getParameter1() * 100);
             return new IndTestLaggedRegression(dataSet, params.getDouble("alpha"), 1);
         }
-        if (IndTestType.BIC_BUMP == testType) {
+        if (IndTestType.SEM_BIC == testType) {
             return new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)),
                     params.getDouble("alpha"));
         }
@@ -159,7 +164,7 @@ public final class IndTestChooser {
             return new IndTestMulti(independenceTests, ResolveSepsets.Method.tippett);
         } else if (IndTestType.FISHER == testType) {
             return new IndTestFisherZFisherPValue(dataSets, params.getDouble("alpha"));
-        } else if (IndTestType.BIC_BUMP == testType) {
+        } else if (IndTestType.SEM_BIC == testType) {
             List<DataModel> dataModels = new ArrayList<>();
             for (DataSet dataSet : dataSets) dataModels.add(dataSet);
             return new IndTestScore(new SemBicScoreImages(dataModels), params.getDouble("alpha"));
@@ -174,7 +179,7 @@ public final class IndTestChooser {
             return new IndTestGSquare(dataDiscrete, params.getDouble("alpha"));
         } else if (IndTestType.CHI_SQUARE == testType) {
             return new IndTestChiSquare(dataDiscrete, params.getDouble("alpha"));
-        } else if (IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION == testType) {
+        } else if (IndTestType.MIXED_MLR == testType) {
             return new IndTestMultinomialLogisticRegression(dataDiscrete, params.getDouble("alpha"));
         } else {
             return new IndTestChiSquare(dataDiscrete, params.getDouble("alpha"));

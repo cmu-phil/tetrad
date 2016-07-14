@@ -140,13 +140,13 @@ public final class IndTestChooser {
                                           SearchParams params, IndTestType testType) {
         IndTestParams indTestParams = params.getIndTestParams();
 
-        if (IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION == testType) {
+        if (IndTestType.MIXED_MLR == testType) {
             return new IndTestMultinomialLogisticRegressionWald(dataSet, indTestParams.getAlpha(), false);
         } else if (IndTestType.LINEAR_REGRESSION == testType) {
             return new IndTestRegression(dataSet,
                     indTestParams.getAlpha());
         } else {
-            params.setIndTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+            params.setIndTestType(IndTestType.MIXED_MLR);
             return new IndTestMultinomialLogisticRegression(dataSet, indTestParams.getAlpha());
         }
     }
@@ -239,7 +239,7 @@ public final class IndTestChooser {
         if (IndTestType.CHI_SQUARE == testType) {
             return new IndTestChiSquare(dataDiscrete, indTestParams.getAlpha());
         }
-        if (IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION == testType) {
+        if (IndTestType.MIXED_MLR == testType) {
             return new IndTestMultinomialLogisticRegression(dataDiscrete, indTestParams.getAlpha());
         } else {
             params.setIndTestType(IndTestType.CHI_SQUARE);

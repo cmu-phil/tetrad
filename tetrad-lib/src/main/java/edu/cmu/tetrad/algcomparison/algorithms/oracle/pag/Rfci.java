@@ -1,25 +1,31 @@
-package edu.cmu.tetrad.algcomparison.algorithms.mixed.pag;
+package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
 import edu.cmu.tetrad.algcomparison.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
+import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.IndTestMixedLrt;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * RFCI using the Fisher Z test.
+ * @author jdramsey
  */
-public class MixedFciLrt implements Algorithm {
+public class Rfci implements Algorithm {
+    private IndTestType type;
+
+    public Rfci(IndTestType type) {
+        this.type = type;
+    }
+
+    @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestMixedLrt(dataSet, parameters.getDouble("alpha"));
-        Fci pc = new Fci(test);
+        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
+        edu.cmu.tetrad.search.Rfci pc = new edu.cmu.tetrad.search.Rfci(test);
         return pc.search();
     }
 
@@ -29,12 +35,12 @@ public class MixedFciLrt implements Algorithm {
     }
 
     public String getDescription() {
-        return "FCI using the Mixed LRT test";
+        return "RFCI using the Fisher Z test.";
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Continuous;
     }
 
     @Override
