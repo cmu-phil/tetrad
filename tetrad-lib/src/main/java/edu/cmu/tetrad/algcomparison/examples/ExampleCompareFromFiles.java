@@ -44,7 +44,7 @@ public class ExampleCompareFromFiles {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 10);
+        parameters.put("numRuns", 2);
         parameters.put("numMeasures", 100);
         parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
         parameters.put("sampleSize", 1000);
@@ -77,11 +77,14 @@ public class ExampleCompareFromFiles {
         algorithms.add(new Pcs(IndTestType.FISHER_Z));
         algorithms.add(new Cpcs(IndTestType.FISHER_Z));
 
-        Simulation simulation = new LoadContinuousDataAndGraphs(
-                "comparison/save1", parameters);
+        Simulations simulations = new Simulations();
+
+        simulations.add(new LoadContinuousDataAndGraphs("comparison/save1.1", parameters));
+        simulations.add(new LoadContinuousDataAndGraphs("comparison/save1.2", parameters));
+        simulations.add(new LoadContinuousDataAndGraphs("comparison/save1.3", parameters));
 
         new Comparison().compareAlgorithms("comparison/Comparison.txt",
-                simulation, algorithms, statistics, parameters);
+                simulations, algorithms, statistics, parameters);
     }
 }
 

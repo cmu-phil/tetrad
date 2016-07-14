@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
-import edu.cmu.tetrad.algcomparison.DataType;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
@@ -18,6 +18,7 @@ import java.util.List;
 public class Pc implements Algorithm {
     private IndTestType type;
     private Algorithm initialGraph = null;
+    private IndependenceTest test;
 
     public Pc(IndTestType type) {
         this.type = type;
@@ -36,6 +37,7 @@ public class Pc implements Algorithm {
         }
 
         IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
+        this.test = test;
         edu.cmu.tetrad.search.Pc cpc = new edu.cmu.tetrad.search.Pc(test);
 
         if (initial != null) {
@@ -58,7 +60,7 @@ public class Pc implements Algorithm {
 
     @Override
     public DataType getDataType() {
-        return DataType.Discrete;
+        return type.getDataType();
     }
 
     @Override

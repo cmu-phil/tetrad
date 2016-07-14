@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
-import edu.cmu.tetrad.algcomparison.DataType;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
@@ -58,7 +58,7 @@ public class Cpc implements Algorithm {
 
     @Override
     public DataType getDataType() {
-        return DataType.Discrete;
+        return type.getDataType();
     }
 
     @Override

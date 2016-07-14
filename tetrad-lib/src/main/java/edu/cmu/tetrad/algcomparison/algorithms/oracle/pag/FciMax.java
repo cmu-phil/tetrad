@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
-import edu.cmu.tetrad.algcomparison.DataType;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
@@ -57,7 +57,7 @@ public class FciMax implements Algorithm {
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return type.getDataType();
     }
 
     @Override

@@ -21,25 +21,12 @@
 
 package edu.cmu.tetrad.search;
 
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.jet.math.Functions;
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.LogisticRegression;
-import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
-import edu.pitt.csb.mgm.MixedUtils;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;

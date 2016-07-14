@@ -34,8 +34,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.pitt.csb.mgm.MixedUtils;

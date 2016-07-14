@@ -81,7 +81,7 @@ public class IndTestMenuItems {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.FISHER_Z &&
                 testType != IndTestType.FISHER_ZD &&
-                testType != IndTestType.BIC_BUMP &&
+                testType != IndTestType.SEM_BIC &&
                 testType != IndTestType.FISHER_Z_BOOTSTRAP &&
 //                testType != IndTestType.CORRELATION_T &&
                 testType != IndTestType.CONDITIONAL_CORRELATION &&
@@ -147,7 +147,7 @@ public class IndTestMenuItems {
             linRegrTest.setSelected(true);
         } else if (testType == IndTestType.MIXED_MLR) {
             logr.setSelected(true);
-        } else if (testType == IndTestType.BIC_BUMP) {
+        } else if (testType == IndTestType.SEM_BIC) {
             bicBump.setSelected(true);
         }
 
@@ -209,7 +209,7 @@ public class IndTestMenuItems {
 
         bicBump.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.BIC_BUMP);
+                setter.setTestType(IndTestType.SEM_BIC);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using the BIC bump test.");
             }
@@ -222,7 +222,7 @@ public class IndTestMenuItems {
         if (testType != IndTestType.POOL_RESIDUALS_FISHER_Z
                 && testType != IndTestType.TIPPETT
                 && testType != IndTestType.FISHER
-                && testType != IndTestType.BIC_BUMP) {
+                && testType != IndTestType.SEM_BIC) {
             setter.setTestType(IndTestType.POOL_RESIDUALS_FISHER_Z);
         }
 
@@ -258,7 +258,7 @@ public class IndTestMenuItems {
             tippett.setSelected(true);
         }
 
-        if (testType == IndTestType.BIC_BUMP) {
+        if (testType == IndTestType.SEM_BIC) {
             bicBup.setSelected(true);
         }
 
@@ -288,7 +288,7 @@ public class IndTestMenuItems {
 
         bicBup.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.BIC_BUMP);
+                setter.setTestType(IndTestType.SEM_BIC);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using BIC Bump (IMaGES)");
             }

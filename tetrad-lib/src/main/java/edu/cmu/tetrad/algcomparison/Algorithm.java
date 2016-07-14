@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 
 import java.util.List;

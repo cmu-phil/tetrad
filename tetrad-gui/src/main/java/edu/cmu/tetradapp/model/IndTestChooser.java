@@ -176,7 +176,7 @@ public final class IndTestChooser {
             return new IndTestLaggedRegression(dataSet,
                     indTestParams.getAlpha(), 1);
         }
-        if (IndTestType.BIC_BUMP == testType) {
+        if (IndTestType.SEM_BIC == testType) {
 //            return new IndTestBicBump(new CovarianceMatrixOnTheFly(dataSet), indTestParams.getParameter1());
             return new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)),
                     indTestParams.getAlpha());
@@ -217,7 +217,7 @@ public final class IndTestChooser {
             return new IndTestFisherZFisherPValue(dataSets, params.getIndTestParams().getAlpha());
         }
 
-        if (IndTestType.BIC_BUMP == testType) {
+        if (IndTestType.SEM_BIC == testType) {
 //            return new IndTestBicBump(new CovarianceMatrixOnTheFly(dataSet), indTestParams.getParameter1());
             List<DataModel> dataModels = new ArrayList<>();
             for (DataSet dataSet : dataSets) dataModels.add(dataSet);

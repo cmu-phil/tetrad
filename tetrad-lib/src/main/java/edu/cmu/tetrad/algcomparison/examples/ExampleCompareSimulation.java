@@ -72,10 +72,12 @@ public class ExampleCompareSimulation {
         algorithms.add(new Pcs(IndTestType.FISHER_Z));
         algorithms.add(new Cpcs(IndTestType.FISHER_Z));
 
-        Simulation simulation = new ContinuousLinearGaussianSemSimulation(parameters);
+        Simulations simulations = new Simulations();
+
+        simulations.add(new ContinuousLinearGaussianSemSimulation(parameters));
 
         new Comparison().compareAlgorithms("comparison/Comparison.txt",
-                simulation, algorithms, statistics, parameters);
+                simulations, algorithms, statistics, parameters);
     }
 }
 

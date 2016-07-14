@@ -213,6 +213,7 @@ public class IndTestScore implements IndependenceTest {
     public double getScore() {
         return bump;
     }
+
 }
 
 

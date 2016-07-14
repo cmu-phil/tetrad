@@ -269,7 +269,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
             }
             setResultGraph(getParams().getMaxFullGraph());
 
-            TetradLogger.getInstance().log("maxmodel", "\nMAX GRAPH = " + getParams().getMaxStructureGraph());
+            TetradLogger.getInstance().log("maxmodel", "\nMAX Graph = " + getParams().getMaxStructureGraph());
             TetradLogger.getInstance().log("maxmodel", getLatentClustersString(getParams().getMaxFullGraph()).toString());
             TetradLogger.getInstance().log("maxmodel", "MAX P = " + getParams().getMaxP());
         }

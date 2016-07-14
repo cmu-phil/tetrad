@@ -1,9 +1,8 @@
 package edu.cmu.tetrad.algcomparison.algorithms.continuous.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
-import edu.cmu.tetrad.algcomparison.DataType;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;

@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison;
+package edu.cmu.tetrad.data;
 
 /**
  * The type of the data set--continuous if all continuous variables, discrete if
@@ -6,5 +6,5 @@ package edu.cmu.tetrad.algcomparison;
  * @author jdramsey
  */
 public enum DataType {
-    Continuous, Discrete, Mixed
+    Continuous, Discrete, Mixed, Graph
 }
