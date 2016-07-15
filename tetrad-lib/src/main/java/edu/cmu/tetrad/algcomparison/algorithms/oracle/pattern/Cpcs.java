@@ -1,9 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -16,16 +16,15 @@ import java.util.List;
  * @author jdramsey
  */
 public class Cpcs implements Algorithm {
-    private IndTestType type;
+    private IndTestWrapper test;
 
-    public Cpcs(IndTestType type) {
-        this.type = type;
+    public Cpcs(IndTestWrapper test) {
+        this.test = test;
     }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
-        CpcStable pc = new CpcStable(test);
+        CpcStable pc = new CpcStable(test.getTest(dataSet, parameters));
         return pc.search();
     }
 
@@ -36,12 +35,12 @@ public class Cpcs implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CPC-Stable using the " + type + " test";
+        return "CPC-Stable using the " + test + " test";
     }
 
     @Override
     public DataType getDataType() {
-        return type.getDataType();
+        return test.getDataType();
     }
 
     @Override

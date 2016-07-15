@@ -1,9 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
+import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -16,16 +16,15 @@ import java.util.List;
  * @author jdramsey
  */
 public class Cfci implements Algorithm {
-    private IndTestType type;
+    private IndTestWrapper test;
 
-    public Cfci(IndTestType type) {
-        this.type = type;
+    public Cfci(IndTestWrapper type) {
+        this.test = test;
     }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
-        edu.cmu.tetrad.search.Cfci pc = new edu.cmu.tetrad.search.Cfci(test);
+        edu.cmu.tetrad.search.Cfci pc = new edu.cmu.tetrad.search.Cfci(test.getTest(dataSet, parameters));
         return pc.search();
     }
 
@@ -41,7 +40,7 @@ public class Cfci implements Algorithm {
 
     @Override
     public DataType getDataType() {
-        return type.getDataType();
+        return test.getDataType();
     }
 
     @Override

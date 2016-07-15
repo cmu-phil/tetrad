@@ -18,7 +18,7 @@ public class MixedPcsLrtWfgs implements Algorithm {
         WFgs fgs = new WFgs(ds);
         fgs.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         Graph g =  fgs.search();
-        IndependenceTest test = new IndTestMixedLrt(ds, parameters.getDouble("alpha"));
+        IndependenceTest test = new IndTestMixedRegressionLrt(ds, parameters.getDouble("alpha"));
         PcStable pc = new PcStable(test);
         pc.setInitialGraph(g);
         return pc.search();

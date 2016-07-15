@@ -1,9 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -16,15 +16,14 @@ import java.util.List;
  * @author jdramsey
  */
 public class Pc implements Algorithm {
-    private IndTestType type;
+    private IndTestWrapper test;
     private Algorithm initialGraph = null;
-    private IndependenceTest test;
 
-    public Pc(IndTestType type) {
-        this.type = type;
+    public Pc(IndTestWrapper test) {
+        this.test = test;
     }
-    public Pc(IndTestType type, Algorithm initialGraph) {
-        this.type = type;
+    public Pc(IndTestWrapper test, Algorithm initialGraph) {
+        this.test = test;
         this.initialGraph = initialGraph;
     }
 
@@ -36,9 +35,7 @@ public class Pc implements Algorithm {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
-        this.test = test;
-        edu.cmu.tetrad.search.Pc cpc = new edu.cmu.tetrad.search.Pc(test);
+        edu.cmu.tetrad.search.Pc cpc = new edu.cmu.tetrad.search.Pc(test.getTest(dataSet, parameters));
 
         if (initial != null) {
             cpc.setInitialGraph(initial);
@@ -54,13 +51,13 @@ public class Pc implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "PC using the " + type + " test" + (initialGraph != null ? " with initial graph from " +
+        return "PC using the " + test + " test" + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 
     @Override
     public DataType getDataType() {
-        return type.getDataType();
+        return test.getDataType();
     }
 
     @Override

@@ -1,9 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -16,14 +16,14 @@ import java.util.List;
  * @author jdramsey
  */
 public class Pcs implements Algorithm {
-    private IndTestType type;
+    private IndTestWrapper test;
     private Algorithm initialGraph = null;
 
-    public Pcs(IndTestType type) {
-        this.type = type;
+    public Pcs(IndTestWrapper test) {
+        this.test = test;
     }
-    public Pcs(IndTestType type, Algorithm initialGraph) {
-        this.type = type;
+    public Pcs(IndTestWrapper test, Algorithm initialGraph) {
+        this.test = test;
         this.initialGraph = initialGraph;
     }
 
@@ -35,8 +35,7 @@ public class Pcs implements Algorithm {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
-        edu.cmu.tetrad.search.PcStable pcs = new edu.cmu.tetrad.search.PcStable(test);
+        edu.cmu.tetrad.search.PcStable pcs = new edu.cmu.tetrad.search.PcStable(test.getTest(dataSet, parameters));
 
         if (initial != null) {
             pcs.setInitialGraph(initial);
@@ -52,13 +51,13 @@ public class Pcs implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "PCS using the " + type + " test" + (initialGraph != null ? " with initial graph from " +
+        return "PCS using the " + test + " test" + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 
     @Override
     public DataType getDataType() {
-        return type.getDataType();
+        return test.getDataType();
     }
 
     @Override

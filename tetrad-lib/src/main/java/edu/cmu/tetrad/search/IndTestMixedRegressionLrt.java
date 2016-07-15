@@ -51,10 +51,9 @@ import java.util.*;
  * This logisticRegression makes multiple assumptions: 1. IIA 2. Large sample size (multiple regressions needed on subsets of
  * sample)
  *
- * @author Joseph Ramsey
- * @author Augustus Mayo.
+ * @author AJ Sedgwick
  */
-public class IndTestMixedLrt implements IndependenceTest {
+public class IndTestMixedRegressionLrt implements IndependenceTest {
     private DataSet originalData;
     private List<Node> searchVariables;
     private DataSet internalData;
@@ -67,7 +66,7 @@ public class IndTestMixedLrt implements IndependenceTest {
     private DoubleFactory2D factory2D = DoubleFactory2D.dense;
     private String mode = "min";
 
-    public IndTestMixedLrt(DataSet data, double alpha) {
+    public IndTestMixedRegressionLrt(DataSet data, double alpha) {
         this.searchVariables = data.getVariables();
         this.originalData = data.copy();
         DataSet internalData = data.copy();

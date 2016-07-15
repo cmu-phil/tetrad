@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpcs;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pc;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pcs;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.search.IndTestType;
@@ -73,10 +74,10 @@ public class ExampleCompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(IndTestType.FISHER_Z));
-        algorithms.add(new Cpc(IndTestType.FISHER_Z));
-        algorithms.add(new Pcs(IndTestType.FISHER_Z));
-        algorithms.add(new Cpcs(IndTestType.FISHER_Z));
+        algorithms.add(new Pc(new FisherZ()));
+        algorithms.add(new Cpc(new FisherZ()));
+        algorithms.add(new Pcs(new FisherZ()));
+        algorithms.add(new Cpcs(new FisherZ()));
 
         Simulations simulations = new Simulations();
 

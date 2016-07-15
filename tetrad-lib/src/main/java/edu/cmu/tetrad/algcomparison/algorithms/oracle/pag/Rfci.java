@@ -1,9 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -16,16 +16,15 @@ import java.util.List;
  * @author jdramsey
  */
 public class Rfci implements Algorithm {
-    private IndTestType type;
+    private IndTestWrapper test;
 
-    public Rfci(IndTestType type) {
-        this.type = type;
+    public Rfci(IndTestWrapper test) {
+        this.test = test;
     }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
-        edu.cmu.tetrad.search.Rfci pc = new edu.cmu.tetrad.search.Rfci(test);
+        edu.cmu.tetrad.search.Rfci pc = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
         return pc.search();
     }
 
@@ -40,7 +39,7 @@ public class Rfci implements Algorithm {
 
     @Override
     public DataType getDataType() {
-        return type.getDataType();
+        return test.getDataType();
     }
 
     @Override

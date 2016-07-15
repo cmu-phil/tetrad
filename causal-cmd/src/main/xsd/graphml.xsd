@@ -47,16 +47,16 @@ and open the template in the editor.
 
     <!--types as in graphml-attributes.xsd -->
 
-    <xs:simpleType name="key.name.type" final="#all">
+    <xs:simpleType name="key.name.test" final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/(Dokumentation der Attributes Erweiterung; entsprechende Stelle.html)"
                 xml:lang="en">
-                Simple type for the attr.name attribute of &lt;key>.
-                key.name.type is final, that is, it may not be extended
+                Simple test for the attr.name attribute of &lt;key>.
+                key.name.test is final, that is, it may not be extended
                 or restricted.
-                key.name.type is a restriction of xs:NMTOKEN
+                key.name.test is a restriction of xs:NMTOKEN
                 Allowed values: (no restriction)
             </xs:documentation>
         </xs:annotation>
@@ -67,16 +67,16 @@ and open the template in the editor.
 
 
 
-    <xs:simpleType name="key.type.type" final="#all">
+    <xs:simpleType name="key.test.test" final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/(Dokumentation der Attributes Erweiterung; entsprechende Stelle.html)"
                 xml:lang="en">
-                Simple type for the attr.type attribute of &lt;key>.
-                key.type.type is final, that is, it may not be extended
+                Simple test for the attr.test attribute of &lt;key>.
+                key.test.test is final, that is, it may not be extended
                 or restricted.
-                key.type.type is a restriction of xs:NMTOKEN
+                key.test.test is a restriction of xs:NMTOKEN
                 Allowed values: boolean, int, long, float, double, string.
             </xs:documentation>
         </xs:annotation>
@@ -102,12 +102,12 @@ and open the template in the editor.
                 Definition of the attribute group key.attributes.attrib.
                 This group consists of the two optional attributes
                 - attr.name (gives the name for the data function)
-                - attr.type ((declares the range of values for the data function)
+                - attr.test ((declares the range of values for the data function)
             </xs:documentation>
         </xs:annotation>
 
-        <xs:attribute name="attr.name" type="key.name.type" use="optional"/>
-        <xs:attribute name="attr.type" type="key.type.type" use="optional"/>
+        <xs:attribute name="attr.name" test="key.name.test" use="optional"/>
+        <xs:attribute name="attr.test" test="key.test.test" use="optional"/>
     </xs:attributeGroup>
 
     <!--types as in graphml-parseinfo.xsd -->
@@ -116,20 +116,20 @@ and open the template in the editor.
         <xs:documentation
             source="http://graphml.graphdrawing.org/"
             xml:lang="en">
-            Simple type definitions for the new graph attributes.
+            Simple test definitions for the new graph attributes.
         </xs:documentation>
     </xs:annotation>
 
-    <xs:simpleType name="graph.order.type"  final="#all">
+    <xs:simpleType name="graph.order.test"  final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/"
                 xml:lang="en">
-                Simple type for the parse.order attribute of &lt;graph>.
-                graph.order.type is final, that is, it may not be extended
+                Simple test for the parse.order attribute of &lt;graph>.
+                graph.order.test is final, that is, it may not be extended
                 or restricted.
-                graph.order.type is a restriction of xs:NMTOKEN
+                graph.order.test is a restriction of xs:NMTOKEN
                 Allowed values: free, nodesfirst, adjacencylist.
             </xs:documentation>
         </xs:annotation>
@@ -141,16 +141,16 @@ and open the template in the editor.
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="graph.nodes.type"  final="#all">
+    <xs:simpleType name="graph.nodes.test"  final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/"
                 xml:lang="en">
-                Simple type for the parse.nodes attribute of &lt;graph>.
-                graph.nodes.type is final, that is, it may not be extended
+                Simple test for the parse.nodes attribute of &lt;graph>.
+                graph.nodes.test is final, that is, it may not be extended
                 or restricted.
-                graph.nodes.type is a restriction of xs:nonNegativeInteger
+                graph.nodes.test is a restriction of xs:nonNegativeInteger
                 Allowed values: (no restriction).
             </xs:documentation>
         </xs:annotation>
@@ -158,16 +158,16 @@ and open the template in the editor.
         <xs:restriction base="xs:nonNegativeInteger"/>
     </xs:simpleType>
 
-    <xs:simpleType name="graph.edges.type" final="#all">
+    <xs:simpleType name="graph.edges.test" final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/"
                 xml:lang="en">
-                Simple type for the parse.edges attribute of &lt;graph>.
-                graph.edges.type is final, that is, it may not be extended
+                Simple test for the parse.edges attribute of &lt;graph>.
+                graph.edges.test is final, that is, it may not be extended
                 or restricted.
-                graph.edges.type is a restriction of xs:nonNegativeInteger
+                graph.edges.test is a restriction of xs:nonNegativeInteger
                 Allowed values: (no restriction).
             </xs:documentation>
         </xs:annotation>
@@ -175,16 +175,16 @@ and open the template in the editor.
         <xs:restriction base="xs:nonNegativeInteger"/>
     </xs:simpleType>
 
-    <xs:simpleType name="graph.maxindegree.type" final="#all">
+    <xs:simpleType name="graph.maxindegree.test" final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/"
                 xml:lang="en">
-                Simple type for the parse.maxindegree attribute of &lt;graph>.
-                graph.maxindegree.type is final, that is, it may not be extended
+                Simple test for the parse.maxindegree attribute of &lt;graph>.
+                graph.maxindegree.test is final, that is, it may not be extended
                 or restricted.
-                graph.maxindegree.type is a restriction of xs:nonNegativeInteger
+                graph.maxindegree.test is a restriction of xs:nonNegativeInteger
                 Allowed values: (no restriction).
             </xs:documentation>
         </xs:annotation>
@@ -192,16 +192,16 @@ and open the template in the editor.
         <xs:restriction base="xs:nonNegativeInteger"/>
     </xs:simpleType>
 
-    <xs:simpleType name="graph.maxoutdegree.type" final="#all">
+    <xs:simpleType name="graph.maxoutdegree.test" final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/"
                 xml:lang="en">
-                Simple type for the parse.maxoutdegree attribute of &lt;graph>.
-                graph.maxoutdegree.type is final, that is, it may not be extended
+                Simple test for the parse.maxoutdegree attribute of &lt;graph>.
+                graph.maxoutdegree.test is final, that is, it may not be extended
                 or restricted.
-                graph.maxoutdegree.type is a restriction of xs:nonNegativeInteger
+                graph.maxoutdegree.test is a restriction of xs:nonNegativeInteger
                 Allowed values: (no restriction).
             </xs:documentation>
         </xs:annotation>
@@ -209,16 +209,16 @@ and open the template in the editor.
         <xs:restriction base="xs:nonNegativeInteger"/>
     </xs:simpleType>
 
-    <xs:simpleType name="graph.nodeids.type"  final="#all">
+    <xs:simpleType name="graph.nodeids.test"  final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/"
                 xml:lang="en">
-                Simple type for the parse.nodeids attribute of &lt;graph>.
-                graph.nodeids.type is final, that is, it may not be extended
+                Simple test for the parse.nodeids attribute of &lt;graph>.
+                graph.nodeids.test is final, that is, it may not be extended
                 or restricted.
-                graph.nodeids.type is a restriction of xs:string
+                graph.nodeids.test is a restriction of xs:string
                 Allowed values: (no restriction).
             </xs:documentation>
         </xs:annotation>
@@ -229,16 +229,16 @@ and open the template in the editor.
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="graph.edgeids.type"  final="#all">
+    <xs:simpleType name="graph.edgeids.test"  final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/"
                 xml:lang="en">
-                Simple type for the parse.edgeids attribute of &lt;graph>.
-                graph.edgeids.type is final, that is, it may not be extended
+                Simple test for the parse.edgeids attribute of &lt;graph>.
+                graph.edgeids.test is final, that is, it may not be extended
                 or restricted.
-                graph.edgeids.type is a restriction of xs:string
+                graph.edgeids.test is a restriction of xs:string
                 Allowed values: (no restriction).
             </xs:documentation>
         </xs:annotation>
@@ -270,13 +270,13 @@ and open the template in the editor.
             </xs:documentation>
         </xs:annotation>
 
-        <xs:attribute name="parse.nodeids" type="graph.nodeids.type"/>
-        <xs:attribute name="parse.edgeids" type="graph.edgeids.type"/>
-        <xs:attribute name="parse.order" type="graph.order.type"/>
-        <xs:attribute name="parse.nodes" type="graph.nodes.type"/>
-        <xs:attribute name="parse.edges" type="graph.edges.type"/>
-        <xs:attribute name="parse.maxindegree" type="graph.maxindegree.type" use="optional"/>
-        <xs:attribute name="parse.maxoutdegree" type="graph.maxoutdegree.type" use="optional"/>
+        <xs:attribute name="parse.nodeids" test="graph.nodeids.test"/>
+        <xs:attribute name="parse.edgeids" test="graph.edgeids.test"/>
+        <xs:attribute name="parse.order" test="graph.order.test"/>
+        <xs:attribute name="parse.nodes" test="graph.nodes.test"/>
+        <xs:attribute name="parse.edges" test="graph.edges.test"/>
+        <xs:attribute name="parse.maxindegree" test="graph.maxindegree.test" use="optional"/>
+        <xs:attribute name="parse.maxoutdegree" test="graph.maxoutdegree.test" use="optional"/>
     </xs:attributeGroup>
 
 
@@ -285,20 +285,20 @@ and open the template in the editor.
         <xs:documentation
             source="http://graphml.graphdrawing.org/"
             xml:lang="en">
-            Simple type definitions for the new node attributes.
+            Simple test definitions for the new node attributes.
         </xs:documentation>
     </xs:annotation>
 
-    <xs:simpleType name="node.indegree.type" final="#all">
+    <xs:simpleType name="node.indegree.test" final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/"
                 xml:lang="en">
-                Simple type for the parse.indegree attribute of &lt;node>.
-                node.indegree.type is final, that is, it may not be extended
+                Simple test for the parse.indegree attribute of &lt;node>.
+                node.indegree.test is final, that is, it may not be extended
                 or restricted.
-                node.indegree.type is a restriction of xs:nonNegativeInteger
+                node.indegree.test is a restriction of xs:nonNegativeInteger
                 Allowed values: (no restriction).
             </xs:documentation>
         </xs:annotation>
@@ -306,16 +306,16 @@ and open the template in the editor.
         <xs:restriction base="xs:nonNegativeInteger"/>
     </xs:simpleType>
 
-    <xs:simpleType name="node.outdegree.type" final="#all">
+    <xs:simpleType name="node.outdegree.test" final="#all">
 
         <xs:annotation>
             <xs:documentation
                 source="http://graphml.graphdrawing.org/"
                 xml:lang="en">
-                Simple type for the parse.outdegree attribute of &lt;node>.
-                node.outdegree.type is final, that is, it may not be extended
+                Simple test for the parse.outdegree attribute of &lt;node>.
+                node.outdegree.test is final, that is, it may not be extended
                 or restricted.
-                node.outdegree.type is a restriction of xs:nonNegativeInteger
+                node.outdegree.test is a restriction of xs:nonNegativeInteger
                 Allowed values: (no restriction).
             </xs:documentation>
         </xs:annotation>
@@ -336,8 +336,8 @@ and open the template in the editor.
             </xs:documentation>
         </xs:annotation>
 
-        <xs:attribute name="parse.indegree" type="node.indegree.type" use="optional"/>
-        <xs:attribute name="parse.outdegree" type="node.outdegree.type" use="optional"/>
+        <xs:attribute name="parse.indegree" test="node.indegree.test" use="optional"/>
+        <xs:attribute name="parse.outdegree" test="node.outdegree.test" use="optional"/>
     </xs:attributeGroup>
 
 </xs:schema>

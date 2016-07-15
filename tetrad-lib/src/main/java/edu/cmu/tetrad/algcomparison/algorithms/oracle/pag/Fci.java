@@ -1,9 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -17,14 +17,14 @@ import java.util.List;
  * @author jdramsey
  */
 public class Fci implements Algorithm {
-    private IndTestType type;
+    private IndTestWrapper test;
     private Algorithm initialGraph = null;
 
-    public Fci(IndTestType type) {
-        this.type = type;
+    public Fci(IndTestWrapper type) {
+        this.test = type;
     }
-    public Fci(IndTestType type, Algorithm initialGraph) {
-        this.type = type;
+    public Fci(IndTestWrapper type, Algorithm initialGraph) {
+        this.test = type;
         this.initialGraph = initialGraph;
     }
 
@@ -36,8 +36,7 @@ public class Fci implements Algorithm {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
-        edu.cmu.tetrad.search.Fci cpc = new edu.cmu.tetrad.search.Fci(test);
+        edu.cmu.tetrad.search.Fci cpc = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
 
         if (initial != null) {
             cpc.setInitialGraph(initial);
@@ -52,13 +51,13 @@ public class Fci implements Algorithm {
     }
 
     public String getDescription() {
-        return "FCI using the " + type + " test" + (initialGraph != null ? " with initial graph from " +
+        return "FCI using the " + test + " test" + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 
     @Override
     public DataType getDataType() {
-        return type.getDataType();
+        return test.getDataType();
     }
 
     @Override

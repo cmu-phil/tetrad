@@ -1,9 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.independence.IndTestChooser;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -16,14 +16,14 @@ import java.util.List;
  * @author jdramsey
  */
 public class Cpc implements Algorithm {
-    private IndTestType type;
+    private IndTestWrapper test;
     private Algorithm initialGraph = null;
 
-    public Cpc(IndTestType type) {
-        this.type = type;
+    public Cpc(IndTestWrapper type) {
+        this.test = type;
     }
-    public Cpc(IndTestType type, Algorithm initialGraph) {
-        this.type = type;
+    public Cpc(IndTestWrapper type, Algorithm initialGraph) {
+        this.test = type;
         this.initialGraph = initialGraph;
     }
 
@@ -35,8 +35,7 @@ public class Cpc implements Algorithm {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        IndependenceTest test = new IndTestChooser().getTest(type, dataSet, parameters);
-        edu.cmu.tetrad.search.Cpc cpc = new edu.cmu.tetrad.search.Cpc(test);
+        edu.cmu.tetrad.search.Cpc cpc = new edu.cmu.tetrad.search.Cpc(test.getTest(dataSet, parameters));
 
         if (initial != null) {
             cpc.setInitialGraph(initial);
@@ -52,13 +51,13 @@ public class Cpc implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CPC using the " + type + " test" + (initialGraph != null ? " with initial graph from " +
+        return "CPC using the " + test + " test" + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 
     @Override
     public DataType getDataType() {
-        return type.getDataType();
+        return test.getDataType();
     }
 
     @Override
