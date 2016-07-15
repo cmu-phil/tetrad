@@ -48,8 +48,7 @@ public class ExampleCompareFromFiles {
         parameters.put("numMeasures", 100);
         parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
         parameters.put("sampleSize", 1000);
-//        parameters.put("alpha", 1e-4);
-        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.put("alpha", 1e-4);
 
         Statistics statistics = new Statistics();
 
@@ -86,7 +85,8 @@ public class ExampleCompareFromFiles {
         for (int i = 0; i < sampleSizes.length; i++) {
             int sampleSize = sampleSizes[i];
             parameters.put("sampleSize", sampleSize);
-            simulations.add(new LoadContinuousDataAndGraphs("comparison/save1." + (i + 1), parameters));
+            simulations.add(new LoadContinuousDataAndGraphs(
+                    "comparison/save1." + (i + 1), parameters));
         }
 
         new Comparison().compareAlgorithms("comparison/Comparison.txt",
