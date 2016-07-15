@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.*;
-import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpcs;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pc;
@@ -50,8 +49,8 @@ public class ExampleCompareSimulation {
 
         statistics.add(new AdjacencyPrecisionStat());
         statistics.add(new AdjacencyRecallStat());
-        statistics.add(new ArrowPrecisionStat());
-        statistics.add(new ArrowRecallStat());
+        statistics.add(new ArrowheadPrecisionStat());
+        statistics.add(new ArrowheadRecallStat());
         statistics.add(new MathewsCorrAdjStat());
         statistics.add(new MathewsCorrArrowStat());
         statistics.add(new F1AdjStat());

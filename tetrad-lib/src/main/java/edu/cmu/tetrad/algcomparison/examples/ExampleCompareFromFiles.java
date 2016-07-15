@@ -44,7 +44,7 @@ public class ExampleCompareFromFiles {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 2);
+        parameters.put("numRuns", 10);
         parameters.put("numMeasures", 100);
         parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
         parameters.put("sampleSize", 1000);
@@ -55,8 +55,8 @@ public class ExampleCompareFromFiles {
 
         statistics.add(new AdjacencyPrecisionStat());
         statistics.add(new AdjacencyRecallStat());
-        statistics.add(new ArrowPrecisionStat());
-        statistics.add(new ArrowRecallStat());
+        statistics.add(new ArrowheadPrecisionStat());
+        statistics.add(new ArrowheadRecallStat());
         statistics.add(new MathewsCorrAdjStat());
         statistics.add(new MathewsCorrArrowStat());
         statistics.add(new F1AdjStat());
@@ -66,6 +66,8 @@ public class ExampleCompareFromFiles {
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
+        statistics.setWeight("AHP", 1.0);
+        statistics.setWeight("AHR", 0.5);
 
         statistics.setSortByUtility(true);
         statistics.setShowUtilities(true);
@@ -79,9 +81,13 @@ public class ExampleCompareFromFiles {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LoadContinuousDataAndGraphs("comparison/save1.1", parameters));
-        simulations.add(new LoadContinuousDataAndGraphs("comparison/save1.2", parameters));
-        simulations.add(new LoadContinuousDataAndGraphs("comparison/save1.3", parameters));
+        int[] sampleSizes = {100, 500, 1000};
+
+        for (int i = 0; i < sampleSizes.length; i++) {
+            int sampleSize = sampleSizes[i];
+            parameters.put("sampleSize", sampleSize);
+            simulations.add(new LoadContinuousDataAndGraphs("comparison/save1." + (i + 1), parameters));
+        }
 
         new Comparison().compareAlgorithms("comparison/Comparison.txt",
                 simulations, algorithms, statistics, parameters);

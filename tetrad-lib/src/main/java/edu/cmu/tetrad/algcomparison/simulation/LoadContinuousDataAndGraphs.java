@@ -76,10 +76,11 @@ public class LoadContinuousDataAndGraphs implements Simulation {
             BufferedReader r = new BufferedReader(new FileReader(file));
 
             StringBuilder b = new StringBuilder();
-            b.append("Load data sets and graphs from a directory.").append("\n");
+            b.append("Load data sets and graphs from a directory.").append("\n\n");
             String line;
 
             while ((line = r.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
                 b.append(line).append("\n");
             }
 

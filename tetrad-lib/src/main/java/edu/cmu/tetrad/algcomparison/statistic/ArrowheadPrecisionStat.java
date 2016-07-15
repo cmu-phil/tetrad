@@ -11,16 +11,16 @@ import edu.cmu.tetrad.graph.Graph;
  * positive is counted. Similarly for false negatives.
  * @author jdramsey
  */
-public class ArrowPrecisionStat implements Statistic {
+public class ArrowheadPrecisionStat implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "OP";
+        return "AHP";
     }
 
     @Override
     public String getDescription() {
-        return "Orientation (Arrow) precision";
+        return "Arrow head precision";
     }
 
     @Override

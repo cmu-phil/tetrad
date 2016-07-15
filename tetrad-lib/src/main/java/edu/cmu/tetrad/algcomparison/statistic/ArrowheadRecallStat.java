@@ -11,16 +11,16 @@ import edu.cmu.tetrad.graph.Graph;
  * positive is counted. Similarly for false negatives.
  * @author jdramsey
  */
-public class ArrowRecallStat implements Statistic {
+public class ArrowheadRecallStat implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "OR";
+        return "AHR";
     }
 
     @Override
     public String getDescription() {
-        return "Orientation (Arrow) recall";
+        return "Arrow head recall";
     }
 
     @Override
