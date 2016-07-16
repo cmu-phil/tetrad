@@ -5,7 +5,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
-import org.relaxng.datatype.Datatype;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +28,7 @@ public class FisherZ implements IndTestWrapper {
 
     @Override
     public String getDescription() {
-        return "Fisher Z";
+        return "Fisher Z test";
     }
 
     @Override

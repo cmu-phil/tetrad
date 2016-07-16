@@ -31,7 +31,7 @@ public class GSquare implements IndTestWrapper {
 
     @Override
     public String getDescription() {
-        return "G Square";
+        return "G Square test";
     }
 
     @Override

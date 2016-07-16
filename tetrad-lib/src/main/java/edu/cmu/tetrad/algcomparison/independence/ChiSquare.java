@@ -29,7 +29,7 @@ public class ChiSquare implements IndTestWrapper {
 
     @Override
     public String getDescription() {
-        return "Chi Square";
+        return "Chi Square test";
     }
 
     @Override

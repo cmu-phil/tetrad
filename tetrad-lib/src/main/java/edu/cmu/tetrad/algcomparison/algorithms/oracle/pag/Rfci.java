@@ -34,7 +34,7 @@ public class Rfci implements Algorithm {
     }
 
     public String getDescription() {
-        return "RFCI using the " + test.getDescription() + " test";
+        return "RFCI using" + test.getDescription();
     }
 
     @Override

@@ -51,7 +51,7 @@ public class Cpc implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CPC using the " + test.getDescription() + " test" + (initialGraph != null ? " with initial graph from " +
+        return "CPC using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 

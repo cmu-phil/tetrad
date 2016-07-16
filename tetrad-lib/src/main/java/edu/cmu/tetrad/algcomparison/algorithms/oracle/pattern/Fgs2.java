@@ -1,29 +1,30 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PC-Stable using the Chi Square independence test.
+ * FGS (the heuristic version).
  * @author jdramsey
  */
-public class Pcs implements Algorithm {
-    private IndTestWrapper test;
+public class Fgs2 implements Algorithm {
+    private ScoreWrapper score;
     private Algorithm initialGraph = null;
 
-    public Pcs(IndTestWrapper test) {
-        this.test = test;
+    public Fgs2(ScoreWrapper score) {
+        this.score = score;
     }
-    public Pcs(IndTestWrapper test, Algorithm initialGraph) {
-        this.test = test;
+
+    public Fgs2(ScoreWrapper score, Algorithm initialGraph) {
+        this.score = score;
         this.initialGraph = initialGraph;
     }
 
@@ -35,13 +36,13 @@ public class Pcs implements Algorithm {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.PcStable pcs = new edu.cmu.tetrad.search.PcStable(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.Fgs2 fgs = new edu.cmu.tetrad.search.Fgs2(score.getScore(dataSet, parameters));
 
         if (initial != null) {
-            pcs.setInitialGraph(initial);
+            fgs.setInitialGraph(initial);
         }
 
-        return pcs.search();
+        return fgs.search();
     }
 
     @Override
@@ -51,19 +52,18 @@ public class Pcs implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "PCS using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "FGS using " + score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return DataType.Continuous;
     }
 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
+        parameters.add("penaltyDiscount");
+        parameters.add("fgsDepth");
         return parameters;
-    }
-}
+    }}

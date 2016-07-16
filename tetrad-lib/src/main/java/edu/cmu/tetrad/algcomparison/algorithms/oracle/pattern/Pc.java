@@ -22,6 +22,7 @@ public class Pc implements Algorithm {
     public Pc(IndTestWrapper test) {
         this.test = test;
     }
+
     public Pc(IndTestWrapper test, Algorithm initialGraph) {
         this.test = test;
         this.initialGraph = initialGraph;
@@ -51,7 +52,7 @@ public class Pc implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "PC using the " + test.getDescription() + " test" + (initialGraph != null ? " with initial graph from " +
+        return "PC using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 

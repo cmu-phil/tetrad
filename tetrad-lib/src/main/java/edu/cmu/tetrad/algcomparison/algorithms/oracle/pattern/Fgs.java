@@ -1,6 +1,8 @@
-package edu.cmu.tetrad.algcomparison.algorithms.continuous.pattern;
+package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
@@ -15,15 +17,34 @@ import java.util.List;
  * FGS (the heuristic version).
  * @author jdramsey
  */
-public class ContinuousFgs implements Algorithm {
+public class Fgs implements Algorithm {
+    private ScoreWrapper score;
+    private Algorithm initialGraph = null;
+
+    public Fgs(ScoreWrapper score) {
+        this.score = score;
+    }
+
+    public Fgs(ScoreWrapper score, Algorithm initialGraph) {
+        this.score = score;
+        this.initialGraph = initialGraph;
+    }
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        Fgs fgs = new Fgs(score);
+        Graph initial = null;
+
+        if (initialGraph != null) {
+            initial = initialGraph.search(dataSet, parameters);
+        }
+
+        edu.cmu.tetrad.search.Fgs fgs = new edu.cmu.tetrad.search.Fgs(score.getScore(dataSet, parameters));
         fgs.setHeuristicSpeedup(true);
-        fgs.setDepth(parameters.getInt("fgsDepth"));
+
+        if (initial != null) {
+            fgs.setInitialGraph(initial);
+        }
+
         return fgs.search();
     }
 
@@ -34,7 +55,7 @@ public class ContinuousFgs implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS using the SEM BIC score";
+        return "FGS using " + score.getDescription();
     }
 
     @Override

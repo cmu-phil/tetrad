@@ -35,7 +35,7 @@ public class Cfci implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CFCI, using the " + test.getDescription() + " test";
+        return "CFCI, using " + test.getDescription();
     }
 
     @Override

@@ -34,7 +34,7 @@ public class SemBicTest implements IndTestWrapper {
 
     @Override
     public String getDescription() {
-        return "Fisher Z";
+        return "SEM BIC test";
     }
 
     @Override

@@ -1,8 +1,10 @@
-package edu.cmu.tetrad.algcomparison.algorithms.mixed.pag;
+package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.Algorithm;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.Parameters;
+import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
@@ -11,12 +13,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * GFCI using the Sem BIC score.
+ * @author jdramsey
  */
-public class MixedGfciMixedScore implements Algorithm {
+public class Gfci implements Algorithm {
+    private ScoreWrapper score;
+
+    public Gfci(ScoreWrapper score) {
+        this.score = score;
+    }
+
     public Graph search(DataSet dataSet, Parameters parameters) {
-        MixedBicScore score = new MixedBicScore(dataSet);
-        GFci pc = new GFci(score);
+        GFci pc = new GFci(score.getScore(dataSet, parameters));
         return pc.search();
     }
 
@@ -26,16 +34,18 @@ public class MixedGfciMixedScore implements Algorithm {
     }
 
     public String getDescription() {
-        return "GFCI using the Mixed BIC score";
+        return "GFCI using " + score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Continuous;
     }
 
     @Override
     public List<String> getParameters() {
-        return new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
+        parameters.add("alpha");
+        return parameters;
     }
 }

@@ -28,7 +28,7 @@ public class MixedRegressionLRT implements IndTestWrapper {
 
     @Override
     public String getDescription() {
-        return "Fisher Z";
+        return "Fisher Z test";
     }
 
     @Override

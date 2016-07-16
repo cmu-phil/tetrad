@@ -31,7 +31,7 @@ public class MultinomialLogisticRegressionWald implements IndTestWrapper {
 
     @Override
     public String getDescription() {
-        return "MultinomialLogisticRetressionWald";
+        return "MultinomialLogisticRetressionWald test";
     }
 
     @Override
