@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * PC using the Fisher Z test.
+ * PC.
  * @author jdramsey
  */
 public class Cpcs implements Algorithm {

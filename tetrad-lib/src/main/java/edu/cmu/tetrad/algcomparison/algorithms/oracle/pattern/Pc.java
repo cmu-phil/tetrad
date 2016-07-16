@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PC using the Chi Square independence test.
+ * PC.
  * @author jdramsey
  */
 public class Pc implements Algorithm {

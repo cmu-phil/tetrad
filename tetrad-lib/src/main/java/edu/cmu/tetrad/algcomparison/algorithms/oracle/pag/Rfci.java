@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RFCI using the Fisher Z test.
+ * RFCI.
  * @author jdramsey
  */
 public class Rfci implements Algorithm {

@@ -813,11 +813,11 @@ public class Comparison {
             StringBuilder description = new StringBuilder();
             description.append(algorithmWrapper.getDescription());
 
-            if (overriddenParameters.size() > 0) {
-                for (String parameter : overriddenParameters.keySet()) {
-                    description.append(", " + parameter + " = " + overriddenParameters.get(parameter));
-                }
-            }
+//            if (overriddenParameters.size() > 0) {
+//                for (String parameter : overriddenParameters.keySet()) {
+//                    description.append(", " + parameter + " = " + overriddenParameters.get(parameter));
+//                }
+//            }
 
             return description.toString();
         }

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Conserative FCI using the Fisher Z independence test.
+ * Conserative FCI.
  * @author jdramsey
  */
 public class Cfci implements Algorithm {

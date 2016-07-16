@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FciMax Max using the Fisher Z independence test.
+ * FciMax Max.
  * @author jdramsey
  */
 public class FciMax implements Algorithm {

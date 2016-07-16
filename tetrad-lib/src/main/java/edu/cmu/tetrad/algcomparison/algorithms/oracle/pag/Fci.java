@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FCI using the Fisher Z independence test.
+ * FCI.
  *
  * @author jdramsey
  */

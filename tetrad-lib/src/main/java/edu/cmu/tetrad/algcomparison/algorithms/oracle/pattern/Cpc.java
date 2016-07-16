@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * CPC using the Chi Square independence test.
+ * CPC.
  * @author jdramsey
  */
 public class Cpc implements Algorithm {

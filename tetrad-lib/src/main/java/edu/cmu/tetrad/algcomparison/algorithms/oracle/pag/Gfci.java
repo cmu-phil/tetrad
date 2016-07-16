@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * GFCI using the Sem BIC score.
+ * GFCI.
  * @author jdramsey
  */
 public class Gfci implements Algorithm {
