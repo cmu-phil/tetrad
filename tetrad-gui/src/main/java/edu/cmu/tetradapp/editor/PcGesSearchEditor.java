@@ -162,6 +162,10 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result Graph");
     }
 
+    public PcGesSearchEditor(RandomMixedRunner runner) {
+        super(runner, "Result Graph");
+    }
+
 //    public PcGesSearchEditor(GlassoRunner runner) {
 //        super(runner, "Result Graph");
 //    }
@@ -710,8 +714,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
     private void addMixedTestMenuItems(JMenu test) {
         IndTestType testType = getTestType();
-        if (testType != IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION) {
-            setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+        if (testType != IndTestType.MIXED_MLR) {
+            setTestType(IndTestType.MIXED_MLR);
         }
 
         ButtonGroup group = new ButtonGroup();
@@ -722,7 +726,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
         logr.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+                setTestType(IndTestType.MIXED_MLR);
             }
         });
     }

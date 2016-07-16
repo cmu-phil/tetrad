@@ -14,7 +14,7 @@ java -jar tetradcmd-5.0.0-19.jar -data munin1.txt -datatype discrete -algorithm
 fci -maxIndegree 3 -significance 0.5
 
 I'm assuming that tetradcmd.jar and munin1.txt are in the same directory you're
-typing in. I'm assuming you're on a Unix-type machine and have JDK 1.4.2 or
+typing in. I'm assuming you're on a Unix-test machine and have JDK 1.4.2 or
 higher installed. I'm assuming munin1.txt is the data file that was sent to me
 earlier with 189 variables and 5000 cases. I'm assuming that the delimiter for
 the data file is whitespace, or regex " *[\t ] *".

@@ -140,13 +140,13 @@ public final class IndTestChooser {
                                           SearchParams params, IndTestType testType) {
         IndTestParams indTestParams = params.getIndTestParams();
 
-        if (IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION == testType) {
+        if (IndTestType.MIXED_MLR == testType) {
             return new IndTestMultinomialLogisticRegressionWald(dataSet, indTestParams.getAlpha(), false);
         } else if (IndTestType.LINEAR_REGRESSION == testType) {
             return new IndTestRegression(dataSet,
                     indTestParams.getAlpha());
         } else {
-            params.setIndTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+            params.setIndTestType(IndTestType.MIXED_MLR);
             return new IndTestMultinomialLogisticRegression(dataSet, indTestParams.getAlpha());
         }
     }
@@ -176,7 +176,7 @@ public final class IndTestChooser {
             return new IndTestLaggedRegression(dataSet,
                     indTestParams.getAlpha(), 1);
         }
-        if (IndTestType.BIC_BUMP == testType) {
+        if (IndTestType.SEM_BIC == testType) {
 //            return new IndTestBicBump(new CovarianceMatrixOnTheFly(dataSet), indTestParams.getParameter1());
             return new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)),
                     indTestParams.getAlpha());
@@ -217,7 +217,7 @@ public final class IndTestChooser {
             return new IndTestFisherZFisherPValue(dataSets, params.getIndTestParams().getAlpha());
         }
 
-        if (IndTestType.BIC_BUMP == testType) {
+        if (IndTestType.SEM_BIC == testType) {
 //            return new IndTestBicBump(new CovarianceMatrixOnTheFly(dataSet), indTestParams.getParameter1());
             List<DataModel> dataModels = new ArrayList<>();
             for (DataSet dataSet : dataSets) dataModels.add(dataSet);
@@ -239,7 +239,7 @@ public final class IndTestChooser {
         if (IndTestType.CHI_SQUARE == testType) {
             return new IndTestChiSquare(dataDiscrete, indTestParams.getAlpha());
         }
-        if (IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION == testType) {
+        if (IndTestType.MIXED_MLR == testType) {
             return new IndTestMultinomialLogisticRegression(dataDiscrete, indTestParams.getAlpha());
         } else {
             params.setIndTestType(IndTestType.CHI_SQUARE);

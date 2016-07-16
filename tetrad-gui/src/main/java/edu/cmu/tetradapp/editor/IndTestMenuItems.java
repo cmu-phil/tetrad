@@ -81,12 +81,12 @@ public class IndTestMenuItems {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.FISHER_Z &&
                 testType != IndTestType.FISHER_ZD &&
-                testType != IndTestType.BIC_BUMP &&
+                testType != IndTestType.SEM_BIC &&
                 testType != IndTestType.FISHER_Z_BOOTSTRAP &&
 //                testType != IndTestType.CORRELATION_T &&
                 testType != IndTestType.CONDITIONAL_CORRELATION &&
                 testType != IndTestType.LINEAR_REGRESSION &&
-                testType != IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION) {
+                testType != IndTestType.MIXED_MLR) {
             setter.setTestType(IndTestType.FISHER_Z);
         }
 
@@ -128,7 +128,7 @@ public class IndTestMenuItems {
 
         logr.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+                setter.setTestType(IndTestType.MIXED_MLR);
             }
         });
 
@@ -145,9 +145,9 @@ public class IndTestMenuItems {
             conditionalCorrelation.setSelected(true);
         } else if (testType == IndTestType.LINEAR_REGRESSION) {
             linRegrTest.setSelected(true);
-        } else if (testType == IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION) {
+        } else if (testType == IndTestType.MIXED_MLR) {
             logr.setSelected(true);
-        } else if (testType == IndTestType.BIC_BUMP) {
+        } else if (testType == IndTestType.SEM_BIC) {
             bicBump.setSelected(true);
         }
 
@@ -201,7 +201,7 @@ public class IndTestMenuItems {
 
         logr.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+                setter.setTestType(IndTestType.MIXED_MLR);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using multinomial logistic regression test.");
             }
@@ -209,7 +209,7 @@ public class IndTestMenuItems {
 
         bicBump.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.BIC_BUMP);
+                setter.setTestType(IndTestType.SEM_BIC);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using the BIC bump test.");
             }
@@ -222,7 +222,7 @@ public class IndTestMenuItems {
         if (testType != IndTestType.POOL_RESIDUALS_FISHER_Z
                 && testType != IndTestType.TIPPETT
                 && testType != IndTestType.FISHER
-                && testType != IndTestType.BIC_BUMP) {
+                && testType != IndTestType.SEM_BIC) {
             setter.setTestType(IndTestType.POOL_RESIDUALS_FISHER_Z);
         }
 
@@ -258,7 +258,7 @@ public class IndTestMenuItems {
             tippett.setSelected(true);
         }
 
-        if (testType == IndTestType.BIC_BUMP) {
+        if (testType == IndTestType.SEM_BIC) {
             bicBup.setSelected(true);
         }
 
@@ -288,7 +288,7 @@ public class IndTestMenuItems {
 
         bicBup.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.BIC_BUMP);
+                setter.setTestType(IndTestType.SEM_BIC);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using BIC Bump (IMaGES)");
             }
@@ -343,7 +343,7 @@ public class IndTestMenuItems {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.CHI_SQUARE &&
                 testType != IndTestType.G_SQUARE &&
-                testType != IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION) {
+                testType != IndTestType.MIXED_MLR) {
             setter.setTestType(IndTestType.CHI_SQUARE);
         }
 
@@ -364,7 +364,7 @@ public class IndTestMenuItems {
             chiSquare.setSelected(true);
         } else if (setter.getTestType() == IndTestType.G_SQUARE) {
             gSquare.setSelected(true);
-        } else if (setter.getTestType() == IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION) {
+        } else if (setter.getTestType() == IndTestType.MIXED_MLR) {
             logr.setSelected(true);
         }
 
@@ -386,7 +386,7 @@ public class IndTestMenuItems {
 
         logr.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+                setter.setTestType(IndTestType.MIXED_MLR);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using multinomial logistic regression test.");
             }
@@ -395,8 +395,8 @@ public class IndTestMenuItems {
 
     static void addMixedTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
-        if (testType != IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION) {
-            setter.setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+        if (testType != IndTestType.MIXED_MLR) {
+            setter.setTestType(IndTestType.MIXED_MLR);
         }
 
         ButtonGroup group = new ButtonGroup();
@@ -407,7 +407,7 @@ public class IndTestMenuItems {
 
         logr.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+                setter.setTestType(IndTestType.MIXED_MLR);
             }
         });
     }

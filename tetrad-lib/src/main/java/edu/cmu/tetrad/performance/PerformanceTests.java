@@ -800,7 +800,7 @@ public class PerformanceTests {
 
             System.out.println(new Date());
 
-//            System.out.println("Replacing nodes");
+//            System.out.println("Replacing nodes");d
 //
 //            estPattern = GraphUtils.replaceNodes(estPattern, dag.getNodes());
 
@@ -977,7 +977,7 @@ public class PerformanceTests {
             fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
-//            fgs.setFaithfulnessAssumed(faithfulness);
+//            fgs.setHeuristicSpeedup(faithfulness);
             fgs.setMaxIndegree(maxIndegree);
             fgs.setCycleBound(-1);
         } else {
@@ -1022,7 +1022,7 @@ public class PerformanceTests {
             fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
-//            fgs.setFaithfulnessAssumed(faithfulness);
+//            fgs.setHeuristicSpeedup(faithfulness);
             fgs.setMaxIndegree(maxIndegree);
             fgs.setCycleBound(-1);
 

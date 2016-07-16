@@ -492,7 +492,7 @@ public final class SampleVcpcFast implements GraphSearch {
 //            for (Edge edge : graph.getEdges()) {
 //                if (Edges.isBidirectedEdge(edge)) {
 //                    patterns.remove(graph);
-//                    continue GRAPH;
+//                    continue Graph;
 //                }
 //            }
 

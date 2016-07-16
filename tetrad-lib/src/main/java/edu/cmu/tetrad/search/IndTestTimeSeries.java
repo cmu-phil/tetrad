@@ -1510,6 +1510,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     public double getScore() {
         return getPValue();
     }
+
 }
 
 

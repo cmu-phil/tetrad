@@ -313,7 +313,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         fgs.setKnowledge(getParams().getKnowledge());
         fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
         fgs.setVerbose(true);
-//        fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+//        fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
         fgs.setMaxIndegree(params.getIndTestParams().getDepth());
         Graph graph = fgs.search(target);
 

@@ -396,6 +396,7 @@ public final class IndTestGSquare implements IndependenceTest {
     public double getScore() {
         return getPValue();
     }
+
 }
 
 

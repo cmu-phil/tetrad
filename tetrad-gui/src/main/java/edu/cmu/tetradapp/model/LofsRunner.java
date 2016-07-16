@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -41,7 +42,8 @@ import java.util.List;
  */
 
 public class LofsRunner extends AbstractAlgorithmRunner implements
-        GraphSource, PropertyChangeListener, KnowledgeBoxInput {
+        GraphSource, PropertyChangeListener, KnowledgeBoxInput,
+        DoNotAddOldModel {
     static final long serialVersionUID = 23L;
     private transient List<PropertyChangeListener> listeners;
     private Graph pattern;
@@ -55,14 +57,14 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     // }
 
     public LofsRunner(GraphWrapper graphWrapper,
-                               DataWrapper dataWrapper, PcSearchParams params) {
+                      DataWrapper dataWrapper, PcSearchParams params) {
         super(dataWrapper, params, null);
         this.pattern = graphWrapper.getGraph();
     }
 
     public LofsRunner(GraphWrapper graphWrapper,
-                               DataWrapper dataWrapper, PcSearchParams params,
-                               KnowledgeBoxModel knowledgeBoxModel) {
+                      DataWrapper dataWrapper, PcSearchParams params,
+                      KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = graphWrapper.getGraph();
     }
@@ -71,7 +73,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
      * Constucts a wrapper for the given EdgeListGraph.
      */
     public LofsRunner(GraphSource graphWrapper, PcSearchParams params,
-                               KnowledgeBoxModel knowledgeBoxModel) {
+                      KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
@@ -83,7 +85,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     }
 
     public LofsRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                      PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
@@ -119,62 +121,68 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     }
 
     public LofsRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                      PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                      PcSearchParams params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                      PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                      PcSearchParams params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(FciRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                      PcSearchParams params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(FciRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, GraphWrapper graph) {
+                      PcSearchParams params, GraphWrapper graph) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
         this.trueGraph = graph.getGraph();
     }
 
     public LofsRunner(CcdRunner wrapper, DataWrapper dataWrapper,
-                               BasicSearchParams params) {
+                      PcSearchParams params) {
+        super(dataWrapper, params, null);
+        this.pattern = wrapper.getGraph();
+    }
+
+    public LofsRunner(CcdRunner2 wrapper, DataWrapper dataWrapper,
+                      PcSearchParams params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                      PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                      PcSearchParams params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                                GraphWrapper graphWrapper, PcSearchParams params) {
+                      GraphWrapper graphWrapper, PcSearchParams params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
         this.trueGraph = graphWrapper.getGraph();
@@ -196,7 +204,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     public static LingamStructureRunner serializableInstance() {
         return new LingamStructureRunner(DataWrapper.serializableInstance(),
                 PcSearchParams.serializableInstance(), KnowledgeBoxModel
-                        .serializableInstance());
+                .serializableInstance());
     }
 
     // ============================PUBLIC METHODS==========================//
@@ -218,7 +226,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
             list.add(source);
 
             if (pattern == null) {
-                throw new IllegalArgumentException("Data must be specified.");  
+                throw new IllegalArgumentException("Data must be specified.");
             }
 
             graph = applyLofs(list, pattern);
@@ -300,7 +308,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
         lofs.setOrientStrongerDirection(params.isOrientStrongerDirection());
         lofs.setEdgeCorrected(params.isMeanCenterResiduals());
         lofs.setR2Orient2Cycles(params.isR2Orient2Cycles());
-            lofs.setScore(params.getScore());
+        lofs.setScore(params.getScore());
         lofs.setEpsilon(params.getEpsilon());
         lofs.setZeta(params.getZeta());
         lofs.setSelfLoopStrength(params.getSelfLoopStrength());

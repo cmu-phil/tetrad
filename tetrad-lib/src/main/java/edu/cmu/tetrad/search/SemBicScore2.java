@@ -260,11 +260,6 @@ public class SemBicScore2 implements Score {
     }
 
     @Override
-    public boolean isDiscrete() {
-        return false;
-    }
-
-    @Override
     public double getParameter1() {
         return penaltyDiscount;
     }
@@ -275,8 +270,16 @@ public class SemBicScore2 implements Score {
     }
 
     // Calculates the BIC score.
+//    private double score(double residualVariance, int n, double logn, int p, double c) {
+//        return -n * Math.log(residualVariance) - c * (p + 1) * logn;
+//    }
+
     private double score(double residualVariance, int n, double logn, int p, double c) {
-        return -n * Math.log(residualVariance) - c * (p + 1) * logn;
+        int cols = covarianceMatrix.getDimension();
+        double q = 2 / (double) cols;
+        double bic = -n * Math.log(residualVariance) - c * (p + 1) * logn;
+        double structPrior = (p * Math.log(q) + (cols - p) * Math.log(1.0 - q));
+        return bic ;//+ structPrior;
     }
 
     private Matrix getSelection1(Matrix cov, int[] rows) {

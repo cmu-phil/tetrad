@@ -794,7 +794,7 @@ public class TestMarkovBlanketSearches {
 //        IndependenceTest test = new IndTestDSep(dag);
 //        Mbfs search = new Mbfs(test, -1);
 //
-//        System.out.println("INDEPENDENT GRAPH: " + dag);
+//        System.out.println("INDEPENDENT Graph: " + dag);
 //
 //        List<Node> nodes = dag.getNodes();
 //

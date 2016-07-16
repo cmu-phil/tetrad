@@ -686,7 +686,7 @@ public final class Ccd implements GraphSearch {
     private List<Node> local(Graph psi, Node z) {
         List<Node> local = new ArrayList<>();
 
-        //Is X p-adjacent to V in psi?
+        //Is X p-adjacent to v in psi?
         for (Node x : nodes) {
             if (x == z) {
                 continue;
@@ -696,7 +696,7 @@ public final class Ccd implements GraphSearch {
                 local.add(x);
             }
 
-            //or is there a collider between X and V in psi?
+            //or is there a collider between X and v in psi?
             for (Node y : nodes) {
                 if (y == z || y == x) {
                     continue;

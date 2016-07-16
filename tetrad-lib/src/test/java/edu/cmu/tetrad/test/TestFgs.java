@@ -268,7 +268,7 @@ public class TestFgs {
 
         Graph pattern1 = new Pc(new IndTestDSep(g)).search();
         FgsMb2 fgs = new FgsMb2(new GraphScore(g));
-//        fgs.setFaithfulnessAssumed(false);
+//        fgs.setHeuristicSpeedup(false);
         Graph pattern2 = fgs.search(x1);
 
 //        System.out.println(pattern1);
@@ -433,7 +433,7 @@ public class TestFgs {
 //        System.out.println(pattern);
 
         String trueString = "Graph Nodes:\n" +
-                "ABILITY GPQ PREPROD QFJ SEX CITES PUBS \n" +
+                "ABILITY,GPQ,PREPROD,QFJ,SEX,CITES,PUBS\n" +
                 "\n" +
                 "Graph Edges: \n" +
                 "1. ABILITY --> GPQ\n" +
@@ -821,21 +821,21 @@ public class TestFgs {
     }
 
     private Graph searchMixedPc(DataSet dk, double alpha) {
-        IndependenceTest test = new IndTestMixedLrt(dk, 0.001);
+        IndependenceTest test = new IndTestMixedRegressionLrt(dk, 0.001);
 //        IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(dk, alpha, false);
         Pc pc = new Pc(test);
         return pc.search();
     }
 
     private Graph searchMixedPcs(DataSet dk, double alpha) {
-        IndependenceTest test = new IndTestMixedLrt(dk, 0.001);
+        IndependenceTest test = new IndTestMixedRegressionLrt(dk, 0.001);
 //        IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(dk, alpha, false);
         PcStable pc = new PcStable(test);
         return pc.search();
     }
 
     private Graph searchMixedCpc(DataSet dk, double alpha) {
-        IndependenceTest test = new IndTestMixedLrt(dk, 0.001);
+        IndependenceTest test = new IndTestMixedRegressionLrt(dk, 0.001);
 //        IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(dk, alpha, false);
         Cpc pc = new Cpc(test);
         return pc.search();
@@ -860,7 +860,7 @@ public class TestFgs {
         Graph gm = m.search();
         //IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, searchParams[3]);
 //        IndependenceTest indTest = new IndTestMultinomialLogisticRegressionWald(ds, 0.1, false);
-        IndependenceTest indTest = new IndTestMixedLrt(ds, 0.001);
+        IndependenceTest indTest = new IndTestMixedRegressionLrt(ds, 0.001);
         PcStable pcs = new PcStable(indTest);
         pcs.setDepth(-1);
         pcs.setInitialGraph(gm);
