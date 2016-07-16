@@ -106,8 +106,10 @@ and open the template in the editor.
             </xs:documentation>
         </xs:annotation>
 
-        <xs:attribute name="attr.name" test="key.name.test" use="optional"/>
-        <xs:attribute name="attr.test" test="key.test.test" use="optional"/>
+        <!--<xs:attribute name="attr.name" test="key.name.test" use="optional"/>-->
+        <xs:attribute name="attr.name" use="optional"/>
+        <!--<xs:attribute name="attr.test" test="key.test.test" use="optional"/>-->
+        <xs:attribute name="attr.test" use="optional"/>
     </xs:attributeGroup>
 
     <!--types as in graphml-parseinfo.xsd -->
@@ -270,13 +272,21 @@ and open the template in the editor.
             </xs:documentation>
         </xs:annotation>
 
-        <xs:attribute name="parse.nodeids" test="graph.nodeids.test"/>
-        <xs:attribute name="parse.edgeids" test="graph.edgeids.test"/>
-        <xs:attribute name="parse.order" test="graph.order.test"/>
-        <xs:attribute name="parse.nodes" test="graph.nodes.test"/>
-        <xs:attribute name="parse.edges" test="graph.edges.test"/>
-        <xs:attribute name="parse.maxindegree" test="graph.maxindegree.test" use="optional"/>
-        <xs:attribute name="parse.maxoutdegree" test="graph.maxoutdegree.test" use="optional"/>
+        <!--<xs:attribute name="parse.nodeids" test="graph.nodeids.test"/>-->
+        <!--<xs:attribute name="parse.edgeids" test="graph.edgeids.test"/>-->
+        <!--<xs:attribute name="parse.order" test="graph.order.test"/>-->
+        <!--<xs:attribute name="parse.nodes" test="graph.nodes.test"/>-->
+        <!--<xs:attribute name="parse.edges" test="graph.edges.test"/>-->
+        <!--<xs:attribute name="parse.maxindegree" test="graph.maxindegree.test" use="optional"/>-->
+        <!--<xs:attribute name="parse.maxoutdegree" test="graph.maxoutdegree.test" use="optional"/>-->
+
+        <xs:attribute name="parse.nodeids"/>
+        <xs:attribute name="parse.edgeids"/>
+        <xs:attribute name="parse.order"/>
+        <xs:attribute name="parse.nodes"/>
+        <xs:attribute name="parse.edges"/>
+        <xs:attribute name="parse.maxindegree" use="optional"/>
+        <xs:attribute name="parse.maxoutdegree" use="optional"/>
     </xs:attributeGroup>
 
 
@@ -336,8 +346,11 @@ and open the template in the editor.
             </xs:documentation>
         </xs:annotation>
 
-        <xs:attribute name="parse.indegree" test="node.indegree.test" use="optional"/>
-        <xs:attribute name="parse.outdegree" test="node.outdegree.test" use="optional"/>
+        <!--<xs:attribute name="parse.indegree" test="node.indegree.test" use="optional"/>-->
+        <!--<xs:attribute name="parse.outdegree" test="node.outdegree.test" use="optional"/>-->
+
+        <xs:attribute name="parse.indegree" use="optional"/>
+        <xs:attribute name="parse.outdegree" use="optional"/>
     </xs:attributeGroup>
 
 </xs:schema>
