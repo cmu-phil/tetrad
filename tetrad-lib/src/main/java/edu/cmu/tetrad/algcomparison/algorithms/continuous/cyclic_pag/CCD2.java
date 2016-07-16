@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Created by jdramsey on 6/4/16.
  */
-public class ContinuousCcd2 implements Algorithm {
+public class CCD2 implements Algorithm {
     public Graph search(DataSet dataSet, Parameters parameters) {
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
