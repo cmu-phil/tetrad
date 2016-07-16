@@ -35,7 +35,7 @@ public class Cpcs implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CPC-Stable using the " + test + " test";
+        return "CPC-Stable using the " + test.getDescription() + " test";
     }
 
     @Override

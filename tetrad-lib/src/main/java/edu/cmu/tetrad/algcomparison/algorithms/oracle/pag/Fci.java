@@ -51,7 +51,8 @@ public class Fci implements Algorithm {
     }
 
     public String getDescription() {
-        return "FCI using the " + test + " test" + (initialGraph != null ? " with initial graph from " +
+        return "FCI using the " + test.getDescription() + " test" +
+                (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 

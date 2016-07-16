@@ -50,7 +50,8 @@ public class FciMax implements Algorithm {
     }
 
     public String getDescription() {
-        return "FCI-MAX using the " + test + " test" + (initialGraph != null ? " with initial graph from " +
+        return "FCI-MAX using the " + test.getDescription() + " test" +
+                (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 

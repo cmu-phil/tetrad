@@ -51,7 +51,7 @@ public class Pcs implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "PCS using the " + test + " test" + (initialGraph != null ? " with initial graph from " +
+        return "PCS using the " + test.getDescription() + " test" + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 

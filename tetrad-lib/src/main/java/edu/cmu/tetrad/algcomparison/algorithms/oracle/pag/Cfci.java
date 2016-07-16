@@ -35,7 +35,7 @@ public class Cfci implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CFCI, using the Fisher Z test.";
+        return "CFCI, using the " + test.getDescription() + " test";
     }
 
     @Override

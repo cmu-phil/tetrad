@@ -34,7 +34,7 @@ public class Rfci implements Algorithm {
     }
 
     public String getDescription() {
-        return "RFCI using the Fisher Z test.";
+        return "RFCI using the " + test.getDescription() + " test";
     }
 
     @Override
