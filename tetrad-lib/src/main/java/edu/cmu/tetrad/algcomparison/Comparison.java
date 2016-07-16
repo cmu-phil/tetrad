@@ -38,7 +38,6 @@ import java.util.*;
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics and a list
  * of parameters and their values.
- *
  * @author jdramsey
  */
 public class Comparison {
