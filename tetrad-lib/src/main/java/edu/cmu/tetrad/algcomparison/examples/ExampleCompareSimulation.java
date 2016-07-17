@@ -74,7 +74,7 @@ public class ExampleCompareSimulation {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new ContinuousLinearGaussianSemSimulation(parameters));
+        simulations.add(new ContinuousLinearGaussianSemSimulation());
 
         new Comparison().compareAlgorithms("comparison/Comparison.txt",
                 simulations, algorithms, statistics, parameters);

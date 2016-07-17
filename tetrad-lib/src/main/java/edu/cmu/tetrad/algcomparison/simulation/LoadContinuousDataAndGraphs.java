@@ -17,23 +17,26 @@ import java.util.List;
  */
 public class LoadContinuousDataAndGraphs implements Simulation {
     private String path;
-    private List<DataSet> dataSets;
     private Graph graph;
+    private List<DataSet> dataSets;
 
-    public LoadContinuousDataAndGraphs(String filesPath, Parameters parameters) {
-        this.path = filesPath;
+    public LoadContinuousDataAndGraphs(String path) {
+        this.path = path;
+    }
+
+    public void simulate(Parameters parameters) {
         this.dataSets = new ArrayList<>();
 
-        if (new File(filesPath + "/data").exists()) {
-            int numDataSets = new File(filesPath + "/data").listFiles().length;
+        if (new File(path + "/data").exists()) {
+            int numDataSets = new File(path + "/data").listFiles().length;
 
-            File file2 = new File(filesPath + "/graph/graph.txt");
+            File file2 = new File(path + "/graph/graph.txt");
             System.out.println("Loading graph from " + file2.getAbsolutePath());
             this.graph = GraphUtils.loadGraphTxt(file2);
 
             try {
                 for (int i = 0; i < numDataSets; i++) {
-                    File file1 = new File(filesPath + "/data/data." + (i + 1) + ".txt");
+                    File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
                     DataReader reader = new DataReader();
@@ -88,6 +91,12 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        return parameters;
     }
 
     @Override

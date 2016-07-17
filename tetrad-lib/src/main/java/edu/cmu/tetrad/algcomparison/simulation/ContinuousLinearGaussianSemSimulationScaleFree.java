@@ -19,7 +19,7 @@ public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulatio
     private List<DataSet> dataSets;
     private Graph graph;
 
-    public ContinuousLinearGaussianSemSimulationScaleFree(Parameters parameters) {
+    public void simulate(Parameters parameters) {
         this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.scaleFreeGraph(
                 parameters.getInt("numMeasures"),
@@ -47,6 +47,21 @@ public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulatio
 
     public String getDescription() {
         return "Linear, Gaussian SEM simulation";
+    }
+
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("numMeasures");
+        parameters.add("numLatents");
+        parameters.add("scaleFreeAlpha");
+        parameters.add("scaleFreeBeta");
+        parameters.add("scaleFreeDeltaIn");
+        parameters.add("scaleFreeDeltaOut");
+        parameters.add("maxOutdegree");
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
+        return parameters;
     }
 
     @Override

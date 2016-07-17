@@ -10,6 +10,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ public class DiscreteBayesNetSimulation implements Simulation {
     private List<DataSet> dataSets;
     private Graph graph;
 
-    public DiscreteBayesNetSimulation(Parameters parameters) {
+    public void simulate(Parameters parameters) {
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
@@ -28,6 +29,8 @@ public class DiscreteBayesNetSimulation implements Simulation {
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
                 parameters.getInt("connected") == 1);
+
+        dataSets = new ArrayList<>();
 
        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
            DataSet dataSet = simulate(graph, parameters);
@@ -52,6 +55,20 @@ public class DiscreteBayesNetSimulation implements Simulation {
 
     public String getDescription() {
         return "Bayes net simulation";
+    }
+
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("numMeasures");
+        parameters.add("numLatents");
+        parameters.add("numEdges");
+        parameters.add("maxDegree");
+        parameters.add("maxIndegree");
+        parameters.add("maxOutdegree");
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
+        return parameters;
     }
 
     @Override

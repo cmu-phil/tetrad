@@ -79,19 +79,8 @@ public class ExampleCompareFromFiles {
         algorithms.add(new Pcs(new FisherZ()));
         algorithms.add(new Cpcs(new FisherZ()));
 
-        Simulations simulations = new Simulations();
-
-        int[] sampleSizes = {100, 500, 1000};
-
-        for (int i = 0; i < sampleSizes.length; i++) {
-            int sampleSize = sampleSizes[i];
-            parameters.put("sampleSize", sampleSize);
-            simulations.add(new LoadContinuousDataAndGraphs(
-                    "comparison/save1." + (i + 1), parameters));
-        }
-
-        new Comparison().compareAlgorithms("comparison/Comparison.txt",
-                simulations, algorithms, statistics, parameters);
+        new Comparison().compareAlgorithms("comparison/save1", "comparison/Comparison.txt",
+                algorithms, statistics, parameters);
     }
 }
 

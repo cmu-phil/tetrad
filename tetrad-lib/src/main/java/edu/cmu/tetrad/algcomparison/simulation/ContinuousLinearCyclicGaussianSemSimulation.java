@@ -17,13 +17,12 @@ import java.util.List;
  * Created by jdramsey on 6/4/16.
  */
 public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
-    private List<DataSet> dataSets;
     private Graph graph;
+    private List<DataSet> dataSets;
 
-    public ContinuousLinearCyclicGaussianSemSimulation(Parameters parameters) {
-
+    public void simulate(Parameters parameters) {
         dataSets = new ArrayList<>();
-        Graph graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
+        this.graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
                 parameters.getInt("numEdges"));
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
@@ -46,6 +45,15 @@ public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
 
     public String getDescription() {
         return "Linear, Gaussian SEM simulation";
+    }
+
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("numMeasures");
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
+        return parameters;
     }
 
     @Override

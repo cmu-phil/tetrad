@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.algcomparison;
 
+import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.statistic.ElapsedTimeStat;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utilities.SimulationPath;
@@ -38,6 +39,7 @@ import java.util.*;
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics and a list
  * of parameters and their values.
+ *
  * @author jdramsey
  */
 public class Comparison {
@@ -49,16 +51,43 @@ public class Comparison {
     /**
      * Compares algorithms.
      *
-     * @param path        Path to the file where the output should be printed.
+     * @param filePath    Path to the directory where files have been saved.
+     * @param outFile     Path to the file where the output should be printed.
+     * @param algorithms  The list of algorithms to be compared.
+     * @param statistics  The list of statistics on which to compare the algorithms, and their utility weights.
+     * @param parameters  The list of parameters and their values.
+     */
+    public void compareAlgorithms(String filePath, String outFile, Algorithms algorithms,
+                                  Statistics statistics, Parameters parameters) {
+        Simulations simulations = new Simulations();
+
+        File file = new File(filePath);
+        File[] dirs = file.listFiles();
+
+        for (File dir : dirs) {
+            simulations.add(new LoadContinuousDataAndGraphs(dir.getAbsolutePath()));
+        }
+
+        compareAlgorithms(outFile, simulations, algorithms, statistics, parameters);
+    }
+
+    /**
+     * Compares algorithms.
+     *
+     * @param outFile     Path to the file where the output should be printed.
      * @param simulations The list of simulation that is used to generate graphs and data for the comparison.
      * @param algorithms  The list of algorithms to be compared.
      * @param statistics  The list of statistics on which to compare the algorithms, and their utility weights.
      * @param parameters  The list of parameters and their values.
      */
-    public void compareAlgorithms(String path, Simulations simulations, Algorithms algorithms,
+    public void compareAlgorithms(String outFile, Simulations simulations, Algorithms algorithms,
                                   Statistics statistics, Parameters parameters) {
+        for (Simulation simulation : simulations.getSimulations()) {
+            simulation.simulate(parameters);
+        }
+
         try {
-            File comparison = new File(path);
+            File comparison = new File(outFile);
             this.out = new PrintStream(new FileOutputStream(comparison));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -260,31 +289,83 @@ public class Comparison {
      * @param parameters The parameters to be used in the simulation.
      */
     public void saveDataSetAndGraphs(String path, Simulation simulation, Parameters parameters) {
+        List<SimulationWrapper> simulationWrappers = new ArrayList<>();
+
+        List<Integer> _dims = new ArrayList<>();
+        List<String> varyingParameters = new ArrayList<>();
+
+        for (String parameter : simulation.getParameters()) {
+            if (parameters.getNumValues(parameter) > 1) {
+                _dims.add(parameters.getNumValues(parameter));
+                varyingParameters.add(parameter);
+            }
+        }
+
+        if (varyingParameters.isEmpty()) {
+            simulationWrappers.add(new SimulationWrapper(simulation));
+        } else {
+
+            int[] dims = new int[_dims.size()];
+            for (int i = 0; i < _dims.size(); i++) dims[i] = _dims.get(i);
+
+            CombinationGenerator gen = new CombinationGenerator(dims);
+            int[] choice;
+
+            while ((choice = gen.next()) != null) {
+                SimulationWrapper wrapper = new SimulationWrapper(simulation);
+
+                for (int h = 0; h < dims.length; h++) {
+                    String p = varyingParameters.get(h);
+                    Number[] values = parameters.getValues(p);
+                    Number value = values[choice[h]];
+                    wrapper.setValue(p, value);
+                }
+
+                simulationWrappers.add(wrapper);
+            }
+        }
+
         try {
-            File dir = new File(path);
-            dir.mkdirs();
-            dir.delete();
-            dir.mkdirs();
+            int index = 0;
 
-            new File(dir, "data").mkdir();
-            new File(dir, "graph").mkdir();
+            for (SimulationWrapper simulationWrapper : simulationWrappers) {
+                for (String param : simulationWrapper.getOverriddenParameters()) {
+                    parameters.setValue(param, simulationWrapper.getValue(param));
+                }
 
-            File file2 = new File(dir + "/graph/graph.txt");
-            GraphUtils.saveGraph(simulation.getTrueGraph(), file2, false);
+                simulationWrapper.simulate(parameters);
+                index++;
 
-            for (int i = 0; i < simulation.getNumDataSets(); i++) {
-                File file = new File(dir + "/data/data." + (i + 1) + ".txt");
-                Writer out = new FileWriter(file);
-                DataSet dataSet = simulation.getDataSet(i);
-                DataWriter.writeRectangularData(dataSet, out, '\t');
+                File dir = new File(path);
+                dir.mkdirs();
+                dir.delete();
+                dir.mkdirs();
+
+                File subdir = new File(dir, "" + index);
+                subdir.mkdir();
+
+                File dir1 = new File(subdir, "graph");
+                File dir2 = new File(subdir, "data");
+                dir1.mkdirs();
+                dir2.mkdirs();
+
+                File file2 = new File(dir1, "graph.txt");
+                GraphUtils.saveGraph(simulationWrapper.getTrueGraph(), file2, false);
+
+                for (int i = 0; i < simulationWrapper.getNumDataSets(); i++) {
+                    File file = new File(dir2, "data." + (i + 1) + ".txt");
+                    Writer out = new FileWriter(file);
+                    DataSet dataSet = simulationWrapper.getDataSet(i);
+                    DataWriter.writeRectangularData(dataSet, out, '\t');
+                    out.close();
+                }
+
+                PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
+                out.println(simulationWrapper.getDescription());
+                out.println();
+                out.println(parameters);
                 out.close();
             }
-
-            PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
-            out.println(simulation.getDescription());
-            out.println();
-            out.println(parameters);
-            out.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -779,10 +860,6 @@ public class Comparison {
             return overriddenParameters.get(parameter);
         }
 
-        public Map<String, Number> getOverriddenParametersMap() {
-            return overriddenParameters;
-        }
-
         public Algorithm getAlgorithm() {
             return algorithm;
         }
@@ -847,6 +924,62 @@ public class Comparison {
 
         public AlgorithmWrapper getAlgorithmWrapper() {
             return algorithmWrapper;
+        }
+    }
+
+    private class SimulationWrapper implements Simulation {
+        private Simulation simulation;
+        private Map<String, Number> overriddenParameters = new LinkedHashMap<>();
+
+        public SimulationWrapper(Simulation simulation) {
+            this.simulation = simulation;
+        }
+
+        @Override
+        public void simulate(Parameters parameters) {
+            simulation.simulate(parameters);
+        }
+
+        @Override
+        public int getNumDataSets() {
+            return simulation.getNumDataSets();
+        }
+
+        @Override
+        public Graph getTrueGraph() {
+            return simulation.getTrueGraph();
+        }
+
+        @Override
+        public DataSet getDataSet(int index) {
+            return simulation.getDataSet(index);
+        }
+
+        @Override
+        public DataType getDataType() {
+            return simulation.getDataType();
+        }
+
+        @Override
+        public String getDescription() {
+            return simulation.getDescription();
+        }
+
+        @Override
+        public List<String> getParameters() {
+            return simulation.getParameters();
+        }
+
+        public List<String> getOverriddenParameters() {
+            return new ArrayList<>(overriddenParameters.keySet());
+        }
+
+        public void setValue(String parameter, Number value) {
+            this.overriddenParameters.put(parameter, value);
+        }
+
+        public Number getValue(String parameter) {
+            return overriddenParameters.get(parameter);
         }
     }
 }

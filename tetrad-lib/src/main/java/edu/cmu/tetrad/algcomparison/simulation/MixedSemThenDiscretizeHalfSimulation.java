@@ -19,11 +19,11 @@ import java.util.List;
  * Created by jdramsey on 6/4/16.
  */
 public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
-    private List<DataSet> dataSets;
     private Graph graph;
+    private List<DataSet> dataSets;
 
-    public MixedSemThenDiscretizeHalfSimulation(Parameters parameters) {
-        Graph graph = GraphUtils.scaleFreeGraph(
+    public void simulate(Parameters parameters) {
+        this.graph = GraphUtils.scaleFreeGraph(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
                 parameters.getDouble("scaleFreeAlpha"),
@@ -45,6 +45,21 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
 
     public String getDescription() {
         return "Simulation SEM data then discretizing some variables";
+    }
+
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("numMeasures");
+        parameters.add("numLatents");
+        parameters.add("scaleFreeAlpha");
+        parameters.add("scaleFreeBeta");
+        parameters.add("scaleFreeDeltaIn");
+        parameters.add("scaleFreeDeltaOut");
+        parameters.add("maxOutdegree");
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
+        return parameters;
     }
 
     @Override

@@ -3,12 +3,20 @@ package edu.cmu.tetrad.algcomparison;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.sem.Parameter;
+
+import java.util.List;
 
 /**
  * The interface that simulations must implement.
  * @author jdramsey
  */
 public interface Simulation {
+
+    /**
+     * Creates a data set and simulates data.
+     */
+    void simulate(Parameters parameters);
 
     /**
      * @return The number of data sets to simulate.
@@ -36,4 +44,10 @@ public interface Simulation {
      * at the beginning of the report.
      */
     String getDescription();
+
+    /**
+     * @return Returns the parameters used in the simulation. These are the
+     * parameters whose values can be varied.
+     */
+    List<String> getParameters();
 }
