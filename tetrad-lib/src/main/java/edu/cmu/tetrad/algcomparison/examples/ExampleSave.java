@@ -41,7 +41,8 @@ public class ExampleSave {
         parameters.put("sampleSize", 100, 500, 1000);
 
         Simulation simulation = new ContinuousLinearGaussianSemSimulation();
-        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
+        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation,
+                parameters);
     }
 }
 

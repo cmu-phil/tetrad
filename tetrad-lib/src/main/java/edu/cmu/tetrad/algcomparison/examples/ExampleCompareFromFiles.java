@@ -79,7 +79,8 @@ public class ExampleCompareFromFiles {
         algorithms.add(new Pcs(new FisherZ()));
         algorithms.add(new Cpcs(new FisherZ()));
 
-        new Comparison().compareAlgorithms("comparison/save1", "comparison/Comparison.txt",
+        new Comparison().compareAlgorithms("comparison/save1",
+                "comparison/Comparison.txt",
                 algorithms, statistics, parameters);
     }
 }

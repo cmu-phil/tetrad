@@ -82,8 +82,15 @@ public class Comparison {
      */
     public void compareAlgorithms(String outFile, Simulations simulations, Algorithms algorithms,
                                   Statistics statistics, Parameters parameters) {
+        Simulations _simulations = new Simulations();
+
         for (Simulation simulation : simulations.getSimulations()) {
-            simulation.simulate(parameters);
+            List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters);
+
+            for (SimulationWrapper wrapper : wrappers) {
+                wrapper.simulate(parameters);
+                _simulations.add(wrapper);
+            }
         }
 
         try {
@@ -138,7 +145,7 @@ public class Comparison {
 
         List<AlgorithmSimulationWrapper> algorithmSimulationWrappers = new ArrayList<>();
 
-        for (Simulation simulation : simulations.getSimulations()) {
+        for (Simulation simulation : _simulations.getSimulations()) {
             for (AlgorithmWrapper algorithmWrapper : algorithmWrappers) {
                 if (algorithmWrapper.getDataType() == simulation.getDataType()
                         || algorithmWrapper.getDataType() == DataType.Mixed) {
@@ -206,12 +213,12 @@ public class Comparison {
             out.println("Simulation:");
             out.println();
 
-            if (simulations.getSimulations().size() == 1) {
-                out.println(simulations.getSimulations().get(0).getDescription());
+            if (_simulations.getSimulations().size() == 1) {
+                out.println(_simulations.getSimulations().get(0).getDescription());
             } else {
                 int i = 0;
 
-                for (Simulation simulation : simulations.getSimulations()) {
+                for (Simulation simulation : _simulations.getSimulations()) {
                     out.println("Simulation " + (++i) + ":");
                     out.println();
                     out.println(simulation.getDescription());
@@ -224,7 +231,7 @@ public class Comparison {
             int s = 0;
 
             for (AlgorithmSimulationWrapper wrapper : algorithmSimulationWrappers) {
-                if (wrapper.getSimulation() == simulations.getSimulations().get(0)) {
+                if (wrapper.getSimulation() == _simulations.getSimulations().get(0)) {
                     out.println((s + 1) + ". " + wrapper.getDescription());
                     s++;
                 }
@@ -254,14 +261,14 @@ public class Comparison {
             }
 
             printStats(statTables, statistics, Mode.Average, newOrder, algorithmWrappers, algorithmSimulationWrappers,
-                    simulations, utilities);
+                    _simulations, utilities);
 
             statTables = calcStatTables(allStats, Mode.StandardDeviation, numTables,
                     algorithmSimulationWrappers, numStats);
 
             printStats(statTables, statistics, Mode.StandardDeviation, newOrder, algorithmWrappers,
                     algorithmSimulationWrappers,
-                    simulations, utilities);
+                    _simulations, utilities);
 
             statTables = calcStatTables(allStats, Mode.WorstCase, numTables, algorithmSimulationWrappers,
                     numStats);
@@ -275,7 +282,7 @@ public class Comparison {
 
             printStats(statTables, statistics, Mode.WorstCase, newOrder, algorithmWrappers,
                     algorithmSimulationWrappers,
-                    simulations, utilities);
+                    _simulations, utilities);
         }
 
         out.close();
@@ -289,41 +296,7 @@ public class Comparison {
      * @param parameters The parameters to be used in the simulation.
      */
     public void saveDataSetAndGraphs(String path, Simulation simulation, Parameters parameters) {
-        List<SimulationWrapper> simulationWrappers = new ArrayList<>();
-
-        List<Integer> _dims = new ArrayList<>();
-        List<String> varyingParameters = new ArrayList<>();
-
-        for (String parameter : simulation.getParameters()) {
-            if (parameters.getNumValues(parameter) > 1) {
-                _dims.add(parameters.getNumValues(parameter));
-                varyingParameters.add(parameter);
-            }
-        }
-
-        if (varyingParameters.isEmpty()) {
-            simulationWrappers.add(new SimulationWrapper(simulation));
-        } else {
-
-            int[] dims = new int[_dims.size()];
-            for (int i = 0; i < _dims.size(); i++) dims[i] = _dims.get(i);
-
-            CombinationGenerator gen = new CombinationGenerator(dims);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                SimulationWrapper wrapper = new SimulationWrapper(simulation);
-
-                for (int h = 0; h < dims.length; h++) {
-                    String p = varyingParameters.get(h);
-                    Number[] values = parameters.getValues(p);
-                    Number value = values[choice[h]];
-                    wrapper.setValue(p, value);
-                }
-
-                simulationWrappers.add(wrapper);
-            }
-        }
+        List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
 
         try {
             int index = 0;
@@ -369,6 +342,45 @@ public class Comparison {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private List<SimulationWrapper> getSimulationWrappers(Simulation simulation, Parameters parameters) {
+        List<SimulationWrapper> simulationWrappers = new ArrayList<>();
+
+        List<Integer> _dims = new ArrayList<>();
+        List<String> varyingParameters = new ArrayList<>();
+
+        for (String parameter : simulation.getParameters()) {
+            if (parameters.getNumValues(parameter) > 1) {
+                _dims.add(parameters.getNumValues(parameter));
+                varyingParameters.add(parameter);
+            }
+        }
+
+        if (varyingParameters.isEmpty()) {
+            simulationWrappers.add(new SimulationWrapper(simulation));
+        } else {
+
+            int[] dims = new int[_dims.size()];
+            for (int i = 0; i < _dims.size(); i++) dims[i] = _dims.get(i);
+
+            CombinationGenerator gen = new CombinationGenerator(dims);
+            int[] choice;
+
+            while ((choice = gen.next()) != null) {
+                SimulationWrapper wrapper = new SimulationWrapper(simulation);
+
+                for (int h = 0; h < dims.length; h++) {
+                    String p = varyingParameters.get(h);
+                    Number[] values = parameters.getValues(p);
+                    Number value = values[choice[h]];
+                    wrapper.setValue(p, value);
+                }
+
+                simulationWrappers.add(wrapper);
+            }
+        }
+        return simulationWrappers;
     }
 
 
