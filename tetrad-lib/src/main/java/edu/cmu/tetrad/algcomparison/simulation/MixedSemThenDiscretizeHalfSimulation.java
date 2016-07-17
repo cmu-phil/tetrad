@@ -16,12 +16,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
 
+    @Override
     public void simulate(Parameters parameters) {
         this.graph = GraphUtils.scaleFreeGraph(
                 parameters.getInt("numMeasures"),
@@ -39,10 +40,12 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
         }
     }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }
 
+    @Override
     public String getDescription() {
         return "Simulation SEM data then discretizing some variables";
     }

@@ -17,12 +17,13 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class MixedLeeHastieSimulation implements Simulation {
     private List<DataSet> dataSets;
     private Graph graph;
 
+    @Override
     public void simulate(Parameters parameters) {
         this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
@@ -39,39 +40,18 @@ public class MixedLeeHastieSimulation implements Simulation {
         }
     }
 
-    private DataSet simulate(Graph dag, Parameters parameters) {
-        HashMap<String, Integer> nd = new HashMap<>();
-
-        List<Node> nodes = dag.getNodes();
-
-        Collections.shuffle(nodes);
-
-        for (int i = 0; i < nodes.size(); i++) {
-            if (i < nodes.size() * parameters.getDouble("percentDiscreteForMixedSimulation") * 0.01) {
-                nd.put(nodes.get(i).getName(), parameters.getInt("numCategories"));
-            } else {
-                nd.put(nodes.get(i).getName(), 0);
-            }
-        }
-
-        Graph graph = MixedUtils.makeMixedGraph(dag, nd);
-
-        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
-        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
-
-        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), false);
-        return MixedUtils.makeMixedData(ds, nd);
-    }
 
     @Override
     public Graph getTrueGraph() {
         return graph;
     }
 
+    @Override
     public DataSet getDataSet(int index) {
         return dataSets.get(index);
     }
 
+    @Override
     public String getDescription() {
         return "Lee & Hastie simulation";
     }
@@ -99,4 +79,29 @@ public class MixedLeeHastieSimulation implements Simulation {
     public DataType getDataType() {
         return DataType.Mixed;
     }
+
+    private DataSet simulate(Graph dag, Parameters parameters) {
+        HashMap<String, Integer> nd = new HashMap<>();
+
+        List<Node> nodes = dag.getNodes();
+
+        Collections.shuffle(nodes);
+
+        for (int i = 0; i < nodes.size(); i++) {
+            if (i < nodes.size() * parameters.getDouble("percentDiscreteForMixedSimulation") * 0.01) {
+                nd.put(nodes.get(i).getName(), parameters.getInt("numCategories"));
+            } else {
+                nd.put(nodes.get(i).getName(), 0);
+            }
+        }
+
+        Graph graph = MixedUtils.makeMixedGraph(dag, nd);
+
+        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
+        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
+
+        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), false);
+        return MixedUtils.makeMixedData(ds, nd);
+    }
+
 }

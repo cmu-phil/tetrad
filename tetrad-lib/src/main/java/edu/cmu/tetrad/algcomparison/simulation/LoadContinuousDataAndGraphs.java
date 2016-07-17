@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class LoadContinuousDataAndGraphs implements Simulation {
     private String path;
@@ -24,6 +24,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         this.path = path;
     }
 
+    @Override
     public void simulate(Parameters parameters) {
         this.dataSets = new ArrayList<>();
 
@@ -65,14 +66,17 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         }
     }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }
 
+    @Override
     public DataSet getDataSet(int index) {
         return dataSets.get(index);
     }
 
+    @Override
     public String getDescription() {
         try {
             File file = new File(path, "parameters.txt");

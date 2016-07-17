@@ -14,12 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class DiscreteBayesNetSimulation implements Simulation {
     private List<DataSet> dataSets;
     private Graph graph;
 
+    @Override
     public void simulate(Parameters parameters) {
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
@@ -38,21 +39,18 @@ public class DiscreteBayesNetSimulation implements Simulation {
        }
     }
 
+    @Override
     public DataSet getDataSet(int index) {
         return dataSets.get(index);
     }
 
-    private DataSet simulate(Graph graph, Parameters parameters) {
-        int numCategories = parameters.getInt("numCategories");
-        BayesPm pm = new BayesPm(graph, numCategories, numCategories);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-        return im.simulateData(parameters.getInt("sampleSize"), false);
-    }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }
 
+    @Override
     public String getDescription() {
         return "Bayes net simulation";
     }
@@ -79,5 +77,13 @@ public class DiscreteBayesNetSimulation implements Simulation {
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
+    }
+
+
+    private DataSet simulate(Graph graph, Parameters parameters) {
+        int numCategories = parameters.getInt("numCategories");
+        BayesPm pm = new BayesPm(graph, numCategories, numCategories);
+        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 }

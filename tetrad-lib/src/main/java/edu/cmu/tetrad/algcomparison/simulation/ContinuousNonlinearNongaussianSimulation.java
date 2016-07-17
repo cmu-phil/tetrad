@@ -11,12 +11,13 @@ import java.text.ParseException;
 import java.util.*;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class ContinuousNonlinearNongaussianSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
 
+    @Override
     public void simulate(Parameters parameters) {
         this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
@@ -40,6 +41,7 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
         return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }

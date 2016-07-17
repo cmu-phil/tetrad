@@ -13,12 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulation {
     private List<DataSet> dataSets;
     private Graph graph;
 
+    @Override
     public void simulate(Parameters parameters) {
         this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.scaleFreeGraph(
@@ -37,14 +38,17 @@ public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulatio
         }
     }
 
+    @Override
     public DataSet getDataSet(int index) {
         return dataSets.get(index);
     }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }
 
+    @Override
     public String getDescription() {
         return "Linear, Gaussian SEM simulation";
     }

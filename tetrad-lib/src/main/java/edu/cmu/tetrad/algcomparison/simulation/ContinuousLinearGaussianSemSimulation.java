@@ -13,12 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class ContinuousLinearGaussianSemSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
 
+    @Override
     public void simulate(Parameters parameters) {
         dataSets = new ArrayList<>();
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
@@ -37,14 +38,17 @@ public class ContinuousLinearGaussianSemSimulation implements Simulation {
         }
     }
 
+    @Override
     public DataSet getDataSet(int index) {
         return dataSets.get(index);
     }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }
 
+    @Override
     public String getDescription() {
         return "Linear, Gaussian SEM simulation";
     }

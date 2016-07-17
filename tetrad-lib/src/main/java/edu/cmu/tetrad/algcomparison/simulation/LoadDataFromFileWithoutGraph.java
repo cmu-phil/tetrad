@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath {
     private DataSet dataSet;
@@ -36,18 +36,22 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
         }
     }
 
+    @Override
     public void simulate(Parameters parameters) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Graph getTrueGraph() {
         return null;
     }
 
+    @Override
     public DataSet getDataSet(int index) {
         return dataSet;
     }
 
+    @Override
     public String getDescription() {
         return "Load single file to run.";
     }
@@ -67,6 +71,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
         return DataType.Continuous;
     }
 
+    @Override
     public String getPath() {
         return path;
     }
