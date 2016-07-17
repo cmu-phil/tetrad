@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison;
+package edu.cmu.tetrad.algcomparison.simulation;
 
 import java.util.*;
 
@@ -66,6 +66,7 @@ public class Parameters {
         if (getNumValues(name) != 1) {
             throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
         }
+
         usedParameters.add(name);
         return parameters.get(name)[0].intValue();
     }

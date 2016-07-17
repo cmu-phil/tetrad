@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
@@ -16,14 +14,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
-    private List<DataSet> dataSets;
     private Graph graph;
+    private List<DataSet> dataSets;
 
-    public MixedSemThenDiscretizeHalfSimulation(Parameters parameters) {
-        Graph graph = GraphUtils.scaleFreeGraph(
+    @Override
+    public void simulate(Parameters parameters) {
+        this.graph = GraphUtils.scaleFreeGraph(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
                 parameters.getDouble("scaleFreeAlpha"),
@@ -39,12 +38,29 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
         }
     }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }
 
+    @Override
     public String getDescription() {
         return "Simulation SEM data then discretizing some variables";
+    }
+
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("numMeasures");
+        parameters.add("numLatents");
+        parameters.add("scaleFreeAlpha");
+        parameters.add("scaleFreeBeta");
+        parameters.add("scaleFreeDeltaIn");
+        parameters.add("scaleFreeDeltaOut");
+        parameters.add("maxOutdegree");
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
+        return parameters;
     }
 
     @Override

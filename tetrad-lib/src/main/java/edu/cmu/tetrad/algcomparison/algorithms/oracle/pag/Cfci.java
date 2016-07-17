@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
-import edu.cmu.tetrad.algcomparison.Algorithm;
-import edu.cmu.tetrad.algcomparison.Parameters;
+import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
+import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataSet;

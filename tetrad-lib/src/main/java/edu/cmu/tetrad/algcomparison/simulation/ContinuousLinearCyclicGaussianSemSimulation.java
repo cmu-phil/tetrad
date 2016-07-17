@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -14,16 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
-    private List<DataSet> dataSets;
     private Graph graph;
+    private List<DataSet> dataSets;
 
-    public ContinuousLinearCyclicGaussianSemSimulation(Parameters parameters) {
-
+    @Override
+    public void simulate(Parameters parameters) {
         dataSets = new ArrayList<>();
-        Graph graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
+        this.graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
                 parameters.getInt("numEdges"));
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
@@ -36,16 +34,28 @@ public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
         }
     }
 
+    @Override
     public DataSet getDataSet(int index) {
         return dataSets.get(index);
     }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }
 
+    @Override
     public String getDescription() {
         return "Linear, Gaussian SEM simulation";
+    }
+
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("numMeasures");
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
+        return parameters;
     }
 
     @Override

@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -13,13 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulation {
     private List<DataSet> dataSets;
     private Graph graph;
 
-    public ContinuousLinearGaussianSemSimulationScaleFree(Parameters parameters) {
+    @Override
+    public void simulate(Parameters parameters) {
         this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.scaleFreeGraph(
                 parameters.getInt("numMeasures"),
@@ -37,16 +36,34 @@ public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulatio
         }
     }
 
+    @Override
     public DataSet getDataSet(int index) {
         return dataSets.get(index);
     }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }
 
+    @Override
     public String getDescription() {
         return "Linear, Gaussian SEM simulation";
+    }
+
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("numMeasures");
+        parameters.add("numLatents");
+        parameters.add("scaleFreeAlpha");
+        parameters.add("scaleFreeBeta");
+        parameters.add("scaleFreeDeltaIn");
+        parameters.add("scaleFreeDeltaOut");
+        parameters.add("maxOutdegree");
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
+        return parameters;
     }
 
     @Override

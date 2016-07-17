@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -13,27 +11,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class LoadContinuousDataAndGraphs implements Simulation {
     private String path;
-    private List<DataSet> dataSets;
     private Graph graph;
+    private List<DataSet> dataSets;
 
-    public LoadContinuousDataAndGraphs(String filesPath, Parameters parameters) {
-        this.path = filesPath;
+    public LoadContinuousDataAndGraphs(String path) {
+        this.path = path;
+    }
+
+    @Override
+    public void simulate(Parameters parameters) {
         this.dataSets = new ArrayList<>();
 
-        if (new File(filesPath + "/data").exists()) {
-            int numDataSets = new File(filesPath + "/data").listFiles().length;
+        if (new File(path + "/data").exists()) {
+            int numDataSets = new File(path + "/data").listFiles().length;
 
-            File file2 = new File(filesPath + "/graph/graph.txt");
+            File file2 = new File(path + "/graph/graph.txt");
             System.out.println("Loading graph from " + file2.getAbsolutePath());
             this.graph = GraphUtils.loadGraphTxt(file2);
 
             try {
                 for (int i = 0; i < numDataSets; i++) {
-                    File file1 = new File(filesPath + "/data/data." + (i + 1) + ".txt");
+                    File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
                     DataReader reader = new DataReader();
@@ -62,14 +64,17 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         }
     }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }
 
+    @Override
     public DataSet getDataSet(int index) {
         return dataSets.get(index);
     }
 
+    @Override
     public String getDescription() {
         try {
             File file = new File(path, "parameters.txt");
@@ -88,6 +93,12 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        return parameters;
     }
 
     @Override

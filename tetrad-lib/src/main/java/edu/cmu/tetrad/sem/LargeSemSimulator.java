@@ -90,6 +90,9 @@ public final class LargeSemSimulator {
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
+
+        int size = variableNodes.size();
+        setupModel(size);
     }
 
     public LargeSemSimulator(Graph graph, List<Node> nodes, int[] tierIndices) {
@@ -104,6 +107,9 @@ public final class LargeSemSimulator {
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
+
+        int size = variableNodes.size();
+        setupModel(size);
     }
 
     /**
@@ -114,9 +120,6 @@ public final class LargeSemSimulator {
      * various values--could be improved).
      */
     public DataSet simulateDataAcyclic1(int sampleSize) {
-        int size = variableNodes.size();
-        setupModel(size);
-
 //        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
         final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variableNodes);
 
@@ -141,9 +144,6 @@ public final class LargeSemSimulator {
 
     // Trying again to parallelize simulateDataAcyclic.
     public DataSet simulateDataAcyclic2(int sampleSize) {
-        int size = variableNodes.size();
-        setupModel(size);
-
         class SimulateRowTask extends RecursiveTask<double[]> {
             private final int i;
 
@@ -230,9 +230,6 @@ public final class LargeSemSimulator {
     }
 
     public DataSet simulateDataAcyclic(int sampleSize) {
-        int size = variableNodes.size();
-        setupModel(size);
-
         class SimulateTask extends RecursiveTask<Boolean> {
             private final int from;
             private final int to;
@@ -376,6 +373,18 @@ public final class LargeSemSimulator {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public double[][] getCoefficientMatrix() {
+        double[][] c = new double[coefs.length][coefs.length];
+
+        for (int i = 0; i < coefs.length; i++) {
+            for (int j = 0; j < coefs[i].length; j++) {
+                c[i][parents[i][j]] = coefs[i][j];
+            }
+        }
+
+        return c;
     }
 }
 

@@ -21,16 +21,16 @@
 
 package edu.cmu.tetrad.algcomparison.examples;
 
-import edu.cmu.tetrad.algcomparison.*;
+import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpcs;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pc;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pcs;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.search.IndTestType;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -43,7 +43,7 @@ public class ExampleCompareSimulation {
         parameters.put("numRuns", 10);
         parameters.put("numMeasures", 100);
         parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
-        parameters.put("sampleSize", 1000);
+        parameters.put("sampleSize", 100, 200);
         parameters.put("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
@@ -74,7 +74,7 @@ public class ExampleCompareSimulation {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new ContinuousLinearGaussianSemSimulation(parameters));
+        simulations.add(new ContinuousLinearGaussianSemSimulation());
 
         new Comparison().compareAlgorithms("comparison/Comparison.txt",
                 simulations, algorithms, statistics, parameters);

@@ -1,4 +1,6 @@
-package edu.cmu.tetrad.algcomparison;
+package edu.cmu.tetrad.algcomparison.simulation;
+
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 
 import java.util.ArrayList;
 import java.util.List;

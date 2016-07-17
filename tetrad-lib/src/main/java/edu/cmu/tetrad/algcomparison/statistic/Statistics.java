@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison;
+package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 

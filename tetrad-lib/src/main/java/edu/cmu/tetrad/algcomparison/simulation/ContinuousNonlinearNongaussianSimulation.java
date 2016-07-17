@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.algcomparison.Parameters;
-import edu.cmu.tetrad.algcomparison.Simulation;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
@@ -11,13 +9,14 @@ import java.text.ParseException;
 import java.util.*;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class ContinuousNonlinearNongaussianSimulation implements Simulation {
-    private List<DataSet> dataSets;
     private Graph graph;
+    private List<DataSet> dataSets;
 
-    public ContinuousNonlinearNongaussianSimulation(Parameters parameters) {
+    @Override
+    public void simulate(Parameters parameters) {
         this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
@@ -40,6 +39,7 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
         return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 
+    @Override
     public Graph getTrueGraph() {
         return graph;
     }
@@ -61,6 +61,20 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
 
     public String getDescription() {
         return "Nonlinear, non-Gaussian SEM simulation";
+    }
+
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("numMeasures");
+        parameters.add("numLatents");
+        parameters.add("numEdges");
+        parameters.add("maxDegree");
+        parameters.add("maxIndegree");
+        parameters.add("maxOutdegree");
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
+        return parameters;
     }
 
     private GeneralizedSemPm getPm(Graph graph) {

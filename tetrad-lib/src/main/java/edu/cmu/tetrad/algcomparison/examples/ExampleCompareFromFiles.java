@@ -21,15 +21,15 @@
 
 package edu.cmu.tetrad.algcomparison.examples;
 
-import edu.cmu.tetrad.algcomparison.*;
+import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpcs;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pc;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pcs;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.search.IndTestType;
 
 /**
  * An example script to load in data sets and graphs from files and analyze them. The
@@ -79,19 +79,9 @@ public class ExampleCompareFromFiles {
         algorithms.add(new Pcs(new FisherZ()));
         algorithms.add(new Cpcs(new FisherZ()));
 
-        Simulations simulations = new Simulations();
-
-        int[] sampleSizes = {100, 500, 1000};
-
-        for (int i = 0; i < sampleSizes.length; i++) {
-            int sampleSize = sampleSizes[i];
-            parameters.put("sampleSize", sampleSize);
-            simulations.add(new LoadContinuousDataAndGraphs(
-                    "comparison/save1." + (i + 1), parameters));
-        }
-
-        new Comparison().compareAlgorithms("comparison/Comparison.txt",
-                simulations, algorithms, statistics, parameters);
+        new Comparison().compareAlgorithms("comparison/save1",
+                "comparison/Comparison.txt",
+                algorithms, statistics, parameters);
     }
 }
 
