@@ -88,6 +88,11 @@ public class Comparison {
             List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters);
 
             for (SimulationWrapper wrapper : wrappers) {
+                for (String param : wrapper.getOverriddenParameters().keySet()) {
+                    parameters.put(param, wrapper.getValue(param));
+                    wrapper.setValue(param, wrapper.getValue(param));
+                }
+
                 wrapper.simulate(parameters);
                 _simulations.add(wrapper);
             }
@@ -220,8 +225,15 @@ public class Comparison {
 
                 for (Simulation simulation : _simulations.getSimulations()) {
                     out.println("Simulation " + (++i) + ":");
-                    out.println();
                     out.println(simulation.getDescription());
+
+                    if (simulation instanceof SimulationWrapper) {
+                        for (String param : ((SimulationWrapper) simulation).getOverriddenParameters().keySet()) {
+                            out.println(param + " = " + ((SimulationWrapper) simulation).getValue(param));
+                        }
+                    }
+
+                    out.println();
                 }
             }
 
@@ -302,7 +314,7 @@ public class Comparison {
             int index = 0;
 
             for (SimulationWrapper simulationWrapper : simulationWrappers) {
-                for (String param : simulationWrapper.getOverriddenParameters()) {
+                for (String param : simulationWrapper.getOverriddenParameters().keySet()) {
                     parameters.setValue(param, simulationWrapper.getValue(param));
                 }
 
@@ -982,8 +994,8 @@ public class Comparison {
             return simulation.getParameters();
         }
 
-        public List<String> getOverriddenParameters() {
-            return new ArrayList<>(overriddenParameters.keySet());
+        public Map<String, Number> getOverriddenParameters() {
+            return overriddenParameters;
         }
 
         public void setValue(String parameter, Number value) {
