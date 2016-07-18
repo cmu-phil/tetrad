@@ -22,7 +22,10 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
     public LoadDataFromFileWithoutGraph(String path) {
         this.dataSet = null;
         this.path = path;
+    }
 
+    @Override
+    public void simulate(Parameters parameters) {
         try {
             File file = new File(path);
             System.out.println("Loading data from " + file.getAbsolutePath());
@@ -32,11 +35,6 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void simulate(Parameters parameters) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

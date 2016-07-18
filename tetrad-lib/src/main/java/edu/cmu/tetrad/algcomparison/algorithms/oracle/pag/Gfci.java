@@ -38,7 +38,7 @@ public class Gfci implements Algorithm {
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return score.getDataType();
     }
 
     @Override

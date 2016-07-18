@@ -65,6 +65,7 @@ public class MixedLeeHastieSimulation implements Simulation {
         parameters.add("maxOutdegree");
         parameters.add("numRuns");
         parameters.add("sampleSize");
+        parameters.add("numCategories");
         return parameters;
     }
 

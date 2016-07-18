@@ -33,7 +33,7 @@ public class ConditionalGaussianLRT implements IndTestWrapper {
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Mixed;
     }
 
     @Override
