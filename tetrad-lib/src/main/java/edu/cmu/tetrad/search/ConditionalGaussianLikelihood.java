@@ -205,7 +205,7 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
-        int dof = f(A) * h(X) + (!A.isEmpty() ? f(A) : 0);
+        int dof = f(A) * h(X) + f(A);
 
         return new Ret(lik, dof);
     }
