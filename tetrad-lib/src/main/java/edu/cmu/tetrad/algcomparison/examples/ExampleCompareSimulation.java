@@ -43,7 +43,7 @@ public class ExampleCompareSimulation {
         parameters.put("numRuns", 10);
         parameters.put("numMeasures", 100);
         parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
-        parameters.put("sampleSize", 100, 200);
+        parameters.put("sampleSize", 500);
         parameters.put("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();

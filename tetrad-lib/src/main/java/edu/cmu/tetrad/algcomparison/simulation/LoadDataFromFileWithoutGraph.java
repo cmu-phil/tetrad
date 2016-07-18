@@ -25,7 +25,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath 
     }
 
     @Override
-    public void simulate(Parameters parameters) {
+    public void createData(Parameters parameters) {
         try {
             File file = new File(path);
             System.out.println("Loading data from " + file.getAbsolutePath());

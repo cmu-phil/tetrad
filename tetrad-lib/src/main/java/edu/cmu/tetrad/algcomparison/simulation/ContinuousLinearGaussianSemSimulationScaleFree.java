@@ -18,7 +18,7 @@ public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulatio
     private Graph graph;
 
     @Override
-    public void simulate(Parameters parameters) {
+    public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.scaleFreeGraph(
                 parameters.getInt("numMeasures"),

@@ -23,7 +23,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
     }
 
     @Override
-    public void simulate(Parameters parameters) {
+    public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
 
         if (new File(path + "/data").exists()) {
