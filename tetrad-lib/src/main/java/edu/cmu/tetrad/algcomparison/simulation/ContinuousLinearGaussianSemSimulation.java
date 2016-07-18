@@ -18,7 +18,7 @@ public class ContinuousLinearGaussianSemSimulation implements Simulation {
     private List<DataSet> dataSets;
 
     @Override
-    public void simulate(Parameters parameters) {
+    public void createData(Parameters parameters) {
         dataSets = new ArrayList<>();
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),

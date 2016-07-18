@@ -48,7 +48,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     // Likelihood function
     private ConditionalGaussianLikelihood likelihood;
 
-
     public IndTestConditionalGaussianLrt(DataSet data, double alpha) {
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
@@ -97,7 +96,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         double lik = ret1.getLik() - ret2.getLik();
         double dof = ret1.getDof() - ret2.getDof();
 
-        if (dof <= 0) dof = 0;
+        if (dof <= 1) dof = 1;
 
         double p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(2.0 * lik);
 

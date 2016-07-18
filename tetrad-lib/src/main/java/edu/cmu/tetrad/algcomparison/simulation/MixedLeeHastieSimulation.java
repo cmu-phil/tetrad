@@ -22,7 +22,7 @@ public class MixedLeeHastieSimulation implements Simulation {
     private Graph graph;
 
     @Override
-    public void simulate(Parameters parameters) {
+    public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"), parameters.getInt("numLatents"),
@@ -37,7 +37,6 @@ public class MixedLeeHastieSimulation implements Simulation {
             dataSets.add(dataSet);
         }
     }
-
 
     @Override
     public Graph getTrueGraph() {
@@ -65,6 +64,7 @@ public class MixedLeeHastieSimulation implements Simulation {
         parameters.add("maxOutdegree");
         parameters.add("numRuns");
         parameters.add("sampleSize");
+        parameters.add("numCategories");
         return parameters;
     }
 

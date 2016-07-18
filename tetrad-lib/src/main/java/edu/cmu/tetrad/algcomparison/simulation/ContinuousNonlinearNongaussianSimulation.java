@@ -16,7 +16,7 @@ public class ContinuousNonlinearNongaussianSimulation implements Simulation {
     private List<DataSet> dataSets;
 
     @Override
-    public void simulate(Parameters parameters) {
+    public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),

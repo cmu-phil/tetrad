@@ -19,7 +19,7 @@ public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
     private List<DataSet> dataSets;
 
     @Override
-    public void simulate(Parameters parameters) {
+    public void createData(Parameters parameters) {
         dataSets = new ArrayList<>();
         this.graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
                 parameters.getInt("numEdges"));

@@ -19,7 +19,7 @@ public class DiscreteBayesNetSimulation implements Simulation {
     private Graph graph;
 
     @Override
-    public void simulate(Parameters parameters) {
+    public void createData(Parameters parameters) {
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),

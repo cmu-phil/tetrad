@@ -15,7 +15,7 @@ public interface Simulation {
     /**
      * Creates a data set and simulates data.
      */
-    void simulate(Parameters parameters);
+    void createData(Parameters parameters);
 
     /**
      * @return The number of data sets to simulate.

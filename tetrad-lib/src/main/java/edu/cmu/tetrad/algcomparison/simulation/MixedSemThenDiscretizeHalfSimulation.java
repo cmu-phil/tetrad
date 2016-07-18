@@ -21,7 +21,7 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
     private List<DataSet> dataSets;
 
     @Override
-    public void simulate(Parameters parameters) {
+    public void createData(Parameters parameters) {
         this.graph = GraphUtils.scaleFreeGraph(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
