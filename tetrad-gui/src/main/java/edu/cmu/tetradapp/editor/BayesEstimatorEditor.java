@@ -86,15 +86,15 @@ public class BayesEstimatorEditor extends JPanel {
 
         JScrollPane wizardScroll = new JScrollPane(getWizard());
 
-        BayesProperties properties = new BayesProperties(dataSet, graph);
+        BayesProperties properties = new BayesProperties(dataSet);
         properties.setGraph(graph);
 
         StringBuilder buf = new StringBuilder();
         buf.append("\nP-value = ").append(properties.getLikelihoodRatioP());
 //        buf.append("\nP-value = ").append(properties.getVuongP());
-        buf.append("\nDf = ").append(properties.getPValueDf());
+        buf.append("\nDf = ").append(properties.getDof());
         buf.append("\nChi square = ")
-                .append(nf.format(properties.getPValueChisq()));
+                .append(nf.format(properties.getChisq()));
         buf.append("\nBIC score = ").append(nf.format(properties.getBic()));
         buf.append("\n\nH0: Complete graph.");
 

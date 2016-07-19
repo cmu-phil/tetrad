@@ -25,7 +25,8 @@ public class MixedLeeHastieSimulation implements Simulation {
     public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"), parameters.getInt("numLatents"),
+                parameters.getInt("numMeasures"),
+                parameters.getInt("numLatents"),
                 parameters.getInt("numEdges"),
                 parameters.getInt("maxDegree"),
                 parameters.getInt("maxIndegree"),

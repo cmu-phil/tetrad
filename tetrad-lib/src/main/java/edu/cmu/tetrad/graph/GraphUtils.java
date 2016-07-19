@@ -313,7 +313,7 @@ public final class GraphUtils {
         long size = (long) nodes.size();
 
         if (numEdges < 0 || numEdges > size * (size - 1)) {
-            throw new IllegalArgumentException("NumEdges must be "
+            throw new IllegalArgumentException("numEdges must be "
                     + "greater than 0 and <= (#nodes)(#nodes - 1) / 2: "
                     + numEdges);
         }

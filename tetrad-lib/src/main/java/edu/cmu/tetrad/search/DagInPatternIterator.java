@@ -83,15 +83,15 @@ public class DagInPatternIterator {
             throw new IllegalArgumentException("The pattern already violates that knowledge.");
         }
 
-        for (Edge edge : pattern.getEdges()) {
-            if (Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge)) {
-                continue;
-            }
-
-            if (Edges.isBidirectedEdge(edge)) {
-                continue;
-            }
-        }
+//        for (Edge edge : pattern.getEdges()) {
+//            if (Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge)) {
+//                continue;
+//            }
+//
+//            if (Edges.isBidirectedEdge(edge)) {
+//                continue;
+//            }
+//        }
 
         HashMap<Graph, Set<Edge>> changedEdges = new HashMap<Graph, Set<Edge>>();
         changedEdges.put(pattern, new HashSet<Edge>());
@@ -175,7 +175,7 @@ public class DagInPatternIterator {
         private boolean triedRight = false;
         private IKnowledge knowledge;
         private Map<Graph, Set<Edge>> changedEdges = new HashMap<Graph, Set<Edge>>();
-        private boolean allowArbitraryOrientation = false;
+        private boolean allowArbitraryOrientation = true;
 
         public DecoratedGraph(Graph graph, IKnowledge knowledge, Map<Graph, Set<Edge>> changedEdges, boolean allowArbitraryOrientation) {
             this.graph = graph;

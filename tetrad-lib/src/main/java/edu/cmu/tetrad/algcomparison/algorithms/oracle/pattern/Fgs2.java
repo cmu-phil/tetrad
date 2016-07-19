@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * FGS (the heuristic version).
+ *
  * @author jdramsey
  */
 public class Fgs2 implements Algorithm {
@@ -52,7 +53,7 @@ public class Fgs2 implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS using " + score.getDescription();
+        return "FGS2 using " + score.getDescription();
     }
 
     @Override
@@ -66,4 +67,5 @@ public class Fgs2 implements Algorithm {
         parameters.add("penaltyDiscount");
         parameters.add("fgsDepth");
         return parameters;
-    }}
+    }
+}

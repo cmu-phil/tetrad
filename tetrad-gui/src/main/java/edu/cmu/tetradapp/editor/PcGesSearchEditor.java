@@ -341,9 +341,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Pattern pattern = new Pattern(resultGraph);
-            PatternToDag ptd = new PatternToDag(pattern);
-            Graph dag = ptd.patternToDagMeek();
+            Graph dag = SearchGraphUtils.dagFromPattern(resultGraph);
 
             DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
             String report;
@@ -495,18 +493,23 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         }
 
 
-        BayesProperties properties = new BayesProperties(dataSet, dag);
-        properties.setGraph(dag);
-
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(4);
 
         StringBuilder buf = new StringBuilder();
-        buf.append("\nP-value = ").append(properties.getLikelihoodRatioP());
-        buf.append("\nDf = ").append(properties.getPValueDf());
-        buf.append("\nChi square = ")
-                .append(nf.format(properties.getPValueChisq()));
-        buf.append("\nBIC score = ").append(nf.format(properties.getBic()));
+
+        BayesProperties properties = new BayesProperties(dataSet);
+        properties.setGraph(dag);
+
+        double p = properties.getLikelihoodRatioP();
+        double chisq = properties.getChisq();
+        double bic = properties.getBic();
+        int dof = properties.getDof(dag);
+
+        buf.append("\nP  = ").append(p);
+        buf.append("\nDOF = ").append(dof);
+        buf.append("\nChiSq = ").append(nf.format(chisq));
+        buf.append("\nBIC = ").append(nf.format(bic));
         buf.append("\n\nH0: Completely disconnected graph.");
 
         return buf.toString();
@@ -642,15 +645,17 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             public void actionPerformed(ActionEvent e) {
                 Graph graph = new EdgeListGraph(getGraph());
 
-                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
-                for (Edge edge : graph.getEdges()) {
-                    if (Edges.isBidirectedEdge(edge)) {
-                        graph.removeEdge(edge);
-                    }
-                }
+//                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
+//                for (Edge edge : graph.getEdges()) {
+//                    if (Edges.isBidirectedEdge(edge)) {
+//                        graph.removeEdge(edge);
+//                    }
+//                }
 
-                PatternToDag search = new PatternToDag(new Pattern(graph));
-                Graph dag = search.patternToDagMeek();
+                Graph dag = SearchGraphUtils.dagFromPattern(graph);
+
+//                PatternToDag search = new PatternToDag(new Pattern(graph));
+//                Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
