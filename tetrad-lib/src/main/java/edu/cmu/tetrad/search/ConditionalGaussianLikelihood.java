@@ -95,7 +95,7 @@ public class ConditionalGaussianLikelihood {
             nodesHash.put(v, j);
         }
 
-        this.adTree = new AdLeafTree(dataSet);
+        this.adTree = AdTrees.getAdLeafTree(dataSet);//   new AdLeafTree(dataSet);
     }
 
     private int getDof2(int i, int[] parents) {

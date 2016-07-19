@@ -976,7 +976,8 @@ public class Comparison {
 
         @Override
         public Graph getTrueGraph() {
-            return  new EdgeListGraph(graph);
+            if (graph == null) return null;
+            else return new EdgeListGraph(graph);
         }
 
         @Override

@@ -54,7 +54,8 @@ public final class TestBayesBicScorer  {
         int n = 1000;
         DataSet dataSet2Discrete = bayesIm2.simulateData(n, false);
 
-        BayesProperties scorer = new BayesProperties(dataSet2Discrete, graph1);
+        BayesProperties scorer = new BayesProperties(dataSet2Discrete);
+        scorer.setGraph(graph1);
         double likelihoodRatioP = scorer.getLikelihoodRatioP();
         assertEquals(.000, likelihoodRatioP, 0.001);
     }

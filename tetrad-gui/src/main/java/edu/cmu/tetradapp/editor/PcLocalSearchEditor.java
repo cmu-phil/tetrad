@@ -339,7 +339,7 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
         }
 
 
-        BayesProperties properties = new BayesProperties(dataSet, dag);
+        BayesProperties properties = new BayesProperties(dataSet);
         properties.setGraph(dag);
 
         NumberFormat nf = NumberFormat.getInstance();
@@ -347,9 +347,9 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
 
         StringBuilder buf = new StringBuilder();
         buf.append("\nP-value = ").append(properties.getLikelihoodRatioP());
-        buf.append("\nDf = ").append(properties.getPValueDf());
+        buf.append("\nDf = ").append(properties.getDof());
         buf.append("\nChi square = ")
-                .append(nf.format(properties.getPValueChisq()));
+                .append(nf.format(properties.getChisq()));
         buf.append("\nBIC score = ").append(nf.format(properties.getBic()));
         buf.append("\n\nH0: Completely disconnected graph.");
 

@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,26 +39,50 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public final class BayesProperties {
-    public interface Estimator {
-        BayesIm estimate(BayesPm bayesPm, DataSet dataSet);
-    }
-
     private DataSet dataSet;
     private BayesPm bayesPm;
     private Graph graph;
     private MlBayesIm blankBayesIm;
-    private int pValueDf;
+    private int dof;
     private double chisq;
-    private Estimator estimator = new Estimator() {
-        public BayesIm estimate(BayesPm bayesPm, DataSet dataSet) {
-            MlBayesEstimator estimator = new MlBayesEstimator();
-            return estimator.estimate(bayesPm, dataSet);
-        }
-    };
+    private MlBayesEstimator estimator;
 
-    public BayesProperties(DataSet dataSet, Graph graph) {
-        setDataSet(dataSet);
-        setGraph(graph);
+    // Indices of variables.
+    private Map<String, Integer> nodesHash;
+
+    // Discrete data only.
+    private int[][] discreteData;
+
+    public BayesProperties(DataSet dataSet) {
+        if (dataSet == null) {
+            throw new NullPointerException();
+        }
+
+        this.dataSet = dataSet;
+        List<Node> variables = dataSet.getVariables();
+
+        discreteData = new int[dataSet.getNumColumns()][];
+
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            Node v = dataSet.getVariable(j);
+
+            if (v instanceof DiscreteVariable) {
+                int[] col = new int[dataSet.getNumRows()];
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    col[i] = dataSet.getInt(i, j);
+                }
+
+                discreteData[j] = col;
+            }
+        }
+
+        nodesHash = new HashMap<>();
+
+        for (int j = 0; j < variables.size(); j++) {
+            Node v = variables.get(j);
+            nodesHash.put(v.getName(), j);
+        }
     }
 
     public final void setGraph(Graph graph) {
@@ -93,8 +116,12 @@ public final class BayesProperties {
         }
 
         this.graph = graph;
-        this.bayesPm = bayesPm;
         this.blankBayesIm = new MlBayesIm(bayesPm);
+        this.dof = -1;
+        this.chisq = Double.NaN;
+        this.bayesPm = bayesPm;
+        this.estimator = new MlBayesEstimator();
+
     }
 
     /**
@@ -103,7 +130,29 @@ public final class BayesProperties {
      * www.cs.cmu.edu/~awm.
      */
     public final double getBic() {
-        return -(logProbDataGivenStructure() - parameterPenalty());
+        return -(2 * getLikelihood(graph) - getDof(graph));
+    }
+
+    public double getLikelihood(Graph graph) {
+        BayesPm pm = new BayesPm(graph);
+        BayesIm im = new MlBayesEstimator().estimate(pm, dataSet);
+        double lik = 0.0;
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                int[] parents = im.getParents(j);
+                int[] values = new int[parents.length];
+
+                for (int k = 0; i < parents.length; i++) {
+                    values[k] = dataSet.getInt(i, parents[k]);
+                }
+
+                double p = im.getProbability(j, im.getRowIndex(j, values), dataSet.getInt(i, j));
+                lik += Math.log(p);
+            }
+        }
+
+        return lik;
     }
 
     /**
@@ -119,252 +168,40 @@ public final class BayesProperties {
         for (Node node : nodes) {
             graph0.addNode(node);
         }
-        for (int i = 0; i < nodes.size() - 1; i++) {
-            for (int j = i + 1; j <= nodes.size() - 1; j++)
-                graph0.addDirectedEdge(nodes.get(i), nodes.get(j));
-        }
-        BayesProperties scorer1 = new BayesProperties(getDataSet(), graph1);
-        BayesProperties scorer0 = new BayesProperties(getDataSet(), graph0);
 
-        double l1 = scorer1.logProbDataGivenStructure();
-        double l0 = scorer0.logProbDataGivenStructure();
+//        for (int i = 0; i < nodes.size() - 1; i++) {
+//            for (int j = i + 1; j <= nodes.size() - 1; j++)
+//                graph0.addDirectedEdge(nodes.get(i), nodes.get(j));
+//        }
 
-        double chisq = 2.0 * (l0 - l1);
-        int n1 = scorer1.numNonredundantParams();
-        int n0 = scorer0.numNonredundantParams();
+        double l0 = getLikelihood(graph0);
+        int n0 = getDof(graph0);
 
-        int df = n0 - n1;
-        double pValue = (1.0 - ProbUtils.chisqCdf(chisq, df));
+        double l1 = getLikelihood(graph1);
+        int n1 = getDof(graph1);
 
-        //        System.out.println("\n*** P Value Calculation ***");
-        //        System.out.println("l1 = " + l1 + " l0 = " + l0 + " l0 - l1 = " + (l0 - l1));
-        //        System.out.println("n1 = " + n1 + " n0 = " + n0 + " n1 - n0 = " + (n1 - n0));
-        //        System.out.println("chisq = " + chisq + " pvalue = " + pValue);
+        double chisq = 2.0 * Math.abs(l0 - l1);
 
-        this.pValueDf = df;
+        int dof = Math.abs(n1 - n0);
+        double p = (1.0 - ProbUtils.chisqCdf(chisq, dof));
+
+        System.out.println(p + " chisq = " + chisq);
+
+        this.dof = dof;
         this.chisq = chisq;
-        return pValue;
+        return p;
     }
 
-//    public final double getLikelihoodRatioP() {
-//        Graph graph1 = getGraph();
-//        List<Node> nodes = getGraph().getNodes();
-//
-//        // Null hypothesis = no edges.
-//        Graph graph0 = new Dag();
-//
-//        for (Node node : nodes) {
-//            graph0.addNode(node);
-//        }
-//
-//        BayesProperties scorer1 = new BayesProperties(getDataSet(), graph1);
-//        BayesProperties scorer0 = new BayesProperties(getDataSet(), graph0);
-//
-//        double l1 = scorer1.logProbDataGivenStructure();
-//        double l0 = scorer0.logProbDataGivenStructure();
-//
-//        System.out.println("l1 = " + l1);
-//        System.out.println("l0 = " + l0);
-//
-//        double chisq = -2.0 * (l0 - l1);
-//        int n1 = scorer1.numNonredundantParams();
-//        int n0 = scorer0.numNonredundantParams();
-//
-//        int df = n1 - n0;
-//        double pValue = (1.0 - ProbUtils.chisqCdf(chisq, df));
-//
-//        //        System.out.println("\n*** P Value Calculation ***");
-//        //        System.out.println("l1 = " + l1 + " l0 = " + l0 + " l0 - l1 = " + (l0 - l1));
-//        //        System.out.println("n1 = " + n1 + " n0 = " + n0 + " n1 - n0 = " + (n1 - n0));
-//        //        System.out.println("chisq = " + chisq + " pvalue = " + pValue);
-//
-//        this.pValueDf = df;
-//        this.chisq = chisq;
-//        return pValue;
-//    }
+    public int getDof(Graph graph) {
+        BayesPm pm = new BayesPm(graph);
+        BayesIm im = new MlBayesEstimator().estimate(pm, dataSet);
 
-//    public final double getVuongP() {
-//        Graph gg = getGraph();
-//        List<Node> nodes = getGraph().getNodes();
-//
-//        // Null hypothesis = no edges.
-//        Graph gf = new Dag();
-//
-//        for (Node node : nodes) {
-//            gf.addNode(node);
-//        }
-//
-//        BayesProperties scorerf = new BayesProperties(getDataSet(), gg);
-//        BayesProperties scorerg = new BayesProperties(getDataSet(), gf);
-//
-//        double[] scoresf = scorerf.logsProbDataGivenStructure();
-//        double[] scoresg = scorerg.logsProbDataGivenStructure();
-//
-//        int n = getDataSet().getNumRows();
-//
-//        double v1 = 0.0;
-//
-//        for (int i = 0; i < n; i++) {
-//            double v = scoresg[i] - scoresf[i];
-//            v1 += (v * v);
-//        }
-//
-//        double lf = 0.0;
-//
-//        for (int i = 0; i < n; i++) {
-//            lf += scoresg[i];
-//        }
-//
-//        double lg = 0.0;
-//
-//        for (int i = 0; i < n; i++) {
-//            lg += scoresf[i];
-//        }
-//
-//        double lr = 0.0;
-//
-//        for (int i = 0; i < n; i++) {
-//            lr += scoresg[i] - scoresf[i];
-//        }
-//
-////        double lr = lf - lf;
-//
-//        double w2 = v1 / n - Math.pow(lr / n, 2);
-//
-//
-//        double stat = (lr) / (Math.pow((double) n * w2, 0.5));
-//
-//        System.out.println("v1 = " + v1 + " lr = " + lr + " w2 = " + w2 + " stat = " + stat);
-//
-//        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(stat)));
-//    }
-
-    /**
-     * Calculates  log(P(Data | structure)) using Andrew Moore's formula.
-     */
-//    public final double logProbDataGivenStructure2() {
-//        DataSetProbs probs = new DataSetProbs(getDataSet());
-//
-//        double r = dataSet.getNumRows();
-//        double score = 0.0;
-//
-//        List<String> dataVarNames = dataSet.getVariableNames();
-//
-//        for (int j = 0; j < blankBayesIm.getNumNodes(); j++) {
-//
-//            rows:
-//            for (int k = 0; k < blankBayesIm.getNumRows(j); k++) {
-//
-//                // Calculate probability of this combination of parent
-//                // values.
-//                Proposition condition = Proposition.tautology(blankBayesIm);
-//
-//                int[] parents = blankBayesIm.getParents(j);
-//                int[] parentValues = blankBayesIm.getParentValues(j, k);
-//
-//                for (int v = 0; v < blankBayesIm.getNumParents(j); v++) {
-//                    int parent = parents[v];
-//                    int dataVar = translate(parent, dataVarNames);
-//                    condition.setCategory(dataVar, parentValues[v]);
-//                }
-//
-//                double p1 = probs.getProb(condition);
-//
-//                for (int v = 0; v < blankBayesIm.getNumColumns(j); v++) {
-//                    Proposition assertion = Proposition.tautology(blankBayesIm);
-//
-//                    int _j = translate(j, dataVarNames);
-//                    assertion.setCategory(_j, v);
-//                    double p2 = probs.getConditionalProb(assertion, condition);
-//
-//                    if (Double.isNaN(p2) || p2 == 0.) {
-//                        continue rows;
-//                    }
-//
-//                    double numCases = r * p1 * p2;
-//                    score += numCases * Math.log(p2);
-//                }
-//            }
-//        }
-//
-//        return score;
-//    }
-
-    public final BayesPm getBayesPm() {
-        return bayesPm;
-    }
-
-    public final int getPValueDf() {
-        return pValueDf;
-    }
-
-    public final double getPValueChisq() {
-        return chisq;
-    }
-
-    public Estimator getEstimator() {
-        return estimator;
-    }
-
-    public void setEstimator(Estimator estimator) {
-        this.estimator = estimator;
-    }
-
-    //=========================================PRIVATE METHODS===================================//
-
-    private double logProbDataGivenStructure() {
-        BayesIm bayesIm = this.estimator.estimate(bayesPm, dataSet);
-        BayesImProbs probs = new BayesImProbs(bayesIm);
-        List<Node> variables = bayesIm.getVariables();
-        DataSet reorderedDataSet = dataSet.subsetColumns(variables);
-
-        int n = reorderedDataSet.getNumRows();
-        int m = reorderedDataSet.getNumColumns();
-
-        double score = 0.0;
-        int[] _case = new int[m];
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                _case[j] = reorderedDataSet.getInt(i, j);
-            }
-
-            score += Math.log(probs.getCellProb(_case));
-        }
-
-        return score;
-    }
-
-//    private double[] logsProbDataGivenStructure() {
-//        BayesIm bayesIm = this.estimator.estimate(bayesPm, dataSet);
-//        BayesImProbs probs = new BayesImProbs(bayesIm);
-//        List<Node> variables = bayesIm.getVariables();
-//        DataSet reorderedDataSet = dataSet.subsetColumns(variables);
-//
-//        int n = reorderedDataSet.getNumRows();
-//        int m = reorderedDataSet.getNumColumns();
-//
-//        double[] scores = new double[n];
-//        int[] _case = new int[m];
-//
-//        for (int i = 0; i < n; i++) {
-//            for (int j = 0; j < m; j++) {
-//                _case[j] = reorderedDataSet.getInt(i, j);
-//            }
-//
-//            scores[i] = Math.log(probs.getCellProb(_case));
-//        }
-//
-//        return scores;
-//    }
-
-    private int numNonredundantParams() {
         setGraph(getGraph());
         int numParams = 0;
 
-        for (int j = 0; j < blankBayesIm.getNumNodes(); j++) {
-            int numColumns = blankBayesIm.getNumColumns(j);
-            int numRows = blankBayesIm.getNumRows(j);
+        for (int j = 0; j < im.getNumNodes(); j++) {
+            int numColumns = im.getNumColumns(j);
+            int numRows = im.getNumRows(j);
 
             if (numColumns > 1) {
                 numParams += (numColumns - 1) * numRows;
@@ -374,8 +211,55 @@ public final class BayesProperties {
         return numParams;
     }
 
+
+    public final BayesPm getBayesPm() {
+        return bayesPm;
+    }
+
+    public final int getDof() {
+        return dof;
+    }
+
+    public final double getChisq() {
+        return chisq;
+    }
+
+    public MlBayesEstimator getEstimator() {
+        return estimator;
+    }
+
+    public void setEstimator(MlBayesEstimator estimator) {
+        this.estimator = estimator;
+    }
+
+    //=========================================PRIVATE METHODS===================================//
+
+    private double logProbDataGivenStructure() {
+        BayesPm pm = new BayesPm(getGraph(), bayesPm);
+        BayesIm bayesIm = this.estimator.estimate(pm, dataSet);
+        BayesImProbs probs = new BayesImProbs(bayesIm);
+        List<Node> variables = bayesIm.getVariables();
+
+        int n = dataSet.getNumRows();
+        int m = dataSet.getNumColumns();
+
+        double score = 0.0;
+        int[] _case = new int[m];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                int j1 = nodesHash.get(variables.get(j).getName());
+                _case[j] = discreteData[j1][i];
+            }
+
+            score += Math.log(probs.getCellProb(_case));
+        }
+
+        return score;
+    }
+
     private double parameterPenalty() {
-        int numParams = numNonredundantParams();
+        int numParams = getDof(getGraph());
         double r = dataSet.getNumRows();
         return (double) numParams * Math.log(r) / 2.;
     }
@@ -383,25 +267,6 @@ public final class BayesProperties {
     private Graph getGraph() {
         return graph;
     }
-
-    private DataSet getDataSet() {
-        return dataSet;
-    }
-
-    private void setDataSet(DataSet dataSet) {
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
-
-        this.bayesPm = null;
-        this.blankBayesIm = null;
-        this.graph = null;
-        this.pValueDf = -1;
-        this.chisq = Double.NaN;
-
-        this.dataSet = dataSet;
-    }
-
 }
 
 
