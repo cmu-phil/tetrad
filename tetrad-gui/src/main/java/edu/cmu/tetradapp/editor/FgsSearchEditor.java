@@ -747,18 +747,17 @@ public class FgsSearchEditor extends AbstractSearchEditor
         StringBuilder buf = new StringBuilder();
 
         BayesProperties properties = new BayesProperties(dataSet);
-        properties.setGraph(dag);
 
-        double p = properties.getLikelihoodRatioP();
+        double p = properties.getLikelihoodRatioP(dag);
         double chisq = properties.getChisq();
         double bic = properties.getBic();
-        int dof = properties.getDof(dag);
+        double dof = properties.getDof();
 
         buf.append("\nP  = ").append(p);
         buf.append("\nDOF = ").append(dof);
         buf.append("\nChiSq = ").append(nf.format(chisq));
         buf.append("\nBIC = ").append(nf.format(bic));
-        buf.append("\n\nH0: Completely disconnected graph.");
+        buf.append("\n\nH0: Complete DAG.");
 
         return buf.toString();
     }

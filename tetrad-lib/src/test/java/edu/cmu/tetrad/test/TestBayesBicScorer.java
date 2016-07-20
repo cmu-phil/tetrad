@@ -42,22 +42,21 @@ public final class TestBayesBicScorer  {
 
     @Test
     public void testPValue() {
-        RandomUtil.getInstance().setSeed(492834924L);
+//        RandomUtil.getInstance().setSeed(492834924L);
 
-        Graph graph1 = GraphConverter.convert("X1,X2-->X3,X4,X5-->X6,X7,X8");
-        Graph graph2 = GraphConverter.convert("X1,X2-->X3,X4,X5,X6,X7-->X8");
+//        Graph graph = GraphConverter.convert("X1,X2,X4,X4,X5,X6,X7,X8");
+        Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X6,X6-->X7,X9,X10,X11,X12");
+//        Graph graph2 = GraphConverter.convert("X1,X2-->X3,X4,X5-->X6,X7-->X8");
 
-        Dag dag2 = new Dag(graph2);
-        BayesPm bayesPm2 = new BayesPm(dag2);
-        BayesIm bayesIm2 = new MlBayesIm(bayesPm2, MlBayesIm.RANDOM);
+        int numCategories = 4;
+        BayesPm pm = new BayesPm(graph, numCategories, numCategories);
+        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
-        int n = 1000;
-        DataSet dataSet2Discrete = bayesIm2.simulateData(n, false);
+        DataSet data = im.simulateData(1000, false);
 
-        BayesProperties scorer = new BayesProperties(dataSet2Discrete);
-        scorer.setGraph(graph1);
-        double likelihoodRatioP = scorer.getLikelihoodRatioP();
-        assertEquals(.0125, likelihoodRatioP, 0.001);
+        BayesProperties scorer = new BayesProperties(data);
+
+        scorer.getLikelihoodRatioP(graph);
     }
 
     public void testGregsBdeuStructurePrior() {
