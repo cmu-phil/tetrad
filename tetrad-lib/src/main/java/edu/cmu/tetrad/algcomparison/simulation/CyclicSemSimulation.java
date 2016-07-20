@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * @author jdramsey
  */
-public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
+public class CyclicSemSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
 

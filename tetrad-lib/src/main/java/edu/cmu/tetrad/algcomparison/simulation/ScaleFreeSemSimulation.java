@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * @author jdramsey
  */
-public class ContinuousLinearGaussianSemSimulationScaleFree implements Simulation {
+public class ScaleFreeSemSimulation implements Simulation {
     private List<DataSet> dataSets;
     private Graph graph;
 

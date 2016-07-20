@@ -24,7 +24,7 @@ package edu.cmu.tetrad.algcomparison.examples;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.algcomparison.simulation.ContinuousLinearGaussianSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 
 /**
  * An example script to save out data files and graphs from a simulation.
@@ -40,7 +40,7 @@ public class ExampleSave {
         parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
         parameters.put("sampleSize", 100, 500, 1000);
 
-        Simulation simulation = new ContinuousLinearGaussianSemSimulation();
+        Simulation simulation = new SemSimulation();
         new Comparison().saveDataSetAndGraphs("comparison/save1", simulation,
                 parameters);
     }

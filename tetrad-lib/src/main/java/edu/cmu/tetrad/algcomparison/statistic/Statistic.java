@@ -35,7 +35,7 @@ public interface Statistic {
      * that indicates how well the algorithm did on this statistic. If the statistic is already
      * between 0 and 1, you can just return the statistic. Higher numbers are better.
      * @param value The value of the statistic.
-     * @return The utility value of the statistic.
+     * @return The weight of the statistic, 0 to 1, higher is better.
      */
     double getWeight(double value);
 }
