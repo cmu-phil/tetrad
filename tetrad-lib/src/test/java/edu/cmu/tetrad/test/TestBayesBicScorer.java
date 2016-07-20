@@ -46,9 +46,9 @@ public final class TestBayesBicScorer  {
 
 //        Graph graph = GraphConverter.convert("X1,X2,X4,X4,X5,X6,X7,X8");
         Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X6,X6-->X7,X9,X10,X11,X12");
-//        Graph graph2 = GraphConverter.convert("X1,X2-->X3,X4,X5-->X6,X7-->X8");
+        Graph graph2 = GraphConverter.convert("X1,X2,X3,X7-->X6,X9,X10,X11,X12");
 
-        int numCategories = 4;
+        int numCategories = 8;
         BayesPm pm = new BayesPm(graph, numCategories, numCategories);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
@@ -56,7 +56,7 @@ public final class TestBayesBicScorer  {
 
         BayesProperties scorer = new BayesProperties(data);
 
-        scorer.getLikelihoodRatioP(graph);
+        scorer.getLikelihoodRatioP(graph2);
     }
 
     public void testGregsBdeuStructurePrior() {

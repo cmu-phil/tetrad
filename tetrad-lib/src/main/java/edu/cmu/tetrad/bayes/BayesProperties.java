@@ -109,31 +109,25 @@ public final class BayesProperties {
                 graph0.addDirectedEdge(nodes.get(i), nodes.get(j));
         }
 
-        double l0 = getLikelihood2(graph0);
-        int n0 = getDof2(graph0);
+        Ret r0 = getLikelihood2(graph0);
+        Ret r1 = getLikelihood2(graph);
 
-        double l1 = getLikelihood2(graph);
-        int n1 = getDof2(graph);
+        this.likelihood = r1.getLik();
 
-        this.likelihood = l1;
-
-        double lDiff = l0 - l1;
-
+        double lDiff = r0.getLik() - r1.getLik();
         System.out.println("lDiff = " + lDiff);
 
-        int nDiff = n0 - n1;
+        int nDiff = r0.getDof() - r1.getDof();
         System.out.println("nDiff = " + nDiff);
 
         double chisq = 2.0 * lDiff;
-        if (chisq < 0) chisq = 0;
         double dof = nDiff;
-        if (dof < .001) dof = .001;
 
         this.chisq = chisq;
         this.dof = dof;
 
         int N = dataSet.getNumRows();
-        this.bic = 2 * l1 - n1 * Math.log(N);
+        this.bic = 2 * r1.getLik() - r1.getDof() * Math.log(N);
         System.out.println("bic = " + bic);
 
         System.out.println("chisq = " + chisq);
@@ -223,8 +217,9 @@ public final class BayesProperties {
         return lik;
     }
 
-    private double getLikelihood2(Graph graph) {
+    private Ret getLikelihood2(Graph graph) {
         double lik = 0.0;
+        int dof = 0;
 
         for (Node node : graph.getNodes()) {
             List<Node> parents = graph.getParents(node);
@@ -237,10 +232,12 @@ public final class BayesProperties {
                 z[j] = variables.indexOf(getVariable(parents.get(j).getName()));
             }
 
-            lik += getLikelihoodNode(i, z);
+            Ret ret = getLikelihoodNode(i, z);
+            lik += ret.getLik();
+            dof += ret.getDof();
         }
 
-        return lik;
+        return new Ret(lik, dof);
     }
 
     private int getDof2(Graph graph) {
@@ -263,7 +260,7 @@ public final class BayesProperties {
         return dof;
     }
 
-    private double getLikelihoodNode(int node, int parents[]) {
+    private Ret getLikelihoodNode(int node, int parents[]) {
 
         // Number of categories for node.
         int c = numCategories[node];
@@ -315,18 +312,42 @@ public final class BayesProperties {
 
         //Finally, compute the score
         double lik = 0.0;
+        int dof = 0;
 
         for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+            int d = 0;
+
             for (int childValue = 0; childValue < c; childValue++) {
                 int cellCount = n_jk[rowIndex][childValue];
                 int rowCount = n_j[rowIndex];
 
                 if (cellCount == 0) continue;
                 lik += cellCount * Math.log(cellCount / (double) rowCount);
+                d++;
             }
+
+            if (d > 0) dof += c - 1;
         }
 
-        return lik;
+        return new Ret(lik, dof);
+    }
+
+    private class Ret {
+        private double lik;
+        private int dof;
+
+        public Ret(double lik, int dof) {
+            this.lik = lik;
+            this.dof = dof;
+        }
+
+        public double getLik() {
+            return lik;
+        }
+
+        public int getDof() {
+            return dof;
+        }
     }
 
     private double getDofNode(int node, int parents[]) {
