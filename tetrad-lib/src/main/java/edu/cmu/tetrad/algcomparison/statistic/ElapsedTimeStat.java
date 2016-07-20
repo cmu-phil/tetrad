@@ -26,7 +26,7 @@ public class ElapsedTimeStat implements Statistic {
     }
 
     @Override
-    public double getUtility(double value) {
-        return 1 - value;
+    public double getWeight(double value) {
+        return 1 - Math.tanh(0.001 * value);
     }
 }

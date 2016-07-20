@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * @author jdramsey
  */
-public class DiscreteBayesNetSimulation implements Simulation {
+public class BayesNetSimulation implements Simulation {
     private List<DataSet> dataSets;
     private Graph graph;
 

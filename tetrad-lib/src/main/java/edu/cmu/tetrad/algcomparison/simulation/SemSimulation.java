@@ -14,22 +14,34 @@ import java.util.List;
 /**
  * @author jdramsey
  */
-public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
+public class SemSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
 
     @Override
     public void createData(Parameters parameters) {
         dataSets = new ArrayList<>();
-        this.graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
-                parameters.getInt("numEdges"));
+
+        int numEdges = parameters.getInt("numEdges");
+
+        if (numEdges == -1) {
+            numEdges = (int) (parameters.getInt("numMeasures") * parameters.getDouble("edgeFactor"));
+        }
+
+        this.graph = GraphUtils.randomGraphRandomForwardEdges(
+                parameters.getInt("numMeasures"),
+                parameters.getInt("numLatents"),
+                numEdges,
+                parameters.getInt("maxDegree"),
+                parameters.getInt("maxIndegree"),
+                parameters.getInt("maxOutdegree"),
+                parameters.getInt("connected") == 1);
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             SemPm pm = new SemPm(graph);
             SemImInitializationParams params = new SemImInitializationParams();
-            params.setCoefRange(.2, .9);
-            params.setCoefSymmetric(true);
-            SemIm im = new SemIm(pm, params);
+            params.setVarRange(parameters.getDouble("variance"), parameters.getDouble("variance"));
+            SemIm im = new SemIm(pm);
             dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
         }
     }
@@ -53,8 +65,15 @@ public class ContinuousLinearCyclicGaussianSemSimulation implements Simulation {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("numMeasures");
+        parameters.add("numLatents");
+        parameters.add("numEdges");
+        parameters.add("edgeFactor");
+        parameters.add("maxDegree");
+        parameters.add("maxIndegree");
+        parameters.add("maxOutdegree");
         parameters.add("numRuns");
         parameters.add("sampleSize");
+        parameters.add("variance");
         return parameters;
     }
 

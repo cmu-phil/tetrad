@@ -19,32 +19,38 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.examples;
+package mycomparisons;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpc;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpcs;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pc;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pcs;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Fgs2;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
- * An example script to simulate data and run a comparison analysis on it.
  * @author jdramsey
  */
-public class ExampleCompareSimulation {
+public class RichardComparison {
     public static void main(String... args) {
+
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 10);
-        parameters.put("numMeasures", 100);
-        parameters.put("edgeFactor", 2);
-        parameters.put("sampleSize", 500);
-        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
+//        parameters.put("numRuns", 10);
+//        parameters.put("sampleSize", 50, 100, 500, 1000, 5000);
+//        parameters.put("numMeasures", 10, 50);
+//        parameters.put("edgeFactor", 2, 5);
+//        parameters.put("numCategories", 2, 4, 6);
+//        parameters.put("variance", 0.0, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5);
+//        parameters.put("percentDiscreteForMixedSimulation", 100);
+
+        parameters.put("alpha", 1e-3);
+        parameters.put("penaltyDiscount", 4);
+
+        parameters.put("fgsDepth", -1);
+        parameters.put("samplePrior", 1);
+        parameters.put("structurePrior", 1);
 
         Statistics statistics = new Statistics();
 
@@ -59,25 +65,21 @@ public class ExampleCompareSimulation {
         statistics.add(new ShdStat());
         statistics.add(new ElapsedTimeStat());
 
-        statistics.setWeight("AP", 1.0);
-        statistics.setWeight("AR", 0.5);
-
-        statistics.setSortByUtility(true);
-        statistics.setShowUtilities(true);
+        statistics.setSortByUtility(false);
+        statistics.setShowUtilities(false);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ()));
-        algorithms.add(new Pcs(new FisherZ()));
-        algorithms.add(new Cpcs(new FisherZ()));
+        algorithms.add(new Fgs2(new SemBicScore()));
+        algorithms.add(new Gfci(new SemBicScore()));
 
-        Simulations simulations = new Simulations();
+//        Simulation simulation = new ContinuousSemThenDiscretizeSimulation();
+//        new Comparison().saveDataSetAndGraphs("comparison/saveRichard2", simulation,
+//                parameters);
 
-        simulations.add(new SemSimulation());
+        new Comparison().compareAlgorithms("comparison/saveRichardContinuous",
+                "comparison/ComparisonContinuous.txt", algorithms, statistics, parameters);
 
-        new Comparison().compareAlgorithms("comparison/Comparison.txt",
-                simulations, algorithms, statistics, parameters);
     }
 }
 

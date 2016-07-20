@@ -57,7 +57,7 @@ public final class TestBayesBicScorer  {
         BayesProperties scorer = new BayesProperties(dataSet2Discrete);
         scorer.setGraph(graph1);
         double likelihoodRatioP = scorer.getLikelihoodRatioP();
-        assertEquals(.000, likelihoodRatioP, 0.001);
+        assertEquals(.0125, likelihoodRatioP, 0.001);
     }
 
     public void testGregsBdeuStructurePrior() {

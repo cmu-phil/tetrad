@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
 
 import java.util.ArrayList;
@@ -13,25 +14,22 @@ import java.util.List;
 /**
  * @author jdramsey
  */
-public class ContinuousLinearGaussianSemSimulation implements Simulation {
+public class CyclicSemSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
 
     @Override
     public void createData(Parameters parameters) {
         dataSets = new ArrayList<>();
-        this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("numEdges"),
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+        this.graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
+                parameters.getInt("numEdges"));
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             SemPm pm = new SemPm(graph);
-            SemIm im = new SemIm(pm);
+            SemImInitializationParams params = new SemImInitializationParams();
+            params.setCoefRange(.2, .9);
+            params.setCoefSymmetric(true);
+            SemIm im = new SemIm(pm, params);
             dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
         }
     }
@@ -55,11 +53,6 @@ public class ContinuousLinearGaussianSemSimulation implements Simulation {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("numMeasures");
-        parameters.add("numLatents");
-        parameters.add("numEdges");
-        parameters.add("maxDegree");
-        parameters.add("maxIndegree");
-        parameters.add("maxOutdegree");
         parameters.add("numRuns");
         parameters.add("sampleSize");
         return parameters;

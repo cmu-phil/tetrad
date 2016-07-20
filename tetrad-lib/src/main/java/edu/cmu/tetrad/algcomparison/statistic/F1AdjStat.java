@@ -36,7 +36,7 @@ public class F1AdjStat implements Statistic {
     }
 
     @Override
-    public double getUtility(double value) {
+    public double getWeight(double value) {
         return value;
     }
 }

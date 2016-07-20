@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * @author jdramsey
  */
-public class ContinuousNonlinearNongaussianSimulation implements Simulation {
+public class GeneralSemSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
 
