@@ -16,20 +16,26 @@ import java.util.List;
 /**
  * @author jdramsey
  */
-public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
+public class ContinuousSemThenDiscretizeSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
 
     @Override
     public void createData(Parameters parameters) {
-        this.graph = GraphUtils.scaleFreeGraph(
+        int numEdges = parameters.getInt("numEdges");
+
+        if (numEdges == -1) {
+            numEdges = (int) (parameters.getInt("numMeasures") * parameters.getDouble("edgeFactor"));
+        }
+
+        this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
-                parameters.getDouble("scaleFreeAlpha"),
-                parameters.getDouble("scaleFreeBeta"),
-                parameters.getDouble("scaleFreeDeltaIn"),
-                parameters.getInt("scaleFreeDeltaOut")
-        );
+                numEdges,
+                parameters.getInt("maxDegree"),
+                parameters.getInt("maxIndegree"),
+                parameters.getInt("maxOutdegree"),
+                parameters.getInt("connected") == 1);
 
         dataSets = new ArrayList<>();
 
@@ -53,13 +59,15 @@ public class MixedSemThenDiscretizeHalfSimulation implements Simulation {
         List<String> parameters = new ArrayList<>();
         parameters.add("numMeasures");
         parameters.add("numLatents");
-        parameters.add("scaleFreeAlpha");
-        parameters.add("scaleFreeBeta");
-        parameters.add("scaleFreeDeltaIn");
-        parameters.add("scaleFreeDeltaOut");
+        parameters.add("numEdges");
+        parameters.add("edgeFactor");
+        parameters.add("maxDegree");
+        parameters.add("maxIndegree");
         parameters.add("maxOutdegree");
         parameters.add("numRuns");
         parameters.add("sampleSize");
+        parameters.add("variance");
+        parameters.add("numCategories");
         return parameters;
     }
 

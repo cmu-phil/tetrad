@@ -140,8 +140,8 @@ public class Comparison {
 
                     for (int h = 0; h < dims.length; h++) {
                         String p = varyingParameters.get(h);
-                        Number[] values = parameters.getValues(p);
-                        Number value = values[choice[h]];
+                        Object[] values = parameters.getValues(p);
+                        Object value = values[choice[h]];
                         wrapper.setValue(p, value);
                     }
 
@@ -165,6 +165,8 @@ public class Comparison {
                     }
 
                     algorithmSimulationWrappers.add(wrapper);
+                } else {
+                    System.out.println("Type mismatch; skipping algorithm/simulation " + algorithmWrapper.getDescription());
                 }
             }
         }
@@ -255,7 +257,7 @@ public class Comparison {
                 String statName = stat.getAbbreviation();
                 double weight = statistics.getWeight(stat);
                 if (weight != 0.0) {
-                    out.println("    " + weight + " * Utility(" + statName + ")");
+                    out.println("    " + weight + " * Weight(" + statName + ")");
                 }
             }
 
@@ -382,8 +384,8 @@ public class Comparison {
 
                 for (int h = 0; h < dims.length; h++) {
                     String p = varyingParameters.get(h);
-                    Number[] values = parameters.getValues(p);
-                    Number value = values[choice[h]];
+                    Object[] values = parameters.getValues(p);
+                    Object value = values[choice[h]];
                     wrapper.setValue(p, value);
                 }
 
@@ -832,7 +834,7 @@ public class Comparison {
 
     private class AlgorithmWrapper implements Algorithm {
         private Algorithm algorithm;
-        private Map<String, Number> overriddenParameters = new LinkedHashMap<>();
+        private Map<String, Object> overriddenParameters = new LinkedHashMap<>();
 
         public AlgorithmWrapper(Algorithm algorithm) {
             this.algorithm = algorithm;
@@ -876,11 +878,11 @@ public class Comparison {
             return new ArrayList<>(overriddenParameters.keySet());
         }
 
-        public void setValue(String parameter, Number value) {
+        public void setValue(String parameter, Object value) {
             this.overriddenParameters.put(parameter, value);
         }
 
-        public Number getValue(String parameter) {
+        public Object getValue(String parameter) {
             return overriddenParameters.get(parameter);
         }
 
@@ -890,7 +892,7 @@ public class Comparison {
     }
 
     private class AlgorithmSimulationWrapper implements Algorithm {
-        private Map<String, Number> overriddenParameters = new LinkedHashMap<>();
+        private Map<String, Object> overriddenParameters = new LinkedHashMap<>();
         private Simulation simulation;
         private AlgorithmWrapper algorithmWrapper;
 
@@ -928,15 +930,15 @@ public class Comparison {
             return new ArrayList<>(overriddenParameters.keySet());
         }
 
-        public void setValue(String parameter, Number value) {
+        public void setValue(String parameter, Object value) {
             this.overriddenParameters.put(parameter, value);
         }
 
-        public Number getValue(String parameter) {
+        public Object getValue(String parameter) {
             return overriddenParameters.get(parameter);
         }
 
-        public Map<String, Number> getOverriddenParametersMap() {
+        public Map<String, Object> getOverriddenParametersMap() {
             return overriddenParameters;
         }
 
@@ -951,7 +953,7 @@ public class Comparison {
 
     private class SimulationWrapper implements Simulation {
         private Simulation simulation;
-        private Map<String, Number> overriddenParameters = new LinkedHashMap<>();
+        private Map<String, Object> overriddenParameters = new LinkedHashMap<>();
         private Graph graph;
         private List<DataSet> dataSets;
 
@@ -1000,15 +1002,15 @@ public class Comparison {
             return simulation.getParameters();
         }
 
-        public Map<String, Number> getOverriddenParameters() {
+        public Map<String, Object> getOverriddenParameters() {
             return overriddenParameters;
         }
 
-        public void setValue(String parameter, Number value) {
+        public void setValue(String parameter, Object value) {
             this.overriddenParameters.put(parameter, value);
         }
 
-        public Number getValue(String parameter) {
+        public Object getValue(String parameter) {
             return overriddenParameters.get(parameter);
         }
 

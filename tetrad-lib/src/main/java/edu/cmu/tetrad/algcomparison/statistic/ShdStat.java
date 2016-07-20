@@ -31,7 +31,7 @@ public class ShdStat implements Statistic {
     /**
      * This will be given the index of the SHD stat.
      */
-    public double getUtility(double value) {
-        return 1.0 - value;
+    public double getWeight(double value) {
+        return 1.0 - Math.tanh(0.001 * value);
     }
 }

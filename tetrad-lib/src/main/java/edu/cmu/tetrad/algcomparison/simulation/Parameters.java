@@ -9,15 +9,16 @@ import java.util.*;
  * @author jdramsey
  */
 public class Parameters {
-    private Map<String, Number[]> parameters = new LinkedHashMap<>();
+    private Map<String, Object[]> parameters = new LinkedHashMap<>();
     private Set<String> usedParameters = new LinkedHashSet<>();
-    private Map<String, Number> overriddenParameter = new HashMap<>();
+    private Map<String, Object> overriddenParameter = new HashMap<>();
 
     public Parameters() {
 
         // Defaults
         put("numMeasures", 10);
-        put("numEdges", 10);
+        put("numEdges", -1);
+        put("edgeFactor", 1);
         put("numLatents", 0);
         put("maxDegree", 10);
         put("maxIndegree", 10);
@@ -29,6 +30,11 @@ public class Parameters {
         put("penaltyDiscount", 4);
         put("fgsDepth", -1);
         put("depth", -1);
+        put("coefLow", 0.5);
+        put("coefHigh", 1.5);
+        put("variance", -1);
+        put("varianceLow", 1.0);
+        put("varianceHigh", 3.0);
         put("printWinners", 0);
         put("printAverages", 0);
         put("printAverageTables", 1);
@@ -60,7 +66,8 @@ public class Parameters {
      */
     public int getInt(String name) {
         if (overriddenParameter.containsKey(name)) {
-            return overriddenParameter.get(name).intValue();
+            Object o = overriddenParameter.get(name);
+            return ((Number) o).intValue();
         }
 
         if (getNumValues(name) != 1) {
@@ -68,7 +75,8 @@ public class Parameters {
         }
 
         usedParameters.add(name);
-        return parameters.get(name)[0].intValue();
+        Object o = parameters.get(name)[0];
+        return ((Number) o).intValue();
     }
 
     /**
@@ -78,23 +86,54 @@ public class Parameters {
      */
     public double getDouble(String name) {
         if (overriddenParameter.containsKey(name)) {
-            return overriddenParameter.get(name).doubleValue();
+            Object o = overriddenParameter.get(name);
+            return ((Number) o).doubleValue();
         }
 
         if (getNumValues(name) != 1) {
             throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
         }
         usedParameters.add(name);
-        return parameters.get(name)[0].doubleValue();
+        Object o = parameters.get(name)[0];
+        return ((Number) o).doubleValue();
+    }
+
+    /**
+     * Returns the string values of the given parameter.
+     * @param name The name of the parameter.
+     * @return The double value of this parameter.
+     */
+    public String getString(String name) {
+        if (overriddenParameter.containsKey(name)) {
+            Object o = overriddenParameter.get(name);
+            return (String) o;
+        }
+
+        if (getNumValues(name) != 1) {
+            throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+        }
+        usedParameters.add(name);
+        Object o = parameters.get(name)[0];
+        return (String) o;
+    }
+
+
+    /**
+     * Sets the value(s) of the given parameter to a list of strings.
+     * @param name The name of the parameter.
+     * @param n A list of values for the parameter.
+     */
+    public void put(String name, Object...n) {
+        parameters.put(name, n);
     }
 
     /**
      * Sets the value(s) of the given parameter to a list of values.
      * @param name The name of the parameter.
-     * @param n A lsit of values for the parameter.
+     * @param s A list of strings for the parameter.
      */
-    public void put(String name, Number...n) {
-        parameters.put(name, n);
+    public void put(String name, String...s) {
+        parameters.put(name, s);
     }
 
     /**
@@ -103,6 +142,7 @@ public class Parameters {
      * @return The number of values set for that parameter.
      */
     public int getNumValues(String name) {
+        System.out.println(name);
         return  parameters.get(name).length;
     }
 
@@ -111,7 +151,7 @@ public class Parameters {
      * @param parameter The name of the parameter.
      * @return The array of values.
      */
-    public Number[] getValues(String parameter) {
+    public Object[] getValues(String parameter) {
         return parameters.get(parameter);
     }
 
@@ -120,15 +160,24 @@ public class Parameters {
      * @param parameter The name of the parameter.
      * @param value The value of the parameter (a single value).
      */
-    public void setValue(String parameter, Number value) {
-        parameters.put(parameter, new Number[]{value});
+    public void setValue(String parameter, Object value) {
+        parameters.put(parameter, new Object[]{value});
+    }
+
+    /**
+     * Sets the given parameter to the given value.
+     * @param parameter The name of the parameter.
+     * @param value The value of the parameter (a single value).
+     */
+    public void setValue(String parameter, String value) {
+        parameters.put(parameter, new String[]{value});
     }
 
     /**
      * Sets a map of parameters to override the current ones.
      * @param parameters A map from parameter names to values.
      */
-    public void setOverriddenParameters(Map<String, Number> parameters) {
+    public void setOverriddenParameters(Map<String, Object> parameters) {
         this.overriddenParameter = parameters;
     }
 }

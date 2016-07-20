@@ -34,8 +34,8 @@ public class MathewsCorrAdjStat implements Statistic {
     }
 
     @Override
-    public double getUtility(double value) {
-        return 1.0 - 0.5 * value;
+    public double getWeight(double value) {
+        return 0.5 + 0.5 * value;
     }
 
     private double mcc(double adjTp, double adjFp, double adjTn, double adjFn) {
