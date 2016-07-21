@@ -392,11 +392,9 @@ public class Comparison {
 //
             simulations.addAll(getClasses(Simulation.class));
 
-            out.println();
             out.println("Available Algorithms");
-
             out.println();
-            out.println("Takes an independence test (using an example independence test)");
+            out.println("Takes an independence test (using an example independence test):");
             out.println();
 
             for (Class clazz : new ArrayList<>(algorithms)) {
@@ -488,7 +486,7 @@ public class Comparison {
             }
 
             out.println();
-            out.print("Available Independence Tests");
+            out.println("Available Independence Tests");
             out.println();
 
             for (Class clazz : independenceWrappers) {
@@ -573,8 +571,10 @@ public class Comparison {
             if (values == null || values.length == 0) {
                 out.print("no default");
 
-                if (i < parameters.size() - 1) out.print("; ");
-                if ((i + 1) % 4 == 0) out.print("\n\t\t");
+                if (i < parameters.size() - 1) {
+                    out.print("; ");
+                    if ((i + 1) % 4 == 0) out.print("\n\t\t");
+                }
 
                 continue;}
 
@@ -583,8 +583,10 @@ public class Comparison {
                 if (j < values.length - 1) out.print(",");
             }
 
-            if (i < parameters.size() - 1) out.print("; ");
-            if ((i + 1) % 4 == 0) out.print("\n\t\t");
+            if (i < parameters.size() - 1) {
+                out.print("; ");
+                if ((i + 1) % 4 == 0) out.print("\n\t\t");
+            }
         }
 
         out.println();
