@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.*;
@@ -433,7 +434,7 @@ public class Comparison {
                     if (constructors[i].getParameterTypes().length == 1
                             && constructors[i].getParameterTypes()[0] == ScoreWrapper.class) {
                         Algorithm algorithm = (Algorithm) constructors[i].newInstance(
-                                SemBicScore.class.newInstance());
+                                BdeuScore.class.newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
                             printParameters(algorithm, out, allParams);
