@@ -53,16 +53,16 @@ public class ExampleCompareFromFiles {
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new AdjacencyPrecisionStat());
-        statistics.add(new AdjacencyRecallStat());
-        statistics.add(new ArrowheadPrecisionStat());
-        statistics.add(new ArrowheadRecallStat());
-        statistics.add(new MathewsCorrAdjStat());
-        statistics.add(new MathewsCorrArrowStat());
-        statistics.add(new F1AdjStat());
-        statistics.add(new F1ArrowStat());
-        statistics.add(new ShdStat());
-        statistics.add(new ElapsedTimeStat());
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new MathewsCorrAdj());
+        statistics.add(new MathewsCorrArrow());
+        statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
+        statistics.add(new SHD());
+        statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);

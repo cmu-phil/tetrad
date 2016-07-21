@@ -16,7 +16,7 @@ import edu.cmu.tetrad.graph.Graph;
  * positive is counted. Similarly for false negatives
  * @author jdramsey
  */
-public class MathewsCorrArrowStat implements Statistic {
+public class MathewsCorrArrow implements Statistic {
     @Override
     public String getAbbreviation() {
         return "McArrow";

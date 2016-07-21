@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -16,14 +16,14 @@ import java.util.List;
  * @author jdramsey
  */
 public class Pc implements Algorithm {
-    private IndTestWrapper test;
+    private IndependenceWrapper test;
     private Algorithm initialGraph = null;
 
-    public Pc(IndTestWrapper test) {
+    public Pc(IndependenceWrapper test) {
         this.test = test;
     }
 
-    public Pc(IndTestWrapper test, Algorithm initialGraph) {
+    public Pc(IndependenceWrapper test, Algorithm initialGraph) {
         this.test = test;
         this.initialGraph = initialGraph;
     }
@@ -52,7 +52,7 @@ public class Pc implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "PC using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
+        return "PC (\"Peter and Clark\") using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 
@@ -63,8 +63,6 @@ public class Pc implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        return parameters;
+        return test.getParameters();
     }
 }

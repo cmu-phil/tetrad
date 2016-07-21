@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
-public class MixedFgs2Sem implements Algorithm {
+public class MixedFgsTreatingDiscreteAsContinuous implements Algorithm {
     public Graph search(DataSet Dk, Parameters parameters) {
         Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(Dk));

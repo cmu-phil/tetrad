@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
-import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -16,9 +16,9 @@ import java.util.List;
  * @author jdramsey
  */
 public class Cfci implements Algorithm {
-    private IndTestWrapper test;
+    private IndependenceWrapper test;
 
-    public Cfci(IndTestWrapper type) {
+    public Cfci(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -35,7 +35,7 @@ public class Cfci implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CFCI, using " + test.getDescription();
+        return "CFCI (Conservative Fast Causal Inference), using " + test.getDescription();
     }
 
     @Override
@@ -45,8 +45,6 @@ public class Cfci implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        return parameters;
+        return test.getParameters();
     }
 }

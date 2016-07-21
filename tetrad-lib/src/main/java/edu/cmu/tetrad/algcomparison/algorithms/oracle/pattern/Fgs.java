@@ -1,18 +1,19 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * FGS (the heuristic version).
+ *
  * @author jdramsey
  */
 public class Fgs implements Algorithm {
@@ -36,8 +37,7 @@ public class Fgs implements Algorithm {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Fgs fgs = new edu.cmu.tetrad.search.Fgs(score.getScore(dataSet, parameters));
-        fgs.setHeuristicSpeedup(true);
+        edu.cmu.tetrad.search.Fgs2 fgs = new edu.cmu.tetrad.search.Fgs2(score.getScore(dataSet, parameters));
 
         if (initial != null) {
             fgs.setInitialGraph(initial);
@@ -53,7 +53,7 @@ public class Fgs implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS using " + score.getDescription();
+        return "FGS (Fast Greedy Search) using " + score.getDescription();
     }
 
     @Override
@@ -63,8 +63,6 @@ public class Fgs implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-        parameters.add("fgsDepth");
-        return parameters;
-    }}
+        return score.getParameters();
+    }
+}

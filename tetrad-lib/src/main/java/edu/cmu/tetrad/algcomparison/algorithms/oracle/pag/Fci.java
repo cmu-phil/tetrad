@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -17,13 +17,13 @@ import java.util.List;
  * @author jdramsey
  */
 public class Fci implements Algorithm {
-    private IndTestWrapper test;
+    private IndependenceWrapper test;
     private Algorithm initialGraph = null;
 
-    public Fci(IndTestWrapper type) {
+    public Fci(IndependenceWrapper type) {
         this.test = type;
     }
-    public Fci(IndTestWrapper type, Algorithm initialGraph) {
+    public Fci(IndependenceWrapper type, Algorithm initialGraph) {
         this.test = type;
         this.initialGraph = initialGraph;
     }
@@ -51,7 +51,7 @@ public class Fci implements Algorithm {
     }
 
     public String getDescription() {
-        return "FCI using " + test.getDescription() +
+        return "FCI (Fast Causal Inference) using " + test.getDescription() +
                 (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
@@ -63,8 +63,6 @@ public class Fci implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        return parameters;
+        return test.getParameters();
     }
 }

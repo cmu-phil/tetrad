@@ -100,10 +100,9 @@ public class StructEmBayesSearchEditor extends JPanel {
         JScrollPane wizardScroll = new JScrollPane(getWizard());
 
         BayesProperties scorer = new BayesProperties(dataSet);
-        scorer.setGraph(graph);
 
         StringBuilder buf = new StringBuilder();
-        buf.append("\nP-value = ").append(scorer.getLikelihoodRatioP());
+        buf.append("\nP-value = ").append(scorer.getLikelihoodRatioP(graph));
         buf.append("\nDf = ").append(scorer.getDof());
         buf.append("\nChi square = ").append(
                 nf.format(scorer.getChisq()));

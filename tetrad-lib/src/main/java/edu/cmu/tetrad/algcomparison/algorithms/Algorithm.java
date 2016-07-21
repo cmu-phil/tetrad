@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithms;
 
+import edu.cmu.tetrad.util.HasParameters;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -11,7 +12,7 @@ import java.util.List;
  * Interface that algorithms must implement.
  * @author jdramsey
  */
-public interface Algorithm {
+public interface Algorithm extends HasParameters {
 
     /**
      * Runs the search.

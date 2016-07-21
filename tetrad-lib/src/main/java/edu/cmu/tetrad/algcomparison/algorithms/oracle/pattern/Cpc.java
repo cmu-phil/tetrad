@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -16,13 +16,13 @@ import java.util.List;
  * @author jdramsey
  */
 public class Cpc implements Algorithm {
-    private IndTestWrapper test;
+    private IndependenceWrapper test;
     private Algorithm initialGraph = null;
 
-    public Cpc(IndTestWrapper type) {
+    public Cpc(IndependenceWrapper type) {
         this.test = type;
     }
-    public Cpc(IndTestWrapper type, Algorithm initialGraph) {
+    public Cpc(IndependenceWrapper type, Algorithm initialGraph) {
         this.test = type;
         this.initialGraph = initialGraph;
     }
@@ -51,7 +51,7 @@ public class Cpc implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CPC using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
+        return "CPC (Conservative \"Peter and Clark\") using " + test.getDescription() + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 
@@ -62,8 +62,6 @@ public class Cpc implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        return parameters;
+        return test.getParameters();
     }
 }

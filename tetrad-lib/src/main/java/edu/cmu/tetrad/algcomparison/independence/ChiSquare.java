@@ -13,7 +13,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  * @author jdramsey
  */
-public class ChiSquare implements IndTestWrapper {
+public class ChiSquare implements IndependenceWrapper {
     private DataSet dataSet = null;
     private edu.cmu.tetrad.search.IndependenceTest test = null;
 

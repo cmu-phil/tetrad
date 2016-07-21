@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.util.HasParameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -10,7 +11,7 @@ import java.util.List;
  * The interface that simulations must implement.
  * @author jdramsey
  */
-public interface Simulation {
+public interface Simulation extends HasParameters {
 
     /**
      * Creates a data set and simulates data.

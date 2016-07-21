@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithms.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -10,18 +11,26 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.BDeuScore;
+import edu.cmu.tetrad.search.Fgs2;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
-public class MixedFgs2Bic implements Algorithm {
-    public Graph search(DataSet Dk, Parameters parameters) {
-        Discretizer discretizer = new Discretizer(Dk);
-        List<Node> nodes = Dk.getVariables();
+public class MixedFgsDiscretingContinuousVariables implements Algorithm {
+    private ScoreWrapper score;
+
+    public MixedFgsDiscretingContinuousVariables(ScoreWrapper score) {
+        this.score = score;
+    }
+
+    public Graph search(DataSet dataSet, Parameters parameters) {
+        Discretizer discretizer = new Discretizer(dataSet);
+        List<Node> nodes = dataSet.getVariables();
 
         for (Node node : nodes) {
             if (node instanceof ContinuousVariable) {
@@ -29,14 +38,11 @@ public class MixedFgs2Bic implements Algorithm {
             }
         }
 
-        Dk = discretizer.discretize();
+        dataSet = discretizer.discretize();
 
-        BicScore score = new BicScore(Dk);
-        score.setSamplePrior(parameters.getInt("samplePrior"));
-        score.setStructurePrior(parameters.getInt("structurePrior"));
-        Fgs2 fgs = new Fgs2(score);
+        Fgs2 fgs = new Fgs2(score.getScore(dataSet, parameters));
         Graph p = fgs.search();
-        return convertBack(Dk, p);
+        return convertBack(dataSet, p);
     }
 
 
@@ -47,7 +53,7 @@ public class MixedFgs2Bic implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS with BIC after discretizing the continuous variables in the data set";
+        return "FGS with BDeu after discretizing the continuous variables in the data set";
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {

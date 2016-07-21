@@ -33,7 +33,7 @@ public class Gfci implements Algorithm {
     }
 
     public String getDescription() {
-        return "GFCI using " + score.getDescription();
+        return "GFCI (Greey Fast Causal Inference) using " + score.getDescription();
     }
 
     @Override
@@ -43,8 +43,6 @@ public class Gfci implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        return parameters;
+        return score.getParameters();
     }
 }

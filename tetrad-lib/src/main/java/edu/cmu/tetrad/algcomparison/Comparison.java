@@ -23,18 +23,22 @@ package edu.cmu.tetrad.algcomparison;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.*;
-import edu.cmu.tetrad.algcomparison.statistic.ElapsedTimeStat;
+import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.algcomparison.statistic.utilities.SimulationPath;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.CombinationGenerator;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
+import org.reflections.Reflections;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -356,6 +360,217 @@ public class Comparison {
         }
     }
 
+    /**
+     *
+     */
+    public void configuration(String outFile) {
+        try {
+            PrintStream out = new PrintStream(new FileOutputStream(new File(outFile)));
+
+            List<Class> algorithms = new ArrayList<>();
+            List<Class> statistics = new ArrayList<>();
+            List<Class> independenceWrappers = new ArrayList<>();
+            List<Class> scoreWrappers = new ArrayList<>();
+            List<Class> simulations = new ArrayList<>();
+
+            algorithms.addAll(getClasses(Algorithm.class));
+//
+            statistics.addAll(getClasses(Statistic.class));
+//
+            independenceWrappers.addAll(getClasses(IndependenceWrapper.class));
+//
+            scoreWrappers.addAll(getClasses(ScoreWrapper.class));
+//
+            simulations.addAll(getClasses(Simulation.class));
+
+            out.println();
+            out.println("Available Algorithms");
+
+            out.println();
+            out.println("Takes an independence test (using an example independence test)");
+            out.println();
+
+            for (Class clazz : new ArrayList<>(algorithms)) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
+                Constructor[] constructors = clazz.getConstructors();
+
+                for (int i = 0; i < constructors.length; i++) {
+                    if (constructors[i].getParameterTypes().length == 1
+                            && constructors[i].getParameterTypes()[0] == IndependenceWrapper.class) {
+                        Algorithm algorithm = (Algorithm) constructors[i].newInstance(
+                                FisherZ.class.newInstance());
+                        out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(algorithm, out);
+                        }
+                    }
+                }
+            }
+
+            out.println();
+            out.println("Takes a score (using an example score):");
+            out.println();
+
+            for (Class clazz : new ArrayList<>(algorithms)) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
+                Constructor[] constructors = clazz.getConstructors();
+
+                for (int i = 0; i < constructors.length; i++) {
+                    if (constructors[i].getParameterTypes().length == 1
+                            && constructors[i].getParameterTypes()[0] == ScoreWrapper.class) {
+                        Algorithm algorithm = (Algorithm) constructors[i].newInstance(
+                                SemBicScore.class.newInstance());
+                        out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(algorithm, out);
+                        }
+                    }
+
+
+                }
+            }
+
+            out.println();
+            out.println("Blank Constructor:");
+            out.println();
+
+            for (Class clazz : new ArrayList<>(algorithms)) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
+                Constructor[] constructors = clazz.getConstructors();
+
+                for (int i = 0; i < constructors.length; i++) {
+                    if (constructors[i].getParameterTypes().length == 0) {
+                        Algorithm algorithm = (Algorithm) constructors[i].newInstance();
+                        out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(algorithm, out);
+                        }
+                    }
+                }
+            }
+
+
+            out.println();
+            out.println("Available Statistics");
+            out.println();
+
+            for (Class clazz : statistics) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
+                Constructor[] constructors = clazz.getConstructors();
+
+                for (int i = 0; i < constructors.length; i++) {
+                    if (constructors[i].getParameterTypes().length == 0) {
+                        Statistic statistic = (Statistic) constructors[i].newInstance();
+                        out.println(clazz.getSimpleName() + ": " + statistic.getDescription());
+                    }
+                }
+            }
+
+            out.println();
+            out.print("Available Independence Tests");
+            out.println();
+
+            for (Class clazz : independenceWrappers) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
+                Constructor[] constructors = clazz.getConstructors();
+
+                for (int i = 0; i < constructors.length; i++) {
+                    if (constructors[i].getParameterTypes().length == 0) {
+                        IndependenceWrapper independence = (IndependenceWrapper) constructors[i].newInstance();
+                        out.println(clazz.getSimpleName() + ": " + independence.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(independence, out);
+                        }
+                    }
+                }
+            }
+
+            out.println();
+            out.println("Available Scores");
+            out.println();
+
+            for (Class clazz : scoreWrappers) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
+                Constructor[] constructors = clazz.getConstructors();
+
+                for (int i = 0; i < constructors.length; i++) {
+                    if (constructors[i].getParameterTypes().length == 0) {
+                        ScoreWrapper score = (ScoreWrapper) constructors[i].newInstance();
+                        out.println(clazz.getSimpleName() + ": " + score.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(score, out);
+                        }
+                    }
+                }
+            }
+
+            out.println();
+            out.println("Available Simulations");
+            out.println();
+
+            for (Class clazz : simulations) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
+                Constructor[] constructors = clazz.getConstructors();
+
+                for (int i = 0; i < constructors.length; i++) {
+                    if (constructors[i].getParameterTypes().length == 0) {
+                        Simulation simulation = (Simulation) constructors[i].newInstance();
+                        out.println(clazz.getSimpleName() + ": " + simulation.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(simulation, out);
+                        }
+                    }
+                }
+            }
+
+            out.println();
+
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void printParameters(HasParameters hasParameters, PrintStream out) {
+        List<String> parameters = hasParameters.getParameters();
+        if (parameters.isEmpty()) return;
+        out.print("\tParameters: ");
+
+        for (int i = 0; i < parameters.size(); i++) {
+            out.print(parameters.get(i));
+            if (i < parameters.size() - 1) out.print(", ");
+        }
+
+        out.println();
+    }
+
+    private List<Class> getClasses(Class type) {
+        Reflections reflections = new Reflections();
+        Set<Class> allClasses = reflections.getSubTypesOf(type);
+        return new ArrayList<>(allClasses);
+    }
+
     private List<SimulationWrapper> getSimulationWrappers(Simulation simulation, Parameters parameters) {
         List<SimulationWrapper> simulationWrappers = new ArrayList<>();
 
@@ -497,7 +712,7 @@ public class Comparison {
 
                             double stat;
 
-                            if (_stat instanceof ElapsedTimeStat) {
+                            if (_stat instanceof ElapsedTime) {
                                 stat = elapsed / 1000.0;
                             } else {
                                 stat = _stat.getValue(truth[u], est[u]);

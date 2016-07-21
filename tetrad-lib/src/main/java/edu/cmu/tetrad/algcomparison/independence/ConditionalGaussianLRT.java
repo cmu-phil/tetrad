@@ -13,7 +13,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  * @author jdramsey
  */
-public class ConditionalGaussianLRT implements IndTestWrapper {
+public class ConditionalGaussianLRT implements IndependenceWrapper {
     private DataSet dataSet = null;
     private IndependenceTest test = null;
 

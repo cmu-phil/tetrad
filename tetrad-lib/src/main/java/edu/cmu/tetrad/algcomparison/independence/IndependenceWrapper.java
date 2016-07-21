@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.util.HasParameters;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -10,7 +11,7 @@ import java.util.List;
  * Interface that algorithms must implement.
  * @author jdramsey
  */
-public interface IndTestWrapper {
+public interface IndependenceWrapper extends HasParameters {
 
     /**
      * Returns true iff x and y are independent conditional on z for the given data set.
