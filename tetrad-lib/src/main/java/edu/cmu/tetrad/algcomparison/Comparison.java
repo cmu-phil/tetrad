@@ -27,8 +27,10 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
+import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
@@ -43,6 +45,7 @@ import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics and a list
@@ -576,7 +579,8 @@ public class Comparison {
                     if ((i + 1) % 4 == 0) out.print("\n\t\t");
                 }
 
-                continue;}
+                continue;
+            }
 
             for (int j = 0; j < values.length; j++) {
                 out.print(values[j]);
@@ -638,7 +642,7 @@ public class Comparison {
     }
 
 
-    private double[][][][] calcStats(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, Statistics statistics,
+    private double[][][][] calcStats(final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, Statistics statistics,
                                      Parameters parameters) {
         int numGraphTypes = 4;
 
@@ -649,114 +653,200 @@ public class Comparison {
 
         boolean didAnalysis = false;
 
-        for (int i = 0; i < numRuns; i++) {
-            System.out.println();
-            System.out.println("Run " + (i + 1));
-            System.out.println();
+        List<Run> runs = new ArrayList<>();
 
+        for (int i = 0; i < numRuns; i++) {
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
                 AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(t);
-                SimulationWrapper simulationWrapper = (SimulationWrapper) algorithmSimulationWrapper.getSimulation();
-                Simulation simulation = algorithmSimulationWrapper.getSimulation();
-                DataSet data = simulation.getDataSet(i);
-                Graph trueGraph = simulation.getTrueGraph();
+                runs.add(new Run(i, t, algorithmSimulationWrapper));
+            }
+        }
 
-                boolean isMixed = data.isMixed();
+        List<AlgorithmTask> tasks = new ArrayList<>();
 
-                System.out.println((t + 1) + ". " + algorithmSimulationWrapper.getDescription()
-                        + " simulation: " + simulation.getDescription());
+        for (Run run : runs) {
+            tasks.add(new AlgorithmTask(algorithmSimulationWrappers, statistics, parameters,
+                    numGraphTypes, allStats, run));
+        }
 
-                long start = System.currentTimeMillis();
-                Graph out;
+        class Task extends RecursiveTask<Boolean> {
+            List<AlgorithmTask> tasks;
 
-                try {
-                    DataSet copy = data.copy();
+            public Task(List<AlgorithmTask> tasks) {
+                this.tasks = tasks;
+            }
 
-                    for (String p : algorithmSimulationWrapper.getOverriddenParameters()) {
-                        parameters.setValue(p, algorithmSimulationWrapper.getValue(p));
+            @Override
+            protected Boolean compute() {
+                Queue<AlgorithmTask> tasks = new ArrayDeque<>();
+
+                for (int i = 0; i < this.tasks.size(); i += 1) {
+                    AlgorithmTask task = this.tasks.get(i);
+                    tasks.add(task);
+                    task.fork();
+
+                    for (AlgorithmTask _task : new ArrayList<>(tasks)) {
+                        if (_task.isDone()) {
+                            _task.join();
+                            tasks.remove(_task);
+                        }
                     }
 
-                    parameters.setOverriddenParameters(algorithmSimulationWrapper.getOverriddenParametersMap());
-
-                    out = algorithmSimulationWrapper.search(copy, parameters);
-                } catch (Exception e) {
-                    System.out.println("Could not run " + algorithmSimulationWrapper.getDescription());
-                    e.printStackTrace();
-                    continue;
+                    while (tasks.size() > 3) {
+                        AlgorithmTask _task = tasks.poll();
+                        _task.join();
+                    }
                 }
 
-                String path = null;
-
-                if (simulationWrapper.getSimulation() instanceof SimulationPath) {
-                    path = ((SimulationPath) simulationWrapper.getSimulation()).getPath();
+                for (AlgorithmTask task : tasks) {
+                    task.join();
                 }
 
-                printGraph(path, out, i, algorithmSimulationWrapper);
+                return true;
+            }
+        }
 
-                long stop = System.currentTimeMillis();
+        Task task = new Task(tasks);
 
-                long elapsed = stop - start;
+        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
-                if (trueGraph != null) {
-                    out = GraphUtils.replaceNodes(out, trueGraph.getNodes());
-                }
+//        for (Run run : runs) {
+//            didAnalysis = doRun(algorithmSimulationWrappers, statistics, parameters,
+//                    numGraphTypes, allStats, didAnalysis, run);
+//        }
 
-                Graph[] est = new Graph[numGraphTypes];
+        return allStats;
+    }
 
-                Graph comparisonGraph = trueGraph == null ? null : algorithmSimulationWrapper.getComparisonGraph(trueGraph);
+    private class AlgorithmTask extends RecursiveTask<Boolean> {
+        private List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
+        private Statistics statistics;
+        private Parameters parameters;
+        private int numGraphTypes;
+        private double[][][][] allStats;
+        private final Run run;
 
-                est[0] = out;
-                graphTypeUsed[0] = true;
+        public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+                             Statistics statistics, Parameters parameters,
+                             int numGraphTypes, double[][][][] allStats, Run run) {
+            this.algorithmSimulationWrappers = algorithmSimulationWrappers;
+            this.statistics = statistics;
+            this.parameters = parameters;
+            this.numGraphTypes = numGraphTypes;
+            this.allStats = allStats;
+            this.run = run;
+        }
 
-                if (isMixed) {
-                    est[1] = getSubgraph(out, true, true, data);
-                    est[2] = getSubgraph(out, true, false, data);
-                    est[3] = getSubgraph(out, false, false, data);
+        @Override
+        protected Boolean compute() {
+            doRun(algorithmSimulationWrappers, statistics, parameters, numGraphTypes,
+                    allStats, run);
+            return true;
+        }
+    }
 
-                    graphTypeUsed[1] = true;
-                    graphTypeUsed[2] = true;
-                    graphTypeUsed[3] = true;
-                }
 
-                Graph[] truth = new Graph[numGraphTypes];
+    private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, Statistics statistics, Parameters parameters, int numGraphTypes, double[][][][] allStats, Run run) {
+        System.out.println();
+        System.out.println("Run " + (run.getI() + 1));
+        System.out.println();
 
-                truth[0] = comparisonGraph;
+        AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(run.getT());
+        SimulationWrapper simulationWrapper = (SimulationWrapper) algorithmSimulationWrapper.getSimulation();
+        Simulation simulation = algorithmSimulationWrapper.getSimulation();
+        DataSet data = simulation.getDataSet(run.getI());
+        Graph trueGraph = simulation.getTrueGraph();
 
-                if (isMixed && comparisonGraph != null) {
-                    truth[1] = getSubgraph(comparisonGraph, true, true, data);
-                    truth[2] = getSubgraph(comparisonGraph, true, false, data);
-                    truth[3] = getSubgraph(comparisonGraph, false, false, data);
-                }
+        boolean isMixed = data.isMixed();
 
-                if (comparisonGraph != null) {
-                    for (int u = 0; u < numGraphTypes; u++) {
-                        if (!graphTypeUsed[u]) continue;
+        System.out.println((run.getT() + 1) + ". " + algorithmSimulationWrapper.getDescription()
+                + " simulation: " + simulation.getDescription());
 
-                        int j = -1;
+        long start = System.currentTimeMillis();
+        Graph out;
 
-                        for (Statistic _stat : statistics.getStatistics()) {
-                            j++;
+        try {
+            DataSet copy = data.copy();
 
-                            double stat;
+            for (String p : algorithmSimulationWrapper.getOverriddenParameters()) {
+                parameters.setValue(p, algorithmSimulationWrapper.getValue(p));
+            }
 
-                            if (_stat instanceof ElapsedTime) {
-                                stat = elapsed / 1000.0;
-                            } else {
-                                stat = _stat.getValue(truth[u], est[u]);
-                            }
+            parameters.setOverriddenParameters(algorithmSimulationWrapper.getOverriddenParametersMap());
 
-                            if (!Double.isNaN(stat)) {
-                                allStats[u][t][j][i] = stat;
-                            }
-                        }
+            out = algorithmSimulationWrapper.search(copy, parameters);
+        } catch (Exception e) {
+            System.out.println("Could not run " + algorithmSimulationWrapper.getDescription());
+            e.printStackTrace();
+            return;
+        }
 
-                        didAnalysis = true;
+        String path = null;
+
+        if (simulationWrapper.getSimulation() instanceof SimulationPath) {
+            path = ((SimulationPath) simulationWrapper.getSimulation()).getPath();
+        }
+
+        printGraph(path, out, run.getI(), algorithmSimulationWrapper);
+
+        long stop = System.currentTimeMillis();
+
+        long elapsed = stop - start;
+
+        if (trueGraph != null) {
+            out = GraphUtils.replaceNodes(out, trueGraph.getNodes());
+        }
+
+        Graph[] est = new Graph[numGraphTypes];
+
+        Graph comparisonGraph = trueGraph == null ? null : algorithmSimulationWrapper.getComparisonGraph(trueGraph);
+
+        est[0] = out;
+        graphTypeUsed[0] = true;
+
+        if (isMixed) {
+            est[1] = getSubgraph(out, true, true, data);
+            est[2] = getSubgraph(out, true, false, data);
+            est[3] = getSubgraph(out, false, false, data);
+
+            graphTypeUsed[1] = true;
+            graphTypeUsed[2] = true;
+            graphTypeUsed[3] = true;
+        }
+
+        Graph[] truth = new Graph[numGraphTypes];
+
+        truth[0] = comparisonGraph;
+
+        if (isMixed && comparisonGraph != null) {
+            truth[1] = getSubgraph(comparisonGraph, true, true, data);
+            truth[2] = getSubgraph(comparisonGraph, true, false, data);
+            truth[3] = getSubgraph(comparisonGraph, false, false, data);
+        }
+
+        if (comparisonGraph != null) {
+            for (int u = 0; u < numGraphTypes; u++) {
+                if (!graphTypeUsed[u]) continue;
+
+                int j = -1;
+
+                for (Statistic _stat : statistics.getStatistics()) {
+                    j++;
+
+                    double stat;
+
+                    if (_stat instanceof ElapsedTime) {
+                        stat = elapsed / 1000.0;
+                    } else {
+                        stat = _stat.getValue(truth[u], est[u]);
+                    }
+
+                    if (!Double.isNaN(stat)) {
+                        allStats[u][run.getT()][j][run.getI()] = stat;
                     }
                 }
             }
         }
-
-        return didAnalysis ? allStats : null;
     }
 
     private void printGraph(String path, Graph graph, int i, Algorithm algorithm) {
@@ -1258,6 +1348,31 @@ public class Comparison {
 
         public Simulation getSimulation() {
             return simulation;
+        }
+
+    }
+
+    private class Run {
+        private final int i;
+        private final int t;
+        private final AlgorithmSimulationWrapper wrapper;
+
+        public Run(int i, int t, AlgorithmSimulationWrapper wrapper) {
+            this.i = i;
+            this.t = t;
+            this.wrapper = wrapper;
+        }
+
+        public int getI() {
+            return i;
+        }
+
+        public int getT() {
+            return t;
+        }
+
+        public AlgorithmSimulationWrapper getWrapper() {
+            return wrapper;
         }
     }
 }
