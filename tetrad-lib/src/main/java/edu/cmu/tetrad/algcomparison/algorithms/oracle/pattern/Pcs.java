@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * PC-Stable.
+ *
  * @author jdramsey
  */
 public class Pcs implements Algorithm {
@@ -22,6 +23,7 @@ public class Pcs implements Algorithm {
     public Pcs(IndependenceWrapper test) {
         this.test = test;
     }
+
     public Pcs(IndependenceWrapper test, Algorithm initialGraph) {
         this.test = test;
         this.initialGraph = initialGraph;

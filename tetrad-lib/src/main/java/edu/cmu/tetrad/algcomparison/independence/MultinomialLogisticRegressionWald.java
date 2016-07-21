@@ -10,6 +10,7 @@ import java.util.List;
 
 /**
  * Wrapper for Fisher Z test.
+ *
  * @author jdramsey
  */
 public class MultinomialLogisticRegressionWald implements IndependenceWrapper {

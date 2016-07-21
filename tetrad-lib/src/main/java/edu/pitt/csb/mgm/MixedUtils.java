@@ -966,10 +966,7 @@ public class MixedUtils {
 
         IndependenceTest test = null;
 
-        if (name.equals("lrt")) {
-            test = new IndTestMixedRegressionLrt(data, alpha);
-            //test = new IndTestMultinomialLogisticRegression(data, alpha);
-        } else if (name.equals("tlin")) {
+        if (name.equals("tlin")) {
             test = new edu.pitt.csb.mgm.IndTestMixedMultipleTTest(data, alpha);
             ((edu.pitt.csb.mgm.IndTestMixedMultipleTTest)test).setPreferLinear(true);
             //test = new IndTestMultinomialLogisticRegressionWald(data, alpha, true);

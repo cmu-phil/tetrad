@@ -20,10 +20,16 @@ public class BayesNetSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
+        int numEdges = parameters.getInt("numEdges");
+
+        if (numEdges == -1) {
+            numEdges = (int) (parameters.getInt("numMeasures") * parameters.getDouble("edgeFactor"));
+        }
+
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
-                parameters.getInt("numEdges"),
+                numEdges,
                 parameters.getInt("maxDegree"),
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
@@ -31,10 +37,10 @@ public class BayesNetSimulation implements Simulation {
 
         dataSets = new ArrayList<>();
 
-       for (int i = 0; i < parameters.getInt("numRuns"); i++) {
-           DataSet dataSet = simulate(graph, parameters);
-           dataSets.add(dataSet);
-       }
+        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            DataSet dataSet = simulate(graph, parameters);
+            dataSets.add(dataSet);
+        }
     }
 
     @Override

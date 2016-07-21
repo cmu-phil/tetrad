@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.algorithms.mixed.pattern;
+package edu.cmu.tetrad.algcomparison.algorithms.mixed;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.data.DataType;

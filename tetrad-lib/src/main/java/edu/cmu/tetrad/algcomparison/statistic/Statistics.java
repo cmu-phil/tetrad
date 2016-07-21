@@ -9,6 +9,7 @@ import java.util.Map;
 
 /**
  * A list of statistics and their utility weights.
+ *
  * @author jdramsey
  */
 public class Statistics {
@@ -17,10 +18,12 @@ public class Statistics {
     private boolean showUtilities = true;
     private boolean sortByUtility = true;
 
-    public Statistics(){}
+    public Statistics() {
+    }
 
     /**
      * Adds a statistic.
+     *
      * @param statistic The statistic to add.
      */
     public void add(Statistic statistic) {
@@ -29,8 +32,9 @@ public class Statistics {
 
     /**
      * Sets the utility weight of the statistic by the given name.
+     *
      * @param abbrebiation The abbreviation set in the statistic.
-     * @param weight The utility weight for that statistic.
+     * @param weight       The utility weight for that statistic.
      */
     public void setWeight(String abbrebiation, double weight) {
         boolean set = false;
@@ -50,6 +54,7 @@ public class Statistics {
 
     /**
      * Return the list of statistics.
+     *
      * @return A copy of this list, in the order added.
      */
     public List<Statistic> getStatistics() {
@@ -58,6 +63,7 @@ public class Statistics {
 
     /**
      * The utility weight for the statistic.
+     *
      * @param statistic The statistic.
      * @return The utility weight for it.
      */
@@ -71,6 +77,7 @@ public class Statistics {
 
     /**
      * The number of statistics.
+     *
      * @return This number.
      */
     public int size() {

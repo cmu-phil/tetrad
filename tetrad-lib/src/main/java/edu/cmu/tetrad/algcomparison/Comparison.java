@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.*;
@@ -254,16 +255,22 @@ public class Comparison {
             }
 
             out.println();
-            out.println("Weighting of statistics:\n");
-            out.println("W = ");
+            out.println("Weighting of statistics:");
+            out.println();
+            out.println("Utility = ");
 
             for (Statistic stat : statistics.getStatistics()) {
                 String statName = stat.getAbbreviation();
                 double weight = statistics.getWeight(stat);
                 if (weight != 0.0) {
-                    out.println("    " + weight + " * Weight(" + statName + ")");
+                    out.println("    " + weight + " * f(" + statName + ")");
                 }
             }
+
+            out.println();
+            out.println("Note that f for each statistic is a function that maps the statistic to the ");
+            out.println("interval [0, 1], with higher being better.");
+            out.println();
 
             out.println();
 
@@ -367,6 +374,8 @@ public class Comparison {
         try {
             PrintStream out = new PrintStream(new FileOutputStream(new File(outFile)));
 
+            Parameters allParams = new Parameters();
+
             List<Class> algorithms = new ArrayList<>();
             List<Class> statistics = new ArrayList<>();
             List<Class> independenceWrappers = new ArrayList<>();
@@ -404,7 +413,7 @@ public class Comparison {
                                 FisherZ.class.newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm, out);
+                            printParameters(algorithm, out, allParams);
                         }
                     }
                 }
@@ -425,10 +434,10 @@ public class Comparison {
                     if (constructors[i].getParameterTypes().length == 1
                             && constructors[i].getParameterTypes()[0] == ScoreWrapper.class) {
                         Algorithm algorithm = (Algorithm) constructors[i].newInstance(
-                                SemBicScore.class.newInstance());
+                                BdeuScore.class.newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm, out);
+                            printParameters(algorithm, out, allParams);
                         }
                     }
 
@@ -452,7 +461,7 @@ public class Comparison {
                         Algorithm algorithm = (Algorithm) constructors[i].newInstance();
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(algorithm, out);
+                            printParameters(algorithm, out, allParams);
                         }
                     }
                 }
@@ -494,7 +503,7 @@ public class Comparison {
                         IndependenceWrapper independence = (IndependenceWrapper) constructors[i].newInstance();
                         out.println(clazz.getSimpleName() + ": " + independence.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(independence, out);
+                            printParameters(independence, out, allParams);
                         }
                     }
                 }
@@ -516,7 +525,7 @@ public class Comparison {
                         ScoreWrapper score = (ScoreWrapper) constructors[i].newInstance();
                         out.println(clazz.getSimpleName() + ": " + score.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(score, out);
+                            printParameters(score, out, allParams);
                         }
                     }
                 }
@@ -538,7 +547,7 @@ public class Comparison {
                         Simulation simulation = (Simulation) constructors[i].newInstance();
                         out.println(clazz.getSimpleName() + ": " + simulation.getDescription());
                         if (HasParameters.class.isAssignableFrom(clazz)) {
-                            printParameters(simulation, out);
+                            printParameters(simulation, out, allParams);
                         }
                     }
                 }
@@ -552,14 +561,30 @@ public class Comparison {
         }
     }
 
-    private void printParameters(HasParameters hasParameters, PrintStream out) {
+    private void printParameters(HasParameters hasParameters, PrintStream out, Parameters allParams) {
         List<String> parameters = hasParameters.getParameters();
         if (parameters.isEmpty()) return;
         out.print("\tParameters: ");
 
         for (int i = 0; i < parameters.size(); i++) {
             out.print(parameters.get(i));
-            if (i < parameters.size() - 1) out.print(", ");
+            out.print(" = ");
+            Object[] values = allParams.getValues(parameters.get(i));
+            if (values == null || values.length == 0) {
+                out.print("no default");
+
+                if (i < parameters.size() - 1) out.print("; ");
+                if ((i + 1) % 4 == 0) out.print("\n\t\t");
+
+                continue;}
+
+            for (int j = 0; j < values.length; j++) {
+                out.print(values[j]);
+                if (j < values.length - 1) out.print(",");
+            }
+
+            if (i < parameters.size() - 1) out.print("; ");
+            if ((i + 1) % 4 == 0) out.print("\n\t\t");
         }
 
         out.println();
@@ -900,7 +925,7 @@ public class Comparison {
             }
 
             if (statistics.isShowUtilities()) {
-                table.setToken(0, initialColumn + numStats, "W");
+                table.setToken(0, initialColumn + numStats, "U");
             }
 
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {

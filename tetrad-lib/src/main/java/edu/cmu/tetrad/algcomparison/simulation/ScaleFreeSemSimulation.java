@@ -19,7 +19,6 @@ public class ScaleFreeSemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        this.dataSets = new ArrayList<>();
         this.graph = GraphUtils.scaleFreeGraph(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
@@ -28,6 +27,8 @@ public class ScaleFreeSemSimulation implements Simulation {
                 parameters.getDouble("scaleFreeDeltaIn"),
                 parameters.getInt("scaleFreeDeltaOut")
         );
+
+        this.dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             SemPm pm = new SemPm(graph);

@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Graph;
  * https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
  * </p>
  * We calculate the correlation directly from the confusion matrix.
+ *
  * @author jdramsey
  */
 public class MathewsCorrAdj implements Statistic {
@@ -34,7 +35,7 @@ public class MathewsCorrAdj implements Statistic {
     }
 
     @Override
-    public double getWeight(double value) {
+    public double getMapTo01(double value) {
         return 0.5 + 0.5 * value;
     }
 

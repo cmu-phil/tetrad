@@ -20,9 +20,15 @@ public class CyclicSemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
+        int numEdges = parameters.getInt("numEdges");
+
+        if (numEdges == -1) {
+            numEdges = (int) (parameters.getInt("numMeasures") * parameters.getDouble("edgeFactor"));
+        }
+
+        this.graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"), numEdges);
+
         dataSets = new ArrayList<>();
-        this.graph = GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
-                parameters.getInt("numEdges"));
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             SemPm pm = new SemPm(graph);

@@ -23,6 +23,7 @@ public class Fci implements Algorithm {
     public Fci(IndependenceWrapper type) {
         this.test = type;
     }
+
     public Fci(IndependenceWrapper type, Algorithm initialGraph) {
         this.test = type;
         this.initialGraph = initialGraph;
@@ -53,7 +54,7 @@ public class Fci implements Algorithm {
     public String getDescription() {
         return "FCI (Fast Causal Inference) using " + test.getDescription() +
                 (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+                        initialGraph.getDescription() : "");
     }
 
     @Override

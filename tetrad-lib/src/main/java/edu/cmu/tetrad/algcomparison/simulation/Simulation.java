@@ -9,6 +9,7 @@ import java.util.List;
 
 /**
  * The interface that simulations must implement.
+ *
  * @author jdramsey
  */
 public interface Simulation extends HasParameters {

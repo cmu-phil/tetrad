@@ -53,7 +53,7 @@ public class MixedFgsDiscretingContinuousVariables implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS with BDeu after discretizing the continuous variables in the data set";
+        return "FGS after discretizing the continuous variables in the data set using " + score.getDescription();
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {
@@ -86,10 +86,8 @@ public class MixedFgsDiscretingContinuousVariables implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        List<String> parameters = score.getParameters();
         parameters.add("numCategories");
-        parameters.add("samplePrior");
-        parameters.add("structurePrior");
         return parameters;
     }
 }

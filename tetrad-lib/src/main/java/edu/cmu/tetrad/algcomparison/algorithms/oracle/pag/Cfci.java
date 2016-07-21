@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * Conserative FCI.
+ *
  * @author jdramsey
  */
 public class Cfci implements Algorithm {

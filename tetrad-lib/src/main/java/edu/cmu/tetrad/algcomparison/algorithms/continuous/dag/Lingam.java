@@ -11,6 +11,7 @@ import java.util.List;
 
 /**
  * LiNGAM.
+ *
  * @author jdramsey
  */
 public class Lingam implements Algorithm {

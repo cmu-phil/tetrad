@@ -612,108 +612,6 @@ public class TestFgs {
 
     }
 
-//    @Test
-    public void testMixedScore() {
-        int k = 3; // Number of categories for discrete variables
-        int v = 30;
-        int e = 30;
-        double penalty = 2.0;
-
-        System.out.println("\n# nodes = " + v + " # edges = " + e +
-                " penalty = " + penalty + " # categories = " + k);
-
-        System.out.println();
-
-        System.out.println("K = # categories");
-        System.out.println("AP = Adjacency Precision");
-        System.out.println("AR = Adjacency Recall");
-        System.out.println("OP = Orientation (arrow head) Precision");
-        System.out.println("OR = Orientation (arrow head) Recall");
-        System.out.println("E = Elapsed time, in seconds");
-        System.out.println();
-
-        System.out.println("K\tAP\tAR\tOP\tOR\tE");
-
-        for (int y = 0; y < 5; y++) {
-            Graph dag = GraphUtils.randomGraphRandomForwardEdges(v, 0, e, 10, 10, 10, false);
-//                        Graph dag = GraphUtils.scaleFreeGraph(v, 0, .45, .45, .1, .9);
-
-            DataSet Dk = getMixedDataAjStyle(dag, k, 1000);
-
-            long start = System.currentTimeMillis();
-
-//            Graph pattern = searchSemFgs(Dk, penalty);
-//            Graph pattern = searchBdeuFgs(Dk, k);
-//            Graph pattern = searchMixedFgs(Dk, penalty);
-//            Graph pattern = searchMixedPc(Dk, 0.001);
-//            Graph pattern = searchMixedPcs(Dk, 0.001);
-//            Graph pattern = searchMixedCpc(Dk, 0.001);
-//            Graph pattern = searchMGMFgs(Dk, penalty);
-            Graph pattern = searchMGMPcs(Dk);
-//            Graph pattern = searchMGMCpc(Dk);
-
-            long stop = System.currentTimeMillis();
-
-            long elapsed = stop - start;
-            long elapsedSeconds = elapsed / 1000;
-
-            Graph truePattern = SearchGraphUtils.patternForDag(dag);
-
-            System.out.println("\nall edges");
-
-            GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison3(
-                    pattern, truePattern, System.out);
-            NumberFormat nf = new DecimalFormat("0.00");
-
-            System.out.println(k +
-                    "\t" + nf.format(comparison.getAdjPrec()) +
-                    "\t" + nf.format(comparison.getAdjRec()) +
-                    "\t" + nf.format(comparison.getAhdPrec()) +
-                    "\t" + nf.format(comparison.getAhdRec()) +
-                    "\t" + elapsedSeconds + " s");
-
-            System.out.println("\ndiscrete discrete");
-
-            comparison = SearchGraphUtils.getGraphComparison3(
-                    getSubgraph(pattern, true, true, Dk),
-                    getSubgraph(truePattern, true, true, Dk), System.out);
-
-            System.out.println(k +
-                    "\t" + nf.format(comparison.getAdjPrec()) +
-                    "\t" + nf.format(comparison.getAdjRec()) +
-                    "\t" + nf.format(comparison.getAhdPrec()) +
-                    "\t" + nf.format(comparison.getAhdRec()) +
-                    "\t" + getSubgraph(pattern, true, true, Dk).getNumEdges() + "\t= # edges");
-
-            System.out.println("\ndiscrete continuous");
-
-            comparison = SearchGraphUtils.getGraphComparison3(
-                    getSubgraph(pattern, true, false, Dk),
-                    getSubgraph(truePattern, true, false, Dk), System.out);
-
-            System.out.println(k +
-                    "\t" + nf.format(comparison.getAdjPrec()) +
-                    "\t" + nf.format(comparison.getAdjRec()) +
-                    "\t" + nf.format(comparison.getAhdPrec()) +
-                    "\t" + nf.format(comparison.getAhdRec()) +
-                    "\t" + getSubgraph(pattern, true, false, Dk).getNumEdges() + "\t= # edges");
-
-            System.out.println("\ncontinuous continuous");
-
-            comparison = SearchGraphUtils.getGraphComparison3(
-                    getSubgraph(pattern, false, false, Dk),
-                    getSubgraph(truePattern, false, false, Dk), System.out);
-
-            System.out.println(k +
-                    "\t" + nf.format(comparison.getAdjPrec()) +
-                    "\t" + nf.format(comparison.getAdjRec()) +
-                    "\t" + nf.format(comparison.getAhdPrec()) +
-                    "\t" + nf.format(comparison.getAhdRec()) +
-                    "\t" + getSubgraph(pattern, false, false, Dk).getNumEdges() + "\t= # edges");
-
-        }
-    }
-
     private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
         Graph newGraph = new EdgeListGraph(graph.getNodes());
 
@@ -820,27 +718,6 @@ public class TestFgs {
         return fgs.search();
     }
 
-    private Graph searchMixedPc(DataSet dk, double alpha) {
-        IndependenceTest test = new IndTestMixedRegressionLrt(dk, 0.001);
-//        IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(dk, alpha, false);
-        Pc pc = new Pc(test);
-        return pc.search();
-    }
-
-    private Graph searchMixedPcs(DataSet dk, double alpha) {
-        IndependenceTest test = new IndTestMixedRegressionLrt(dk, 0.001);
-//        IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(dk, alpha, false);
-        PcStable pc = new PcStable(test);
-        return pc.search();
-    }
-
-    private Graph searchMixedCpc(DataSet dk, double alpha) {
-        IndependenceTest test = new IndTestMixedRegressionLrt(dk, 0.001);
-//        IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(dk, alpha, false);
-        Cpc pc = new Cpc(test);
-        return pc.search();
-    }
-
     public Graph searchMGMFgs(DataSet ds, double penalty) {
         MGM m = new MGM(ds, new double[]{0.1, 0.1, 0.1});
         //m.setVerbose(this.verbose);
@@ -852,33 +729,6 @@ public class TestFgs {
         fg.setBoundGraph(gm);
         fg.setVerbose(false);
         return fg.search();
-    }
-
-    public synchronized Graph searchMGMPcs(DataSet ds) {
-        MGM m = new MGM(ds, new double[]{0.1, 0.1, 0.1});
-        //m.setVerbose(this.verbose);
-        Graph gm = m.search();
-        //IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, searchParams[3]);
-//        IndependenceTest indTest = new IndTestMultinomialLogisticRegressionWald(ds, 0.1, false);
-        IndependenceTest indTest = new IndTestMixedRegressionLrt(ds, 0.001);
-        PcStable pcs = new PcStable(indTest);
-        pcs.setDepth(-1);
-        pcs.setInitialGraph(gm);
-        pcs.setVerbose(false);
-        return pcs.search();
-    }
-
-    public synchronized Graph searchMGMCpc(DataSet ds) {
-        MGM m = new MGM(ds, new double[]{0.1, 0.1, 0.1});
-        //m.setVerbose(this.verbose);
-        Graph gm = m.search();
-        //IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, searchParams[3]);
-        IndependenceTest indTest = new IndTestMultinomialLogisticRegressionWald(ds, 0.1, false);
-        Cpc pcs = new Cpc(indTest);
-        pcs.setDepth(-1);
-        pcs.setInitialGraph(gm);
-        pcs.setVerbose(false);
-        return pcs.search();
     }
 
     public DataSet getMixedDataAjStyle(Graph g, int k, int samps) {
@@ -1024,20 +874,8 @@ public class TestFgs {
                 case 2:
                     out = searchMixedFgs(data, penalty);
                     break;
-                case 3:
-                    out = searchMixedPc(data, 0.001);
-                    break;
-                case 4:
-                    out = searchMixedPcs(data, 0.001);
-                    break;
-                case 5:
-                    out = searchMixedCpc(data, 0.001);
-                    break;
                 case 6:
                     out = searchMGMFgs(data, penalty);
-                    break;
-                case 7:
-                    out = searchMGMPcs(data);
                     break;
                 default:
                     throw new IllegalStateException();

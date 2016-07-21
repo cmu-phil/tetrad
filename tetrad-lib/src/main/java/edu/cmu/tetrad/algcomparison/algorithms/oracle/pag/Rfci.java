@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * RFCI.
+ *
  * @author jdramsey
  */
 public class Rfci implements Algorithm {
