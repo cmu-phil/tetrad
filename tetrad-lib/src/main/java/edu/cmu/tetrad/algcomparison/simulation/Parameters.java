@@ -43,6 +43,16 @@ public class Parameters {
         put("percentDiscreteForMixedSimulation", 50);
         put("ofInterestCutoff", 0.05);
         put("printGraphs", 0);
+        put("numCategories", 4);
+        put("samplePrior", 1);
+        put("structurePrior", 1);
+        put("mgmParam1", 0.1);
+        put("mgmParam2", 0.1);
+        put("mgmParam3", 0.1);
+        put("scaleFreeAlpha", 0.9);
+        put("scaleFreeBeta", 0.05);
+        put("scaleFreeDeltaIn", 3);
+        put("scaleFreeDeltaOut", 3);
     }
 
     /**
