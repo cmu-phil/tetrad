@@ -25,7 +25,7 @@ public class Lingam implements Algorithm {
     }
 
     public String getDescription() {
-        return "LiNGAM.";
+        return "LiNGAM (Linear Non-Gaussian Acyclic Model";
     }
 
     @Override

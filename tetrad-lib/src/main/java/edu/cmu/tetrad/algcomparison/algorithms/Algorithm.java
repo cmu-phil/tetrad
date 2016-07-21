@@ -11,7 +11,7 @@ import java.util.List;
  * Interface that algorithms must implement.
  * @author jdramsey
  */
-public interface Algorithm {
+public interface Algorithm extends HasParameters {
 
     /**
      * Runs the search.

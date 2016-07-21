@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 6/4/16.
+ * @author jdramsey
  */
 public class Mgm implements Algorithm {
     public Graph search(DataSet ds, Parameters parameters) {
@@ -29,7 +29,7 @@ public class Mgm implements Algorithm {
     }
 
     public String getDescription() {
-        return "Returns the output of the MGM algorithm";
+        return "Returns the output of the MGM algorithm (a Markov random field)";
     }
 
     @Override

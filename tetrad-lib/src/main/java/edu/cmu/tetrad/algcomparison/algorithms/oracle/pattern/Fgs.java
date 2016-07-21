@@ -16,15 +16,15 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fgs2 implements Algorithm {
+public class Fgs implements Algorithm {
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
 
-    public Fgs2(ScoreWrapper score) {
+    public Fgs(ScoreWrapper score) {
         this.score = score;
     }
 
-    public Fgs2(ScoreWrapper score, Algorithm initialGraph) {
+    public Fgs(ScoreWrapper score, Algorithm initialGraph) {
         this.score = score;
         this.initialGraph = initialGraph;
     }
@@ -53,7 +53,7 @@ public class Fgs2 implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGS2 using " + score.getDescription();
+        return "FGS (Fast Greedy Search) using " + score.getDescription();
     }
 
     @Override
@@ -63,9 +63,6 @@ public class Fgs2 implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-        parameters.add("fgsDepth");
-        return parameters;
+        return score.getParameters();
     }
 }

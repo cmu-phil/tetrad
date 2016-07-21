@@ -24,7 +24,7 @@ package mycomparisons;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pag.Gfci;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Fgc;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -70,7 +70,7 @@ public class RichardComparison {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fgc(new SemBicScore()));
+        algorithms.add(new Fgs(new SemBicScore()));
         algorithms.add(new Gfci(new SemBicScore()));
 
 //        Simulation simulation = new ContinuousSemThenDiscretizeSimulation();

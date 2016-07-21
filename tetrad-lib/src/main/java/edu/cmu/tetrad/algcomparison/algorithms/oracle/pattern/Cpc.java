@@ -62,8 +62,6 @@ public class Cpc implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
-        return parameters;
+        return test.getParameters();
     }
 }

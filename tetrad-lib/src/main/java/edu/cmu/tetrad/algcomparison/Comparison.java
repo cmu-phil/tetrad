@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithms.HasParameters;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -37,6 +38,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
+import mycomparisons.experimental.Experimental;
 import org.reflections.Reflections;
 
 import java.io.*;
@@ -375,8 +377,6 @@ public class Comparison {
             List<Class> scoreWrappers = new ArrayList<>();
             List<Class> simulations = new ArrayList<>();
 
-            List<String> parameters = new ArrayList<>();
-
             algorithms.addAll(getClasses(Algorithm.class));
 //
             statistics.addAll(getClasses(Statistic.class));
@@ -391,10 +391,14 @@ public class Comparison {
             out.println("Available Algorithms");
 
             out.println();
-            out.println("Takes and Independence Test (using Fisher Z test as an example)");
+            out.println("Takes an independence test (using an example independence test)");
             out.println();
 
             for (Class clazz : new ArrayList<>(algorithms)) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
                 Constructor[] constructors = clazz.getConstructors();
 
                 for (int i = 0; i < constructors.length; i++) {
@@ -403,15 +407,22 @@ public class Comparison {
                         Algorithm algorithm = (Algorithm) constructors[i].newInstance(
                                 FisherZ.class.newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(algorithm, out);
+                        }
                     }
                 }
             }
 
             out.println();
-            out.println("Takes a Score (using the SEM BIC score as an example):");
+            out.println("Takes a score (using an example score):");
             out.println();
 
             for (Class clazz : new ArrayList<>(algorithms)) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
                 Constructor[] constructors = clazz.getConstructors();
 
                 for (int i = 0; i < constructors.length; i++) {
@@ -420,7 +431,12 @@ public class Comparison {
                         Algorithm algorithm = (Algorithm) constructors[i].newInstance(
                                 SemBicScore.class.newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(algorithm, out);
+                        }
                     }
+
+
                 }
             }
 
@@ -429,12 +445,19 @@ public class Comparison {
             out.println();
 
             for (Class clazz : new ArrayList<>(algorithms)) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
                 Constructor[] constructors = clazz.getConstructors();
 
                 for (int i = 0; i < constructors.length; i++) {
                     if (constructors[i].getParameterTypes().length == 0) {
                         Algorithm algorithm = (Algorithm) constructors[i].newInstance();
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(algorithm, out);
+                        }
                     }
                 }
             }
@@ -445,6 +468,10 @@ public class Comparison {
             out.println();
 
             for (Class clazz : statistics) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
                 Constructor[] constructors = clazz.getConstructors();
 
                 for (int i = 0; i < constructors.length; i++) {
@@ -460,12 +487,19 @@ public class Comparison {
             out.println();
 
             for (Class clazz : independenceWrappers) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
                 Constructor[] constructors = clazz.getConstructors();
 
                 for (int i = 0; i < constructors.length; i++) {
                     if (constructors[i].getParameterTypes().length == 0) {
                         IndependenceWrapper independence = (IndependenceWrapper) constructors[i].newInstance();
                         out.println(clazz.getSimpleName() + ": " + independence.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(independence, out);
+                        }
                     }
                 }
             }
@@ -475,12 +509,19 @@ public class Comparison {
             out.println();
 
             for (Class clazz : scoreWrappers) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
                 Constructor[] constructors = clazz.getConstructors();
 
                 for (int i = 0; i < constructors.length; i++) {
                     if (constructors[i].getParameterTypes().length == 0) {
-                        ScoreWrapper scores = (ScoreWrapper) constructors[i].newInstance();
-                        out.println(clazz.getSimpleName() + ": " + scores.getDescription());
+                        ScoreWrapper score = (ScoreWrapper) constructors[i].newInstance();
+                        out.println(clazz.getSimpleName() + ": " + score.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(score, out);
+                        }
                     }
                 }
             }
@@ -490,12 +531,19 @@ public class Comparison {
             out.println();
 
             for (Class clazz : simulations) {
+                if (Experimental.class.isAssignableFrom(clazz)) {
+                    continue;
+                }
+
                 Constructor[] constructors = clazz.getConstructors();
 
                 for (int i = 0; i < constructors.length; i++) {
                     if (constructors[i].getParameterTypes().length == 0) {
-                        Simulation scores = (Simulation) constructors[i].newInstance();
-                        out.println(clazz.getSimpleName() + ": " + scores.getDescription());
+                        Simulation simulation = (Simulation) constructors[i].newInstance();
+                        out.println(clazz.getSimpleName() + ": " + simulation.getDescription());
+                        if (HasParameters.class.isAssignableFrom(clazz)) {
+                            printParameters(simulation, out);
+                        }
                     }
                 }
             }
@@ -506,6 +554,19 @@ public class Comparison {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void printParameters(HasParameters hasParameters, PrintStream out) {
+        List<String> parameters = hasParameters.getParameters();
+        if (parameters.isEmpty()) return;
+        out.print("\tParameters: ");
+
+        for (int i = 0; i < parameters.size(); i++) {
+            out.print(parameters.get(i));
+            if (i < parameters.size() - 1) out.print(", ");
+        }
+
+        out.println();
     }
 
     private List<Class> getClasses(Class type) {

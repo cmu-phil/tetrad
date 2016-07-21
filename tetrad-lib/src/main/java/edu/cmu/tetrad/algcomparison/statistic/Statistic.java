@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.algcomparison.algorithms.HasParameters;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
