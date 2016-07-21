@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 /**
  * The adjacency recall. The true positives are the number of adjacencies in both
  * the true and estimated graphs.
+ *
  * @author jdramsey
  */
 public class AdjacencyRecall implements Statistic {
@@ -31,7 +32,7 @@ public class AdjacencyRecall implements Statistic {
     }
 
     @Override
-    public double getWeight(double value) {
+    public double getMapTo01(double value) {
         return value;
     }
 }

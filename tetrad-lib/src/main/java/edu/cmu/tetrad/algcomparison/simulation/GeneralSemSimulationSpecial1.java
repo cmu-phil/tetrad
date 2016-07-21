@@ -16,6 +16,7 @@ import java.util.*;
 /**
  * This was used for a simulation to test the FTFC and FOFC algorithms and contains
  * some carefully selected functions to test nonlinearity and non-Gaussianity.
+ *
  * @author ekummerfeld@gmail.com
  * @author jdramsey
  */
@@ -25,15 +26,22 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        this.dataSets = new ArrayList<>();
+        int numEdges = parameters.getInt("numEdges");
+
+        if (numEdges == -1) {
+            numEdges = (int) (parameters.getInt("numMeasures") * parameters.getDouble("edgeFactor"));
+        }
+
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
-                parameters.getInt("numEdges"),
+                numEdges,
                 parameters.getInt("maxDegree"),
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
                 parameters.getInt("connected") == 1);
+
+        this.dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             DataSet dataSet = simulate(graph, parameters);
@@ -112,8 +120,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
                     String _template = TemplateExpander.getInstance().expandTemplate(
                             nonlinearStructuralEdgesFunction, pm, node);
                     pm.setNodeExpression(node, _template);
-                }
-                else {
+                } else {
                     String _template = TemplateExpander.getInstance().expandTemplate(
                             nonlinearFactorMeasureEdgesFunction, pm, node);
                     pm.setNodeExpression(node, _template);

@@ -9,6 +9,7 @@ import java.util.Set;
 
 /**
  * A confusion matrix for adjacencies--i.e. TP, FP, TN, FN for counts of adjacencies.
+ *
  * @author jdramsey
  */
 public class AdjacencyConfusion {

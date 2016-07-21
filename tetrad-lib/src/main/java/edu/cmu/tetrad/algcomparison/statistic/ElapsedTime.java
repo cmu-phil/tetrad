@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
  * Records the elapsed time of the algorithm in seconds. This is a placeholder, really;
  * the elapsed time is calculated by the comparison class and recorded if this statistic is
  * used.
+ *
  * @author jdramsey
  */
 public class ElapsedTime implements Statistic {
@@ -26,7 +27,7 @@ public class ElapsedTime implements Statistic {
     }
 
     @Override
-    public double getWeight(double value) {
+    public double getMapTo01(double value) {
         return 1 - Math.tanh(0.001 * value);
     }
 }

@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * CPC.
+ *
  * @author jdramsey
  */
 public class Cpc implements Algorithm {
@@ -22,6 +23,7 @@ public class Cpc implements Algorithm {
     public Cpc(IndependenceWrapper type) {
         this.test = type;
     }
+
     public Cpc(IndependenceWrapper type, Algorithm initialGraph) {
         this.test = type;
         this.initialGraph = initialGraph;

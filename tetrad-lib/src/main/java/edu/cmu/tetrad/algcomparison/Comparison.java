@@ -254,16 +254,22 @@ public class Comparison {
             }
 
             out.println();
-            out.println("Weighting of statistics:\n");
-            out.println("W = ");
+            out.println("Weighting of statistics:");
+            out.println();
+            out.println("Utility = ");
 
             for (Statistic stat : statistics.getStatistics()) {
                 String statName = stat.getAbbreviation();
                 double weight = statistics.getWeight(stat);
                 if (weight != 0.0) {
-                    out.println("    " + weight + " * Weight(" + statName + ")");
+                    out.println("    " + weight + " * f(" + statName + ")");
                 }
             }
+
+            out.println();
+            out.println("Note that f for each statistic is a function that maps the statistic to the ");
+            out.println("interval [0, 1], with higher being better.");
+            out.println();
 
             out.println();
 
@@ -900,7 +906,7 @@ public class Comparison {
             }
 
             if (statistics.isShowUtilities()) {
-                table.setToken(0, initialColumn + numStats, "W");
+                table.setToken(0, initialColumn + numStats, "U");
             }
 
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {

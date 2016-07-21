@@ -14,6 +14,7 @@ import java.util.List;
 
 /**
  * Wrapper for Fisher Z test.
+ *
  * @author jdramsey
  */
 public class SemBicTest implements IndependenceWrapper {

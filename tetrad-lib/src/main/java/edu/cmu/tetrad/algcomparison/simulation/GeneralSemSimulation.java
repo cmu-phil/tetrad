@@ -14,17 +14,19 @@ import java.util.*;
 public class GeneralSemSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
-    private Parameters parameters;
 
     @Override
     public void createData(Parameters parameters) {
-        this.parameters = parameters;
+        int numEdges = parameters.getInt("numEdges");
 
-        this.dataSets = new ArrayList<>();
+        if (numEdges == -1) {
+            numEdges = (int) (parameters.getInt("numMeasures") * parameters.getDouble("edgeFactor"));
+        }
+
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
-                parameters.getInt("numEdges"),
+                numEdges,
                 parameters.getInt("maxDegree"),
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
@@ -37,7 +39,7 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
-        GeneralizedSemPm pm = getPm(graph);
+        GeneralizedSemPm pm = getPm(graph, parameters);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         return im.simulateData(parameters.getInt("sampleSize"), false);
     }
@@ -80,7 +82,7 @@ public class GeneralSemSimulation implements Simulation {
         return parameters;
     }
 
-    private GeneralizedSemPm getPm(Graph graph) {
+    private GeneralizedSemPm getPm(Graph graph, Parameters parameters) {
         GeneralizedSemPm pm = new GeneralizedSemPm(graph);
 
         List<Node> variablesNodes = pm.getVariableNodes();
@@ -96,8 +98,7 @@ public class GeneralSemSimulation implements Simulation {
                     String _template = TemplateExpander.getInstance().expandTemplate(
                             latentFunction, pm, node);
                     pm.setNodeExpression(node, _template);
-                }
-                else {
+                } else {
                     String _template = TemplateExpander.getInstance().expandTemplate(
                             measuredFunction, pm, node);
                     pm.setNodeExpression(node, _template);

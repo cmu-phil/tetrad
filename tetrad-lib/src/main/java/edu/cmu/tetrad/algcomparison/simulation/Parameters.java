@@ -6,6 +6,7 @@ import java.util.*;
  * Stores a list of named parameters with their values. Stores default values for known
  * parameters. Returns a list of parameters with their values, for the parameters whose
  * values have been retrieved, using the toString method.
+ *
  * @author jdramsey
  */
 public class Parameters {
@@ -47,6 +48,7 @@ public class Parameters {
     /**
      * Returns a list of the parameters whoese values were actually used in the course of
      * the simulatoin.
+     *
      * @return This list, in String form.
      */
     public String toString() {
@@ -61,6 +63,7 @@ public class Parameters {
 
     /**
      * Returns the integer values of the given parameter.
+     *
      * @param name The name of the parameter.
      * @return The integer value of this parameter.
      */
@@ -81,6 +84,7 @@ public class Parameters {
 
     /**
      * Returns the double values of the given parameter.
+     *
      * @param name The name of the parameter.
      * @return The double value of this parameter.
      */
@@ -100,6 +104,7 @@ public class Parameters {
 
     /**
      * Returns the string values of the given parameter.
+     *
      * @param name The name of the parameter.
      * @return The double value of this parameter.
      */
@@ -120,34 +125,38 @@ public class Parameters {
 
     /**
      * Sets the value(s) of the given parameter to a list of strings.
+     *
      * @param name The name of the parameter.
-     * @param n A list of values for the parameter.
+     * @param n    A list of values for the parameter.
      */
-    public void put(String name, Object...n) {
+    public void put(String name, Object... n) {
         parameters.put(name, n);
     }
 
     /**
      * Sets the value(s) of the given parameter to a list of values.
+     *
      * @param name The name of the parameter.
-     * @param s A list of strings for the parameter.
+     * @param s    A list of strings for the parameter.
      */
-    public void put(String name, String...s) {
+    public void put(String name, String... s) {
         parameters.put(name, s);
     }
 
     /**
      * Returns the number of values for the parameter.
+     *
      * @param name The name of the parameter.
      * @return The number of values set for that parameter.
      */
     public int getNumValues(String name) {
         System.out.println(name);
-        return  parameters.get(name).length;
+        return parameters.get(name).length;
     }
 
     /**
      * Returns the values set for the given parameter. Usually of length 1.
+     *
      * @param parameter The name of the parameter.
      * @return The array of values.
      */
@@ -157,8 +166,9 @@ public class Parameters {
 
     /**
      * Sets the given parameter to the given value.
+     *
      * @param parameter The name of the parameter.
-     * @param value The value of the parameter (a single value).
+     * @param value     The value of the parameter (a single value).
      */
     public void setValue(String parameter, Object value) {
         parameters.put(parameter, new Object[]{value});
@@ -166,8 +176,9 @@ public class Parameters {
 
     /**
      * Sets the given parameter to the given value.
+     *
      * @param parameter The name of the parameter.
-     * @param value The value of the parameter (a single value).
+     * @param value     The value of the parameter (a single value).
      */
     public void setValue(String parameter, String value) {
         parameters.put(parameter, new String[]{value});
@@ -175,6 +186,7 @@ public class Parameters {
 
     /**
      * Sets a map of parameters to override the current ones.
+     *
      * @param parameters A map from parameter names to values.
      */
     public void setOverriddenParameters(Map<String, Object> parameters) {

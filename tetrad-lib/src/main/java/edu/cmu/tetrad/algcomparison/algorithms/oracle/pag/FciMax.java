@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * FciMax Max.
+ *
  * @author jdramsey
  */
 public class FciMax implements Algorithm {
@@ -22,6 +23,7 @@ public class FciMax implements Algorithm {
     public FciMax(IndependenceWrapper test) {
         this.test = test;
     }
+
     public FciMax(IndependenceWrapper test, Algorithm initialGraph) {
         this.test = test;
         this.initialGraph = initialGraph;
@@ -52,7 +54,7 @@ public class FciMax implements Algorithm {
     public String getDescription() {
         return "FCI-MAX (Fast Causal Inference Max) using " + test.getDescription() +
                 (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+                        initialGraph.getDescription() : "");
     }
 
     @Override

@@ -34,6 +34,7 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
+ *
  * @author jdramsey
  */
 public class ExampleCompareSimulation {

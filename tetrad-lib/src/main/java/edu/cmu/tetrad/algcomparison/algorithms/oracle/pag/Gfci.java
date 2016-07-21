@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * GFCI.
+ *
  * @author jdramsey
  */
 public class Gfci implements Algorithm {

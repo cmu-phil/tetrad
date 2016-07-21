@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
  * https://en.wikipedia.org/wiki/F1_score
  * </p>
  * We use what's on this page called the "traditional" F1 statistic.
+ *
  * @author Joseh Ramsey
  */
 public class F1Adj implements Statistic {
@@ -36,7 +37,7 @@ public class F1Adj implements Statistic {
     }
 
     @Override
-    public double getWeight(double value) {
+    public double getMapTo01(double value) {
         return value;
     }
 }

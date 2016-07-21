@@ -42,4 +42,5 @@ public class Gccd implements Algorithm {
         List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         return parameters;
-    }}
+    }
+}

@@ -39,6 +39,7 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
  * </p>
  * saves them. For other formats, specialty data loaders can be written to implement the
  * Simulation interface.
+ *
  * @author jdramsey
  */
 public class ExampleCompareFromFiles {
