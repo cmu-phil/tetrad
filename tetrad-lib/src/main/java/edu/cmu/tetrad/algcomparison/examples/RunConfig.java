@@ -31,7 +31,7 @@ import edu.cmu.tetrad.algcomparison.simulation.Simulation;
  *
  * @author jdramsey
  */
-public class ExampleConfig {
+public class RunConfig {
     public static void main(String... args) {
         new Comparison().configuration("comparison/Config.txt");
     }

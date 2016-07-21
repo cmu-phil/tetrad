@@ -4,23 +4,20 @@ import edu.cmu.tetrad.algcomparison.statistic.utilities.AdjacencyConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Calculates the F1 statistic for adjacencies. See
- * </p>
- * https://en.wikipedia.org/wiki/F1_score
- * </p>
- * We use what's on this page called the "traditional" F1 statistic.
- * @author Joseh Ramsey
+ * The adjacency recall. The true positives are the number of adjacencies in both
+ * the true and estimated graphs.
+ * @author jdramsey
  */
-public class F1AdjStat implements Statistic {
+public class AdjacencyRecall implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "F1Adj";
+        return "AR";
     }
 
     @Override
     public String getDescription() {
-        return "F1 statistic for adjacencies";
+        return "Adjacency Recall";
     }
 
     @Override
@@ -30,9 +27,7 @@ public class F1AdjStat implements Statistic {
         int adjFp = adjConfusion.getAdjFp();
         int adjFn = adjConfusion.getAdjFn();
         int adjTn = adjConfusion.getAdjTn();
-        double adjPrecision = adjTp / (double) (adjTp + adjFp);
-        double adjRecall = adjTp / (double) (adjTp + adjFn);
-        return 2 * (adjPrecision * adjRecall) / (adjPrecision + adjRecall);
+        return adjTp / (double) (adjTp + adjFn);
     }
 
     @Override

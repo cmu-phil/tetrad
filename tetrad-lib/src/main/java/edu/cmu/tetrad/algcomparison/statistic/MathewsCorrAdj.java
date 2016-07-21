@@ -12,7 +12,7 @@ import edu.cmu.tetrad.graph.Graph;
  * We calculate the correlation directly from the confusion matrix.
  * @author jdramsey
  */
-public class MathewsCorrAdjStat implements Statistic {
+public class MathewsCorrAdj implements Statistic {
     @Override
     public String getAbbreviation() {
         return "McAdj";

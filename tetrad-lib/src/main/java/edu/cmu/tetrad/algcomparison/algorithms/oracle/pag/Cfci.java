@@ -35,7 +35,7 @@ public class Cfci implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CFCI, using " + test.getDescription();
+        return "CFCI (Conservative Fast Causal Inference), using " + test.getDescription();
     }
 
     @Override

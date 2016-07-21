@@ -24,7 +24,7 @@ package mycomparisons;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pag.Gfci;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Fgs2;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Fgc;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -54,23 +54,23 @@ public class RichardComparison {
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new AdjacencyPrecisionStat());
-        statistics.add(new AdjacencyRecallStat());
-        statistics.add(new ArrowheadPrecisionStat());
-        statistics.add(new ArrowheadRecallStat());
-        statistics.add(new MathewsCorrAdjStat());
-        statistics.add(new MathewsCorrArrowStat());
-        statistics.add(new F1AdjStat());
-        statistics.add(new F1ArrowStat());
-        statistics.add(new ShdStat());
-        statistics.add(new ElapsedTimeStat());
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new MathewsCorrAdj());
+        statistics.add(new MathewsCorrArrow());
+        statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
+        statistics.add(new SHD());
+        statistics.add(new ElapsedTime());
 
         statistics.setSortByUtility(false);
         statistics.setShowUtilities(false);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fgs2(new SemBicScore()));
+        algorithms.add(new Fgc(new SemBicScore()));
         algorithms.add(new Gfci(new SemBicScore()));
 
 //        Simulation simulation = new ContinuousSemThenDiscretizeSimulation();

@@ -9,7 +9,7 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
  * the true graph.
  * @author jdramsey
  */
-public class ShdStat implements Statistic {
+public class SHD implements Statistic {
 
     @Override
     public String getAbbreviation() {

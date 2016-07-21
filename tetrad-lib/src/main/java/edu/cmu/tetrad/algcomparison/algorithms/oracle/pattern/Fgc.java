@@ -1,30 +1,31 @@
-package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
+package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FCI.
+ * FGS (the heuristic version).
  *
  * @author jdramsey
  */
-public class Fci implements Algorithm {
-    private IndependenceWrapper test;
+public class Fgc implements Algorithm {
+    private ScoreWrapper score;
     private Algorithm initialGraph = null;
 
-    public Fci(IndependenceWrapper type) {
-        this.test = type;
+    public Fgc(ScoreWrapper score) {
+        this.score = score;
     }
-    public Fci(IndependenceWrapper type, Algorithm initialGraph) {
-        this.test = type;
+
+    public Fgc(ScoreWrapper score, Algorithm initialGraph) {
+        this.score = score;
         this.initialGraph = initialGraph;
     }
 
@@ -36,35 +37,35 @@ public class Fci implements Algorithm {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Fci cpc = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.Fgs2 fgs = new edu.cmu.tetrad.search.Fgs2(score.getScore(dataSet, parameters));
 
         if (initial != null) {
-            cpc.setInitialGraph(initial);
+            fgs.setInitialGraph(initial);
         }
 
-        return cpc.search();
+        return fgs.search();
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(graph).convert();
+        return SearchGraphUtils.patternForDag(graph);
     }
 
+    @Override
     public String getDescription() {
-        return "FCI (Fast Causal Inference) using " + test.getDescription() +
-                (initialGraph != null ? " with initial graph from " +
-                initialGraph.getDescription() : "");
+        return "FGS (Fast Greedy Search) using " + score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return score.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
+        parameters.add("penaltyDiscount");
+        parameters.add("fgsDepth");
         return parameters;
     }
 }

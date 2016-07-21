@@ -4,20 +4,20 @@ import edu.cmu.tetrad.algcomparison.statistic.utilities.AdjacencyConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * The adjacency recall. The true positives are the number of adjacencies in both
+ * The adjacency precision. The true positives are the number of adjacencies in both
  * the true and estimated graphs.
  * @author jdramsey
  */
-public class AdjacencyRecallStat implements Statistic {
+public class AdjacencyPrecision implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "AR";
+        return "AP";
     }
 
     @Override
     public String getDescription() {
-        return "Adjacency Recall";
+        return "Adjacency Precision";
     }
 
     @Override
@@ -27,7 +27,7 @@ public class AdjacencyRecallStat implements Statistic {
         int adjFp = adjConfusion.getAdjFp();
         int adjFn = adjConfusion.getAdjFn();
         int adjTn = adjConfusion.getAdjTn();
-        return adjTp / (double) (adjTp + adjFn);
+        return adjTp / (double) (adjTp + adjFp);
     }
 
     @Override

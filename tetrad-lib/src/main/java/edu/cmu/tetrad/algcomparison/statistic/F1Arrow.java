@@ -14,7 +14,7 @@ import edu.cmu.tetrad.graph.Graph;
  * Similarly for false negatives
  * @author Joseh Ramsey
  */
-public class F1ArrowStat implements Statistic {
+public class F1Arrow implements Statistic {
     @Override
     public String getAbbreviation() {
         return "F1Arrow";

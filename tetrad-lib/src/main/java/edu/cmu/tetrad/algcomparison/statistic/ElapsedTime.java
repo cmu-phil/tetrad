@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
  * used.
  * @author jdramsey
  */
-public class ElapsedTimeStat implements Statistic {
+public class ElapsedTime implements Statistic {
 
     @Override
     public String getAbbreviation() {

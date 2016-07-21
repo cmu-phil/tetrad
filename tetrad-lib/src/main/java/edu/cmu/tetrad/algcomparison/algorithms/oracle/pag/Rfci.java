@@ -34,7 +34,7 @@ public class Rfci implements Algorithm {
     }
 
     public String getDescription() {
-        return "RFCI using " + test.getDescription();
+        return "RFCI (Really Fast Causal Inference) using " + test.getDescription();
     }
 
     @Override

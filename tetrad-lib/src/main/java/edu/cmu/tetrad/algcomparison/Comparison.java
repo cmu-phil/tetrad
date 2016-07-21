@@ -28,7 +28,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.*;
-import edu.cmu.tetrad.algcomparison.statistic.ElapsedTimeStat;
+import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.algcomparison.statistic.utilities.SimulationPath;
@@ -655,7 +655,7 @@ public class Comparison {
 
                             double stat;
 
-                            if (_stat instanceof ElapsedTimeStat) {
+                            if (_stat instanceof ElapsedTime) {
                                 stat = elapsed / 1000.0;
                             } else {
                                 stat = _stat.getValue(truth[u], est[u]);

@@ -35,7 +35,7 @@ public class Cpcs implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "CPC-Stable using " + test.getDescription();
+        return "CPC-Stable (Conservative \"Peter and Clark\" Stable) using " + test.getDescription();
     }
 
     @Override

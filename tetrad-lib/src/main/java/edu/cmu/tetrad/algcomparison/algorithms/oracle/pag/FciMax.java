@@ -50,7 +50,7 @@ public class FciMax implements Algorithm {
     }
 
     public String getDescription() {
-        return "FCI-MAX using " + test.getDescription() +
+        return "FCI-MAX (Fast Causal Inference Max) using " + test.getDescription() +
                 (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
