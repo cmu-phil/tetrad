@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
-import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -16,9 +16,9 @@ import java.util.List;
  * @author jdramsey
  */
 public class Cfci implements Algorithm {
-    private IndTestWrapper test;
+    private IndependenceWrapper test;
 
-    public Cfci(IndTestWrapper type) {
+    public Cfci(IndependenceWrapper test) {
         this.test = test;
     }
 

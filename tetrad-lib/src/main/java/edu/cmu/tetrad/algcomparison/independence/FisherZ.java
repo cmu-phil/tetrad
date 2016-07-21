@@ -13,7 +13,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  * @author jdramsey
  */
-public class FisherZ implements IndTestWrapper {
+public class FisherZ implements IndependenceWrapper {
     private DataSet dataSet = null;
     private IndependenceTest test = null;
 

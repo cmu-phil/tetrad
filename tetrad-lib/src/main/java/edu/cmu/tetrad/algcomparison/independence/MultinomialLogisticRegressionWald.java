@@ -12,7 +12,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  * @author jdramsey
  */
-public class MultinomialLogisticRegressionWald implements IndTestWrapper {
+public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
     private DataSet dataSet = null;
     private edu.cmu.tetrad.search.IndependenceTest test = null;
 

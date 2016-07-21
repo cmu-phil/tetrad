@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndTestWrapper;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.data.DataSet;
@@ -16,13 +16,13 @@ import java.util.List;
  * @author jdramsey
  */
 public class FciMax implements Algorithm {
-    private IndTestWrapper test;
+    private IndependenceWrapper test;
     private Algorithm initialGraph = null;
 
-    public FciMax(IndTestWrapper test) {
+    public FciMax(IndependenceWrapper test) {
         this.test = test;
     }
-    public FciMax(IndTestWrapper test, Algorithm initialGraph) {
+    public FciMax(IndependenceWrapper test, Algorithm initialGraph) {
         this.test = test;
         this.initialGraph = initialGraph;
     }

@@ -10,7 +10,7 @@ import java.util.List;
  * Interface that algorithms must implement.
  * @author jdramsey
  */
-public interface IndTestWrapper {
+public interface IndependenceWrapper {
 
     /**
      * Returns true iff x and y are independent conditional on z for the given data set.

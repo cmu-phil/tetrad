@@ -13,7 +13,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  * @author jdramsey
  */
-public class ConditionalCorrelation implements IndTestWrapper {
+public class ConditionalCorrelation implements IndependenceWrapper {
     private DataSet dataSet = null;
     private IndependenceTest test = null;
 
