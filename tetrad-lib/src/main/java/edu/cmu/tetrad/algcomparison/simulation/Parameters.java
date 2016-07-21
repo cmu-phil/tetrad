@@ -53,6 +53,9 @@ public class Parameters {
         put("scaleFreeBeta", 0.05);
         put("scaleFreeDeltaIn", 3);
         put("scaleFreeDeltaOut", 3);
+        put("generalSemFunctionTemplateMeasured", "TSUM(NEW(B)*$)");
+        put("generalSemFunctionTemplateLatent", "TSUM(NEW(B)*$)");
+        put("generalSemErrorTemplate", "Beta(2, 5)");
     }
 
     /**

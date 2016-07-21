@@ -79,6 +79,9 @@ public class GeneralSemSimulation implements Simulation {
         parameters.add("maxOutdegree");
         parameters.add("numRuns");
         parameters.add("sampleSize");
+        parameters.add("generalSemFunctionTemplateMeasured");
+        parameters.add("generalSemFunctionTemplateLatent");
+        parameters.add("generalSemErrorTemplate");
         return parameters;
     }
 
