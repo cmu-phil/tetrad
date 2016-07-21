@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.algorithms;
+package edu.cmu.tetrad.util;
 
 import java.util.List;
 
