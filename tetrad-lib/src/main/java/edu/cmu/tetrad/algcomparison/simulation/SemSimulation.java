@@ -40,7 +40,7 @@ public class SemSimulation implements Simulation {
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             SemPm pm = new SemPm(graph);
             SemImInitializationParams params = new SemImInitializationParams();
-            params.setVarRange(parameters.getDouble("variance"), parameters.getDouble("variance"));
+            params.setVarRange(parameters.getDouble("varLow"), parameters.getDouble("varHigh"));
             SemIm im = new SemIm(pm);
             dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
         }

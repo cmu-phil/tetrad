@@ -56,6 +56,8 @@ public class Parameters {
         put("generalSemFunctionTemplateMeasured", "TSUM(NEW(B)*$)");
         put("generalSemFunctionTemplateLatent", "TSUM(NEW(B)*$)");
         put("generalSemErrorTemplate", "Beta(2, 5)");
+        put("varLow", 1);
+        put("varHigh", 3);
     }
 
     /**
