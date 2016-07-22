@@ -43,13 +43,12 @@ public class ExampleCompareSimulation {
 
         parameters.put("numRuns", 10);
         parameters.put("numMeasures", 100);
-        parameters.put("edgeFactor", 2);
+        parameters.put("avgDegree", 4);
         parameters.put("sampleSize", 500);
         parameters.put("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("alpha"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -78,9 +77,7 @@ public class ExampleCompareSimulation {
 
         simulations.add(new SemSimulation());
 
-        Comparison comparison = new Comparison();
-        comparison.setTabDelimitedTables(true);
-        comparison.compareAlgorithms("comparison/Comparison.txt",
+        new Comparison().compareAlgorithms("comparison/Comparison.txt",
                 simulations, algorithms, statistics, parameters);
     }
 }

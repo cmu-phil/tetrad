@@ -119,7 +119,7 @@ public class Comparison {
         out.println(new Date());
 
         // Only consider the algorithms for the given data type. Mixed data types can go either way.
-        // MGM algorithms won't run on continuous data or discrete data.
+        // MGM algorithms won'algSimIndex run on continuous data or discrete data.
         List<AlgorithmWrapper> algorithmWrappers = new ArrayList<>();
 
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
@@ -650,14 +650,15 @@ public class Comparison {
         graphTypeUsed = new boolean[4];
         int numRuns = parameters.getInt("numRuns");
 
-        double[][][][] allStats = new double[4][algorithmSimulationWrappers.size() * statistics.size()][statistics.size() + 1][numRuns];
+        double[][][][] allStats = new double[4][algorithmSimulationWrappers.size()][statistics.size() + 1][numRuns];
 
         List<Run> runs = new ArrayList<>();
+        int index = 0;
 
-        for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
-            for (int i = 0; i < numRuns; i++) {
-                AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(t);
-                runs.add(new Run(i, t, algorithmSimulationWrapper));
+        for (int algSimIndex = 0; algSimIndex < algorithmSimulationWrappers.size(); algSimIndex++) {
+            for (int runIndex = 0; runIndex < numRuns; runIndex++) {
+                AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(algSimIndex);
+                runs.add(new Run(algSimIndex, runIndex, index++, algorithmSimulationWrapper));
             }
         }
 
@@ -709,11 +710,6 @@ public class Comparison {
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 
-//        for (Run run : runs) {
-//            didAnalysis = doRun(algorithmSimulationWrappers, statistics, parameters,
-//                    numGraphTypes, allStats, didAnalysis, run);
-//        }
-
         return allStats;
     }
 
@@ -744,21 +740,22 @@ public class Comparison {
         }
     }
 
-    private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, Statistics statistics, Parameters parameters, int numGraphTypes, double[][][][] allStats, Run run) {
+    private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, Statistics statistics,
+                       Parameters parameters, int numGraphTypes, double[][][][] allStats, Run run) {
         System.out.println();
-        System.out.println("Run " + (run.getI() + 1));
+        System.out.println("Run " + (run.getRunIndex() + 1));
         System.out.println();
 
-        AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(run.getT());
-        AlgorithmWrapper algorithmWrapper = algorithmSimulationWrappers.get(run.getT()).getAlgorithmWrapper();
+        AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(run.getAlgSimIndex());
+        AlgorithmWrapper algorithmWrapper = algorithmSimulationWrappers.get(run.getAlgSimIndex()).getAlgorithmWrapper();
         SimulationWrapper simulationWrapper = (SimulationWrapper) algorithmSimulationWrapper.getSimulation();
         Simulation simulation = algorithmSimulationWrapper.getSimulation();
-        DataSet data = simulation.getDataSet(run.getI());
+        DataSet data = simulation.getDataSet(run.getRunIndex());
         Graph trueGraph = simulation.getTrueGraph();
 
         boolean isMixed = data.isMixed();
 
-        System.out.println((run.getT() + 1) + ". " + algorithmSimulationWrapper.getDescription()
+        System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmSimulationWrapper.getDescription()
                 + " simulation: " + simulation.getDescription());
 
         long start = System.currentTimeMillis();
@@ -788,7 +785,7 @@ public class Comparison {
             path = ((SimulationPath) simulationWrapper.getSimulation()).getPath();
         }
 
-        printGraph(path, out, run.getI(), algorithmSimulationWrapper);
+        printGraph(path, out, run.getRunIndex(), algorithmSimulationWrapper);
 
         long stop = System.currentTimeMillis();
 
@@ -829,23 +826,24 @@ public class Comparison {
             for (int u = 0; u < numGraphTypes; u++) {
                 if (!graphTypeUsed[u]) continue;
 
-                int j = -1;
+                int statIndex = -1;
 
                 for (Statistic _stat : statistics.getStatistics()) {
-                    j++;
+                    statIndex++;
 
                     double stat;
 
                     if (_stat instanceof ElapsedTime) {
                         stat = elapsed / 1000.0;
                     } else if (_stat instanceof ParameterColumn) {
-                        stat = parameters.getDouble(_stat.getAbbreviation());
+                        stat = run.getWrapper().getAlgorithmWrapper().getAlgorithmSpecificParameters()
+                                .getDouble(_stat.getAbbreviation());
                     } else {
                         stat = _stat.getValue(truth[u], est[u]);
                     }
 
                     if (!Double.isNaN(stat)) {
-                        allStats[u][run.getT()][j][run.getI()] = stat;
+                        allStats[u][run.getAlgSimIndex()][statIndex][run.getRunIndex()] = stat;
                     }
                 }
             }
@@ -1359,22 +1357,28 @@ public class Comparison {
     }
 
     private class Run {
-        private final int i;
-        private final int t;
+        private final int algSimIndex;
+        private final int runIndex;
+        private final int index;
         private final AlgorithmSimulationWrapper wrapper;
 
-        public Run(int i, int t, AlgorithmSimulationWrapper wrapper) {
-            this.i = i;
-            this.t = t;
+        public Run(int algSimIndex, int runIndex, int index, AlgorithmSimulationWrapper wrapper) {
+            this.runIndex = runIndex;
+            this.algSimIndex = algSimIndex;
+            this.index = index;
             this.wrapper = wrapper;
         }
 
-        public int getI() {
-            return i;
+        public int getAlgSimIndex() {
+            return algSimIndex;
         }
 
-        public int getT() {
-            return t;
+        public int getRunIndex() {
+            return runIndex;
+        }
+
+        public int getIndex() {
+            return index;
         }
 
         public AlgorithmSimulationWrapper getWrapper() {
