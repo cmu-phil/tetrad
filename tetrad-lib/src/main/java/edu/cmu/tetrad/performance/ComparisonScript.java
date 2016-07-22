@@ -31,7 +31,7 @@ public class ComparisonScript {
         /** ******************** **/
 
         /** If you want to run on NO DATA, i.e., just run each algorithm directly on some random true graphs **/
-        params.setNoData(true); // set this to true
+        params.setNoData(false); // set this to true
         // note that the number of random graphs will be equal to numTrials, set above
         /** ******************** **/
 

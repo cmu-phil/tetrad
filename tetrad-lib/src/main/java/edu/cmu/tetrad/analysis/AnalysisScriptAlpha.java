@@ -54,7 +54,7 @@ public class AnalysisScriptAlpha {
         DataSet dataSet = null;
         for (File file : files) {
 
-            if (file.getName().startsWith("data") && file.getName().endsWith(".txt")) {
+            if (file.getName().startsWith("jul14") && file.getName().endsWith(".txt")) {
                 Path dataFile = Paths.get(path.concat("/").concat(file.getName()));
                 Character delimiter = '\t';
                 try {

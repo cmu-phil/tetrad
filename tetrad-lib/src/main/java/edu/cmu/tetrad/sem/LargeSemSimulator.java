@@ -378,8 +378,15 @@ public final class LargeSemSimulator {
         this.verbose = verbose;
     }
 
-    public double[][] getCoefs(){
-        return coefs;
+    public double[][] getCoefficientMatrix() {
+        double[][] c = new double[coefs.length][coefs.length];
+
+        for (int i = 0; i < coefs.length; i++) {
+            for (int j = 0; j < coefs[i].length; j++) {
+                c[i][parents[i][j]] = coefs[i][j];
+            }
+        }
+        return c;
     }
 }
 

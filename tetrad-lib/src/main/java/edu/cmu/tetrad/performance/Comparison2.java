@@ -15,7 +15,9 @@ import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
+import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.linear.EigenDecomposition;
+import edu.cmu.tetrad.util.MatrixUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -254,18 +256,21 @@ public class Comparison2 {
 
                 dataSet = sim.simulateDataAcyclic(params.getSampleSize());
 
-//                /** added 6.08.16 for tsFCI **/
-//                if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
-//                    boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(sim.getCoefs()));
-//                         //this TetradMatrix needs to be the matrix of coefficients from the SEM!
-//                    if (!isStableTetradMatrix){
-//                        System.out.println("%%%%%%%%%% WARNING %%%%%%%%% not a stable set of eigenvalues for data generation");
-//                        System.out.println("Skipping this attempt!");
-//                        sim.setCoefRange(0.2,0.5);
-//                        dataSet = sim.simulateDataAcyclic(params.getSampleSize());
-//                    }
-//                }
-//                /***************************/
+                /** added 6.08.16 for tsFCI **/
+                if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+//                    System.out.println("Coefs matrix : " + sim.getCoefs());
+                    System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
+//                    System.out.println("dim = " + sim.getCoefs()[1][1]);
+                    boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(sim.getCoefficientMatrix()));
+                         //this TetradMatrix needs to be the matrix of coefficients from the SEM!
+                    if (!isStableTetradMatrix){
+                        System.out.println("%%%%%%%%%% WARNING %%%%%%%%% not a stable set of eigenvalues for data generation");
+                        System.out.println("Skipping this attempt!");
+                        sim.setCoefRange(0.2,0.5);
+                        dataSet = sim.simulateDataAcyclic(params.getSampleSize());
+                    }
+                }
+                /***************************/
 
             } else if (params.getDataType() == ComparisonParameters.DataType.Discrete) {
                 List<Node> nodes = new ArrayList<>();
@@ -683,9 +688,15 @@ public class Comparison2 {
 
     public static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {
 
-        EigenDecomposition dec = new EigenDecomposition(mat.getRealMatrix());
-        double[] realEigenvalues = dec.getRealEigenvalues();
-        double[] imagEigenvalues = dec.getImagEigenvalues();
+        double[] realEigenvalues = new double[0];
+        double[] imagEigenvalues = new double[0];
+        try {
+            EigenDecomposition dec = new EigenDecomposition(mat.getRealMatrix());
+            realEigenvalues = dec.getRealEigenvalues();
+            imagEigenvalues = dec.getImagEigenvalues();
+        } catch (MaxCountExceededException e) {
+            e.printStackTrace();
+        }
 
         double sum = 0.0;
 
@@ -703,7 +714,7 @@ public class Comparison2 {
 
             sum += modulus;
 
-            if (modulus >= 1.5) {
+            if (modulus >= 1.0) {
                 return false;
 //                allEigenvaluesSmallerThanOneInModulus = false;
             }
