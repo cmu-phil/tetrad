@@ -53,7 +53,7 @@ public class ParameterColumn implements Statistic {
      * will thow an exception.
      * @throws UnsupportedOperationException
      */
-    public double getMapTo01(double value) {
+    public double getNormValue(double value) {
         throw new UnsupportedOperationException();
     }
 }

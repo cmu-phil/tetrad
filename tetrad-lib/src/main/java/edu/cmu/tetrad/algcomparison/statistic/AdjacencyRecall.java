@@ -32,7 +32,7 @@ public class AdjacencyRecall implements Statistic {
     }
 
     @Override
-    public double getMapTo01(double value) {
+    public double getNormValue(double value) {
         return value;
     }
 }
