@@ -12,7 +12,7 @@ import java.util.*;
 public class Parameters {
     private Map<String, Object[]> parameters = new LinkedHashMap<>();
     private Set<String> usedParameters = new LinkedHashSet<>();
-    private Map<String, Object> overriddenParameter = new HashMap<>();
+    private Map<String, Object> overriddenParameters = new HashMap<>();
 
     public Parameters() {
 
@@ -56,6 +56,14 @@ public class Parameters {
         put("generalSemFunctionTemplateMeasured", "TSUM(NEW(B)*$)");
         put("generalSemFunctionTemplateLatent", "TSUM(NEW(B)*$)");
         put("generalSemErrorTemplate", "Beta(2, 5)");
+        put("varLow", 1);
+        put("varHigh", 3);
+    }
+
+    public Parameters(Parameters parameters) {
+        this.parameters = new LinkedHashMap<>(parameters.parameters);
+        this.usedParameters = new LinkedHashSet<>(parameters.usedParameters);
+        this.overriddenParameters = new HashMap<>(parameters.overriddenParameters);
     }
 
     /**
@@ -81,8 +89,8 @@ public class Parameters {
      * @return The integer value of this parameter.
      */
     public int getInt(String name) {
-        if (overriddenParameter.containsKey(name)) {
-            Object o = overriddenParameter.get(name);
+        if (overriddenParameters.containsKey(name)) {
+            Object o = overriddenParameters.get(name);
             return ((Number) o).intValue();
         }
 
@@ -102,8 +110,8 @@ public class Parameters {
      * @return The double value of this parameter.
      */
     public double getDouble(String name) {
-        if (overriddenParameter.containsKey(name)) {
-            Object o = overriddenParameter.get(name);
+        if (overriddenParameters.containsKey(name)) {
+            Object o = overriddenParameters.get(name);
             return ((Number) o).doubleValue();
         }
 
@@ -122,8 +130,8 @@ public class Parameters {
      * @return The double value of this parameter.
      */
     public String getString(String name) {
-        if (overriddenParameter.containsKey(name)) {
-            Object o = overriddenParameter.get(name);
+        if (overriddenParameters.containsKey(name)) {
+            Object o = overriddenParameters.get(name);
             return (String) o;
         }
 
@@ -203,6 +211,14 @@ public class Parameters {
      * @param parameters A map from parameter names to values.
      */
     public void setOverriddenParameters(Map<String, Object> parameters) {
-        this.overriddenParameter = parameters;
+        this.overriddenParameters = parameters;
+    }
+
+    public Map<String, Object[]> getParameters() {
+        return parameters;
+    }
+
+    public Set<String> getUsedParameters() {
+        return usedParameters;
     }
 }
