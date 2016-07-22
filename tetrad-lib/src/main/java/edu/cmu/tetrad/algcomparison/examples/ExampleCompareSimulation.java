@@ -49,6 +49,7 @@ public class ExampleCompareSimulation {
 
         Statistics statistics = new Statistics();
 
+        statistics.add(new ParameterColumn("alpha"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -77,7 +78,9 @@ public class ExampleCompareSimulation {
 
         simulations.add(new SemSimulation());
 
-        new Comparison().compareAlgorithms("comparison/Comparison.txt",
+        Comparison comparison = new Comparison();
+        comparison.setTabDelimitedTables(true);
+        comparison.compareAlgorithms("comparison/Comparison.txt",
                 simulations, algorithms, statistics, parameters);
     }
 }

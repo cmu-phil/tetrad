@@ -32,6 +32,7 @@ import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
+import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.algcomparison.statistic.utilities.SimulationPath;
@@ -134,7 +135,7 @@ public class Comparison {
             }
 
             if (varyingParameters.isEmpty()) {
-                algorithmWrappers.add(new AlgorithmWrapper(algorithm));
+                algorithmWrappers.add(new AlgorithmWrapper(algorithm, parameters));
             } else {
 
                 int[] dims = new int[_dims.size()];
@@ -144,7 +145,7 @@ public class Comparison {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    AlgorithmWrapper wrapper = new AlgorithmWrapper(algorithm);
+                    AlgorithmWrapper wrapper = new AlgorithmWrapper(algorithm, parameters);
 
                     for (int h = 0; h < dims.length; h++) {
                         String p = varyingParameters.get(h);
@@ -260,7 +261,7 @@ public class Comparison {
             out.println();
             out.println("Weighting of statistics:");
             out.println();
-            out.println("Utility = ");
+            out.println("U = ");
 
             for (Statistic stat : statistics.getStatistics()) {
                 String statName = stat.getAbbreviation();
@@ -651,12 +652,10 @@ public class Comparison {
 
         double[][][][] allStats = new double[4][algorithmSimulationWrappers.size() * statistics.size()][statistics.size() + 1][numRuns];
 
-        boolean didAnalysis = false;
-
         List<Run> runs = new ArrayList<>();
 
-        for (int i = 0; i < numRuns; i++) {
-            for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
+        for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
+            for (int i = 0; i < numRuns; i++) {
                 AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(t);
                 runs.add(new Run(i, t, algorithmSimulationWrapper));
             }
@@ -745,13 +744,13 @@ public class Comparison {
         }
     }
 
-
     private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, Statistics statistics, Parameters parameters, int numGraphTypes, double[][][][] allStats, Run run) {
         System.out.println();
         System.out.println("Run " + (run.getI() + 1));
         System.out.println();
 
         AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(run.getT());
+        AlgorithmWrapper algorithmWrapper = algorithmSimulationWrappers.get(run.getT()).getAlgorithmWrapper();
         SimulationWrapper simulationWrapper = (SimulationWrapper) algorithmSimulationWrapper.getSimulation();
         Simulation simulation = algorithmSimulationWrapper.getSimulation();
         DataSet data = simulation.getDataSet(run.getI());
@@ -768,13 +767,15 @@ public class Comparison {
         try {
             DataSet copy = data.copy();
 
-            for (String p : algorithmSimulationWrapper.getOverriddenParameters()) {
-                parameters.setValue(p, algorithmSimulationWrapper.getValue(p));
+            Parameters algParameters = algorithmSimulationWrapper.getAlgorithmWrapper().getAlgorithmSpecificParameters();
+
+            for (String p : algorithmWrapper.getOverriddenParameters()) {
+                algParameters.setValue(p, algorithmWrapper.getValue(p));
             }
 
             parameters.setOverriddenParameters(algorithmSimulationWrapper.getOverriddenParametersMap());
 
-            out = algorithmSimulationWrapper.search(copy, parameters);
+            out = algorithmSimulationWrapper.search(copy, algParameters);
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmSimulationWrapper.getDescription());
             e.printStackTrace();
@@ -837,6 +838,8 @@ public class Comparison {
 
                     if (_stat instanceof ElapsedTime) {
                         stat = elapsed / 1000.0;
+                    } else if (_stat instanceof ParameterColumn) {
+                        stat = parameters.getDouble(_stat.getAbbreviation());
                     } else {
                         stat = _stat.getValue(truth[u], est[u]);
                     }
@@ -970,6 +973,7 @@ public class Comparison {
         int numStats = statistics.size();
 
         NumberFormat nf = new DecimalFormat("0.00");
+        NumberFormat smallNf = new DecimalFormat("0.00E0");
 
         out.println();
 
@@ -1023,7 +1027,8 @@ public class Comparison {
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
                 for (int statIndex = 0; statIndex < numStats; statIndex++) {
                     double stat = statTables[u][newOrder[t]][statIndex];
-                    table.setToken(t + 1, initialColumn + statIndex, nf.format(Math.abs(stat)));
+                    table.setToken(t + 1, initialColumn + statIndex,
+                            Math.abs(stat) < 0.1 ? smallNf.format(stat) : nf.format(stat));
                 }
 
                 table.setToken(t + 1, initialColumn + numStats, nf.format(utilities[newOrder[t]]));
@@ -1166,15 +1171,17 @@ public class Comparison {
 
     private class AlgorithmWrapper implements Algorithm {
         private Algorithm algorithm;
-        private Map<String, Object> overriddenParameters = new LinkedHashMap<>();
+        private Parameters parameters;
+        private List<String> overriddenParameters = new ArrayList<>();
 
-        public AlgorithmWrapper(Algorithm algorithm) {
+        public AlgorithmWrapper(Algorithm algorithm, Parameters parameters) {
             this.algorithm = algorithm;
+            this.parameters = new Parameters(parameters);
         }
 
         @Override
         public Graph search(DataSet dataSet, Parameters parameters) {
-            return algorithm.search(dataSet, parameters);
+            return algorithm.search(dataSet, this.parameters);
         }
 
         @Override
@@ -1188,8 +1195,8 @@ public class Comparison {
             description.append(algorithm.getDescription());
 
             if (overriddenParameters.size() > 0) {
-                for (String parameter : overriddenParameters.keySet()) {
-                    description.append(", " + parameter + " = " + overriddenParameters.get(parameter));
+                for (String parameter : overriddenParameters) {
+                    description.append(", " + parameter + " = " + parameters.getValues(parameter)[0]);
                 }
             }
 
@@ -1207,20 +1214,23 @@ public class Comparison {
         }
 
         public List<String> getOverriddenParameters() {
-            return new ArrayList<>(overriddenParameters.keySet());
+            return new ArrayList<>(overriddenParameters);
         }
 
         public void setValue(String parameter, Object value) {
-            this.overriddenParameters.put(parameter, value);
+            parameters.setValue(parameter, value);
+            this.overriddenParameters.add(parameter);
         }
 
         public Object getValue(String parameter) {
-            return overriddenParameters.get(parameter);
+            return parameters.getValues(parameter)[0];
         }
 
         public Algorithm getAlgorithm() {
             return algorithm;
         }
+
+        public Parameters getAlgorithmSpecificParameters() { return this.parameters; }
     }
 
     private class AlgorithmSimulationWrapper implements Algorithm {
@@ -1256,10 +1266,6 @@ public class Comparison {
         @Override
         public List<String> getParameters() {
             return algorithmWrapper.getParameters();
-        }
-
-        public List<String> getOverriddenParameters() {
-            return new ArrayList<>(overriddenParameters.keySet());
         }
 
         public void setValue(String parameter, Object value) {
