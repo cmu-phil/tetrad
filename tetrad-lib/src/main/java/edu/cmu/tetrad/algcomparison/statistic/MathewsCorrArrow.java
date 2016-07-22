@@ -39,7 +39,7 @@ public class MathewsCorrArrow implements Statistic {
     }
 
     @Override
-    public double getMapTo01(double value) {
+    public double getNormValue(double value) {
         return 0.5 + 0.5 * value;
     }
 

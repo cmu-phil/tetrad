@@ -42,5 +42,5 @@ public interface Statistic {
      * @param value The value of the statistic.
      * @return The weight of the statistic, 0 to 1, higher is better.
      */
-    double getMapTo01(double value);
+    double getNormValue(double value);
 }
