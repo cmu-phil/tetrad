@@ -37,6 +37,8 @@ public class Statistics {
      * @param weight       The utility weight for that statistic.
      */
     public void setWeight(String abbrebiation, double weight) {
+        if (weight < 0 || weight > 1) throw new IllegalArgumentException("Weight must be in [0, 1]: " + weight);
+
         boolean set = false;
 
         for (Statistic stat : statistics) {

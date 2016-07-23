@@ -396,9 +396,9 @@ public class Comparison {
 //
             simulations.addAll(getClasses(Simulation.class));
 
-            out.println("Available Algorithms");
+            out.println("Available Algorithms:");
             out.println();
-            out.println("Takes an independence test (using an example independence test):");
+            out.println("Algorithms that take an independence test (using an example independence test):");
             out.println();
 
             for (Class clazz : new ArrayList<>(algorithms)) {
@@ -417,12 +417,15 @@ public class Comparison {
                         if (HasParameters.class.isAssignableFrom(clazz)) {
                             printParameters(algorithm, out, allParams);
                         }
+                        if (TakesInitialGraph.class.isAssignableFrom(clazz)) {
+                            out.println("\t" + clazz.getSimpleName() + " can take an initial graph from some other algorithm as input");
+                        }
                     }
                 }
             }
 
             out.println();
-            out.println("Takes a score (using an example score):");
+            out.println("Algorithms that taks a score (using an example score):");
             out.println();
 
             for (Class clazz : new ArrayList<>(algorithms)) {
@@ -448,7 +451,7 @@ public class Comparison {
             }
 
             out.println();
-            out.println("Blank Constructor:");
+            out.println("Algorithms with blank constructor:");
             out.println();
 
             for (Class clazz : new ArrayList<>(algorithms)) {
@@ -471,7 +474,7 @@ public class Comparison {
 
 
             out.println();
-            out.println("Available Statistics");
+            out.println("Available Statistics:");
             out.println();
 
             for (Class clazz : statistics) {
@@ -490,7 +493,7 @@ public class Comparison {
             }
 
             out.println();
-            out.println("Available Independence Tests");
+            out.println("Available Independence Tests:");
             out.println();
 
             for (Class clazz : independenceWrappers) {
@@ -512,7 +515,7 @@ public class Comparison {
             }
 
             out.println();
-            out.println("Available Scores");
+            out.println("Available Scores:");
             out.println();
 
             for (Class clazz : scoreWrappers) {
@@ -534,7 +537,7 @@ public class Comparison {
             }
 
             out.println();
-            out.println("Available Simulations");
+            out.println("Available Simulations:");
             out.println();
 
             for (Class clazz : simulations) {

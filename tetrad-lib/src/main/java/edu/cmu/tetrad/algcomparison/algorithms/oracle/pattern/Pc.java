@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
+import edu.cmu.tetrad.algcomparison.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataType;
@@ -16,7 +17,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Pc implements Algorithm {
+public class Pc implements Algorithm, TakesInitialGraph {
     private IndependenceWrapper test;
     private Algorithm initialGraph = null;
 
