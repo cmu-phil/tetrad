@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
+import edu.cmu.tetrad.algcomparison.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -16,7 +17,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Fgs implements Algorithm {
+public class Fgs implements Algorithm, TakesInitialGraph {
     private ScoreWrapper score;
     private Algorithm initialGraph = null;
 
