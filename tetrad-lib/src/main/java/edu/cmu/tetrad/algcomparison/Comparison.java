@@ -35,7 +35,9 @@ import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
-import edu.cmu.tetrad.algcomparison.statistic.utilities.SimulationPath;
+import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
+import edu.cmu.tetrad.algcomparison.utils.HasParameters;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
@@ -1231,7 +1233,9 @@ public class Comparison {
             return algorithm;
         }
 
-        public Parameters getAlgorithmSpecificParameters() { return this.parameters; }
+        public Parameters getAlgorithmSpecificParameters() {
+            return this.parameters;
+        }
     }
 
     private class AlgorithmSimulationWrapper implements Algorithm {
