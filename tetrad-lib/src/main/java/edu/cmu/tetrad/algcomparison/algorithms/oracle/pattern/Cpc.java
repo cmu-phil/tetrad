@@ -1,15 +1,14 @@
 package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
 
-import edu.cmu.tetrad.algcomparison.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
