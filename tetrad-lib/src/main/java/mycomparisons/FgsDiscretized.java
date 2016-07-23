@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FGS (the heuristic version).
+ * FGS, discretizing all variables in the (continuous) dataset.
  *
  * @author jdramsey
  */

@@ -10,10 +10,11 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FGS (the heuristic version).
+ * FGS, adding measurement noise to all variables in the (continuous) dataset.
  *
  * @author jdramsey
  */
@@ -59,7 +60,7 @@ public class FgsMeasurementError implements Algorithm, TakesInitialGraph {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
+        List<String> parameters = new ArrayList<>(score.getParameters());
         parameters.add("measurementVariance");
         return parameters;
     }
