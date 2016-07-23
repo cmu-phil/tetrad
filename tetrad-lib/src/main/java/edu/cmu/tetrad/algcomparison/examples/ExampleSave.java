@@ -37,7 +37,7 @@ public class ExampleSave {
 
         parameters.put("numRuns", 10);
         parameters.put("numMeasures", 100);
-        parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
+        parameters.put("avgDegree", 4);
         parameters.put("sampleSize", 100, 500, 1000);
 
         Simulation simulation = new SemSimulation();
