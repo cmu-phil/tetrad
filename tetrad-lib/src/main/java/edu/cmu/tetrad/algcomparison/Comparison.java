@@ -1233,7 +1233,9 @@ public class Comparison {
             return algorithm;
         }
 
-        public Parameters getAlgorithmSpecificParameters() { return this.parameters; }
+        public Parameters getAlgorithmSpecificParameters() {
+            return this.parameters;
+        }
     }
 
     private class AlgorithmSimulationWrapper implements Algorithm {
