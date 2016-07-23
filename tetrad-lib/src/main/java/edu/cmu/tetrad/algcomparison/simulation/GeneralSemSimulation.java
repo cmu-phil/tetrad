@@ -32,6 +32,8 @@ public class GeneralSemSimulation implements Simulation {
                 parameters.getInt("maxOutdegree"),
                 parameters.getInt("connected") == 1);
 
+        this.dataSets = new ArrayList<>();
+
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             DataSet dataSet = simulate(graph, parameters);
             this.dataSets.add(dataSet);

@@ -1,14 +1,14 @@
-package edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern;
+package edu.cmu.tetrad.algcomparison.algorithms.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.Lofs2;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,16 +16,10 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Pc implements Algorithm, TakesInitialGraph {
-    private IndependenceWrapper test;
+public class SkewE implements Algorithm, TakesInitialGraph {
     private Algorithm initialGraph = null;
 
-    public Pc(IndependenceWrapper test) {
-        this.test = test;
-    }
-
-    public Pc(IndependenceWrapper test, Algorithm initialGraph) {
-        this.test = test;
+    public SkewE(Algorithm initialGraph) {
         this.initialGraph = initialGraph;
     }
 
@@ -37,34 +31,33 @@ public class Pc implements Algorithm, TakesInitialGraph {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Pc cpc = new edu.cmu.tetrad.search.Pc(test.getTest(dataSet, parameters));
+        List<DataSet> dataSets = new ArrayList<>();
+        dataSets.add(dataSet);
 
-        if (initial != null) {
-            cpc.setInitialGraph(initial);
-        }
+        Lofs2 lofs = new Lofs2(initial, dataSets);
+        lofs.setRule(Lofs2.Rule.SkewE);
 
-        return cpc.search();
+        return lofs.orient();
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(graph);
+        return graph;
     }
 
     @Override
     public String getDescription() {
-        return "PC (\"Peter and Clark\") using " + test.getDescription()
-                + (initialGraph != null ? " with initial graph from " +
+        return "SkewE" + (initialGraph != null ? " with initial graph from " +
                 initialGraph.getDescription() : "");
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return DataType.Continuous;
     }
 
     @Override
     public List<String> getParameters() {
-        return test.getParameters();
+        return initialGraph.getParameters();
     }
 }
