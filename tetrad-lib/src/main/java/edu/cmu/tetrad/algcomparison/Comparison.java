@@ -755,7 +755,7 @@ public class Comparison {
         Graph out;
 
         try {
-            out = algorithmSimulationWrapper.search(data, algorithmWrapper.getAlgorithmSpecificParameters());
+            out = algorithmSimulationWrapper.search(data.copy(), algorithmWrapper.getAlgorithmSpecificParameters());
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
             e.printStackTrace();
@@ -768,7 +768,7 @@ public class Comparison {
             path = ((SimulationPath) simulationWrapper.getSimulation()).getPath();
         }
 
-        printGraph(path, out, run.getRunIndex(), algorithmSimulationWrapper);
+        printGraph(path, out, run.getRunIndex(), algorithmWrapper);
 
         long stop = System.currentTimeMillis();
 
@@ -812,9 +812,9 @@ public class Comparison {
                 int statIndex = -1;
 
                 for (Statistic _stat : statistics.getStatistics()) {
-                    if (_stat instanceof ParameterColumn) continue;
-
                     statIndex++;
+
+                    if (_stat instanceof ParameterColumn) continue;
 
                     double stat;
 
@@ -830,13 +830,13 @@ public class Comparison {
         }
     }
 
-    private void printGraph(String path, Graph graph, int i, Algorithm algorithm) {
+    private void printGraph(String path, Graph graph, int i, AlgorithmWrapper algorithmWrapper) {
         if (!saveGraphs) {
             return;
         }
 
         try {
-            String description = algorithm.getDescription();
+            String description = algorithmWrapper.getDescription();
             File file;
 
             if (path != null) {
@@ -1095,10 +1095,17 @@ public class Comparison {
         List<Integer> order = new ArrayList<>();
         for (int t = 0; t < algorithmSimulationWrappers.size(); t++) order.add(t);
 
+        final double[] _utilities = Arrays.copyOf(utilities, utilities.length);
+        double low = StatUtils.min(utilities);
+        for (int t = 0; t < _utilities.length; t++) {
+            low--;
+            if (Double.isNaN(_utilities[t])) _utilities[t] = low;
+        }
+
         Collections.sort(order, new Comparator<Integer>() {
             @Override
             public int compare(Integer o1, Integer o2) {
-                return -Double.compare(utilities[o1], utilities[o2]);
+                return -Double.compare(_utilities[o1], _utilities[o2]);
             }
         });
 
