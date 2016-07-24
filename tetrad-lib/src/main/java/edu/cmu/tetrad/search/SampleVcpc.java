@@ -491,7 +491,7 @@ public final class SampleVcpc implements GraphSearch {
 //            for (Edge edge : graph.getEdges()) {
 //                if (Edges.isBidirectedEdge(edge)) {
 //                    patterns.remove(graph);
-//                    continue GRAPH;
+//                    continue Graph;
 //                }
 //            }
 

@@ -1029,7 +1029,7 @@ public class MGM extends ConvexProximal implements GraphSearch{
 
         /*public Matrix compute(double t, Matrix X){
             double[][] out = new double[1][];
-            out[0] = computeColt(t, factory1D.make(X.getData()[0])).toArray();
+            out[0] = computeColt(t, factory1D.make(X.getContinuousData()[0])).toArray();
             return new DenseMatrix(out);
         }*/
 

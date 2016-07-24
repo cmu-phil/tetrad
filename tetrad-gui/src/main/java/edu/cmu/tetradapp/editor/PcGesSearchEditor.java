@@ -162,6 +162,10 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result Graph");
     }
 
+    public PcGesSearchEditor(RandomMixedRunner runner) {
+        super(runner, "Result Graph");
+    }
+
 //    public PcGesSearchEditor(GlassoRunner runner) {
 //        super(runner, "Result Graph");
 //    }
@@ -337,9 +341,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Pattern pattern = new Pattern(resultGraph);
-            PatternToDag ptd = new PatternToDag(pattern);
-            Graph dag = ptd.patternToDagMeek();
+            Graph dag = SearchGraphUtils.dagFromPattern(resultGraph);
 
             DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
             String report;
@@ -491,19 +493,23 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         }
 
 
-        BayesProperties properties = new BayesProperties(dataSet, dag);
-        properties.setGraph(dag);
-
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(4);
 
         StringBuilder buf = new StringBuilder();
-        buf.append("\nP-value = ").append(properties.getLikelihoodRatioP());
-        buf.append("\nDf = ").append(properties.getPValueDf());
-        buf.append("\nChi square = ")
-                .append(nf.format(properties.getPValueChisq()));
-        buf.append("\nBIC score = ").append(nf.format(properties.getBic()));
-        buf.append("\n\nH0: Completely disconnected graph.");
+
+        BayesProperties properties = new BayesProperties(dataSet);
+
+        double p = properties.getLikelihoodRatioP(dag);
+        double chisq = properties.getChisq();
+        double bic = properties.getBic();
+        double dof = properties.getDof();
+
+        buf.append("\nP  = ").append(p);
+        buf.append("\nDOF = ").append(dof);
+        buf.append("\nChiSq = ").append(nf.format(chisq));
+        buf.append("\nBIC = ").append(nf.format(bic));
+        buf.append("\n\nH0: Complete DAG.");
 
         return buf.toString();
     }
@@ -638,15 +644,17 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             public void actionPerformed(ActionEvent e) {
                 Graph graph = new EdgeListGraph(getGraph());
 
-                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
-                for (Edge edge : graph.getEdges()) {
-                    if (Edges.isBidirectedEdge(edge)) {
-                        graph.removeEdge(edge);
-                    }
-                }
+//                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
+//                for (Edge edge : graph.getEdges()) {
+//                    if (Edges.isBidirectedEdge(edge)) {
+//                        graph.removeEdge(edge);
+//                    }
+//                }
 
-                PatternToDag search = new PatternToDag(new Pattern(graph));
-                Graph dag = search.patternToDagMeek();
+                Graph dag = SearchGraphUtils.dagFromPattern(graph);
+
+//                PatternToDag search = new PatternToDag(new Pattern(graph));
+//                Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
@@ -710,8 +718,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
     private void addMixedTestMenuItems(JMenu test) {
         IndTestType testType = getTestType();
-        if (testType != IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION) {
-            setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+        if (testType != IndTestType.MIXED_MLR) {
+            setTestType(IndTestType.MIXED_MLR);
         }
 
         ButtonGroup group = new ButtonGroup();
@@ -722,7 +730,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
         logr.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setTestType(IndTestType.MULTINOMIAL_LOGISTIC_REGRESSION);
+                setTestType(IndTestType.MIXED_MLR);
             }
         });
     }

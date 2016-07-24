@@ -129,6 +129,7 @@ public interface IndependenceTest {
      * A score that is higher with more likely models.
      */
     double getScore();
+
 }
 
 

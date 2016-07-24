@@ -179,7 +179,7 @@ public final class Fci implements GraphSearch {
     }
 
     public Graph search() {
-        return search(new Fas(getIndependenceTest()));
+        return search(new Fas(initialGraph, getIndependenceTest()));
     }
 
     public void setInitialGraph(Graph initialGraph) {

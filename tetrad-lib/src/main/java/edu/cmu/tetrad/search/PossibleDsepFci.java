@@ -39,7 +39,7 @@ import java.util.Set;
  * Specifically, the methods in this class perform step D. of the algorithm. </p> The algorithm implemented by this
  * class is a bit broader, however, because it allows for the possibility that some pairs of variables have already been
  * compared by a different algorithm. Specifically, if the <code>prevCheck</code> variable is provided in the
- * constructor, then the algorithm pairwise checks every variable in the graph with every variable in V \
+ * constructor, then the algorithm pairwise checks every variable in the graph with every variable in v \
  * <code>prevCheck</code> (that is, the unchecked variables). This feature is used by the CIVI algorithm of Danks's
  * "Efficient Inclusion of Novel Variables."
  *
@@ -177,10 +177,10 @@ public class PossibleDsepFci {
     }
 
     /**
-     * A variable V is in Possible-D-Sep(A,B) iff
+     * A variable v is in Possible-D-Sep(A,B) iff
      * <pre>
-     * 	(i) V != A & V != B
-     * 	(ii) there is an undirected path U between A and V such that for every
+     * 	(i) v != A & v != B
+     * 	(ii) there is an undirected path U between A and v such that for every
      * 		 subpath <X,Y,Z> of U either:
      * 		(a) Y is a collider on the subpath, or
      * 		(b) X is adjacent to Z.

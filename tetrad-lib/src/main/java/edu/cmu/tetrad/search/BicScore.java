@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.dist.Discrete;
-import org.apache.commons.math3.special.Gamma;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -157,7 +154,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         }
 
         //Finally, compute the score
-        double prob = 0.0;
+        double lik = 0.0;
 
         for (int rowIndex = 0; rowIndex < r; rowIndex++) {
             for (int childValue = 0; childValue < c; childValue++) {
@@ -165,14 +162,14 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
                 int rowCount = n_j[rowIndex];
 
                 if (cellCount == 0) continue;
-                prob += cellCount * Math.log(cellCount / (double) rowCount);
+                lik += cellCount * Math.log(cellCount / (double) rowCount);
             }
         }
 
         int params = r * (c - 1);
         int n = getSampleSize();
 
-        return 2 * prob - params * Math.log(n);
+        return 2 * lik - params * Math.log(n);
     }
 
     private double getPriorForStructure(int numParents) {
@@ -222,11 +219,6 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
      */
     public boolean isEffectEdge(double bump) {
         return bump > 0;//lastBumpThreshold;
-    }
-
-    @Override
-    public boolean isDiscrete() {
-        return true;
     }
 
     @Override

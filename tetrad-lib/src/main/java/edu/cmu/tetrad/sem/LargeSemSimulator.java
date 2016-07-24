@@ -90,6 +90,9 @@ public final class LargeSemSimulator {
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
+
+        int size = variableNodes.size();
+        setupModel(size);
     }
 
     public LargeSemSimulator(Graph graph, List<Node> nodes, int[] tierIndices) {
@@ -104,6 +107,9 @@ public final class LargeSemSimulator {
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
+
+        int size = variableNodes.size();
+        setupModel(size);
     }
 
     /**
@@ -386,6 +392,7 @@ public final class LargeSemSimulator {
                 c[i][parents[i][j]] = coefs[i][j];
             }
         }
+
         return c;
     }
 }

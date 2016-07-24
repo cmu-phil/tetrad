@@ -102,7 +102,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
 //    public MimBuildRunner(DataWrapper dataWrapper, MimBuildParams params) {
 //        super(dataWrapper, params.getClusters(), params);
-//        this.dataSet = (DataSet) getData();
+//        this.dataSet = (DataSet) getContinuousData();
 //        setClusters(params.getClusters());
 //    }
 
@@ -269,7 +269,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
             }
             setResultGraph(getParams().getMaxFullGraph());
 
-            TetradLogger.getInstance().log("maxmodel", "\nMAX GRAPH = " + getParams().getMaxStructureGraph());
+            TetradLogger.getInstance().log("maxmodel", "\nMAX Graph = " + getParams().getMaxStructureGraph());
             TetradLogger.getInstance().log("maxmodel", getLatentClustersString(getParams().getMaxFullGraph()).toString());
             TetradLogger.getInstance().log("maxmodel", "MAX P = " + getParams().getMaxP());
         }

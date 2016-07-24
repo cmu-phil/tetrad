@@ -161,6 +161,8 @@ public final class SemEstimator implements TetradSerializable {
             throw new IllegalArgumentException("Expecting a covariance matrix with no missing values.");
         }
 
+        semPm.getGraph().setShowErrorTerms(false);
+
         setCovMatrix(submatrix(covMatrix, semPm));
         setSemPm(semPm);
         setSemOptimizer(semOptimizer);

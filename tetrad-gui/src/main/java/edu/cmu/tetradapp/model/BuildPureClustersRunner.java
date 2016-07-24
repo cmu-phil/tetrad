@@ -159,7 +159,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
             }
 //            else if (algorithm == BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS) {
 ////                FindOneFactorClusters bpc;
-////                Object source = getData();
+////                Object source = getContinuousData();
 ////
 ////                if (source instanceof DataSet) {
 ////                    bpc = new FindOneFactorClusters(
@@ -174,7 +174,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 ////                searchGraph = bpc.search();
 //
 //                FindOneFactorClusters2 bpc;
-//                Object source = getData();
+//                Object source = getContinuousData();
 //                FindOneFactorClusters2.Algorithm sag = FindOneFactorClusters2.Algorithm.SAG;
 //
 //                if (source instanceof DataSet) {
@@ -199,7 +199,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //            }
 //            else if (algorithm == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
 //                FindTwoFactorClusters2 bpc;
-//                Object source = getData();
+//                Object source = getContinuousData();
 //
 //                if (source instanceof DataSet) {
 //                    bpc = new FindTwoFactorClusters2(
@@ -404,7 +404,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //        List<Node> searchLatents = new ArrayList<Node>();
 //
 //        for (Node node : searchGraph.getNodes()) {
-//            if (!getData().getVariables().contains(node)) {
+//            if (!getContinuousData().getVariables().contains(node)) {
 ////                if (node.getNodeType() == NodeType.LATENT) {
 //                searchLatents.add(node);
 //            }

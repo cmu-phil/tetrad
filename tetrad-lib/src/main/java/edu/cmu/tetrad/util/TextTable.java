@@ -56,6 +56,7 @@ public class TextTable {
      * The number of spaces between columns. By default, 2.
      */
     private int columnSpacing = 2;
+    private boolean tabDelimited;
 
     /**
      * Construct the text table; the table has a fixed number of rows and
@@ -167,23 +168,32 @@ public class TextTable {
 
         for (String[] token1 : tokens) {
             for (int j = 0; j < tokens[0].length; j++) {
-                for (int k = 0; k < getColumnSpacing(); k++) {
-                    buffer.append(' ');
-                }
 
-                int numPaddingSpaces = colWidths[j] - token1[j].length();
+                if (tabDelimited) {
+                    buffer.append(token1[j]);
 
-                if (getJustification() == RIGHT_JUSTIFIED) {
-                    for (int k = 0; k < numPaddingSpaces; k++) {
+                    if (j < tokens[0].length - 1) {
+                        buffer.append("\t");
+                    }
+                } else {
+                    for (int k = 0; k < getColumnSpacing(); k++) {
                         buffer.append(' ');
                     }
-                }
 
-                buffer.append(token1[j]);
+                    int numPaddingSpaces = colWidths[j] - token1[j].length();
 
-                if (getJustification() == LEFT_JUSTIFIED) {
-                    for (int k = 0; k < numPaddingSpaces; k++) {
-                        buffer.append(' ');
+                    if (getJustification() == RIGHT_JUSTIFIED) {
+                        for (int k = 0; k < numPaddingSpaces; k++) {
+                            buffer.append(' ');
+                        }
+                    }
+
+                    buffer.append(token1[j]);
+
+                    if (getJustification() == LEFT_JUSTIFIED) {
+                        for (int k = 0; k < numPaddingSpaces; k++) {
+                            buffer.append(' ');
+                        }
                     }
                 }
             }
@@ -192,6 +202,10 @@ public class TextTable {
         }
 
         return buffer.toString();
+    }
+
+    public void setTabDelimited(boolean tabDelimited) {
+        this.tabDelimited = tabDelimited;
     }
 }
 

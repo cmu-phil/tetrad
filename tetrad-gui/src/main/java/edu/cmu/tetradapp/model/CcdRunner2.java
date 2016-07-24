@@ -40,24 +40,10 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
     static final long serialVersionUID = 23L;
 
     private transient List<PropertyChangeListener> listeners;
-    //    private List<ScoredGraph> topGraphs;
-//    private int index;
     private transient Ccd2 ccd;
-//    private transient Graph initialGraph;
 
 
     //=========================CONSTRUCTORS================================//
-
-//    public CcdRunner(DataWrapper dataWrapper, BasicSearchParams params) {
-//        super(dataWrapper, params, null);
-//    }
-//
-//    /**
-//     * Constucts a wrapper for the given EdgeListGraph.
-//     */
-//    public CcdRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-//        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
-//    }
 
     /**
      * Constructs a wrapper for the given DataWrapper. The DataWrapper must
@@ -86,33 +72,16 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
     }
 
     public CcdRunner2(IndependenceFactsModel model, BasicSearchParams params) {
-        super(model, params, null); 
+        super(model, params, null);
     }
 
     public CcdRunner2(IndependenceFactsModel model, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
-//    public CcdRunner(DataWrapper dataWrapper, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-    //        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
-//    }
-
     public CcdRunner2(DataWrapper dataWrapper, BasicSearchParams params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
     }
-
-//    public CcdRunner(DataWrapper dataWrapper, GraphSource graph, BasicSearchParams params) {
-//        super(new MergeDatasetsWrapper(dataWrapper), params, null);
-////        if (graph == dataWrapper) throw new IllegalArgumentException();
-//        if (graph == this) throw new IllegalArgumentException();
-//        this.initialGraph = graph.getGraph();
-//    }
-//
-//    public CcdRunner(DataWrapper dataWrapper, GraphSource graph, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-//        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
-//        if (graph == this) throw new IllegalArgumentException();
-//        this.initialGraph = graph.getGraph();
-//    }
 
     public CcdRunner2(DataWrapper dataWrapper1,
                       DataWrapper dataWrapper2,
@@ -341,7 +310,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //            fci.setSamplePrior(indTestParams.getSamplePrior());
 //            fci.setStructurePrior(indTestParams.getStructurePrior());
 //            fci.setCompleteRuleSetUsed(false);
-//            fci.setFaithfulnessAssumed(indTestParams.isFaithfulnessAssumed());
+//            fci.setHeuristicSpeedup(indTestParams.isFaithfulnessAssumed());
 //            graph = fci.search();
 //        }
 //
@@ -377,7 +346,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         }
 
         BasicIndTestParams indTestParams = (BasicIndTestParams) getParams().getIndTestParams();
-        double penaltyDiscount = 2.0;//indTestParams.getPenaltyDiscount();
+        double penaltyDiscount = 20.0;//indTestParams.getPenaltyDiscount();
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
@@ -463,7 +432,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         ccd.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
 //        gfci.setDepth(3);
-//        ccd.setFaithfulnessAssumed(indTestParams.isFaithfulnessAssumed());
+//        ccd.setHeuristicSpeedup(indTestParams.isFaithfulnessAssumed());
         Graph graph = ccd.search();
 
         if (getSourceGraph() != null) {
@@ -522,14 +491,8 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         SearchParams params = getParams();
         IndTestType testType = null;
 
-//        if (getParams() instanceof BasicSearchParams) {
-            BasicSearchParams _params = (BasicSearchParams) params;
-            testType = _params.getIndTestType();
-//        } 
-//        else {
-//            BasicSearchParams _params = (BasicSearchParams) params;
-//            testType = _params.getIndTestType();
-//        }
+        BasicSearchParams _params = (BasicSearchParams) params;
+        testType = _params.getIndTestType();
 
         return new IndTestChooser().getTest(dataModel, params, testType);
     }

@@ -238,11 +238,6 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     }
 
     @Override
-    public boolean isDiscrete() {
-        return false;
-    }
-
-    @Override
     public double getParameter1() {
         return penaltyDiscount;
     }

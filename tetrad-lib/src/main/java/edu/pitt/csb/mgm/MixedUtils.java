@@ -24,18 +24,14 @@ package edu.pitt.csb.mgm;
 import cern.colt.matrix.DoubleFactory2D;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;//IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
-import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.dist.Discrete;
 
 
 import java.io.File;
@@ -128,6 +124,20 @@ public class MixedUtils {
                 mixVars.add(n);
             }
         }
+
+//        MixedDataBox box = new MixedDataBox(mixVars, dsCont.getNumRows());
+//
+//        for (int i = 0; i < box.numRows(); i++) {
+//            for (int j = 0; j < box.numCols(); j++) {
+//                if (mixVars.get(j) instanceof ContinuousVariable) {
+//                    box.set(i, j, dsCont.getDouble(i, j));
+//                } else {
+//                    box.set(i, j, (int) Math.round(dsCont.getDouble(i, j)));
+//                }
+//            }
+//        }
+
+//        return new BoxDataSet(box, mixVars);
 
         return ColtDataSet.makeData(mixVars, dsCont.getDoubleData());
     }
@@ -956,10 +966,7 @@ public class MixedUtils {
 
         IndependenceTest test = null;
 
-        if (name.equals("lrt")) {
-            test = new IndTestMixedLrt(data, alpha);
-            //test = new IndTestMultinomialLogisticRegression(data, alpha);
-        } else if (name.equals("tlin")) {
+        if (name.equals("tlin")) {
             test = new edu.pitt.csb.mgm.IndTestMixedMultipleTTest(data, alpha);
             ((edu.pitt.csb.mgm.IndTestMixedMultipleTTest)test).setPreferLinear(true);
             //test = new IndTestMultinomialLogisticRegressionWald(data, alpha, true);

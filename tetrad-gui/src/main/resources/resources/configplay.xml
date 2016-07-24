@@ -1546,6 +1546,23 @@
             <!--<params-class>edu.cmu.tetradapp.model.PcSearchParams-->
             <!--</params-class>-->
             <!--</model>-->
+            <model name="Random Mixed" acronym="Random Mixed" help="random_mixed" category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="colliderOrientations"
+                           description="Collider Orientations" default="on"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.RandomMixedRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.PcGesSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.PcSearchParams
+                </params-class>
+            </model>
             <model name="LiNGAM" acronym="LiNGAM" help="lingam"
                    category="DAG Searches">
                 <logger>

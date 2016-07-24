@@ -186,7 +186,7 @@ public class BinaryFunction {
         buf.append("\n");
 
         for (int j = 0; j < numArgs; j++) {
-            buf.append("V").append(j + 1).append("   \t");
+            buf.append("v").append(j + 1).append("   \t");
         }
 
         buf.append("G");

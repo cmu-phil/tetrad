@@ -26,10 +26,7 @@ import cern.jet.stat.Descriptive;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static java.lang.Math.*;
 
@@ -1989,6 +1986,29 @@ public final class StatUtils {
             }
         }
         return mid;
+    }
+
+    // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
+    public static double logOfSum(List<Double> logs) {
+
+        Collections.sort(logs, new Comparator<Double>() {
+            @Override
+            public int compare(Double o1, Double o2) {
+                return -Double.compare(o1, o2);
+            }
+        });
+
+        double sum = 0.0;
+        int N = logs.size() - 1;
+        double loga0 = logs.get(0);
+
+        for (int i = 1; i <= N; i++) {
+            sum += exp(logs.get(i) - loga0);
+        }
+
+        sum += 1;
+
+        return loga0 + log(sum);
     }
 }
 

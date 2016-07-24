@@ -313,7 +313,7 @@ public final class GraphUtils {
         long size = (long) nodes.size();
 
         if (numEdges < 0 || numEdges > size * (size - 1)) {
-            throw new IllegalArgumentException("NumEdges must be "
+            throw new IllegalArgumentException("numEdges must be "
                     + "greater than 0 and <= (#nodes)(#nodes - 1) / 2: "
                     + numEdges);
         }
@@ -2327,7 +2327,7 @@ public final class GraphUtils {
         Graph graph = new EdgeListGraph();
 
         while (!(line = in.readLine().trim()).equals("")) {
-            String[] tokens = line.split(" ");
+            String[] tokens = line.split(",");
 
             for (String token : tokens) {
                 graph.addNode(new GraphNode(token));
