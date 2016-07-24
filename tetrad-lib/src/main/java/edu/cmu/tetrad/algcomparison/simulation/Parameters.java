@@ -117,8 +117,14 @@ public class Parameters {
         if (getNumValues(name) != 1) {
             throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
         }
+
         usedParameters.add(name);
         Object o = parameters.get(name)[0];
+
+        if (!(o instanceof Number)) {
+            throw new IllegalArgumentException("Not a Number parameter: " + name);
+        }
+
         return ((Number) o).doubleValue();
     }
 

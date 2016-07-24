@@ -16,10 +16,10 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Tahn implements Algorithm, TakesInitialGraph {
+public class Tanh implements Algorithm, TakesInitialGraph {
     private Algorithm initialGraph = null;
 
-    public Tahn(Algorithm initialGraph) {
+    public Tanh(Algorithm initialGraph) {
         this.initialGraph = initialGraph;
     }
 
