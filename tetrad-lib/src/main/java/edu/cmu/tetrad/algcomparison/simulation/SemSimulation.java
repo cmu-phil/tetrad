@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.sem.SemIm;
@@ -22,16 +22,10 @@ public class SemSimulation implements Simulation {
     public void createData(Parameters parameters) {
         dataSets = new ArrayList<>();
 
-        int numEdges = parameters.getInt("numEdges");
-
-        if (numEdges == -1) {
-            numEdges = (int) (parameters.getInt("numMeasures") * parameters.getDouble("edgeFactor"));
-        }
-
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
-                numEdges,
+                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
                 parameters.getInt("maxDegree"),
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
@@ -66,8 +60,7 @@ public class SemSimulation implements Simulation {
         List<String> parameters = new ArrayList<>();
         parameters.add("numMeasures");
         parameters.add("numLatents");
-        parameters.add("numEdges");
-        parameters.add("edgeFactor");
+        parameters.add("avgDegree");
         parameters.add("maxDegree");
         parameters.add("maxIndegree");
         parameters.add("maxOutdegree");

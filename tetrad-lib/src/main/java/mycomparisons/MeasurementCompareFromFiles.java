@@ -23,34 +23,31 @@ package mycomparisons;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pag.Gfci;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
+ * An example script to load in data sets and graphs from files and analyze them. The
+ * files loaded must be in the same format as
+ * </p>
+ * new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
+ * </p>
+ * saves them. For other formats, specialty data loaders can be written to implement the
+ * Simulation interface.
+ *
  * @author jdramsey
  */
-public class RichardComparison {
+public class MeasurementCompareFromFiles {
     public static void main(String... args) {
-
         Parameters parameters = new Parameters();
 
-//        parameters.put("numRuns", 10);
-//        parameters.put("sampleSize", 50, 100, 500, 1000, 5000);
-//        parameters.put("numMeasures", 10, 50);
-//        parameters.put("edgeFactor", 2, 5);
-//        parameters.put("numCategories", 2, 4, 6);
-//        parameters.put("variance", 0.0, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5);
-//        parameters.put("percentDiscreteForMixedSimulation", 100);
-
-        parameters.put("alpha", 1e-3);
-        parameters.put("penaltyDiscount", 4);
-
-        parameters.put("fgsDepth", -1);
-        parameters.put("samplePrior", 1);
-        parameters.put("structurePrior", 1);
+        // Can leave the simulation parameters out since
+        // we're loading from file here.
+//        parameters.put("alpha", 1e-4);
+//        parameters.put("measurementVariance", 0, .01, .1, .2, .3, .4, .5);
+        parameters.put("numCategories", 2, 4, 6);
 
         Statistics statistics = new Statistics();
 
@@ -65,21 +62,21 @@ public class RichardComparison {
         statistics.add(new SHD());
         statistics.add(new ElapsedTime());
 
-        statistics.setSortByUtility(false);
-        statistics.setShowUtilities(false);
+        statistics.setWeight("AP", 1.0);
+        statistics.setWeight("AR", 1.0);
+        statistics.setWeight("AHP", 1.0);
+        statistics.setWeight("AHR", 1.0);
+
+        statistics.setSortByUtility(true);
+        statistics.setShowUtilities(true);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fgs(new SemBicScore()));
-        algorithms.add(new Gfci(new SemBicScore()));
+        algorithms.add(new FgsDiscretized(new BdeuScore()));
 
-//        Simulation simulation = new ContinuousSemThenDiscretizeSimulation();
-//        new Comparison().saveDataSetAndGraphs("comparison/saveRichard2", simulation,
-//                parameters);
-
-        new Comparison().compareAlgorithms("comparison/saveRichardContinuous",
-                "comparison/ComparisonContinuous.txt", algorithms, statistics, parameters);
-
+        new Comparison().compareAlgorithms("measurement/trueData",
+                "measurement/ComparisonDiscrete.txt",
+                algorithms, statistics, parameters);
     }
 }
 

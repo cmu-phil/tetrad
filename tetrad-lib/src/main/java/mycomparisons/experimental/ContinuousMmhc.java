@@ -1,12 +1,15 @@
 package mycomparisons.experimental;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.IndTestScore;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.search.mb.Mmhc;
 import edu.cmu.tetrad.util.Experimental;
 

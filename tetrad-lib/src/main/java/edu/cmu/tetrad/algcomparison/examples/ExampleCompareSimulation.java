@@ -22,14 +22,13 @@
 package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpc;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpcs;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pc;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pcs;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
@@ -43,13 +42,12 @@ public class ExampleCompareSimulation {
 
         parameters.put("numRuns", 10);
         parameters.put("numMeasures", 100);
-        parameters.put("edgeFactor", 2);
+        parameters.put("avgDegree", 4);
         parameters.put("sampleSize", 500);
         parameters.put("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("alpha"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -70,7 +68,7 @@ public class ExampleCompareSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ()));
+        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
         algorithms.add(new Pcs(new FisherZ()));
         algorithms.add(new Cpcs(new FisherZ()));
 
@@ -78,9 +76,7 @@ public class ExampleCompareSimulation {
 
         simulations.add(new SemSimulation());
 
-        Comparison comparison = new Comparison();
-        comparison.setTabDelimitedTables(true);
-        comparison.compareAlgorithms("comparison/Comparison.txt",
+        new Comparison().compareAlgorithms("comparison/Comparison.txt",
                 simulations, algorithms, statistics, parameters);
     }
 }

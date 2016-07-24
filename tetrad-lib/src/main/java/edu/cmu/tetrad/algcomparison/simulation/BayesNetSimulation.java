@@ -1,10 +1,10 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
@@ -20,16 +20,10 @@ public class BayesNetSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        int numEdges = parameters.getInt("numEdges");
-
-        if (numEdges == -1) {
-            numEdges = (int) (parameters.getInt("numMeasures") * parameters.getDouble("edgeFactor"));
-        }
-
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
-                numEdges,
+                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
                 parameters.getInt("maxDegree"),
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
@@ -64,7 +58,7 @@ public class BayesNetSimulation implements Simulation {
         List<String> parameters = new ArrayList<>();
         parameters.add("numMeasures");
         parameters.add("numLatents");
-        parameters.add("numEdges");
+        parameters.add("avgDegree");
         parameters.add("maxDegree");
         parameters.add("maxIndegree");
         parameters.add("maxOutdegree");

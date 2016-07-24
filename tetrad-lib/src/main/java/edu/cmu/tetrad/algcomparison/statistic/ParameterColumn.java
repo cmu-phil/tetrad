@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
-import edu.cmu.tetrad.algcomparison.statistic.utilities.AdjacencyConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
@@ -53,7 +51,7 @@ public class ParameterColumn implements Statistic {
      * will thow an exception.
      * @throws UnsupportedOperationException
      */
-    public double getMapTo01(double value) {
+    public double getNormValue(double value) {
         throw new UnsupportedOperationException();
     }
 }

@@ -22,13 +22,13 @@
 package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpcs;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pc;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pcs;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
@@ -46,10 +46,8 @@ public class ExampleCompareFromFiles {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 10);
-        parameters.put("numMeasures", 100);
-        parameters.put("numEdges", 2 * parameters.getInt("numMeasures"));
-        parameters.put("sampleSize", 1000);
+        // Can leave the simulation parameters out since
+        // we're loading from file here.
         parameters.put("alpha", 1e-4);
 
         Statistics statistics = new Statistics();

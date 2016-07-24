@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.statistic.utilities;
+package edu.cmu.tetrad.algcomparison.statistic.utils;
 
 /**
  * Some simulations may wish to implement this interface to specify a simulation

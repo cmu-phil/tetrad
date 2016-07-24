@@ -18,12 +18,11 @@ public class Parameters {
 
         // Defaults
         put("numMeasures", 10);
-        put("numEdges", -1);
-        put("edgeFactor", 1);
         put("numLatents", 0);
-        put("maxDegree", 10);
-        put("maxIndegree", 10);
-        put("maxOutdegree", 10);
+        put("avgDegree", 2);
+        put("maxDegree", 100);
+        put("maxIndegree", 100);
+        put("maxOutdegree", 100);
         put("connected", 0);
         put("sampleSize", 1000);
         put("numRuns", 1);
@@ -118,8 +117,14 @@ public class Parameters {
         if (getNumValues(name) != 1) {
             throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
         }
+
         usedParameters.add(name);
         Object o = parameters.get(name)[0];
+
+        if (!(o instanceof Number)) {
+            throw new IllegalArgumentException("Not a Number parameter: " + name);
+        }
+
         return ((Number) o).doubleValue();
     }
 
@@ -167,12 +172,15 @@ public class Parameters {
     /**
      * Returns the number of values for the parameter.
      *
-     * @param name The name of the parameter.
+     * @param parameter The parameter of the parameter.
      * @return The number of values set for that parameter.
      */
-    public int getNumValues(String name) {
-        System.out.println(name);
-        return parameters.get(name).length;
+    public int getNumValues(String parameter) {
+        Object[] objects = parameters.get(parameter);
+        if (objects == null) {
+            System.out.println("Expecting a value for parameter '" + parameter + "'");
+        }
+        return objects.length;
     }
 
     /**

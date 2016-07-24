@@ -1,12 +1,18 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
+import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.sem.TemplateExpander;
 
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author jdramsey
@@ -17,20 +23,16 @@ public class GeneralSemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        int numEdges = parameters.getInt("numEdges");
-
-        if (numEdges == -1) {
-            numEdges = (int) (parameters.getInt("numMeasures") * parameters.getDouble("edgeFactor"));
-        }
-
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
-                numEdges,
+                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
                 parameters.getInt("maxDegree"),
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
                 parameters.getInt("connected") == 1);
+
+        this.dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             DataSet dataSet = simulate(graph, parameters);
@@ -73,7 +75,7 @@ public class GeneralSemSimulation implements Simulation {
         List<String> parameters = new ArrayList<>();
         parameters.add("numMeasures");
         parameters.add("numLatents");
-        parameters.add("numEdges");
+        parameters.add("avgDegree");
         parameters.add("maxDegree");
         parameters.add("maxIndegree");
         parameters.add("maxOutdegree");

@@ -1,14 +1,19 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jdramsey
@@ -17,6 +22,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
     private String path;
     private Graph graph;
     private List<DataSet> dataSets;
+    private Map<String, Object> parameterValues = new HashMap<>();
 
     public LoadContinuousDataAndGraphs(String path) {
         this.path = path;
@@ -53,7 +59,15 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                         String[] tokens = line.split(" = ");
                         String key = tokens[0];
                         String value = tokens[1];
-                        parameters.put(key, Double.parseDouble(value));
+
+                        try {
+                            double _value = Double.parseDouble(value);
+                            parameterValues.put(key, _value);
+                            parameters.put(key, _value);
+                        } catch (NumberFormatException e) {
+                            parameterValues.put(key, value);
+                            parameters.put(key, value);
+                        }
                     }
                 }
 
@@ -97,8 +111,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        return parameters;
+        return new ArrayList<>(parameterValues.keySet());
     }
 
     @Override

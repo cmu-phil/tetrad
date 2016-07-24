@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utilities.AdjacencyConfusion;
+import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
@@ -32,7 +32,7 @@ public class AdjacencyPrecision implements Statistic {
     }
 
     @Override
-    public double getMapTo01(double value) {
+    public double getNormValue(double value) {
         return value;
     }
 }

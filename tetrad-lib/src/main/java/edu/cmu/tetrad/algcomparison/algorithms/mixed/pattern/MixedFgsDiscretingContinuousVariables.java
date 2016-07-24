@@ -2,20 +2,18 @@ package edu.cmu.tetrad.algcomparison.algorithms.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fgs2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

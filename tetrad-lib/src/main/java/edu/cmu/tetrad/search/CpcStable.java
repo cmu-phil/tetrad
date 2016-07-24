@@ -264,14 +264,10 @@ public final class CpcStable implements GraphSearch {
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
         orientUnshieldedTriples(knowledge);
 
-        System.out.println("Meek rules");
-
         MeekRules meekRules = new MeekRules();
         meekRules.setOut(out);
 
         meekRules.orientImplied(getGraph());
-
-        System.out.println("Meek rules done");
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - startTime;
