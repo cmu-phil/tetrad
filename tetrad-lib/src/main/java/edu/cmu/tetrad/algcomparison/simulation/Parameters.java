@@ -178,7 +178,7 @@ public class Parameters {
     public int getNumValues(String parameter) {
         Object[] objects = parameters.get(parameter);
         if (objects == null) {
-            System.out.println("Expecting a value for parameter '" + parameter + "'");
+            throw new IllegalArgumentException("Expecting a value for parameter '" + parameter + "'");
         }
         return objects.length;
     }
