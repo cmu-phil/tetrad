@@ -1071,16 +1071,7 @@ public class Comparison {
                 double weight = statistics.getWeight(stat);
 
                 if (weight != 0.0) {
-                    double _stat = stats[t][j];
-                    double utility;
-
-                    if (stat.getAbbreviation().equals("E") || stat.getAbbreviation().equals("SHD")) {
-                        utility = all.get(j).indexOf(_stat) / (double) all.get(j).size();
-                    } else {
-                        utility = _stat;
-                    }
-
-                    sum += weight * utility;
+                    sum += weight * stat.getNormValue(stats[t][j]);
                     count++;
                 }
             }
