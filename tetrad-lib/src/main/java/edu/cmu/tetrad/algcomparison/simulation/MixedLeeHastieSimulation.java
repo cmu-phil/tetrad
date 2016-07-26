@@ -67,6 +67,7 @@ public class MixedLeeHastieSimulation implements Simulation {
         parameters.add("numRuns");
         parameters.add("sampleSize");
         parameters.add("numCategories");
+        parameters.add("percentDiscreteForMixedSimulation");
         return parameters;
     }
 

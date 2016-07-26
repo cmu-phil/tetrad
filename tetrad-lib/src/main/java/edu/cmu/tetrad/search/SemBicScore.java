@@ -128,7 +128,7 @@ public class SemBicScore implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
+        return localScore(y, append(z, x)) - localScore(y, z) - 1 * (z.length + 1);
     }
 
     @Override
