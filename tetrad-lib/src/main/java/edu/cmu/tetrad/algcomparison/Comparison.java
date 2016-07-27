@@ -61,6 +61,7 @@ public class Comparison {
     private PrintStream out;
     private boolean tabDelimitedTables = false;
     private boolean saveGraphs = false;
+    private boolean copyData = false;
 
     /**
      * Compares algorithms.
@@ -95,6 +96,7 @@ public class Comparison {
      */
     public void compareAlgorithms(String outFile, Simulations simulations, Algorithms algorithms,
                                   Statistics statistics, Parameters parameters) {
+
         // Create output file.
         try {
             File comparison = new File(outFile);
@@ -105,7 +107,7 @@ public class Comparison {
 
         out.println(new Date());
 
-        // Set up similations--create data and graphs, read in parameters. The parameters
+        // Set up simulations--create data and graphs, read in parameters. The parameters
         // are set in the parameters object.
         List<SimulationWrapper> simulationWrappers = new ArrayList<>();
 
@@ -124,8 +126,6 @@ public class Comparison {
         }
 
         // Set up the algorithms.
-        // Only consider the algorithms for the given data type. Mixed data types can go either way.
-        // MGM algorithms won'algSimIndex run on continuous data or discrete data.
         List<AlgorithmWrapper> algorithmWrappers = new ArrayList<>();
 
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
@@ -170,12 +170,14 @@ public class Comparison {
 
         for (SimulationWrapper simulationWrapper : simulationWrappers) {
             for (AlgorithmWrapper algorithmWrapper : algorithmWrappers) {
-                if (algorithmWrapper.getDataType() == simulationWrapper.getDataType()
-                        || algorithmWrapper.getDataType() == DataType.Mixed) {
+                DataType algDataType = algorithmWrapper.getDataType();
+                DataType simDataType = simulationWrapper.getDataType();
+                if (algDataType == DataType.Mixed || (algDataType == simDataType)) {
                     algorithmSimulationWrappers.add(new AlgorithmSimulationWrapper(
                             algorithmWrapper, simulationWrapper));
                 } else {
-                    System.out.println("Type mismatch; skipping algorithm/simulationWrapper " + algorithmWrapper.getDescription());
+                    System.out.println("Type mismatch; skipping algorithm/simulation " + algorithmWrapper.getDescription()
+                            + " / " + simulationWrapper.getDescription());
                 }
             }
         }
@@ -746,8 +748,6 @@ public class Comparison {
         DataSet data = simulationWrapper.getDataSet(run.getRunIndex());
         Graph trueGraph = simulationWrapper.getTrueGraph();
 
-        boolean isMixed = data.isMixed();
-
         System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
@@ -755,7 +755,7 @@ public class Comparison {
         Graph out;
 
         try {
-            out = algorithmSimulationWrapper.search(data.copy(), algorithmWrapper.getAlgorithmSpecificParameters());
+            out = algorithmSimulationWrapper.search(copyData ? data.copy() : data, algorithmWrapper.getAlgorithmSpecificParameters());
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
             e.printStackTrace();
@@ -785,7 +785,7 @@ public class Comparison {
         est[0] = out;
         graphTypeUsed[0] = true;
 
-        if (isMixed) {
+        if (data.isMixed()) {
             est[1] = getSubgraph(out, true, true, data);
             est[2] = getSubgraph(out, true, false, data);
             est[3] = getSubgraph(out, false, false, data);
@@ -799,7 +799,7 @@ public class Comparison {
 
         truth[0] = comparisonGraph;
 
-        if (isMixed && comparisonGraph != null) {
+        if (data.isMixed() && comparisonGraph != null) {
             truth[1] = getSubgraph(comparisonGraph, true, true, data);
             truth[2] = getSubgraph(comparisonGraph, true, false, data);
             truth[3] = getSubgraph(comparisonGraph, false, false, data);
@@ -881,6 +881,20 @@ public class Comparison {
      */
     public boolean isSaveGraphs() {
         return saveGraphs;
+    }
+
+    /**
+     * @return True if data should be copied before analyzing it.
+     */
+    public boolean isCopyData() {
+        return copyData;
+    }
+
+    /**
+     * @param copyData True if data should be copied before analyzing it.
+     */
+    public void setCopyData(boolean copyData) {
+        this.copyData = copyData;
     }
 
     private enum Mode {
@@ -1331,7 +1345,13 @@ public class Comparison {
         }
 
         public Object getValue(String parameter) {
-            return parameters.getValues(parameter)[0];
+            Object[] values = parameters.getValues(parameter);
+
+            if (values == null || values.length == 0) {
+                throw new NullPointerException("Expecting parameter to be defined: " + parameter);
+            }
+
+            return values[0];
         }
 
         public Simulation getSimulation() {

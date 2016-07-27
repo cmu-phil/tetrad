@@ -49,7 +49,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
-    private transient Fgs fgs;
+    private transient Fgs2 fgs;
     private transient Graph initialGraph;
 
     //============================CONSTRUCTORS============================//
@@ -298,7 +298,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
-            fgs = new Fgs(gesScore);
+            fgs = new Fgs2(gesScore);
             fgs.setKnowledge(getParams().getKnowledge());
             fgs.setVerbose(true);
         } else {
@@ -314,24 +314,24 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    fgs = new Fgs(gesScore);
+                    fgs = new Fgs2(gesScore);
                 } else if (dataSet.isDiscrete()) {
                     double samplePrior = ((FgsParams) getParams()).getSamplePrior();
                     double structurePrior = ((FgsParams) getParams()).getStructurePrior();
                     BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
-                    fgs = new Fgs(score);
+                    fgs = new Fgs2(score);
                 } else {
                     MixedBicScore gesScore = new MixedBicScore(dataSet);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
-                    fgs = new Fgs(gesScore);
+                    fgs = new Fgs2(gesScore);
                 }
             } else if (model instanceof ICovarianceMatrix) {
                 SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
-                fgs = new Fgs(gesScore);
+                fgs = new Fgs2(gesScore);
             }
             else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
@@ -357,11 +357,11 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                     if (indTestParams.isFirstNontriangular()) {
                         SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                         fgsScore.setPenaltyDiscount(penalty);
-                        fgs = new Fgs(fgsScore);
+                        fgs = new Fgs2(fgsScore);
                     } else {
                         SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                         fgsScore.setPenaltyDiscount(penalty);
-                        fgs = new Fgs(fgsScore);
+                        fgs = new Fgs2(fgsScore);
                     }
                 } else if (allDiscrete(list)) {
                     double structurePrior = ((FgsParams) getParams()).getStructurePrior();
@@ -372,9 +372,9 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                     fgsScore.setStructurePrior(structurePrior);
 
                     if (indTestParams.isFirstNontriangular()) {
-                        fgs = new Fgs(fgsScore);
+                        fgs = new Fgs2(fgsScore);
                     } else {
-                        fgs = new Fgs(fgsScore);
+                        fgs = new Fgs2(fgsScore);
                     }
                 } else {
                     throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
@@ -388,7 +388,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         fgs.setKnowledge(getParams().getKnowledge());
         fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
         fgs.setVerbose(true);
-        fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
+        fgs.setFaithfulnessAssumed(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed());
         Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {

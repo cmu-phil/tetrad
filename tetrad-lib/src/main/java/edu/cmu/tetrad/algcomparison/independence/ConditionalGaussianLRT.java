@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestConditionalGaussianLrt;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.util.Experimental;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ConditionalGaussianLRT implements IndependenceWrapper {
+public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental {
     private DataSet dataSet = null;
     private IndependenceTest test = null;
 

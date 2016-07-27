@@ -27,18 +27,16 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Calculates the BDeu score.
+ * Calculates the discrete BIC score.
  */
 public class BicScore implements LocalDiscreteScore, IBDeuScore {
     private List<Node> variables;
     private int[][] data;
     private int sampleSize;
 
-    private double samplePrior = 1;
-    private double structurePrior = 1;
+    private double penaltyDiscount = 1;
 
     private int[] numCategories;
-    private double penaltyDiscount = 2;
 
     public BicScore(DataSet dataSet) {
         if (dataSet == null) {
@@ -169,7 +167,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         int params = r * (c - 1);
         int n = getSampleSize();
 
-        return 2 * lik - params * Math.log(n);
+        return 2 * lik - penaltyDiscount * params * Math.log(n);
     }
 
     private double getPriorForStructure(int numParents) {
@@ -247,22 +245,22 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
     @Override
     public double getStructurePrior() {
-        return structurePrior;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public double getSamplePrior() {
-        return samplePrior;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setSamplePrior(double samplePrior) {
-        this.samplePrior = samplePrior;
+        throw new UnsupportedOperationException();
     }
 
     public void setVariables(List<Node> variables) {

@@ -15,19 +15,13 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemBicScore implements ScoreWrapper {
-    private DataSet dataSet = null;
-    private Score score = null;
 
     @Override
     public Score getScore(DataSet dataSet, Parameters parameters) {
-        if (dataSet != this.dataSet) {
-            this.dataSet = dataSet;
-            edu.cmu.tetrad.search.SemBicScore semBicScore
-                    = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-            semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            this.score = semBicScore;
-        }
-        return score;
+        edu.cmu.tetrad.search.SemBicScore semBicScore
+                = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
+        semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        return semBicScore;
     }
 
     @Override

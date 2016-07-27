@@ -24,8 +24,8 @@ public class Rfci implements Algorithm {
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Rfci pc = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
-        return pc.search();
+        edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
+        return search.search();
     }
 
     @Override

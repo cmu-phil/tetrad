@@ -39,7 +39,7 @@ public class Parameters {
         put("printAverages", 0);
         put("printAverageTables", 1);
         put("printGraph", 0);
-        put("percentDiscreteForMixedSimulation", 50);
+        put("percentDiscrete", 50);
         put("ofInterestCutoff", 0.05);
         put("printGraphs", 0);
         put("numCategories", 4);
@@ -178,7 +178,7 @@ public class Parameters {
     public int getNumValues(String parameter) {
         Object[] objects = parameters.get(parameter);
         if (objects == null) {
-            System.out.println("Expecting a value for parameter '" + parameter + "'");
+            throw new IllegalArgumentException("Expecting a value for parameter '" + parameter + "'");
         }
         return objects.length;
     }
