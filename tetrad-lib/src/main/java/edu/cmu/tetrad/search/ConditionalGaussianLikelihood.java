@@ -258,6 +258,8 @@ public class ConditionalGaussianLikelihood {
         public int getDof() {
             return dof;
         }
+
+        public String toString() { return "lik = " + lik + " dof = " + dof;};
     }
 
     private int f(List<DiscreteVariable> A) {

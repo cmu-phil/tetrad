@@ -37,14 +37,14 @@ public class Fgs implements Algorithm, TakesInitialGraph {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Fgs2 fgs = new edu.cmu.tetrad.search.Fgs2(score.getScore(dataSet, parameters));
-        fgs.setFaithfulnessAssumed(true);
+        edu.cmu.tetrad.search.Fgs2 search = new edu.cmu.tetrad.search.Fgs2(score.getScore(dataSet, parameters));
+        search.setFaithfulnessAssumed(true);
 
         if (initial != null) {
-            fgs.setInitialGraph(initial);
+            search.setInitialGraph(initial);
         }
 
-        return fgs.search();
+        return search.search();
     }
 
     @Override

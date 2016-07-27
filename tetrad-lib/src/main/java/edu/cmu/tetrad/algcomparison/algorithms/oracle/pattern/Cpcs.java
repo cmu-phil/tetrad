@@ -25,8 +25,8 @@ public class Cpcs implements Algorithm {
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        CpcStable pc = new CpcStable(test.getTest(dataSet, parameters));
-        return pc.search();
+        CpcStable search = new CpcStable(test.getTest(dataSet, parameters));
+        return search.search();
     }
 
     @Override

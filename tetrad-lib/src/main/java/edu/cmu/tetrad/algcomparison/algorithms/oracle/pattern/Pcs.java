@@ -37,13 +37,13 @@ public class Pcs implements Algorithm, TakesInitialGraph {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.PcStable pcs = new edu.cmu.tetrad.search.PcStable(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.PcStable search = new edu.cmu.tetrad.search.PcStable(test.getTest(dataSet, parameters));
 
         if (initial != null) {
-            pcs.setInitialGraph(initial);
+            search.setInitialGraph(initial);
         }
 
-        return pcs.search();
+        return search.search();
     }
 
     @Override

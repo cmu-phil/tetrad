@@ -37,13 +37,13 @@ public class Fci implements Algorithm, TakesInitialGraph {
             initial = initialGraph.search(dataSet, parameters);
         }
 
-        edu.cmu.tetrad.search.Fci cpc = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
+        edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
 
         if (initial != null) {
-            cpc.setInitialGraph(initial);
+            search.setInitialGraph(initial);
         }
 
-        return cpc.search();
+        return search.search();
     }
 
     @Override
