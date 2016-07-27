@@ -24,8 +24,8 @@ public class Gfci implements Algorithm {
     }
 
     public Graph search(DataSet dataSet, Parameters parameters) {
-        GFci pc = new GFci(score.getScore(dataSet, parameters));
-        return pc.search();
+        GFci search = new GFci(score.getScore(dataSet, parameters));
+        return search.search();
     }
 
     @Override

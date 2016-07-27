@@ -61,7 +61,6 @@ public class ScaleFreeSemSimulation implements Simulation {
         parameters.add("scaleFreeBeta");
         parameters.add("scaleFreeDeltaIn");
         parameters.add("scaleFreeDeltaOut");
-        parameters.add("maxOutdegree");
         parameters.add("numRuns");
         parameters.add("sampleSize");
         return parameters;

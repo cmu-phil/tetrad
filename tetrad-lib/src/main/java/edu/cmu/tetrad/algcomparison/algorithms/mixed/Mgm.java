@@ -29,7 +29,7 @@ public class Mgm implements Algorithm {
     }
 
     public String getDescription() {
-        return "Returns the output of the MGM algorithm (a Markov random field)";
+        return "Returns the output of the MGM (Mixed Graphical Model) algorithm (a Markov random field)";
     }
 
     @Override

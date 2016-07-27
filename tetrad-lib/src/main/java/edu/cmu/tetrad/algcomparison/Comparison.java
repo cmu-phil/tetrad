@@ -1331,7 +1331,13 @@ public class Comparison {
         }
 
         public Object getValue(String parameter) {
-            return parameters.getValues(parameter)[0];
+            Object[] values = parameters.getValues(parameter);
+
+            if (values == null || values.length == 0) {
+                throw new NullPointerException("Expecting parameter to be defined: " + parameter);
+            }
+
+            return values[0];
         }
 
         public Simulation getSimulation() {
