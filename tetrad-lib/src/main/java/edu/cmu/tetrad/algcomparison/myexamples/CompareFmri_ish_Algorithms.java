@@ -28,6 +28,7 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.simulation.ScaleFreeSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -41,16 +42,27 @@ public class CompareFmri_ish_Algorithms {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
+//        parameters.put("numRuns", 1);
+//        parameters.put("numMeasures", 200);
+        parameters.put("avgDegree", 10);
+//        parameters.put("sampleSize", 1000);
+//        parameters.put("alpha", .01, .001, .0001);
+//        parameters.put("penaltyDiscount", 4, 8, 12);
+
+        parameters.put("numMeasures", 50);
+        parameters.put("numLatents", 0);
+        parameters.put("scaleFreeAlpha", .05);
+        parameters.put("scaleFreeBeta", .90);
+        parameters.put("scaleFreeDeltaIn", 3);
+        parameters.put("scaleFreeDeltaOut", 3);
         parameters.put("numRuns", 1);
-        parameters.put("numMeasures", 200);
-        parameters.put("avgDegree", 7);
-        parameters.put("sampleSize", 500);
-        parameters.put("alpha", .01, .001, .0001);
-        parameters.put("penaltyDiscount", 4, 8, 12);
+        parameters.put("sampleSize", 2000);
+        parameters.put("penaltyDiscount", 2, 4, 6, 8, 10, 12);
+        parameters.put("alpha", .001);
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("alpha"));
+//        statistics.add(new ParameterColumn("alpha"));
         statistics.add(new ParameterColumn("penaltyDiscount"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -67,20 +79,21 @@ public class CompareFmri_ish_Algorithms {
 //        statistics.setWeight("AR", 1.0);
 //        statistics.setWeight("AHP", 1.0);
 //        statistics.setWeight("AHR", 1.0);
-        statistics.setWeight("SHD", .2);
+        statistics.setWeight("SHD", 1);
+        statistics.setWeight("E", 1);
 
         statistics.setSortByUtility(true);
         statistics.setShowUtilities(true);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Pc(new SemBicTest()));
-        algorithms.add(new Cpc(new FisherZ()));
-        algorithms.add(new Cpc(new SemBicTest()));
-        algorithms.add(new Pcs(new FisherZ()));
-        algorithms.add(new Cpcs(new FisherZ()));
-        algorithms.add(new Cpcs(new SemBicTest()));
+//        algorithms.add(new Pc(new FisherZ()));
+//        algorithms.add(new Pc(new SemBicTest()));
+//        algorithms.add(new Cpc(new FisherZ()));
+//        algorithms.add(new Cpc(new SemBicTest()));
+//        algorithms.add(new Pcs(new FisherZ()));
+//        algorithms.add(new Cpcs(new FisherZ()));
+//        algorithms.add(new Cpcs(new SemBicTest()));
         algorithms.add(new Fgs(new SemBicScore()));
 
         Simulations simulations = new Simulations();
