@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.util.Experimental;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ConditionalGaussianBicScore implements ScoreWrapper {
+public class ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
     private DataSet dataSet;
     private Score score;
 
