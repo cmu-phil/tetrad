@@ -14,19 +14,13 @@ import java.util.List;
  * @author jdramsey
  */
 public class DiscreteBicScore implements ScoreWrapper {
-    private DataSet dataSet = null;
-    private Score score = null;
 
     @Override
     public Score getScore(DataSet dataSet, Parameters parameters) {
-        if (dataSet != this.dataSet) {
-            this.dataSet = dataSet;
-            edu.cmu.tetrad.search.BicScore score
-                    = new edu.cmu.tetrad.search.BicScore(dataSet);
-            score.setSamplePrior(parameters.getDouble("samplePrior"));
-            score.setStructurePrior(parameters.getDouble("structurePrior"));
-            this.score = score;
-        }
+        edu.cmu.tetrad.search.BicScore score
+                = new edu.cmu.tetrad.search.BicScore(dataSet);
+        score.setSamplePrior(parameters.getDouble("samplePrior"));
+        score.setStructurePrior(parameters.getDouble("structurePrior"));
         return score;
     }
 
