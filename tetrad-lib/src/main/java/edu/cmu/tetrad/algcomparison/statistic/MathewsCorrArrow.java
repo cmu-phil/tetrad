@@ -25,7 +25,7 @@ public class MathewsCorrArrow implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Matthew's correlation coefficient for adjacencies";
+        return "Matthew's correlation coefficient for arrowheads";
     }
 
     @Override

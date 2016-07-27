@@ -24,8 +24,8 @@ public class Cfci implements Algorithm {
 
     @Override
     public Graph search(DataSet dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Cfci pc = new edu.cmu.tetrad.search.Cfci(test.getTest(dataSet, parameters));
-        return pc.search();
+        edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(test.getTest(dataSet, parameters));
+        return search.search();
     }
 
     @Override
