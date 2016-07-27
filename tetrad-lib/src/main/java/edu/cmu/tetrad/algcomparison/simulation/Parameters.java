@@ -39,7 +39,7 @@ public class Parameters {
         put("printAverages", 0);
         put("printAverageTables", 1);
         put("printGraph", 0);
-        put("percentDiscreteForMixedSimulation", 50);
+        put("percentDiscrete", 50);
         put("ofInterestCutoff", 0.05);
         put("printGraphs", 0);
         put("numCategories", 4);

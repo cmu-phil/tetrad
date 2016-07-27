@@ -16,17 +16,11 @@ import java.util.List;
  * @author jdramsey
  */
 public class ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
-    private DataSet dataSet;
     private Score score;
 
     @Override
     public Score getScore(DataSet dataSet, Parameters parameters) {
-        if (dataSet != this.dataSet) {
-            this.dataSet = dataSet;
-            this.score = new ConditionalGaussianScore(dataSet);
-        }
-
-        return this.score;
+        return new ConditionalGaussianScore(dataSet);
     }
 
     @Override
