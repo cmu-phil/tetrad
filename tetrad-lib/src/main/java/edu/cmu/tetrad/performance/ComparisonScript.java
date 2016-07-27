@@ -21,7 +21,7 @@ public class ComparisonScript {
         int minSample = 100; // smallest sample size to generate
         int maxSample = 1000; // largest sample size to generate
         int increment = 100; // ramp up sample size by this increment
-        int numTrials = 10; // number of data sets to run for a particular sample size, results will be averaged
+        int numTrials = 2; // number of data sets to run for a particular sample size, results will be averaged
 
         /** If you want to run data sets from file instead of generating random graphs **/
         params.setDataFromFile(false); // set this to true

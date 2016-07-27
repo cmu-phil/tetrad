@@ -54,7 +54,7 @@ public class AnalysisScriptAlpha {
         DataSet dataSet = null;
         for (File file : files) {
 
-            if (file.getName().startsWith("jul14") && file.getName().endsWith(".txt")) {
+            if (file.getName().startsWith("data") && file.getName().endsWith(".txt")) {
                 Path dataFile = Paths.get(path.concat("/").concat(file.getName()));
                 Character delimiter = '\t';
                 try {
@@ -105,9 +105,9 @@ public class AnalysisScriptAlpha {
 
         System.out.println("score list : " + scorelist);
         System.out.println("likelihood list : " + likList);
-        System.out.println("n list : " + nlist);
-        System.out.println("p list : " + plist);
-        System.out.println("numVar list : " + numVarlist);
+//        System.out.println("n list : " + nlist);
+//        System.out.println("p list : " + plist);
+        System.out.println("complexity term list : " + complexitylist);
     }
 
     /** Creates a MAG in the equivalence class represented by a PAG.
@@ -184,26 +184,29 @@ public class AnalysisScriptAlpha {
         DoubleMatrix2D Shat = result.getShat();
 //        System.out.println("Sigma hat is : " + Shat);
 //        System.out.println("Number of non-zero entries = " + numNonZero(Shat));
-        int numVar = numNonZero(Shat);
-//        int numVar = mag.getEdges().size();
-        return score(Shat, n, logn, p, numVar);
+//        int numVar = numNonZero(Shat);
+        int edgeSize = mag.getEdges().size();
+        return score(Shat, n, logn, p, edgeSize);
     }
 
     ArrayList<Integer> nlist = new ArrayList<>();
     ArrayList<Integer> plist = new ArrayList<>();
-    ArrayList<Integer> numVarlist = new ArrayList<>();
+    ArrayList<Double> complexitylist = new ArrayList<>();
     // Calculates the -2BIC score. Note: assuming data is mean zero. This score is to be minimized.
-    private double score(DoubleMatrix2D Shat, int n, double logn, int p, int numVar) {
+    private double score(DoubleMatrix2D Shat, int n, double logn, int p, int edgeSize) {
 //        DoubleMatrix2D S = cov(lagdata.getDoubleData());
         DoubleMatrix2D mat = new DenseDoubleMatrix2D(cov.getMatrix().toArray());
         double factor = ((double) n-1)/n;
         DoubleMatrix2D S = scatter(mat,factor);
         double logL = loglik(S, Shat, n);
+        double complexity = (edgeSize + 2.0 * p) * logn;
         System.out.println("Loglikelihood is : " + logL);
+        System.out.println("Complexity term is : " + complexity);
         nlist.add(n);
         plist.add(p);
-        numVarlist.add(numVar);
-        return (-2.0 * logL + 1.0 * (numVar + p + 1.0) * logn); // increased penalty by factor of 10
+        complexitylist.add(complexity);
+//        return (-2.0 * logL + 1.0 * (numVar + p + 1.0) * logn); // increased penalty by factor of 10 // old
+        return (-2.0 * logL + 1.0 * (edgeSize + 2.0 * p) * logn); // no penalty factor
     }
 
     ArrayList<Double> likList = new ArrayList<>();

@@ -21,11 +21,9 @@
 
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.VerticalDoubleDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradAlgebra;
@@ -41,6 +39,7 @@ import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
+import static java.lang.Math.PI;
 import static java.lang.Math.sqrt;
 
 /**
@@ -340,6 +339,41 @@ public final class LargeSemSimulator {
             this.coefs[_head] = newCoefs;
         }
 
+        if (graph instanceof TimeLagGraph) {
+            TimeLagGraph lagGraph = (TimeLagGraph) graph;
+            IKnowledge knowledge = TimeSeriesUtils.getKnowledge(lagGraph);
+            List<Node> lag0 = lagGraph.getLag0Nodes();
+
+            for (Node y : lag0) {
+                List<Node> _parents = lagGraph.getParents(y);
+
+                for (Node x : _parents) {
+                    List<List<Node>> similar = returnSimilarPairs(x, y, knowledge); // returnSimilarPairs // returns List<List<Node>>
+
+                    int _x = variableNodes.indexOf(x);
+                    int _y = variableNodes.indexOf(y);
+                    double first = Double.NaN;
+
+                    for (int i = 0; i < parents[_y].length; i++) {
+                        if (_x == parents[_y][i]) {
+                            first = coefs[_y][i];
+                        }
+                    }
+
+                    for (int j = 0; j < similar.get(0).size(); j++) {
+                        int _xx = variableNodes.indexOf(similar.get(0).get(j));
+                        int _yy = variableNodes.indexOf(similar.get(1).get(j));
+
+                        for (int i = 0; i < parents[_yy].length; i++) {
+                            if (_xx == parents[_yy][i]) {
+                                coefs[_yy][i] = first;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         for (int i = 0; i < size; i++) {
             this.errorVars[i] = errorCovarDist.nextRandom();
             this.means[i] = meanDist.nextRandom();
@@ -394,6 +428,106 @@ public final class LargeSemSimulator {
         }
 
         return c;
+    }
+
+    public List<Node> getVariableNodes() {
+        return variableNodes;
+    }
+
+    // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    private List<List<Node>> returnSimilarPairs(Node x, Node y, IKnowledge knowledge) {
+        System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
+        if(x.getName().equals("time") || y.getName().equals("time")){
+            return new ArrayList<List<Node>>();
+        }
+//        System.out.println("Knowledge within returnSimilar : " + knowledge);
+        int ntiers = knowledge.getNumTiers();
+        int indx_tier = knowledge.isInWhichTier(x);
+        int indy_tier = knowledge.isInWhichTier(y);
+        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int indx_comp = -1;
+        int indy_comp = -1;
+        List tier_x = knowledge.getTier(indx_tier);
+//        Collections.sort(tier_x);
+        List tier_y = knowledge.getTier(indy_tier);
+//        Collections.sort(tier_y);
+
+        int i;
+        for(i = 0; i < tier_x.size(); ++i) {
+            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+                indx_comp = i;
+                break;
+            }
+        }
+
+        for(i = 0; i < tier_y.size(); ++i) {
+            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+                indy_comp = i;
+                break;
+            }
+        }
+
+        System.out.println("original independence: " + x + " and " + y);
+
+        if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
+        if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
+
+
+        List<Node> simListX = new ArrayList<>();
+        List<Node> simListY = new ArrayList<>();
+
+        for(i = 0; i < ntiers - tier_diff; ++i) {
+            if(knowledge.getTier(i).size()==1) continue;
+            String A;
+            Node x1;
+            String B;
+            Node y1;
+            if (indx_tier >= indy_tier) {
+                List tmp_tier1 = knowledge.getTier(i + tier_diff);
+//                Collections.sort(tmp_tier1);
+                List tmp_tier2 = knowledge.getTier(i);
+//                Collections.sort(tmp_tier2);
+                A = (String) tmp_tier1.get(indx_comp);
+                B = (String) tmp_tier2.get(indy_comp);
+                if (A.equals(B)) continue;
+                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+                x1 = graph.getNode(A);
+                y1 = graph.getNode(B);
+                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
+                simListX.add(x1);
+                simListY.add(y1);
+            } else {
+                //System.out.println("############## WARNING (returnSimilarPairs): did not catch x,y pair " + x + ", " + y);
+                //System.out.println();
+                List tmp_tier1 = knowledge.getTier(i);
+//                Collections.sort(tmp_tier1);
+                List tmp_tier2 = knowledge.getTier(i + tier_diff);
+//                Collections.sort(tmp_tier2);
+                A = (String) tmp_tier1.get(indx_comp);
+                B = (String) tmp_tier2.get(indy_comp);
+                if (A.equals(B)) continue;
+                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+                x1 = graph.getNode(A);
+                y1 = graph.getNode(B);
+                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
+                simListX.add(x1);
+                simListY.add(y1);
+            }
+        }
+
+        List<List<Node>> pairList = new ArrayList<List<Node>>();
+        pairList.add(simListX);
+        pairList.add(simListY);
+        return(pairList);
+    }
+
+    public String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
+        if(tempS.indexOf(':')== -1) {
+            return tempS;
+        } else return tempS.substring(0, tempS.indexOf(':'));
     }
 }
 

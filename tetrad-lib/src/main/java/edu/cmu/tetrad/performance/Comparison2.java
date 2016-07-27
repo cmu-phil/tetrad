@@ -250,27 +250,48 @@ public class Comparison2 {
 
                 /** added 6.08.16 for tsFCI **/
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
-                    sim.setCoefRange(0.2,0.6);
+                    sim.setCoefRange(10.0,20.0);
                 }
                 /***************************/
 
-                dataSet = sim.simulateDataAcyclic(params.getSampleSize());
+//                dataSet = sim.simulateDataAcyclic(params.getSampleSize());
 
                 /** added 6.08.16 for tsFCI **/
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
-//                    System.out.println("Coefs matrix : " + sim.getCoefs());
-                    System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
-//                    System.out.println("dim = " + sim.getCoefs()[1][1]);
-                    boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(sim.getCoefficientMatrix()));
-                         //this TetradMatrix needs to be the matrix of coefficients from the SEM!
-                    if (!isStableTetradMatrix){
-                        System.out.println("%%%%%%%%%% WARNING %%%%%%%%% not a stable set of eigenvalues for data generation");
-                        System.out.println("Skipping this attempt!");
-                        sim.setCoefRange(0.2,0.5);
+////                    System.out.println("Coefs matrix : " + sim.getCoefs());
+//                    System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
+////                    System.out.println("dim = " + sim.getCoefs()[1][1]);
+//                    boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(sim.getCoefficientMatrix()));
+//                    //this TetradMatrix needs to be the matrix of coefficients from the SEM!
+//                    if (!isStableTetradMatrix) {
+//                        System.out.println("%%%%%%%%%% WARNING %%%%%%%%% not a stable set of eigenvalues for data generation");
+//                        System.out.println("Skipping this attempt!");
+//                        sim.setCoefRange(0.2, 0.5);
+//                        dataSet = sim.simulateDataAcyclic(params.getSampleSize());
+//                    }
+//
+//                    /***************************/
+                    boolean isStableTetradMatrix;
+                    int attempt = 1;
+                    do {
                         dataSet = sim.simulateDataAcyclic(params.getSampleSize());
-                    }
+                        System.out.println("Variable Nodes : " + sim.getVariableNodes());
+                        System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
+
+//                        TetradMatrix m = new TetradMatrix(sim.getCoefficientMatrix());
+//                        m.getSelection();
+
+                        isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(sim.getCoefficientMatrix()));
+                        System.out.println("isStableTetradMatrix? : " + isStableTetradMatrix);
+                        attempt++;
+                    } while (!isStableTetradMatrix || attempt>10);
+                    if (!isStableTetradMatrix){
+                        System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
+                        System.out.println("Made " + attempt + " attempts to get stable matrix.");
+                        sim.setCoefRange(0.15, 0.3);
+                        dataSet = sim.simulateDataAcyclic(params.getSampleSize());
+                    } else System.out.println("Coefficient matrix is stable.");
                 }
-                /***************************/
 
             } else if (params.getDataType() == ComparisonParameters.DataType.Discrete) {
                 List<Node> nodes = new ArrayList<>();
@@ -698,31 +719,17 @@ public class Comparison2 {
             e.printStackTrace();
         }
 
-        double sum = 0.0;
-
-//        boolean allEigenvaluesSmallerThanOneInModulus = true;
         for (int i = 0; i < realEigenvalues.length; i++) {
             double realEigenvalue = realEigenvalues[i];
             double imagEigenvalue = imagEigenvalues[i];
+            System.out.println("Real eigenvalues are : " + realEigenvalue + " and imag part : " + imagEigenvalue);
             double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
-//			double argument = Math.atan(imagEigenvalue/realEigenvalue);
-//			double modulusCubed = Math.pow(modulus, 3);
-//			System.out.println("eigenvalue #"+i+" = " + realEigenvalue + "+" + imagEigenvalue + "i");
-//			System.out.println("eigenvalue #"+i+" has argument = " + argument);
-//			System.out.println("eigenvalue #"+i+" has modulus = " + modulus);
-//			System.out.println("eigenvalue #"+i+" has modulus^3 = " + modulusCubed);
-
-            sum += modulus;
 
             if (modulus >= 1.0) {
                 return false;
-//                allEigenvaluesSmallerThanOneInModulus = false;
             }
         }
         return true;
-//        return allEigenvaluesSmallerThanOneInModulus;
-
-//        return sum / realEigenvalues.size() < 1;
     }
 
     public enum TableColumn {AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
