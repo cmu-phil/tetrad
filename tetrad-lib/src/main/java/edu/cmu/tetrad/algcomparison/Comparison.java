@@ -170,8 +170,8 @@ public class Comparison {
 
         for (SimulationWrapper simulationWrapper : simulationWrappers) {
             for (AlgorithmWrapper algorithmWrapper : algorithmWrappers) {
-                if (algorithmWrapper.getDataType() == simulationWrapper.getDataType()
-                        || algorithmWrapper.getDataType() == DataType.Mixed) {
+                if (algorithmWrapper.getDataType() == DataType.Mixed
+                        || (algorithmWrapper.getDataType() == simulationWrapper.getDataType())) {
                     algorithmSimulationWrappers.add(new AlgorithmSimulationWrapper(
                             algorithmWrapper, simulationWrapper));
                 } else {
@@ -746,8 +746,6 @@ public class Comparison {
         DataSet data = simulationWrapper.getDataSet(run.getRunIndex());
         Graph trueGraph = simulationWrapper.getTrueGraph();
 
-        boolean isMixed = data.isMixed();
-
         System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
@@ -785,7 +783,7 @@ public class Comparison {
         est[0] = out;
         graphTypeUsed[0] = true;
 
-        if (isMixed) {
+        if (data.isMixed()) {
             est[1] = getSubgraph(out, true, true, data);
             est[2] = getSubgraph(out, true, false, data);
             est[3] = getSubgraph(out, false, false, data);
@@ -799,7 +797,7 @@ public class Comparison {
 
         truth[0] = comparisonGraph;
 
-        if (isMixed && comparisonGraph != null) {
+        if (data.isMixed() && comparisonGraph != null) {
             truth[1] = getSubgraph(comparisonGraph, true, true, data);
             truth[2] = getSubgraph(comparisonGraph, true, false, data);
             truth[3] = getSubgraph(comparisonGraph, false, false, data);
