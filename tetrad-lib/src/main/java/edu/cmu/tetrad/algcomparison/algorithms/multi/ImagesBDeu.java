@@ -51,7 +51,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm {
 
     @Override
     public String getDescription() {
-        return "IMaGES for continuous variables (using the SEM BIC score)";
+        return "IMaGES for discrete variables (using the BDeu score)";
     }
 
     @Override
