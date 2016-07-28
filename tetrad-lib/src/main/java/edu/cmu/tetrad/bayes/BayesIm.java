@@ -23,10 +23,9 @@ package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VariableSource;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.Simulator;
+import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.util.IM;
 
 import java.util.List;

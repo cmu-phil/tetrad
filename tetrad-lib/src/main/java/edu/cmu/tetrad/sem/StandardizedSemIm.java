@@ -24,6 +24,7 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 
