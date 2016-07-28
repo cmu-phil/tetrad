@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 
