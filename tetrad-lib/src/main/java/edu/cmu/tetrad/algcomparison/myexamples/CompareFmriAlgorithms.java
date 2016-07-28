@@ -26,11 +26,10 @@ import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
+import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
+import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
-import edu.cmu.tetrad.algcomparison.simulation.ScaleFreeSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
@@ -38,31 +37,30 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
  *
  * @author jdramsey
  */
-public class CompareFmri_ish_Algorithms {
+public class CompareFmriAlgorithms {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-//        parameters.put("numRuns", 1);
-//        parameters.put("numMeasures", 200);
-        parameters.put("avgDegree", 10);
-//        parameters.put("sampleSize", 1000);
-//        parameters.put("alpha", .01, .001, .0001);
-//        parameters.put("penaltyDiscount", 4, 8, 12);
-
-        parameters.put("numMeasures", 50);
+        parameters.put("numMeasures", 50, 100, 200);
         parameters.put("numLatents", 0);
+        parameters.put("avgDegree", 10);
         parameters.put("scaleFreeAlpha", .05);
         parameters.put("scaleFreeBeta", .90);
         parameters.put("scaleFreeDeltaIn", 3);
         parameters.put("scaleFreeDeltaOut", 3);
         parameters.put("numRuns", 1);
-        parameters.put("sampleSize", 2000);
-        parameters.put("penaltyDiscount", 2, 4, 6, 8, 10, 12);
-        parameters.put("alpha", .001);
+        parameters.put("sampleSize", 1000);
+        parameters.put("percentDiscrete", 100);
+        parameters.put("numCategories", 4);
+
+//        parameters.put("samplePrior", 1, 2, 4, 8);
+
+        parameters.put("penaltyDiscount", 1);
+//        parameters.put("structurePrior", 1, 2, 4, 8);
+
 
         Statistics statistics = new Statistics();
 
-//        statistics.add(new ParameterColumn("alpha"));
         statistics.add(new ParameterColumn("penaltyDiscount"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -75,12 +73,12 @@ public class CompareFmri_ish_Algorithms {
         statistics.add(new SHD());
         statistics.add(new ElapsedTime());
 
-//        statistics.setWeight("AP", 1.0);
-//        statistics.setWeight("AR", 1.0);
-//        statistics.setWeight("AHP", 1.0);
-//        statistics.setWeight("AHR", 1.0);
-        statistics.setWeight("SHD", 1);
-        statistics.setWeight("E", 1);
+        statistics.setWeight("AP", 1.0);
+        statistics.setWeight("AR", 1.0);
+        statistics.setWeight("AHP", 1.0);
+        statistics.setWeight("AHR", 1.0);
+//        statistics.setWeight("SHD", 1);
+//        statistics.setWeight("E", 1);
 
         statistics.setSortByUtility(true);
         statistics.setShowUtilities(true);
@@ -94,13 +92,15 @@ public class CompareFmri_ish_Algorithms {
 //        algorithms.add(new Pcs(new FisherZ()));
 //        algorithms.add(new Cpcs(new FisherZ()));
 //        algorithms.add(new Cpcs(new SemBicTest()));
-        algorithms.add(new Fgs(new SemBicScore()));
+        algorithms.add(new Fgs(new DiscreteBicScore()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new SemSimulation());
+        simulations.add(new DiscreteLeeHastieSimulation());
 
-        new Comparison().compareAlgorithms("comparison/Comparison2.txt",
+        Comparison comparison = new Comparison();
+        comparison.setSaveGraphs(true);
+        comparison.compareAlgorithms("comparison/Comparison2.txt",
                 simulations, algorithms, statistics, parameters);
     }
 }

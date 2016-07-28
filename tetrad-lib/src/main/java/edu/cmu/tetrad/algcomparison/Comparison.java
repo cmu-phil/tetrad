@@ -61,6 +61,7 @@ public class Comparison {
     private PrintStream out;
     private boolean tabDelimitedTables = false;
     private boolean saveGraphs = false;
+    private boolean copyData = false;
 
     /**
      * Compares algorithms.
@@ -95,6 +96,7 @@ public class Comparison {
      */
     public void compareAlgorithms(String outFile, Simulations simulations, Algorithms algorithms,
                                   Statistics statistics, Parameters parameters) {
+
         // Create output file.
         try {
             File comparison = new File(outFile);
@@ -105,7 +107,7 @@ public class Comparison {
 
         out.println(new Date());
 
-        // Set up similations--create data and graphs, read in parameters. The parameters
+        // Set up simulations--create data and graphs, read in parameters. The parameters
         // are set in the parameters object.
         List<SimulationWrapper> simulationWrappers = new ArrayList<>();
 
@@ -124,8 +126,6 @@ public class Comparison {
         }
 
         // Set up the algorithms.
-        // Only consider the algorithms for the given data type. Mixed data types can go either way.
-        // MGM algorithms won'algSimIndex run on continuous data or discrete data.
         List<AlgorithmWrapper> algorithmWrappers = new ArrayList<>();
 
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
@@ -170,12 +170,14 @@ public class Comparison {
 
         for (SimulationWrapper simulationWrapper : simulationWrappers) {
             for (AlgorithmWrapper algorithmWrapper : algorithmWrappers) {
-                if (algorithmWrapper.getDataType() == DataType.Mixed
-                        || (algorithmWrapper.getDataType() == simulationWrapper.getDataType())) {
+                DataType algDataType = algorithmWrapper.getDataType();
+                DataType simDataType = simulationWrapper.getDataType();
+                if (algDataType == DataType.Mixed || (algDataType == simDataType)) {
                     algorithmSimulationWrappers.add(new AlgorithmSimulationWrapper(
                             algorithmWrapper, simulationWrapper));
                 } else {
-                    System.out.println("Type mismatch; skipping algorithm/simulationWrapper " + algorithmWrapper.getDescription());
+                    System.out.println("Type mismatch; skipping algorithm/simulation " + algorithmWrapper.getDescription()
+                            + " / " + simulationWrapper.getDescription());
                 }
             }
         }
@@ -753,7 +755,7 @@ public class Comparison {
         Graph out;
 
         try {
-            out = algorithmSimulationWrapper.search(data.copy(), algorithmWrapper.getAlgorithmSpecificParameters());
+            out = algorithmSimulationWrapper.search(copyData ? data.copy() : data, algorithmWrapper.getAlgorithmSpecificParameters());
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
             e.printStackTrace();
@@ -879,6 +881,20 @@ public class Comparison {
      */
     public boolean isSaveGraphs() {
         return saveGraphs;
+    }
+
+    /**
+     * @return True if data should be copied before analyzing it.
+     */
+    public boolean isCopyData() {
+        return copyData;
+    }
+
+    /**
+     * @param copyData True if data should be copied before analyzing it.
+     */
+    public void setCopyData(boolean copyData) {
+        this.copyData = copyData;
     }
 
     private enum Mode {

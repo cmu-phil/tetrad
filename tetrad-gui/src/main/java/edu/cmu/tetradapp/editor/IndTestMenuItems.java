@@ -69,11 +69,7 @@ public class IndTestMenuItems {
                 if (!dataSet.isContinuous()) continuous = false;
             }
 
-            if (!continuous) {
-                throw new IllegalArgumentException("Multiple data sets must all be continuous.");
-            }
-
-            addMultiContinuousTestMenuItems(test, setter);
+            addMultiTestMenuItems(test, setter);
         }
     }
 
@@ -217,7 +213,7 @@ public class IndTestMenuItems {
 
     }
 
-    static void addMultiContinuousTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
+    static void addMultiTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.POOL_RESIDUALS_FISHER_Z
                 && testType != IndTestType.TIPPETT
@@ -240,9 +236,9 @@ public class IndTestMenuItems {
         group.add(fisherZPoolResiduals);
         test.add(fisherZPoolResiduals);
 
-        JCheckBoxMenuItem bicBup = new JCheckBoxMenuItem("BIC Bump (IMaGES)");
-        group.add(bicBup);
-        test.add(bicBup);
+        JCheckBoxMenuItem bicBump = new JCheckBoxMenuItem("BIC Bump (IMaGES)");
+        group.add(bicBump);
+        test.add(bicBump);
 
         testType = setter.getTestType();
 
@@ -259,7 +255,7 @@ public class IndTestMenuItems {
         }
 
         if (testType == IndTestType.SEM_BIC) {
-            bicBup.setSelected(true);
+            bicBump.setSelected(true);
         }
 
         fisherZPoolResiduals.addActionListener(new ActionListener() {
@@ -286,7 +282,7 @@ public class IndTestMenuItems {
             }
         });
 
-        bicBup.addActionListener(new ActionListener() {
+        bicBump.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setter.setTestType(IndTestType.SEM_BIC);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),

@@ -46,11 +46,11 @@ public class CompareNewAlgorithms {
         parameters.put("avgDegree", 4);
         parameters.put("sampleSize", 500);
 //        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
-        parameters.put("percentDiscreteForMixedSimulation", 25);
+        parameters.put("percentDiscrete", 25);
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("percentDiscreteForMixedSimulation"));
+        statistics.add(new ParameterColumn("percentDiscrete"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());

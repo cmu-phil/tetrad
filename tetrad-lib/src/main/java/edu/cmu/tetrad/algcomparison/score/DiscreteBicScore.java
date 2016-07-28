@@ -19,14 +19,13 @@ public class DiscreteBicScore implements ScoreWrapper {
     public Score getScore(DataSet dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.BicScore score
                 = new edu.cmu.tetrad.search.BicScore(dataSet);
-        score.setSamplePrior(parameters.getDouble("samplePrior"));
-        score.setStructurePrior(parameters.getDouble("structurePrior"));
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         return score;
     }
 
     @Override
     public String getDescription() {
-        return "Disrete BIC Score";
+        return "Discrete BIC Score";
     }
 
     @Override
@@ -37,8 +36,7 @@ public class DiscreteBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("samplePrior");
-        parameters.add("structurePrior");
+        parameters.add("penaltyDiscount");
         return parameters;
     }
 
