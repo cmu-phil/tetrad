@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison;
 
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithms.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
@@ -185,7 +186,7 @@ public class Comparison {
         int numRuns = parameters.getInt("numRuns");
 
         // Run all of the algorithms and compile statistics.
-        double[][][][] allStats = calcStats(algorithmSimulationWrappers, statistics, numRuns);
+        double[][][][] allStats = calcStats(algorithmSimulationWrappers, statistics, numRuns, parameters);
 
         // Print out the priliminary information for statistics types, etc.
         if (allStats != null) {
@@ -646,7 +647,7 @@ public class Comparison {
 
 
     private double[][][][] calcStats(final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
-                                     Statistics statistics, int numRuns) {
+                                     Statistics statistics, int numRuns, Parameters parameters) {
         int numGraphTypes = 4;
 
         graphTypeUsed = new boolean[4];
@@ -666,7 +667,8 @@ public class Comparison {
         List<AlgorithmTask> tasks = new ArrayList<>();
 
         for (Run run : runs) {
-            tasks.add(new AlgorithmTask(algorithmSimulationWrappers, statistics, numGraphTypes, allStats, run));
+            tasks.add(new AlgorithmTask(algorithmSimulationWrappers, statistics, numGraphTypes, allStats, run,
+                    parameters));
         }
 
         class Task extends RecursiveTask<Boolean> {
@@ -719,25 +721,28 @@ public class Comparison {
         private int numGraphTypes;
         private double[][][][] allStats;
         private final Run run;
+        private Parameters parameters;
 
         public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
-                             Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run) {
+                             Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run,
+                             Parameters parameters) {
             this.algorithmSimulationWrappers = algorithmSimulationWrappers;
             this.statistics = statistics;
             this.numGraphTypes = numGraphTypes;
             this.allStats = allStats;
             this.run = run;
+            this.parameters = parameters;
         }
 
         @Override
         protected Boolean compute() {
-            doRun(algorithmSimulationWrappers, statistics, numGraphTypes, allStats, run);
+            doRun(algorithmSimulationWrappers, statistics, numGraphTypes, allStats, run, parameters);
             return true;
         }
     }
 
     private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, Statistics statistics,
-                       int numGraphTypes, double[][][][] allStats, Run run) {
+                       int numGraphTypes, double[][][][] allStats, Run run, Parameters parameters) {
         System.out.println();
         System.out.println("Run " + (run.getRunIndex() + 1));
         System.out.println();
@@ -755,7 +760,27 @@ public class Comparison {
         Graph out;
 
         try {
-            out = algorithmSimulationWrapper.search(copyData ? data.copy() : data, algorithmWrapper.getAlgorithmSpecificParameters());
+            Algorithm algorithm = algorithmWrapper.getAlgorithm();
+
+            if (algorithm instanceof MultiDataSetAlgorithm) {
+                List<Integer> indices = new ArrayList<>();
+                int numDataSets = simulationWrapper.getSimulation().getNumDataSets();
+                for (int i = 0; i < numDataSets; i++) indices.add(i);
+                Collections.shuffle(indices);
+
+                List<DataSet> dataSets = new ArrayList<>();
+                int randomSelection = parameters.getInt("randomSelection");
+                for (int i = 0; i < Math.min(numDataSets, randomSelection); i++) {
+                    dataSets.add(simulationWrapper.getSimulation().getDataSet(indices.get(i)));
+                }
+
+                Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
+                out = ((MultiDataSetAlgorithm) algorithm).search(dataSets, _params);
+            } else {
+                DataSet dataSet = copyData ? data.copy() : data;
+                Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
+                out = algorithm.search(dataSet, _params);
+            }
         } catch (Exception e) {
             System.out.println("Could not run " + algorithmWrapper.getDescription());
             e.printStackTrace();
@@ -1251,7 +1276,7 @@ public class Comparison {
 
         @Override
         public Graph search(DataSet dataSet, Parameters parameters) {
-            return algorithmWrapper.search(dataSet, parameters);
+            return algorithmWrapper.getAlgorithm().search(dataSet, parameters);
         }
 
         @Override
