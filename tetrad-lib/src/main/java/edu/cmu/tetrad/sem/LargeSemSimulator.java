@@ -287,12 +287,25 @@ public final class LargeSemSimulator {
             }
         }
 
+        if(graph instanceof TimeLagGraph){
+            sampleSize += 200;
+        }
+
         double[][] all = new double[variableNodes.size()][sampleSize];
 
         int chunk = sampleSize / ForkJoinPoolInstance.getInstance().getPool().getParallelism() + 1;
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(0, sampleSize, all, chunk));
 
+        if(graph instanceof TimeLagGraph){
+            int [] rem = new int[200];
+            for (int i=0;i <200;++i){
+                rem[i]=i;
+            }
+            BoxDataSet dat = new BoxDataSet(new VerticalDoubleDataBox(all), variableNodes);
+            dat.removeRows(rem);
+            return dat;
+        }
         return new BoxDataSet(new VerticalDoubleDataBox(all), variableNodes);
     }
 
@@ -348,7 +361,7 @@ public final class LargeSemSimulator {
                 List<Node> _parents = lagGraph.getParents(y);
 
                 for (Node x : _parents) {
-                    List<List<Node>> similar = returnSimilarPairs(x, y, knowledge); // returnSimilarPairs // returns List<List<Node>>
+                    List<List<Node>> similar = returnSimilarPairs(x, y, knowledge);
 
                     int _x = variableNodes.indexOf(x);
                     int _y = variableNodes.indexOf(y);

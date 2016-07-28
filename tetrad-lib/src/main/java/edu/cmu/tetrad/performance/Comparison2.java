@@ -250,7 +250,7 @@ public class Comparison2 {
 
                 /** added 6.08.16 for tsFCI **/
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
-                    sim.setCoefRange(10.0,20.0);
+                    sim.setCoefRange(0.20,0.50);
                 }
                 /***************************/
 
@@ -273,21 +273,36 @@ public class Comparison2 {
 //                    /***************************/
                     boolean isStableTetradMatrix;
                     int attempt = 1;
+                    int tierSize = params.getNumVars();
+                    int[] sub = new int[tierSize];
+                    int[] sub2 = new int[tierSize];
+                    for(int i = 0; i < tierSize; i++){
+                        sub[i] = i;
+                        sub2[i] = tierSize + i;
+                    }
                     do {
                         dataSet = sim.simulateDataAcyclic(params.getSampleSize());
-                        System.out.println("Variable Nodes : " + sim.getVariableNodes());
-                        System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
+//                        System.out.println("Variable Nodes : " + sim.getVariableNodes());
+//                        System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
 
-//                        TetradMatrix m = new TetradMatrix(sim.getCoefficientMatrix());
-//                        m.getSelection();
+                        TetradMatrix coefMat = new TetradMatrix(sim.getCoefficientMatrix());
+                        TetradMatrix B = coefMat.getSelection(sub, sub);
+                        TetradMatrix Gamma1 = coefMat.getSelection(sub2, sub);
+                        TetradMatrix Gamma0 = TetradMatrix.identity(tierSize).minus(B);
+                        TetradMatrix A1 = Gamma0.inverse().times(Gamma1);
 
-                        isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(sim.getCoefficientMatrix()));
+//                        TetradMatrix B2 = coefMat.getSelection(sub2, sub2);
+//                        System.out.println("B matrix : " + B);
+//                        System.out.println("B2 matrix : " + B2);
+//                        System.out.println("Gamma1 matrix : " + Gamma1);
+//                        isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(sim.getCoefficientMatrix()));
+                        isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(A1);
                         System.out.println("isStableTetradMatrix? : " + isStableTetradMatrix);
                         attempt++;
-                    } while (!isStableTetradMatrix || attempt>10);
+                    } while ((!isStableTetradMatrix) && attempt<=5);
                     if (!isStableTetradMatrix){
                         System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
-                        System.out.println("Made " + attempt + " attempts to get stable matrix.");
+                        System.out.println("Made " + (attempt-1) + " attempts to get stable matrix.");
                         sim.setCoefRange(0.15, 0.3);
                         dataSet = sim.simulateDataAcyclic(params.getSampleSize());
                     } else System.out.println("Coefficient matrix is stable.");
