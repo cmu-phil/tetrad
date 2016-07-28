@@ -89,7 +89,7 @@ public class SemThenDiscretizeSimulation implements Simulation {
 
         Discretizer discretizer = new Discretizer(continuousData);
 
-        for (int i = 0; i < shuffledNodes.size() * parameters.getDouble("percentDiscreteForMixedSimulation") * 0.01; i++) {
+        for (int i = 0; i < shuffledNodes.size() * parameters.getDouble("percentDiscrete") * 0.01; i++) {
             discretizer.equalIntervals(shuffledNodes.get(i), parameters.getInt("numCategories"));
         }
 
