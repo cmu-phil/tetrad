@@ -22,7 +22,8 @@
 package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 
@@ -40,7 +41,7 @@ public class ExampleSave {
         parameters.put("avgDegree", 4);
         parameters.put("sampleSize", 100, 500, 1000);
 
-        Simulation simulation = new SemSimulation();
+        Simulation simulation = new SemSimulation(new RandomForward());
         new Comparison().saveDataSetAndGraphs("comparison/save1", simulation,
                 parameters);
     }

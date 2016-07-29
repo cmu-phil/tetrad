@@ -1,9 +1,10 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
@@ -18,19 +19,17 @@ import java.util.List;
  * @author jdramsey
  */
 public class GeneralSemSimulation implements Simulation {
+    private final RandomGraph randomGraph;
     private Graph graph;
     private List<DataSet> dataSets;
 
+    public GeneralSemSimulation(RandomGraph randomGraph) {
+        this.randomGraph = randomGraph;
+    }
+
     @Override
     public void createData(Parameters parameters) {
-        this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+        this.graph = randomGraph.createGraph(parameters);
 
         this.dataSets = new ArrayList<>();
 
@@ -68,18 +67,12 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     public String getDescription() {
-        return "Nonlinear, non-Gaussian SEM simulation";
+        return "Nonlinear, non-Gaussian SEM simulation using " + randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("numMeasures");
-        parameters.add("numLatents");
-        parameters.add("avgDegree");
-        parameters.add("maxDegree");
-        parameters.add("maxIndegree");
-        parameters.add("maxOutdegree");
+        List<String> parameters = randomGraph.getParameters();
         parameters.add("numRuns");
         parameters.add("sampleSize");
         parameters.add("generalSemFunctionTemplateMeasured");
