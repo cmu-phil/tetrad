@@ -18,8 +18,6 @@ public class ChiSquare implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        if (dataSet == null) throw new NullPointerException();
-
         return new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
     }
 

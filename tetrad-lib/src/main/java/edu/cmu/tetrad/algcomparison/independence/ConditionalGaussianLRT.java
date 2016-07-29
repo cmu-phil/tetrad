@@ -16,16 +16,10 @@ import java.util.List;
  * @author jdramsey
  */
 public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental {
-    private DataSet dataSet = null;
-    private IndependenceTest test = null;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        if (dataSet != this.dataSet) {
-            this.dataSet = dataSet;
-            this.test = new IndTestConditionalGaussianLrt(dataSet, parameters.getDouble("alpha"));
-        }
-        return test;
+        return new IndTestConditionalGaussianLrt(dataSet, parameters.getDouble("alpha"));
     }
 
     @Override

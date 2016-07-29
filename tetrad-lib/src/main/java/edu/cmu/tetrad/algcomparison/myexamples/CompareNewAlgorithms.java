@@ -22,16 +22,19 @@
 package edu.cmu.tetrad.algcomparison.myexamples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithms.graphs.RandomForward;
-import edu.cmu.tetrad.algcomparison.algorithms.myalgorithms.Wfgs;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Cfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.DataType;
 
 /**
@@ -47,12 +50,12 @@ public class CompareNewAlgorithms {
         parameters.put("numMeasures", 100);
         parameters.put("avgDegree", 4);
         parameters.put("sampleSize", 500);
-//        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
-        parameters.put("percentDiscrete", 25);
+        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
+//        parameters.put("percentDiscrete", 25);
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("percentDiscrete"));
+//        statistics.add(new ParameterColumn("percentDiscrete"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -72,17 +75,15 @@ public class CompareNewAlgorithms {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new ConditionalGaussianLRT()));
-        algorithms.add(new Cpc(new ConditionalGaussianLRT(), new Fgs(new ConditionalGaussianBicScore())));
-        algorithms.add(new Pcs(new ConditionalGaussianLRT()));
-        algorithms.add(new Cpcs(new ConditionalGaussianLRT()));
-        algorithms.add(new Wfgs());
+        algorithms.add(new Cfci(new FisherZ()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LeeHastieSimulation(new RandomForward()));
+        simulations.add(new SemSimulation(new RandomForward()));
 
-        new Comparison().compareAlgorithms("comparison/Comparison.txt",
+        Comparison comparison = new Comparison();
+        comparison.setSaveGraphs(true);
+        comparison.compareAlgorithms("comparison/ComparisonNew.txt",
                 simulations, algorithms, statistics, parameters);
     }
 }

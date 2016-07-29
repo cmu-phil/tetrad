@@ -18,18 +18,12 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemBicTest implements IndependenceWrapper {
-    private DataSet dataSet = null;
-    private edu.cmu.tetrad.search.IndependenceTest test = null;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        if (dataSet != this.dataSet) {
-            this.dataSet = dataSet;
-            List<DataModel> dataModels = new ArrayList<>();
-            dataModels.add(dataSet);
-            return new IndTestScore(new SemBicScoreImages(dataModels), parameters.getDouble("alpha"));
-        }
-        return test;
+        List<DataModel> dataModels = new ArrayList<>();
+        dataModels.add(dataSet);
+        return new IndTestScore(new SemBicScoreImages(dataModels), parameters.getDouble("alpha"));
     }
 
     @Override

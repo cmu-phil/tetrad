@@ -14,19 +14,13 @@ import java.util.List;
  * @author jdramsey
  */
 public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
-    private DataSet dataSet = null;
-    private edu.cmu.tetrad.search.IndependenceTest test = null;
 
     @Override
     public edu.cmu.tetrad.search.IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        if (dataSet != this.dataSet) {
-            this.dataSet = dataSet;
-            this.test = new IndTestMultinomialLogisticRegressionWald(
-                    dataSet,
-                    parameters.getDouble("alpha"),
-                    false);
-        }
-        return test;
+        return new IndTestMultinomialLogisticRegressionWald(
+                dataSet,
+                parameters.getDouble("alpha"),
+                false);
     }
 
     @Override

@@ -22,15 +22,14 @@
 package edu.cmu.tetrad.algcomparison.myexamples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Fgs;
-import edu.cmu.tetrad.algcomparison.graphs.RandomForward;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.data.DataType;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
