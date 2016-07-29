@@ -19,10 +19,10 @@ import java.util.List;
 public class SemThenDiscretizeSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
-    private double percentDiscrete;
+    private DataType dataType;
 
-    public SemThenDiscretizeSimulation(double percentDiscrete) {
-        this.percentDiscrete = percentDiscrete;
+    public SemThenDiscretizeSimulation(DataType dataType) {
+        this.dataType = dataType;
     }
 
     @Override
@@ -35,6 +35,14 @@ public class SemThenDiscretizeSimulation implements Simulation {
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
                 parameters.getInt("connected") == 1);
+
+        double percentDiscrete = parameters.getDouble("percentDiscrete");
+
+        if (dataType == DataType.Continuous && percentDiscrete != 0.0) {
+            throw new IllegalArgumentException("To simulate continuous data, 'percentDiscrete' must be set to 0.0.");
+        } else if (dataType == DataType.Discrete && percentDiscrete != 1000.0) {
+            throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 100.0.");
+        }
 
         dataSets = new ArrayList<>();
 
@@ -82,13 +90,7 @@ public class SemThenDiscretizeSimulation implements Simulation {
 
     @Override
     public DataType getDataType() {
-        if (percentDiscrete == 0) {
-            return DataType.Continuous;
-        } else if (percentDiscrete == 100) {
-            return DataType.Discrete;
-        } else {
-            return DataType.Mixed;
-        }
+        return dataType;
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
