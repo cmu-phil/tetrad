@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits some algorithms to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */
@@ -76,6 +76,13 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         super(runner, "Result PAG");
     }
 
+    public FciCcdSearchEditor(TsFciRunner runner) {
+        super(runner, "Result PAG");
+    }
+
+    public FciCcdSearchEditor(TsGFciRunner runner) {
+        super(runner, "Result PAG");
+    }
     /**
      * Opens up an editor to let the user view the given CcdRunner.
      */

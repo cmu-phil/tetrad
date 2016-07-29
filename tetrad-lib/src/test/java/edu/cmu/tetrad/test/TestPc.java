@@ -503,7 +503,7 @@ public class TestPc {
         System.out.println(algorithms[t] + " avg num tails " + nf.format(avgNumTails));
         System.out.println(algorithms[t] + " avg num bidirected " + nf.format(avgNumBidirected));
         System.out.println(algorithms[t] + " avg elapsed " + nf.format(avgElapsed));
-//        System.out.println(algorithms[t] + " avg precision / elapsed " + nf2.format(avgRatioPrecisionToElapsed));
+//        System.out.println(algorithm[t] + " avg precision / elapsed " + nf2.format(avgRatioPrecisionToElapsed));
 
         return ret;
     }

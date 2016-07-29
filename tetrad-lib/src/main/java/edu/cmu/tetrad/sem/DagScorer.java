@@ -41,7 +41,7 @@ import java.util.TreeSet;
  * substituted for the CovarianceMatrix.) Uses regression to do the estimation,
  * so this is only for DAG models. But the DAG model may be reset on the fly
  * and the estimation redone. Variables whose parents have not changed will
- * not be reestimated. Intended to speed up estimation for algorithms that
+ * not be reestimated. Intended to speed up estimation for algorithm that
  * require repeated estimation of DAG models over the same variables.
  * Assumes all variables are measured.
  *

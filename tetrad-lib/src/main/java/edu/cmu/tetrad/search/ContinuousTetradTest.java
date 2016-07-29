@@ -41,7 +41,7 @@ import static java.lang.Math.abs;
 /**
  * Implements different tests of tetrad constraints: using Wishart's test (CPS, Wishart 1928); Bollen's test (Bollen,
  * 1990) or a more computationally intensive test that fits one/two factor Gaussian models. These tests are the core
- * statistical procedure of search algorithms BuildPureClusters and Purify.
+ * statistical procedure of search algorithm BuildPureClusters and Purify.
  * <p>
  * References:
  * <p>

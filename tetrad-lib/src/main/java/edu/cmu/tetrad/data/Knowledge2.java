@@ -32,7 +32,7 @@ import java.util.regex.Matcher;
 
 /**
  * Stores information about required and forbidden edges and common causes for
- * use in algorithms.  This information can be set edge by edge or else globally
+ * use in algorithm.  This information can be set edge by edge or else globally
  * via temporal tiers.  When setting temporal tiers, all edges from later tiers
  * to earlier tiers are forbidden.
  * <p>
@@ -488,7 +488,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             buf.append("\n").append(i).append(forbiddenWithin).append(" ");
 
             List<String> tier = getTier(i);
-            Collections.sort(tier);
+//            Collections.sort(tier); // Do not sort!
 
             for (Object aTier : tier) {
                 String name = (String) aTier;
@@ -542,6 +542,73 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         out.write(buf.toString());
         out.flush();
     }
+
+//    private void saveKnowledge(Writer out)
+//            throws IOException {
+//        StringBuilder buf = new StringBuilder();
+//        buf.append("/knowledge");
+//
+//        buf.append("\naddtemporal\n");
+//
+//        for (int i = 0; i < tierSpecs.size(); i++) {
+//            String forbiddenWithin = isTierForbiddenWithin(i) ? "*" : "";
+//
+//            buf.append("\n").append(i).append(forbiddenWithin).append(" ");
+//
+//            List<String> tier = getTier(i);
+//
+//            for (Object aTier : tier) {
+//                String name = (String) aTier;
+//                buf.append(name).append(" ");
+//            }
+//        }
+//
+//        buf.append("\n");
+//
+//        buf.append("\nforbiddirect\n\n");
+//
+//        Set<OrderedPair<Set<MyNode>>> copy = new HashSet<>(forbiddenRulesSpecs);
+//        copy.removeAll(forbiddenTierRules());
+//
+//        for (OrderedPair<Set<MyNode>> o : copy) {
+//            Set<MyNode> first = o.getFirst();
+//            Set<MyNode> second = o.getSecond();
+//
+//            for (MyNode s : first) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("==> ");
+//
+//            for (MyNode s : second) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("\n");
+//        }
+//
+//        buf.append("requiredirect\n\n");
+//
+//        for (OrderedPair<Set<MyNode>> o : requiredRulesSpecs) {
+//            Set<MyNode> first = o.getFirst();
+//            Set<MyNode> second = o.getSecond();
+//
+//            for (MyNode s : first) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("==> ");
+//
+//            for (MyNode s : second) {
+//                buf.append(s).append(" ");
+//            }
+//
+//            buf.append("\n");
+//        }
+//
+//        out.write(buf.toString());
+//        out.flush();
+//    }
 
     /**
      * Iterator over the KnowledgeEdge's representing required edges.
@@ -694,13 +761,14 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
     private void ensureTiers(int tier) {
         for (int i = tierSpecs.size(); i <= tier; i++) {
-            tierSpecs.add(new HashSet<MyNode>());
+            tierSpecs.add(new LinkedHashSet<MyNode>());
 
             for (int j = 0; j < i; j++) {
                 forbiddenRulesSpecs.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
             }
         }
     }
+
 
     /**
      * @return the largest indes of a tier in which every variable is forbidden by every
@@ -944,8 +1012,25 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         return rules;
     }
+
+    /**
+     * Returns the index of the tier of node if it's in a tier, otherwise -1.
+     */
+    //@Override
+    public int isInWhichTier(Node node) {
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            Set<MyNode> tier = tierSpecs.get(i);
+
+            for (MyNode myNode : tier) {
+                if (myNode.getName().equals(node.getName())) {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    } // added by DMalinsky for tsFCI on 4/20/16
+
 }
-
-
 
 

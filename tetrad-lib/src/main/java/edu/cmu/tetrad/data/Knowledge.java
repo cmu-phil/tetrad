@@ -32,7 +32,7 @@ import java.util.*;
 
 /**
  * Stores information about required and forbidden edges and common causes for
- * use in algorithms.  This information can be set edge by edge or else globally
+ * use in algorithm.  This information can be set edge by edge or else globally
  * via temporal tiers.  When setting temporal tiers, all edges from later tiers
  * to earlier tiers are forbidden. </p> For this class, all varNames are
  * referenced by name only.  This is because the same Knowledge object is
@@ -1157,8 +1157,11 @@ public final class Knowledge implements TetradSerializable, IKnowledge {
     public void setLagged(boolean lagged) {
         this.lagged = lagged;
     }
+
+    //@Override
+    public int isInWhichTier(Node node) {
+        return tierMap.get(node.getName());
+    } // added by DMalinsky for tsFCI on 4/20/16
+
 }
-
-
-
 

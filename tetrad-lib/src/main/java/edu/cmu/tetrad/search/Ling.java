@@ -1038,7 +1038,7 @@ public class Ling {
     /**
      * This small class is used to store graph permutations. It contains basic methods for adding and accessing graphs.
      * <p>
-     * It is likely that this class will move elesewhere once the role of algorithms that produce multiple graphs is
+     * It is likely that this class will move elesewhere once the role of algorithm that produce multiple graphs is
      * better defined.
      */
 

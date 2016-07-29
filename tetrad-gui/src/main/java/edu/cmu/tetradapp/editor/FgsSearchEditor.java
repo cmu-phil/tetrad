@@ -48,7 +48,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Edits some algorithms to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */
@@ -82,6 +82,14 @@ public class FgsSearchEditor extends AbstractSearchEditor
     }
 
     public FgsSearchEditor(ImagesRunner runner) {
+        super(runner, "Result Pattern");
+    }
+
+    public FgsSearchEditor(TsFgsRunner runner) {
+        super(runner, "Result Pattern");
+    }
+
+    public FgsSearchEditor(TsImagesRunner runner) {
         super(runner, "Result Pattern");
     }
 

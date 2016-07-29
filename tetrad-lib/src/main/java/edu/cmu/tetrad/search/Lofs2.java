@@ -46,9 +46,9 @@ import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
 /**
- * LOFS = Ling Orientation Fixed Structure. Some additional algorithms.
+ * LOFS = Ling Orientation Fixed Structure. Some additional algorithm.
  * </p>
- * Expands the set of algorithms from Lofs.
+ * Expands the set of algorithm from Lofs.
  *
  * @author Joseph Ramsey
  */

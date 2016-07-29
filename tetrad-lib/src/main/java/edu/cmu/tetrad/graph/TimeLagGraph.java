@@ -21,15 +21,13 @@
 
 package edu.cmu.tetrad.graph;
 
-import org.apache.commons.math3.linear.EigenDecomposition;
+//import edu.cmu.tetrad.data.IKnowledge;
+//import edu.cmu.tetrad.data.Knowledge2;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a time series graph--that is, a graph with a fixed number S of lags, with edges into initial lags
@@ -50,6 +48,7 @@ public class TimeLagGraph implements Graph {
     private int maxLag = 1;
     private int numInitialLags = 1;
     private List<Node> lag0Nodes = new ArrayList<>();
+//    private IKnowledge knowledge;
 
     public TimeLagGraph() {
     }
@@ -66,6 +65,24 @@ public class TimeLagGraph implements Graph {
             }
         });
     }
+
+//    public TimeLagGraph(Graph graph) {
+//        //this.graph = new EdgeListGraph(graph);
+//        //this.lag0Nodes = graph.getNodes();
+//
+//        List<Node> Nodes = graph.getNodes();
+//        for(Node node : Nodes){
+//            this.graph.addNode(node);
+//        }
+//
+//        //need to add edges?
+//
+//        this.graph.addPropertyChangeListener(new PropertyChangeListener() {
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                getPcs().firePropertyChange(evt);
+//            }
+//        });
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.

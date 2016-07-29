@@ -678,7 +678,7 @@ public class PurifyScoreBased implements IPurify {
         double tau[][] =
                 new double[numObserved][numObserved];     //measurement error variance
         //Note: error covariance matrix tau is usually *not* diagonal, unlike the implementation of other
-        //structural EM algorithms such as in MimBuildScoreSearch.
+        //structural EM algorithm such as in MimBuildScoreSearch.
         for (int i = 0; i < numLatent; i++) {
             for (int j = 0; j < numLatent; j++) {
                 beta[i][j] = 0.;

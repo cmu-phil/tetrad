@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A list of algorithms to be compared.
+ * A list of algorithm to be compared.
  *
  * @author jdramsey
  */
@@ -24,9 +24,9 @@ public class Algorithms {
     }
 
     /**
-     * Returns the list of algorithms.
+     * Returns the list of algorithm.
      *
-     * @return A copy of the list of algorithms that have been added, in that order.
+     * @return A copy of the list of algorithm that have been added, in that order.
      */
     public List<Algorithm> getAlgorithms() {
         return new ArrayList<>(algorithms);

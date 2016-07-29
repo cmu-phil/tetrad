@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
 
 /**
- * Interface for Bff (Best Fit Finder) algorithms. See implementations.
+ * Interface for Bff (Best Fit Finder) algorithm. See implementations.
  */
 public interface Bff {
     void setAlpha(double alpha);

@@ -259,7 +259,7 @@ public class TestMarkovBlanketSearches {
 //
 ////        LogUtils.getInstance().add(System.out, Level.FINEST);
 //
-//        List<MbSearch> algorithms =
+//        List<MbSearch> algorithm =
 //                new LinkedList<MbSearch>();
 //
 //        List<Stats> collectedStats = new ArrayList<Stats>();
@@ -292,10 +292,10 @@ public class TestMarkovBlanketSearches {
 //                    test = new IndTestFisherZ(dataSet, params.getParameter1());
 //                }
 //
-//                algorithms.clear();
+//                algorithm.clear();
 //
 //                for (String algName : algNames) {
-//                    algorithms.add(getAlgorithm(algName, test, params.getMaxIndegree(), dataSet));
+//                    algorithm.add(getAlgorithm(algName, test, params.getMaxIndegree(), dataSet));
 //                }
 //            }
 //
@@ -349,12 +349,12 @@ public class TestMarkovBlanketSearches {
 //
 //            println(out, "n = " + (n + 1));
 //
-//            for (MbSearch algorithm : new LinkedList<MbSearch>(algorithms)) {
+//            for (MbSearch algorithm : new LinkedList<MbSearch>(algorithm)) {
 ////                System.out.println("Running " + algorithm.getAlgorithmName() + "...");
 //                Stats stats = printNodeStats(algorithm, t, truth, i, out, params.getTimeLimit());
 //
 //                if (stats == null) {
-////                    algorithms.remove(algorithm);
+////                    algorithm.remove(algorithm);
 ////
 ////                    for (Stats _stats : new LinkedList<Stats>(collectedStats)) {
 ////                        if (_stats.getAlgorithm() == algorithm) {
@@ -382,7 +382,7 @@ public class TestMarkovBlanketSearches {
 //
 //        println(out, "\tFP\tFN\tErr\tCorr\tTruth\tTime");
 //
-//        for (MbSearch algorithm : algorithms) {
+//        for (MbSearch algorithm : algorithm) {
 //            int fpSum = 0, fnSum = 0, errorsSum = 0, truthSum = 0;
 //            long timeSum = 0;
 //            int n = 0;

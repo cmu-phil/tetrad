@@ -22,18 +22,19 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.exception.MaxCountExceededException;
+import org.apache.commons.math3.linear.EigenDecomposition;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -388,9 +389,62 @@ public class TimeSeriesUtils {
                 newVariables.add(laggedNode);
                 laggedNode.setCenter(80 * col + 50, 80 * (numLags - lag) + 50);
                 laggedNodes[lag][col] = laggedNode;
-                knowledge.addToTier(numLags - lag, laggedNode.getName());
+//                knowledge.addToTier(numLags - lag, laggedNode.getName());
             }
         }
+
+//        System.out.println("Variable list before the sort = " + newVariables);
+        Collections.sort(newVariables, new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                String name1 = getNameNoLag(o1);
+                String name2 = getNameNoLag(o2);
+
+//                System.out.println("name 1 = " + name1);
+//                System.out.println("name 2 = " + name2);
+
+                String prefix1 = getPrefix(name1);
+                String prefix2 = getPrefix(name2);
+
+//                System.out.println("prefix 1 = " + prefix1);
+//                System.out.println("prefix 2 = " + prefix2);
+
+                int index1 = getIndex(name1);
+                int index2 = getIndex(name2);
+
+//                System.out.println("index 1 = " + index1);
+//                System.out.println("index 2 = " + index2);
+
+                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                    if (prefix1.compareTo(prefix2) == 0) {
+                        return Integer.compare(index1, index2);
+                    } else {
+                        return prefix1.compareTo(prefix2);
+                    }
+
+                } else {
+                    return getLag(o1.getName())-getLag(o2.getName());
+                }
+            }
+        });
+
+//        System.out.println("Variable list after the sort = " + newVariables);
+
+        for (Node node : newVariables) {
+            String varName = node.getName();
+            String tmp;
+            int lag;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+//                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+//                laglist.add(lag);
+            }
+            knowledge.addToTier(numLags - lag, node.getName());
+        }
+
         DataSet laggedData = new ColtDataSet(laggedRows, newVariables);
         for (int lag = 0; lag <= numLags; lag++) {
             for (int col = 0; col < dataSize; col++) {
@@ -413,6 +467,329 @@ public class TimeSeriesUtils {
 //        laggedData.setName(data.getNode());
         return laggedData;
     }
+
+    /**
+     * Creates new time series dataset from the given one with index variable (e.g., time)
+     */
+    public static DataSet createLagDataWithIndex(DataSet data, int numLags) {
+        List<Node> variables = data.getVariables();
+        int dataSize = variables.size();
+        int laggedRows = data.getNumRows() - numLags;
+        IKnowledge knowledge = new Knowledge2();
+        Node[][] laggedNodes = new Node[numLags + 1][dataSize];
+        List<Node> newVariables = new ArrayList<Node>((numLags + 1) * dataSize + 2); // added 1 to this
+
+        for (int lag = 0; lag <= numLags; lag++) {
+            for (int col = 0; col < dataSize; col++) {
+                Node node = variables.get(col);
+                String varName = node.getName();
+                Node laggedNode;
+                String name = varName;
+
+                if (lag != 0) {
+                    name = name + ":" + lag;
+                }
+
+                if (node instanceof ContinuousVariable) {
+                    laggedNode = new ContinuousVariable(name);
+                } else if (node instanceof DiscreteVariable) {
+                    DiscreteVariable var = (DiscreteVariable) node;
+                    laggedNode = new DiscreteVariable(var);
+                    laggedNode.setName(name);
+                } else {
+                    throw new IllegalStateException("Node must be either continuous or discrete");
+                }
+                newVariables.add(laggedNode);
+                laggedNode.setCenter(80 * col + 50, 80 * (numLags - lag) + 50);
+                laggedNodes[lag][col] = laggedNode;
+//                knowledge.addToTier(numLags - lag + 1, laggedNode.getName());
+            }
+        }
+
+        String name = "time";
+        Node indexNode = new ContinuousVariable(name);
+        indexNode.setName(name);
+        newVariables.add(indexNode);
+        indexNode.setCenter(50, 80 * (numLags - 1) + 50);
+        knowledge.addToTier(0, indexNode.getName());
+
+        //        System.out.println("Variable list before the sort = " + variables);
+        Collections.sort(newVariables, new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                String name1 = getNameNoLag(o1);
+                String name2 = getNameNoLag(o2);
+
+//                System.out.println("name 1 = " + name1);
+//                System.out.println("name 2 = " + name2);
+
+                String prefix1 = getPrefix(name1);
+                String prefix2 = getPrefix(name2);
+
+//                System.out.println("prefix 1 = " + prefix1);
+//                System.out.println("prefix 2 = " + prefix2);
+
+                int index1 = getIndex(name1);
+                int index2 = getIndex(name2);
+
+//                System.out.println("index 1 = " + index1);
+//                System.out.println("index 2 = " + index2);
+
+                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                    if (prefix1.compareTo(prefix2) == 0) {
+                        return Integer.compare(index1, index2);
+                    } else {
+                        return prefix1.compareTo(prefix2);
+                    }
+
+                } else {
+                    return getLag(o1.getName())-getLag(o2.getName());
+                }
+            }
+        });
+
+//        System.out.println("Variable list after the sort = " + variables);
+
+        for (Node node : newVariables) {
+            String varName = node.getName();
+            if (varName.equals("time")) continue;
+            String tmp;
+            int lag;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+//                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+//                laglist.add(lag);
+            }
+            knowledge.addToTier(numLags - lag + 1, node.getName());
+        }
+
+        DataSet laggedData = new ColtDataSet(laggedRows, newVariables);
+        for (int lag = 0; lag <= numLags; lag++) {
+            for (int col = 0; col < dataSize; col++) {
+                for (int row = 0; row < laggedRows; row++) {
+                    Node laggedNode = laggedNodes[lag][col];
+                    if (laggedNode instanceof ContinuousVariable) {
+                        double value = data.getDouble(row + numLags - lag, col);
+                        laggedData.setDouble(row, col + lag * dataSize, value);
+                    } else {
+                        int value = data.getInt(row + numLags - lag, col);
+                        laggedData.setInt(row, col + lag * dataSize, value);
+                    }
+                }
+            }
+        }
+
+        // fill indexNode with for loop over rows
+        for (int row = 0; row < laggedRows; row++) {
+            laggedData.setDouble(row, dataSize + numLags * dataSize, row+1);
+        }
+
+        knowledge.setDefaultToKnowledgeLayout(true);
+        laggedData.setKnowledge(knowledge);
+        System.out.println("Knowledge set to : " + knowledge);
+        return laggedData;
+    }
+
+    public static TimeLagGraph GraphToLagGraph(Graph _graph){
+        TimeLagGraph graph = new TimeLagGraph();
+        int numLags = 1;
+
+        for (Node node : _graph.getNodes()) {
+            graph.addNode(new ContinuousVariable(node.getName()));
+
+            /* adding node from Lag 1 to Lag 0 for every node */
+            Node from = graph.getNode(node.getName(),1);
+            Node to = graph.getNode(node.getName(),0);
+            Edge edge = new Edge(from,to,Endpoint.TAIL,Endpoint.ARROW);
+            graph.addEdge(edge);
+            //graph.addDirectedEdge(from, to);
+        }
+
+        for (Edge edge : _graph.getEdges()) {
+            if (!Edges.isDirectedEdge(edge)) {
+                throw new IllegalArgumentException();
+            }
+
+            Node from = edge.getNode1();
+            Node to = edge.getNode2();
+//            System.out.println("From node = " + from.getName());
+//            System.out.println("To node = " + to.getName());
+            Node _from = graph.getNode(from.getName(), 0);
+            Node _to = graph.getNode(to.getName(), 0);
+            Edge edge1 = new Edge(_from,_to,Endpoint.TAIL,Endpoint.ARROW);
+            graph.addEdge(edge1);
+            //graph.addDirectedEdge(_from, _to);
+        }
+
+        //for lag
+        // for node
+        //  with probability 0.3 add edge from node to *random* node at lag0
+
+        for (int lag = 1; lag <= numLags; lag++) {
+            for (Node node1 : graph.getLag0Nodes()){
+                Node from = graph.getNode(node1.getName(),lag);
+                for (Node node2 : graph.getLag0Nodes()){
+                    Node to = graph.getNode(node2.getName(),0);
+                    if (node1.getName().equals(node2.getName())) continue;
+                    if (RandomUtil.getInstance().nextUniform(0,1)<=0.15){
+                        Edge edge = new Edge(from,to,Endpoint.TAIL,Endpoint.ARROW);
+                        graph.addEdge(edge);
+                        //graph.addDirectedEdge(from, to);
+                    }
+                } // for node at lag0 (to)
+            } // for node at lag (from)
+        } // for lag
+
+
+        return graph;
+    }
+
+    public static String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
+        if(tempS.indexOf(':')== -1) {
+            return tempS;
+        } else return tempS.substring(0, tempS.indexOf(':'));
+    }
+
+    public static String getPrefix(String s) {
+//        int y = 0;
+//        for (int i = s.length() - 1; i >= 0; i--) {
+//            try {
+//                y = Integer.parseInt(s.substring(i));
+//            } catch (NumberFormatException e) {
+//                return s.substring(0, y);
+//            }
+//        }
+//
+//        throw new IllegalArgumentException("Not character prefix.");
+
+//        if(s.indexOf(':')== -1) return s;
+//        String tmp = s.substring(0,s.indexOf(':')-1);
+//        return tmp;
+        return s.substring(0,1);
+    }
+
+    public static int getIndex(String s) {
+        int y = 0;
+        for (int i = s.length() - 1; i >= 0; i--) {
+            try {
+                y = Integer.parseInt(s.substring(i));
+            } catch (NumberFormatException e) {
+                return y;
+            }
+        }
+        throw new IllegalArgumentException("Not integer suffix.");
+    }
+
+    public static int getLag(String s) {
+        if(s.indexOf(':')== -1) return 0;
+        String tmp = s.substring(s.indexOf(':')+1,s.length());
+        return (Integer.parseInt(tmp));
+    }
+
+    public static IKnowledge getKnowledge(Graph graph) {
+//        System.out.println("Entering getKnowledge ... ");
+        int numLags = 1; // need to fix this!
+        List<Node> variables = graph.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge = new Knowledge2();
+        int lag;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+                laglist.add(lag);
+            }
+        }
+        numLags = Collections.max(laglist);
+
+//        System.out.println("Variable list before the sort = " + variables);
+        Collections.sort(variables, new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                String name1 = getNameNoLag(o1);
+                String name2 = getNameNoLag(o2);
+
+//                System.out.println("name 1 = " + name1);
+//                System.out.println("name 2 = " + name2);
+
+                String prefix1 = getPrefix(name1);
+                String prefix2 = getPrefix(name2);
+
+//                System.out.println("prefix 1 = " + prefix1);
+//                System.out.println("prefix 2 = " + prefix2);
+
+                int index1 = getIndex(name1);
+                int index2 = getIndex(name2);
+
+//                System.out.println("index 1 = " + index1);
+//                System.out.println("index 2 = " + index2);
+
+                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                    if (prefix1.compareTo(prefix2) == 0) {
+                        return Integer.compare(index1, index2);
+                    } else {
+                        return prefix1.compareTo(prefix2);
+                    }
+                } else {
+                    return getLag(o1.getName())-getLag(o2.getName());
+                }
+            }
+        });
+
+//        System.out.println("Variable list after the sort = " + variables);
+
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+//                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+//                laglist.add(lag);
+            }
+            knowledge.addToTier(numLags - lag, node.getName());
+        }
+
+        //System.out.println("Knowledge in graph = " + knowledge);
+        return knowledge;
+    }
+
+    public static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {
+
+        double[] realEigenvalues = new double[0];
+        double[] imagEigenvalues = new double[0];
+        try {
+            EigenDecomposition dec = new EigenDecomposition(mat.getRealMatrix());
+            realEigenvalues = dec.getRealEigenvalues();
+            imagEigenvalues = dec.getImagEigenvalues();
+        } catch (MaxCountExceededException e) {
+            e.printStackTrace();
+        }
+
+        for (int i = 0; i < realEigenvalues.length; i++) {
+            double realEigenvalue = realEigenvalues[i];
+            double imagEigenvalue = imagEigenvalues[i];
+            System.out.println("Real eigenvalues are : " + realEigenvalue + " and imag part : " + imagEigenvalue);
+            double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
+
+            if (modulus >= 1.0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
 
 

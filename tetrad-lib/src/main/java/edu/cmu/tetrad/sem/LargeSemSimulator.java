@@ -21,11 +21,9 @@
 
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.VerticalDoubleDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+//import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradAlgebra;
@@ -41,6 +39,7 @@ import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
+import static java.lang.Math.PI;
 import static java.lang.Math.sqrt;
 
 /**
@@ -120,6 +119,9 @@ public final class LargeSemSimulator {
      * various values--could be improved).
      */
     public DataSet simulateDataAcyclic1(int sampleSize) {
+        int size = variableNodes.size();
+        setupModel(size);
+
 //        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
         final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variableNodes);
 
@@ -144,6 +146,9 @@ public final class LargeSemSimulator {
 
     // Trying again to parallelize simulateDataAcyclic.
     public DataSet simulateDataAcyclic2(int sampleSize) {
+        int size = variableNodes.size();
+        setupModel(size);
+
         class SimulateRowTask extends RecursiveTask<double[]> {
             private final int i;
 
@@ -230,6 +235,9 @@ public final class LargeSemSimulator {
     }
 
     public DataSet simulateDataAcyclic(int sampleSize) {
+        int size = variableNodes.size();
+        setupModel(size);
+
         class SimulateTask extends RecursiveTask<Boolean> {
             private final int from;
             private final int to;
@@ -279,12 +287,25 @@ public final class LargeSemSimulator {
             }
         }
 
+        if(graph instanceof TimeLagGraph){
+            sampleSize += 200;
+        }
+
         double[][] all = new double[variableNodes.size()][sampleSize];
 
         int chunk = sampleSize / ForkJoinPoolInstance.getInstance().getPool().getParallelism() + 1;
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(0, sampleSize, all, chunk));
 
+        if(graph instanceof TimeLagGraph){
+            int [] rem = new int[200];
+            for (int i=0;i <200;++i){
+                rem[i]=i;
+            }
+            BoxDataSet dat = new BoxDataSet(new VerticalDoubleDataBox(all), variableNodes);
+            dat.removeRows(rem);
+            return dat;
+        }
         return new BoxDataSet(new VerticalDoubleDataBox(all), variableNodes);
     }
 
@@ -329,6 +350,41 @@ public final class LargeSemSimulator {
 
             this.parents[_head] = newParents;
             this.coefs[_head] = newCoefs;
+        }
+
+        if (graph instanceof TimeLagGraph) {
+            TimeLagGraph lagGraph = (TimeLagGraph) graph;
+            IKnowledge knowledge = getKnowledge(lagGraph); //TimeSeriesUtils.getKnowledge(lagGraph);
+            List<Node> lag0 = lagGraph.getLag0Nodes();
+
+            for (Node y : lag0) {
+                List<Node> _parents = lagGraph.getParents(y);
+
+                for (Node x : _parents) {
+                    List<List<Node>> similar = returnSimilarPairs(x, y, knowledge);
+
+                    int _x = variableNodes.indexOf(x);
+                    int _y = variableNodes.indexOf(y);
+                    double first = Double.NaN;
+
+                    for (int i = 0; i < parents[_y].length; i++) {
+                        if (_x == parents[_y][i]) {
+                            first = coefs[_y][i];
+                        }
+                    }
+
+                    for (int j = 0; j < similar.get(0).size(); j++) {
+                        int _xx = variableNodes.indexOf(similar.get(0).get(j));
+                        int _yy = variableNodes.indexOf(similar.get(1).get(j));
+
+                        for (int i = 0; i < parents[_yy].length; i++) {
+                            if (_xx == parents[_yy][i]) {
+                                coefs[_yy][i] = first;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         for (int i = 0; i < size; i++) {
@@ -386,6 +442,217 @@ public final class LargeSemSimulator {
 
         return c;
     }
+
+    public List<Node> getVariableNodes() {
+        return variableNodes;
+    }
+
+    // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    private List<List<Node>> returnSimilarPairs(Node x, Node y, IKnowledge knowledge) {
+        System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
+        if(x.getName().equals("time") || y.getName().equals("time")){
+            return new ArrayList<List<Node>>();
+        }
+//        System.out.println("Knowledge within returnSimilar : " + knowledge);
+        int ntiers = knowledge.getNumTiers();
+        int indx_tier = knowledge.isInWhichTier(x);
+        int indy_tier = knowledge.isInWhichTier(y);
+        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int indx_comp = -1;
+        int indy_comp = -1;
+        List tier_x = knowledge.getTier(indx_tier);
+//        Collections.sort(tier_x);
+        List tier_y = knowledge.getTier(indy_tier);
+//        Collections.sort(tier_y);
+
+        int i;
+        for(i = 0; i < tier_x.size(); ++i) {
+            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+                indx_comp = i;
+                break;
+            }
+        }
+
+        for(i = 0; i < tier_y.size(); ++i) {
+            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+                indy_comp = i;
+                break;
+            }
+        }
+
+        System.out.println("original independence: " + x + " and " + y);
+
+        if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
+        if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
+
+
+        List<Node> simListX = new ArrayList<>();
+        List<Node> simListY = new ArrayList<>();
+
+        for(i = 0; i < ntiers - tier_diff; ++i) {
+            if(knowledge.getTier(i).size()==1) continue;
+            String A;
+            Node x1;
+            String B;
+            Node y1;
+            if (indx_tier >= indy_tier) {
+                List tmp_tier1 = knowledge.getTier(i + tier_diff);
+//                Collections.sort(tmp_tier1);
+                List tmp_tier2 = knowledge.getTier(i);
+//                Collections.sort(tmp_tier2);
+                A = (String) tmp_tier1.get(indx_comp);
+                B = (String) tmp_tier2.get(indy_comp);
+                if (A.equals(B)) continue;
+                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+                x1 = graph.getNode(A);
+                y1 = graph.getNode(B);
+                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
+                simListX.add(x1);
+                simListY.add(y1);
+            } else {
+                //System.out.println("############## WARNING (returnSimilarPairs): did not catch x,y pair " + x + ", " + y);
+                //System.out.println();
+                List tmp_tier1 = knowledge.getTier(i);
+//                Collections.sort(tmp_tier1);
+                List tmp_tier2 = knowledge.getTier(i + tier_diff);
+//                Collections.sort(tmp_tier2);
+                A = (String) tmp_tier1.get(indx_comp);
+                B = (String) tmp_tier2.get(indy_comp);
+                if (A.equals(B)) continue;
+                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+                x1 = graph.getNode(A);
+                y1 = graph.getNode(B);
+                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
+                simListX.add(x1);
+                simListY.add(y1);
+            }
+        }
+
+        List<List<Node>> pairList = new ArrayList<List<Node>>();
+        pairList.add(simListX);
+        pairList.add(simListY);
+        return(pairList);
+    }
+
+    public String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
+        if(tempS.indexOf(':')== -1) {
+            return tempS;
+        } else return tempS.substring(0, tempS.indexOf(':'));
+    }
+    public IKnowledge getKnowledge(Graph graph) {
+//        System.out.println("Entering getKnowledge ... ");
+        int numLags = 1; // need to fix this!
+        List<Node> variables = graph.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge = new Knowledge2();
+        int lag;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+                laglist.add(lag);
+            }
+        }
+        numLags = Collections.max(laglist);
+
+//        System.out.println("Variable list before the sort = " + variables);
+        Collections.sort(variables, new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                String name1 = getNameNoLag(o1);
+                String name2 = getNameNoLag(o2);
+
+//                System.out.println("name 1 = " + name1);
+//                System.out.println("name 2 = " + name2);
+
+                String prefix1 = getPrefix(name1);
+                String prefix2 = getPrefix(name2);
+
+//                System.out.println("prefix 1 = " + prefix1);
+//                System.out.println("prefix 2 = " + prefix2);
+
+                int index1 = getIndex(name1);
+                int index2 = getIndex(name2);
+
+//                System.out.println("index 1 = " + index1);
+//                System.out.println("index 2 = " + index2);
+
+                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                    if (prefix1.compareTo(prefix2) == 0) {
+                        return Integer.compare(index1, index2);
+                    } else {
+                        return prefix1.compareTo(prefix2);
+                    }
+                } else {
+                    return getLag(o1.getName())-getLag(o2.getName());
+                }
+            }
+        });
+
+//        System.out.println("Variable list after the sort = " + variables);
+
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+//                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+//                laglist.add(lag);
+            }
+            knowledge.addToTier(numLags - lag, node.getName());
+        }
+
+        //System.out.println("Knowledge in graph = " + knowledge);
+        return knowledge;
+    }
+
+    public static String getPrefix(String s) {
+//        int y = 0;
+//        for (int i = s.length() - 1; i >= 0; i--) {
+//            try {
+//                y = Integer.parseInt(s.substring(i));
+//            } catch (NumberFormatException e) {
+//                return s.substring(0, y);
+//            }
+//        }
+//
+//        throw new IllegalArgumentException("Not character prefix.");
+
+//        if(s.indexOf(':')== -1) return s;
+//        String tmp = s.substring(0,s.indexOf(':')-1);
+//        return tmp;
+        return s.substring(0,1);
+    }
+
+    public static int getIndex(String s) {
+        int y = 0;
+        for (int i = s.length() - 1; i >= 0; i--) {
+            try {
+                y = Integer.parseInt(s.substring(i));
+            } catch (NumberFormatException e) {
+                return y;
+            }
+        }
+        throw new IllegalArgumentException("Not integer suffix.");
+    }
+
+    public static int getLag(String s) {
+        if(s.indexOf(':')== -1) return 0;
+        String tmp = s.substring(s.indexOf(':')+1,s.length());
+        return (Integer.parseInt(tmp));
+    }
+
 }
 
 

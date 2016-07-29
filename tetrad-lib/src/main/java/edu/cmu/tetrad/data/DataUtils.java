@@ -117,7 +117,7 @@ public final class DataUtils {
      * probabilities is alpha, then the first column will contain a -99 (or
      * other missing value code) in a given case with probability alpha. </p>
      * This method will be useful in generating datasets which can be used to
-     * test algorithms that handle missing data and/or latent variables. </p>
+     * test algorithm that handle missing data and/or latent variables. </p>
      * Author:  Frank Wimberly
      *
      * @param inData The data to which random missing data is to be added.

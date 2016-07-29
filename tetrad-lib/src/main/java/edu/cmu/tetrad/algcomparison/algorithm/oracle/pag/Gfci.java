@@ -34,7 +34,7 @@ public class Gfci implements Algorithm {
     }
 
     public String getDescription() {
-        return "GFCI (Greey Fast Causal Inference) using " + score.getDescription();
+        return "GFCI (Greedy Fast Causal Inference) using " + score.getDescription();
     }
 
     @Override

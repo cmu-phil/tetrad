@@ -29,6 +29,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -52,7 +53,7 @@ import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
 /**
- * Script to do a comparison of a list of algorithms using a list of statistics and a list
+ * Script to do a comparison of a list of algorithm using a list of statistics and a list
  * of parameters and their values.
  *
  * @author jdramsey
@@ -65,12 +66,12 @@ public class Comparison {
     private boolean copyData = false;
 
     /**
-     * Compares algorithms.
+     * Compares algorithm.
      *
      * @param filePath   Path to the directory where files have been saved.
      * @param outFile    Path to the file where the output should be printed.
-     * @param algorithms The list of algorithms to be compared.
-     * @param statistics The list of statistics on which to compare the algorithms, and their utility weights.
+     * @param algorithms The list of algorithm to be compared.
+     * @param statistics The list of statistics on which to compare the algorithm, and their utility weights.
      * @param parameters The list of parameters and their values.
      */
     public void compareAlgorithms(String filePath, String outFile, Algorithms algorithms,
@@ -88,12 +89,12 @@ public class Comparison {
     }
 
     /**
-     * Compares algorithms.
+     * Compares algorithm.
      *
      * @param outFile     Path to the file where the output should be printed.
      * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
-     * @param algorithms  The list of algorithms to be compared.
-     * @param statistics  The list of statistics on which to compare the algorithms, and their utility weights.
+     * @param algorithms  The list of algorithm to be compared.
+     * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      */
     public void compareAlgorithms(String outFile, Simulations simulations, Algorithms algorithms,
                                   Statistics statistics, Parameters parameters) {
@@ -126,7 +127,7 @@ public class Comparison {
             }
         }
 
-        // Set up the algorithms.
+        // Set up the algorithm.
         List<AlgorithmWrapper> algorithmWrappers = new ArrayList<>();
 
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
@@ -185,7 +186,7 @@ public class Comparison {
 
         int numRuns = parameters.getInt("numRuns");
 
-        // Run all of the algorithms and compile statistics.
+        // Run all of the algorithm and compile statistics.
         double[][][][] allStats = calcStats(algorithmSimulationWrappers, statistics, numRuns, parameters);
 
         // Print out the priliminary information for statistics types, etc.
@@ -761,6 +762,11 @@ public class Comparison {
 
         try {
             Algorithm algorithm = algorithmWrapper.getAlgorithm();
+            Simulation simulation = simulationWrapper.getSimulation();
+
+            if (algorithm instanceof HasKnowledge && simulation instanceof HasKnowledge) {
+                ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
+            }
 
             if (algorithm instanceof MultiDataSetAlgorithm) {
                 List<Integer> indices = new ArrayList<>();

@@ -34,7 +34,7 @@ import java.util.List;
  * connectivity are removed. Original docs follow.
  * <p/>
  * Generates random DAGs uniformly with certain classes of DAGs using variants
- * of Markov chain algorithms by Malancon, Dutour, and Philippe. Pieces of the
+ * of Markov chain algorithm by Malancon, Dutour, and Philippe. Pieces of the
  * infrastructure of the algorithm are adapted from the the BNGenerator class by
  * Jaime Shinsuke Ide jaime.ide@poli.usp.br, released under the GNU General
  * Public License, for which the following statement is being included as part

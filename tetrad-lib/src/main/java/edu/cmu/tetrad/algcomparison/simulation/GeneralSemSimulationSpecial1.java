@@ -15,7 +15,7 @@ import java.text.ParseException;
 import java.util.*;
 
 /**
- * This was used for a simulation to test the FTFC and FOFC algorithms and contains
+ * This was used for a simulation to test the FTFC and FOFC algorithm and contains
  * some carefully selected functions to test nonlinearity and non-Gaussianity.
  *
  * @author ekummerfeld@gmail.com

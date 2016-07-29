@@ -105,7 +105,7 @@ final class SessionEditorToolbar extends JPanel {
 //                "predict",
 //                "<html>Add a node for a prediction algorithm.</html>"),
 //            new ButtonInfo("Knowledge", "Knowledge", "knowledge",
-//                    "<html>Store knowledge for use by multiple algorithms." +
+//                    "<html>Store knowledge for use by multiple algorithm." +
 //                            "</html>"),
             new ButtonInfo("Edge", "Draw Edge", "flow",
                     "<html>Add an edge from one node to another to declare" +

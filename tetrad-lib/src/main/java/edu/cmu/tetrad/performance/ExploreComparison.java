@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Runs algorithms on data set (simulation is OK), printing out error statistics.
+ * Runs algorithm on data set (simulation is OK), printing out error statistics.
  *
  * @author jdramsey 2016.03.24
  */

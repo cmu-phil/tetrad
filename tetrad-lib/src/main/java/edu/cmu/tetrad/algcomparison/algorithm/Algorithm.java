@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
 import java.util.List;
 
 /**
- * Interface that algorithms must implement.
+ * Interface that algorithm must implement.
  *
  * @author jdramsey
  */

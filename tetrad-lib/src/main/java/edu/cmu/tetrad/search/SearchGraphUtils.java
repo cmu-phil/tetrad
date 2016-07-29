@@ -33,7 +33,7 @@ import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
 /**
- * Graph utilities for search algorithms. Lots of orientation method, for instance.
+ * Graph utilities for search algorithm. Lots of orientation method, for instance.
  *
  * @author Joseph Ramsey
  */

@@ -119,7 +119,7 @@ public class RegressionResult implements TetradSerializable {
     private TetradVector res;
 
     /**
-     * A result for a variety of regression algorithms.
+     * A result for a variety of regression algorithm.
      *
      * @param zeroInterceptAssumed True iff a zero intercept was assumed in
      *                             doing the regression, in which case this
