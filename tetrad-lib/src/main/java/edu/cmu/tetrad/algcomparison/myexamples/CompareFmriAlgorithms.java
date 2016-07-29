@@ -23,8 +23,8 @@ package edu.cmu.tetrad.algcomparison.myexamples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithms.graphs.RandomForward;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Fgs;
+import edu.cmu.tetrad.algcomparison.graphs.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
