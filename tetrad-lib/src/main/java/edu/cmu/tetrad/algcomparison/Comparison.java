@@ -29,6 +29,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -761,6 +762,11 @@ public class Comparison {
 
         try {
             Algorithm algorithm = algorithmWrapper.getAlgorithm();
+            Simulation simulation = simulationWrapper.getSimulation();
+
+            if (algorithm instanceof HasKnowledge && simulation instanceof HasKnowledge) {
+                ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
+            }
 
             if (algorithm instanceof MultiDataSetAlgorithm) {
                 List<Integer> indices = new ArrayList<>();

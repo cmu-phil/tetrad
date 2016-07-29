@@ -27,7 +27,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsFci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsGfci;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -42,7 +42,7 @@ public class ExampleCompareSimulationTimeSeries {
         Parameters parameters = new Parameters();
 
         parameters.put("numRuns", 10);
-        parameters.put("numMeasures", 100);
+        parameters.put("numMeasures", 10);
         parameters.put("avgDegree", 4);
         parameters.put("sampleSize", 500);
         parameters.put("alpha", 1e-4, 1e-3, 1e-2);
