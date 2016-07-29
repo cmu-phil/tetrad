@@ -35,6 +35,7 @@ public class GeneralSemSimulation implements Simulation {
         this.dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             this.dataSets.add(dataSet);
         }

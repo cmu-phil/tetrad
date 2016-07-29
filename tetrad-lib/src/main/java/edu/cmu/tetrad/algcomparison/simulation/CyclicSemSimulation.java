@@ -26,6 +26,7 @@ public class CyclicSemSimulation implements Simulation {
         dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            System.out.println("Simulating dataset #" + (i + 1));
             SemPm pm = new SemPm(graph);
             SemImInitializationParams params = new SemImInitializationParams();
             params.setCoefRange(.2, .9);
