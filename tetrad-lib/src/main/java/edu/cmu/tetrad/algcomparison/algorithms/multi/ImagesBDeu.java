@@ -64,6 +64,8 @@ public class ImagesBDeu implements MultiDataSetAlgorithm {
 
     @Override
     public List<String> getParameters() {
-        return new Fgs(new BdeuScore()).getParameters();
+        List<String> parameters = new Fgs(new BdeuScore()).getParameters();
+        parameters.add("randomSelection");
+        return parameters;
     }
 }
