@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.util.List;
 
 /**
- * Stores the parameters needed for (a variety of) search algorithms.
+ * Stores the parameters needed for (a variety of) search algorithm.
  *
  * @author Ricardo Silva, Joseph Ramsey
  */
@@ -49,7 +49,7 @@ public interface MimParams extends Params, KnowledgeTransferable, TetradSerializ
     void setKnowledge(IKnowledge knowledge);
 
     /**
-     * @return the clusters to edit (for some algorithms).
+     * @return the clusters to edit (for some algorithm).
      */
     Clusters getClusters();
 

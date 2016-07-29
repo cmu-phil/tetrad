@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits some algorithms to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */

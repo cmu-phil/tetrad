@@ -58,7 +58,7 @@ import java.util.*;
  * <p>
  * Knowledge may be associated with the data set, using the
  * <code>setKnowledge</code> method. This knowledge is not used internally to
- * the data set, but it may be retrieved by algorithms and used.
+ * the data set, but it may be retrieved by algorithm and used.
  * <p>
  * This data set replaces an earlier Minitab-style DataSet class. The reasons
  * for replacement are as follows.

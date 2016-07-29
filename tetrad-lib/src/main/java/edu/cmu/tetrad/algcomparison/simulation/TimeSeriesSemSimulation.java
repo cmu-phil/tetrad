@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
@@ -11,15 +13,17 @@ import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.TetradMatrix;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author jdramsey
  */
-public class TimeSeriesSemSimulation implements Simulation {
+public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     private Graph graph;
     private List<DataSet> dataSets;
+    private IKnowledge knowledge;
 
     @Override
     public void createData(Parameters parameters) {
@@ -34,6 +38,7 @@ public class TimeSeriesSemSimulation implements Simulation {
                 parameters.getInt("maxOutdegree"),
                 parameters.getInt("connected") == 1);
         this.graph = TimeSeriesUtils.GraphToLagGraph(graph);
+        this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
 //        this.graph = GraphUtils.randomGraphRandomForwardEdges(
 //                parameters.getInt("numMeasures"),
@@ -52,8 +57,12 @@ public class TimeSeriesSemSimulation implements Simulation {
 //            dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
 
             LargeSemSimulator sim = new LargeSemSimulator(graph);
-            sim.setCoefRange(0.20,0.50); // parameters.getDouble("coefLow"),parameters.getDouble("coefHigh")
-
+            if(parameters.getDouble("coefHigh") > 0.80) {
+                System.out.println("Coefficients have been set (perhaps by default) too " +
+                        "high for stationary time series.");
+                System.out.println("Setting coefficient range to [0.20,0.60].");
+                sim.setCoefRange(0.20, 0.60);
+            } else sim.setCoefRange(parameters.getDouble("coefLow"), parameters.getDouble("coefHigh"));
             boolean isStableTetradMatrix;
             int attempt = 1;
             int tierSize = parameters.getInt("numMeasures") + parameters.getInt("numLatents"); //params.getNumVars();
@@ -125,5 +134,15 @@ public class TimeSeriesSemSimulation implements Simulation {
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }

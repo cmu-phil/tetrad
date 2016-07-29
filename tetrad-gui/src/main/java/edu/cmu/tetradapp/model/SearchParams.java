@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.Params;
 import java.util.List;
 
 /**
- * Stores the parameters needed for (a variety of) search algorithms.
+ * Stores the parameters needed for (a variety of) search algorithm.
  *
  * @author Raul Salinas
  */

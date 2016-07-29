@@ -37,7 +37,7 @@ import java.util.List;
 
 /**
  * Implementation of a test of tetrad constraints with discrete variables. We are assuming that variables are ordinal or
- * binary. Such tests are a core statistical procedure in algorithms BuildPureClusters and Purify. </p> An "underlying
+ * binary. Such tests are a core statistical procedure in algorithm BuildPureClusters and Purify. </p> An "underlying
  * latent variable" approach is used to test tetrads indirectly by fitting discrete one-factor and two-factor models.
  * See Bartholomew and Knott (1999) for details. A two-stage procedure for fitting polychorics correlations (Olsson,
  * 1979) and a chi-square test of tetrad constraints over those correlations is the key for this method. </p>

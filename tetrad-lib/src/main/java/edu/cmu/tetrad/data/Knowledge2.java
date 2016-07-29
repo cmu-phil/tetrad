@@ -32,7 +32,7 @@ import java.util.regex.Matcher;
 
 /**
  * Stores information about required and forbidden edges and common causes for
- * use in algorithms.  This information can be set edge by edge or else globally
+ * use in algorithm.  This information can be set edge by edge or else globally
  * via temporal tiers.  When setting temporal tiers, all edges from later tiers
  * to earlier tiers are forbidden.
  * <p>

@@ -54,7 +54,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Edits some algorithms to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */

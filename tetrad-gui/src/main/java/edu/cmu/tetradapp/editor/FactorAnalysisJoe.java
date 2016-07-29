@@ -33,13 +33,13 @@ import java.util.Vector;
  * Useful references:
  * "Factor Analysis of Data Matrices" - Paul Horst (1965)
  *         This work has good specifications and explanations
- *          of factor analysis algorithms and methods of
+ *          of factor analysis algorithm and methods of
  *          communality estimation.
  *
  * "Applied Factor Analysis" - R.J. Rummel (1970)
  *          This book is a good companion to the book listed
  *          above.  While it doesn't specify any actual
- *          algorithms, it has a great introduction to the
+ *          algorithm, it has a great introduction to the
  *          subject that gives the reader a good appreciation
  *          of the philosophy and the mathematics behind
  *          factor analysis.

@@ -39,7 +39,7 @@ import java.util.*;
 import static java.lang.Math.round;
 
 /**
- * Runs some basic performance tests of various algorithms.
+ * Runs some basic performance tests of various algorithm.
  *
  * @author Joseph Ramsey
  */
@@ -1164,7 +1164,7 @@ public class PerformanceTests {
         boolean completeRuleSetUsed = false;
         boolean faithfulnessAssumed = true;
 
-        init(new File("fci.algorithms.comparison" + numVars + "." + (int) (edgeFactor * numVars) +
+        init(new File("fci.algorithm.comparison" + numVars + "." + (int) (edgeFactor * numVars) +
                 "." + numCases + ".txt"), "Num runs = " + numRuns);
         out.println("Num vars = " + numVars);
         out.println("Num edges = " + (int) (numVars * edgeFactor));

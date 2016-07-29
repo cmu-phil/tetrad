@@ -10,7 +10,7 @@ import java.util.*;
 
 /**
  * Constructs and AD leaf tree on the fly. Probably doesn't speed up the first
- * algorithm it's used for much, but it should speed up subsequent algorithms
+ * algorithm it's used for much, but it should speed up subsequent algorithm
  * on the same data.
  * </p>
  * Continuous variables in the data set are ignored.

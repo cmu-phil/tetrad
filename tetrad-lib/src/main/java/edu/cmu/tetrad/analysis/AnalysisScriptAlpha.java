@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
 /**
- * Runs algorithms on data set to find alpha value.
+ * Runs algorithm on data set to find alpha value.
  *
  * @author dmalinsky 2016.06.22
  */

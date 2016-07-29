@@ -53,7 +53,7 @@ import java.util.ArrayList;
 /**
  * Abstract base class for a number of search editors. The advantage of
  * extending this class, in case you were wondering, is that it will handle
- * threading for you, provide a stop button for algorithms, and do logging. The
+ * threading for you, provide a stop button for algorithm, and do logging. The
  * execute button used must be getExecuteButton(), or else logging won't work.
  *
  * @author Joseph Ramsey

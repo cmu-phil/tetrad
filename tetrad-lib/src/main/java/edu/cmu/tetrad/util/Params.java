@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.util;
 
 /**
- * Tagging interface for classes that hold parameters for algorithms.
+ * Tagging interface for classes that hold parameters for algorithm.
  *
  * @author Joseph Ramsey
  */

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Runs algorithms on data set (simulation is OK), printing out error statistics.
+ * Runs algorithm on data set (simulation is OK), printing out error statistics.
  *
  * @author jdramsey 2016.03.24
  * @author dmalinsky 2016.03.28
@@ -49,7 +49,7 @@ public class ComparisonScript {
 
         List<ComparisonParameters.Algorithm> algList = new ArrayList<>();
 
-        /** add algorithms to compare to the list algList. comment out those you don't want to consider. **/
+        /** add algorithm to compare to the list algList. comment out those you don't want to consider. **/
         //algList.add(ComparisonParameters.Algorithm.PC);
         //algList.add(ComparisonParameters.Algorithm.FGS);
         //algList.add(ComparisonParameters.Algorithm.FCI);
@@ -59,7 +59,7 @@ public class ComparisonScript {
         /***********************************************************/
 
         if( params.isDataFromFile() ){
-            System.out.println("running algorithms on data from input files");
+            System.out.println("running algorithm on data from input files");
             minSample = 1;
             maxSample = maxGraphs;
             increment = 1;
@@ -67,7 +67,7 @@ public class ComparisonScript {
         }
 
         if( params.isNoData() ) {
-            System.out.println("running algorithms on NO DATA, only true graph");
+            System.out.println("running algorithm on NO DATA, only true graph");
             minSample = 1;
             maxSample = 1;
             increment = 1;
@@ -110,7 +110,7 @@ public class ComparisonScript {
                     avgTable.setToken(count, 0, "N=" + 0 + ", alg = " + alg);
                     } else avgTable.setToken(count, 0, "N=" + sampleSize + ", alg = " + alg);
 
-                } // loop over algorithms in algList
+                } // loop over algorithm in algList
             } // loop over sample sizes
 
             // add column names, then print table

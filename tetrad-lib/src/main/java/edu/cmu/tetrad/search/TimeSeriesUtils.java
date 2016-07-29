@@ -598,7 +598,7 @@ public class TimeSeriesUtils {
         int numLags = 1;
 
         for (Node node : _graph.getNodes()) {
-            graph.addNode(node);
+            graph.addNode(new ContinuousVariable(node.getName()));
 
             /* adding node from Lag 1 to Lag 0 for every node */
             Node from = graph.getNode(node.getName(),1);

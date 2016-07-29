@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation;
 
 /**
  * An example script to save out data files and graphs from a simulation.
@@ -40,7 +41,7 @@ public class ExampleSave {
         parameters.put("avgDegree", 4);
         parameters.put("sampleSize", 100, 500, 1000);
 
-        Simulation simulation = new SemSimulation();
+        Simulation simulation = new TimeSeriesSemSimulation(); //SemSimulation();
         new Comparison().saveDataSetAndGraphs("comparison/save1", simulation,
                 parameters);
     }

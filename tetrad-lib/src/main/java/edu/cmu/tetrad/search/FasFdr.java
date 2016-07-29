@@ -35,12 +35,12 @@ import java.util.*;
 import static java.lang.Math.sqrt;
 
 /**
- * Implements the "fast adjacency search" used in several causal algorithms in this package. In the fast adjacency
+ * Implements the "fast adjacency search" used in several causal algorithm in this package. In the fast adjacency
  * search, at a given stage of the search, an edge X*-*Y is removed from the graph if X _||_ Y | S, where S is a subset
  * of size d either of adj(X) or of adj(Y), where d is the depth of the search. The fast adjacency search performs this
  * procedure for each pair of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1, where d1 is either
  * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
- * search is different for different algorithms, depending on the assumptions of the algorithm. A mapping from {x, y} to
+ * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
  * <p>
  * This variant does each depth twice, gathering up the p values in the first round, using FDR to estimate a cutoff
