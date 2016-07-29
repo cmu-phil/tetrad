@@ -12,9 +12,10 @@ import edu.cmu.tetrad.search.GFci;
 import java.util.List;
 
 /**
- * GFCI.
+ * tsGFCI.
  *
  * @author jdramsey
+ * @author dmalinsky
  */
 public class TsGfci implements Algorithm {
     private ScoreWrapper score;
