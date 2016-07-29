@@ -64,6 +64,8 @@ public class ImagesSemBic implements MultiDataSetAlgorithm {
 
     @Override
     public List<String> getParameters() {
-        return new Fgs(new SemBicScore()).getParameters();
+        List<String> parameters = new Fgs(new SemBicScore()).getParameters();
+        parameters.add("randomSelection");
+        return parameters;
     }
 }
