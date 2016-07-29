@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.pitt.csb.mgm.MixedUtils;
+import org.relaxng.datatype.Datatype;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,15 +18,16 @@ import java.util.List;
 /**
  * A version of the Lee & Hastic simulation which is guaranteed ot generate a discrete
  * data set.
+ *
  * @author jdramsey
  */
 public class LeeHastieSimulation implements Simulation {
     private List<DataSet> dataSets;
     private Graph graph;
-    private double percentDiscrete = 50;
+    private DataType dataType;
 
-    public LeeHastieSimulation(double percentDiscrete) {
-        this.percentDiscrete = percentDiscrete;
+    public LeeHastieSimulation(DataType dataType) {
+        this.dataType = dataType;
     }
 
     @Override
@@ -38,6 +40,14 @@ public class LeeHastieSimulation implements Simulation {
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
                 parameters.getInt("connected") == 1);
+
+        double percentDiscrete = parameters.getDouble("percentDiscrete");
+
+        if (dataType == DataType.Continuous && percentDiscrete != 0.0) {
+            throw new IllegalArgumentException("To simulate continuous data, 'percentDiscrete' must be set to 0.0.");
+        } else if (dataType == DataType.Discrete && percentDiscrete != 1000.0) {
+            throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 100.0.");
+        }
 
         this.dataSets = new ArrayList<>();
 
@@ -86,13 +96,7 @@ public class LeeHastieSimulation implements Simulation {
 
     @Override
     public DataType getDataType() {
-        if (percentDiscrete == 0) {
-            return DataType.Continuous;
-        } else if (percentDiscrete == 100) {
-            return DataType.Discrete;
-        } else {
-            return DataType.Mixed;
-        }
+        return dataType;
     }
 
     private DataSet simulate(Graph dag, Parameters parameters) {
