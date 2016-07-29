@@ -29,7 +29,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LoadContinuousDataAndGraphs;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
@@ -769,7 +769,7 @@ public class Comparison {
                 Collections.shuffle(indices);
 
                 List<DataSet> dataSets = new ArrayList<>();
-                int randomSelection = parameters.getInt("randomSelection");
+                int randomSelection = algorithmWrapper.getAlgorithmSpecificParameters().getInt("randomSelection");
                 for (int i = 0; i < Math.min(numDataSets, randomSelection); i++) {
                     dataSets.add(simulationWrapper.getSimulation().getDataSet(indices.get(i)));
                 }

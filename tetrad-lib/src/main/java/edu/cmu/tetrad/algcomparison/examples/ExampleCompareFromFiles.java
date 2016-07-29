@@ -28,7 +28,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpcs;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pcs;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**

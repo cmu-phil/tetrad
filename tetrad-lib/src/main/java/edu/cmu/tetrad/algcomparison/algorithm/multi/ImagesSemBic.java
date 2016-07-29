@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -64,6 +64,8 @@ public class ImagesSemBic implements MultiDataSetAlgorithm {
 
     @Override
     public List<String> getParameters() {
-        return new Fgs(new SemBicScore()).getParameters();
+        List<String> parameters = new Fgs(new SemBicScore()).getParameters();
+        parameters.add("randomSelection");
+        return parameters;
     }
 }

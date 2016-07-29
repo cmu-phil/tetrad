@@ -1,9 +1,10 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -17,27 +18,36 @@ import java.util.List;
 /**
  * A version of the Lee & Hastic simulation which is guaranteed ot generate a discrete
  * data set.
+ *
  * @author jdramsey
  */
 public class LeeHastieSimulation implements Simulation {
+    private RandomGraph randomGraph;
     private List<DataSet> dataSets;
     private Graph graph;
-    private double percentDiscrete = 50;
+    private DataType dataType;
 
-    public LeeHastieSimulation(double percentDiscrete) {
-        this.percentDiscrete = percentDiscrete;
+    public LeeHastieSimulation(RandomGraph graph) {
+        this.randomGraph = graph;
     }
 
     @Override
     public void createData(Parameters parameters) {
-        this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+        this.graph = randomGraph.createGraph(parameters);
+
+        double percentDiscrete = parameters.getDouble("percentDiscrete");
+
+        boolean discrete = parameters.getString("dataType").equals("discrete");
+        boolean continuous = parameters.getString("dataType").equals("continuous");
+
+        if (discrete && percentDiscrete != 100.0) {
+            throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 0.0.");
+        } else if (continuous && percentDiscrete != 0.0) {
+            throw new IllegalArgumentException("To simulate continuoue data, 'percentDiscrete' must be set to 100.0.");
+        }
+
+        if (discrete) this.dataType = DataType.Discrete;
+        if (continuous) this.dataType = DataType.Continuous;
 
         this.dataSets = new ArrayList<>();
 
@@ -60,18 +70,12 @@ public class LeeHastieSimulation implements Simulation {
 
     @Override
     public String getDescription() {
-        return "Lee & Hastie simulation";
+        return "Lee & Hastie simulation using " + randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("numMeasures");
-        parameters.add("numLatents");
-        parameters.add("avgDegree");
-        parameters.add("maxDegree");
-        parameters.add("maxIndegree");
-        parameters.add("maxOutdegree");
+        List<String> parameters = randomGraph.getParameters();
         parameters.add("numRuns");
         parameters.add("sampleSize");
         parameters.add("numCategories");
@@ -86,13 +90,7 @@ public class LeeHastieSimulation implements Simulation {
 
     @Override
     public DataType getDataType() {
-        if (percentDiscrete == 0) {
-            return DataType.Continuous;
-        } else if (percentDiscrete == 100) {
-            return DataType.Discrete;
-        } else {
-            return DataType.Mixed;
-        }
+        return dataType;
     }
 
     private DataSet simulate(Graph dag, Parameters parameters) {

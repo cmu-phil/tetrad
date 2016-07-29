@@ -14,7 +14,7 @@ public class SHD implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "SHD ";
+        return "SHD";
     }
 
     @Override

@@ -1,10 +1,11 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -17,24 +18,38 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemThenDiscretizeSimulation implements Simulation {
+    private final RandomGraph randomGraph;
     private Graph graph;
     private List<DataSet> dataSets;
-    private double percentDiscrete;
+    private DataType dataType;
 
-    public SemThenDiscretizeSimulation(double percentDiscrete) {
-        this.percentDiscrete = percentDiscrete;
+    public SemThenDiscretizeSimulation(RandomGraph randomGraph) {
+        this.randomGraph = randomGraph;
+        this.dataType = DataType.Mixed;
+    }
+
+    public SemThenDiscretizeSimulation(RandomGraph randomGraph, DataType dataType) {
+        this.randomGraph = randomGraph;
+        this.dataType = dataType;
     }
 
     @Override
     public void createData(Parameters parameters) {
-        this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+        this.graph = randomGraph.createGraph(parameters);
+
+        double percentDiscrete = parameters.getDouble("percentDiscrete");
+
+        boolean discrete = parameters.getString("dataType").equals("discrete");
+        boolean continuous = parameters.getString("dataType").equals("continuous");
+
+        if (discrete && percentDiscrete != 100.0) {
+            throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 0.0.");
+        } else if (continuous && percentDiscrete != 0.0) {
+            throw new IllegalArgumentException("To simulate continuoue data, 'percentDiscrete' must be set to 100.0.");
+        }
+
+        if (discrete) this.dataType = DataType.Discrete;
+        if (continuous) this.dataType = DataType.Continuous;
 
         dataSets = new ArrayList<>();
 
@@ -51,18 +66,13 @@ public class SemThenDiscretizeSimulation implements Simulation {
 
     @Override
     public String getDescription() {
-        return "Simulation SEM data then discretizing some variables";
+        return "Simulation SEM data then discretizing some variables, using " +
+                randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("numMeasures");
-        parameters.add("numLatents");
-        parameters.add("avgDegree");
-        parameters.add("maxDegree");
-        parameters.add("maxIndegree");
-        parameters.add("maxOutdegree");
+        List<String> parameters = randomGraph.getParameters();
         parameters.add("numRuns");
         parameters.add("sampleSize");
         parameters.add("variance");
@@ -82,13 +92,7 @@ public class SemThenDiscretizeSimulation implements Simulation {
 
     @Override
     public DataType getDataType() {
-        if (percentDiscrete == 0) {
-            return DataType.Continuous;
-        } else if (percentDiscrete == 100) {
-            return DataType.Discrete;
-        } else {
-            return DataType.Mixed;
-        }
+        return dataType;
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
