@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.algcomparison.algorithms.graphs.RandomGraph;
+import edu.cmu.tetrad.algcomparison.graphs.RandomGraph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Discretizer;

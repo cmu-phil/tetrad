@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.algcomparison.algorithms.graphs.RandomGraph;
+import edu.cmu.tetrad.algcomparison.graphs.RandomGraph;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;

@@ -1,6 +1,7 @@
-package edu.cmu.tetrad.algcomparison.algorithms.graphs;
+package edu.cmu.tetrad.algcomparison.graphs;
 
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.List;
 public class RandomForward implements RandomGraph {
 
     @Override
-    public edu.cmu.tetrad.graph.Graph createGraph(Parameters parameters) {
+    public Graph createGraph(Parameters parameters) {
         return GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),

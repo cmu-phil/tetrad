@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.algorithms.graphs;
+package edu.cmu.tetrad.algcomparison.graphs;
 
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.graph.GraphUtils;
