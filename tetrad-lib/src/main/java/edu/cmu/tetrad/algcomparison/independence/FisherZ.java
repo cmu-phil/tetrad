@@ -15,16 +15,10 @@ import java.util.List;
  * @author jdramsey
  */
 public class FisherZ implements IndependenceWrapper {
-    private DataSet dataSet = null;
-    private IndependenceTest test = null;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        if (dataSet != this.dataSet) {
-            this.dataSet = dataSet;
-            this.test = new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
-        }
-        return test;
+        return new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
     }
 
     @Override
