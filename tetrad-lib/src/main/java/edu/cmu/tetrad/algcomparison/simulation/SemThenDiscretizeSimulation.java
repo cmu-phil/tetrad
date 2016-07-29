@@ -19,6 +19,11 @@ import java.util.List;
 public class SemThenDiscretizeSimulation implements Simulation {
     private Graph graph;
     private List<DataSet> dataSets;
+    private double percentDiscrete;
+
+    public SemThenDiscretizeSimulation(double percentDiscrete) {
+        this.percentDiscrete = percentDiscrete;
+    }
 
     @Override
     public void createData(Parameters parameters) {
@@ -34,6 +39,7 @@ public class SemThenDiscretizeSimulation implements Simulation {
         dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            System.out.println("Simulating dataset #" + (i + 1));
             dataSets.add(simulate(graph, parameters));
         }
     }
@@ -76,7 +82,13 @@ public class SemThenDiscretizeSimulation implements Simulation {
 
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        if (percentDiscrete == 0) {
+            return DataType.Continuous;
+        } else if (percentDiscrete == 100) {
+            return DataType.Discrete;
+        } else {
+            return DataType.Mixed;
+        }
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
@@ -89,7 +101,7 @@ public class SemThenDiscretizeSimulation implements Simulation {
 
         Discretizer discretizer = new Discretizer(continuousData);
 
-        for (int i = 0; i < shuffledNodes.size() * parameters.getDouble("percentDiscreteForMixedSimulation") * 0.01; i++) {
+        for (int i = 0; i < shuffledNodes.size() * parameters.getDouble("percentDiscrete") * 0.01; i++) {
             discretizer.equalIntervals(shuffledNodes.get(i), parameters.getInt("numCategories"));
         }
 

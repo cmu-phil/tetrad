@@ -25,11 +25,6 @@ public class DiscreteLeeHastieSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        if (parameters.getDouble("percentDiscreteForMixedSimulation") != 100.0) {
-            throw new IllegalArgumentException("Discrete Lee & Hastie simulation requires that " +
-                    "percentDiscreteForMixedSimulation be set to 100%");
-        }
-
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
@@ -41,7 +36,11 @@ public class DiscreteLeeHastieSimulation implements Simulation {
 
         this.dataSets = new ArrayList<>();
 
+        System.out.println("Setting percentDiscrete to 100");
+        parameters.setValue("percentDiscrete", 100);
+
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             dataSets.add(dataSet);
         }
@@ -74,7 +73,7 @@ public class DiscreteLeeHastieSimulation implements Simulation {
         parameters.add("numRuns");
         parameters.add("sampleSize");
         parameters.add("numCategories");
-        parameters.add("percentDiscreteForMixedSimulation");
+        parameters.add("percentDiscrete");
         return parameters;
     }
 
@@ -96,7 +95,7 @@ public class DiscreteLeeHastieSimulation implements Simulation {
         Collections.shuffle(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
-            if (i < nodes.size() * parameters.getDouble("percentDiscreteForMixedSimulation") * 0.01) {
+            if (i < nodes.size() * parameters.getDouble("percentDiscrete") * 0.01) {
                 nd.put(nodes.get(i).getName(), parameters.getInt("numCategories"));
             } else {
                 nd.put(nodes.get(i).getName(), 0);

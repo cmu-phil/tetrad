@@ -15,18 +15,10 @@ import java.util.List;
  * @author jdramsey
  */
 public class GSquare implements IndependenceWrapper {
-    private DataSet dataSet = null;
-    private IndependenceTest test = null;
-    private Parameters parameters;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        this.parameters = parameters;
-        if (dataSet != this.dataSet) {
-            this.dataSet = dataSet;
-            this.test = new IndTestGSquare(dataSet, parameters.getDouble("alpha"));
-        }
-        return test;
+        return new IndTestGSquare(dataSet, parameters.getDouble("alpha"));
     }
 
     @Override
@@ -36,7 +28,7 @@ public class GSquare implements IndependenceWrapper {
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Discrete;
     }
 
     @Override

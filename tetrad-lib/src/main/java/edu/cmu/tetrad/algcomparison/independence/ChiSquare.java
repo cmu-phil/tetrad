@@ -15,16 +15,12 @@ import java.util.List;
  * @author jdramsey
  */
 public class ChiSquare implements IndependenceWrapper {
-    private DataSet dataSet = null;
-    private edu.cmu.tetrad.search.IndependenceTest test = null;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        if (dataSet != this.dataSet) {
-            this.dataSet = dataSet;
-            this.test = new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
-        }
-        return test;
+        if (dataSet == null) throw new NullPointerException();
+
+        return new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
     }
 
     @Override
@@ -34,7 +30,7 @@ public class ChiSquare implements IndependenceWrapper {
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Discrete;
     }
 
     @Override

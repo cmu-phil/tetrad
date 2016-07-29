@@ -15,11 +15,18 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ * A version of the Lee & Hastic simulation which is guaranteed ot generate a discrete
+ * data set.
  * @author jdramsey
  */
-public class MixedLeeHastieSimulation implements Simulation {
+public class LeeHastieSimulation implements Simulation {
     private List<DataSet> dataSets;
     private Graph graph;
+    private double percentDiscrete = 50;
+
+    public LeeHastieSimulation(double percentDiscrete) {
+        this.percentDiscrete = percentDiscrete;
+    }
 
     @Override
     public void createData(Parameters parameters) {
@@ -35,6 +42,7 @@ public class MixedLeeHastieSimulation implements Simulation {
         this.dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             dataSets.add(dataSet);
         }
@@ -78,7 +86,13 @@ public class MixedLeeHastieSimulation implements Simulation {
 
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        if (percentDiscrete == 0) {
+            return DataType.Continuous;
+        } else if (percentDiscrete == 100) {
+            return DataType.Discrete;
+        } else {
+            return DataType.Mixed;
+        }
     }
 
     private DataSet simulate(Graph dag, Parameters parameters) {

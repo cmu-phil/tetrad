@@ -32,6 +32,7 @@ public class SemSimulation implements Simulation {
                 parameters.getInt("connected") == 1);
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            System.out.println("Simulating dataset #" + (i + 1));
             SemPm pm = new SemPm(graph);
             SemImInitializationParams params = new SemImInitializationParams();
             params.setVarRange(parameters.getDouble("varLow"), parameters.getDouble("varHigh"));
