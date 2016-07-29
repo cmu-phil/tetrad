@@ -31,6 +31,7 @@ import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.data.DataType;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -78,7 +79,7 @@ public class CompareNewAlgorithms {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LeeHastieSimulation(parameters.getDouble("percentDiscrete")));
+        simulations.add(new LeeHastieSimulation(DataType.Discrete));
 
         new Comparison().compareAlgorithms("comparison/Comparison.txt",
                 simulations, algorithms, statistics, parameters);

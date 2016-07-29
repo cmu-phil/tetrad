@@ -45,7 +45,7 @@ public class LeeHastieSimulation implements Simulation {
 
         if (dataType == DataType.Continuous && percentDiscrete != 0.0) {
             throw new IllegalArgumentException("To simulate continuous data, 'percentDiscrete' must be set to 0.0.");
-        } else if (dataType == DataType.Discrete && percentDiscrete != 1000.0) {
+        } else if (dataType == DataType.Discrete && percentDiscrete != 100.0) {
             throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 100.0.");
         }
 

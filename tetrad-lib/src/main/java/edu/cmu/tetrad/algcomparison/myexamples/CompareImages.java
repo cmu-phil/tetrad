@@ -24,14 +24,14 @@ package edu.cmu.tetrad.algcomparison.myexamples;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithms.multi.ImagesBDeu;
-import edu.cmu.tetrad.algcomparison.algorithms.multi.ImagesSemBic;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpc;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pc;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.algcomparison.score.BdeuScore;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.data.DataType;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -42,12 +42,13 @@ public class CompareImages {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 10);
+        parameters.put("numRuns", 15);
         parameters.put("numMeasures", 100);
-        parameters.put("avgDegree", 4);
+        parameters.put("avgDegree", 2);
         parameters.put("sampleSize", 500);
         parameters.put("alpha", 1e-4, 1e-3, 1e-2);
         parameters.put("randomSelection", 5);
+        parameters.put("percentDiscrete", 100);
 
         Statistics statistics = new Statistics();
 
@@ -70,19 +71,19 @@ public class CompareImages {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Pc(new ChiSquare()));
-//        algorithms.add(new Cpc(new ChiSquare()));
+        algorithms.add(new Pc(new ChiSquare()));
+        algorithms.add(new Cpc(new ChiSquare()));
 //        algorithms.add(new Pcs(new ChiSquare()));
 //        algorithms.add(new Cpcs(new ChiSquare()));
 //        algorithms.add(new Pc(new ConditionalGaussianLRT()));
 //        algorithms.add(new Cpc(new ConditionalGaussianLRT()));
 //        algorithms.add(new Pcs(new ConditionalGaussianLRT()));
 //        algorithms.add(new Cpcs(new ConditionalGaussianLRT()));
-        algorithms.add(new ImagesSemBic());
+        algorithms.add(new ImagesBDeu());
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new ContinuousLeeHastieSimulation());
+            simulations.add(new LeeHastieSimulation(DataType.Discrete));
 
         new Comparison().compareAlgorithms("comparison/ComparisonImages.txt",
                 simulations, algorithms, statistics, parameters);

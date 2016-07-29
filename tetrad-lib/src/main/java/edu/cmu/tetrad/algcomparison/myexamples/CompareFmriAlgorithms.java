@@ -23,14 +23,13 @@ package edu.cmu.tetrad.algcomparison.myexamples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.*;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
+import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Parameters;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.data.DataType;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -52,9 +51,7 @@ public class CompareFmriAlgorithms {
         parameters.put("sampleSize", 1000);
         parameters.put("percentDiscrete", 100);
         parameters.put("numCategories", 4);
-
 //        parameters.put("samplePrior", 1, 2, 4, 8);
-
         parameters.put("penaltyDiscount", 1);
 //        parameters.put("structurePrior", 1, 2, 4, 8);
 
@@ -96,7 +93,7 @@ public class CompareFmriAlgorithms {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LeeHastieSimulation(parameters.getDouble("percentDiscrete")));
+        simulations.add(new LeeHastieSimulation(DataType.Discrete));
 
         Comparison comparison = new Comparison();
         comparison.setSaveGraphs(true);
