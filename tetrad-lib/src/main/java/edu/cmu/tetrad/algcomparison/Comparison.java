@@ -769,7 +769,7 @@ public class Comparison {
                 Collections.shuffle(indices);
 
                 List<DataSet> dataSets = new ArrayList<>();
-                int randomSelection = parameters.getInt("randomSelection");
+                int randomSelection = algorithmWrapper.getAlgorithmSpecificParameters().getInt("randomSelection");
                 for (int i = 0; i < Math.min(numDataSets, randomSelection); i++) {
                     dataSets.add(simulationWrapper.getSimulation().getDataSet(indices.get(i)));
                 }

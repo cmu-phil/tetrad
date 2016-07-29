@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.myexamples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithms.graphs.RandomForward;
 import edu.cmu.tetrad.algcomparison.algorithms.myalgorithms.Wfgs;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
@@ -79,7 +80,7 @@ public class CompareNewAlgorithms {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LeeHastieSimulation(DataType.Discrete));
+        simulations.add(new LeeHastieSimulation(new RandomForward()));
 
         new Comparison().compareAlgorithms("comparison/Comparison.txt",
                 simulations, algorithms, statistics, parameters);

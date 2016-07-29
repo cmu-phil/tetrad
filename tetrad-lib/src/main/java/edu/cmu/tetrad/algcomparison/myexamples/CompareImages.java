@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.myexamples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithms.graphs.RandomForward;
 import edu.cmu.tetrad.algcomparison.algorithms.multi.ImagesBDeu;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Pc;
@@ -47,8 +48,9 @@ public class CompareImages {
         parameters.put("avgDegree", 2);
         parameters.put("sampleSize", 500);
         parameters.put("alpha", 1e-4, 1e-3, 1e-2);
-        parameters.put("randomSelection", 5);
+        parameters.put("randomSelection", 5, 10);
         parameters.put("percentDiscrete", 100);
+        parameters.put("dataType", "discrete");
 
         Statistics statistics = new Statistics();
 
@@ -83,7 +85,7 @@ public class CompareImages {
 
         Simulations simulations = new Simulations();
 
-            simulations.add(new LeeHastieSimulation(DataType.Discrete));
+        simulations.add(new LeeHastieSimulation(new RandomForward()));
 
         new Comparison().compareAlgorithms("comparison/ComparisonImages.txt",
                 simulations, algorithms, statistics, parameters);

@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
+import edu.cmu.tetrad.algcomparison.algorithms.graphs.GraphGenerator;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -15,21 +16,19 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemSimulation implements Simulation {
+    private final GraphGenerator graphGenerator;
     private Graph graph;
     private List<DataSet> dataSets;
 
+    public SemSimulation(GraphGenerator graphGenerator) {
+        this.graphGenerator = graphGenerator;
+    }
+
     @Override
     public void createData(Parameters parameters) {
-        dataSets = new ArrayList<>();
+        this.graph = graphGenerator.getGraph(parameters);
 
-        this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+        dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
@@ -58,13 +57,7 @@ public class SemSimulation implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("numMeasures");
-        parameters.add("numLatents");
-        parameters.add("avgDegree");
-        parameters.add("maxDegree");
-        parameters.add("maxIndegree");
-        parameters.add("maxOutdegree");
+        List<String> parameters = graphGenerator.getParameters();
         parameters.add("numRuns");
         parameters.add("sampleSize");
         parameters.add("variance");

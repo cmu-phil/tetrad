@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.myexamples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithms.graphs.RandomForward;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.Fgs;
 import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
@@ -40,21 +41,20 @@ public class CompareFmriAlgorithms {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numMeasures", 50, 100, 200);
+        parameters.put("numMeasures", 50);
         parameters.put("numLatents", 0);
         parameters.put("avgDegree", 10);
         parameters.put("scaleFreeAlpha", .05);
         parameters.put("scaleFreeBeta", .90);
         parameters.put("scaleFreeDeltaIn", 3);
         parameters.put("scaleFreeDeltaOut", 3);
-        parameters.put("numRuns", 1);
+        parameters.put("numRuns", 15);
         parameters.put("sampleSize", 1000);
         parameters.put("percentDiscrete", 100);
         parameters.put("numCategories", 4);
-//        parameters.put("samplePrior", 1, 2, 4, 8);
         parameters.put("penaltyDiscount", 1);
-//        parameters.put("structurePrior", 1, 2, 4, 8);
-
+        parameters.put("randomSelection", 5);
+        parameters.put("dataType", "discrete");
 
         Statistics statistics = new Statistics();
 
@@ -93,11 +93,11 @@ public class CompareFmriAlgorithms {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LeeHastieSimulation(DataType.Discrete));
+        simulations.add(new LeeHastieSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
         comparison.setSaveGraphs(true);
-        comparison.compareAlgorithms("comparison/Comparison2.txt",
+        comparison.compareAlgorithms("comparison/ComparisonFMRI.txt",
                 simulations, algorithms, statistics, parameters);
     }
 }
