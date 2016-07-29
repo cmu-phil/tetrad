@@ -12,10 +12,10 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Cyclic implements GraphGenerator {
+public class Cyclic implements RandomGraph {
 
     @Override
-    public Graph getGraph(Parameters parameters) {
+    public Graph createGraph(Parameters parameters) {
         return GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
                 parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2);
 

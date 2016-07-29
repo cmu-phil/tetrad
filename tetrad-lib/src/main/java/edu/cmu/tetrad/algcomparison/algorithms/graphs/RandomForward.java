@@ -9,10 +9,10 @@ import java.util.List;
 /**
  * Created by jdramsey on 7/29/16.
  */
-public class RandomForward implements GraphGenerator {
+public class RandomForward implements RandomGraph {
 
     @Override
-    public edu.cmu.tetrad.graph.Graph getGraph(Parameters parameters) {
+    public edu.cmu.tetrad.graph.Graph createGraph(Parameters parameters) {
         return GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),

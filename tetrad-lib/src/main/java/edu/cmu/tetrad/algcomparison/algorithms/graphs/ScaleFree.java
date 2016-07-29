@@ -11,10 +11,10 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ScaleFree implements GraphGenerator {
+public class ScaleFree implements RandomGraph {
 
     @Override
-    public edu.cmu.tetrad.graph.Graph getGraph(Parameters parameters) {
+    public edu.cmu.tetrad.graph.Graph createGraph(Parameters parameters) {
         return GraphUtils.scaleFreeGraph(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),

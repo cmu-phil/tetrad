@@ -1,11 +1,10 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.algcomparison.algorithms.graphs.GraphGenerator;
+import edu.cmu.tetrad.algcomparison.algorithms.graphs.RandomGraph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -18,24 +17,24 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemThenDiscretizeSimulation implements Simulation {
-    private final GraphGenerator graphGenerator;
+    private final RandomGraph randomGraph;
     private Graph graph;
     private List<DataSet> dataSets;
     private DataType dataType;
 
-    public SemThenDiscretizeSimulation(GraphGenerator graphGenerator) {
-        this.graphGenerator = graphGenerator;
+    public SemThenDiscretizeSimulation(RandomGraph randomGraph) {
+        this.randomGraph = randomGraph;
         this.dataType = DataType.Mixed;
     }
 
-    public SemThenDiscretizeSimulation(GraphGenerator graphGenerator, DataType dataType) {
-        this.graphGenerator = graphGenerator;
+    public SemThenDiscretizeSimulation(RandomGraph randomGraph, DataType dataType) {
+        this.randomGraph = randomGraph;
         this.dataType = dataType;
     }
 
     @Override
     public void createData(Parameters parameters) {
-        this.graph = graphGenerator.getGraph(parameters);
+        this.graph = randomGraph.createGraph(parameters);
 
         double percentDiscrete = parameters.getDouble("percentDiscrete");
 
@@ -66,12 +65,13 @@ public class SemThenDiscretizeSimulation implements Simulation {
 
     @Override
     public String getDescription() {
-        return "Simulation SEM data then discretizing some variables";
+        return "Simulation SEM data then discretizing some variables, using " +
+                randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = graphGenerator.getParameters();
+        List<String> parameters = randomGraph.getParameters();
         parameters.add("numRuns");
         parameters.add("sampleSize");
         parameters.add("variance");

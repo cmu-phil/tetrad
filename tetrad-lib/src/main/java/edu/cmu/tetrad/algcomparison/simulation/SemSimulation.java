@@ -1,10 +1,9 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.algcomparison.algorithms.graphs.GraphGenerator;
+import edu.cmu.tetrad.algcomparison.algorithms.graphs.RandomGraph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
@@ -16,17 +15,17 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemSimulation implements Simulation {
-    private final GraphGenerator graphGenerator;
+    private final RandomGraph randomGraph;
     private Graph graph;
     private List<DataSet> dataSets;
 
-    public SemSimulation(GraphGenerator graphGenerator) {
-        this.graphGenerator = graphGenerator;
+    public SemSimulation(RandomGraph randomGraph) {
+        this.randomGraph = randomGraph;
     }
 
     @Override
     public void createData(Parameters parameters) {
-        this.graph = graphGenerator.getGraph(parameters);
+        this.graph = randomGraph.createGraph(parameters);
 
         dataSets = new ArrayList<>();
 
@@ -52,12 +51,12 @@ public class SemSimulation implements Simulation {
 
     @Override
     public String getDescription() {
-        return "Linear, Gaussian SEM simulation";
+        return "Linear, Gaussian SEM simulation using "+ randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = graphGenerator.getParameters();
+        List<String> parameters = randomGraph.getParameters();
         parameters.add("numRuns");
         parameters.add("sampleSize");
         parameters.add("variance");

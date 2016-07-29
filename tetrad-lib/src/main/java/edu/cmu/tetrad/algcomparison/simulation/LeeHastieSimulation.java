@@ -1,15 +1,13 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.algcomparison.algorithms.graphs.GraphGenerator;
+import edu.cmu.tetrad.algcomparison.algorithms.graphs.RandomGraph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.pitt.csb.mgm.MixedUtils;
-import org.relaxng.datatype.Datatype;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,18 +21,18 @@ import java.util.List;
  * @author jdramsey
  */
 public class LeeHastieSimulation implements Simulation {
-    private GraphGenerator graphGenerator;
+    private RandomGraph randomGraph;
     private List<DataSet> dataSets;
     private Graph graph;
     private DataType dataType;
 
-    public LeeHastieSimulation(GraphGenerator graph) {
-        this.graphGenerator = graph;
+    public LeeHastieSimulation(RandomGraph graph) {
+        this.randomGraph = graph;
     }
 
     @Override
     public void createData(Parameters parameters) {
-        this.graph = graphGenerator.getGraph(parameters);
+        this.graph = randomGraph.createGraph(parameters);
 
         double percentDiscrete = parameters.getDouble("percentDiscrete");
 
@@ -71,12 +69,12 @@ public class LeeHastieSimulation implements Simulation {
 
     @Override
     public String getDescription() {
-        return "Lee & Hastie simulation";
+        return "Lee & Hastie simulation using " + randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = graphGenerator.getParameters();
+        List<String> parameters = randomGraph.getParameters();
         parameters.add("numRuns");
         parameters.add("sampleSize");
         parameters.add("numCategories");

@@ -10,14 +10,14 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public interface GraphGenerator {
+public interface RandomGraph {
 
     /**
      * @param parameters Whatever parameters are need for the given graph. See
      *                   getParameters().
      * @return  Returns a random graph using the given parameters.
      */
-    Graph getGraph(Parameters parameters);
+    Graph createGraph(Parameters parameters);
 
     /**
      * Returns a short, one-line description of this graph type. This will be
