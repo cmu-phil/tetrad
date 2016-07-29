@@ -16,10 +16,10 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class Gfci implements Algorithm {
+public class TsGfci implements Algorithm {
     private ScoreWrapper score;
 
-    public Gfci(ScoreWrapper score) {
+    public TsGfci(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -34,7 +34,7 @@ public class Gfci implements Algorithm {
     }
 
     public String getDescription() {
-        return "GFCI (Greedy Fast Causal Inference) using " + score.getDescription();
+        return "tsGFCI (Time Series Greedy Fast Causal Inference) using " + score.getDescription();
     }
 
     @Override

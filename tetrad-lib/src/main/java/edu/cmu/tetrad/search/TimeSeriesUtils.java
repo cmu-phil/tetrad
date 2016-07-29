@@ -29,6 +29,8 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.exception.MaxCountExceededException;
+import org.apache.commons.math3.linear.EigenDecomposition;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -761,6 +763,31 @@ public class TimeSeriesUtils {
 
         //System.out.println("Knowledge in graph = " + knowledge);
         return knowledge;
+    }
+
+    public static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {
+
+        double[] realEigenvalues = new double[0];
+        double[] imagEigenvalues = new double[0];
+        try {
+            EigenDecomposition dec = new EigenDecomposition(mat.getRealMatrix());
+            realEigenvalues = dec.getRealEigenvalues();
+            imagEigenvalues = dec.getImagEigenvalues();
+        } catch (MaxCountExceededException e) {
+            e.printStackTrace();
+        }
+
+        for (int i = 0; i < realEigenvalues.length; i++) {
+            double realEigenvalue = realEigenvalues[i];
+            double imagEigenvalue = imagEigenvalues[i];
+            System.out.println("Real eigenvalues are : " + realEigenvalue + " and imag part : " + imagEigenvalue);
+            double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
+
+            if (modulus >= 1.0) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

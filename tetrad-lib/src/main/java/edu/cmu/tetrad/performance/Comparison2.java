@@ -232,7 +232,7 @@ public class Comparison2 {
                 /** added 6.08.16 for tsFCI **/
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
                     trueDag = GraphUtils.randomGraphRandomForwardEdges(
-                            nodes, 0, params.getNumEdges(), 10, 10, 10, false, true); //need lag version of this
+                            nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                     trueDag = TimeSeriesUtils.GraphToLagGraph(trueDag);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
                 }
@@ -296,7 +296,7 @@ public class Comparison2 {
 //                        System.out.println("B2 matrix : " + B2);
 //                        System.out.println("Gamma1 matrix : " + Gamma1);
 //                        isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(sim.getCoefficientMatrix()));
-                        isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(A1);
+                        isStableTetradMatrix = TimeSeriesUtils.allEigenvaluesAreSmallerThanOneInModulus(A1);
                         System.out.println("isStableTetradMatrix? : " + isStableTetradMatrix);
                         attempt++;
                     } while ((!isStableTetradMatrix) && attempt<=5);
@@ -720,31 +720,6 @@ public class Comparison2 {
         if(s.indexOf(':')== -1) return 0;
         String tmp = s.substring(s.indexOf(':')+1,s.length());
         return (Integer.parseInt(tmp));
-    }
-
-    public static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {
-
-        double[] realEigenvalues = new double[0];
-        double[] imagEigenvalues = new double[0];
-        try {
-            EigenDecomposition dec = new EigenDecomposition(mat.getRealMatrix());
-            realEigenvalues = dec.getRealEigenvalues();
-            imagEigenvalues = dec.getImagEigenvalues();
-        } catch (MaxCountExceededException e) {
-            e.printStackTrace();
-        }
-
-        for (int i = 0; i < realEigenvalues.length; i++) {
-            double realEigenvalue = realEigenvalues[i];
-            double imagEigenvalue = imagEigenvalues[i];
-            System.out.println("Real eigenvalues are : " + realEigenvalue + " and imag part : " + imagEigenvalue);
-            double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
-
-            if (modulus >= 1.0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public enum TableColumn {AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
