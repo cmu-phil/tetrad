@@ -45,8 +45,8 @@ public class LeeHastieSimulation implements Simulation {
             throw new IllegalArgumentException("To simulate continuoue data, 'percentDiscrete' must be set to 100.0.");
         }
 
-        if (discrete) this.dataType = dataType.Discrete;
-        if (continuous) this.dataType = dataType.Continuous;
+        if (discrete) this.dataType = DataType.Discrete;
+        if (continuous) this.dataType = DataType.Continuous;
 
         this.dataSets = new ArrayList<>();
 
