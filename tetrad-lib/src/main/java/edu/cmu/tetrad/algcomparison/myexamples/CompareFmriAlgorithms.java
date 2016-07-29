@@ -96,7 +96,7 @@ public class CompareFmriAlgorithms {
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new DiscreteLeeHastieSimulation());
+        simulations.add(new LeeHastieSimulation(parameters.getDouble("percentDiscrete")));
 
         Comparison comparison = new Comparison();
         comparison.setSaveGraphs(true);

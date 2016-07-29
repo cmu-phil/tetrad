@@ -19,17 +19,17 @@ import java.util.List;
  * data set.
  * @author jdramsey
  */
-public class DiscreteLeeHastieSimulation implements Simulation {
+public class LeeHastieSimulation implements Simulation {
     private List<DataSet> dataSets;
     private Graph graph;
+    private double percentDiscrete = 50;
+
+    public LeeHastieSimulation(double percentDiscrete) {
+        this.percentDiscrete = percentDiscrete;
+    }
 
     @Override
     public void createData(Parameters parameters) {
-        if (parameters.getDouble("percentDiscrete") != 100.0) {
-            throw new IllegalArgumentException("Discrete Lee & Hastie simulation requires that " +
-                    "percentDiscrete be set to 100%");
-        }
-
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures"),
                 parameters.getInt("numLatents"),
@@ -42,6 +42,7 @@ public class DiscreteLeeHastieSimulation implements Simulation {
         this.dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             dataSets.add(dataSet);
         }
@@ -85,7 +86,13 @@ public class DiscreteLeeHastieSimulation implements Simulation {
 
     @Override
     public DataType getDataType() {
-        return DataType.Discrete;
+        if (percentDiscrete == 0) {
+            return DataType.Continuous;
+        } else if (percentDiscrete == 100) {
+            return DataType.Discrete;
+        } else {
+            return DataType.Mixed;
+        }
     }
 
     private DataSet simulate(Graph dag, Parameters parameters) {

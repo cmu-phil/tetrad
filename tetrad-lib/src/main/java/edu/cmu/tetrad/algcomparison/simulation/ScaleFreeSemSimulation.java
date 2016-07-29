@@ -31,6 +31,7 @@ public class ScaleFreeSemSimulation implements Simulation {
         this.dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+            System.out.println("Simulating dataset #" + (i + 1));
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));

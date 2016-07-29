@@ -23,13 +23,14 @@ package edu.cmu.tetrad.algcomparison.myexamples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithms.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithms.myalgorithms.Wfgs;
+import edu.cmu.tetrad.algcomparison.algorithms.multi.ImagesBDeu;
+import edu.cmu.tetrad.algcomparison.algorithms.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.algorithms.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
-import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Parameters;
-import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
+import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
@@ -37,20 +38,19 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
  *
  * @author jdramsey
  */
-public class CompareNewAlgorithms {
+public class CompareImages {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 2);
+        parameters.put("numRuns", 10);
         parameters.put("numMeasures", 100);
         parameters.put("avgDegree", 4);
         parameters.put("sampleSize", 500);
-//        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
-        parameters.put("percentDiscrete", 25);
+        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.put("randomSelection", 5);
 
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn("percentDiscrete"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -63,24 +63,28 @@ public class CompareNewAlgorithms {
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1.0);
-        statistics.setWeight("AR", 0.5);
+        statistics.setWeight("AHP", 1.0);
 
         statistics.setSortByUtility(true);
         statistics.setShowUtilities(true);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new ConditionalGaussianLRT()));
-        algorithms.add(new Cpc(new ConditionalGaussianLRT(), new Fgs(new ConditionalGaussianBicScore())));
-        algorithms.add(new Pcs(new ConditionalGaussianLRT()));
-        algorithms.add(new Cpcs(new ConditionalGaussianLRT()));
-        algorithms.add(new Wfgs());
+//        algorithms.add(new Pc(new ChiSquare()));
+//        algorithms.add(new Cpc(new ChiSquare()));
+//        algorithms.add(new Pcs(new ChiSquare()));
+//        algorithms.add(new Cpcs(new ChiSquare()));
+//        algorithms.add(new Pc(new ConditionalGaussianLRT()));
+//        algorithms.add(new Cpc(new ConditionalGaussianLRT()));
+//        algorithms.add(new Pcs(new ConditionalGaussianLRT()));
+//        algorithms.add(new Cpcs(new ConditionalGaussianLRT()));
+        algorithms.add(new ImagesSemBic());
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new LeeHastieSimulation(parameters.getDouble("percentDiscrete")));
+        simulations.add(new ContinuousLeeHastieSimulation());
 
-        new Comparison().compareAlgorithms("comparison/Comparison.txt",
+        new Comparison().compareAlgorithms("comparison/ComparisonImages.txt",
                 simulations, algorithms, statistics, parameters);
     }
 }
