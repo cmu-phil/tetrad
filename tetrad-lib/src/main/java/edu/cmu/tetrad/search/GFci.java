@@ -24,35 +24,20 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
- * Replaces the FAS search in the previous version with GES followed by PC adjacency removals for more accuracy.
- * Uses conservative collider orientation. Gets sepsets for X---Y from among adjacents of X or of Y. -jdramsey 3/10/2015
- * <p>
- * Following an idea of Spirtes, now it uses more of the information in GES, to calculating possible dsep paths and to
- * utilize unshielded colliders found by GES. 5/31/2015
- * <p>
- * Previous:
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
- * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models,"
+ * JMLR 2016.
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
- * @author Joseph Ramsey
- * @author Choh-Man Teng
+ * @author Juan Miguel Ogarrio
+ * @author ps7z
+ * @author jdramsey
  */
 public final class GFci implements GraphSearch {
 
@@ -65,17 +50,11 @@ public final class GFci implements GraphSearch {
     // The background knowledge.
     private IKnowledge knowledge = new Knowledge2();
 
-    // The variables to search over (optional)
-    private List<Node> variables = new ArrayList<>();
-
     // The conditional independence test.
     private IndependenceTest independenceTest;
 
     // Flag for complete rule set, true if should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed = false;
-
-    // True iff the possible dsep search is done.
-//    private boolean possibleDsepSearchDone = true;
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
@@ -104,9 +83,6 @@ public final class GFci implements GraphSearch {
     // The structure prior for the Bdeu score (discrete data).
     private double structurePrior = 1;
 
-    // Map from variables to their column indices in the data set.
-    private ConcurrentMap<Node, Integer> hashIndices;
-
     // The print stream that output is directed to.
     private PrintStream out = System.out;
 
@@ -134,8 +110,6 @@ public final class GFci implements GraphSearch {
         }
 
         this.independenceTest = independenceTest;
-        this.variables = independenceTest.getVariables();
-        buildIndexing(variables);
     }
 
     public GFci(Score score) {
@@ -148,8 +122,6 @@ public final class GFci implements GraphSearch {
 
         this.sampleSize = score.getSampleSize();
         this.independenceTest = new IndTestScore(score);
-        this.variables = score.getVariables();
-        buildIndexing(variables);
     }
 
     //========================PUBLIC METHODS==========================//
@@ -173,20 +145,11 @@ public final class GFci implements GraphSearch {
         fgs.setKnowledge(getKnowledge());
         fgs.setVerbose(verbose);
         fgs.setNumPatternsToStore(0);
-//        fgs.setHeuristicSpeedup(faithfulnessAssumed);
+        fgs.setFaithfulnessAssumed(faithfulnessAssumed);
         graph = fgs.search();
         Graph fgsGraph = new EdgeListGraphSingleConnections(graph);
 
-//        System.out.println("GFCI: FGS done");
-
         sepsets = new SepsetsGreedy(fgsGraph, independenceTest, null, maxIndegree);
-//        ((SepsetsGreedy) sepsets).setDepth(3);
-//        sepsets = new SepsetsConservative(fgsGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsConservativeMajority(fgsGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsMaxPValue(fgsGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsMinScore(fgsGraph, independenceTest, null, maxIndegree);
-//
-//        System.out.println("GFCI: Look inside triangles starting");
 
         for (Node b : nodes) {
             List<Node> adjacentNodes = fgsGraph.getAdjacentNodes(b);
@@ -210,54 +173,13 @@ public final class GFci implements GraphSearch {
             }
         }
 
-//        SepsetMap map = new SepsetMap();
-//
-//        for (Edge edge : graph.getEdges()) {
-//            Node a = edge.getNode1();
-//            Node c = edge.getNode2();
-//
-//            Edge e = fgsGraph.getEdge(a, c);
-//
-//            if (e != null && e.isDirected()) {
-//
-//                // Only the ones that are in triangles.
-//                Set<Node> _adj = new HashSet<>(fgsGraph.getAdjacentNodes(a));
-//                _adj.retainAll(fgsGraph.getAdjacentNodes(c));
-//                if (_adj.isEmpty()) continue;
-//
-//                Node f = Edges.getDirectedEdgeHead(e);
-//                List<Node> adj = fgsGraph.getAdjacentNodes(f);
-//                adj.remove(Edges.getDirectedEdgeTail(e));
-//
-//                DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
-//                int[] choice;
-//
-//                while ((choice = gen.next()) != null) {
-//                    List<Node> cond = GraphUtils.asList(choice, adj);
-//
-//                    if (independenceTest.isIndependent(a, c, cond)) {
-//                        graph.removeEdge(a, c);
-//                        map.set(a, c, cond);
-//                    }
-//                }
-//            }
-//        }
-
-//        System.out.println("GFCI: Look inside triangles done");
-
         modifiedR0(fgsGraph);
-
-//    modifiedR0(fgsGraph, map);
-
-//        System.out.println("GFCI: R0 done");
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.doFinalOrientation(graph);
-
-//        System.out.println("GFCI: Final orientation done");
 
         GraphUtils.replaceNodes(graph, independenceTest.getVariables());
 
@@ -456,16 +378,6 @@ public final class GFci implements GraphSearch {
 
     //===========================================PRIVATE METHODS=======================================//
 
-    private void buildIndexing(List<Node> nodes) {
-        this.hashIndices = new ConcurrentHashMap<>();
-
-        int i = 0;
-
-        for (Node node : nodes) {
-            this.hashIndices.put(node, i++);
-        }
-    }
-
     /**
      * Orients according to background knowledge
      */
@@ -523,25 +435,6 @@ public final class GFci implements GraphSearch {
 
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
-    }
-
-    private int freeDegree(List<Node> nodes, Graph graph) {
-        int max = 0;
-
-        for (Node x : nodes) {
-            List<Node> opposites = graph.getAdjacentNodes(x);
-
-            for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<Node>(opposites);
-                adjx.remove(y);
-
-                if (adjx.size() > max) {
-                    max = adjx.size();
-                }
-            }
-        }
-
-        return max;
     }
 }
 

@@ -45,6 +45,7 @@ public class ExampleCompareSimulationTimeSeries {
         parameters.put("numMeasures", 10);
         parameters.put("avgDegree", 4);
         parameters.put("sampleSize", 500);
+        parameters.put("penaltyDiscount", 4);
         parameters.put("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
@@ -68,7 +69,7 @@ public class ExampleCompareSimulationTimeSeries {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new TsFci(new FisherZ()));
+//        algorithms.add(new TsFci(new FisherZ()));
         algorithms.add(new TsGfci(new SemBicScore()));
 
         Simulations simulations = new Simulations();

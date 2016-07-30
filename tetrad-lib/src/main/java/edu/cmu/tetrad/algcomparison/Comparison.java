@@ -53,7 +53,7 @@ import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
 /**
- * Script to do a comparison of a list of algorithm using a list of statistics and a list
+ * Script to do a comparison of a list of algorithms using a list of statistics and a list
  * of parameters and their values.
  *
  * @author jdramsey
@@ -66,11 +66,11 @@ public class Comparison {
     private boolean copyData = false;
 
     /**
-     * Compares algorithm.
+     * Compares algorithms.
      *
      * @param filePath   Path to the directory where files have been saved.
      * @param outFile    Path to the file where the output should be printed.
-     * @param algorithms The list of algorithm to be compared.
+     * @param algorithms The list of algorithms to be compared.
      * @param statistics The list of statistics on which to compare the algorithm, and their utility weights.
      * @param parameters The list of parameters and their values.
      */
@@ -89,11 +89,11 @@ public class Comparison {
     }
 
     /**
-     * Compares algorithm.
+     * Compares algorithms.
      *
      * @param outFile     Path to the file where the output should be printed.
      * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
-     * @param algorithms  The list of algorithm to be compared.
+     * @param algorithms  The list of algorithms to be compared.
      * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      */
     public void compareAlgorithms(String outFile, Simulations simulations, Algorithms algorithms,
@@ -102,6 +102,8 @@ public class Comparison {
         // Create output file.
         try {
             File comparison = new File(outFile);
+            File dir = comparison.getParentFile();
+            dir.mkdirs();
             this.out = new PrintStream(new FileOutputStream(comparison));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -127,7 +129,7 @@ public class Comparison {
             }
         }
 
-        // Set up the algorithm.
+        // Set up the algorithms.
         List<AlgorithmWrapper> algorithmWrappers = new ArrayList<>();
 
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
@@ -186,7 +188,7 @@ public class Comparison {
 
         int numRuns = parameters.getInt("numRuns");
 
-        // Run all of the algorithm and compile statistics.
+        // Run all of the algorithms and compile statistics.
         double[][][][] allStats = calcStats(algorithmSimulationWrappers, statistics, numRuns, parameters);
 
         // Print out the priliminary information for statistics types, etc.
