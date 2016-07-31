@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.FindTwoFactorClusters;
-import edu.cmu.tetradapp.model.FtfcIndTestParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -38,9 +38,9 @@ import java.text.NumberFormat;
  * @author Joseph Ramsey
  */
 class FtfcIndTestParamsEditor extends JComponent {
-    private FtfcIndTestParams FtfcParams;
+    private Params FtfcParams;
 
-    public FtfcIndTestParamsEditor(FtfcIndTestParams paramsPureClusters) {
+    public FtfcIndTestParamsEditor(Params paramsPureClusters) {
         this.FtfcParams = paramsPureClusters;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
@@ -62,14 +62,14 @@ class FtfcIndTestParamsEditor extends JComponent {
         algorithmSelector.addItem(FindTwoFactorClusters.Algorithm.SAG);
         algorithmSelector.addItem(FindTwoFactorClusters.Algorithm.GAP);
 
-        FindTwoFactorClusters.Algorithm algorithmType = getParams().getAlgorithm();
+        FindTwoFactorClusters.Algorithm algorithmType = getParams().getFtfcAlgorithm();
         algorithmSelector.setSelectedItem(algorithmType);
 
         algorithmSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 FindTwoFactorClusters.Algorithm index = (FindTwoFactorClusters.Algorithm) algorithmSelector.getSelectedItem();
                 if (index != null) {
-                    getParams().setAlgorithm(index);
+                    getParams().setFtfcAlgorithm(index);
                 }
             }
         });
@@ -91,7 +91,7 @@ class FtfcIndTestParamsEditor extends JComponent {
         add(Box.createHorizontalGlue());
     }
 
-    private FtfcIndTestParams getParams() {
+    private Params getParams() {
         return this.FtfcParams;
     }
 

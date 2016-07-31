@@ -31,7 +31,6 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.datamanip.ShiftDataParams;
 import edu.cmu.tetradapp.util.TextAreaOutputStream;
 
 import javax.swing.*;
@@ -52,7 +51,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The params.
      */
-    private ShiftDataParams params;
+    private Params params;
     private Object[] parentModels;
     private ShiftSearch search;
 
@@ -69,7 +68,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
      * Sets the parameters.
      */
     public void setParams(Params params) {
-        this.params = (ShiftDataParams) params;
+        this.params = params;
     }
 
     /**

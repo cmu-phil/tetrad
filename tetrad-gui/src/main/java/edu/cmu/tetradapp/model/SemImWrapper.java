@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -72,18 +73,18 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         log(semIm);
     }
 
-    public SemImWrapper(SemPmWrapper semPmWrapper, SemImParams params) {
+    public SemImWrapper(SemPmWrapper semPmWrapper, Params params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
-        semIm = new SemIm(semPmWrapper.getSemPm(), params.getSemImInitializionParams());
+        semIm = new SemIm(semPmWrapper.getSemPm(), params);
 
         log(semIm);
     }
 
     public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
-                        SemImParams params) {
+                        Params params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
@@ -96,9 +97,9 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         SemIm oldSemIm = oldSemImWrapper.getSemIm();
 
         if (!params.isRetainPreviousValues()) {
-            this.semIm = new SemIm(semPm, params.getSemImInitializionParams());
+            this.semIm = new SemIm(semPm, params);
         } else {
-            this.semIm = new SemIm(semPm, oldSemIm, params.getSemImInitializionParams());
+            this.semIm = new SemIm(semPm, oldSemIm, params);
         }
 
         log(semIm);
@@ -137,7 +138,7 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     public static SemImWrapper serializableInstance() {
         return new SemImWrapper(SemPmWrapper.serializableInstance(),
                 new SemImWrapper(SemPmWrapper.serializableInstance(),
-                        SemImParams.serializableInstance()), new SemImParams());
+                        new Params()), new Params());
     }
 
     //===========================PUBLIC METHODS=========================//

@@ -21,11 +21,12 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetradapp.model.*;
+import edu.cmu.tetrad.graph.TimeLagGraph;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetradapp.model.FactorAnalysisRunner;
+import edu.cmu.tetradapp.model.IFgsRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -33,12 +34,9 @@ import java.awt.*;
 import java.util.List;
 
 /**
- *
  * @author Michael Freenor
  */
 public class FactorAnalysisEditor extends AbstractSearchEditor {
-
-    private boolean alreadyLaidOut = false;
 
     //=========================CONSTRUCTORS============================//
 
@@ -123,59 +121,45 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        return getAlgorithmRunner().getParams().getVarNames();
     }
 
-    public JPanel getToolbar()
-    {
+    public JPanel getToolbar() {
         return null;
     }
- 
+
     //================================PRIVATE METHODS====================//
 
     private JComponent getIndTestParamBox() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        IndTestParams indTestParams = params.getIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        Params params = getAlgorithmRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(IndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Params params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof FgsIndTestParams) {
+        if (params instanceof Params) {
             if (getAlgorithmRunner() instanceof IFgsRunner) {
                 IFgsRunner gesRunner = ((IFgsRunner) getAlgorithmRunner());
-                FgsIndTestParams params = (FgsIndTestParams) indTestParams;
                 return new FgsIndTestParamsEditor(params, gesRunner.getType());
             }
         }
 
-        if (indTestParams instanceof LagIndTestParams) {
-            return new TimeSeriesIndTestParamsEditor(
-                    (LagIndTestParams) indTestParams);
+        if (getAlgorithmRunner().getParams().getIndClass() instanceof TimeLagGraph) {
+            return new TimeSeriesIndTestParamsEditor(getAlgorithmRunner().getParams());
         }
 
-        if (indTestParams instanceof GraphIndTestParams) {
-            return new IndTestParamsEditor((GraphIndTestParams) indTestParams);
+        if (getAlgorithmRunner().getParams().getIndClass() instanceof Graph) {
+            return new IndTestParamsEditor(params);
         }
 
-        if (indTestParams instanceof DiscDetIndepParams) {
-            return new DiscDetIndepParamsEditor(
-                    (DiscDetIndepParams) indTestParams);
-        }
-
-        if (indTestParams instanceof PcIndTestParams) {
-            return new PcIndTestParamsEditor((PcIndTestParams) indTestParams);
-        }
-
-        return new IndTestParamsEditor(indTestParams);
+        return new PcIndTestParamsEditor(params);
     }
 
     protected void doDefaultArrangement(Graph resultGraph) {

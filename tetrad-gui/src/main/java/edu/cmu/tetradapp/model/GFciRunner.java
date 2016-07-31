@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeListener;
@@ -48,14 +49,14 @@ public class GFciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-//    public GFciRunner(DataWrapper dataWrapper, GFciSearchParams params) {
+//    public GFciRunner(DataWrapper dataWrapper, Params params) {
 //        super(dataWrapper, params, null);
 //    }
 //
 //    /**
 //     * Constucts a wrapper for the given EdgeListGraph.
 //     */
-//    public GFciRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+//    public GFciRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
 //        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
 //    }
 
@@ -64,51 +65,51 @@ public class GFciRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public GFciRunner(DataWrapper dataWrapper, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public GFciRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public GFciRunner(Graph graph, FciSearchParams params) {
+    public GFciRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
 
-    public GFciRunner(GraphWrapper graphWrapper, GFciSearchParams params) {
+    public GFciRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public GFciRunner(DagWrapper dagWrapper, GFciSearchParams params) {
+    public GFciRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public GFciRunner(SemGraphWrapper dagWrapper, GFciSearchParams params) {
+    public GFciRunner(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public GFciRunner(IndependenceFactsModel model, GFciSearchParams params) {
+    public GFciRunner(IndependenceFactsModel model, Params params) {
         super(model, params, null);
     }
 
-    public GFciRunner(IndependenceFactsModel model, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public GFciRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
-//    public GFciRunner(DataWrapper dataWrapper, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+//    public GFciRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
 //        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
 //    }
 
-    public GFciRunner(DataWrapper dataWrapper, GFciSearchParams params) {
+    public GFciRunner(DataWrapper dataWrapper, Params params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
     }
 
-//    public GFciRunner(DataWrapper dataWrapper, GraphSource graph, GFciSearchParams params) {
+//    public GFciRunner(DataWrapper dataWrapper, GraphSource graph, Params params) {
 //        super(new MergeDatasetsWrapper(dataWrapper), params, null);
 ////        if (graph == dataWrapper) throw new IllegalArgumentException();
 //        if (graph == this) throw new IllegalArgumentException();
 //        this.initialGraph = graph.getGraph();
 //    }
 //
-//    public GFciRunner(DataWrapper dataWrapper, GraphSource graph, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+//    public GFciRunner(DataWrapper dataWrapper, GraphSource graph, Params params, KnowledgeBoxModel knowledgeBoxModel) {
 //        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
 //        if (graph == this) throw new IllegalArgumentException();
 //        this.initialGraph = graph.getGraph();
@@ -116,7 +117,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
 
     public GFciRunner(DataWrapper dataWrapper1,
                       DataWrapper dataWrapper2,
-                      GFciSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -128,7 +129,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
     public GFciRunner(DataWrapper dataWrapper1,
                       DataWrapper dataWrapper2,
                       DataWrapper dataWrapper3,
-                      GFciSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -143,7 +144,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper2,
                       DataWrapper dataWrapper3,
                       DataWrapper dataWrapper4,
-                      GFciSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -160,7 +161,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper3,
                       DataWrapper dataWrapper4,
                       DataWrapper dataWrapper5,
-                      GFciSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -179,7 +180,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper4,
                       DataWrapper dataWrapper5,
                       DataWrapper dataWrapper6,
-                      GFciSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -200,7 +201,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper5,
                       DataWrapper dataWrapper6,
                       DataWrapper dataWrapper7,
-                      GFciSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -223,7 +224,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper6,
                       DataWrapper dataWrapper7,
                       DataWrapper dataWrapper8,
-                      GFciSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -248,7 +249,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper7,
                       DataWrapper dataWrapper8,
                       DataWrapper dataWrapper9,
-                      GFciSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -275,7 +276,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper8,
                       DataWrapper dataWrapper9,
                       DataWrapper dataWrapper10,
-                      GFciSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -293,11 +294,11 @@ public class GFciRunner extends AbstractAlgorithmRunner
 
     }
 
-    public GFciRunner(GraphWrapper graphWrapper, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public GFciRunner(GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-//    public GFciRunner(GraphWrapper graphWrapper, GFciSearchParams params) {
+//    public GFciRunner(GraphWrapper graphWrapper, Params params) {
 //        super(graphWrapper.getGraph(), params, null);
 //    }
 
@@ -308,8 +309,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static GFciRunner serializableInstance() {
-        return new GFciRunner(Dag.serializableInstance(),
-                FciSearchParams.serializableInstance());
+        return new GFciRunner(Dag.serializableInstance(), new Params());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -320,9 +320,9 @@ public class GFciRunner extends AbstractAlgorithmRunner
      */
 //    public void execute() {
 //        IKnowledge knowledge = getParams().getKnowledge();
-//        SearchParams searchParams = getParams();
+//        Params searchParams = getParams();
 //
-//        GFciIndTestParams indTestParams = (GFciIndTestParams) searchParams.getIndTestParams();
+//        Params params = (Params) searchParams;
 //
 //        Graph graph;
 //
@@ -332,16 +332,16 @@ public class GFciRunner extends AbstractAlgorithmRunner
 //        } else {
 //            GFci fci = new GFci(getIndependenceTest());
 //            fci.setKnowledge(knowledge);
-//            fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
-//            fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
-//            fci.setMaxIndegree(indTestParams.getDepth());
-//            double penaltyDiscount = indTestParams.getPenaltyDiscount();
+//            fci.setCompleteRuleSetUsed(params.isCompleteRuleSetUsed());
+//            fci.setMaxPathLength(params.getMaxReachablePathLength());
+//            fci.setMaxIndegree(params.getDepth());
+//            double penaltyDiscount = params.getPenaltyDiscount();
 //
 //            fci.setPenaltyDiscount(penaltyDiscount);
-//            fci.setSamplePrior(indTestParams.getSamplePrior());
-//            fci.setStructurePrior(indTestParams.getStructurePrior());
+//            fci.setSamplePrior(params.getSamplePrior());
+//            fci.setStructurePrior(params.getStructurePrior());
 //            fci.setCompleteRuleSetUsed(false);
-//            fci.setHeuristicSpeedup(indTestParams.isFaithfulnessAssumed());
+//            fci.setHeuristicSpeedup(params.isFaithfulnessAssumed());
 //            graph = fci.search();
 //        }
 //
@@ -374,8 +374,8 @@ public class GFciRunner extends AbstractAlgorithmRunner
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        GFciIndTestParams indTestParams = (GFciIndTestParams) getParams().getIndTestParams();
-        double penaltyDiscount = indTestParams.getPenaltyDiscount();
+        Params params = (Params) getParams();
+        double penaltyDiscount = params.getPenaltyDiscount();
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
@@ -397,8 +397,8 @@ public class GFciRunner extends AbstractAlgorithmRunner
                     gfci = new GFci(gesScore);
                 }
 //                else if (dataSet.isDiscrete()) {
-//                    double samplePrior = ((GFciSearchParams) getParams()).getSamplePrior();
-//                    double structurePrior = ((GFciSearchParams) getParams()).getStructurePrior();
+//                    double samplePrior = ((Params) getParams()).getSamplePrior();
+//                    double structurePrior = ((Params) getParams()).getStructurePrior();
 //                    BDeuScore score = new BDeuScore(dataSet);
 //                    score.setSamplePrior(samplePrior);
 //                    score.setStructurePrior(structurePrior);
@@ -427,19 +427,19 @@ public class GFciRunner extends AbstractAlgorithmRunner
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
-//                GFciSearchParams GFciSearchParams = (GFciSearchParams) getParams();
-//                FgsIndTestParams indTestParams = (FgsIndTestParams) GFciSearchParams.getIndTestParams();
+//                Params Params = (Params) getParams();
+//                Params params = (Params) Params;
 
                 if (allContinuous(list)) {
-                    double penalty = indTestParams.getPenaltyDiscount();
+                    double penalty = params.getPenaltyDiscount();
 
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
                     gfci = new GFci(fgsScore);
                 }
 //                else if (allDiscrete(list)) {
-//                    double structurePrior = ((GFciSearchParams) getParams()).getStructurePrior();
-//                    double samplePrior = ((GFciSearchParams) getParams()).getSamplePrior();
+//                    double structurePrior = ((Params) getParams()).getStructurePrior();
+//                    double samplePrior = ((Params) getParams()).getSamplePrior();
 //
 //                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
 //                    fgsScore.setSamplePrior(samplePrior);
@@ -457,11 +457,11 @@ public class GFciRunner extends AbstractAlgorithmRunner
 
 //        gfci.setInitialGraph(initialGraph);
 //        gfci.setKnowledge(getParams().getKnowledge());
-//        gfci.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+//        gfci.setNumPatternsToStore(params.getNumPatternsToSave());
         gfci.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
 //        gfci.setDepth(3);
-        gfci.setFaithfulnessAssumed(indTestParams.isFaithfulnessAssumed());
+        gfci.setFaithfulnessAssumed(params.isFaithfulnessAssumed());
         Graph graph = gfci.search();
 
         if (getSourceGraph() != null) {
@@ -515,14 +515,14 @@ public class GFciRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        SearchParams params = getParams();
+        Params params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof BasicSearchParams) {
-            BasicSearchParams _params = (BasicSearchParams) params;
+        if (getParams() instanceof Params) {
+            Params _params = (Params) params;
             testType = _params.getIndTestType();
         } else {
-            GFciSearchParams _params = (GFciSearchParams) params;
+            Params _params = (Params) params;
             testType = _params.getIndTestType();
         }
 

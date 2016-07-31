@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.ParamsResettable;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -57,7 +58,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      *
      * @serial Cannot be null.
      */
-    private MimParams params;
+    private Params params;
 
     /**
      * Clusters resulting from the last run of the algorithm.
@@ -95,7 +96,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public AbstractMimRunner(DataWrapper dataWrapper, Clusters clusters, MimParams params) {
+    public AbstractMimRunner(DataWrapper dataWrapper, Clusters clusters, Params params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -116,7 +117,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.dataModel = data;
     }
 
-    public AbstractMimRunner(MeasurementModelWrapper wrapper, Clusters clusters, MimParams params) {
+    public AbstractMimRunner(MeasurementModelWrapper wrapper, Clusters clusters, Params params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -134,7 +135,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.dataModel = data;
     }
 
-    public AbstractMimRunner(MimRunner runner, MimParams params) {
+    public AbstractMimRunner(MimRunner runner, Params params) {
         if (runner == null) {
             throw new NullPointerException();
         }
@@ -187,12 +188,12 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         }
     }
 
-    public final MimParams getParams() {
+    public final Params getParams() {
         return this.params;
     }
 
     public void resetParams(Object params) {
-        this.params = (MimParams) params;
+        this.params = (Params) params;
     }
 
     public Object getResettableParams() {

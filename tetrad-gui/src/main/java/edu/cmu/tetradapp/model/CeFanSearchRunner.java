@@ -26,6 +26,7 @@ import edu.cmu.tetrad.search.Cefs;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.LinkedList;
@@ -49,7 +50,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CeFanSearchRunner(DataWrapper dataWrapper, MbSearchParams params) {
+    public CeFanSearchRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
@@ -58,34 +59,34 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(Graph graph, MbSearchParams params) {
+    public CeFanSearchRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(GraphWrapper graphWrapper, MbSearchParams params) {
+    public CeFanSearchRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(DagWrapper dagWrapper, MbSearchParams params) {
+    public CeFanSearchRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
     public CeFanSearchRunner(SemGraphWrapper dagWrapper,
-            BasicSearchParams params) {
+            Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CeFanSearchRunner(IndependenceFactsModel model, MbSearchParams params) {
+    public CeFanSearchRunner(IndependenceFactsModel model, Params params) {
         super(model, params, null);
     }
 
-    public CeFanSearchRunner(IndependenceFactsModel model, MbSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CeFanSearchRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -96,8 +97,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static CeFanSearchRunner serializableInstance() {
-        return new CeFanSearchRunner(Dag.serializableInstance(),
-                MbSearchParams.serializableInstance());
+        return new CeFanSearchRunner(Dag.serializableInstance(), new Params());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -107,14 +107,14 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((MbSearchParams) getParams()).getDepth();
+        int pcDepth = ((Params) getParams()).getDepth();
         Cefs search =
                 new Cefs(getIndependenceTest(), pcDepth);
-        SearchParams params = getParams();
-        if(params instanceof MeekSearchParams){
-            search.setAggressivelyPreventCycles(((MeekSearchParams) params).isAggressivelyPreventCycles());
+        Params params = getParams();
+        if(params instanceof Params){
+            search.setAggressivelyPreventCycles(params.isAggressivelyPreventCycles());
         }
-        String targetName = ((MbSearchParams) getParams()).getTargetName();
+        String targetName = ((Params) getParams()).getTargetName();
         Graph graph = search.search(targetName);
         setResultGraph(graph);
 
@@ -136,7 +136,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        MbSearchParams params = (MbSearchParams) getParams();
+        Params params = (Params) getParams();
         IndTestType testType = params.getIndTestType();
         return new IndTestChooser().getTest(dataModel, params, testType);
     }

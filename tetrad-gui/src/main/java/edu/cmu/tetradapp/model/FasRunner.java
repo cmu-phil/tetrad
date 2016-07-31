@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -46,21 +47,21 @@ public class FasRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FasRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public FasRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
-    public FasRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FasRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public FasRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
+    public FasRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params) {
         super(dataWrapper, params, null);
         this.initialGraph = graphWrapper.getGraph();
     }
 
-    public FasRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FasRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.initialGraph = graphWrapper.getGraph();
     }
@@ -68,37 +69,37 @@ public class FasRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FasRunner(Graph graph, PcSearchParams params) {
+    public FasRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FasRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public FasRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FasRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FasRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public FasRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public FasRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public FasRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public FasRunner(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public FasRunner(IndependenceFactsModel model, PcSearchParams params) {
+    public FasRunner(IndependenceFactsModel model, Params params) {
         super(model, params, null);
     }
 
-    public FasRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FasRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
     
@@ -108,8 +109,7 @@ public class FasRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static FasRunner serializableInstance() {
-        return new FasRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new FasRunner(Dag.serializableInstance(), new Params());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -128,7 +128,7 @@ public class FasRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
-        int depth = getParams().getIndTestParams().getDepth();
+        int depth = getParams().getDepth();
         Graph graph = new EdgeListGraph(getIndependenceTest().getVariables());
 
         Fas fas = new Fas(graph, getIndependenceTest());
@@ -199,9 +199,9 @@ public class FasRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles(){
-        SearchParams params = getParams();
-        if(params instanceof MeekSearchParams){
-           return ((MeekSearchParams)params).isAggressivelyPreventCycles();
+        Params params = getParams();
+        if(params instanceof Params){
+           return ((Params)params).isAggressivelyPreventCycles();
         }
         return false;
     }

@@ -24,9 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.TaskManager;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -176,8 +174,7 @@ public class FtfcSearchEditor extends JPanel {
                 try {
 //                    mimRunner.getParams().setClusters(clusterEditor.getClusters());
                     getMimRunner().execute();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     CharArrayWriter writer1 = new CharArrayWriter();
                     PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
@@ -233,8 +230,7 @@ public class FtfcSearchEditor extends JPanel {
 
                 try {
                     sleep(delay);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     return;
                 }
 
@@ -281,8 +277,7 @@ public class FtfcSearchEditor extends JPanel {
                 while (thread().isAlive()) {
                     try {
                         sleep(200);
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         return;
                     }
                 }
@@ -359,7 +354,7 @@ public class FtfcSearchEditor extends JPanel {
         }
 
         if (getMimRunner().getClusters() != null) {
-            ClusterEditor editor =  new ClusterEditor(getMimRunner().getClusters(),
+            ClusterEditor editor = new ClusterEditor(getMimRunner().getClusters(),
                     getMimRunner().getData().getVariableNames());
             tabbedPane.add("Measurement Model", editor);
         }
@@ -464,11 +459,9 @@ public class FtfcSearchEditor extends JPanel {
         try {
             Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();
             getMimRunner().getParams().setSourceGraph(graph);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             getMimRunner().getParams().setSourceGraph(null);
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             getMimRunner().getParams().setSourceGraph(null);
             e.printStackTrace();
         }
@@ -485,29 +478,22 @@ public class FtfcSearchEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        MimParams params = getMimRunner().getParams();
-        MimIndTestParams indTestParams = params.getMimIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        edu.cmu.tetrad.util.Params params = getMimRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(MimIndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Params params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof FtfcIndTestParams) {
-            MimRunner runner = getMimRunner();
-            FtfcIndTestParams params =  (FtfcIndTestParams) indTestParams;
-            params.setVarNames(runner.getParams().getVarNames());
+        MimRunner runner = getMimRunner();
+        params.setVarNames(runner.getParams().getVarNames());
             return new FtfcIndTestParamsEditor(params);
-        }
-
-        throw new IllegalArgumentException(
-                "Unrecognized IndTestParams: " + indTestParams.getClass());
     }
 }
 

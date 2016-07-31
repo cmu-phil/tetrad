@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -39,7 +40,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
     static final long serialVersionUID = 23L;
 
 //    private String name;
-//    private KnowledgeParams params;
+//    private Params params;
 //    private KnowledgeBoxInput knowledgeBoxInput1;
 //    private List<String> varNames = new ArrayList<String>();
 
@@ -58,75 +59,75 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
     private List<String> variableNames = new ArrayList<String>();
     private Graph resultGraph = new EdgeListGraph();
 
-    public RequiredGraphModel(BayesPmWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(BayesPmWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(GraphWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(GraphWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(StandardizedSemImWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(StandardizedSemImWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(SemImWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(SemImWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(SemPmWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(SemPmWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(DataWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(DataWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(TimeLagGraphWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(TimeLagGraphWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(GeneralizedSemImWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(GeneralizedSemImWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(BayesImWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(BayesImWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(SemGraphWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(SemGraphWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(GeneralizedSemPmWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(GeneralizedSemPmWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(DagWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(DagWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(DirichletBayesImWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(DirichletBayesImWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(BuildPureClustersRunner wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(BuildPureClustersRunner wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(PurifyRunner wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(PurifyRunner wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(LofsRunner wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(LofsRunner wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(MeasurementModelWrapper wrapper, KnowledgeParams params) {
+    public RequiredGraphModel(MeasurementModelWrapper wrapper, Params params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(KnowledgeBoxInput input, KnowledgeParams params) {
+    public RequiredGraphModel(KnowledgeBoxInput input, Params params) {
         this(params, input);
     }
 
@@ -134,7 +135,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
     /**
      * Constructor from dataWrapper edge
      */
-    public RequiredGraphModel(KnowledgeParams params, KnowledgeBoxInput input) {
+    public RequiredGraphModel(Params params, KnowledgeBoxInput input) {
         super(params, input);
 
         if (params == null) {
@@ -171,7 +172,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         }
     }
 
-    private void createKnowledge(KnowledgeParams params) {
+    private void createKnowledge(Params params) {
         IKnowledge knowledge = params.getKnowledge();
         knowledge.clear();
 
@@ -217,7 +218,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
      * @see TetradSerializableUtils
      */
     public static RequiredGraphModel serializableInstance() {
-        return new RequiredGraphModel(new KnowledgeParams(), GraphWrapper.serializableInstance());
+        return new RequiredGraphModel(new Params(), GraphWrapper.serializableInstance());
     }
 
     public Graph getResultGraph() {

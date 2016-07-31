@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.calculator.CalculatorParams;
 import edu.cmu.tetrad.calculator.expression.*;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -52,7 +51,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     /**
      * The calculator's params.
      */
-    private CalculatorParams params;
+    private Params params;
 
 
     /**
@@ -118,7 +117,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * Sets the calculator's params.
      */
     public void setParams(Params params) {
-        this.params = (CalculatorParams) params;
+        this.params = (Params) params;
     }
 
 
@@ -226,11 +225,14 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         Preferences.userRoot().put("calculator_equations", buf.toString());
 
         if (params != null) {
-            this.params.resetEquations();
+            List<String> _equations = new ArrayList<>();
 
             for (Equation eq : equations) {
-                this.params.addEquation(eq.getUnparsedExpression());
+                _equations.add(eq.getUnparsedExpression());
+//                this.params.addEquation(eq.getUnparsedExpression());
             }
+
+            this.params.setEquations(_equations);
         }
 
         return true;

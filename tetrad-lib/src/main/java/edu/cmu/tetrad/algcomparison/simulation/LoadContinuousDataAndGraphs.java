@@ -64,15 +64,15 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                         try {
                             double _value = Double.parseDouble(value);
                             parameterValues.put(key, _value);
-                            parameters.put(key, _value);
+                            parameters.set(key, _value);
                         } catch (NumberFormatException e) {
                             parameterValues.put(key, value);
-                            parameters.put(key, value);
+                            parameters.set(key, value);
                         }
                     }
                 }
 
-                parameters.put("numRuns", numDataSets);
+                parameters.set("numRuns", numDataSets);
             } catch (IOException e) {
                 e.printStackTrace();
             }

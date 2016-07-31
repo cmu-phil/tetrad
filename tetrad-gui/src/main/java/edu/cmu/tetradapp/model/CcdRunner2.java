@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeListener;
@@ -50,42 +51,42 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CcdRunner2(DataWrapper dataWrapper, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner2(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public CcdRunner2(Graph graph, BasicSearchParams params) {
+    public CcdRunner2(Graph graph, Params params) {
         super(graph, params);
     }
 
 
-    public CcdRunner2(GraphWrapper graphWrapper, BasicSearchParams params) {
+    public CcdRunner2(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public CcdRunner2(DagWrapper dagWrapper, BasicSearchParams params) {
+    public CcdRunner2(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CcdRunner2(SemGraphWrapper dagWrapper, BasicSearchParams params) {
+    public CcdRunner2(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CcdRunner2(IndependenceFactsModel model, BasicSearchParams params) {
+    public CcdRunner2(IndependenceFactsModel model, Params params) {
         super(model, params, null);
     }
 
-    public CcdRunner2(IndependenceFactsModel model, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner2(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
-    public CcdRunner2(DataWrapper dataWrapper, BasicSearchParams params) {
+    public CcdRunner2(DataWrapper dataWrapper, Params params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
     }
 
     public CcdRunner2(DataWrapper dataWrapper1,
                       DataWrapper dataWrapper2,
-                      BasicSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -97,7 +98,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
     public CcdRunner2(DataWrapper dataWrapper1,
                       DataWrapper dataWrapper2,
                       DataWrapper dataWrapper3,
-                      BasicSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -112,7 +113,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper2,
                       DataWrapper dataWrapper3,
                       DataWrapper dataWrapper4,
-                      BasicSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -129,7 +130,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper3,
                       DataWrapper dataWrapper4,
                       DataWrapper dataWrapper5,
-                      BasicSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -148,7 +149,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper4,
                       DataWrapper dataWrapper5,
                       DataWrapper dataWrapper6,
-                      BasicSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -169,7 +170,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper5,
                       DataWrapper dataWrapper6,
                       DataWrapper dataWrapper7,
-                      BasicSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -192,7 +193,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper6,
                       DataWrapper dataWrapper7,
                       DataWrapper dataWrapper8,
-                      BasicSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -217,7 +218,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper7,
                       DataWrapper dataWrapper8,
                       DataWrapper dataWrapper9,
-                      BasicSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -244,7 +245,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                       DataWrapper dataWrapper8,
                       DataWrapper dataWrapper9,
                       DataWrapper dataWrapper10,
-                      BasicSearchParams params) {
+                      Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -262,11 +263,11 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
     }
 
-    public CcdRunner2(GraphWrapper graphWrapper, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner2(GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-//    public CcdRunner(GraphWrapper graphWrapper, BasicSearchParams params) {
+//    public CcdRunner(GraphWrapper graphWrapper, Params params) {
 //        super(graphWrapper.getGraph(), params, null);
 //    }
 
@@ -277,8 +278,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static CcdRunner2 serializableInstance() {
-        return new CcdRunner2(Dag.serializableInstance(),
-                BasicSearchParams.serializableInstance().serializableInstance());
+        return new CcdRunner2(Dag.serializableInstance(), new Params());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -289,9 +289,9 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
      */
 //    public void execute() {
 //        IKnowledge knowledge = getParams().getKnowledge();
-//        SearchParams searchParams = getParams();
+//        Params searchParams = getParams();
 //
-//        GFciIndTestParams indTestParams = (GFciIndTestParams) searchParams.getIndTestParams();
+//        Params params = (Params) searchParams;
 //
 //        Graph graph;
 //
@@ -301,16 +301,16 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //        } else {
 //            GFci fci = new GFci(getIndependenceTest());
 //            fci.setKnowledge(knowledge);
-//            fci.setCompleteRuleSetUsed(indTestParams.isCompleteRuleSetUsed());
-//            fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
-//            fci.setMaxIndegree(indTestParams.getDepth());
-//            double penaltyDiscount = indTestParams.getPenaltyDiscount();
+//            fci.setCompleteRuleSetUsed(params.isCompleteRuleSetUsed());
+//            fci.setMaxPathLength(params.getMaxReachablePathLength());
+//            fci.setMaxIndegree(params.getDepth());
+//            double penaltyDiscount = params.getPenaltyDiscount();
 //
 //            fci.setPenaltyDiscount(penaltyDiscount);
-//            fci.setSamplePrior(indTestParams.getSamplePrior());
-//            fci.setStructurePrior(indTestParams.getStructurePrior());
+//            fci.setSamplePrior(params.getSamplePrior());
+//            fci.setStructurePrior(params.getStructurePrior());
 //            fci.setCompleteRuleSetUsed(false);
-//            fci.setHeuristicSpeedup(indTestParams.isFaithfulnessAssumed());
+//            fci.setHeuristicSpeedup(params.isFaithfulnessAssumed());
 //            graph = fci.search();
 //        }
 //
@@ -345,8 +345,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        BasicIndTestParams indTestParams = (BasicIndTestParams) getParams().getIndTestParams();
-        double penaltyDiscount = 20.0;//indTestParams.getPenaltyDiscount();
+        double penaltyDiscount = 20.0;//params.getPenaltyDiscount();
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
@@ -368,8 +367,8 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                     ccd = new Ccd2(gesScore);
                 }
 //                else if (dataSet.isDiscrete()) {
-//                    double samplePrior = ((BasicSearchParams) getParams()).getSamplePrior();
-//                    double structurePrior = ((BasicSearchParams) getParams()).getStructurePrior();
+//                    double samplePrior = ((Params) getParams()).getSamplePrior();
+//                    double structurePrior = ((Params) getParams()).getStructurePrior();
 //                    BDeuScore score = new BDeuScore(dataSet);
 //                    score.setSamplePrior(samplePrior);
 //                    score.setStructurePrior(structurePrior);
@@ -398,19 +397,19 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
-//                BasicSearchParams BasicSearchParams = (BasicSearchParams) getParams();
-//                FgsIndTestParams indTestParams = (FgsIndTestParams) BasicSearchParams.getIndTestParams();
+//                Params Params = (Params) getParams();
+//                Params params = (Params) Params;
 
                 if (allContinuous(list)) {
-                    double penalty = 4;//indTestParams.getPenaltyDiscount();
+                    double penalty = 4;//params.getPenaltyDiscount();
 
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
                     ccd = new Ccd2(fgsScore);
                 }
 //                else if (allDiscrete(list)) {
-//                    double structurePrior = ((BasicSearchParams) getParams()).getStructurePrior();
-//                    double samplePrior = ((BasicSearchParams) getParams()).getSamplePrior();
+//                    double structurePrior = ((Params) getParams()).getStructurePrior();
+//                    double samplePrior = ((Params) getParams()).getSamplePrior();
 //
 //                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
 //                    fgsScore.setSamplePrior(samplePrior);
@@ -428,11 +427,11 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 
 //        gfci.setInitialGraph(initialGraph);
 //        gfci.setKnowledge(getParams().getKnowledge());
-//        gfci.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave());
+//        gfci.setNumPatternsToStore(params.getNumPatternsToSave());
         ccd.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
 //        gfci.setDepth(3);
-//        ccd.setHeuristicSpeedup(indTestParams.isFaithfulnessAssumed());
+//        ccd.setHeuristicSpeedup(params.isFaithfulnessAssumed());
         Graph graph = ccd.search();
 
         if (getSourceGraph() != null) {
@@ -488,10 +487,10 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        SearchParams params = getParams();
+        Params params = getParams();
         IndTestType testType = null;
 
-        BasicSearchParams _params = (BasicSearchParams) params;
+        Params _params = (Params) params;
         testType = _params.getIndTestType();
 
         return new IndTestChooser().getTest(dataModel, params, testType);

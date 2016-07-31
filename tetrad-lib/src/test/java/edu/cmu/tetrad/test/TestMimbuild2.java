@@ -27,9 +27,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.search.Mimbuild2;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -54,7 +54,7 @@ public class TestMimbuild2 {
 
             Graph mimStructure = structure(mim);
 
-            SemImInitializationParams params = new SemImInitializationParams();
+            Params params = new Params();
             params.setCoefRange(.5, 1.5);
 
             SemPm pm = new SemPm(mim);
@@ -177,7 +177,7 @@ public class TestMimbuild2 {
 //        Graph mimStructure = structure(mim);
 //
 //        SemPm pm = new SemPm(mim);
-//        SemImInitializationParams params = new SemImInitializationParams();
+//        Params params = new Params();
 //        params.setCoefRange(0.5, 1.5);
 //
 //        NumberFormat nf = new DecimalFormat("0.0000");
@@ -379,7 +379,7 @@ public class TestMimbuild2 {
 //        System.out.println("\n\nTrue graph:");
 //        System.out.println(mimStructure);
 //
-//        SemImInitializationParams params = new SemImInitializationParams();
+//        Params params = new Params();
 //        params.setCoefRange(0.5, 1.5);
 //
 //        SemIm im = new SemIm(pm, params);
@@ -445,7 +445,7 @@ public class TestMimbuild2 {
 //        Graph mimStructure = structure(mim);
 //
 //        SemPm pm = new SemPm(mim);
-//        SemImInitializationParams params = new SemImInitializationParams();
+//        Params params = new Params();
 //        params.setCoefRange(0.5, 1.5);
 //
 //        NumberFormat nf = new DecimalFormat("0.0000");

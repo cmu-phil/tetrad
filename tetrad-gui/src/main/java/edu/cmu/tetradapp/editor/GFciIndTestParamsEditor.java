@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.GFciIndTestParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -42,7 +42,7 @@ class GFciIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private GFciIndTestParams params = null;
+    private Params params = null;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -84,18 +84,18 @@ class GFciIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public GFciIndTestParamsEditor(GFciIndTestParams params) {
+    public GFciIndTestParamsEditor(Params params) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(indTestParams().getAlpha(), 8,
+        alphaField = new DoubleTextField(params().getAlpha(), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setAlpha(value);
+                    params().setAlpha(value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -103,11 +103,11 @@ class GFciIndTestParamsEditor extends JComponent {
             }
         });
 
-        depthField = new IntTextField(indTestParams().getDepth(), 5);
+        depthField = new IntTextField(params().getDepth(), 5);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    indTestParams().setDepth(value);
+                    params().setDepth(value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -116,12 +116,12 @@ class GFciIndTestParamsEditor extends JComponent {
         });
 
 
-        penaltyDiscount = new DoubleTextField(indTestParams().getPenaltyDiscount(), 8,
+        penaltyDiscount = new DoubleTextField(params().getPenaltyDiscount(), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         penaltyDiscount.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setPenaltyDiscount(value);
+                    params().setPenaltyDiscount(value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -129,12 +129,12 @@ class GFciIndTestParamsEditor extends JComponent {
             }
         });
 
-        samplePrior = new DoubleTextField(indTestParams().getSamplePrior(), 8,
+        samplePrior = new DoubleTextField(params().getSamplePrior(), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         samplePrior.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setSamplePrior(value);
+                    params().setSamplePrior(value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -142,12 +142,12 @@ class GFciIndTestParamsEditor extends JComponent {
             }
         });
 
-        structurePrior = new DoubleTextField(indTestParams().getStructurePrior(), 8,
+        structurePrior = new DoubleTextField(params().getStructurePrior(), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         structurePrior.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setStructurePrior(value);
+                    params().setStructurePrior(value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -157,28 +157,28 @@ class GFciIndTestParamsEditor extends JComponent {
 
 
         completeRuleSetCheckBox = new JCheckBox();
-        completeRuleSetCheckBox.setSelected(indTestParams().isCompleteRuleSetUsed());
+        completeRuleSetCheckBox.setSelected(params().isCompleteRuleSetUsed());
         completeRuleSetCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                indTestParams().setCompleteRuleSetUsed(source.isSelected());
+                params().setCompleteRuleSetUsed(source.isSelected());
             }
         });
 
         possibleDsepCheckBox = new JCheckBox();
-        possibleDsepCheckBox.setSelected(indTestParams().isPossibleDsepDone());
+        possibleDsepCheckBox.setSelected(params().isPossibleDsepDone());
         possibleDsepCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                indTestParams().setPossibleDsepDone(source.isSelected());
+                params().setPossibleDsepDone(source.isSelected());
             }
         });
 
-        maxReachablePathLengthField = new IntTextField(indTestParams().getMaxReachablePathLength(), 3);
+        maxReachablePathLengthField = new IntTextField(params().getMaxReachablePathLength(), 3);
         maxReachablePathLengthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    indTestParams().setMaxReachablePathLength(value);
+                    params().setMaxReachablePathLength(value);
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -188,11 +188,11 @@ class GFciIndTestParamsEditor extends JComponent {
 
 
         faithfulnessAssumed = new JCheckBox();
-        faithfulnessAssumed.setSelected(indTestParams().isFaithfulnessAssumed());
+        faithfulnessAssumed.setSelected(params().isFaithfulnessAssumed());
         faithfulnessAssumed.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                indTestParams().setFaithfulnessAssumed(source.isSelected());
+                params().setFaithfulnessAssumed(source.isSelected());
             }
         });
 
@@ -270,7 +270,7 @@ class GFciIndTestParamsEditor extends JComponent {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private GFciIndTestParams indTestParams() {
+    private Params params() {
         return params;
     }
 }

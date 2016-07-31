@@ -601,7 +601,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         private final GraphSelectionWrapper wrapper;
 
         /**
-         * Constructs the editor given the <code>RegressionParams</code> and the <code>DataModel</code>
+         * Constructs the editor given the <code>Params</code> and the <code>DataModel</code>
          * that should be used.
          */
         public GraphSelectionEditorPanel(GraphSelectionWrapper graphSelectionWrapper) {
@@ -645,9 +645,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
             group2.add(atMost);
             group2.add(atLeast);
 
-            if (wrapper.getNType() == GraphSelectionWrapper.nType.equals) {
+            if (wrapper.getNType().equals(GraphSelectionWrapper.nType.equals.toString())) {
                 equals.setSelected(true);
-            } else if (wrapper.getNType() == GraphSelectionWrapper.nType.atMost) {
+            } else if (wrapper.getNType().equals(GraphSelectionWrapper.nType.atMost.toString())) {
                 atMost.setSelected(true);
             } else {
                 atLeast.setSelected(true);

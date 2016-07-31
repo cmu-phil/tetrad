@@ -343,7 +343,7 @@ public class TestSemIm {
         g.addBidirectedEdge(x1, x2);
 
         SemPm semPm = new SemPm(g);
-        SemImInitializationParams params = new SemImInitializationParams();
+        Params params = new Params();
         SemIm semIm = new SemIm(semPm, params);
 
         SemIm modified = modifySemImStandardizedInterventionOnTargetParents(semIm, x4);

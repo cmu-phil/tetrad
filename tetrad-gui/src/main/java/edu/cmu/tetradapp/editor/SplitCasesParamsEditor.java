@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SplitCasesSpec;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.datamanip.SplitCasesParams;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 
@@ -63,7 +62,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The params used to store the values this editor edits.
      */
-    private SplitCasesParams params;
+    private Params params;
 
 
     /**
@@ -178,7 +177,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
 
     public void setParams(Params params) {
-        this.params = (SplitCasesParams) params;
+        this.params = (Params) params;
     }
 
 

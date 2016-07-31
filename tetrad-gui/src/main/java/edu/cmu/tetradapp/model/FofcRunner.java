@@ -32,6 +32,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.rmi.MarshalledObject;
@@ -58,20 +59,20 @@ public class FofcRunner extends AbstractMimRunner
     //============================CONSTRUCTORS============================//
 
     public FofcRunner(DataWrapper dataWrapper,
-                                   FofcParams pureClustersParams) {
+                                   Params pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
 
     }
 
     public FofcRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
-                                   FofcParams pureClustersParams) {
+                                   Params pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = semIm.getSemPm().getGraph();
     }
 
     public FofcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
-                                   FofcParams pureClustersParams) {
+                                   Params pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
@@ -81,7 +82,7 @@ public class FofcRunner extends AbstractMimRunner
      */
     public static FofcRunner serializableInstance() {
         return new FofcRunner(DataWrapper.serializableInstance(),
-                FofcParams.serializableInstance());
+                new Params());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -102,7 +103,7 @@ public class FofcRunner extends AbstractMimRunner
             getParams().setTetradTestType(tetradTestType);
         }
 
-        FindOneFactorClusters.Algorithm algorithm = ((FofcIndTestParams) getParams().getMimIndTestParams()).getAlgorithm();
+        FindOneFactorClusters.Algorithm algorithm = getParams().getFofcAlgorithms();
 
         if (source instanceof DataSet) {
             fofc = new FindOneFactorClusters((DataSet) source, tetradTestType, algorithm, getParams().getAlpha());

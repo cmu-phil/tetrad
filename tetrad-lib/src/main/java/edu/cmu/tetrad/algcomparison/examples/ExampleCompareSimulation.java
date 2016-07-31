@@ -41,11 +41,11 @@ public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 10);
-        parameters.put("numMeasures", 100);
-        parameters.put("avgDegree", 4);
-        parameters.put("sampleSize", 500);
-        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.set("numRuns", 10);
+        parameters.set("numMeasures", 100);
+        parameters.set("avgDegree", 4);
+        parameters.set("sampleSize", 500);
+        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
 

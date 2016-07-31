@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.Cfci;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -43,14 +44,14 @@ public class CfciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public CfciRunner(DataWrapper dataWrapper, FciSearchParams params) {
+    public CfciRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CfciRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CfciRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     /**
@@ -58,32 +59,32 @@ public class CfciRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CfciRunner(DataWrapper dataWrapper,FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CfciRunner(DataWrapper dataWrapper,Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
     
-    public CfciRunner(Graph graph, FciSearchParams params) {
+    public CfciRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
     
-    public CfciRunner(GraphWrapper graphWrapper, FciSearchParams params) {
+    public CfciRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public CfciRunner(DagWrapper dagWrapper, FciSearchParams params) {
+    public CfciRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CfciRunner(SemGraphWrapper dagWrapper, FciSearchParams params) {
+    public CfciRunner(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CfciRunner(IndependenceFactsModel model, FciSearchParams params) {
+    public CfciRunner(IndependenceFactsModel model, Params params) {
         super(model, params, null);
     }
 
-    public CfciRunner(IndependenceFactsModel model, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CfciRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -93,8 +94,7 @@ public class CfciRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static CfciRunner serializableInstance() {
-        return new CfciRunner(Dag.serializableInstance(),
-                FciSearchParams.serializableInstance());
+        return new CfciRunner(Dag.serializableInstance(), new Params());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -105,13 +105,13 @@ public class CfciRunner extends AbstractAlgorithmRunner
      */
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
-        SearchParams searchParams = getParams();
+        Params searchParams = getParams();
 
-        IndTestParams indTestParams = searchParams.getIndTestParams();
+        Params params = searchParams;
 
         Cfci cfci = new Cfci(getIndependenceTest());
         cfci.setKnowledge(knowledge);
-        cfci.setDepth(indTestParams.getDepth());
+        cfci.setDepth(params.getDepth());
         Graph graph = cfci.search();
 
         if (getSourceGraph() != null) {
@@ -134,15 +134,15 @@ public class CfciRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        SearchParams params = getParams();
+        Params params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof BasicSearchParams) {
-            BasicSearchParams _params = (BasicSearchParams) params;
+        if (getParams() instanceof Params) {
+            Params _params = (Params) params;
             testType = _params.getIndTestType();
         }
         else {
-            FciSearchParams _params = (FciSearchParams) params;
+            Params _params = (Params) params;
             testType = _params.getIndTestType();
         }
 

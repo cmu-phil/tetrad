@@ -32,6 +32,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.rmi.MarshalledObject;
@@ -58,20 +59,20 @@ public class FtfcRunner extends AbstractMimRunner
     //============================CONSTRUCTORS============================//
 
     public FtfcRunner(DataWrapper dataWrapper,
-                      FtfcParams pureClustersParams) {
+                      Params pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
 
     }
 
     public FtfcRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
-                      FtfcParams pureClustersParams) {
+                      Params pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = semIm.getSemPm().getGraph();
     }
 
     public FtfcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
-                      FtfcParams pureClustersParams) {
+                      Params pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
@@ -80,8 +81,7 @@ public class FtfcRunner extends AbstractMimRunner
      * Generates a simple exemplar of this class to test serialization.
      */
     public static FtfcRunner serializableInstance() {
-        return new FtfcRunner(DataWrapper.serializableInstance(),
-                FtfcParams.serializableInstance());
+        return new FtfcRunner(DataWrapper.serializableInstance(), new Params());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -102,7 +102,7 @@ public class FtfcRunner extends AbstractMimRunner
             getParams().setTetradTestType(tetradTestType);
         }
 
-        FindTwoFactorClusters.Algorithm algorithm = ((FtfcIndTestParams) getParams().getMimIndTestParams()).getAlgorithm();
+        FindTwoFactorClusters.Algorithm algorithm = getParams().getFtfcAlgorithm();
 
         if (source instanceof DataSet) {
             ftfc = new FindTwoFactorClusters((DataSet) source, algorithm, getParams().getAlpha());

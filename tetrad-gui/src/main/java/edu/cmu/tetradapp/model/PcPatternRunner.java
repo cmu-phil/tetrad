@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcPatternRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public PcPatternRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
@@ -54,44 +55,44 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcPatternRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcPatternRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcPatternRunner(Graph graph, PcSearchParams params) {
+    public PcPatternRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcPatternRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public PcPatternRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcPatternRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcPatternRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public PcPatternRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public PcPatternRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public PcPatternRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public PcPatternRunner(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public PcPatternRunner(IndependenceFactsModel model, PcSearchParams params) {
+    public PcPatternRunner(IndependenceFactsModel model, Params params) {
         super(model, params, null);
     }
 
-    public PcPatternRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcPatternRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -101,8 +102,7 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static PcPatternRunner serializableInstance() {
-        return new PcPatternRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new PcPatternRunner(Dag.serializableInstance(), new Params());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -121,7 +121,7 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
-        int depth = getParams().getIndTestParams().getDepth();
+        int depth = getParams().getDepth();
 
         PcPattern pcSearch = new PcPattern(getIndependenceTest());
         pcSearch.setKnowledge(knowledge);
@@ -185,9 +185,9 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles(){
-        SearchParams params = getParams();
-        if(params instanceof MeekSearchParams){
-            return ((MeekSearchParams)params).isAggressivelyPreventCycles();
+        Params params = getParams();
+        if(params instanceof Params){
+            return ((Params)params).isAggressivelyPreventCycles();
         }
         return false;
     }

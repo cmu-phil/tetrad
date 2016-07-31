@@ -36,6 +36,7 @@ import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -178,8 +179,8 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-        if (getAlgorithmRunner().getParams() instanceof MeekSearchParams) {
-            MeekSearchParams params = (MeekSearchParams) getAlgorithmRunner().getParams();
+        if (getAlgorithmRunner().getParams() instanceof Params) {
+            Params params = (Params) getAlgorithmRunner().getParams();
             JCheckBox preventCycles = new JCheckBox("Aggressively Prevent Cycles");
             preventCycles.setHorizontalTextPosition(AbstractButton.RIGHT);
             preventCycles.setSelected(params.isAggressivelyPreventCycles());
@@ -187,7 +188,7 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
             preventCycles.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     JCheckBox box = (JCheckBox) e.getSource();
-                    MeekSearchParams params = (MeekSearchParams) getAlgorithmRunner().getParams();
+                    Params params = (Params) getAlgorithmRunner().getParams();
                     params.setAggressivelyPreventCycles(box.isSelected());
                 }
             });
@@ -551,7 +552,7 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
+        Params params = getAlgorithmRunner().getParams();
         return params.getVarNames();
     }
 
@@ -732,51 +733,47 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        IndTestParams indTestParams = params.getIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        return getIndTestParamBox(getAlgorithmRunner().getParams());
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(IndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Params params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof FgsIndTestParams) {
+        if (params instanceof Params) {
             if (getAlgorithmRunner() instanceof IFgsRunner) {
                 IFgsRunner fgsRunner = ((IFgsRunner) getAlgorithmRunner());
-                FgsIndTestParams params = (FgsIndTestParams) indTestParams;
                 return new FgsIndTestParamsEditor(params, fgsRunner.getType());
             }
         }
 
-        if (indTestParams instanceof LagIndTestParams) {
-            return new TimeSeriesIndTestParamsEditor(
-                    (LagIndTestParams) indTestParams);
+        if (params instanceof Params) {
+            return new TimeSeriesIndTestParamsEditor(params);
         }
 
-        if (indTestParams instanceof GraphIndTestParams) {
-            return new IndTestParamsEditor((GraphIndTestParams) indTestParams);
+        if (params instanceof Params) {
+            return new IndTestParamsEditor(params);
         }
 
-        if (indTestParams instanceof DiscDetIndepParams) {
+        if (params instanceof Params) {
             return new DiscDetIndepParamsEditor(
-                    (DiscDetIndepParams) indTestParams);
+                    (Params) params);
         }
 
-        if (indTestParams instanceof PcIndTestParams) {
-            return new PcIndTestParamsEditor((PcIndTestParams) indTestParams);
+        if (params instanceof Params) {
+            return new PcIndTestParamsEditor(params);
         }
 
-        if (indTestParams instanceof PcLocalIndTestParams) {
-            return new PcLocalIndTestParamsEditor((PcLocalIndTestParams) indTestParams);
+        if (params instanceof Params) {
+            return new FciIndTestParamsEditor(params);
         }
 
-        return new IndTestParamsEditor(indTestParams);
+        return new IndTestParamsEditor(params);
     }
 
     protected void doDefaultArrangement(Graph resultGraph) {

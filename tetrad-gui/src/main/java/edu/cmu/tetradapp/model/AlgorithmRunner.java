@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.TripleClassifier;
 import edu.cmu.tetrad.session.Executable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * Specifies the methods that all algorithm runners must implement. All
@@ -50,7 +51,7 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource, 
     /**
      * @return the search parameters for this algorithm.
      */
-    SearchParams getParams();
+    Params getParams();
 
     /**
      * @return the graph from which data was originally generated, if such a

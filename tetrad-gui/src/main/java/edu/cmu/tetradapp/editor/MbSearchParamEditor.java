@@ -53,7 +53,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
     /**
      * The parameter object being edited.
      */
-    private MbSearchParams params;
+    private Params params;
 
     /**
      * The name of the target variable or node in the PCX search.
@@ -77,7 +77,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
             throw new NullPointerException();
         }
 
-        this.params = (MbSearchParams) params;
+        this.params = (Params) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -182,7 +182,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         preventCycles.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox box = (JCheckBox) e.getSource();
-                MeekSearchParams p = params;
+                Params p = params;
                 p.setAggressivelyPreventCycles(box.isSelected());
             }
         });
@@ -290,7 +290,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         editorWindow.setVisible(true);
     }
 
-    private MbSearchParams params() {
+    private Params params() {
         return this.params;
     }
 

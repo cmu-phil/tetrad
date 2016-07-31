@@ -44,14 +44,14 @@ import java.rmi.MarshalledObject;
 public class GeneralizedSemDataWrapper extends DataWrapper implements SessionModel {
     static final long serialVersionUID = 23L;
     private GeneralizedSemIm semIm = null;
-    private SemDataParams params;
+    private Params params;
     private long seed;
 
     private transient DataModelList dataModelList;
 
     //==============================CONSTRUCTORS=============================//
 
-    public GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, SemDataParams params) {
+    public GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, Params params) {
         GeneralizedSemIm semIm = null;
 
         try {
@@ -65,7 +65,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
         try {
             params = new MarshalledObject<>(params).get();
         } catch (Exception e) {
-            throw new RuntimeException("Could not clone the SemDataParams.");
+            throw new RuntimeException("Could not clone the Params.");
         }
 
         setParams(params);
@@ -89,7 +89,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
      */
     public static DataWrapper serializableInstance() {
         return new GeneralizedSemDataWrapper(GeneralizedSemImWrapper.serializableInstance(),
-                SemDataParams.serializableInstance());
+                new Params());
     }
 
     /**
@@ -110,7 +110,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
         // These are generated from seeds.
     }
 
-    private DataModelList simulateData(Simulator simulator, SemDataParams params) {
+    private DataModelList simulateData(Simulator simulator, Params params) {
         if (this.dataModelList != null) {
             return this.dataModelList;
         }
@@ -142,7 +142,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
     }
 
     public void setParams(Params params) {
-        this.params = (SemDataParams) params;
+        this.params = (Params) params;
     }
 
     private void setSeed() {

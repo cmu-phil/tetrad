@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Lingam;
 import edu.cmu.tetrad.search.MeekRules;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -51,7 +52,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
     //============================CONSTRUCTORS============================//
 
-    public LingamStructureRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingamStructureRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -62,7 +63,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
      */
     public static LingamStructureRunner serializableInstance() {
         return new LingamStructureRunner(DataWrapper.serializableInstance(),
-                PcSearchParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+                new Params(), KnowledgeBoxModel.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -86,15 +87,15 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
         }
 
 //        Lingam_old lingam = new Lingam_old();
-//        lingam.setParameter1(getParams().getIndTestParams().getParameter1());
+//        lingam.setParameter1(getParams().getParameter1());
 //        lingam.setPruningDone(true);
-//        lingam.setParameter1(getParams().getIndTestParams().getParameter1());
+//        lingam.setParameter1(getParams().getParameter1());
 //        GraphWithParameters result = lingam.lingam(data);
 //        Graph graph = result.getGraph();
 
 
         Lingam lingam = new Lingam();
-        LingamParams params = (LingamParams) getParams();
+        Params params = (Params) getParams();
         lingam.setPruneFactor(params.getPruneFactor());
         Graph graph = lingam.search(data);
 
@@ -147,9 +148,9 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
     }
 
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
+        Params params = getParams();
+        if (params instanceof Params) {
+            return ((Params) params).isAggressivelyPreventCycles();
         }
         return false;
     }

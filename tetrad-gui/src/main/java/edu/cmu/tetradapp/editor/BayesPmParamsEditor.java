@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.BayesPmParams;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -40,7 +39,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     /**
      * The parameters object being edited.
      */
-    private BayesPmParams params = null;
+    private Params params = null;
 
     /**
      * Lets the user edit the number of nodes.
@@ -64,7 +63,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
             throw new NullPointerException();
         }
 
-        this.params = (BayesPmParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -167,7 +166,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
 
-        if (getParams().getInitializationMode() == BayesPmParams.MANUAL) {
+        if (getParams().getInitializationMode().equals("manual")) {
             setUpManually.setSelected(true);
             lowerBoundField.setEnabled(false);
             upperBoundField.setEnabled(false);
@@ -180,7 +179,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
 
         setUpManually.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode(BayesPmParams.MANUAL);
+                getParams().setInitializationMode("manual");
                 lowerBoundField.setEnabled(false);
                 upperBoundField.setEnabled(false);
             }
@@ -188,7 +187,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
 
         automaticallyAssigned.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode(BayesPmParams.AUTOMATIC);
+                getParams().setInitializationMode("automatic");
                 lowerBoundField.setEnabled(true);
                 upperBoundField.setEnabled(true);
             }
@@ -205,7 +204,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
      *
      * @return the stored simulation parameters model.
      */
-    private synchronized BayesPmParams getParams() {
+    private synchronized Params getParams() {
         return this.params;
     }
 }

@@ -28,10 +28,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.AlgorithmRunner;
-import edu.cmu.tetradapp.model.SearchParams;
 import edu.cmu.tetradapp.util.GraphHistory;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
@@ -138,7 +138,8 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
      * Not supported.
      */
     public void setGraph(Graph g) {
-        this.workbench.setGraph(g);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            throw new UnsupportedOperationException("Cannot set the graph on a search editor.");
+        this.workbench.setGraph(g);
+        throw new UnsupportedOperationException("Cannot set the graph on a search editor.");
     }
 
 
@@ -221,7 +222,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                 setErrorMessage(null);
 
                 if (!knowledgeMessageShown) {
-                    SearchParams searchParams = getAlgorithmRunner().getParams();
+                    Params searchParams = getAlgorithmRunner().getParams();
 
                     if (searchParams != null) {
                         IKnowledge knowledge = searchParams.getKnowledge();
@@ -238,11 +239,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
                 try {
                     storeLatestWorkbenchGraph();
-
-//                    if (!getWorkbench().getGraph().getNodes().isEmpty()) {
-//                        getAlgorithmRunner().setInitialGraph(getWorkbench().getGraph());
-//                    }
-
                     getAlgorithmRunner().execute();
                 } catch (Exception e) {
                     CharArrayWriter writer1 = new CharArrayWriter();
@@ -300,8 +296,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                             getExecuteButton().setEnabled(true);
                             return;
                         }
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
@@ -362,7 +357,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         Graph resultGraph = resultGraph();
 
         Graph sourceGraph = algorithmRunner.getSourceGraph();
-        SearchParams searchParams = algorithmRunner.getParams();
+        Params searchParams = algorithmRunner.getParams();
         Graph latestWorkbenchGraph = null;
 
         if (searchParams != null) {
@@ -371,8 +366,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
         if (latestWorkbenchGraph == null) {
             GraphUtils.arrangeBySourceGraph(resultGraph, sourceGraph);
-        }
-        else {
+        } else {
             GraphUtils.arrangeBySourceGraph(resultGraph, latestWorkbenchGraph);
         }
 
@@ -474,7 +468,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             return;
         }
 
-        SearchParams searchParams = algorithmRunner.getParams();
+        Params searchParams = algorithmRunner.getParams();
 
         try {
             Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();
@@ -486,15 +480,13 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             if (searchParams != null) {
                 searchParams.setSourceGraph(graph);
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
 
             if (searchParams != null) {
                 searchParams.setSourceGraph(null);
             }
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             if (searchParams != null) {
                 searchParams.setSourceGraph(null);
             }

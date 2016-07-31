@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -47,17 +48,17 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
 
     public PurifyRunner(DataWrapper dataWrapper,
                           MeasurementModelWrapper mmWrapper,
-                          PurifyParams params) {
+                          Params params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         setClusters(mmWrapper.getClusters());
         params.setClusters(mmWrapper.getClusters());
     }
 
-    public PurifyRunner(DataWrapper dataWrapper, PurifyParams params) {
+    public PurifyRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params.getClusters(), params);
     }
 
-    public PurifyRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PurifyParams params) {
+    public PurifyRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params) {
         super(dataWrapper,params.getClusters(), params);
 
         Graph mim = graphWrapper.getGraph();
@@ -69,7 +70,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         params.setClusters(clusters);
     }
 
-    public PurifyRunner(BuildPureClustersRunner bpc, PurifyParams params) {
+    public PurifyRunner(BuildPureClustersRunner bpc, Params params) {
         super(bpc, params);
     }
     
@@ -79,8 +80,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
      * @see TetradSerializableUtils
      */
     public static PurifyRunner serializableInstance() {
-        return new PurifyRunner(DataWrapper.serializableInstance(),
-                PurifyParams.serializableInstance());
+        return new PurifyRunner(DataWrapper.serializableInstance(), new Params());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

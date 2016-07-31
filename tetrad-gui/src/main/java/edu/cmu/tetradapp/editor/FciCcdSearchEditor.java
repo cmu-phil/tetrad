@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -344,7 +345,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
+        Params params = getAlgorithmRunner().getParams();
         return params.getVarNames();
     }
 
@@ -382,53 +383,51 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        SearchParams params = getAlgorithmRunner().getParams();
-        IndTestParams indTestParams = params.getIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        Params params = getAlgorithmRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(IndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Params params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof FgsIndTestParams) {
+        if (params instanceof Params) {
             FgsRunner fgsRunner = ((FgsRunner) getAlgorithmRunner());
-            FgsIndTestParams params = (FgsIndTestParams) indTestParams;
             return new FgsIndTestParamsEditor(params, fgsRunner.getType());
         }
 
-        if (indTestParams instanceof LagIndTestParams) {
-            return new TimeSeriesIndTestParamsEditor(
-                    (LagIndTestParams) indTestParams);
-        }
+//        if (params instanceof LagIndTestParams) {
+//            return new TimeSeriesIndTestParamsEditor(
+//                    (LagIndTestParams) params);
+//        }
+//
+//        if (params instanceof GraphIndTestParams) {
+//            return new IndTestParamsEditor((GraphIndTestParams) params);
+//        }
+//
+//        if (params instanceof Params) {
+//            return new PcIndTestParamsEditor((Params) params);
+//        }
 
-        if (indTestParams instanceof GraphIndTestParams) {
-            return new IndTestParamsEditor((GraphIndTestParams) indTestParams);
-        }
+//        if (params instanceof ParamsOld) {
+//            throw new IllegalArgumentException();
+////            return new ParamsEditorOld((ParamsOld) params);
+//        }
+//
+//        if (params instanceof Params) {
+//            return new ParamsEditor((Params) params);
+//        }
+//
+//        if (params instanceof Params) {
+//            return new ParamsEditor((Params) params);
+//        }
 
-        if (indTestParams instanceof PcIndTestParams) {
-            return new PcIndTestParamsEditor((PcIndTestParams) indTestParams);
-        }
-
-        if (indTestParams instanceof FciIndTestParamsOld) {
-            throw new IllegalArgumentException();
-//            return new FciIndTestParamsEditorOld((FciIndTestParamsOld) indTestParams);
-        }
-
-        if (indTestParams instanceof FciIndTestParams) {
-            return new FciIndTestParamsEditor((FciIndTestParams) indTestParams);
-        }
-
-        if (indTestParams instanceof GFciIndTestParams) {
-            return new GFciIndTestParamsEditor((GFciIndTestParams) indTestParams);
-        }
-
-        return new IndTestParamsEditor(indTestParams);
+        return new IndTestParamsEditor(params);
     }
 
     protected void doDefaultArrangement(Graph resultGraph) {

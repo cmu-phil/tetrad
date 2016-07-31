@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.LinkedList;
@@ -47,15 +48,15 @@ public class MbfsPatternRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public MbfsPatternRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public MbfsPatternRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public MbfsPatternRunner(DataWrapper dataWrapper, PcSearchParams params) {
-        super(dataWrapper, params, new KnowledgeBoxModel(dataWrapper, new KnowledgeParams()));
+    public MbfsPatternRunner(DataWrapper dataWrapper, Params params) {
+        super(dataWrapper, params, new KnowledgeBoxModel(dataWrapper, new Params()));
     }
 
-//    public MbfsPatternRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
+//    public MbfsPatternRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params) {
 //        super(dataWrapper, params, null);
 //        this.trueGraph = graphWrapper.getGraph();
 //    }
@@ -63,22 +64,22 @@ public class MbfsPatternRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbfsPatternRunner(Graph graph, PcSearchParams params) {
+    public MbfsPatternRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
 //    /**
 //     * Constucts a wrapper for the given EdgeListGraph.
 //     */
-//    public MbfsPatternRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+//    public MbfsPatternRunner(GraphWrapper graphWrapper, Params params) {
 //        super(graphWrapper.getGraph(), params);
 //    }
 
-    public MbfsPatternRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public MbfsPatternRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-//    public MbfsPatternRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+//    public MbfsPatternRunner(SemGraphWrapper dagWrapper, Params params) {
 //        super(dagWrapper.getGraph(), params);
 //    }
 
@@ -88,8 +89,7 @@ public class MbfsPatternRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
-        return new PcRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new PcRunner(Dag.serializableInstance(), new Params());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -110,7 +110,7 @@ public class MbfsPatternRunner extends AbstractAlgorithmRunner
         IKnowledge knowledge = getParams().getKnowledge();
 
         Mbfs search = new Mbfs(getIndependenceTest(), -1);
-        search.setDepth(getParams().getIndTestParams().getDepth());
+        search.setDepth(getParams().getDepth());
 //        search.setTrueGraph(trueGraph);
 
         Graph graph = search.search();
@@ -167,9 +167,9 @@ public class MbfsPatternRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles(){
-        SearchParams params = getParams();
-        if(params instanceof MeekSearchParams){
-           return ((MeekSearchParams)params).isAggressivelyPreventCycles();
+        Params params = getParams();
+        if(params instanceof Params){
+           return ((Params)params).isAggressivelyPreventCycles();
         }
         return false;
     }

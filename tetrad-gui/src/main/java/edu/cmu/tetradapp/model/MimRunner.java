@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.Executable;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * Specifies the methods that all algorithm runners must implement. All
@@ -46,7 +47,7 @@ public interface MimRunner extends SessionModel, Executable {
     /**
      * @return the search parameters for this algorithm.
      */
-    MimParams getParams();
+    Params getParams();
 
     /**
      * @return the graph from which data was originally generated, if such a

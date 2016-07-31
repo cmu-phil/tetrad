@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.PcLocalIndTestParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -40,7 +40,7 @@ class PcLocalIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private PcLocalIndTestParams params = null;
+    private Params params = null;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -58,18 +58,18 @@ class PcLocalIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public PcLocalIndTestParamsEditor(PcLocalIndTestParams params) {
+    public PcLocalIndTestParamsEditor(Params params) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(indTestParams().getAlpha(), 8,
+        alphaField = new DoubleTextField(params().getAlpha(), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setAlpha(value);
+                    params().setAlpha(value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -78,11 +78,11 @@ class PcLocalIndTestParamsEditor extends JComponent {
             }
         });
 
-        depthField = new IntTextField(indTestParams().getDepth(), 4);
+        depthField = new IntTextField(params().getDepth(), 4);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    indTestParams().setDepth(value);
+                    params().setDepth(value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -118,7 +118,7 @@ class PcLocalIndTestParamsEditor extends JComponent {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private PcLocalIndTestParams indTestParams() {
+    private Params params() {
         return params;
     }
 }

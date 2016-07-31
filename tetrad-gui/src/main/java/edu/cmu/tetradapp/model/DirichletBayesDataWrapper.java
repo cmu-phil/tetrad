@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
@@ -36,7 +37,7 @@ public class DirichletBayesDataWrapper extends DataWrapper
     static final long serialVersionUID = 23L;
 
     public DirichletBayesDataWrapper(DirichletBayesImWrapper wrapper,
-            BayesDataParams params) {
+            Params params) {
         int sampleSize = params.getSampleSize();
         boolean latentDataSaved = params.isLatentDataSaved();
         setDataModel(wrapper.getDirichletBayesIm().simulateData(sampleSize, latentDataSaved));
@@ -52,7 +53,7 @@ public class DirichletBayesDataWrapper extends DataWrapper
     public static DataWrapper serializableInstance() {
         return new DirichletBayesDataWrapper(
                 DirichletBayesImWrapper.serializableInstance(),
-                BayesDataParams.serializableInstance());
+                new Params());
     }
 }
 

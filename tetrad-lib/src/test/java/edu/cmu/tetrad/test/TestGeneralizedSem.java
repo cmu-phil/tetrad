@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradVector;
@@ -440,7 +441,7 @@ public class TestGeneralizedSem {
 
         SemPm spm = new SemPm(graph);
 
-        SemImInitializationParams params = new SemImInitializationParams();
+        Params params = new Params();
         params.setCoefRange(0.5, 1.5);
         params.setVarRange(1, 3);
 

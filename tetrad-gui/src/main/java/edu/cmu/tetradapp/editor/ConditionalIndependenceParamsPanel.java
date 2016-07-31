@@ -27,8 +27,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetradapp.model.LogisticRegressionParams;
-import edu.cmu.tetradapp.model.StandardRegressionParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
 
@@ -59,7 +58,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
     /**
      * The params that are being edited.
      */
-    private StandardRegressionParams params;
+    private Params params;
 
 
     /**
@@ -85,7 +84,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
      * A mapping between variable names and what sort of variable they are:
      * 1 - binary, 2- discrete, 3 - continuous.
      */
-    private static Map<String, Integer> VAR_MAP = new HashMap<String, Integer>();
+    private static Map<String, Integer> VAR_MAP = new HashMap<>();
 
 
     /**
@@ -96,10 +95,10 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
 
 
     /**
-     * Constructs the editor given the <code>RegressionParams</code> and the <code>DataModel</code>
+     * Constructs the editor given the <code>Params</code> and the <code>DataModel</code>
      * that should be used.
      */
-    public ConditionalIndependenceParamsPanel(StandardRegressionParams params, DataModel model) {
+    public ConditionalIndependenceParamsPanel(Params params, DataModel model) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         if (params == null) {
             throw new NullPointerException("The given params must not be null");
@@ -121,7 +120,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
         PREDICTORS_LIST = createList();
         VariableListModel predictorsModel = (VariableListModel) getPredictorsList().getModel();
         SOURCE_LIST = createList();
-        if (params instanceof LogisticRegressionParams && model instanceof DataSet) {
+        if (params instanceof Params && model instanceof DataSet) {
             buildMap((DataSet) model);
             getSourceList().setCellRenderer(new LogisticRegRenderer());
         }
@@ -134,7 +133,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
         if (regressors != null) {
             List<String> elements = Arrays.asList(regressors);
             predictorsModel.addAll(elements);
-            List<String> initVars = new ArrayList<String>(variableNames);
+            List<String> initVars = new ArrayList<>(variableNames);
             initVars.removeAll(elements);
             variableModel.addAll(initVars);
         } else {
@@ -208,7 +207,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
 
     private static List<Comparable> getSelected(JList list) {
         List selected = list.getSelectedValuesList();
-        List<Comparable> selectedList = new ArrayList<Comparable>(selected == null ? 0 : selected.size());
+        List<Comparable> selectedList = new ArrayList<>(selected == null ? 0 : selected.size());
         if (selected != null) {
             for (Object o : selected) {
                 selectedList.add((Comparable) o);
@@ -238,7 +237,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
                 } else if (1 < selected.size()) {
                     JOptionPane.showMessageDialog(ConditionalIndependenceParamsPanel.this, "Cannot have more than one response variable");
                     return;
-                } else if(params instanceof LogisticRegressionParams && !isBinary((String)selected.get(0))){
+                } else if(params instanceof Params && !isBinary((String)selected.get(0))){
                     JOptionPane.showMessageDialog(ConditionalIndependenceParamsPanel.this,
                             "Response variable must be binary.");
                     return;
@@ -263,7 +262,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
                 } else if (1 < selected.size()) {
                     JOptionPane.showMessageDialog(ConditionalIndependenceParamsPanel.this, "Cannot have more than one response variable");
                     return;
-                } else if(params instanceof LogisticRegressionParams && !isBinary((String)selected.get(0))){
+                } else if(params instanceof Params && !isBinary((String)selected.get(0))){
                     JOptionPane.showMessageDialog(ConditionalIndependenceParamsPanel.this,
                             "Response variable must be binary.");
                     return;
@@ -548,7 +547,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
                                     "There can only be one response variable.");
                             dtde.rejectDrop();
                             return;
-                        } else if (params instanceof LogisticRegressionParams && !isBinary((String) vars.get(0))) {
+                        } else if (params instanceof Params && !isBinary((String) vars.get(0))) {
                             JOptionPane.showMessageDialog(ConditionalIndependenceParamsPanel.this,
                                     "The response variable must be binary");
                             dtde.rejectDrop();

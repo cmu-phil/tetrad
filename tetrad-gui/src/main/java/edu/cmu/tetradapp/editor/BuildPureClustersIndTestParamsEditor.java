@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.BpcAlgorithmType;
 import edu.cmu.tetrad.search.TestType;
-import edu.cmu.tetradapp.model.BuildPureClustersIndTestParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,10 +39,10 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class BuildPureClustersIndTestParamsEditor extends JComponent {
-    private BuildPureClustersIndTestParams paramsPureClusters;
+    private Params paramsPureClusters;
 
     public BuildPureClustersIndTestParamsEditor(
-            final BuildPureClustersIndTestParams paramsPureClusters,
+            final Params paramsPureClusters,
             boolean discreteData) {
         this.paramsPureClusters = paramsPureClusters;
 
@@ -87,13 +87,13 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
 //        final BpcAlgorithmType[] descriptions = BpcAlgorithmType.getAlgorithmDescriptions();
         final BpcAlgorithmType[] descriptions = new BpcAlgorithmType[]{BpcAlgorithmType.BUILD_PURE_CLUSTERS};
         algorithmSelector = new JComboBox(descriptions);
-        algorithmSelector.setSelectedItem(getParams().getAlgorithmType());
+        algorithmSelector.setSelectedItem(getParams().getBpcAlgorithmType());
 
         algorithmSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JComboBox combo = (JComboBox) e.getSource();
                 BpcAlgorithmType type = (BpcAlgorithmType) combo.getSelectedItem();
-                getParams().setAlgorithmType(type);
+                getParams().setBpcAlgorithmType(type);
 
                 if (type == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
                     testSelector.removeAllItems();
@@ -152,7 +152,7 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
 //        }
     }
 
-    private BuildPureClustersIndTestParams getParams() {
+    private Params getParams() {
         return this.paramsPureClusters;
     }
 

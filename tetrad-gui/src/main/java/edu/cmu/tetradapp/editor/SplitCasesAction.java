@@ -90,7 +90,7 @@ public final class SplitCasesAction extends AbstractAction {
             selectedVariables.addAll(dataSet.getVariables());
         }
 //
-//        SplitCasesParamsEditor editor = new SplitCasesParamsEditor(dataSet, 3);
+//        ParamsEditor editor = new ParamsEditor(dataSet, 3);
 //
 //        int ret = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(),
 //                editor, "Split Data by Cases", JOptionPane.OK_CANCEL_OPTION,

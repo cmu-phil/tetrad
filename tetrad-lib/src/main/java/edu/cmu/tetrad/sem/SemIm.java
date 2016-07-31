@@ -246,7 +246,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     /**
      * Parameters to help guide how values are chosen for freeParameters.
      */
-    private SemImInitializationParams initializationParams = new SemImInitializationParams();
+    private Params params = new Params();
 
 //    /**
 //     * True if positive definiteness should be checked when optimizing the
@@ -293,7 +293,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * Constructs a new SEM IM from the given SEM PM, using the given params
      * object to guide the choice of parameter values.
      */
-    public SemIm(SemPm semPm, SemImInitializationParams params) {
+    public SemIm(SemPm semPm, Params params) {
         this(semPm, null, params);
     }
 
@@ -302,13 +302,13 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * params object to guide the choice of parameter values. If old values are
      * retained, they are gotten from the old SEM IM.
      */
-    public SemIm(SemPm semPm, SemIm oldSemIm, SemImInitializationParams params) {
+    public SemIm(SemPm semPm, SemIm oldSemIm, Params params) {
         if (semPm == null) {
             throw new NullPointerException("Sem PM must not be null.");
         }
 
         if (params != null) {
-            this.setInitializationParams(params);
+            this.setParams(params);
         }
 
         this.semPm = new SemPm(semPm);
@@ -342,7 +342,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         // Note that we want to use the default params object here unless a bona fide
         // subistute has been provided.
-        if (oldSemIm != null && this.getInitializationParams().isRetainPreviousValues()) {
+        if (oldSemIm != null && this.getParams().isRetainPreviousValues()) {
             retainPreviousValues(oldSemIm);
         }
 
@@ -2471,25 +2471,25 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         if (parameter.isInitializedRandomly()) {
             if (parameter.getType() == ParamType.COEF) {
-                final double coefLow = getInitializationParams().getCoefLow();
-                final double coefHigh = getInitializationParams().getCoefHigh();
+                final double coefLow = getParams().getCoefLow();
+                final double coefHigh = getParams().getCoefHigh();
                 double value = new Split(coefLow, coefHigh).nextRandom();
-                if (getInitializationParams().isCoefSymmetric()) {
+                if (getParams().isCoefSymmetric()) {
                     return value;
                 } else {
                     return Math.abs(value);
                 }
             } else if (parameter.getType() == ParamType.COVAR) {
-                final double covLow = getInitializationParams().getCovLow();
-                final double covHigh = getInitializationParams().getCovHigh();
+                final double covLow = getParams().getCovLow();
+                final double covHigh = getParams().getCovHigh();
                 double value = new Split(covLow, covHigh).nextRandom();
-                if (getInitializationParams().isCoefSymmetric()) {
+                if (getParams().isCoefSymmetric()) {
                     return value;
                 } else {
                     return Math.abs(value);
                 }
             } else { //if (parameter.getType() == ParamType.VAR) {
-                return RandomUtil.getInstance().nextUniform(getInitializationParams().getVarLow(), getInitializationParams().getVarHigh());
+                return RandomUtil.getInstance().nextUniform(getParams().getVarLow(), getParams().getVarHigh());
             }
         } else {
             return parameter.getStartingValue();
@@ -2726,8 +2726,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                     "Sample size out of range: " + sampleSize);
         }
 
-        if (getInitializationParams() == null) {
-            setInitializationParams(new SemImInitializationParams());
+        if (getParams() == null) {
+            setParams(new Params());
         }
 
         if (distributions == null) {
@@ -2752,13 +2752,12 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 / power_of_ten;
     }
 
-    public SemImInitializationParams getInitializationParams() {
-        return initializationParams;
+    public Params getParams() {
+        return params;
     }
 
-    public void setInitializationParams(SemImInitializationParams
-                                                 initializationParams) {
-        this.initializationParams = initializationParams;
+    public void setParams(Params params) {
+        this.params = params;
     }
 
     public void setFunction(Node node, ConnectionFunction function) {

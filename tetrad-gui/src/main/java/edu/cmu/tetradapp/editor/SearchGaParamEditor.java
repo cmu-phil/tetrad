@@ -30,8 +30,6 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.GaParams;
-import edu.cmu.tetradapp.model.SearchParams;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
@@ -55,7 +53,7 @@ public final class SearchGaParamEditor extends JPanel implements ParameterEditor
     /**
      * The parameter object being edited.
      */
-    private GaParams params;
+    private Params params;
     private Object[] parentModels;
 
     public SearchGaParamEditor() {
@@ -66,7 +64,7 @@ public final class SearchGaParamEditor extends JPanel implements ParameterEditor
             throw new NullPointerException();
         }
 
-        this.params = (GaParams) params;
+        this.params = (Params) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -248,7 +246,7 @@ public final class SearchGaParamEditor extends JPanel implements ParameterEditor
         window.setVisible(true);
     }
 
-    private SearchParams getParams() {
+    private Params getParams() {
         return params;
     }
 }

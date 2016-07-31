@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.*;
@@ -51,21 +52,21 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcMaxRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public PcMaxRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
-    public PcMaxRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcMaxRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public PcMaxRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
+    public PcMaxRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params) {
         super(dataWrapper, params, null);
         this.initialGraph = graphWrapper.getGraph();
     }
 
-    public PcMaxRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcMaxRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.initialGraph = graphWrapper.getGraph();
     }
@@ -73,37 +74,37 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcMaxRunner(Graph graph, PcSearchParams params) {
+    public PcMaxRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcMaxRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public PcMaxRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcMaxRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcMaxRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public PcMaxRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public PcMaxRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public PcMaxRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public PcMaxRunner(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public PcMaxRunner(GraphWrapper graphModel, IndependenceFactsModel facts, PcSearchParams params) {
+    public PcMaxRunner(GraphWrapper graphModel, IndependenceFactsModel facts, Params params) {
         super(graphModel.getGraph(), params, null, facts.getFacts());
     }
 
-    public PcMaxRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcMaxRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -113,8 +114,7 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static PcMaxRunner serializableInstance() {
-        return new PcMaxRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new PcMaxRunner(Dag.serializableInstance(), new Params());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -133,7 +133,7 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
-        int depth = getParams().getIndTestParams().getDepth();
+        int depth = getParams().getDepth();
 
 //        PC pc = new PC(getIndependenceTest());
         PcMax pc = new PcMax(getIndependenceTest());
@@ -216,9 +216,9 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
+        Params params = getParams();
+        if (params instanceof Params) {
+            return ((Params) params).isAggressivelyPreventCycles();
         }
         return false;
     }

@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
@@ -61,20 +62,20 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      */
 
     public BuildPureClustersRunner(DataWrapper dataWrapper,
-                                   BuildPureClustersParams pureClustersParams) {
+                                   Params pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
 
     }
 
     public BuildPureClustersRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
-                                   BuildPureClustersParams pureClustersParams) {
+                                   Params pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = semIm.getSemPm().getGraph();
     }
 
     public BuildPureClustersRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
-                                   BuildPureClustersParams pureClustersParams) {
+                                   Params pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
@@ -86,7 +87,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      */
     public static BuildPureClustersRunner serializableInstance() {
         return new BuildPureClustersRunner(DataWrapper.serializableInstance(),
-                BuildPureClustersParams.serializableInstance());
+                new Params());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -98,7 +99,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     public void execute() {
         boolean rKey = Preferences.userRoot().getBoolean("BPCrDown", false);
 
-        BpcAlgorithmType algorithm = ((BuildPureClustersIndTestParams) getParams().getMimIndTestParams()).getAlgorithmType();
+        BpcAlgorithmType algorithm = getParams().getBpcAlgorithmType();
 
         Graph searchGraph;
 

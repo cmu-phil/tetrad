@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
 import java.util.ArrayList;
@@ -35,16 +36,16 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public final class IndTestChooser {
-    public IndependenceTest getTest(Object dataSource, SearchParams params) {
+    public IndependenceTest getTest(Object dataSource, Params params) {
         return getTest(dataSource, params, IndTestType.DEFAULT);
     }
 
     /**
      * @return an independence checker appropriate to the given data source.
-     * Also sets the IndTestParams on the params to an appropriate type object
+     * Also sets the Params on the params to an appropriate type object
      * (using the existing one if it's of the right type).
      */
-    public IndependenceTest getTest(Object dataSource, SearchParams params,
+    public IndependenceTest getTest(Object dataSource, Params params,
                                     IndTestType testType) {
 
         if (dataSource == null) {
@@ -54,26 +55,16 @@ public final class IndTestChooser {
             throw new NullPointerException();
         }
 
-        IndTestParams indTestParams = params.getIndTestParams();
-        if (indTestParams == null) {
-            indTestParams = new BasicIndTestParams();
-            params.setIndTestParams(indTestParams);
-        }
-
         if (dataSource instanceof DataModelList) {
             DataModelList datasets = (DataModelList) dataSource;
 
-            List<DataSet> _dataSets = new ArrayList<DataSet>();
+            List<DataSet> _dataSets = new ArrayList<>();
 
             for (DataModel dataModel : datasets) {
                 _dataSets.add((DataSet) dataModel);
             }
 
             return getMultiContinuousTest(_dataSets, params, testType);
-
-//            return new IndTestFisherZConcatenateResiduals(_dataSets, params.getIndTestParams().getParameter1());
-
-//            return getMultiContinuousTest(_dataSets, params.getIndTestParams().getParameter1());
         }
 
         if (dataSource instanceof DataSet) {
@@ -98,9 +89,6 @@ public final class IndTestChooser {
 
                 return getDiscreteTest(dataDiscrete, params, testType);
             }
-//            else if (dataSet.isMixed()) {
-//                throw new IllegalArgumentException("Mixed data sets are not currently handled.");
-//            }
             if (dataSet.isMixed()) {
                 DataSet dataMixed = (DataSet) dataSource;
                 if (dataMixed.isMulipliersCollapsed()) {
@@ -116,13 +104,8 @@ public final class IndTestChooser {
                     IndTestType.D_SEPARATION);
         }
         if (dataSource instanceof ICovarianceMatrix) {
-            return getCovMatrixTest((ICovarianceMatrix) dataSource, params,
-                    testType);
+            return getCovMatrixTest((ICovarianceMatrix) dataSource, params);
         }
-//        if (dataSource instanceof CorrelationMatrix) {
-//            return getCorrMatrixTest((CovarianceMatrix) dataSource, params,
-//                    testType);
-//        }
 
         if (dataSource instanceof TimeSeriesData) {
             return timeSeriesTest((TimeSeriesData) dataSource, params);
@@ -137,117 +120,95 @@ public final class IndTestChooser {
     }
 
     private IndependenceTest getMixedTest(DataSet dataSet,
-                                          SearchParams params, IndTestType testType) {
-        IndTestParams indTestParams = params.getIndTestParams();
+                                          Params params, IndTestType testType) {
 
         if (IndTestType.MIXED_MLR == testType) {
-            return new IndTestMultinomialLogisticRegressionWald(dataSet, indTestParams.getAlpha(), false);
+            return new IndTestMultinomialLogisticRegressionWald(dataSet, params.getAlpha(), false);
         } else if (IndTestType.LINEAR_REGRESSION == testType) {
             return new IndTestRegression(dataSet,
-                    indTestParams.getAlpha());
+                    params.getAlpha());
         } else {
             params.setIndTestType(IndTestType.MIXED_MLR);
-            return new IndTestMultinomialLogisticRegression(dataSet, indTestParams.getAlpha());
+            return new IndTestMultinomialLogisticRegression(dataSet, params.getAlpha());
         }
     }
 
     private IndependenceTest getContinuousTest(DataSet dataSet,
-                                               SearchParams params, IndTestType testType) {
-        IndTestParams indTestParams = params.getIndTestParams();
-
-//        if (IndTestType.CORRELATION_T == testType) {
-////            return new ProbabilisticIndependence(dataSet);
-//            return new IndTestCorrelationT(dataSet, indTestParams.getParameter1());
-//        }
+                                               Params params, IndTestType testType) {
         if (IndTestType.CONDITIONAL_CORRELATION == testType) {
-            return new IndTestConditionalCorrelation(dataSet, indTestParams.getAlpha());
+            return new IndTestConditionalCorrelation(dataSet, params.getAlpha());
         }
         if (IndTestType.FISHER_Z == testType) {
-            return new IndTestFisherZ(dataSet, indTestParams.getAlpha());
+            return new IndTestFisherZ(dataSet, params.getAlpha());
         }
         if (IndTestType.FISHER_ZD == testType) {
-            return new IndTestFisherZGeneralizedInverse(dataSet, indTestParams.getAlpha());
+            return new IndTestFisherZGeneralizedInverse(dataSet, params.getAlpha());
         }
         if (IndTestType.FISHER_Z_BOOTSTRAP == testType) {
-            return new IndTestFisherZBootstrap(dataSet, indTestParams.getAlpha(), 15, dataSet.getNumRows());
+            return new IndTestFisherZBootstrap(dataSet, params.getAlpha(), 15, dataSet.getNumRows());
         }
         if (IndTestType.LINEAR_REGRESSION == testType) {
-//            return new IndTestBicBump(dataSet, indTestParams.getParameter1() * 100);
             return new IndTestLaggedRegression(dataSet,
-                    indTestParams.getAlpha(), 1);
+                    params.getAlpha(), 1);
         }
         if (IndTestType.SEM_BIC == testType) {
-//            return new IndTestBicBump(new CovarianceMatrixOnTheFly(dataSet), indTestParams.getParameter1());
             return new IndTestScore(new SemBicScore(new CovarianceMatrixOnTheFly(dataSet)),
-                    indTestParams.getAlpha());
+                    params.getAlpha());
         }
 
         {
             params.setIndTestType(IndTestType.FISHER_Z);
-            return new IndTestFisherZ(dataSet, indTestParams.getAlpha());
+            return new IndTestFisherZ(dataSet, params.getAlpha());
         }
     }
 
     private IndependenceTest getMultiContinuousTest(List<DataSet> dataSets,
-                                                    SearchParams params, IndTestType testType) {
+                                                    Params params, IndTestType testType) {
         if (IndTestType.POOL_RESIDUALS_FISHER_Z == testType) {
-//            return new IndTestFisherZConcatenateResiduals(dataSets, params.getIndTestParams().getParameter1());
-            return new IndTestFisherZPercentIndependent(dataSets, params.getIndTestParams().getAlpha());
-//            return new IndTestFisherZConcatenateResiduals3(dataSets, params.getIndTestParams().getParameter1());
+            return new IndTestFisherZPercentIndependent(dataSets, params.getAlpha());
         }
 
         if (IndTestType.TIPPETT == testType) {
-            List<IndependenceTest> independenceTests = new ArrayList<IndependenceTest>();
+            List<IndependenceTest> independenceTests = new ArrayList<>();
             for (DataModel dataModel : dataSets) {
                 DataSet dataSet = (DataSet) dataModel;
-                independenceTests.add(new IndTestFisherZ(dataSet, params.getIndTestParams().getAlpha()));
+                independenceTests.add(new IndTestFisherZ(dataSet, params.getAlpha()));
             }
 
             return new IndTestMulti(independenceTests, ResolveSepsets.Method.tippett);
         }
 
         if (IndTestType.FISHER == testType) {
-//            List<IndependenceTest> independenceTests = new ArrayList<IndependenceTest>();
-//            for (DataModel dataModel : dataSets) {
-//                DataSet dataSet = (DataSet) dataModel;
-//                independenceTests.add(new IndTestFisherZ(dataSet, params.getIndTestParams().getParameter1()));
-//            }
-//
-//            return new IndTestMulti(independenceTests, ResolveSepsets.Method.fisher2);
-            return new IndTestFisherZFisherPValue(dataSets, params.getIndTestParams().getAlpha());
+            return new IndTestFisherZFisherPValue(dataSets, params.getAlpha());
         }
 
         if (IndTestType.SEM_BIC == testType) {
-//            return new IndTestBicBump(new CovarianceMatrixOnTheFly(dataSet), indTestParams.getParameter1());
             List<DataModel> dataModels = new ArrayList<>();
             for (DataSet dataSet : dataSets) dataModels.add(dataSet);
-            return new IndTestScore(new SemBicScoreImages(dataModels), params.getIndTestParams().getAlpha());
+            return new IndTestScore(new SemBicScoreImages(dataModels), params.getAlpha());
         }
 
         {
-            return new IndTestFisherZConcatenateResiduals(dataSets, params.getIndTestParams().getAlpha());
+            return new IndTestFisherZConcatenateResiduals(dataSets, params.getAlpha());
         }
     }
 
-    private IndependenceTest getDiscreteTest(DataSet dataDiscrete,
-                                             SearchParams params, IndTestType testType) {
-        IndTestParams indTestParams = params.getIndTestParams();
-
+    private IndependenceTest getDiscreteTest(DataSet dataDiscrete, Params params, IndTestType testType) {
         if (IndTestType.G_SQUARE == testType) {
-            return new IndTestGSquare(dataDiscrete, indTestParams.getAlpha());
+            return new IndTestGSquare(dataDiscrete, params.getAlpha());
         }
         if (IndTestType.CHI_SQUARE == testType) {
-            return new IndTestChiSquare(dataDiscrete, indTestParams.getAlpha());
+            return new IndTestChiSquare(dataDiscrete, params.getAlpha());
         }
         if (IndTestType.MIXED_MLR == testType) {
-            return new IndTestMultinomialLogisticRegression(dataDiscrete, indTestParams.getAlpha());
+            return new IndTestMultinomialLogisticRegression(dataDiscrete, params.getAlpha());
         } else {
             params.setIndTestType(IndTestType.CHI_SQUARE);
-            return new IndTestChiSquare(dataDiscrete, indTestParams.getAlpha());
+            return new IndTestChiSquare(dataDiscrete, params.getAlpha());
         }
     }
 
-    private IndependenceTest getGraphTest(Graph graph, SearchParams params,
+    private IndependenceTest getGraphTest(Graph graph, Params params,
                                           IndTestType testType) {
         if (IndTestType.D_SEPARATION == testType) {
             return new IndTestDSep(graph);
@@ -258,156 +219,17 @@ public final class IndTestChooser {
     }
 
     private IndependenceTest getCovMatrixTest(ICovarianceMatrix covMatrix,
-                                              SearchParams params, IndTestType testType) {
-//        if (IndTestType.CORRELATION_T == testType) {
-//            return new IndTestCorrelationT(covMatrix,
-//                    params.getIndTestParams().getParameter1());
-//        }
-//        if (IndTestType.FISHER_Z == testType) {
+                                              Params params) {
         return new IndTestFisherZ(covMatrix,
-                params.getIndTestParams().getAlpha());
-//        }
-//        else {
-//            params.setIndTestType(IndTestType.CORRELATION_T);
-//            return new IndTestCorrelationT(covMatrix, params.getIndTestParams().getParameter1());
-//        }
+                params.getAlpha());
     }
-
-//    private IndependenceTest getCorrMatrixTest(CovarianceMatrix covMatrix,
-//            SearchParams params, IndTestType testType) {
-//        if (IndTestType.CORRELATION_T == testType) {
-//            return new IndTestCramerT(covMatrix,
-//                    params.getIndTestParams().getParameter1());
-//        }
-//        if (IndTestType.FISHER_Z == testType) {
-//            return new IndTestFisherZ(covMatrix,
-//                    params.getIndTestParams().getParameter1());
-//        }
-//        else {
-//            params.setIndTestType(IndTestType.CORRELATION_T);
-//            return new IndTestCramerT(covMatrix,
-//                    params.getIndTestParams().getParameter1());
-//        }
-//    }
 
     private IndependenceTest timeSeriesTest(TimeSeriesData data,
-                                            SearchParams params) {
-        IndTestParams indTestParams = params.getIndTestParams();
-        if (!(indTestParams instanceof LagIndTestParams) || !(
-                getOldNumTimePoints(indTestParams) == data.getNumTimePoints())) {
-            indTestParams = new LagIndTestParams();
-            ((LagIndTestParams) indTestParams).setNumTimePoints(
-                    data.getData().rows());
-            params.setIndTestParams(indTestParams);
-        }
-        IndTestTimeSeries test =
-                new IndTestTimeSeries(data.getData(), data.getVariables());
-        test.setAlpha(indTestParams.getAlpha());
-        test.setNumLags(((LagIndTestParams) indTestParams).getNumLags());
+                                            Params params) {
+        IndTestTimeSeries test = new IndTestTimeSeries(data.getData(), data.getVariables());
+        test.setAlpha(params.getAlpha());
+        test.setNumLags(params.getNumLags());
         return test;
-    }
-
-    /**
-     * Finds an independence checker appropriate to the given data source.
-     * Also sets the IndTestParams on the params to an appropriate type
-     * dataSource (using the existing one if it's of the right type).
-     */
-    public void adjustIndTestParams(Object dataSource, SearchParams params) {
-        if (dataSource instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataSource;
-
-            if (dataSet.isContinuous()) {
-                IndTestParams indTestParams = params.getIndTestParams();
-                if (indTestParams == null) {
-                    indTestParams = new BasicIndTestParams();
-                    params.setIndTestParams(indTestParams);
-                }
-                return;
-            } else if (dataSet.isDiscrete()) {
-                IndTestParams indTestParams = params.getIndTestParams();
-                if (indTestParams == null) {
-                    indTestParams = new BasicIndTestParams();
-                    params.setIndTestParams(indTestParams);
-                }
-                return;
-            } else if (dataSet.isMixed()) {
-                IndTestParams indTestParams = params.getIndTestParams();
-                if (indTestParams == null) {
-                    indTestParams = new BasicIndTestParams();
-                    params.setIndTestParams(indTestParams);
-                }
-                return;
-            } else {
-                throw new IllegalStateException("Tabular data must be either " +
-                        "continuous or discrete.");
-            }
-        }
-
-        if (dataSource instanceof CorrelationMatrix) {
-            IndTestParams indTestParams = params.getIndTestParams();
-            if (indTestParams == null) {
-                indTestParams = new BasicIndTestParams();
-                params.setIndTestParams(indTestParams);
-            }
-            return;
-        }
-
-        if (dataSource instanceof ICovarianceMatrix) {
-            IndTestParams indTestParams = params.getIndTestParams();
-            if (indTestParams == null) {
-                indTestParams = new BasicIndTestParams();
-                params.setIndTestParams(indTestParams);
-            }
-            return;
-        }
-
-        if (dataSource instanceof Graph) {
-            IndTestParams indTestParams = params.getIndTestParams();
-            if (indTestParams == null) {
-                indTestParams = new GraphIndTestParams();
-                params.setIndTestParams(indTestParams);
-            }
-            return;
-        }
-
-        if (dataSource instanceof TimeSeriesData) {
-            TimeSeriesData data = (TimeSeriesData) dataSource;
-            IndTestParams indTestParams = params.getIndTestParams();
-            if (indTestParams == null ||
-                    !(indTestParams instanceof BasicIndTestParams) || !(
-                    getOldNumTimePoints(indTestParams) ==
-                            data.getNumTimePoints())) {
-                indTestParams = new BasicIndTestParams();
-                params.setIndTestParams(indTestParams);
-            }
-            return;
-        }
-
-        if (dataSource instanceof IndependenceFacts) {
-            IndTestParams indTestParams = params.getIndTestParams();
-            if (indTestParams == null) {
-                indTestParams = new BasicIndTestParams();
-                params.setIndTestParams(indTestParams);
-            }
-            return;
-        }
-
-        // Assuming it's a list of continuous data sets...
-        if (dataSource instanceof DataModelList) {
-            IndTestParams indTestParams = params.getIndTestParams();
-            if (indTestParams == null) {
-                indTestParams = new BasicIndTestParams();
-                params.setIndTestParams(indTestParams);
-            }
-            return;
-        }
-
-        throw new IllegalStateException("Unrecognized data type.");
-    }
-
-
-    private int getOldNumTimePoints(IndTestParams indTestParams) {
-        return ((LagIndTestParams) indTestParams).getNumTimePoints();
     }
 }
 

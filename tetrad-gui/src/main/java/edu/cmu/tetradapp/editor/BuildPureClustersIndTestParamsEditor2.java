@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.BpcAlgorithmType;
 import edu.cmu.tetrad.search.TestType;
-import edu.cmu.tetradapp.model.BuildPureClustersIndTestParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,10 +39,10 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class BuildPureClustersIndTestParamsEditor2 extends JComponent {
-    private BuildPureClustersIndTestParams paramsPureClusters;
+    private Params paramsPureClusters;
 
     public BuildPureClustersIndTestParamsEditor2(
-            BuildPureClustersIndTestParams paramsPureClusters,
+            Params paramsPureClusters,
             boolean discreteData) {
         this.paramsPureClusters = paramsPureClusters;
 
@@ -88,9 +88,9 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
 
         final BpcAlgorithmType[] descriptions = BpcAlgorithmType.getAlgorithmDescriptions();
         algorithmSelector = new JComboBox(descriptions);
-        algorithmSelector.setSelectedItem(getParams().getAlgorithmType());
+        algorithmSelector.setSelectedItem(getParams().getBpcAlgorithmType());
 
-        if (getParams().getAlgorithmType() == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
+        if (getParams().getBpcAlgorithmType() == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
             testSelector.removeAllItems();
             testSelector.addItem(TestType.SAG);
             testSelector.addItem(TestType.GAP);
@@ -121,7 +121,7 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
             public void actionPerformed(ActionEvent e) {
                 JComboBox combo = (JComboBox) e.getSource();
                 BpcAlgorithmType type = (BpcAlgorithmType) combo.getSelectedItem();
-                getParams().setAlgorithmType(type);
+                getParams().setBpcAlgorithmType(type);
 
                 if (type == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
                     testSelector.removeAllItems();
@@ -183,7 +183,7 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
 //        }
     }
 
-    private BuildPureClustersIndTestParams getParams() {
+    private Params getParams() {
         return this.paramsPureClusters;
     }
 

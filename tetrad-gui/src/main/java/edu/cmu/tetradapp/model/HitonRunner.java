@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.mb.HitonMb;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -49,33 +50,33 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public HitonRunner(DataWrapper dataWrapper, MbSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public HitonRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public HitonRunner(Graph graph, MbSearchParams params) {
+    public HitonRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public HitonRunner(GraphWrapper dagWrapper, MbSearchParams params) {
+    public HitonRunner(GraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public HitonRunner(DagWrapper dagWrapper, MbSearchParams params) {
+    public HitonRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
     public HitonRunner(SemGraphWrapper dagWrapper,
-                             BasicSearchParams params) {
+                             Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
@@ -86,7 +87,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
      */
     public static HitonRunner serializableInstance() {
         return new HitonRunner(DataWrapper.serializableInstance(),
-                MbSearchParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+                new Params(), KnowledgeBoxModel.serializableInstance());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -96,16 +97,16 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((MbSearchParams) getParams()).getDepth();
+        int pcDepth = ((Params) getParams()).getDepth();
         HitonMb search =
                 new HitonMb(getIndependenceTest(), pcDepth, false);
-//        SearchParams params = getParams();
-//        if (params instanceof MeekSearchParams) {
-//            search.setAggressivelyPreventCycles(((MeekSearchParams) params).isAggressivelyPreventCycles());
+//        Params params = getParams();
+//        if (params instanceof Params) {
+//            search.setAggressivelyPreventCycles(((Params) params).isAggressivelyPreventCycles());
 //        }
 //        Knowledge knowledge = getParams().getKnowledge();
 //        search.setKnowledge(knowledge);
-        String targetName = ((MbSearchParams) getParams()).getTargetName();
+        String targetName = ((Params) getParams()).getTargetName();
         List<Node> nodes = search.findMb(targetName);
 
         Graph graph = new EdgeListGraph();
@@ -131,7 +132,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        MbSearchParams params = (MbSearchParams) getParams();
+        Params params = (Params) getParams();
         IndTestType testType = params.getIndTestType();
         return new IndTestChooser().getTest(dataModel, params, testType);
     }

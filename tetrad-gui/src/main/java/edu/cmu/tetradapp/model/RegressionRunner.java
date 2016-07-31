@@ -31,6 +31,7 @@ import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -55,7 +56,7 @@ public class RegressionRunner implements AlgorithmRunner {
     /**
      * @serial Cannot be null.
      */
-    private RegressionParams params;
+    private Params params;
 
     /**
      * @serial Cannot be null.
@@ -77,11 +78,6 @@ public class RegressionRunner implements AlgorithmRunner {
      * The result of the regression--that is, coefficients, p-values, etc.
      */
     private RegressionResult result;
-
-    /**
-     * @deprecated
-     */
-    private String report;
     private Map<String, String> allParamsSettings;
 
     //=========================CONSTRUCTORS===============================//
@@ -91,7 +87,7 @@ public class RegressionRunner implements AlgorithmRunner {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public RegressionRunner(DataWrapper dataWrapper, RegressionParams params) {
+    public RegressionRunner(DataWrapper dataWrapper, Params params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -129,7 +125,7 @@ public class RegressionRunner implements AlgorithmRunner {
      * @see TetradSerializableUtils
      */
     public static RegressionRunner serializableInstance() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         ContinuousVariable var1 = new ContinuousVariable("X");
         ContinuousVariable var2 = new ContinuousVariable("Y");
 
@@ -145,8 +141,7 @@ public class RegressionRunner implements AlgorithmRunner {
         }
 
         DataWrapper dataWrapper = new DataWrapper(_dataSet);
-        return new RegressionRunner(dataWrapper,
-                RegressionParams.serializableInstance());
+        return new RegressionRunner(dataWrapper, new Params());
     }
 
     //===========================PUBLIC METHODS============================//
@@ -156,20 +151,11 @@ public class RegressionRunner implements AlgorithmRunner {
         return this.dataSet;
     }
 
-    public void resetParams(Object params) {
-        //ignore
-        //this.params = (RegressionParams) params;
-    }
-
-    public void setParams(RegressionParams params) {
+    public void setParams(Params params) {
         this.params = params;
     }
 
-    public boolean isSearchingOverSubset() {
-        return false;
-    }
-
-    public SearchParams getParams() {
+    public Params getParams() {
         return params;
     }
 
@@ -213,7 +199,7 @@ public class RegressionRunner implements AlgorithmRunner {
             regression = new RegressionDataset(_dataSet);
             target = _dataSet.getVariable(params.getTargetName());
             String[] regressorNames = params.getRegressorNames();
-            regressors = new LinkedList<Node>();
+            regressors = new LinkedList<>();
 
             for (String regressorName : regressorNames) {
                 regressors.add(_dataSet.getVariable(regressorName));
@@ -230,7 +216,7 @@ public class RegressionRunner implements AlgorithmRunner {
             regression = new RegressionCovariance(covariances);
             target = covariances.getVariable(params.getTargetName());
             String[] regressorNames = params.getRegressorNames();
-            regressors = new LinkedList<Node>();
+            regressors = new LinkedList<>();
 
             for (String regressorName : regressorNames) {
                 regressors.add(covariances.getVariable(regressorName));
@@ -318,7 +304,7 @@ public class RegressionRunner implements AlgorithmRunner {
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -328,7 +314,7 @@ public class RegressionRunner implements AlgorithmRunner {
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     @Override
@@ -347,10 +333,6 @@ public class RegressionRunner implements AlgorithmRunner {
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamsSettings;
-    }
-
-    public Map<String, String> getAllParamsSettings() {
-        return allParamsSettings;
     }
 }
 

@@ -55,7 +55,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     /**
      * The parameter object being edited.
      */
-    private PcSearchParams params;
+    private Params params;
 
     /**
      * A text field for editing the alpha getValue.
@@ -83,7 +83,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
             throw new NullPointerException();
         }
 
-        this.params = (PcSearchParams) params;
+        this.params = (Params) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -96,33 +96,6 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
 
     public void setup() {
         this.varNames = params.getVarNames();
-
-        for (Object parentModel : parentModels) {
-            if (parentModel instanceof DataWrapper) {
-                DataWrapper wrapper = (DataWrapper) parentModel;
-                DataModel dataModel = wrapper.getSelectedDataModel();
-                new IndTestChooser().adjustIndTestParams(dataModel, params);
-                break;
-            }
-            else if (parentModel instanceof GraphWrapper) {
-                GraphWrapper wrapper = (GraphWrapper) parentModel;
-                new IndTestChooser().adjustIndTestParams(wrapper.getGraph(),
-                        params);
-                break;
-            }
-            else if (parentModel instanceof DagWrapper) {
-                DagWrapper wrapper = (DagWrapper) parentModel;
-                new IndTestChooser().adjustIndTestParams(wrapper.getGraph(),
-                        params);
-                break;
-            }
-            else if (parentModel instanceof SemGraphWrapper) {
-                SemGraphWrapper wrapper = (SemGraphWrapper) parentModel;
-                new IndTestChooser().adjustIndTestParams(wrapper.getGraph(),
-                        params);
-                break;
-            }
-        }
 
         DataModel dataModel1 = null;
         Graph graph = null;
@@ -176,11 +149,11 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
         JButton knowledgeButton = new JButton("Edit");
 
         IntTextField depthField =
-                new IntTextField(this.params.getIndTestParams().getDepth(), 4);
+                new IntTextField(this.params.getDepth(), 4);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    PcSearchParamEditor.this.params.getIndTestParams().setDepth(value);
+                    PcSearchParamEditor.this.params.setDepth(value);
                     Preferences.userRoot().putInt("depth", value);
                     return value;
                 }
@@ -190,14 +163,14 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
             }
         });
 
-        double alpha = this.params.getIndTestParams().getAlpha();
+        double alpha = this.params.getAlpha();
 
         if (!Double.isNaN(alpha)) {
             alphaField = new DoubleTextField(alpha, 4, NumberFormatUtil.getInstance().getNumberFormat());
             alphaField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        PcSearchParamEditor.this.params.getIndTestParams().setAlpha(value);
+                        PcSearchParamEditor.this.params.setAlpha(value);
                         Preferences.userRoot().putDouble("alpha", value);
                         return value;
                     }
@@ -267,7 +240,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
         window.setVisible(true);
     }
 
-    private PcSearchParams getParams() {
+    private Params getParams() {
         return params;
     }
 }

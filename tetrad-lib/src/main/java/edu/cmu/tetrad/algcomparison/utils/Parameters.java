@@ -17,46 +17,46 @@ public class Parameters {
     public Parameters() {
 
         // Defaults
-        put("numMeasures", 10);
-        put("numLatents", 0);
-        put("avgDegree", 2);
-        put("maxDegree", 100);
-        put("maxIndegree", 100);
-        put("maxOutdegree", 100);
-        put("connected", 0);
-        put("sampleSize", 1000);
-        put("numRuns", 1);
-        put("alpha", 0.001);
-        put("penaltyDiscount", 4);
-        put("fgsDepth", -1);
-        put("depth", -1);
-        put("coefLow", 0.5);
-        put("coefHigh", 1.5);
-        put("variance", -1);
-        put("varianceLow", 1.0);
-        put("varianceHigh", 3.0);
-        put("printWinners", 0);
-        put("printAverages", 0);
-        put("printAverageTables", 1);
-        put("printGraph", 0);
-        put("percentDiscrete", 50);
-        put("ofInterestCutoff", 0.05);
-        put("printGraphs", 0);
-        put("numCategories", 4);
-        put("samplePrior", 1);
-        put("structurePrior", 1);
-        put("mgmParam1", 0.1);
-        put("mgmParam2", 0.1);
-        put("mgmParam3", 0.1);
-        put("scaleFreeAlpha", 0.9);
-        put("scaleFreeBeta", 0.05);
-        put("scaleFreeDeltaIn", 3);
-        put("scaleFreeDeltaOut", 3);
-        put("generalSemFunctionTemplateMeasured", "TSUM(NEW(B)*$)");
-        put("generalSemFunctionTemplateLatent", "TSUM(NEW(B)*$)");
-        put("generalSemErrorTemplate", "Beta(2, 5)");
-        put("varLow", 1);
-        put("varHigh", 3);
+        set("numMeasures", 10);
+        set("numLatents", 0);
+        set("avgDegree", 2);
+        set("maxDegree", 100);
+        set("maxIndegree", 100);
+        set("maxOutdegree", 100);
+        set("connected", 0);
+        set("sampleSize", 1000);
+        set("numRuns", 1);
+        set("alpha", 0.001);
+        set("penaltyDiscount", 4);
+        set("fgsDepth", -1);
+        set("depth", -1);
+        set("coefLow", 0.5);
+        set("coefHigh", 1.5);
+        set("variance", -1);
+        set("varianceLow", 1.0);
+        set("varianceHigh", 3.0);
+        set("printWinners", 0);
+        set("printAverages", 0);
+        set("printAverageTables", 1);
+        set("printGraph", 0);
+        set("percentDiscrete", 50);
+        set("ofInterestCutoff", 0.05);
+        set("printGraphs", 0);
+        set("numCategories", 4);
+        set("samplePrior", 1);
+        set("structurePrior", 1);
+        set("mgmParam1", 0.1);
+        set("mgmParam2", 0.1);
+        set("mgmParam3", 0.1);
+        set("scaleFreeAlpha", 0.9);
+        set("scaleFreeBeta", 0.05);
+        set("scaleFreeDeltaIn", 3);
+        set("scaleFreeDeltaOut", 3);
+        set("generalSemFunctionTemplateMeasured", "TSUM(NEW(B)*$)");
+        set("generalSemFunctionTemplateLatent", "TSUM(NEW(B)*$)");
+        set("generalSemErrorTemplate", "Beta(2, 5)");
+        set("varLow", 1);
+        set("varHigh", 3);
     }
 
     public Parameters(Parameters parameters) {
@@ -148,6 +148,24 @@ public class Parameters {
         return (String) o;
     }
 
+    /**
+     * Returns the object for the given parameter.
+     *
+     * @param name The name of the parameter.
+     * @return the object value.
+     */
+    public Object get(String name) {
+        if (overriddenParameters.containsKey(name)) {
+            Object o = overriddenParameters.get(name);
+            return (String) o;
+        }
+
+        if (getNumValues(name) != 1) {
+            throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+        }
+        usedParameters.add(name);
+        return parameters.get(name)[0];
+    }
 
     /**
      * Sets the value(s) of the given parameter to a list of strings.
@@ -155,7 +173,7 @@ public class Parameters {
      * @param name The name of the parameter.
      * @param n    A list of values for the parameter.
      */
-    public void put(String name, Object... n) {
+    public void set(String name, Object... n) {
         parameters.put(name, n);
     }
 
@@ -165,7 +183,7 @@ public class Parameters {
      * @param name The name of the parameter.
      * @param s    A list of strings for the parameter.
      */
-    public void put(String name, String... s) {
+    public void set(String name, String... s) {
         parameters.put(name, s);
     }
 
@@ -199,7 +217,7 @@ public class Parameters {
      * @param parameter The name of the parameter.
      * @param value     The value of the parameter (a single value).
      */
-    public void setValue(String parameter, Object value) {
+    public void set(String parameter, Object value) {
         parameters.put(parameter, new Object[]{value});
     }
 
@@ -209,7 +227,7 @@ public class Parameters {
      * @param parameter The name of the parameter.
      * @param value     The value of the parameter (a single value).
      */
-    public void setValue(String parameter, String value) {
+    public void set(String parameter, String value) {
         parameters.put(parameter, new String[]{value});
     }
 

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.bayes.FactoredBayesStructuralEM;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -89,7 +90,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     }
 
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper, StructEmBayesSearchParams params) {
+            BayesPmWrapper bayesPmWrapper, Params params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -122,7 +123,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     }
 
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,
-            BayesImWrapper bayesImWrapper, StructEmBayesSearchParams params) {
+            BayesImWrapper bayesImWrapper, Params params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }

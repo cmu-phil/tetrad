@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +43,10 @@ public class JcpcRunner extends AbstractAlgorithmRunner
 
     public static PcRunner serializableInstance() {
         return new PcRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+                new Params());
     }
 
-    public JcpcRunner(DataWrapper dataWrapper, SearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public JcpcRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 

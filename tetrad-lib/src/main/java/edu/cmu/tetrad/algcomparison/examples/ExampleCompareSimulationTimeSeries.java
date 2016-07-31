@@ -41,11 +41,11 @@ public class ExampleCompareSimulationTimeSeries {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.put("numRuns", 10);
-        parameters.put("numMeasures", 10);
-        parameters.put("avgDegree", 4);
-        parameters.put("sampleSize", 500);
-        parameters.put("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.set("numRuns", 10);
+        parameters.set("numMeasures", 10);
+        parameters.set("avgDegree", 4);
+        parameters.set("sampleSize", 500);
+        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
 

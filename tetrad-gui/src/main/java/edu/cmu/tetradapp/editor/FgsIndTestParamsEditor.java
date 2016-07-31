@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.FgsIndTestParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.model.FgsRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
@@ -41,7 +41,7 @@ import java.text.NumberFormat;
 
 class FgsIndTestParamsEditor extends JComponent {
     private final FgsRunner.Type type;
-    private FgsIndTestParams params;
+    private Params params;
     private DoubleTextField cellPriorField, structurePriorField;
     private JButton uniformStructurePrior;
     private DoubleTextField penaltyDiscount;
@@ -53,7 +53,7 @@ class FgsIndTestParamsEditor extends JComponent {
      */
     private JCheckBox faithfulnessAssumed;
 
-    public FgsIndTestParamsEditor(FgsIndTestParams params, FgsRunner.Type type) {
+    public FgsIndTestParamsEditor(Params params, FgsRunner.Type type) {
         this.params = params;
         this.type = type;
 
@@ -261,7 +261,7 @@ class FgsIndTestParamsEditor extends JComponent {
 
     }
 
-    private FgsIndTestParams getFgsIndTestParams() {
+    private Params getFgsIndTestParams() {
         return params;
     }
 

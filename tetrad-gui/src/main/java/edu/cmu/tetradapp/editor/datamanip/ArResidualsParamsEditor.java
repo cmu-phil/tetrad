@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor.datamanip;
 
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.editor.ParameterEditor;
-import edu.cmu.tetradapp.model.datamanip.ArResidualsParams;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -39,7 +38,7 @@ public class ArResidualsParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The params.
      */
-    private ArResidualsParams params;
+    private Params params;
 
 
     /**
@@ -54,7 +53,7 @@ public class ArResidualsParamsEditor extends JPanel implements ParameterEditor {
      * Sets the parameters.
      */
     public void setParams(Params params) {
-        this.params = (ArResidualsParams) params;
+        this.params = (Params) params;
     }
 
     /**

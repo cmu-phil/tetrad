@@ -25,10 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetrad.util.*;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -63,8 +60,8 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     /**
      * @deprecated
      */
-    private FgsParams params;
-    private PcSearchParams params2;
+    private Params params;
+    private Params params2;
     private SemIm estSem;
     private Graph trueDag;
 
@@ -83,7 +80,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     //============================CONSTRUCTORS============================//
 
     public PValueImproverWrapper(DataWrapper dataWrapper,
-                                 PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                                 Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -91,7 +88,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     }
 
     public PValueImproverWrapper(DataWrapper dataWrapper,
-                                 PcSearchParams params) {
+                                 Params params) {
         super(dataWrapper, params, null);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -105,7 +102,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     public PValueImproverWrapper(GraphWrapper graphWrapper,
                                  DataWrapper dataWrapper,
-                                 PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                                 Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -114,7 +111,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     public PValueImproverWrapper(GraphWrapper graphWrapper,
                                  DataWrapper dataWrapper,
-                                 PcSearchParams params) {
+                                 Params params) {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -123,7 +120,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     public PValueImproverWrapper(DagWrapper graphWrapper,
                                  DataWrapper dataWrapper,
-                                 PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                                 Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -132,7 +129,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     public PValueImproverWrapper(DagWrapper graphWrapper,
                                  DataWrapper dataWrapper,
-                                 PcSearchParams params) {
+                                 Params params) {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -141,7 +138,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     public PValueImproverWrapper(SemGraphWrapper graphWrapper,
                                  DataWrapper dataWrapper,
-                                 PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                                 Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -150,7 +147,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     public PValueImproverWrapper(SemGraphWrapper graphWrapper,
                                  DataWrapper dataWrapper,
-                                 PcSearchParams params) {
+                                 Params params) {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -159,7 +156,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     public PValueImproverWrapper(AbstractAlgorithmRunner graphWrapper,
                                  DataWrapper dataWrapper,
-                                 PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                                 Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -168,7 +165,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     public PValueImproverWrapper(AbstractAlgorithmRunner graphWrapper,
                                  DataWrapper dataWrapper,
-                                 PcSearchParams params) {
+                                 Params params) {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -183,7 +180,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     public static PValueImproverWrapper serializableInstance() {
         return new PValueImproverWrapper(GraphWrapper.serializableInstance(),
                 DataWrapper.serializableInstance(),
-                PcSearchParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+                new Params(), KnowledgeBoxModel.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -252,11 +249,11 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             throw new IllegalStateException();
         }
 
-        PcIndTestParams indTestParams = (PcIndTestParams) getParams().getIndTestParams();
+        Params params = (Params) getParams();
 
-        search.setAlpha(indTestParams.getAlpha());
-        search.setBeamWidth(indTestParams.getBeamWidth());
-        search.setHighPValueAlpha(indTestParams.getZeroEdgeP());
+        search.setAlpha(params.getAlpha());
+        search.setBeamWidth(params.getBeamWidth());
+        search.setHighPValueAlpha(params.getZeroEdgeP());
         this.graph = search.search();
 
 //        this.graph = search.getNewSemIm().getSemPm().getGraph();
@@ -424,7 +421,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
         s.defaultReadObject();
 
         if (params2 == null) {
-            params2 = new PcSearchParams();
+            params2 = new Params();
         }
     }
 

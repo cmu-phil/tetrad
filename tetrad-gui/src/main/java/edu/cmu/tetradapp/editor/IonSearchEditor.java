@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -194,7 +195,7 @@ public class IonSearchEditor extends AbstractSearchEditor
                 setErrorMessage(null);
 
                 if (!knowledgeMessageShown) {
-                    SearchParams searchParams = getAlgorithmRunner().getParams();
+                    Params searchParams = getAlgorithmRunner().getParams();
 
                     if (searchParams != null) {
                         IKnowledge knowledge = searchParams.getKnowledge();
@@ -298,7 +299,7 @@ public class IonSearchEditor extends AbstractSearchEditor
 
         Box b1 = Box.createVerticalBox();
 
-        final IonParams params = (IonParams) getAlgorithmRunner().getParams();
+        final Params params = getAlgorithmRunner().getParams();
 
         JCheckBox pruneByAdjacenciesBox = new JCheckBox("Prune by Adjacencies");
         pruneByAdjacenciesBox.setSelected(params.isPruneByAdjacencies());
@@ -348,7 +349,7 @@ public class IonSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-        if (getAlgorithmRunner().getParams() instanceof MeekSearchParams) {
+        if (getAlgorithmRunner().getParams() instanceof Params) {
             b1.add(Box.createVerticalStrut(5));
             Box hBox = Box.createHorizontalBox();
             hBox.add(Box.createHorizontalGlue());
@@ -561,7 +562,7 @@ public class IonSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
+        Params params = getAlgorithmRunner().getParams();
         return params.getVarNames();
     }
 
@@ -574,7 +575,7 @@ public class IonSearchEditor extends AbstractSearchEditor
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        SearchParams searchParams = getAlgorithmRunner().getParams();
+        Params searchParams = getAlgorithmRunner().getParams();
 
         if (searchParams != null) {
             searchParams.setKnowledge(knowledge);
@@ -582,7 +583,7 @@ public class IonSearchEditor extends AbstractSearchEditor
     }
 
     public IKnowledge getKnowledge() {
-        SearchParams searchParams = getAlgorithmRunner().getParams();
+        Params searchParams = getAlgorithmRunner().getParams();
 
         if (searchParams == null) {
             return null;

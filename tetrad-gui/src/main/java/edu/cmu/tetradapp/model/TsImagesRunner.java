@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -58,23 +59,23 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 
     //============================CONSTRUCTORS============================//
 
-    public TsImagesRunner(DataWrapper dataWrapper, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsImagesRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
         type = computeType();
     }
 
-    public TsImagesRunner(DataWrapper dataWrapper, GFciSearchParams params) {
+    public TsImagesRunner(DataWrapper dataWrapper, Params params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
         type = computeType();
     }
 
-    public TsImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, GFciSearchParams params) {
+    public TsImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, Params params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
         this.graph = graph.getGraph();
         type = computeType();
     }
 
-    public TsImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsImagesRunner(DataWrapper dataWrapper, GraphWrapper graph, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
         this.graph = graph.getGraph();
         type = computeType();
@@ -82,7 +83,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 
     public TsImagesRunner(DataWrapper dataWrapper1,
                           DataWrapper dataWrapper2,
-                          GFciSearchParams params) {
+                          Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -96,7 +97,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
     public TsImagesRunner(DataWrapper dataWrapper1,
                           DataWrapper dataWrapper2,
                           DataWrapper dataWrapper3,
-                          GFciSearchParams params) {
+                          Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -112,7 +113,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                           DataWrapper dataWrapper2,
                           DataWrapper dataWrapper3,
                           DataWrapper dataWrapper4,
-                          GFciSearchParams params) {
+                          Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -130,7 +131,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                           DataWrapper dataWrapper3,
                           DataWrapper dataWrapper4,
                           DataWrapper dataWrapper5,
-                          GFciSearchParams params) {
+                          Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -150,7 +151,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                           DataWrapper dataWrapper4,
                           DataWrapper dataWrapper5,
                           DataWrapper dataWrapper6,
-                          GFciSearchParams params) {
+                          Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -172,7 +173,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                           DataWrapper dataWrapper5,
                           DataWrapper dataWrapper6,
                           DataWrapper dataWrapper7,
-                          GFciSearchParams params) {
+                          Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -196,7 +197,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                           DataWrapper dataWrapper6,
                           DataWrapper dataWrapper7,
                           DataWrapper dataWrapper8,
-                          GFciSearchParams params) {
+                          Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -222,7 +223,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                           DataWrapper dataWrapper7,
                           DataWrapper dataWrapper8,
                           DataWrapper dataWrapper9,
-                          GFciSearchParams params) {
+                          Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -250,7 +251,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                           DataWrapper dataWrapper8,
                           DataWrapper dataWrapper9,
                           DataWrapper dataWrapper10,
-                          GFciSearchParams params) {
+                          Params params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -269,12 +270,12 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
         type = computeType();
     }
 
-    public TsImagesRunner(GraphWrapper graphWrapper, GFciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsImagesRunner(GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
         type = computeType();
     }
 
-    public TsImagesRunner(GraphWrapper graphWrapper, GFciSearchParams params) {
+    public TsImagesRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params, null);
         type = computeType();
     }
@@ -286,7 +287,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
      */
     public static TsImagesRunner serializableInstance() {
         return new TsImagesRunner(DataWrapper.serializableInstance(),
-                GFciSearchParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+                new Params(), KnowledgeBoxModel.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -309,9 +310,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        GFciSearchParams params = (GFciSearchParams) getParams();
-        GFciIndTestParams indTestParams = (GFciIndTestParams) getParams().getIndTestParams();
-        double penaltyDiscount = indTestParams.getPenaltyDiscount();
+        double penaltyDiscount = getParams().getPenaltyDiscount();
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
@@ -324,8 +323,8 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 fgs = new TsGFci(gesScore);
             } else if (dataSet.isDiscrete()) {
-                double samplePrior = indTestParams.getSamplePrior();
-                double structurePrior = indTestParams.getStructurePrior();
+                double samplePrior = getParams().getSamplePrior();
+                double structurePrior = getParams().getStructurePrior();
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
@@ -352,7 +351,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 //                        "as input. For multiple data sets as input, use IMaGES.");
 //            }
 
-            GFciSearchParams GFciSearchParams = (GFciSearchParams) getParams();
+            Params Params = (Params) getParams();
 
             if (allContinuous(list)) {
                 double penalty = penaltyDiscount;
@@ -362,8 +361,8 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                 fgs = new TsGFci(fgsScore);
 
             } else if (allDiscrete(list)) {
-                double structurePrior = indTestParams.getStructurePrior();
-                double samplePrior = indTestParams.getSamplePrior();
+                double structurePrior = getParams().getStructurePrior();
+                double samplePrior = getParams().getSamplePrior();
 
                 BdeuScoreImages fgsScore = new BdeuScoreImages(list);
                 fgsScore.setSamplePrior(samplePrior);
@@ -378,8 +377,8 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
         }
 
         fgs.setKnowledge(getParams().getKnowledge());
-//        fgs.setNumPatternsToStore(params.getIndTestParams().getNumPatternsToSave()); // removed for TsGFci
-//        fgs.setHeuristicSpeedup(((FgsIndTestParams) params.getIndTestParams()).isFaithfulnessAssumed()); // removed for TsGFci
+//        fgs.setNumPatternsToStore(params.getNumPatternsToSave()); // removed for TsGFci
+//        fgs.setHeuristicSpeedup(((Params) params.getIndTestParams()).isFaithfulnessAssumed()); // removed for TsGFci
         fgs.setVerbose(true);
         Graph graph = fgs.search();
 

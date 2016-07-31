@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.DirichletEstimatorParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,7 +38,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
     /**
      * The parameters object being edited.
      */
-    private DirichletEstimatorParams params = null;
+    private Params params = null;
 
     /**
      * Constructs a dialog to edit the given workbench Bayes simulation
@@ -53,7 +52,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
             throw new NullPointerException();
         }
 
-        this.params = (DirichletEstimatorParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -120,7 +119,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    protected synchronized DirichletEstimatorParams getParams() {
+    protected synchronized Params getParams() {
         return this.params;
     }
 }

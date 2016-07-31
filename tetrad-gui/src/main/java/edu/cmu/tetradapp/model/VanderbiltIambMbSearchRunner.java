@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.search.mb.Iamb;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * @author Tyler Gibson
@@ -30,7 +31,7 @@ public class VanderbiltIambMbSearchRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-    public VanderbiltIambMbSearchRunner(DataWrapper data, MbSearchParams params) {
+    public VanderbiltIambMbSearchRunner(DataWrapper data, Params params) {
         super(data.getSelectedDataModel(), params);
     }
 

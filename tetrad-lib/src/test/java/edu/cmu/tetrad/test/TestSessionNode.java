@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.session.*;
+import edu.cmu.tetrad.util.Params;
 import org.junit.Test;
 
 import java.rmi.MarshalledObject;
@@ -563,7 +564,7 @@ public class TestSessionNode {
         SessionNode node3 = new SessionNode(Type3.class);
         Type2 param = new Type2();
 
-        node1.putParam(Type1.class, param);
+        node1.putParam(Type1.class, new Params());
         node1.addParent(node3);
         node3.addParent(node2);
 

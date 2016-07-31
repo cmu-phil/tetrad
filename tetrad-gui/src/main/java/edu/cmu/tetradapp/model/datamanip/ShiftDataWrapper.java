@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -45,7 +46,7 @@ public class ShiftDataWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    public ShiftDataWrapper(DataWrapper data, ShiftDataParams params) {
+    public ShiftDataWrapper(DataWrapper data, Params params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -118,7 +119,7 @@ public class ShiftDataWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
-        return new ShiftDataWrapper(DataWrapper.serializableInstance(), ShiftDataParams.serializableInstance());
+        return new ShiftDataWrapper(DataWrapper.serializableInstance(), new Params());
     }
 }
 

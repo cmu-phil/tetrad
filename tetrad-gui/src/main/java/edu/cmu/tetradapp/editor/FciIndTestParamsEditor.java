@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.FciIndTestParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -42,7 +42,7 @@ class FciIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private FciIndTestParams params = null;
+    private Params params = null;
 
     private DoubleTextField alphaField;
 
@@ -69,18 +69,18 @@ class FciIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public FciIndTestParamsEditor(FciIndTestParams params) {
+    public FciIndTestParamsEditor(Params params) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(indTestParams().getAlpha(), 8,
+        alphaField = new DoubleTextField(params().getAlpha(), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setAlpha(value);
+                    params().setAlpha(value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -88,11 +88,11 @@ class FciIndTestParamsEditor extends JComponent {
             }
         });
 
-        depthField = new IntTextField(indTestParams().getDepth(), 5);
+        depthField = new IntTextField(params().getDepth(), 5);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    indTestParams().setDepth(value);
+                    params().setDepth(value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -101,15 +101,15 @@ class FciIndTestParamsEditor extends JComponent {
         });
 
         completeRuleSetCheckBox = new JCheckBox();
-        final boolean completeRuleSetUsed = indTestParams().isCompleteRuleSetUsed();
+        final boolean completeRuleSetUsed = params().isCompleteRuleSetUsed();
         completeRuleSetCheckBox.setSelected(completeRuleSetUsed);
         completeRuleSetCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (RFCI_CheckBox.isSelected()) {
-                    indTestParams().setCompleteRuleSetUsed(true);
+                    params().setCompleteRuleSetUsed(true);
                 }
                 else {
-                    indTestParams().setCompleteRuleSetUsed(completeRuleSetCheckBox.isSelected());
+                    params().setCompleteRuleSetUsed(completeRuleSetCheckBox.isSelected());
                 }
 
                 completeRuleSetCheckBox.setSelected(completeRuleSetUsed);
@@ -117,46 +117,46 @@ class FciIndTestParamsEditor extends JComponent {
         });
 
         RFCI_CheckBox = new JCheckBox();
-        RFCI_CheckBox.setSelected(indTestParams().isRFCI_Used());
+        RFCI_CheckBox.setSelected(params().isRFCI_Used());
         RFCI_CheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
                 boolean selected = source.isSelected();
-                indTestParams().setRFCI_Used(selected);
-                indTestParams().setCompleteRuleSetUsed(true);
-                indTestParams().setPossibleDsepDone(false);
+                params().setRFCI_Used(selected);
+                params().setCompleteRuleSetUsed(true);
+                params().setPossibleDsepDone(false);
 
                 if (selected) {
 
                     // keep completeRuleSetCheckBox checked if RFCI is used
-                    indTestParams().setCompleteRuleSetUsed(true);
+                    params().setCompleteRuleSetUsed(true);
                     completeRuleSetCheckBox.setSelected(completeRuleSetUsed);
-                    possibleDsepCheckBox.setSelected(indTestParams().isPossibleDsepDone());
+                    possibleDsepCheckBox.setSelected(params().isPossibleDsepDone());
                 } else {
-                    indTestParams().setRFCI_Used(false);
+                    params().setRFCI_Used(false);
                 }
             }
         });
 
         possibleDsepCheckBox = new JCheckBox();
-        possibleDsepCheckBox.setSelected(indTestParams().isPossibleDsepDone());
+        possibleDsepCheckBox.setSelected(params().isPossibleDsepDone());
         possibleDsepCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (RFCI_CheckBox.isSelected()) {
-                    indTestParams().setPossibleDsepDone(false);
+                    params().setPossibleDsepDone(false);
                     possibleDsepCheckBox.setSelected(false);
                     return;
                 }
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                indTestParams().setPossibleDsepDone(source.isSelected());
+                params().setPossibleDsepDone(source.isSelected());
             }
         });
 
-        maxReachablePathLengthField = new IntTextField(indTestParams().getMaxReachablePathLength(), 3);
+        maxReachablePathLengthField = new IntTextField(params().getMaxReachablePathLength(), 3);
         maxReachablePathLengthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    indTestParams().setMaxReachablePathLength(value);
+                    params().setMaxReachablePathLength(value);
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -219,7 +219,7 @@ class FciIndTestParamsEditor extends JComponent {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.).
      */
-    private FciIndTestParams indTestParams() {
+    private Params params() {
         return params;
     }
 }

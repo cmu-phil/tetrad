@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.FindOneFactorClusters;
 import edu.cmu.tetrad.search.TestType;
-import edu.cmu.tetradapp.model.FofcIndTestParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,10 +39,10 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class FofcIndTestParamsEditor extends JComponent {
-    private FofcIndTestParams fofcParams;
+    private Params fofcParams;
 
-    public FofcIndTestParamsEditor(FofcIndTestParams paramsPureClusters) {
-        this.fofcParams = paramsPureClusters;
+    public FofcIndTestParamsEditor(Params params) {
+        this.fofcParams = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
         final DoubleTextField alphaField = new DoubleTextField(getParams().getAlpha(), 8,
@@ -84,14 +84,14 @@ class FofcIndTestParamsEditor extends JComponent {
         algorithmSelector.addItem(FindOneFactorClusters.Algorithm.SAG);
         algorithmSelector.addItem(FindOneFactorClusters.Algorithm.GAP);
 
-        FindOneFactorClusters.Algorithm algorithmType = getParams().getAlgorithm();
+        FindOneFactorClusters.Algorithm algorithmType = getParams().getFofcAlgorithms();
         algorithmSelector.setSelectedItem(algorithmType);
 
         algorithmSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 FindOneFactorClusters.Algorithm index = (FindOneFactorClusters.Algorithm) algorithmSelector.getSelectedItem();
                 if (index != null) {
-                    getParams().setAlgorithm(index);
+                    getParams().setFofcAlgorithms(index);
                 }
             }
         });
@@ -128,7 +128,7 @@ class FofcIndTestParamsEditor extends JComponent {
         add(Box.createHorizontalGlue());
     }
 
-    private FofcIndTestParams getParams() {
+    private Params getParams() {
         return this.fofcParams;
     }
 

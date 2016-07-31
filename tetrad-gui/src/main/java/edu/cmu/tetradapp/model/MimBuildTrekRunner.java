@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.MimUtils;
 import edu.cmu.tetrad.search.MimbuildTrek;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -54,7 +55,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     public MimBuildTrekRunner(DataWrapper dataWrapper,
                               MeasurementModelWrapper mmWrapper,
-                              MimBuildParams params) {
+                              Params params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
@@ -63,7 +64,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     public MimBuildTrekRunner(DataWrapper dataWrapper,
                               BuildPureClustersRunner mmWrapper,
-                              MimBuildParams params) {
+                              Params params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
@@ -72,7 +73,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     public MimBuildTrekRunner(DataWrapper dataWrapper,
                               MeasurementModelWrapper mmWrapper,
-                              MimBuildParams params,
+                              Params params,
                               KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
@@ -83,20 +84,20 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     public MimBuildTrekRunner(MeasurementModelWrapper mmWrapper,
                               DataWrapper dataWrapper,
-                              MimBuildParams params) {
+                              Params params) {
         super(mmWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
         setClusters(mmWrapper.getClusters());
         params.setClusters(mmWrapper.getClusters());
     }
 
-     public MimBuildTrekRunner(MimBuildTrekRunner runner, MimBuildParams params) {
+     public MimBuildTrekRunner(MimBuildTrekRunner runner, Params params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
         setClusters(params.getClusters());
     }
 
-    public MimBuildTrekRunner(MimBuildTrekRunner runner, KnowledgeBoxModel knowledgeBox, MimBuildParams params) {
+    public MimBuildTrekRunner(MimBuildTrekRunner runner, KnowledgeBoxModel knowledgeBox, Params params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
         setClusters(params.getClusters());
@@ -115,9 +116,9 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
     public static MimBuildTrekRunner serializableInstance() {
         DataSet dataSet = DataUtils.discreteSerializableInstance();
         DataWrapper dataWrapper = new DataWrapper(dataSet);
-        MeasurementModelWrapper mmWrapper = new MeasurementModelWrapper(dataWrapper, MimBuildParams.serializableInstance());
+        MeasurementModelWrapper mmWrapper = new MeasurementModelWrapper(dataWrapper, new Params());
         return new MimBuildTrekRunner(mmWrapper, DataWrapper.serializableInstance(),
-                MimBuildParams.serializableInstance());
+                new Params());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
@@ -171,7 +172,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
         setStructureGraph(structureGraph);
 
-        getParams().getMimIndTestParams().setLatentVarNames(new ArrayList<String>(latentNames));
+        getParams().setLatentVarNames(new ArrayList<String>(latentNames));
 
         this.covMatrix = latentsCov;
 

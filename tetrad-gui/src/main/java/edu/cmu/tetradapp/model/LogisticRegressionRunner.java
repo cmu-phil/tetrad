@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -52,7 +53,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
     /**
      * @serial Cannot be null.
      */
-    private LogisticRegressionParams params;
+    private Params params;
 
     /**
      * @serial Cannot be null.
@@ -92,7 +93,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * containing either a DataSet or a DataSet as its selected model.
      */
     public LogisticRegressionRunner(DataWrapper dataWrapper,
-                                    LogisticRegressionParams params) {
+                                    Params params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -145,8 +146,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         }
 
         DataWrapper dataWrapper = new DataWrapper(dataSet);
-        return new LogisticRegressionRunner(dataWrapper,
-                LogisticRegressionParams.serializableInstance());
+        return new LogisticRegressionRunner(dataWrapper, new Params());
     }
 
     //===========================PUBLIC METHODS============================//
@@ -155,7 +155,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         return this.dataSet;
     }
 
-    public void setParams(LogisticRegressionParams params) {
+    public void setParams(Params params) {
         this.params = params;
     }
 
@@ -175,7 +175,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         return this.result;
     }
 
-    public SearchParams getParams() {
+    public Params getParams() {
         return params;
     }
 
@@ -214,7 +214,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         }
 
         //Regression regression = new Regression();
-        //String targetName = ((RegressionParams) getParams()).getTargetName();
+        //String targetName = ((Params) getParams()).getTargetName();
         String targetName = params.getTargetName();
         double alpha = params.getAlpha();
 

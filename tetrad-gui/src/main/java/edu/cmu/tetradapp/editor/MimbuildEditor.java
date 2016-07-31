@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
@@ -171,7 +172,7 @@ public class MimbuildEditor extends JPanel {
                 JCheckBox box = (JCheckBox) e.getSource();
                 boolean selected = box.isSelected();
 
-                MimParams params = getMimRunner().getParams();
+                Params params = getMimRunner().getParams();
                 params.setShowMaxP(selected);
 
                 if (selected) {
@@ -574,24 +575,21 @@ public class MimbuildEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        MimParams params = getMimRunner().getParams();
-        MimIndTestParams indTestParams = params.getMimIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        Params params = getMimRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(MimIndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Params params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof BuildPureClustersIndTestParams) {
+        if (params instanceof Params) {
             MimRunner runner = getMimRunner();
-            BuildPureClustersIndTestParams params =
-                    (BuildPureClustersIndTestParams) indTestParams;
             params.setVarNames(runner.getParams().getVarNames());
             DataModel dataModel = runner.getData();
 
@@ -606,9 +604,8 @@ public class MimbuildEditor extends JPanel {
             }
         }
 
-        if (indTestParams instanceof PurifyIndTestParams) {
+        if (params instanceof Params) {
             MimRunner runner = getMimRunner();
-            PurifyIndTestParams params = (PurifyIndTestParams) indTestParams;
             params.setVarNames(runner.getParams().getVarNames());
 
             boolean discreteData = false;
@@ -620,16 +617,14 @@ public class MimbuildEditor extends JPanel {
             return new PurifyIndTestParamsEditor(params, discreteData);
         }
 
-        if (indTestParams instanceof MimBuildIndTestParams) {
+        if (params instanceof Params) {
             MimRunner runner = getMimRunner();
-            MimBuildIndTestParams params =
-                    (MimBuildIndTestParams) indTestParams;
             params.setVarNames(runner.getParams().getVarNames());
             return new MimBuildIndTestParamsEditor(params);
         }
 
         throw new IllegalArgumentException(
-                "Unrecognized IndTestParams: " + indTestParams.getClass());
+                "Unrecognized Params: " + params.getClass());
     }
 }
 

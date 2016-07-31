@@ -25,10 +25,7 @@ import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -61,11 +58,11 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
     /**
      * The params object, so the GUI can remember stuff for logging.
      */
-    private UpdaterParams params;
+    private Params params;
 
     //=============================CONSTRUCTORS============================//
 
-    public IdentifiabilityWrapper(BayesImWrapperObs wrapper, UpdaterParams params) {
+    public IdentifiabilityWrapper(BayesImWrapperObs wrapper, Params params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -74,7 +71,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 /*
-    public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, UpdaterParams params) {
+    public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, Params params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -82,7 +79,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 
-    public RowSummingExactWrapper(BayesEstimatorWrapper wrapper, UpdaterParams params) {
+    public RowSummingExactWrapper(BayesEstimatorWrapper wrapper, Params params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -91,7 +88,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 
-    public RowSummingExactWrapper(DirichletEstimatorWrapper wrapper, UpdaterParams params) {
+    public RowSummingExactWrapper(DirichletEstimatorWrapper wrapper, Params params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -107,7 +104,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      */
     public static IdentifiabilityWrapper serializableInstance() {
         return new IdentifiabilityWrapper(
-                BayesImWrapperObs.serializableInstance(), new UpdaterParams());
+                BayesImWrapperObs.serializableInstance(), new Params());
     }
 
     //==============================PUBLIC METHODS========================//
@@ -126,7 +123,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //===============================PRIVATE METHODS======================//
 
-    private void setup(BayesIm bayesIm, UpdaterParams params) {
+    private void setup(BayesIm bayesIm, Params params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.getEvidence() == null || params.getEvidence().isIncompatibleWith(bayesIm)) {
@@ -205,7 +202,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         }
     }
 
-    public UpdaterParams getParams() {
+    public Params getParams() {
         return params;
     }
 }

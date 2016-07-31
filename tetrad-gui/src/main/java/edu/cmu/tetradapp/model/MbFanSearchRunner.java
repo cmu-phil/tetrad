@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Mbfs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -61,45 +62,45 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public MbFanSearchRunner(DataWrapper dataWrapper, MbSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public MbFanSearchRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public MbFanSearchRunner(DataWrapper dataWrapper, MbSearchParams params) {
+    public MbFanSearchRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbFanSearchRunner(Graph graph, MbSearchParams params) {
+    public MbFanSearchRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbFanSearchRunner(GraphWrapper dagWrapper, MbSearchParams params) {
+    public MbFanSearchRunner(GraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbFanSearchRunner(DagWrapper dagWrapper, MbSearchParams params) {
+    public MbFanSearchRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
     public MbFanSearchRunner(SemGraphWrapper dagWrapper,
-                             BasicSearchParams params) {
+                             Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public MbFanSearchRunner(IndependenceFactsModel model, PcSearchParams params) {
+    public MbFanSearchRunner(IndependenceFactsModel model, Params params) {
         super(model, params, null);
     }
 
-    public MbFanSearchRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public MbFanSearchRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -110,7 +111,7 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      */
     public static MbfsRunner serializableInstance() {
         return new MbfsRunner(DataWrapper.serializableInstance(),
-                MbSearchParams.serializableInstance(), KnowledgeBoxModel.serializableInstance());
+                new Params(), KnowledgeBoxModel.serializableInstance());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -120,16 +121,16 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((MbSearchParams) getParams()).getDepth();
+        int pcDepth = ((Params) getParams()).getDepth();
         Mbfs mbfs =
                 new Mbfs(getIndependenceTest(), pcDepth);
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            mbfs.setAggressivelyPreventCycles(((MeekSearchParams) params).isAggressivelyPreventCycles());
+        Params params = getParams();
+        if (params instanceof Params) {
+            mbfs.setAggressivelyPreventCycles(((Params) params).isAggressivelyPreventCycles());
         }
         IKnowledge knowledge = getParams().getKnowledge();
         mbfs.setKnowledge(knowledge);
-        String targetName = ((MbSearchParams) getParams()).getTargetName();
+        String targetName = ((Params) getParams()).getTargetName();
         Graph graph = mbfs.search(targetName);
         setResultGraph(graph);
 
@@ -153,7 +154,7 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        MbSearchParams params = (MbSearchParams) getParams();
+        Params params = (Params) getParams();
         IndTestType testType = params.getIndTestType();
         return new IndTestChooser().getTest(dataModel, params, testType);
     }

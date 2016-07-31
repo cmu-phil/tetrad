@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.search.GrowShrink;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * Runner for the Grow Shrink mb search.
@@ -33,7 +34,7 @@ public class GrowShrinkRunner extends AbstractMBSearchRunner {
 
 
 
-    public GrowShrinkRunner(DataWrapper data, MbSearchParams params){
+    public GrowShrinkRunner(DataWrapper data, Params params){
         super(data.getSelectedDataModel(), params);
     }
 

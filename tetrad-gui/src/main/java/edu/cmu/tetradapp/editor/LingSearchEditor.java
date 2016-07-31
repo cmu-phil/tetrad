@@ -31,6 +31,7 @@ import edu.cmu.tetrad.search.Ling;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -307,7 +308,7 @@ public class LingSearchEditor extends AbstractSearchEditor
 
         Box b211 = Box.createHorizontalBox();
         b211.add(new JLabel("Threshold "));
-        LingParams params = (LingParams) getAlgorithmRunner().getParams();
+        Params params = (Params) getAlgorithmRunner().getParams();
         double pruneFactor = params.getThreshold();
         DoubleTextField field = new DoubleTextField(pruneFactor, 8, NumberFormatUtil.getInstance().getNumberFormat());
 
@@ -344,7 +345,7 @@ public class LingSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-        if (getAlgorithmRunner().getParams() instanceof MeekSearchParams) {
+        if (getAlgorithmRunner().getParams() instanceof Params) {
             b1.add(Box.createVerticalStrut(5));
             Box hBox = Box.createHorizontalBox();
             hBox.add(Box.createHorizontalGlue());
@@ -370,7 +371,7 @@ public class LingSearchEditor extends AbstractSearchEditor
 
 
     private void setThreshold(double value) {
-        LingParams params = (LingParams) getAlgorithmRunner().getParams();
+        Params params = (Params) getAlgorithmRunner().getParams();
         params.setThreshold(value);
     }
 
@@ -416,7 +417,7 @@ public class LingSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        SearchParams params = getAlgorithmRunner().getParams();
+        Params params = getAlgorithmRunner().getParams();
         return params.getVarNames();
     }
 

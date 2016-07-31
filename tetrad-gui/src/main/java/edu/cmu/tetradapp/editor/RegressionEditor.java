@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
-import edu.cmu.tetradapp.model.RegressionParams;
 import edu.cmu.tetradapp.model.RegressionRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -123,8 +122,7 @@ public class RegressionEditor extends JPanel {
 
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();
-        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(
-                (RegressionParams) runner.getParams(),
+        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(runner.getParams(),
                 this.runner.getDataModel());
 
         editorPanel.addPropertyChangeListener(new PropertyChangeListener() {

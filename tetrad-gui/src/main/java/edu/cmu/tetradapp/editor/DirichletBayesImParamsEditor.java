@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.DirichletBayesImParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -41,7 +40,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
     /**
      * The parameters object being edited.
      */
-    private DirichletBayesImParams params = null;
+    private Params params = null;
 
     /**
      * Constructs a dialog to edit the given workbench Bayes simulation
@@ -55,7 +54,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
             throw new NullPointerException();
         }
 
-        this.params = (DirichletBayesImParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -101,13 +100,11 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
             }
         });
 
-        if (getParams().getInitializationMode() == DirichletBayesImParams
-                .MANUAL_RETAIN) {
+        if (getParams().getInitializationMode().equals("manualRetain")) {
             manualRetain.setSelected(true);
             symmetricAlphaField.setEnabled(false);
         }
-        else if (getParams().getInitializationMode() == DirichletBayesImParams
-                .SYMMETRIC_PRIOR) {
+        else if (getParams().getInitializationMode().equals("symmetricPrior")) {
             randomRetain.setSelected(true);
             symmetricAlphaField.setEnabled(true);
         }
@@ -117,16 +114,14 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
 
         manualRetain.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode(
-                        DirichletBayesImParams.MANUAL_RETAIN);
+                getParams().setInitializationMode("manualRetain");
                 symmetricAlphaField.setEnabled(false);
             }
         });
 
         randomRetain.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode(
-                        DirichletBayesImParams.SYMMETRIC_PRIOR);
+                getParams().setInitializationMode("symmetricPrior");
                 symmetricAlphaField.setEnabled(true);
             }
         });
@@ -166,7 +161,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private synchronized DirichletBayesImParams getParams() {
+    private synchronized Params getParams() {
         return this.params;
     }
 }

@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.BayesImParams;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -40,7 +39,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private BayesImParams params = null;
+    private Params params = null;
 
     /**
      * Constructs a dialog to edit the given workbench Bayes simulation
@@ -54,7 +53,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
             throw new NullPointerException();
         }
 
-        this.params = (BayesImParams) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -84,39 +83,32 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         group.add(manually);
         group.add(randomly);
 
-        if (getParams().getInitializationMode() == BayesImParams.MANUAL_RETAIN)
-        {
+        if (getParams().getInitializationMode().equals("manualRetain")) {
             manually.setSelected(true);
             randomEveryTime.setEnabled(false);
             randomEveryTime.setSelected(false);
-        }
-        else
-        if (getParams().getInitializationMode() == BayesImParams.RANDOM_RETAIN)
-        {
+        } else if (getParams().getInitializationMode().equals("randomRatain")) {
             randomly.setSelected(true);
             randomEveryTime.setEnabled(true);
             randomEveryTime.setSelected(false);
-        }
-        else if (getParams().getInitializationMode() == BayesImParams
-                .RANDOM_OVERWRITE) {
+        } else if (getParams().getInitializationMode().equals("randomOverwrite")) {
             randomly.setSelected(true);
             randomEveryTime.setEnabled(true);
             randomEveryTime.setSelected(true);
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
 
         manually.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode(BayesImParams.MANUAL_RETAIN);
+                getParams().setInitializationMode("manualRetain");
                 randomEveryTime.setEnabled(false);
             }
         });
 
         randomly.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode(BayesImParams.RANDOM_RETAIN);
+                getParams().setInitializationMode("randomRetain");
                 randomEveryTime.setEnabled(true);
                 randomEveryTime.setSelected(false);
             }
@@ -132,12 +124,9 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
 
                 if (checkBox.isSelected()) {
-                    getParams().setInitializationMode(
-                            BayesImParams.RANDOM_OVERWRITE);
-                }
-                else {
-                    getParams().setInitializationMode(
-                            BayesImParams.RANDOM_RETAIN);
+                    getParams().setInitializationMode("randomOverwrite");
+                } else {
+                    getParams().setInitializationMode("randomRetain");
                 }
             }
         });
@@ -170,7 +159,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         b1.add(b5);
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
-        setBorder(new EmptyBorder(5, 5, 5, 5));        
+        setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
     public boolean mustBeShown() {
@@ -183,7 +172,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
      *
      * @return the stored simulation parameters model.
      */
-    private synchronized BayesImParams getParams() {
+    private synchronized Params getParams() {
         return this.params;
     }
 }

@@ -53,7 +53,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
      * The Bayes Im being sampled from.
      */
     private BayesIm bayesIm = null;
-    private BayesDataParams params;
+    private Params params;
 
     private transient DataModelList dataModelList;
 
@@ -61,7 +61,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
 
     //============================CONSTRUCTORS=========================//
 
-    public BayesDataWrapper(BayesImWrapper wrapper, BayesDataParams params) {
+    public BayesDataWrapper(BayesImWrapper wrapper, Params params) {
         BayesIm bayesIm = null;
 
         try {
@@ -75,7 +75,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
         try {
             params = new MarshalledObject<>(params).get();
         } catch (Exception e) {
-            throw new RuntimeException("Could not clone the SemDataParams.");
+            throw new RuntimeException("Could not clone the Params.");
         }
 
         DataModelList list = simulateData(wrapper.getBayesIm(), params);
@@ -94,7 +94,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
     }
 
     public BayesDataWrapper(BayesEstimatorWrapper wrapper,
-                            BayesDataParams params) {
+                            Params params) {
         BayesIm bayesIm = null;
 
         try {
@@ -108,7 +108,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
         try {
             params = new MarshalledObject<>(params).get();
         } catch (Exception e) {
-            throw new RuntimeException("Could not clone the SemDataParams.");
+            throw new RuntimeException("Could not clone the Params.");
         }
 
         DataModelList list = simulateData(wrapper.getEstimatedBayesIm(), params);
@@ -121,7 +121,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
     }
 
     public BayesDataWrapper(DirichletEstimatorWrapper wrapper,
-                            BayesDataParams params) {
+                            Params params) {
         BayesIm bayesIm = null;
 
         try {
@@ -135,7 +135,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
         try {
             params = new MarshalledObject<>(params).get();
         } catch (Exception e) {
-            throw new RuntimeException("Could not clone the SemDataParams.");
+            throw new RuntimeException("Could not clone the Params.");
         }
 
         DataModelList list = simulateData(wrapper.getEstimatedBayesIm(), params);
@@ -148,7 +148,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
     }
 
     public BayesDataWrapper(CptInvariantUpdaterWrapper wrapper,
-                            BayesDataParams params) {
+                            Params params) {
         BayesIm bayesIm = null;
 
         try {
@@ -162,7 +162,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
         try {
             params = new MarshalledObject<>(params).get();
         } catch (Exception e) {
-            throw new RuntimeException("Could not clone the SemDataParams.");
+            throw new RuntimeException("Could not clone the Params.");
         }
 
         DataModelList list = simulateData(wrapper.getBayesUpdater().getManipulatedBayesIm(), params);
@@ -200,7 +200,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
     }
 
 
-    private DataModelList simulateData(Simulator simulator, BayesDataParams params) {
+    private DataModelList simulateData(Simulator simulator, Params params) {
         if (this.dataModelList != null) {
             return this.dataModelList;
         }
@@ -250,7 +250,7 @@ public class BayesDataWrapper extends DataWrapper implements SessionModel,
     }
 
     public void setParams(Params params) {
-        this.params = (BayesDataParams) params;
+        this.params = (Params) params;
     }
 
     private void setSeed() {

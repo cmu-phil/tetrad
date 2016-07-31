@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -51,7 +52,7 @@ public final class GraphComparison implements SessionModel {
     /**
      * @serial Cannot be null.
      */
-    private GraphComparisonParams params;
+    private Params params;
 
     /**
      * The target workbench.
@@ -80,7 +81,7 @@ public final class GraphComparison implements SessionModel {
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public GraphComparison(SessionModel model1, SessionModel model2,
-                           GraphComparisonParams params) {
+                           Params params) {
         if (params == null) {
             throw new NullPointerException("Params must not be null");
         }
@@ -145,26 +146,26 @@ public final class GraphComparison implements SessionModel {
 
     public GraphComparison(GraphWrapper referenceGraph,
                            AbstractAlgorithmRunner algorithmRunner,
-                           GraphComparisonParams params) {
+                           Params params) {
         this(referenceGraph, (SessionModel) algorithmRunner,
                 params);
     }
 
     public GraphComparison(GraphWrapper referenceWrapper,
-                           GraphWrapper targetWrapper, GraphComparisonParams params) {
+                           GraphWrapper targetWrapper, Params params) {
         this(referenceWrapper, (SessionModel) targetWrapper,
                 params);
     }
 
     public GraphComparison(DagWrapper referenceGraph,
                            AbstractAlgorithmRunner algorithmRunner,
-                           GraphComparisonParams params) {
+                           Params params) {
         this(referenceGraph, (SessionModel) algorithmRunner,
                 params);
     }
 
     public GraphComparison(DagWrapper referenceWrapper,
-                           GraphWrapper targetWrapper, GraphComparisonParams params) {
+                           GraphWrapper targetWrapper, Params params) {
         this(referenceWrapper, (SessionModel) targetWrapper,
                 params);
     }
@@ -178,9 +179,8 @@ public final class GraphComparison implements SessionModel {
         DagWrapper wrapper1 = DagWrapper.serializableInstance();
         wrapper1.setName("Ref");
         DagWrapper wrapper2 = DagWrapper.serializableInstance();
-        GraphComparisonParams graphComparisonParams = GraphComparisonParams.serializableInstance();
-        graphComparisonParams.setReferenceGraphName("Ref");
-        return new GraphComparison(wrapper1, wrapper2, graphComparisonParams);
+        new Params().setReferenceGraphName("Ref");
+        return new GraphComparison(wrapper1, wrapper2, new Params());
     }
 
     //==============================PUBLIC METHODS========================//
@@ -271,7 +271,7 @@ public final class GraphComparison implements SessionModel {
         this.trueGraph = trueGraph;
     }
 
-    public GraphComparisonParams getParams() {
+    public Params getParams() {
         return params;
     }
 }

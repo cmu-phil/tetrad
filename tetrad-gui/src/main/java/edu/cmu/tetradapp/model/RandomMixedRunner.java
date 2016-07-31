@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.*;
@@ -50,21 +51,21 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public RandomMixedRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public RandomMixedRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
-    public RandomMixedRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public RandomMixedRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
+    public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params) {
         super(dataWrapper, params, null);
         this.initialGraph = graphWrapper.getGraph();
     }
 
-    public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.initialGraph = graphWrapper.getGraph();
     }
@@ -72,34 +73,34 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public RandomMixedRunner(Graph graph, PcSearchParams params) {
+    public RandomMixedRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public RandomMixedRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public RandomMixedRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public RandomMixedRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, PcSearchParams params) {
+    public RandomMixedRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Params params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public RandomMixedRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public RandomMixedRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public RandomMixedRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public RandomMixedRunner(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public RandomMixedRunner(GraphWrapper graphModel, IndependenceFactsModel facts, PcSearchParams params) {
+    public RandomMixedRunner(GraphWrapper graphModel, IndependenceFactsModel facts, Params params) {
         super(graphModel.getGraph(), params, null, facts.getFacts());
     }
 
-    public RandomMixedRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public RandomMixedRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -110,8 +111,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static RandomMixedRunner serializableInstance() {
-        return new RandomMixedRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new RandomMixedRunner(Dag.serializableInstance(), new Params());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -232,9 +232,9 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
+        Params params = getParams();
+        if (params instanceof Params) {
+            return ((Params) params).isAggressivelyPreventCycles();
         }
         return false;
     }

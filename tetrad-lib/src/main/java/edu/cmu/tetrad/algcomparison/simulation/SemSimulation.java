@@ -6,8 +6,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +33,7 @@ public class SemSimulation implements Simulation {
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             SemPm pm = new SemPm(graph);
-            SemImInitializationParams params = new SemImInitializationParams();
-            params.setVarRange(parameters.getDouble("varLow"), parameters.getDouble("varHigh"));
+            Params params = new Params();
             SemIm im = new SemIm(pm);
             dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
         }

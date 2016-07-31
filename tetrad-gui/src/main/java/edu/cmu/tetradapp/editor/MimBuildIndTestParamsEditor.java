@@ -24,8 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.model.MimBuildIndTestParams;
-import edu.cmu.tetradapp.model.MimIndTestParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -40,9 +39,9 @@ import java.util.List;
  * @author Ricardo Silva
  */
 class MimBuildIndTestParamsEditor extends JComponent {
-    private MimIndTestParams params;
+    private Params params;
 
-    public MimBuildIndTestParamsEditor(final MimIndTestParams params) {
+    public MimBuildIndTestParamsEditor(final Params params) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
@@ -74,7 +73,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //                ClusterEditor editor =
 //                        new ClusterEditor(getClusters(), getVarNames());
 //                EditorWindow window = new EditorWindow(editor, "Edit Clusters",
-//                        "Save", false, MimBuildIndTestParamsEditor.this);
+//                        "Save", false, ParamsEditor.this);
 //                DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
 //                window.setVisible(true);
 //            }
@@ -103,7 +102,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //                final KnowledgeEditor editor = new Knowledge2Editor(getKnowledge(),
 //                        latentVarList, getSourceGraph());
 //                EditorWindow window = new EditorWindow(editor,
-//                        "Edit Knowledge (Latents Only)", "Save", false, MimBuildIndTestParamsEditor.this);
+//                        "Edit Knowledge (Latents Only)", "Save", false, ParamsEditor.this);
 //                DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
 //                window.setVisible(true);
 //
@@ -185,7 +184,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
         return params.getVarNames();
     }
 
-    private MimIndTestParams getParams() {
+    private Params getParams() {
         return params;
     }
 }

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
@@ -52,7 +53,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     //============================CONSTRUCTORS============================//
 
-    public WFgsRunner(DataWrapper dataWrapper, FgsParams params) {
+    public WFgsRunner(DataWrapper dataWrapper, Params params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
     }
 
@@ -62,8 +63,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
      * @see TetradSerializableUtils
      */
     public static WFgsRunner serializableInstance() {
-        return new WFgsRunner(DataWrapper.serializableInstance(),
-                FgsParams.serializableInstance());
+        return new WFgsRunner(DataWrapper.serializableInstance(), new Params());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -77,9 +77,9 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
         DataSet dataSet = (DataSet) getDataModel();
 
-        FgsParams params = (FgsParams) getParams();
+        Params params = (Params) getParams();
 
-        double penaltyDiscount = params.getComplexityPenalty();
+        double penaltyDiscount = params.getPenaltyDiscount();
 
         fgs = new WFgs(dataSet);
         fgs.setPenaltyDiscount(penaltyDiscount);
@@ -229,8 +229,8 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        FgsParams params = (FgsParams) getParams();
-        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getComplexityPenalty()));
+        Params params = (Params) getParams();
+        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getPenaltyDiscount()));
         return paramSettings;
     }
 

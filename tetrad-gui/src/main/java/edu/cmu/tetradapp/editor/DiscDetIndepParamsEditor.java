@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetradapp.model.DiscDetIndepParams;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -38,7 +38,7 @@ class DiscDetIndepParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private DiscDetIndepParams params = null;
+    private Params params = null;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -53,25 +53,19 @@ class DiscDetIndepParamsEditor extends JComponent {
     private IntTextField depthField;
 
     /**
-     * A text field to allow the user to enter the lower bound for discrete
-     * determination.
-     */
-    private DoubleTextField discDetLb;
-
-    /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public DiscDetIndepParamsEditor(DiscDetIndepParams params) {
+    public DiscDetIndepParamsEditor(Params params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(indTestParams().getAlpha(), 5,
+        alphaField = new DoubleTextField(params.getAlpha(), 5,
                 NumberFormatUtil.getInstance().getNumberFormat());
 
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    indTestParams().setAlpha(value);
+                    params().setAlpha(value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -80,25 +74,11 @@ class DiscDetIndepParamsEditor extends JComponent {
             }
         });
 
-        depthField = new IntTextField(indTestParams().getDepth(), 5);
+        depthField = new IntTextField(params.getDepth(), 5);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    indTestParams().setDepth(value);
-                    return value;
-                }
-                catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
-            }
-        });
-
-        discDetLb = new DoubleTextField(indTestParams().getDiscDetLb(), 5,
-                NumberFormatUtil.getInstance().getNumberFormat());
-        discDetLb.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    indTestParams().setDiscDetLb(value);
+                    params().setDepth(value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -132,12 +112,6 @@ class DiscDetIndepParamsEditor extends JComponent {
         b2.add(depthField);
         add(b2);
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(new JLabel("Deterministic Lower Bound:"));
-        b3.add(Box.createHorizontalGlue());
-        b3.add(discDetLb);
-        add(b3);
-
         add(Box.createHorizontalGlue());
     }
 
@@ -145,7 +119,7 @@ class DiscDetIndepParamsEditor extends JComponent {
      * @return the mapping object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private DiscDetIndepParams indTestParams() {
+    private Params params() {
         return params;
     }
 }

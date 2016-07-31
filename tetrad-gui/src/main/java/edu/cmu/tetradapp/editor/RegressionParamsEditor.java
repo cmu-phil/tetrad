@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.RegressionParams;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,7 +35,7 @@ import java.awt.*;
  */
 public final class RegressionParamsEditor extends JPanel implements ParameterEditor {
 
-    private RegressionParams params;
+    private Params params;
     private Object[] parentModels;
 
     /**
@@ -57,7 +56,7 @@ public final class RegressionParamsEditor extends JPanel implements ParameterEdi
     }
 
     public void setParams(Params params) {
-        this.params = (RegressionParams) params;
+        this.params = (Params) params;
     }
 
     public void setParentModels(Object[] parentModels) {

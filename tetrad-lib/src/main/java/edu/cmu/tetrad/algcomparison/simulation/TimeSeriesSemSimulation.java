@@ -9,12 +9,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.sem.LargeSemSimulator;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemImInitializationParams;
-import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.TetradMatrix;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +48,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
 //            SemPm pm = new SemPm(graph);
-//            SemImInitializationParams params = new SemImInitializationParams();
+//            Params params = new Params();
 //            params.setVarRange(parameters.getDouble("varLow"), parameters.getDouble("varHigh"));
 //            SemIm im = new SemIm(pm);
 //            dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));

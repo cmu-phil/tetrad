@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.BootstrapSamplerParams;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -42,12 +41,12 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
     /**
      * The parameters object being edited.
      */
-    private BootstrapSamplerParams params = null;
+    private Params params = null;
     private DataSet parentDataSet;
 
 
     public void setParams(Params params) {
-        this.params = (BootstrapSamplerParams) params;
+        this.params = (Params) params;
     }
 
     public void setParentModels(Object[] parentModels) {

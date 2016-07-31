@@ -29,8 +29,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DeltaTetradTest;
 import edu.cmu.tetrad.search.Tetrad;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemImInitializationParams;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.junit.Test;
@@ -301,7 +301,7 @@ public class TestDeltaTetradTest {
 
         SemPm pm = new SemPm(graph);
 
-        SemImInitializationParams params = new SemImInitializationParams();
+        Params params = new Params();
 //        params.setCoefRange(0.3, 0.8);
 
         return new SemIm(pm, params);

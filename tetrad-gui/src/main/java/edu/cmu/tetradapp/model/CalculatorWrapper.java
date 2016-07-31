@@ -21,10 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.calculator.CalculatorParams;
 import edu.cmu.tetrad.calculator.Transformation;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class CalculatorWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      */
-    public CalculatorWrapper(DataWrapper data, CalculatorParams params) {
+    public CalculatorWrapper(DataWrapper data, Params params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -100,8 +100,7 @@ public class CalculatorWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static CalculatorWrapper serializableInstance() {
-        return new CalculatorWrapper(DataWrapper.serializableInstance(),
-                CalculatorParams.serializableInstance());
+        return new CalculatorWrapper(DataWrapper.serializableInstance(), new Params());
     }
 
     //=============================== Private Methods =========================//

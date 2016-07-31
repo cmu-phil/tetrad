@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor.datamanip;
 
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.editor.ParameterEditor;
-import edu.cmu.tetradapp.model.datamanip.BoxCoxParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,7 +38,7 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The params.
      */
-    private BoxCoxParams params;
+    private Params params;
 
 
     /**
@@ -54,7 +53,7 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
      * Sets the parameters.
      */
     public void setParams(Params params) {
-        this.params = (BoxCoxParams) params;
+        this.params = params;
     }
 
     /**

@@ -55,7 +55,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
     /**
      * The parameter object being edited.
      */
-    private FciSearchParams params;
+    private Params params;
 
     /**
      * A text field for editing the alpha value.
@@ -86,7 +86,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
             throw new NullPointerException();
         }
 
-        this.params = (FciSearchParams) params;
+        this.params = (Params) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -99,33 +99,6 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
 
     public void setup() {
         this.varNames = params.getVarNames();
-
-        for (Object parentModel : parentModels) {
-            if (parentModel instanceof DataWrapper) {
-                DataWrapper wrapper = (DataWrapper) parentModel;
-                DataModel dataModel = wrapper.getSelectedDataModel();
-                new IndTestChooser().adjustIndTestParams(dataModel, params);
-                break;
-            }
-            else if (parentModel instanceof GraphWrapper) {
-                GraphWrapper wrapper = (GraphWrapper) parentModel;
-                new IndTestChooser().adjustIndTestParams(wrapper.getGraph(),
-                        params);
-                break;
-            }
-            else if (parentModel instanceof DagWrapper) {
-                DagWrapper wrapper = (DagWrapper) parentModel;
-                new IndTestChooser().adjustIndTestParams(wrapper.getGraph(),
-                        params);
-                break;
-            }
-            else if (parentModel instanceof SemGraphWrapper) {
-                SemGraphWrapper wrapper = (SemGraphWrapper) parentModel;
-                new IndTestChooser().adjustIndTestParams(wrapper.getGraph(),
-                        params);
-                break;
-            }
-        }
 
         DataModel dataModel1 = null;
         Graph graph = null;
@@ -179,11 +152,11 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         JButton knowledgeButton = new JButton("Edit");
 
         IntTextField depthField =
-                new IntTextField(params.getIndTestParams().getDepth(), 4);
+                new IntTextField(params.getDepth(), 4);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params.getIndTestParams().setDepth(value);
+                    params.setDepth(value);
                     Preferences.userRoot().putInt("depth", value);
                     return value;
                 }
@@ -193,7 +166,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
             }
         });
 
-        double alpha = params.getIndTestParams().getAlpha();
+        double alpha = params.getAlpha();
 
         if (!Double.isNaN(alpha)) {
             alphaField =
@@ -201,7 +174,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
             alphaField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        params.getIndTestParams().setAlpha(value);
+                        params.setAlpha(value);
                         Preferences.userRoot().putDouble("alpha", value);
                         return value;
                     }
@@ -269,7 +242,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         editorWindow.setVisible(true);
     }
 
-    private FciSearchParams getParams() {
+    private Params getParams() {
         return params;
     }
 }

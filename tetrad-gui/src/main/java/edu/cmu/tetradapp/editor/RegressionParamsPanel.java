@@ -25,10 +25,10 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphWrapper;
-import edu.cmu.tetradapp.model.RegressionParams;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 
@@ -53,7 +53,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
     /**
      * The parameter object being edited.
      */
-    private RegressionParams params;
+    private Params params;
 
     /**
      * The name of the target variable or node in the regression.
@@ -82,12 +82,12 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
     /**
      * Opens up an editor to let the user view the given RegressionRunner.
      */
-    public RegressionParamsPanel(RegressionParams params,
+    public RegressionParamsPanel(Params params,
             Object[] parentModels) {
 
         if (params == null) {
             throw new NullPointerException(
-                    "RegressionParams must not be null.");
+                    "Params must not be null.");
         }
 
         this.params = params;
@@ -349,7 +349,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         regressorNames = names;
     }
 
-    private RegressionParams params() {
+    private Params params() {
         return this.params;
     }
 

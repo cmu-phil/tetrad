@@ -120,7 +120,7 @@ public class Comparison {
 
             for (SimulationWrapper wrapper : wrappers) {
                 for (String param : wrapper.getParameters()) {
-                    parameters.put(param, wrapper.getValue(param));
+                    parameters.set(param, wrapper.getValue(param));
                 }
 
                 wrapper.createData(parameters);
@@ -333,7 +333,7 @@ public class Comparison {
 
             for (SimulationWrapper simulationWrapper : simulationWrappers) {
                 for (String param : simulationWrapper.getParameters()) {
-                    parameters.setValue(param, simulationWrapper.getValue(param));
+                    parameters.set(param, simulationWrapper.getValue(param));
                 }
 
                 simulationWrapper.createData(parameters);
@@ -1249,7 +1249,7 @@ public class Comparison {
         }
 
         public void setValue(String parameter, Object value) {
-            parameters.setValue(parameter, value);
+            parameters.set(parameter, value);
             this.overriddenParameters.add(parameter);
         }
 
@@ -1338,7 +1338,7 @@ public class Comparison {
             }
 
             for (String param : simulation.getParameters()) {
-                this.parameters.setValue(param, parameters.getValues(param)[0]);
+                this.parameters.set(param, parameters.getValues(param)[0]);
             }
         }
 
@@ -1374,7 +1374,7 @@ public class Comparison {
         }
 
         public void setValue(String parameter, Object value) {
-            parameters.put(parameter, value);
+            parameters.set(parameter, value);
         }
 
         public Object getValue(String parameter) {

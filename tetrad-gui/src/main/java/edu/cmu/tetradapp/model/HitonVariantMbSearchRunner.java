@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.search.mb.HitonVariant;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * @author Tyler Gibson
@@ -30,7 +31,7 @@ public class HitonVariantMbSearchRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-    public HitonVariantMbSearchRunner(DataWrapper data, MbSearchParams params) {
+    public HitonVariantMbSearchRunner(DataWrapper data, Params params) {
         super(data.getSelectedDataModel(), params);
     }
 

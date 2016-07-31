@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
-import edu.cmu.tetradapp.model.IonParams;
 import edu.cmu.tetradapp.model.IonRunner;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -53,7 +52,7 @@ public class IonDisplay extends JPanel implements GraphEditable {
 
     public IonDisplay(final List<Graph> storedGraphs, final IonRunner runner) {
         this.storedGraphs = storedGraphs;
-        int graphIndex = ((IonParams)runner.getParams()).getGraphIndex();
+        int graphIndex = runner.getParams().getGraphIndex();
 
         if (storedGraphs.size() == 0) {
             workbench = new GraphWorkbench();
@@ -72,13 +71,13 @@ public class IonDisplay extends JPanel implements GraphEditable {
                 workbench.setGraph(storedGraphs.get(indices.get(index - 1)));
                 firePropertyChange("modelChanged", null, null);
                 runner.setResultGraph(workbench.getGraph());
-                ((IonParams)runner.getParams()).setGraphIndex(index - 1);
+                runner.getParams().setGraphIndex(index - 1);
             }
         });
 
         if (graphIndex >= indices.size()) {
             graphIndex = 0;
-            ((IonParams) runner.getParams()).setGraphIndex(0);
+            runner.getParams().setGraphIndex(0);
         }
 
         if (indices.size() > 0) {

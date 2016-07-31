@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetradapp.model.RegressionParams;
+import edu.cmu.tetrad.util.Params;
 
 import javax.swing.*;
 import java.awt.*;
@@ -224,7 +224,7 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
              * that the ScatterPlot only contains the appropriate points for rendering.
              */
 
-            RegressionParams params = new RegressionParams();
+            Params params = new Params();
             Vector<String> regressors = new Vector();
             regressors.add(scatterPlot.getXVariable().getName());
             params.setTargetName(scatterPlot.getYVariable().getName());

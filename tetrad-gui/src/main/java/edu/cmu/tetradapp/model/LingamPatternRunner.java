@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -47,19 +48,19 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
     // ============================CONSTRUCTORS============================//
 
-    // public LingamPatternRunner(DataWrapper dataWrapper, PcSearchParams
+    // public LingamPatternRunner(DataWrapper dataWrapper, Params
     // params) {
     // super(dataWrapper, params);
     // }
 
     public LingamPatternRunner(GraphWrapper graphWrapper,
-                               DataWrapper dataWrapper, PcSearchParams params) {
+                               DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
         this.pattern = graphWrapper.getGraph();
     }
 
     public LingamPatternRunner(GraphWrapper graphWrapper,
-                               DataWrapper dataWrapper, PcSearchParams params,
+                               DataWrapper dataWrapper, Params params,
                                KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = graphWrapper.getGraph();
@@ -68,7 +69,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamPatternRunner(GraphSource graphWrapper, PcSearchParams params,
+    public LingamPatternRunner(GraphSource graphWrapper, Params params,
                                KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
@@ -76,54 +77,54 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamPatternRunner(GraphSource graphWrapper, PcSearchParams params) {
+    public LingamPatternRunner(GraphSource graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
     public LingamPatternRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                               Params params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                               Params params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                               Params params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                               PcSearchParams params) {
+                               Params params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
@@ -135,7 +136,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
      */
     public static LingamStructureRunner serializableInstance() {
         return new LingamStructureRunner(DataWrapper.serializableInstance(),
-                PcSearchParams.serializableInstance(), KnowledgeBoxModel
+                new Params(), KnowledgeBoxModel
                         .serializableInstance());
     }
 
@@ -187,7 +188,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
         for (DataModel dataModel : dataSets) {
             DataSet dataSet = (DataSet) dataModel;
             LingamPattern lingamPattern = new LingamPattern(pattern, dataSet);
-            lingamPattern.setAlpha(getParams().getIndTestParams().getAlpha());
+            lingamPattern.setAlpha(getParams().getAlpha());
             Graph _graph = lingamPattern.search();
 
             System.out.println(_graph);
@@ -233,7 +234,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
 //        LingOrientationFixedStructure pcLingam2 = new LingOrientationFixedStructure(pattern, _dataSets);
         LingamPattern2 pcLingam2 = new LingamPattern2(pattern, _dataSets);
-        pcLingam2.setAlpha(getParams().getIndTestParams().getAlpha());
+        pcLingam2.setAlpha(getParams().getAlpha());
 
         Graph graph = pcLingam2.search();
 

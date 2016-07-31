@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -47,41 +48,41 @@ public class KpcRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public KpcRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public KpcRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
 
-    public KpcRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public KpcRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public KpcRunner(Graph graph, PcSearchParams params) {
+    public KpcRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public KpcRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public KpcRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public KpcRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public KpcRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public KpcRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public KpcRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public KpcRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public KpcRunner(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
@@ -91,8 +92,7 @@ public class KpcRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static KpcRunner serializableInstance() {
-        return new KpcRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new KpcRunner(Dag.serializableInstance(), new Params());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -111,10 +111,10 @@ public class KpcRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
-        int depth = getParams().getIndTestParams().getDepth();
+        int depth = getParams().getDepth();
 
 //        Cpci pcSearch = new Cpci(getIndependenceTest(), knowledge, getIndependenceTest().getSimulatedData());
-        Kpc kpc = new Kpc((DataSet) getDataModel(), getParams().getIndTestParams().getAlpha());
+        Kpc kpc = new Kpc((DataSet) getDataModel(), getParams().getAlpha());
         kpc.setKnowledge(knowledge);
         kpc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         kpc.setDepth(depth);
@@ -179,9 +179,9 @@ public class KpcRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles(){
-        SearchParams params = getParams();
-        if(params instanceof MeekSearchParams){
-           return ((MeekSearchParams)params).isAggressivelyPreventCycles();
+        Params params = getParams();
+        if(params instanceof Params){
+           return ((Params)params).isAggressivelyPreventCycles();
         }
         return false;
     }

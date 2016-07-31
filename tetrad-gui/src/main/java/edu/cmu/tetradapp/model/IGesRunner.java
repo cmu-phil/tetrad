@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.ScoredGraph;
+import edu.cmu.tetrad.util.Params;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -61,13 +62,11 @@ public interface IGesRunner {
 
     void addPropertyChangeListener(PropertyChangeListener l);
 
-//    Map<Graph, Double> getDagsToScores();
-
     List<ScoredGraph> getTopGraphs();
 
     Graph getResultGraph();
 
-    SearchParams getParams();
+    Params getParams();
 
     Graph getSourceGraph();
 

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
@@ -483,29 +484,27 @@ public class FofcSearchEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        MimParams params = getMimRunner().getParams();
-        MimIndTestParams indTestParams = params.getMimIndTestParams();
-        return getIndTestParamBox(indTestParams);
+        Params params = getMimRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(MimIndTestParams indTestParams) {
-        if (indTestParams == null) {
+    private JComponent getIndTestParamBox(Params params) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        if (indTestParams instanceof FofcIndTestParams) {
+        if (params instanceof Params) {
             MimRunner runner = getMimRunner();
-            FofcIndTestParams params =  (FofcIndTestParams) indTestParams;
             params.setVarNames(runner.getParams().getVarNames());
             return new FofcIndTestParamsEditor(params);
         }
 
         throw new IllegalArgumentException(
-                "Unrecognized IndTestParams: " + indTestParams.getClass());
+                "Unrecognized Params: " + params.getClass());
     }
 }
 

@@ -22,8 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetradapp.model.CyclicGraphParams;
-import edu.cmu.tetradapp.model.GraphParams;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -40,7 +38,7 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 public class GraphParamsEditor extends JPanel implements ParameterEditor {
-    private GraphParams params = new GraphParams();
+    private Params params = new Params();
 
     /**
      * Constructs a dialog to edit the given workbench randomization
@@ -54,7 +52,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
             throw new NullPointerException();
         }
 
-        this.params = (GraphParams) params;
+        this.params = (Params) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -62,7 +60,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setup() {
-        boolean cyclicAllowed = params instanceof CyclicGraphParams;
+        boolean cyclicAllowed = params.isCyclicAllowed();
         final RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed);
         final RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor();
         final RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
@@ -77,7 +75,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         group.add(manual);
         group.add(random);
 
-        if (Preferences.userRoot().getInt("newGraphInitializationMode", GraphParams.MANUAL) == GraphParams.MANUAL) {
+        if (params.getNewGraphInitializationMode().equals("manual")) {
             manual.setSelected(true);
             randomDagEditor.setEnabled(false);
         }
@@ -91,7 +89,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
                 JRadioButton button = (JRadioButton) e.getSource();
 
                 if (button.isSelected()) {
-                    Preferences.userRoot().putInt("newGraphInitializationMode", GraphParams.MANUAL);
+                    params.setNewGraphInitializationMode("manual");
                     randomDagEditor.setEnabled(false);
                 }
             }
@@ -102,7 +100,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
                 JRadioButton button = (JRadioButton) e.getSource();
 
                 if (button.isSelected()) {
-                    Preferences.userRoot().putInt("newGraphInitializationMode", GraphParams.RANDOM);
+                    params.setNewGraphInitializationMode("random");
                     randomDagEditor.setEnabled(true);
                 }
             }
@@ -185,7 +183,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private synchronized GraphParams getParams() {
+    private synchronized Params getParams() {
         return this.params;
     }
 }

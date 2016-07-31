@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -62,15 +63,15 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public SampleVcpcFastRunner(DataWrapper dataWrapper, PcSearchParams params) {
+    public SampleVcpcFastRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
-    public SampleVcpcFastRunner(DataWrapper dataWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcFastRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public SampleVcpcFastRunner(SemImWrapper semImWrapper, PcSearchParams params, DataWrapper dataWrapper) {
+    public SampleVcpcFastRunner(SemImWrapper semImWrapper, Params params, DataWrapper dataWrapper) {
         super(dataWrapper, params, null);
         this.semIm = semImWrapper.getSemIm();
     }
@@ -79,39 +80,39 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcFastRunner(Graph graph, PcSearchParams params) {
+    public SampleVcpcFastRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcFastRunner(Graph graph, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcFastRunner(Graph graph, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcFastRunner(GraphWrapper graphWrapper, PcSearchParams params) {
+    public SampleVcpcFastRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcFastRunner(GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcFastRunner(GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcFastRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcFastRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public SampleVcpcFastRunner(GraphSource graphWrapper, PcSearchParams params, IndependenceFactsModel model) {
+    public SampleVcpcFastRunner(GraphSource graphWrapper, Params params, IndependenceFactsModel model) {
         super(graphWrapper.getGraph(), params);
         this.independenceFactsModel = model;
     }
@@ -120,41 +121,41 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcFastRunner(GraphSource graphWrapper, PcSearchParams params) {
+    public SampleVcpcFastRunner(GraphSource graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public SampleVcpcFastRunner(DagWrapper dagWrapper, PcSearchParams params) {
+    public SampleVcpcFastRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public SampleVcpcFastRunner(DagWrapper dagWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcFastRunner(DagWrapper dagWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
 
-    public SampleVcpcFastRunner(SemGraphWrapper dagWrapper, PcSearchParams params) {
+    public SampleVcpcFastRunner(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public SampleVcpcFastRunner(SemGraphWrapper dagWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcFastRunner(SemGraphWrapper dagWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public SampleVcpcFastRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params) {
+    public SampleVcpcFastRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params) {
         super(dataWrapper, params, null);
         this.trueGraph = graphWrapper.getGraph();
     }
 
-    public SampleVcpcFastRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcFastRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.trueGraph = graphWrapper.getGraph();
     }
 
-    public SampleVcpcFastRunner(IndependenceFactsModel model, PcSearchParams params) {
+    public SampleVcpcFastRunner(IndependenceFactsModel model, Params params) {
         super(model, params, null);
     }
 
-    public SampleVcpcFastRunner(IndependenceFactsModel model, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcFastRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -165,25 +166,24 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static SampleVcpcFastRunner serializableInstance() {
-        return new SampleVcpcFastRunner(Dag.serializableInstance(),
-                PcSearchParams.serializableInstance());
+        return new SampleVcpcFastRunner(Dag.serializableInstance(), new Params());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
-        PcSearchParams searchParams = (PcSearchParams) getParams();
+        Params searchParams = (Params) getParams();
 
-        PcIndTestParams indTestParams =
-                (PcIndTestParams) searchParams.getIndTestParams();
+        Params params =
+                (Params) searchParams;
 
 
         SampleVcpcFast sfvcpc = new SampleVcpcFast(getIndependenceTest());
 
         sfvcpc.setKnowledge(knowledge);
         sfvcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        sfvcpc.setDepth(indTestParams.getDepth());
+        sfvcpc.setDepth(params.getDepth());
         if (independenceFactsModel != null) {
             sfvcpc.setFacts(independenceFactsModel.getFacts());
         }
@@ -295,9 +295,9 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        SearchParams params = getParams();
-        if (params instanceof MeekSearchParams) {
-            return ((MeekSearchParams) params).isAggressivelyPreventCycles();
+        Params params = getParams();
+        if (params instanceof Params) {
+            return ((Params) params).isAggressivelyPreventCycles();
         }
         return false;
     }

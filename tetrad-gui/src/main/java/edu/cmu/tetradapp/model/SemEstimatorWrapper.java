@@ -59,7 +59,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     private boolean multipleResults = false;
 
     private List<SemEstimator> multipleResultList = new ArrayList<SemEstimator>();
-    private SemEstimatorParams params;
+    private Params params;
 
     //==============================CONSTRUCTORS==========================//
 
@@ -69,13 +69,13 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
      * pops up a dialog. This is irritating when running unit tests.
      * jdramsey 8/29/07
      */
-    private SemEstimatorWrapper(DataSet dataSet, SemPm semPm, SemEstimatorParams params) {
+    private SemEstimatorWrapper(DataSet dataSet, SemPm semPm, Params params) {
         this.params = params;
         this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
     }
 
     public SemEstimatorWrapper(DataWrapper dataWrapper,
-                               SemPmWrapper semPmWrapper, SemEstimatorParams params) {
+                               SemPmWrapper semPmWrapper, Params params) {
         if (dataWrapper == null) {
             throw new NullPointerException("Data wrapper must not be null.");
         }
@@ -134,7 +134,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
     public SemEstimatorWrapper(DataWrapper dataWrapper,
-                               SemImWrapper semImWrapper, SemEstimatorParams params) {
+                               SemImWrapper semImWrapper, Params params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -175,7 +175,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     public SemEstimatorWrapper(DataWrapper dataWrapper,
                                SemPmWrapper semPmWrapper,
                                SemImWrapper semImWrapper,
-                               SemEstimatorParams params) {
+                               Params params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -223,7 +223,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         Dag dag = new Dag();
         dag.addNode(x);
         SemPm pm = new SemPm(dag);
-        SemEstimatorParams params1 = SemEstimatorParams.serializableInstance();
+        Params params1 = new Params();
         return new SemEstimatorWrapper(dataSet, pm, params1);
     }
 
@@ -306,7 +306,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         this.multipleResultList = multipleResultList;
     }
 
-    public SemEstimatorParams getParams() {
+    public Params getParams() {
         return params;
     }
 

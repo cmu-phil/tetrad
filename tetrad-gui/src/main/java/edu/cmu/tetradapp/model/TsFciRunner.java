@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
@@ -43,52 +44,52 @@ public class TsFciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public TsFciRunner(DataWrapper dataWrapper, FciSearchParams params) {
+    public TsFciRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public TsFciRunner(GraphSource graphWrapper, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
 
-    public TsFciRunner(DataWrapper dataWrapper, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner(Graph graph, FciSearchParams params) {
+    public TsFciRunner(Graph graph, Params params) {
         super(graph, params);
     }
 
-    public TsFciRunner(Graph graph, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(Graph graph, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner(TimeLagGraphWrapper model, FciSearchParams params/*, KnowledgeBoxModel knowledgeBoxModel*/) {
+    public TsFciRunner(TimeLagGraphWrapper model, Params params/*, KnowledgeBoxModel knowledgeBoxModel*/) {
         super(model.getGraph(), params);
         this.knowledge = model.getKnowledge();
     }
 
-    public TsFciRunner(GraphWrapper graphWrapper, FciSearchParams params) {
+    public TsFciRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public TsFciRunner(DagWrapper dagWrapper, FciSearchParams params) {
+    public TsFciRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public TsFciRunner(SemGraphWrapper dagWrapper, FciSearchParams params) {
+    public TsFciRunner(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public TsFciRunner(IndependenceFactsModel model, FciSearchParams params) {
+    public TsFciRunner(IndependenceFactsModel model, Params params) {
         super(model, params, null);
     }
 
-    public TsFciRunner(IndependenceFactsModel model, FciSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -99,8 +100,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static TsFciRunner serializableInstance() {
-        return new TsFciRunner(Dag.serializableInstance(),
-                FciSearchParams.serializableInstance());
+        return new TsFciRunner(Dag.serializableInstance(), new Params());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -113,13 +113,13 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         if(this.knowledge == null) {
             knowledge = getParams().getKnowledge();
         } /*else {knowledge = this.knowledge;}*/
-        SearchParams searchParams = getParams();
+        Params searchParams = getParams();
 
-        FciIndTestParams indTestParams = (FciIndTestParams) searchParams.getIndTestParams();
+        Params params = (Params) searchParams;
 
 //            Cfci fciSearch =
 //                    new Cfci(getIndependenceTest(), knowledge);
-//            fciSearch.setDepth(indTestParams.depth());
+//            fciSearch.setDepth(params.depth());
 //            Graph graph = fciSearch.search();
 //
 //            if (knowledge.isDefaultToKnowledgeLayout()) {
@@ -129,22 +129,22 @@ public class TsFciRunner extends AbstractAlgorithmRunner
 //            setResultGraph(graph);
         Graph graph;
 
-        if (indTestParams.isRFCI_Used()) {
+        if (params.isRFCI_Used()) {
             System.out.println("WARNING: there is no RFCI option for tsFCI! Just using tsFCI.");
 //            Rfci fci = new Rfci(getIndependenceTest());
             TsFci fci = new TsFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(true);
-            fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
-            fci.setDepth(indTestParams.getDepth());
+            fci.setMaxPathLength(params.getMaxReachablePathLength());
+            fci.setDepth(params.getDepth());
             graph = fci.search();
         } else {
             TsFci fci = new TsFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(true);
-            fci.setPossibleDsepSearchDone(indTestParams.isPossibleDsepDone());
-            fci.setMaxPathLength(indTestParams.getMaxReachablePathLength());
-            fci.setDepth(indTestParams.getDepth());
+            fci.setPossibleDsepSearchDone(params.isPossibleDsepDone());
+            fci.setMaxPathLength(params.getMaxReachablePathLength());
+            fci.setDepth(params.getDepth());
             graph = fci.search();
         }
 
@@ -166,14 +166,14 @@ public class TsFciRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        SearchParams params = getParams();
+        Params params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof BasicSearchParams) {
-            BasicSearchParams _params = (BasicSearchParams) params;
+        if (getParams() instanceof Params) {
+            Params _params = (Params) params;
             testType = _params.getIndTestType();
         } else {
-            FciSearchParams _params = (FciSearchParams) params;
+            Params _params = (Params) params;
             testType = _params.getIndTestType();
         }
 

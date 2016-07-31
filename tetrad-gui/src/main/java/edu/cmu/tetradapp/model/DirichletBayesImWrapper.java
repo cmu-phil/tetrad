@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -57,7 +58,7 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
     //===========================CONSTRUCTORS=============================//
 
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-            DirichletBayesImParams params) {
+            Params params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -68,12 +69,10 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
-        if (params.getInitializationMode() == DirichletBayesImParams
-                .MANUAL_RETAIN) {
+        if (params.getInitializationMode().equals("manualRetain")) {
             this.dirichletBayesIm = DirichletBayesIm.blankDirichletIm(bayesPm);
         }
-        else if (params.getInitializationMode() == DirichletBayesImParams
-                .SYMMETRIC_PRIOR) {
+        else if (params.getInitializationMode().equals("symmetricPrior")) {
             this.dirichletBayesIm = DirichletBayesIm.symmetricDirichletIm(
                     bayesPm, params.getSymmetricAlpha());
         }
@@ -81,34 +80,6 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
         log(this.dirichletBayesIm);
 
     }
-
-//    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-//            DirichletBayesImWrapper oldBayesImwrapper,
-//            DirichletBayesImParams params) {
-//        if (bayesPmWrapper == null) {
-//            throw new NullPointerException("BayesPmWrapper must not be null.");
-//        }
-//
-//        if (params == null) {
-//            throw new NullPointerException("Params must not be null.");
-//        }
-//
-//        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
-//        DirichletBayesIm oldBayesIm = oldBayesImwrapper.getDirichletBayesIm();
-//
-//        if (params.getInitializationMode() == DirichletBayesImParams
-//                .MANUAL_RETAIN) {
-//            this.dirichletBayesIm = DirichletBayesIm.symmetricDirichletIm(
-//                    bayesPm, oldBayesIm, MlBayesIm.MANUAL);
-//        }
-//        else if (params.getInitializationMode() == DirichletBayesImParams
-//                .SYMMETRIC_PRIOR) {
-//            this.dirichletBayesIm = DirichletBayesIm.symmetricDirichletIm(
-//                    bayesPm, oldBayesIm, params.getSymmetricAlpha());
-//        }
-//
-//        log(this.dirichletBayesIm);
-//    }
 
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
             DataWrapper dataWrapper) {
@@ -155,7 +126,7 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
     public static DirichletBayesImWrapper serializableInstance() {
         return new DirichletBayesImWrapper(
                 BayesPmWrapper.serializableInstance(),
-                DirichletBayesImParams.serializableInstance());
+                new Params());
     }
 
     //================================PUBLIC METHODS=======================//

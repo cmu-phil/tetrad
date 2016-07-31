@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.Ccd;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -50,15 +51,15 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CcdRunner(DataWrapper dataWrapper, BasicSearchParams params) {
+    public CcdRunner(DataWrapper dataWrapper, Params params) {
         super(dataWrapper, params, null);
     }
 
-    public CcdRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, BasicSearchParams params) {
+    public CcdRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, Params params) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public CcdRunner(DataWrapper dataWrapper, GraphWrapper initialGraph, BasicSearchParams params) {
+    public CcdRunner(DataWrapper dataWrapper, GraphWrapper initialGraph, Params params) {
         super(dataWrapper, params);
         setInitialGraph(initialGraph.getGraph());
     }
@@ -67,7 +68,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(GraphSource graphWrapper, PcSearchParams params) {
+    public CcdRunner(GraphSource graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -75,33 +76,33 @@ public class CcdRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(GraphWrapper graphWrapper, BasicSearchParams params) {
+    public CcdRunner(GraphWrapper graphWrapper, Params params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, BasicSearchParams params) {
+    public CcdRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Params params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(DagWrapper dagWrapper, BasicSearchParams params) {
+    public CcdRunner(DagWrapper dagWrapper, Params params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CcdRunner(SemGraphWrapper dagWrapper, BasicSearchParams params) {
+    public CcdRunner(SemGraphWrapper dagWrapper, Params params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CcdRunner(IndependenceFactsModel model, BasicSearchParams params) {
+    public CcdRunner(IndependenceFactsModel model, Params params) {
         super(model, params, null);
     }
 
-    public CcdRunner(IndependenceFactsModel model, BasicSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -111,7 +112,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static CcdRunner serializableInstance() {
-        return new CcdRunner(DataWrapper.serializableInstance(), BasicSearchParams.serializableInstance());
+        return new CcdRunner(DataWrapper.serializableInstance(), new Params());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -122,7 +123,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
      */
     public void execute() {
         Ccd ccd = new Ccd(getIndependenceTest());
-        ccd.setDepth(getParams().getIndTestParams().getDepth());
+        ccd.setDepth(getParams().getDepth());
         ccd.setKnowledge(getParams().getKnowledge());
         Graph graph = ccd.search();
 

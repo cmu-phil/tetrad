@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -55,7 +56,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     /**
      * @serial Cannot be null.
      */
-    private GraphComparisonParams params;
+    private Params params;
 
     /**
      * The target workbench.
@@ -85,7 +86,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public TabularComparison(SessionModel model1, SessionModel model2,
-                             GraphComparisonParams params) {
+                             Params params) {
         if (params == null) {
             throw new NullPointerException("Params must not be null");
         }
@@ -142,7 +143,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         if (this.params != null) {
             GraphUtils.GraphComparison graphComparison = SearchGraphUtils.getGraphComparison2(targetGraph, alteredRefGraph);
-            this.params.addRecord(graphComparison);
+
+            List<GraphUtils.GraphComparison> records = this.params.getRecords();
+            records.add(graphComparison);
+            this.params.setRecords(records);
 
             if (graphComparison.getAdjFn() != 0 || graphComparison.getAdjFp() != 0 ||
                     graphComparison.getAhdFn() != 0 || graphComparison.getAhdFp() != 0) {
@@ -156,26 +160,26 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     public TabularComparison(GraphWrapper referenceGraph,
                              AbstractAlgorithmRunner algorithmRunner,
-                             GraphComparisonParams params) {
+                             Params params) {
         this(referenceGraph, (SessionModel) algorithmRunner,
                 params);
     }
 
     public TabularComparison(GraphWrapper referenceWrapper,
-                             GraphWrapper targetWrapper, GraphComparisonParams params) {
+                             GraphWrapper targetWrapper, Params params) {
         this(referenceWrapper, (SessionModel) targetWrapper,
                 params);
     }
 
     public TabularComparison(DagWrapper referenceGraph,
                              AbstractAlgorithmRunner algorithmRunner,
-                             GraphComparisonParams params) {
+                             Params params) {
         this(referenceGraph, (SessionModel) algorithmRunner,
                 params);
     }
 
     public TabularComparison(DagWrapper referenceWrapper,
-                             GraphWrapper targetWrapper, GraphComparisonParams params) {
+                             GraphWrapper targetWrapper, Params params) {
         this(referenceWrapper, (SessionModel) targetWrapper,
                 params);
     }
@@ -192,7 +196,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     public static TabularComparison serializableInstance() {
         return new TabularComparison(DagWrapper.serializableInstance(),
                 DagWrapper.serializableInstance(),
-                GraphComparisonParams.serializableInstance());
+                new Params());
     }
 
     //==============================PUBLIC METHODS========================//

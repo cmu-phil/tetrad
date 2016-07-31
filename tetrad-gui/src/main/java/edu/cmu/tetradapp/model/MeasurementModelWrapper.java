@@ -31,6 +31,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.ClusterUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -60,26 +61,22 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     private String name;
     private DataSet data;
     private Graph sourceGraph;
-    private MimBuildParams params;
+    private Params params;
 
     //=============================CONSTRUCTORS==========================//
 
-    public MeasurementModelWrapper(MimBuildParams params) {
+    public MeasurementModelWrapper(Params params) {
         this.setVarNames(new ArrayList<String>());
         this.setClusters(params.getClusters());
         this.params = params;
     }
 
-    public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, MimBuildParams params) {
+    public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, Params params) {
         if (knowledgeInput instanceof GraphSource) {
             GraphSource graphWrapper = (GraphSource) knowledgeInput;
             Graph mim = graphWrapper.getGraph();
 
             Clusters clusters = ClusterUtils.mimClusters(mim);
-
-//            List<List<Node>> partition = ClusterUtils.mimClustering(mim, mim.getNodes());
-//            Clusters clusters = ClusterUtils.partitionToClusters(partition);
-
             List<String> nodeNames = new ArrayList<String>();
 
             for (Node node : mim.getNodes()) {
@@ -102,7 +99,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         }
     }
 
-    public MeasurementModelWrapper(DataWrapper dataWrapper, MimBuildParams params) {
+    public MeasurementModelWrapper(DataWrapper dataWrapper, Params params) {
         this.setVarNames(dataWrapper.getVarNames());
         this.setClusters(params.getClusters());
         this.data = (DataSet) dataWrapper.getSelectedDataModel();
@@ -110,7 +107,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     }
 
     public static MeasurementModelWrapper serializableInstance() {
-        return new MeasurementModelWrapper(DataWrapper.serializableInstance(), new MimBuildParams());
+        return new MeasurementModelWrapper(DataWrapper.serializableInstance(), new Params());
     }
 
     public void setName(String name) {
@@ -168,12 +165,12 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         return sourceGraph;
     }
 
-    public MimBuildParams getParams() {
+    public Params getParams() {
         return params;
     }
 
     public void resetParams(Object params) {
-        this.params = (MimBuildParams) params;
+        this.params = (Params) params;
     }
 
     public Object getResettableParams() {
@@ -181,7 +178,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     }
 
     public java.util.List<Node> getVariables() {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (String name : getVariableNames()) {
             Node node = new ContinuousVariable(name);
