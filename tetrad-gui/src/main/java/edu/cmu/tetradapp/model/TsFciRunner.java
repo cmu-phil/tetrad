@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
@@ -111,7 +112,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      */
     public void execute() {
         if(this.knowledge == null) {
-            knowledge = getParams().getKnowledge();
+            knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         } /*else {knowledge = this.knowledge;}*/
         Parameters searchParams = getParams();
 
@@ -129,22 +130,22 @@ public class TsFciRunner extends AbstractAlgorithmRunner
 //            setResultGraph(graph);
         Graph graph;
 
-        if (params.isRFCI_Used()) {
+        if (params.getBoolean("rfciUsed", false)) {
             System.out.println("WARNING: there is no RFCI option for tsFCI! Just using tsFCI.");
 //            Rfci fci = new Rfci(getIndependenceTest());
             TsFci fci = new TsFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(true);
-            fci.setMaxPathLength(params.getMaxReachablePathLength());
-            fci.setDepth(params.getDepth());
+            fci.setMaxPathLength(params.getInt("maxReachablePathLength", -1));
+            fci.setDepth(params.getInt("depth", -1));
             graph = fci.search();
         } else {
             TsFci fci = new TsFci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(true);
-            fci.setPossibleDsepSearchDone(params.isPossibleDsepDone());
-            fci.setMaxPathLength(params.getMaxReachablePathLength());
-            fci.setDepth(params.getDepth());
+            fci.setPossibleDsepSearchDone(params.getBoolean("possibleDsepDone", true));
+            fci.setMaxPathLength(params.getInt("maxReachablePathLength", -1));
+            fci.setDepth(params.getInt("depth", -1));
             graph = fci.search();
         }
 
@@ -171,10 +172,10 @@ public class TsFciRunner extends AbstractAlgorithmRunner
 
         if (getParams() instanceof Parameters) {
             Parameters _params = (Parameters) params;
-            testType = _params.getIndTestType();
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         } else {
             Parameters _params = (Parameters) params;
-            testType = _params.getIndTestType();
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
         return new IndTestChooser().getTest(dataModel, params, testType);

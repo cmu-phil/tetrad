@@ -62,12 +62,12 @@ class FgsIndTestParamsEditor extends JComponent {
 
         if (type == FgsRunner.Type.DISCRETE) {
             this.cellPriorField = new DoubleTextField(
-                    getFgsIndTestParams().getSamplePrior(),  5, nf, smallNf, 1e-4);
+                    getFgsIndTestParams().getDouble("samplePrior", 1),  5, nf, smallNf, 1e-4);
 
             this.cellPriorField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        getFgsIndTestParams().setSamplePrior(value);
+                        getFgsIndTestParams().set("samplePrior", value);
                         return value;
                     }
                     catch (IllegalArgumentException e) {
@@ -77,11 +77,11 @@ class FgsIndTestParamsEditor extends JComponent {
             });
 
             this.structurePriorField = new DoubleTextField(
-                    getFgsIndTestParams().getStructurePrior(), 5, nf);
+                    getFgsIndTestParams().getDouble("structurePrior", 1), 5, nf);
             this.structurePriorField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        getFgsIndTestParams().setStructurePrior(value);
+                        getFgsIndTestParams().set("structurePrior", value);
                         return value;
                     }
                     catch (IllegalArgumentException e) {
@@ -112,11 +112,11 @@ class FgsIndTestParamsEditor extends JComponent {
             });
         } else {
             this.penaltyDiscount = new DoubleTextField(
-                    getFgsIndTestParams().getPenaltyDiscount(), 5, nf);
+                    getFgsIndTestParams().getDouble("penaltyDiscount", 4), 5, nf);
             this.penaltyDiscount.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        getFgsIndTestParams().setPenaltyDiscount(value);
+                        getFgsIndTestParams().set("penaltyDiscount", value);
                         return value;
                     }
                     catch (IllegalArgumentException e) {
@@ -127,11 +127,11 @@ class FgsIndTestParamsEditor extends JComponent {
         }
 
         this.numPatternsToSave = new IntTextField(
-                getFgsIndTestParams().getNumPatternsToSave(), 5);
+                getFgsIndTestParams().getInt("numPatternsToSave", 1), 5);
         this.numPatternsToSave.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getFgsIndTestParams().setNumPatternsToSave(value);
+                    getFgsIndTestParams().set("numPatternsToSave", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -140,11 +140,11 @@ class FgsIndTestParamsEditor extends JComponent {
             }
         });
 
-        this.depth = new IntTextField(getFgsIndTestParams().getDepth(), 4);
+        this.depth = new IntTextField(getFgsIndTestParams().getInt("depth", -1), 4);
         this.depth.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getFgsIndTestParams().setDepth(value);
+                    getFgsIndTestParams().set("depth", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -154,11 +154,11 @@ class FgsIndTestParamsEditor extends JComponent {
         });
 
         faithfulnessAssumed = new JCheckBox();
-        faithfulnessAssumed.setSelected(getFgsIndTestParams().isFaithfulnessAssumed());
+        faithfulnessAssumed.setSelected(getFgsIndTestParams().getBoolean("faithfulnessAssumed", true));
         faithfulnessAssumed.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                getFgsIndTestParams().setFaithfulnessAssumed(source.isSelected());
+                getFgsIndTestParams().set("faithfulnessAssumed", source.isSelected());
             }
         });
 

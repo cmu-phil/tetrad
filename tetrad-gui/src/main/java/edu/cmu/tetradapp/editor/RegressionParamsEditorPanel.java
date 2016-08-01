@@ -102,7 +102,7 @@ public class RegressionParamsEditorPanel extends JPanel {
             throw new NullPointerException("The given params must not be null");
         }
         this.params = params;
-        List<String> variableNames = params.getVarNames();
+        List<String> variableNames = (List<String>) params.get("varNames", null);
         // if null get the variables from the parent data set.
         if (variableNames == null) {
             if (model == null) {
@@ -112,7 +112,7 @@ public class RegressionParamsEditorPanel extends JPanel {
             if (variableNames == null) {
                 throw new IllegalStateException("Could not load variables.");
             }
-            params.setVarNames(variableNames);
+            params.set("varNames", variableNames);
         }
         // create components
         PREDICTORS_LIST = createList();
@@ -126,7 +126,7 @@ public class RegressionParamsEditorPanel extends JPanel {
         RESPONSE_FIELD = createResponse(getSourceList(), 100);
 
         // if regressors are already set use'em.
-        String[] regressors = params.getRegressorNames();
+        String[] regressors = (String[]) params.get("regressorNames", null);
         if (regressors != null) {
             List<String> elements = Arrays.asList(regressors);
             predictorsModel.addAll(elements);
@@ -137,7 +137,7 @@ public class RegressionParamsEditorPanel extends JPanel {
             variableModel.addAll(variableNames);
         }
         // if target is set use it too
-        String target = params.getTargetName();
+        String target = params.getString("targetName", null);
         if (target != null) {
             variableModel.remove(target);
             //     response.setText(target);
@@ -164,7 +164,7 @@ public class RegressionParamsEditorPanel extends JPanel {
         JScrollPane pane = createScrollPane(getSourceList(), new Dimension(100, 350 + height));
         vBox1.add(pane);
         vBox1.add(Box.createVerticalStrut(10));
-        vBox1.add(buildAlphaArea(params.getAlpha()));
+        vBox1.add(buildAlphaArea(params.getDouble("alpha", 0.001)));
         vBox1.add(Box.createVerticalStrut(10));
         vBox1.add(buildSortButton());
         vBox1.add(Box.createVerticalGlue());
@@ -234,7 +234,7 @@ public class RegressionParamsEditorPanel extends JPanel {
                 sourceModel.removeAll(selected);
                 getResponseField().setText((String) selected.get(0));
                 getResponseField().setCaretPosition(0);
-                params.setTargetName((String) selected.get(0));
+                params.set("targetName", (String) selected.get(0));
                 if (target != null && target.length() != 0) {
                     sourceModel.add(target);
                 }
@@ -248,7 +248,7 @@ public class RegressionParamsEditorPanel extends JPanel {
                 List<Comparable> selected = getSelected(getSourceList());
                 sourceModel.removeAll(selected);
                 predictorsModel.addAll(selected);
-                params.setRegressorNames(getPredictors());
+                params.set("regressorNames", getPredictors());
             }
         });
 
@@ -261,10 +261,10 @@ public class RegressionParamsEditorPanel extends JPanel {
                 if (!selected.isEmpty()) {
                     predictorsModel.removeAll(selected);
                     sourceModel.addAll(selected);
-                    params.setRegressorNames(getPredictors());
+                    params.set("regressorNames", getPredictors());
                 } else if (getResponseField().getText() != null && getResponseField().getText().length() != 0) {
                     String text = getResponseField().getText();
-                    params.setTargetName(null);
+                    params.set("targetName", (String) null);
                     getResponseField().setText(null);
                     sourceModel.addAll(Collections.singletonList(text));
                 }
@@ -308,7 +308,7 @@ public class RegressionParamsEditorPanel extends JPanel {
         field.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 if (0.0 <= value && value <= 1.0) {
-                    params.setAlpha(value);
+                    params.set("alpha", 0.001);
                     RegressionParamsEditorPanel.this.firePropertyChange("significanceChanged",
                             oldValue, value);
                     return value;
@@ -364,7 +364,7 @@ public class RegressionParamsEditorPanel extends JPanel {
         pane.setEditable(false);
         pane.setBackground(list.getBackground());
 
-        String target = params.getTargetName();
+        String target = params.getString("targetName", null);
         if (target != null) {
             pane.setText(target);
         } else {
@@ -519,8 +519,8 @@ public class RegressionParamsEditorPanel extends JPanel {
                         List<Comparable> vars = (List<Comparable>) t.getTransferData(ListTransferable.FLAVOR);
                         model.addAll(vars);
                     }
-                    params.setTargetName(getResponseField().getText());
-                    params.setRegressorNames(getPredictors());
+                    params.set("targetName", getResponseField().getText());
+                    params.set("regressorNames", getPredictors());
                     dtde.getDropTargetContext().dropComplete(true);
                 } catch (Exception ex) {
                     dtde.rejectDrop();
@@ -556,8 +556,8 @@ public class RegressionParamsEditorPanel extends JPanel {
                             JTextField pane = (JTextField) comp;
                             pane.setText(null);
                         }
-                        params.setTargetName(getResponseField().getText());
-                        params.setRegressorNames(getPredictors());
+                        params.set("targetName", getResponseField().getText());
+                        params.set("regressorNames", getPredictors());
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }

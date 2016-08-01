@@ -70,11 +70,11 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
      */
     public void setup() {
         // set up text and ties them to the parameters object being edited.
-        IntTextField sampleSizeField = new IntTextField(getParams().getSampleSize(), 8);
+        IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 8);
         sampleSizeField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getParams().setSampleSize(value);
+                    getParams().set("sampleSize", value);
                     return value;
                 }
                 catch (Exception e) {
@@ -83,12 +83,12 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
             }
         });
 
-        IntTextField numDataSetsField = new IntTextField(getParams().getNumDataSets(), 8);
+        IntTextField numDataSetsField = new IntTextField(getParams().getInt("numDataSets", 1), 8);
 
         numDataSetsField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getParams().setNumDataSets(value);
+                    getParams().set("numDataSets", value);
                     return value;
                 }
                 catch (Exception e) {
@@ -102,12 +102,12 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
 //        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
 //                Preferences.userRoot().getBoolean("latentDataSaved", getParams().isIncludeLatents()));
         JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-                getParams().isLatentDataSaved());
+                getParams().getBoolean("latentDataSaved", false));
 
         latentDataSaved.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
-                params.setLatentDataSaved(checkBox.isSelected());
+                params.set("latentDataSaved", checkBox.isSelected());
                 Preferences.userRoot().putBoolean("latentDataSaved",
                         checkBox.isSelected());
             }

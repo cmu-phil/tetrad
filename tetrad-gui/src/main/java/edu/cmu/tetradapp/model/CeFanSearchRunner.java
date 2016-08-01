@@ -22,6 +22,8 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Cefs;
 import edu.cmu.tetrad.search.IndTestType;
@@ -107,22 +109,22 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((Parameters) getParams()).getDepth();
+        int pcDepth = ((Parameters) getParams()).getInt("depth", -1);
         Cefs search =
                 new Cefs(getIndependenceTest(), pcDepth);
         Parameters params = getParams();
         if(params instanceof Parameters){
-            search.setAggressivelyPreventCycles(params.isAggressivelyPreventCycles());
+            search.setAggressivelyPreventCycles(params.getBoolean("aggressivelyPreventCycles", false));
         }
-        String targetName = ((Parameters) getParams()).getTargetName();
+        String targetName = ((Parameters) getParams()).getString("targetName", null);
         Graph graph = search.search(targetName);
         setResultGraph(graph);
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         }
-        else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         }
         else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
@@ -137,7 +139,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
         }
 
         Parameters params = (Parameters) getParams();
-        IndTestType testType = params.getIndTestType();
+        IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 

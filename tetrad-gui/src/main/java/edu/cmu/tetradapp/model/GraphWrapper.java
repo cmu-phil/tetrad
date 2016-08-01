@@ -33,7 +33,6 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -42,7 +41,6 @@ import edu.cmu.tetradapp.util.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
-import java.util.prefs.Preferences;
 
 /**
  * Holds a tetrad-style graph with all of the constructors necessary for it to
@@ -87,17 +85,17 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
     public GraphWrapper(Parameters params) {
-        if (params.getNewGraphInitializationMode().equals("manual")) {
+        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             this.graph = new EdgeListGraph();
-        } else if (params.getNewGraphInitializationMode().equals("random")) {
+        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
             Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
 
-            boolean addCycles = params.isRandomGraphAddCycles();
+            boolean addCycles = params.getBoolean("randomAddCycles", false);
 
             if (addCycles) {
-                int newGraphNumMeasuredNodes = params.getNewGraphNumMeasuredNodes();
-                int newGraphNumEdges = params.getNewGraphNumEdges();
+                int newGraphNumMeasuredNodes = params.getInt("newGraphNumMeasuredNodes", 10);
+                int newGraphNumEdges = params.getInt("newGraphNumEdges", 10);
                 graph = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes ,newGraphNumEdges);
             }
 //            GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
@@ -110,7 +108,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     public GraphWrapper(GraphSource graphSource, Parameters params) {
         if (getGraph() != null) {
             this.graph = new EdgeListGraph(getGraph());
-        } else if (params.getNewGraphInitializationMode().equals("random")) {
+        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
             edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
         }
@@ -123,7 +121,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
                 e.printStackTrace();
                 this.graph = new EdgeListGraph();
             }
-        } else if (params.getNewGraphInitializationMode().equals("manual")) {
+        } else if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             this.graph = new EdgeListGraph();
         }
 

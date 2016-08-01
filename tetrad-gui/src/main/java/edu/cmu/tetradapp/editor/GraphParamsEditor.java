@@ -60,7 +60,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setup() {
-        boolean cyclicAllowed = params.isCyclicAllowed();
+        boolean cyclicAllowed = params.getBoolean("cyclicAllowed", false);
         final RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed);
         final RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor();
         final RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
@@ -75,7 +75,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         group.add(manual);
         group.add(random);
 
-        if (params.getNewGraphInitializationMode().equals("manual")) {
+        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             manual.setSelected(true);
             randomDagEditor.setEnabled(false);
         }
@@ -89,7 +89,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
                 JRadioButton button = (JRadioButton) e.getSource();
 
                 if (button.isSelected()) {
-                    params.setNewGraphInitializationMode("manual");
+                    params.set("newGraphInitializationMode", "manual");
                     randomDagEditor.setEnabled(false);
                 }
             }
@@ -100,7 +100,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
                 JRadioButton button = (JRadioButton) e.getSource();
 
                 if (button.isSelected()) {
-                    params.setNewGraphInitializationMode("random");
+                    params.set("newGraphInitializationMode", "random");
                     randomDagEditor.setEnabled(true);
                 }
             }

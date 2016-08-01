@@ -159,7 +159,7 @@ public class  UpdatedBayesImWizardObs extends JPanel {
                         }
 
                         Node tetradNode = graphNode.getModelNode();
-                        updaterWrapper.getParams().setVariable((DiscreteVariable)
+                        updaterWrapper.getParams().set("variable", (DiscreteVariable)
                                 (updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode)));
                     }
                 }

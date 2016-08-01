@@ -22,8 +22,8 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -82,7 +82,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -131,7 +131,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
         group.add(B);
         group.add(A);
 
-        if (!searchParams.isOrientStrongerDirection()) {
+        if (!searchParams.getBoolean("orientStrongerDirection", true)) {
             A.setSelected(true);
         }
         else {
@@ -142,7 +142,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
-                    searchParams.setOrientStrongerDirection(false);
+                    searchParams.set("orientStrongerDirection", false);
                 }
             }
         });
@@ -151,30 +151,30 @@ public class LofsSearchEditor extends AbstractSearchEditor
             public void actionPerformed(ActionEvent actionEvent) {
                 JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
-                    searchParams.setOrientStrongerDirection(true);
+                    searchParams.set("orientStrongerDirection", true);
                 }
             }
         });
 
         JCheckBox orient2cycles = new JCheckBox("Orient 2 cycles in R2");
 
-        orient2cycles.setSelected(searchParams.isR2Orient2Cycles());
+        orient2cycles.setSelected(searchParams.getBoolean("r2Orient2Cycles", false));
 
         orient2cycles.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-                searchParams.setR2Orient2Cycles(checkBox.isSelected());
+                searchParams.set("r2Orient2Cycles", checkBox.isSelected());
             }
         });
 
         JCheckBox meanCenterResiduals = new JCheckBox("Mean center residuals");
 
-        meanCenterResiduals.setSelected(searchParams.isMeanCenterResiduals());
+        meanCenterResiduals.setSelected(searchParams.getBoolean("meanCenterResiduals", false));
 
         meanCenterResiduals.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-                searchParams.setMeanCenterResiduals(checkBox.isSelected());
+                searchParams.set("meanCenterResiduals", checkBox.isSelected());
             }
         });
 
@@ -185,7 +185,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
 //        scoreBox.addItem("Fifth Moment");
         scoreBox.addItem("Mean Absolute");
 
-        Lofs.Score _score = searchParams.getScore();
+        Lofs.Score _score = (Lofs.Score) searchParams.get("score", Lofs.Score.andersonDarling);
 
         if (_score == Lofs.Score.andersonDarling) {
             scoreBox.setSelectedItem("Anderson Darling");
@@ -210,19 +210,19 @@ public class LofsSearchEditor extends AbstractSearchEditor
                 System.out.println(item);
 
                 if ("Anderson Darling".equals(item)) {
-                    searchParams.setScore(Lofs.Score.andersonDarling);
+                    searchParams.set("score", Lofs.Score.andersonDarling);
                 }
                 else if ("Skew".equals(item)) {
-                    searchParams.setScore(Lofs.Score.skew);
+                    searchParams.set("score", Lofs.Score.skew);
                 }
                 else if ("Kurtosis".equals(item)) {
-                    searchParams.setScore(Lofs.Score.kurtosis);
+                    searchParams.set("score", Lofs.Score.kurtosis);
                 }
                 else if ("Fifth Moment".equals(item)) {
-                    searchParams.setScore(Lofs.Score.fifthMoment);
+                    searchParams.set("score", Lofs.Score.fifthMoment);
                 }
                 else if ("Mean Absolute".equals(item)) {
-                    searchParams.setScore(Lofs.Score.absoluteValue);
+                    searchParams.set("score", Lofs.Score.absoluteValue);
                 }
                 else {
                     throw new IllegalStateException();
@@ -403,7 +403,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
         meekOrient.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                rules.setKnowledge(getAlgorithmRunner().getParams().getKnowledge());
+                rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
                 rules.orientImplied(getGraph());
                 getGraphHistory().add(getGraph());
                 getWorkbench().setGraph(getGraph());
@@ -482,7 +482,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
 
     public List<String> getVarNames() {
         Parameters params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        return (List<String>) params.get("varNames", null);
     }
 
     public void setTestType(IndTestType testType) {
@@ -494,11 +494,11 @@ public class LofsSearchEditor extends AbstractSearchEditor
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//

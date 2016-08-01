@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -45,13 +46,13 @@ class MimBuildIndTestParamsEditor extends JComponent {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getAlpha(), 8,
+        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    getParams().setAlpha(value);
+                    getParams().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -169,19 +170,19 @@ class MimBuildIndTestParamsEditor extends JComponent {
     }
 
     private Graph getSourceGraph() {
-        return params.getSourceGraph();
+        return (Graph) params.get("sourceGraph", null);
     }
 
     private IKnowledge getKnowledge() {
-        return params.getKnowledge();
+        return (IKnowledge) params.get("knowledge", new Knowledge2());
     }
 
     private Clusters getClusters() {
-        return params.getClusters();
+        return (Clusters) params.get("clusters", null);
     }
 
     private List getVarNames() {
-        return params.getVarNames();
+        return (List<String>) params.get("varNames", null);
     }
 
     private Parameters getParams() {

@@ -69,12 +69,12 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
-        if (params.getInitializationMode().equals("manualRetain")) {
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             this.dirichletBayesIm = DirichletBayesIm.blankDirichletIm(bayesPm);
         }
-        else if (params.getInitializationMode().equals("symmetricPrior")) {
+        else if (params.getString("initializationMode", "manualRetain").equals("symmetricPrior")) {
             this.dirichletBayesIm = DirichletBayesIm.symmetricDirichletIm(
-                    bayesPm, params.getSymmetricAlpha());
+                    bayesPm, params.getDouble("symmetricAlpha", 1.0));
         }
 
         log(this.dirichletBayesIm);

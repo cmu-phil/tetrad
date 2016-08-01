@@ -72,17 +72,17 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         setLayout(new BorderLayout());
 
         final JCheckBox randomEveryTime = new JCheckBox();
-        randomEveryTime.setSelected(!params.isRetainPreviousValues());
+        randomEveryTime.setSelected(!params.getBoolean("retainPreviousValues", false));
         DecimalFormat decimalFormat = new DecimalFormat("0.0######");
 
-        final DoubleTextField coefLowField = new DoubleTextField(params.getCoefLow(),
+        final DoubleTextField coefLowField = new DoubleTextField(params.getDouble("coefLow", 0.5),
                 6, decimalFormat);
 
         coefLowField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
                     getParams().set("coefLow", value);
-                    getParams().set("coefHigh", params.getCoefHigh());
+                    getParams().set("coefHigh", params.getDouble("coefHigh", 1.5));
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -92,13 +92,13 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         });
 
 
-        final DoubleTextField coefHighField = new DoubleTextField(params.getCoefHigh(),
+        final DoubleTextField coefHighField = new DoubleTextField(params.getDouble("coefHigh", 1.5),
                 6, decimalFormat);
 
         coefHighField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    getParams().set("coefLow", params.getCoefLow());
+                    getParams().set("coefLow", params.getDouble("coefLow", 0.5));
                     getParams().set("coefHigh", value);
                     return value;
                 }
@@ -108,13 +108,14 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        final DoubleTextField covLowField = new DoubleTextField(params.getCovLow(),
+        final DoubleTextField covLowField = new DoubleTextField(params.getDouble("covLow", 0.1),
                 6, decimalFormat);
 
         covLowField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setCovRange(value, params.getCovHigh());
+                    params.set("covLow", value);
+                    params.set("covHigh", params.getDouble("covHigh", 0.2));
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -123,13 +124,14 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        final DoubleTextField covHighField = new DoubleTextField(params.getCovHigh(),
+        final DoubleTextField covHighField = new DoubleTextField(params.getDouble("covHigh", 0.2),
                 6, decimalFormat);
 
         covHighField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setCovRange(params.getCovLow(), value);
+                    params.set("covLow", params.getDouble("covLow", 0.1));
+                    params.set("covHigh", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -144,7 +146,8 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         varLowField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setVarRange(value, params.getDouble("varHigh", 3));
+                    params.set("varLow", value);
+                    params.set("varHigh", params.getDouble("varHigh", 3));
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -159,7 +162,8 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         varHighField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setVarRange(params.getDouble("varLow", 1), value);
+                    params.set("varLow", params.getDouble("varLow", 1));
+                    params.set("varHigh", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -171,13 +175,13 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         final JCheckBox coefSymmetric = new JCheckBox("Symmetric about zero.");
         final JCheckBox covSymmetric = new JCheckBox("Symmetric about zero.");
 
-        coefSymmetric.setSelected(params.isCoefSymmetric());
-        covSymmetric.setSelected(params.isCovSymmetric());
+        coefSymmetric.setSelected(params.getBoolean("coefSymmetric", true));
+        covSymmetric.setSelected(params.getBoolean("covSymmetric", true));
 
         coefSymmetric.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
-                params.setCoefSymmetric(checkBox.isSelected());
+                params.set("coefSymmetric", checkBox.isSelected());
             }
 
         });
@@ -185,7 +189,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         covSymmetric.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
-                params.setCovSymmetric(checkBox.isSelected());
+                params.set("covSymmetric", checkBox.isSelected());
             }
         });
 
@@ -195,7 +199,8 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         randomEveryTime.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
-                getParams().setRetainPreviousValues(!checkBox.isSelected());
+                boolean retainPreviousValues = !checkBox.isSelected();
+                getParams().set("retainPreviousValues", retainPreviousValues);
             }
         });
 

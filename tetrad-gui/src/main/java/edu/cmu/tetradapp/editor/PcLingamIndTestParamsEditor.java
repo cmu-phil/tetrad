@@ -58,12 +58,12 @@ class PcLingamIndTestParamsEditor extends JComponent {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(params().getAlpha(), 8,
+        alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), new DecimalFormat("0.0#####E0"), 1e-4);
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setAlpha(value);
+                    params().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {

@@ -141,7 +141,7 @@ public class DirichletEstimatorWrapper implements SessionModel, GraphSource {
         DirichletBayesIm dirichletBayesIm =
                 DirichletBayesIm.symmetricDirichletIm(
                         bayesPmWrapper.getBayesPm(),
-                        params.getSymmetricAlpha());
+                        params.getDouble("symmetricAlpha", 1.0));
 
         if (DataUtils.containsMissingValue(dataSet)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");

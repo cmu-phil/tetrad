@@ -112,7 +112,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
 
         try {
             this.estimatedBayesIm =
-                    estimator.maximization(params.getTolerance());
+                    estimator.maximization(params.getDouble("tolerance", 0.0001));
 
         }
         catch (IllegalArgumentException e) {
@@ -147,7 +147,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
 
         try {
             this.estimatedBayesIm =
-                    estimator.maximization(params.getTolerance());
+                    estimator.maximization(params.getDouble("tolerance", 0.0001));
         }
         catch (IllegalArgumentException e) {
             throw new RuntimeException(

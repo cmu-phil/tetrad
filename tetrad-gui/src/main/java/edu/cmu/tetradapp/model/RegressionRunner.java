@@ -106,7 +106,7 @@ public class RegressionRunner implements AlgorithmRunner {
         }
 
         this.params = params;
-        this.targetName = params.getTargetName();
+        this.targetName = params.getString("targetName", null);
         this.dataSet = dataModel;
 
         TetradLogger.getInstance().log("info", "Linear Regression");
@@ -178,14 +178,14 @@ public class RegressionRunner implements AlgorithmRunner {
      */
     public void execute() {
 
-        if (params.getRegressorNames().length == 0 ||
-                params.getTargetName() == null) {
+        if (((String[]) params.get("regressorNames", null)).length == 0 ||
+                params.getString("targetName", null) == null) {
             outGraph = new EdgeListGraph();
             return;
         }
 
-        if (Arrays.asList(params.getRegressorNames()).contains(
-                params.getTargetName())) {
+        if (Arrays.asList((String[]) params.get("regressorNames", null)).contains(
+                params.getString("targetName", null))) {
             outGraph = new EdgeListGraph();
             return;
         }
@@ -197,15 +197,15 @@ public class RegressionRunner implements AlgorithmRunner {
         if (dataSet instanceof DataSet) {
             DataSet _dataSet = (DataSet) dataSet;
             regression = new RegressionDataset(_dataSet);
-            target = _dataSet.getVariable(params.getTargetName());
-            String[] regressorNames = params.getRegressorNames();
+            target = _dataSet.getVariable(params.getString("targetName", null));
+            String[] regressorNames = (String[]) params.get("regressorNames", null);
             regressors = new LinkedList<>();
 
             for (String regressorName : regressorNames) {
                 regressors.add(_dataSet.getVariable(regressorName));
             }
 
-            double alpha = params.getAlpha();
+            double alpha = params.getDouble("alpha", 0.001);
             regression.setAlpha(alpha);
 
             result = regression.regress(target, regressors);
@@ -214,15 +214,15 @@ public class RegressionRunner implements AlgorithmRunner {
         else if (dataSet instanceof ICovarianceMatrix) {
             ICovarianceMatrix covariances = (ICovarianceMatrix) dataSet;
             regression = new RegressionCovariance(covariances);
-            target = covariances.getVariable(params.getTargetName());
-            String[] regressorNames = params.getRegressorNames();
+            target = covariances.getVariable(params.getString("targetName", null));
+            String[] regressorNames = (String[]) params.get("regressorNames", null);
             regressors = new LinkedList<>();
 
             for (String regressorName : regressorNames) {
                 regressors.add(covariances.getVariable(regressorName));
             }
 
-            double alpha = params.getAlpha();
+            double alpha = params.getDouble("alpha", 0.001);
             regression.setAlpha(alpha);
 
             result = regression.regress(target, regressors);

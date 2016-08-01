@@ -92,8 +92,8 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
 
         this.params = params;
 
-        if (params.getVarNames() != null) {
-            this.varNames = params.getVarNames();
+        if ((List<String>) params.get("varNames", null) != null) {
+            this.varNames = (List<String>) params.get("varNames", null);
         }
 
         if (this.varNames == null) {
@@ -103,14 +103,14 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
                 this.varNames = getVarsFromGraph(parentModels);
             }
 
-            params.setVarNames(this.varNames);
+            params.set("varNames", this.varNames);
 
             if (this.varNames == null) {
                 throw new IllegalStateException(
                         "Variables are not accessible.");
             }
 
-            params().setVarNames(varNames);
+            params().set("varNames", varNames);
         }
 
         //predictorVarsList = new Vector();
@@ -138,7 +138,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         responseVar.setFont(new Font("SanSerif", Font.BOLD, 12));
 
         //TEST
-        responseVar.setText(params.getTargetName());
+        responseVar.setText(params.getString("targetName", null));
         if (!responseVar.getText().equals("") &&
                 responseButton.getText().equals(">")) {
             responseButton.toggleInclude();
@@ -147,7 +147,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
 
         DefaultListModel predsModel =
                 (DefaultListModel) this.predictorVarListbox.getModel();
-        String[] paramNames = params.getRegressorNames();
+        String[] paramNames = (String[]) params.get("regressorNames", null);
         for (String paramName : paramNames) {
             predsModel.addElement(paramName);
         }
@@ -155,12 +155,12 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         //Construct availableVarsList of variable names not response nor in predictors.
         //List varListNames = params.getRegressorNames();
         List<Object> varListNames = new ArrayList<Object>(varNames);
-        String targetName = params.getTargetName();
+        String targetName = params.getString("targetName", null);
         if (varListNames.contains(targetName)) {
             varListNames.remove(targetName);
         }
 
-        String[] regNames = params.getRegressorNames();
+        String[] regNames = (String[]) params.get("regressorNames", null);
         for (String regName : regNames) {
             if (varListNames.contains(regName)) {
                 varListNames.remove(regName);
@@ -193,14 +193,14 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         Box b4 = Box.createVerticalBox();
         Box b5 = Box.createVerticalBox();
 
-        DoubleTextField alphaField = new DoubleTextField(params.getAlpha(), 4,
+        DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setAlpha(value);
+                    params().set("alpha", 0.001);
                     Preferences.userRoot().putDouble("alpha",
-                            params().getAlpha());
+                            params().getDouble("alpha", 0.001));
                     return value;
                 }
                 catch (Exception e) {
@@ -412,7 +412,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             //Object targetValue = box.getSelectedItem();
             String newTargetName = responseVar.getText();
             setTargetName(newTargetName);
-            params().setTargetName(targetName());
+            params().set("targetName", targetName());
         }
         /* include predictor variable */
         else if (e.getActionCommand().equals(INCLUDE_PREDICTOR)) {
@@ -480,7 +480,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         setRegressorValues();   //TEST
         setRegressorNames(regNames);
 
-        params().setRegressorNames(regressorNames);
+        params().set("regressorNames", regressorNames);
     }
 
 

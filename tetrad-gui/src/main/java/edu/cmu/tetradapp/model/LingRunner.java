@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Ling;
@@ -149,7 +151,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 
         Ling ling = new Ling(data);
         Parameters searchParams = (Parameters) getParams();
-        ling.setThreshold(searchParams.getThreshold());
+        ling.setThreshold(searchParams.getDouble("threshold", 0.5));
         Ling.StoredGraphs graphs = ling.search();
         Graph graph = null;
 
@@ -216,7 +218,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -228,7 +230,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
     private boolean isAggressivelyPreventCycles() {
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            return ((Parameters) params).isAggressivelyPreventCycles();
+            return ((Parameters) params).getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

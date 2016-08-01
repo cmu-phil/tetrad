@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -235,7 +236,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 //            };
 //        }
 
-        if (params.getKnowledge().isEmpty()) {
+        if (((IKnowledge) params.get("knowledge", new Knowledge2())).isEmpty()) {
             freshenKnowledgeIfEmpty(params);
         }
 
@@ -245,14 +246,14 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         // simulation or not. If in a simulation, I should print the knowledge.
         // If not, I should wait for resetParams to be called. For now I'm
         // printing the knowledge if it's not empty.
-        if (!params.getKnowledge().isEmpty()) {
-            TetradLogger.getInstance().log("knowledge", params.getKnowledge().toString());
+        if (!((IKnowledge) params.get("knowledge", new Knowledge2())).isEmpty()) {
+            TetradLogger.getInstance().log("knowledge", ((IKnowledge) params.get("knowledge", new Knowledge2())).toString());
         }
     }
 
     private void freshenKnowledgeIfEmpty(Parameters params) {
-        if (params.getKnowledge().isEmpty()) {
-            createKnowledge(params.getKnowledge());
+        if (((IKnowledge) params.get("knowledge", new Knowledge2())).isEmpty()) {
+            createKnowledge((IKnowledge) params.get("knowledge", new Knowledge2()));
             varNames = new ArrayList<>();
 
             for (String varName : getKnowledgeBoxInput().getVariableNames()) {
@@ -281,7 +282,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     }
 
     public IKnowledge getKnowledge() {
-        return params.getKnowledge();
+        return (IKnowledge) params.get("knowledge", new Knowledge2());
     }
 
     public String getName() {
@@ -301,7 +302,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        params.setKnowledge(knowledge);
+        params.set("knowledge", knowledge);
         TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
@@ -312,7 +313,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     public void resetParams(Object params) {
         this.params = (Parameters) params;
         freshenKnowledgeIfEmpty(this.params);
-        TetradLogger.getInstance().log("knowledge", this.params.getKnowledge().toString());
+        TetradLogger.getInstance().log("knowledge", ((IKnowledge) this.params.get("knowledge", new Knowledge2())).toString());
     }
 
     public Object getResettableParams() {

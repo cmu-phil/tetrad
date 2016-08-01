@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
@@ -104,24 +105,24 @@ public class FciRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 
         Graph graph;
 
-        if (getParams().isRFCI_Used()) {
+        if (getParams().getBoolean("rfciUsed", false)) {
             Rfci fci = new Rfci(getIndependenceTest());
             fci.setKnowledge(knowledge);
-            fci.setCompleteRuleSetUsed(getParams().isCompleteRuleSetUsed());
-            fci.setMaxPathLength(getParams().getMaxReachablePathLength());
-            fci.setDepth(getParams().getDepth());
+            fci.setCompleteRuleSetUsed(getParams().getBoolean("completeRuleSetUsed", false));
+            fci.setMaxPathLength(getParams().getInt("maxReachablePathLength", -1));
+            fci.setDepth(getParams().getInt("depth", -1));
             graph = fci.search();
         } else {
             Fci fci = new Fci(getIndependenceTest());
             fci.setKnowledge(knowledge);
-            fci.setCompleteRuleSetUsed(getParams().isCompleteRuleSetUsed());
-            fci.setPossibleDsepSearchDone(getParams().isPossibleDsepDone());
-            fci.setMaxPathLength(getParams().getMaxReachablePathLength());
-            fci.setDepth(getParams().getDepth());
+            fci.setCompleteRuleSetUsed(getParams().getBoolean("completeRuleSetUsed", false));
+            fci.setPossibleDsepSearchDone(getParams().getBoolean("possibleDsepDone", true));
+            fci.setMaxPathLength(getParams().getInt("maxReachablePathLength", -1));
+            fci.setDepth(getParams().getInt("depth", -1));
             graph = fci.search();
         }
 
@@ -148,10 +149,10 @@ public class FciRunner extends AbstractAlgorithmRunner
 
         if (getParams() instanceof Parameters) {
             Parameters _params = (Parameters) params;
-            testType = _params.getIndTestType();
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         } else {
             Parameters _params = (Parameters) params;
-            testType = _params.getIndTestType();
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
         return new IndTestChooser().getTest(dataModel, params, testType);

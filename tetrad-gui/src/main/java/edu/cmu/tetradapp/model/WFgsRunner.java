@@ -79,7 +79,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
         Parameters params = (Parameters) getParams();
 
-        double penaltyDiscount = params.getPenaltyDiscount();
+        double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
         fgs = new WFgs(dataSet);
         fgs.setPenaltyDiscount(penaltyDiscount);
@@ -87,8 +87,8 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -222,7 +222,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -230,7 +230,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
         Parameters params = (Parameters) getParams();
-        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getPenaltyDiscount()));
+        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
         return paramSettings;
     }
 

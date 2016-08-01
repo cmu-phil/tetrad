@@ -491,7 +491,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         IndTestType testType = null;
 
         Parameters _params = (Parameters) params;
-        testType = _params.getIndTestType();
+        testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
 
         return new IndTestChooser().getTest(dataModel, params, testType);
     }

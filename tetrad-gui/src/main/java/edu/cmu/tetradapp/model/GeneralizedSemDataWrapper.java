@@ -116,10 +116,10 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
         }
 
         DataModelList list = new DataModelList();
-        int sampleSize = params.getSampleSize();
-        boolean latentDataSaved = params.isLatentDataSaved();
+        int sampleSize = params.getInt("sampleSize", 1000);
+        boolean latentDataSaved = params.getBoolean("latentDataSaved", false);
 
-        for (int i = 0; i < params.getNumDataSets(); i++) {
+        for (int i = 0; i < params.getInt("numDataSets", 1); i++) {
             DataSet dataSet = simulator.simulateData(sampleSize, seed, latentDataSaved);
             list.add(dataSet);
         }

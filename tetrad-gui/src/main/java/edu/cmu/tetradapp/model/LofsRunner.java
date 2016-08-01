@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
@@ -236,8 +233,8 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -257,7 +254,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
         for (DataModel dataModel : dataSets) {
             DataSet dataSet = (DataSet) dataModel;
             LingamPattern lingamPattern = new LingamPattern(pattern, dataSet);
-            lingamPattern.setAlpha(getParams().getAlpha());
+            lingamPattern.setAlpha(getParams().getDouble("alpha", 0.001));
             Graph _graph = lingamPattern.search();
 
             System.out.println(_graph);
@@ -303,16 +300,16 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
         }
 
         Lofs2 lofs = new Lofs2(pattern, _dataSets);
-        lofs.setAlpha(getParams().getAlpha());
-        lofs.setRule(params.getRule());
-        lofs.setOrientStrongerDirection(params.isOrientStrongerDirection());
-        lofs.setEdgeCorrected(params.isMeanCenterResiduals());
-        lofs.setR2Orient2Cycles(params.isR2Orient2Cycles());
-        lofs.setScore(params.getScore());
-        lofs.setEpsilon(params.getEpsilon());
-        lofs.setZeta(params.getZeta());
-        lofs.setSelfLoopStrength(params.getSelfLoopStrength());
-        lofs.setKnowledge(params.getKnowledge());
+        lofs.setAlpha(getParams().getDouble("alpha", 0.001));
+        lofs.setRule((Lofs2.Rule) params.get("rule", Lofs2.Rule.R3));
+        lofs.setOrientStrongerDirection(params.getBoolean("orientStrongerDirection", true));
+        lofs.setEdgeCorrected(params.getBoolean("meanCenterResiduals", false));
+        lofs.setR2Orient2Cycles(params.getBoolean("r2Orient2Cycles", false));
+        lofs.setScore((Lofs.Score) params.get("score", Lofs.Score.andersonDarling));
+        lofs.setEpsilon(params.getDouble("epsilon", .1));
+        lofs.setZeta(params.getDouble("zeta", 1));
+        lofs.setSelfLoopStrength(params.getDouble("selfLoopStrength", 0.0));
+        lofs.setKnowledge((IKnowledge) params.get("knowledge", new Knowledge2()));
 
         return lofs.orient();
     }
@@ -348,7 +345,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -386,7 +383,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 

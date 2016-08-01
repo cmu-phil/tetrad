@@ -21,11 +21,12 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.IonJoeModifications;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
@@ -198,9 +199,9 @@ public class IonRunner extends AbstractAlgorithmRunner
 
         IonJoeModifications ion = new IonJoeModifications(getGraphs());
 
-        ion.setAdjacencySearch(((Parameters) getParams()).isPruneByAdjacencies());
-        ion.setPathLengthSearch(((Parameters) getParams()).isPruneByPathLength());
-        ion.setKnowledge(getParams().getKnowledge());
+        ion.setAdjacencySearch(((Parameters) getParams()).getBoolean("pruneByAdjacencies", true));
+        ion.setPathLengthSearch(((Parameters) getParams()).getBoolean("pruneByPathLength", true));
+        ion.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         
         List<Graph> graphs = ion.search();
 
@@ -220,7 +221,7 @@ public class IonRunner extends AbstractAlgorithmRunner
 
         System.out.println("graphs = " + graphs);
 
-        getParams().setGraphIndex(0);
+        getParams().set("graphIndex", 0);
 
         this.graphs = graphs;
     }

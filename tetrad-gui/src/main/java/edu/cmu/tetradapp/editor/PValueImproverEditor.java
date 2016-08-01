@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -89,16 +90,16 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         }
 
         final Parameters params = (Parameters) getParams();
-        double alpha = params.getAlpha();
-        int beamWidth = params.getBeamWidth();
-        double zeroEdgeP = params.getZeroEdgeP();
+        double alpha = params.getDouble("alpha", 0.001);
+        int beamWidth = params.getInt("beamWidth", 5);
+        double zeroEdgeP = params.getDouble("zeroEdgeP", 0.05);
 
         alphaField = new DoubleTextField(alpha, 6,
                 new DecimalFormat("0.0########"));
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 if (value >= 0 && value <= 1) {
-                    params.setAlpha(value);
+                    params.set("alpha", 0.001);
                     return value;
                 } else {
                     return oldValue;
@@ -110,7 +111,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         beamWidthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 if (value >= 1) {
-                    params.setBeamWidth(value);
+                    params.set("beamwidth", value);
                     return value;
                 } else {
                     return oldValue;
@@ -124,7 +125,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         zeroEdgePField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 if (value >= 0 && value <= 1) {
-                    params.setZeroEdgeP(value);
+                    params.set("zeroEdgeP", value);
                     return value;
                 } else {
                     return oldValue;
@@ -297,7 +298,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
     }
 
     public IKnowledge getKnowledge() {
-        return getWrapper().getParams().getKnowledge();
+        return (IKnowledge) getWrapper().getParams().get("knowledge", new Knowledge2());
     }
 
     public Graph getSourceGraph() {

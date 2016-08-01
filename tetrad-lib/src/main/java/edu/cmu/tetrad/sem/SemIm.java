@@ -2475,16 +2475,16 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 final double coefLow = getParams().getDouble("coefLow", .5);
                 final double coefHigh = getParams().getDouble("coefHigh", 1.5);
                 double value = new Split(coefLow, coefHigh).nextRandom();
-                if (getParams().isCoefSymmetric()) {
+                if (getParams().getBoolean("coefSymmetric", true)) {
                     return value;
                 } else {
                     return Math.abs(value);
                 }
             } else if (parameter.getType() == ParamType.COVAR) {
-                final double covLow = getParams().getCovLow();
-                final double covHigh = getParams().getCovHigh();
+                final double covLow = getParams().getDouble("covLow", 0.1);
+                final double covHigh = getParams().getDouble("covHigh", 0.2);
                 double value = new Split(covLow, covHigh).nextRandom();
-                if (getParams().isCoefSymmetric()) {
+                if (getParams().getBoolean("coefSymmetric", true)) {
                     return value;
                 } else {
                     return Math.abs(value);

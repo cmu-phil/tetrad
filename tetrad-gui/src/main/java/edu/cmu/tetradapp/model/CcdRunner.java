@@ -21,6 +21,8 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -123,8 +125,8 @@ public class CcdRunner extends AbstractAlgorithmRunner
      */
     public void execute() {
         Ccd ccd = new Ccd(getIndependenceTest());
-        ccd.setDepth(getParams().getDepth());
-        ccd.setKnowledge(getParams().getKnowledge());
+        ccd.setDepth(getParams().getInt("depth", -1));
+        ccd.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         Graph graph = ccd.search();
 
         setResultGraph(graph);
@@ -145,7 +147,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 

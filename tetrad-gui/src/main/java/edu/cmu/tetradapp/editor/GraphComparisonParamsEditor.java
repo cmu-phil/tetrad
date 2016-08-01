@@ -106,17 +106,17 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
 
         resetOnExecute.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setResetTableOnExecute(true);
+                getParams().set("resetTableOnExecute", true);
             }
         });
 
         dontResetOnExecute.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setResetTableOnExecute(false);
+                getParams().set("resetTableOnExecute", false);
             }
         });
 
-        if (getParams().isResetTableOnExecute()) {
+        if (getParams().getBoolean("resetTableOnExecute", false)) {
             resetOnExecute.setSelected(true);
         }
         else {
@@ -132,7 +132,7 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
 
         latents.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setKeepLatents(true);
+                getParams().set("keepLatents", true);
             }
         });
 
@@ -142,7 +142,7 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
 //            }
 //        });
 
-        if (getParams().isKeepLatents()) {
+        if (getParams().getBoolean("keepLatents", false)) {
             latents.setSelected(true);
         }
         else {
@@ -164,29 +164,31 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
 
         graph1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setReferenceGraphName(model1.getName());
-                getParams().setTargetGraphName(model2.getName());
+                getParams().set("referenceGraphName", model1.getName());
+                getParams().set("targetGraphName", model2.getName());
             }
         });
 
         graph2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setReferenceGraphName(model2.getName());
-                getParams().setTargetGraphName(model1.getName());
+                getParams().set("referenceGraphName", model2.getName());
+                getParams().set("targetGraphName", model1.getName());
             }
         });
 
-        if (getParams().getReferenceGraphName() == null) {
-            getParams().setReferenceGraphName(model1.getName());
-            getParams().setTargetGraphName(model2.getName());
+        String refName = getParams().getString("referenceGraphName", null);
+        if (refName == null) {
+            getParams().set("referenceGraphName", model1.getName());
+            getParams().set("targetGraphName", model2.getName());
             graph1.setSelected(true);
         }
         else {
-            if (getParams().getReferenceGraphName().equals(model1.getName())) {
+            String targetName = getParams().getString("targetGraphName", null);
+            if (refName.equals(model1.getName())) {
                 graph1.setSelected(true);
             }
             else
-            if (getParams().getReferenceGraphName().equals(model2.getName())) {
+            if (targetName.equals(model2.getName())) {
                 graph2.setSelected(true);
             }
         }

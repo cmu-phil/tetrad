@@ -37,8 +37,8 @@ public class VanderbiltMmmbMbSearchRunner extends AbstractMBSearchRunner {
 
 
     public void execute() throws Exception {
-        Mmmb search = new Mmmb(getIndependenceTest(), getParams().getDepth(), true);
-        this.setSearchResults(search.findMb(this.getParams().getTargetName()));
+        Mmmb search = new Mmmb(getIndependenceTest(), getParams().getInt("depth", -1), true);
+        this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());
     }
 }

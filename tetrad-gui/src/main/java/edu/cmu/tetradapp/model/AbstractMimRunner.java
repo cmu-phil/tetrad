@@ -26,8 +26,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.ParamsResettable;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.List;
 
 /**
@@ -111,7 +109,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.sourceGraph = dataWrapper.getSourceGraph();
 
         DataModel data = getDataModel(dataWrapper);
-        getParams().setKnowledge(dataWrapper.getKnowledge());
+        getParams().set("knowledge", dataWrapper.getKnowledge());
         List names = data.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = data;
@@ -141,7 +139,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         }
 
         this.params = params;
-        this.params.setClusters(runner.getClusters());
+        this.params.set("clusters", runner.getClusters());
         this.sourceGraph = runner.getSourceGraph();
 
         DataModel dataSource = runner.getData();
@@ -257,7 +255,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     }
 
     private void transferVarNamesToParams(List names) {
-        getParams().setVarNames(names);
+        getParams().set("varNames", names);
     }
 
     public String getName() {

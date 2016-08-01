@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -121,16 +122,16 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((Parameters) getParams()).getDepth();
+        int pcDepth = ((Parameters) getParams()).getInt("depth", -1);
         Mbfs mbfs =
                 new Mbfs(getIndependenceTest(), pcDepth);
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            mbfs.setAggressivelyPreventCycles(((Parameters) params).isAggressivelyPreventCycles());
+            mbfs.setAggressivelyPreventCycles(((Parameters) params).getBoolean("aggressivelyPreventCycles", false));
         }
-        IKnowledge knowledge = getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         mbfs.setKnowledge(knowledge);
-        String targetName = ((Parameters) getParams()).getTargetName();
+        String targetName = ((Parameters) getParams()).getString("targetName", null);
         Graph graph = mbfs.search(targetName);
         setResultGraph(graph);
 
@@ -155,7 +156,7 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
         }
 
         Parameters params = (Parameters) getParams();
-        IndTestType testType = params.getIndTestType();
+        IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 

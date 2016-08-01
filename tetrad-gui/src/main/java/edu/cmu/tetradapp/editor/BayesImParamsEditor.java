@@ -83,15 +83,15 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         group.add(manually);
         group.add(randomly);
 
-        if (getParams().getInitializationMode().equals("manualRetain")) {
+        if (getParams().getString("initializationMode", "manualRetain").equals("manualRetain")) {
             manually.setSelected(true);
             randomEveryTime.setEnabled(false);
             randomEveryTime.setSelected(false);
-        } else if (getParams().getInitializationMode().equals("randomRatain")) {
+        } else if (getParams().getString("initializationMode", "manualRetain").equals("randomRatain")) {
             randomly.setSelected(true);
             randomEveryTime.setEnabled(true);
             randomEveryTime.setSelected(false);
-        } else if (getParams().getInitializationMode().equals("randomOverwrite")) {
+        } else if (getParams().getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             randomly.setSelected(true);
             randomEveryTime.setEnabled(true);
             randomEveryTime.setSelected(true);
@@ -101,14 +101,14 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
 
         manually.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode("manualRetain");
+                getParams().set("initializationMode", "manualRetain");
                 randomEveryTime.setEnabled(false);
             }
         });
 
         randomly.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode("randomRetain");
+                getParams().set("initializationMode", "randomRetain");
                 randomEveryTime.setEnabled(true);
                 randomEveryTime.setSelected(false);
             }
@@ -124,9 +124,9 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
                 JCheckBox checkBox = (JCheckBox) e.getSource();
 
                 if (checkBox.isSelected()) {
-                    getParams().setInitializationMode("randomOverwrite");
+                    getParams().set("initializationMode", "randomOverwrite");
                 } else {
-                    getParams().setInitializationMode("randomRetain");
+                    getParams().set("initializationMode", "randomRetain");
                 }
             }
         });

@@ -56,12 +56,12 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
     public TimeSeriesIndTestParamsEditor(Parameters simulator) {
         params = simulator;
 
-        alphaField = new DoubleTextField(getLagIndTestParams().getAlpha(), 5,
+        alphaField = new DoubleTextField(getLagIndTestParams().getDouble("alpha", 0.001), 5,
                 NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    getLagIndTestParams().setAlpha(value);
+                    getLagIndTestParams().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -70,11 +70,11 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
             }
         });
 
-        numLagsField = new IntTextField((getLagIndTestParams()).getNumLags(), 3);
+        numLagsField = new IntTextField((getLagIndTestParams()).getInt("numLags", 1), 3);
         numLagsField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getLagIndTestParams().setNumLags(value);
+                    getLagIndTestParams().set("numLags", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -115,7 +115,7 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
         Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Num Times:"));
         b4.add(Box.createHorizontalGlue());
-        int numTimePoints = getLagIndTestParams().getNumTimePoints();
+        int numTimePoints = getLagIndTestParams().getInt("numTimePoints", 0);
         b4.add(new JLabel(Integer.toString(numTimePoints)));
         add(b4);
         add(Box.createVerticalGlue());

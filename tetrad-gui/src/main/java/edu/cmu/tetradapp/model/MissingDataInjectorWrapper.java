@@ -54,7 +54,7 @@ public class MissingDataInjectorWrapper extends DataWrapper {
 
         int numVars = dataSet.getNumColumns();
 
-        double prob = params.getProb();
+        double prob = params.getDouble("prob", 0.02);
         double[] probs = new double[numVars];
 
         for (int i = 0; i < probs.length; i++) {

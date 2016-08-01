@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -94,7 +95,7 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
     }
 
     public void setup() {
-        this.varNames = params.getVarNames();
+        this.varNames = (List<String>) params.get("varNames", null);
 
         DataModel dataModel1 = null;
         Graph graph = null;
@@ -144,14 +145,14 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
                             "passed to the search).");
         }
 
-        params.setVarNames(varNames);
+        params.set("varNames", varNames);
         JButton knowledgeButton = new JButton("Edit");
 
-        IntTextField depthField = new IntTextField(params.getDepth(), 4);
+        IntTextField depthField = new IntTextField(params.getInt("depth", -1), 4);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params.setDepth(value);
+                    params.set("depth", value);
                     Preferences.userRoot().putInt("depth", value);
                     return value;
                 }
@@ -161,7 +162,7 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        double alpha = params.getAlpha();
+        double alpha = params.getDouble("alpha", 0.001);
 
         if (!Double.isNaN(alpha)) {
             alphaField =
@@ -169,7 +170,7 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
             alphaField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        params.setAlpha(value);
+                        params.set("alpha", 0.001);
                         Preferences.userRoot().putDouble("alpha", value);
                         return value;
                     }
@@ -227,10 +228,10 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
                     "null if you want to launch a OldKnowledgeEditor.");
         }
 
-        IKnowledge knowledge = this.getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
 
         KnowledgeEditor knowledgeEditor = new KnowledgeEditor(knowledge,
-                varNames, params.getSourceGraph());
+                varNames, (Graph) params.get("sourceGraph", null));
         EditorWindow window = new EditorWindow(knowledgeEditor,
                 knowledgeEditor.getName(), "Save", false, this);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);

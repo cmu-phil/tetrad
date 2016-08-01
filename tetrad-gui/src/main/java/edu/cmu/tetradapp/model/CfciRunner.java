@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Cfci;
 import edu.cmu.tetrad.search.IndTestType;
@@ -104,14 +105,14 @@ public class CfciRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         Parameters searchParams = getParams();
 
         Parameters params = searchParams;
 
         Cfci cfci = new Cfci(getIndependenceTest());
         cfci.setKnowledge(knowledge);
-        cfci.setDepth(params.getDepth());
+        cfci.setDepth(params.getInt("depth", -1));
         Graph graph = cfci.search();
 
         if (getSourceGraph() != null) {
@@ -139,11 +140,11 @@ public class CfciRunner extends AbstractAlgorithmRunner
 
         if (getParams() instanceof Parameters) {
             Parameters _params = (Parameters) params;
-            testType = _params.getIndTestType();
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
         else {
             Parameters _params = (Parameters) params;
-            testType = _params.getIndTestType();
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
         return new IndTestChooser().getTest(dataModel, params, testType);

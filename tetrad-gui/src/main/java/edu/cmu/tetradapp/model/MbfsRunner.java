@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.CovarianceMatrixOnTheFly;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -150,16 +151,16 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 //			mbfs.setAggressivelyPreventCycles(((Parameters) params)
 //					.isAggressivelyPreventCycles());
 //		}
-		IKnowledge knowledge = getParams().getKnowledge();
+		IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 //		mbfs.setKnowledge(knowledge);
-		String targetName = ((Parameters) getParams()).getTargetName();
+		String targetName = ((Parameters) getParams()).getString("targetName", null);
 //		Graph searchGraph = mbfs.search(targetName);
 //		setResultGraph(searchGraph);
 
 		DataSet dataSet = (DataSet) getDataModelList().get(0);
 
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        score.setPenaltyDiscount(getParams().getAlpha());
+		score.setPenaltyDiscount(getParams().getDouble("alpha", 0.001));
 		FgsMb search = new FgsMb(score);
         search.setFaithfulnessAssumed(true);
 		Graph searchGraph = search.search(dataSet.getVariable(targetName));
@@ -187,7 +188,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 		}
 
 		Parameters params = (Parameters) getParams();
-		IndTestType testType = params.getIndTestType();
+		IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
 		return new IndTestChooser().getTest(dataModel, params, testType);
 	}
 

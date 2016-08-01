@@ -52,7 +52,7 @@ public class IonDisplay extends JPanel implements GraphEditable {
 
     public IonDisplay(final List<Graph> storedGraphs, final IonRunner runner) {
         this.storedGraphs = storedGraphs;
-        int graphIndex = runner.getParams().getGraphIndex();
+        int graphIndex = runner.getParams().getInt("graphIndex", 1);
 
         if (storedGraphs.size() == 0) {
             workbench = new GraphWorkbench();
@@ -71,13 +71,13 @@ public class IonDisplay extends JPanel implements GraphEditable {
                 workbench.setGraph(storedGraphs.get(indices.get(index - 1)));
                 firePropertyChange("modelChanged", null, null);
                 runner.setResultGraph(workbench.getGraph());
-                runner.getParams().setGraphIndex(index - 1);
+                runner.getParams().set("graphIndex", index - 1);
             }
         });
 
         if (graphIndex >= indices.size()) {
             graphIndex = 0;
-            runner.getParams().setGraphIndex(0);
+            runner.getParams().set("graphIndex", 0);
         }
 
         if (indices.size() > 0) {

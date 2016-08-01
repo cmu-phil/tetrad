@@ -71,10 +71,10 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
 	public SemGraphWrapper(Parameters params) {
-		if (params.getNewGraphInitializationMode().equals("manual")) {
+		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
 			semGraph = new SemGraph();
 			semGraph.setShowErrorTerms(false);
-		} else if (params.getNewGraphInitializationMode().equals("random")) {
+		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
 			RandomUtil.getInstance().setSeed(new Date().getTime());
 			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
@@ -82,7 +82,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	}
 
 	public SemGraphWrapper(SemGraphWrapper graphWrapper, Parameters params) {
-		if (params.getNewGraphInitializationMode().equals("manual")) {
+		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             try {
 				this.semGraph = new SemGraph(graphWrapper.getSemGraph());
                 this.semGraph.setShowErrorTerms(false);
@@ -91,7 +91,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
                 this.semGraph = new SemGraph();
                 this.semGraph.setShowErrorTerms(false);
             }
-        } else if (params.getNewGraphInitializationMode().equals("random")) {
+        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
 			RandomUtil.getInstance().setSeed(new Date().getTime());
 			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
@@ -99,10 +99,10 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	}
 
 	public SemGraphWrapper(DagWrapper graphWrapper, Parameters params) {
-		if (params.getNewGraphInitializationMode().equals("manual")) {
+		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
 			this.semGraph = new SemGraph(graphWrapper.getDag());
 			this.semGraph.setShowErrorTerms(false);
-		} else if (params.getNewGraphInitializationMode().equals("random")) {
+		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
 			RandomUtil.getInstance().setSeed(new Date().getTime());
 			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
@@ -110,10 +110,10 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	}
 
 	public SemGraphWrapper(GraphWrapper graphWrapper, Parameters params) {
-		if (params.getNewGraphInitializationMode().equals("manual")) {
+		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
 			this.semGraph = new SemGraph(graphWrapper.getGraph());
 			this.semGraph.setShowErrorTerms(false);
-		} else if (params.getNewGraphInitializationMode().equals("random")) {
+		} else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
 			RandomUtil.getInstance().setSeed(new Date().getTime());
 			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}

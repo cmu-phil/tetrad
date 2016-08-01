@@ -74,12 +74,12 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
         int lowerBound, upperBound;
 
-        if (params.getInitializationMode().equals("manual")) {
+        if (params.getString("initializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
         }
-        else if (params.getInitializationMode().equals("automatic")) {
-            lowerBound = params.getLowerBoundNumVals();
-            upperBound = params.getUpperBoundNumVals();
+        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 2);
         }
         else {
             throw new IllegalStateException("Unrecognized type.");
@@ -100,13 +100,13 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
         int lowerBound, upperBound;
 
-        if (params.getInitializationMode().equals("manual")) {
+        if (params.getString("initializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
             this.bayesPm = new BayesPm(graph, bayesPm, lowerBound, upperBound);
         }
-        else if (params.getInitializationMode().equals("automatic")) {
-            lowerBound = params.getLowerBoundNumVals();
-            upperBound = params.getUpperBoundNumVals();
+        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 2);
             this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
         }
         else {
@@ -143,12 +143,12 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
         int lowerBound, upperBound;
 
-        if (params.getInitializationMode().equals("manual")) {
+        if (params.getString("initializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
         }
-        else if (params.getInitializationMode().equals("automatic")) {
-            lowerBound = params.getLowerBoundNumVals();
-            upperBound = params.getUpperBoundNumVals();
+        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 2);
         }
         else {
             throw new IllegalStateException("Unrecognized type.");
@@ -173,15 +173,15 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
             int lowerBound, upperBound;
 
-            if (params.getInitializationMode().equals("manual")) {
+            if (params.getString("initializationMode", "manualRetain").equals("manual")) {
                 lowerBound = upperBound = 2;
                 this.bayesPm = new BayesPm(graph,
                         oldBayesPmWrapper.getBayesPm(), lowerBound, upperBound);
             }
             else
-            if (params.getInitializationMode().equals("automatic")) {
-                lowerBound = params.getLowerBoundNumVals();
-                upperBound = params.getUpperBoundNumVals();
+            if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+                lowerBound = params.getInt("lowerBoundNumVals", 2);
+                upperBound = params.getInt("upperBoundNumVals", 2);
                 this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
             }
             else {
@@ -315,12 +315,12 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
         int lowerBound, upperBound;
 
-        if (params.getInitializationMode().equals("manual")) {
+        if (params.getString("initializationMode", "manualRetain").equals("manual")) {
             lowerBound = upperBound = 2;
         }
-        else if (params.getInitializationMode().equals("automatic")) {
-            lowerBound = params.getLowerBoundNumVals();
-            upperBound = params.getUpperBoundNumVals();
+        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 2);
         }
         else {
             throw new IllegalStateException("Unrecognized type.");
@@ -345,15 +345,15 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
             int lowerBound, upperBound;
 
-            if (params.getInitializationMode().equals("manual")) {
+            if (params.getString("initializationMode", "manualRetain").equals("manual")) {
                 lowerBound = upperBound = 2;
                 this.bayesPm = new BayesPm(graph,
                         oldBayesPmWrapper.getBayesPm(), lowerBound, upperBound);
             }
             else
-            if (params.getInitializationMode().equals("automatic")) {
-                lowerBound = params.getLowerBoundNumVals();
-                upperBound = params.getUpperBoundNumVals();
+            if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+                lowerBound = params.getInt("lowerBoundNumVals", 2);
+                upperBound = params.getInt("upperBoundNumVals", 2);
                 this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
             }
             else {

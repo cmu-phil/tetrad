@@ -21,9 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
@@ -167,8 +165,8 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -188,7 +186,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
         for (DataModel dataModel : dataSets) {
             DataSet dataSet = (DataSet) dataModel;
             LingamPattern lingamPattern = new LingamPattern(pattern, dataSet);
-            lingamPattern.setAlpha(getParams().getAlpha());
+            lingamPattern.setAlpha(getParams().getDouble("alpha", 0.001));
             Graph _graph = lingamPattern.search();
 
             System.out.println(_graph);
@@ -234,7 +232,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
 //        LingOrientationFixedStructure pcLingam2 = new LingOrientationFixedStructure(pattern, _dataSets);
         LingamPattern2 pcLingam2 = new LingamPattern2(pattern, _dataSets);
-        pcLingam2.setAlpha(getParams().getAlpha());
+        pcLingam2.setAlpha(getParams().getDouble("alpha", 0.001));
 
         Graph graph = pcLingam2.search();
 
@@ -272,7 +270,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -310,7 +308,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 }

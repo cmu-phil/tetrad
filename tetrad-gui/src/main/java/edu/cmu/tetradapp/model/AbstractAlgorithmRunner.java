@@ -125,9 +125,9 @@ public abstract class AbstractAlgorithmRunner
 
         //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
         if (knowledgeBoxModel == null) {
-            getParams().setKnowledge(dataWrapper.getKnowledge());
+            getParams().set("knowledge", dataWrapper.getKnowledge());
         } else {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
@@ -158,12 +158,12 @@ public abstract class AbstractAlgorithmRunner
 
         //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
         if (knowledgeBoxModel == null) {
-            getParams().setKnowledge(dataWrapper.getKnowledge());
+            getParams().set("knowledge", dataWrapper.getKnowledge());
         } else {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
 
-        getParams().setIndependenceFacts(facts.getFacts());
+        getParams().set("independenceFacts", facts.getFacts());
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
     }
@@ -212,7 +212,7 @@ public abstract class AbstractAlgorithmRunner
                                    KnowledgeBoxModel knowledgeBoxModel) {
         this(graph, params);
         if (knowledgeBoxModel != null) {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
     }
 
@@ -225,7 +225,7 @@ public abstract class AbstractAlgorithmRunner
         this.graphs = Arrays.asList(graphs);
         this.params = params;
         if (knowledgeBoxModel != null) {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
     }
 
@@ -243,7 +243,7 @@ public abstract class AbstractAlgorithmRunner
         DataModel dataSource = model.getFacts();
 
         if (knowledgeBoxModel != null) {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
 
         List names = dataSource.getVariableNames();
@@ -255,10 +255,10 @@ public abstract class AbstractAlgorithmRunner
                                    KnowledgeBoxModel knowledgeBoxModel, IndependenceFacts facts) {
         this(graph, params);
         if (knowledgeBoxModel != null) {
-            getParams().setKnowledge(knowledgeBoxModel.getKnowledge());
+            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
         if (facts != null) {
-            getParams().setIndependenceFacts(facts);
+            getParams().set("independenceFacts", facts);
         }
     }
 
@@ -386,7 +386,7 @@ public abstract class AbstractAlgorithmRunner
     }
 
     private void transferVarNamesToParams(List names) {
-        getParams().setVarNames(names);
+        getParams().set("varNames", names);
     }
 
     /**

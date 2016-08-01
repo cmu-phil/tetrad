@@ -38,7 +38,7 @@ public class VanderbiltInterIambMbSearchRunner extends AbstractMBSearchRunner {
 
     public void execute() throws Exception {
         InterIamb search = new InterIamb(getIndependenceTest());
-        this.setSearchResults(search.findMb(this.getParams().getTargetName()));
+        this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());
     }
 }

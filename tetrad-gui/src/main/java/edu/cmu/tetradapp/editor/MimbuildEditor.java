@@ -164,7 +164,7 @@ public class MimbuildEditor extends JPanel {
 
         JCheckBox showMaxP = new JCheckBox("Show Max P Value Result");
 
-        showMaxP.setSelected(getMimRunner().getParams().isShowMaxP());
+        showMaxP.setSelected(getMimRunner().getParams().getBoolean("showMaxP", false));
 
         showMaxP.addActionListener(new ActionListener() {
             @Override
@@ -173,7 +173,7 @@ public class MimbuildEditor extends JPanel {
                 boolean selected = box.isSelected();
 
                 Parameters params = getMimRunner().getParams();
-                params.setShowMaxP(selected);
+                params.set("showMaxP", selected);
 
                 if (selected) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -182,22 +182,23 @@ public class MimbuildEditor extends JPanel {
                 else if (!selected) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Max P mode turned off and reset.");
-                    params.setMaxP(-1);
-                    params.setMaxStructureGraph(null);
+                    double maxP = -1;
+                    params.set("maxP", maxP);
+                    params.set("maxStructureGraph", (Graph) null);
                 }
             }
         });
 
         JCheckBox include3Clusters = new JCheckBox("Include 3-clusters");
 
-        include3Clusters.setSelected(getMimRunner().getParams().isInclude3Clusters());
+        include3Clusters.setSelected(getMimRunner().getParams().getBoolean("includeThreeClusters", true));
 
         include3Clusters.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JCheckBox box = (JCheckBox) e.getSource();
                 boolean selected = box.isSelected();
-                getMimRunner().getParams().setInclude3Clusters(selected);
+                getMimRunner().getParams().set("includeThreeClusters", selected);
             }
         });
 
@@ -483,7 +484,7 @@ public class MimbuildEditor extends JPanel {
 
         Graph sourceGraph = getMimRunner().getSourceGraph();
         Graph latestWorkbenchGraph =
-                getMimRunner().getParams().getSourceGraph();
+                (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
                 latestWorkbenchGraph);
@@ -535,7 +536,7 @@ public class MimbuildEditor extends JPanel {
     }
 
     public Graph getLatestWorkbenchGraph() {
-        Graph graph = getMimRunner().getParams().getSourceGraph();
+        Graph graph = (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         if (graph == null) {
             return getMimRunner().getSourceGraph();
@@ -553,13 +554,13 @@ public class MimbuildEditor extends JPanel {
 
         try {
             Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();
-            getMimRunner().getParams().setSourceGraph(graph);
+            getMimRunner().getParams().set("sourceGraph", graph);
         }
         catch (IOException e) {
-            getMimRunner().getParams().setSourceGraph(null);
+            getMimRunner().getParams().set("sourceGraph", (Graph) null);
         }
         catch (ClassNotFoundException e) {
-            getMimRunner().getParams().setSourceGraph(null);
+            getMimRunner().getParams().set("sourceGraph", (Graph) null);
             e.printStackTrace();
         }
     }
@@ -590,7 +591,7 @@ public class MimbuildEditor extends JPanel {
 
         if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            params.setVarNames(runner.getParams().getVarNames());
+            params.set("varNames", (java.util.List<String>) runner.getParams().get("varNames", null));
             DataModel dataModel = runner.getData();
 
             if (dataModel instanceof DataSet) {
@@ -606,7 +607,7 @@ public class MimbuildEditor extends JPanel {
 
         if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            params.setVarNames(runner.getParams().getVarNames());
+            params.set("varNames", (java.util.List<String>) runner.getParams().get("varNames", null));
 
             boolean discreteData = false;
 
@@ -619,7 +620,7 @@ public class MimbuildEditor extends JPanel {
 
         if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            params.setVarNames(runner.getParams().getVarNames());
+            params.set("varNames", (java.util.List<String>) runner.getParams().get("varNames", null));
             return new MimBuildIndTestParamsEditor(params);
         }
 

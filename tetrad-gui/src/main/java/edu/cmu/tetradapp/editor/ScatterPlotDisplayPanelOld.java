@@ -227,7 +227,7 @@ public class ScatterPlotDisplayPanelOld extends JPanel {
             Parameters params = new Parameters();
             Vector<String> regressors = new Vector();
             regressors.add(scatterPlot.getXVariable().getName());
-            params.setTargetName(scatterPlot.getYVariable().getName());
+            params.set("targetName", scatterPlot.getYVariable().getName());
 
             if(scatterPlot.getIndexSet().size() != scatterPlot.getDataSet().getNumRows())
             {

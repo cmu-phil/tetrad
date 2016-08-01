@@ -116,7 +116,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -145,7 +145,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
                 setErrorMessage(null);
 
                 if (!knowledgeMessageShown) {
-                    IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+                    IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
                                 getWorkbench(),
@@ -233,15 +233,15 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
     public List<String> getVarNames() {
         Parameters params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        return (List<String>) params.get("varNames", null);
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //==========================PROTECTED METHODS============================//
@@ -462,7 +462,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
         meekOrient.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                rules.setKnowledge(getAlgorithmRunner().getParams().getKnowledge());
+                rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
                 rules.orientImplied(getGraph());
                 getGraphHistory().add(getGraph());
                 getWorkbench().setGraph(getGraph());
@@ -562,7 +562,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
         if (topGraphs == null) topGraphs = new ArrayList<>();
 
-        Graph latestWorkbenchGraph = runner.getParams().getSourceGraph();
+        Graph latestWorkbenchGraph = (Graph) runner.getParams().get("sourceGraph", null);
         Graph sourceGraph = runner.getSourceGraph();
 
         boolean arrangedAll = false;

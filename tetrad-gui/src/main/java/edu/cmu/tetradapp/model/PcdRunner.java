@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -120,7 +121,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
     
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -141,7 +142,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         Parameters searchParams = (Parameters) getParams();
 
         Parameters params =
@@ -149,7 +150,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
 
         Pcd pc = new Pcd(getIndependenceTest());
         pc.setKnowledge(knowledge);
-        pc.setDepth(params.getDepth());
+        pc.setDepth(params.getInt("depth", -1));
 
         Graph graph;
 
@@ -182,7 +183,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         IndependenceTest test = new IndTestChooser().getTest(dataModel, getParams(), testType);
 
         System.out.println(test);

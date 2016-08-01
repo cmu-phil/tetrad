@@ -24,6 +24,8 @@ package edu.cmu.tetradapp.model;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -31,7 +33,6 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +70,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -90,12 +91,12 @@ public class GlassoRunner extends AbstractAlgorithmRunner
             DoubleMatrix2D cov = new DenseDoubleMatrix2D(dataSet.getCovarianceMatrix().toArray());
 
             Glasso glasso = new Glasso(cov);
-            glasso.setMaxit(params.getMaxit());
-            glasso.setIa(params.isIa());
-            glasso.setIs(params.isIs());
-            glasso.setItr(params.isItr());
-            glasso.setIpen(params.isIpen());
-            glasso.setThr(params.getThr());
+            glasso.setMaxit((int) params.get("maxit", 10000));
+            glasso.setIa(params.getBoolean("ia", false));
+            glasso.setIs(params.getBoolean("is", false));
+            glasso.setItr(params.getBoolean("itr", false));
+            glasso.setIpen(params.getBoolean("ipen", false));
+            glasso.setThr(params.getDouble("thr", 1e-4));
             glasso.setRhoAllEqual(1.0);
 
             Glasso.Result result = glasso.search();
@@ -123,7 +124,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -162,7 +163,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     private boolean isAggressivelyPreventCycles(){
         Parameters params = getParams();
         if(params instanceof Parameters){
-           return ((Parameters)params).isAggressivelyPreventCycles();
+            return ((Parameters)params).getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

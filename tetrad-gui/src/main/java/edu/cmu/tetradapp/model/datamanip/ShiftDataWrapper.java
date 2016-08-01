@@ -83,7 +83,7 @@ public class ShiftDataWrapper extends DataWrapper {
             dataSets.add((DataSet) dataModelList.get(i));
         }
 
-        int[] backshifts = params.getShifts();
+        int[] backshifts = (int[]) params.get("shifts", null);
 
         if (backshifts.length < dataSets.get(0).getNumColumns()) {
             return;
@@ -99,7 +99,7 @@ public class ShiftDataWrapper extends DataWrapper {
 
         this.setDataModel(_list);
         this.setSourceGraph(data.getSourceGraph());
-        params.setShifts(backshifts);
+        params.set("shifts", backshifts);
 
         LogDataUtils.logDataModelList("Data in which variables have been shifted in time.", getDataModelList());
     }

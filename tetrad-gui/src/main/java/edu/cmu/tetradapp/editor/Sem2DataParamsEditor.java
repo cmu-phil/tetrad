@@ -63,11 +63,11 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
     public void setup() {
 
         // set up text and ties them to the parameters object being edited.
-        IntTextField sampleSizeField = new IntTextField(getParams().getSampleSize(), 4);
+        IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 4);
         sampleSizeField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    getParams().setSampleSize(value);
+                    getParams().set("sampleSize", value);
                     return value;
                 }
                 catch (Exception e) {
@@ -80,7 +80,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
         latentVarsBox.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
                 JCheckBox b = (JCheckBox)e.getSource();
-                getParams().setIncludeLatents(b.isSelected());
+                getParams().set("includeLatents", b.isSelected());
             }
         });
 

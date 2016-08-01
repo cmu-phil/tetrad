@@ -90,12 +90,12 @@ class GFciIndTestParamsEditor extends JComponent {
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(params().getAlpha(), 8,
+        alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setAlpha(value);
+                    params().set("alpha", 0.001);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -103,11 +103,11 @@ class GFciIndTestParamsEditor extends JComponent {
             }
         });
 
-        depthField = new IntTextField(params().getDepth(), 5);
+        depthField = new IntTextField(params().getInt("depth", -1), 5);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params().setDepth(value);
+                    params().set("depth", value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -116,12 +116,12 @@ class GFciIndTestParamsEditor extends JComponent {
         });
 
 
-        penaltyDiscount = new DoubleTextField(params().getPenaltyDiscount(), 8,
+        penaltyDiscount = new DoubleTextField(params().getDouble("penaltyDiscount", 4), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         penaltyDiscount.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setPenaltyDiscount(value);
+                    params().set("penaltyDiscount", value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -129,12 +129,12 @@ class GFciIndTestParamsEditor extends JComponent {
             }
         });
 
-        samplePrior = new DoubleTextField(params().getSamplePrior(), 8,
+        samplePrior = new DoubleTextField(params().getDouble("samplePrior", 1), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         samplePrior.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setSamplePrior(value);
+                    params().set("samplePrior", value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -142,12 +142,12 @@ class GFciIndTestParamsEditor extends JComponent {
             }
         });
 
-        structurePrior = new DoubleTextField(params().getStructurePrior(), 8,
+        structurePrior = new DoubleTextField(params().getDouble("structurePrior", 1), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         structurePrior.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setStructurePrior(value);
+                    params().set("structurePrior", value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -157,28 +157,28 @@ class GFciIndTestParamsEditor extends JComponent {
 
 
         completeRuleSetCheckBox = new JCheckBox();
-        completeRuleSetCheckBox.setSelected(params().isCompleteRuleSetUsed());
+        completeRuleSetCheckBox.setSelected(params().getBoolean("completeRuleSetUsed", false));
         completeRuleSetCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                params().setCompleteRuleSetUsed(source.isSelected());
+                params().set("completeRuleSetUsed", source.isSelected());
             }
         });
 
         possibleDsepCheckBox = new JCheckBox();
-        possibleDsepCheckBox.setSelected(params().isPossibleDsepDone());
+        possibleDsepCheckBox.setSelected(params().getBoolean("possibleDsepDone", true));
         possibleDsepCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                params().setPossibleDsepDone(source.isSelected());
+                params().set("possibleDsepDone", source.isSelected());
             }
         });
 
-        maxReachablePathLengthField = new IntTextField(params().getMaxReachablePathLength(), 3);
+        maxReachablePathLengthField = new IntTextField(params().getInt("maxReachablePathLength", -1), 3);
         maxReachablePathLengthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params().setMaxReachablePathLength(value);
+                    params().set("maxReachablePathLength", value);
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -188,11 +188,11 @@ class GFciIndTestParamsEditor extends JComponent {
 
 
         faithfulnessAssumed = new JCheckBox();
-        faithfulnessAssumed.setSelected(params().isFaithfulnessAssumed());
+        faithfulnessAssumed.setSelected(params().getBoolean("faithfulnessAssumed", true));
         faithfulnessAssumed.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox source = (JCheckBox) actionEvent.getSource();
-                params().setFaithfulnessAssumed(source.isSelected());
+                params().set("faithfulnessAssumed", source.isSelected());
             }
         });
 

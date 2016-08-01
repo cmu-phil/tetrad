@@ -375,12 +375,12 @@ public class GFciRunner extends AbstractAlgorithmRunner
         }
 
         Parameters params = (Parameters) getParams();
-        double penaltyDiscount = params.getPenaltyDiscount();
+        double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             gfci = new GFci(gesScore);
-            gfci.setKnowledge(getParams().getKnowledge());
+            gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             gfci.setVerbose(true);
         } else {
 
@@ -431,7 +431,7 @@ public class GFciRunner extends AbstractAlgorithmRunner
 //                Parameters params = (Parameters) Parameters;
 
                 if (allContinuous(list)) {
-                    double penalty = params.getPenaltyDiscount();
+                    double penalty = params.getDouble("penaltyDiscount", 4);
 
                     SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                     fgsScore.setPenaltyDiscount(penalty);
@@ -461,13 +461,13 @@ public class GFciRunner extends AbstractAlgorithmRunner
         gfci.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
 //        gfci.setDepth(3);
-        gfci.setFaithfulnessAssumed(params.isFaithfulnessAssumed());
+        gfci.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
         Graph graph = gfci.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -520,10 +520,10 @@ public class GFciRunner extends AbstractAlgorithmRunner
 
         if (getParams() instanceof Parameters) {
             Parameters _params = (Parameters) params;
-            testType = _params.getIndTestType();
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         } else {
             Parameters _params = (Parameters) params;
-            testType = _params.getIndTestType();
+            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
         return new IndTestChooser().getTest(dataModel, params, testType);

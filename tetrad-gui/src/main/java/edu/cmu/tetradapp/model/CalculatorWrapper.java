@@ -61,8 +61,8 @@ public class CalculatorWrapper extends DataWrapper {
 
             List<String> equations = new ArrayList<String>();
 
-            int size = params.getEquations().size();
-            String[] displayEquations = params.getEquations().toArray(new String[size]);
+            int size = ((List<String>) params.get("equations", null)).size();
+            String[] displayEquations = ((List<String>) params.get("equations", null)).toArray(new String[size]);
 
             for (String equation : displayEquations) {
                 if (equation.contains("$")) {

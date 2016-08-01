@@ -97,7 +97,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((Parameters) getParams()).getDepth();
+        int pcDepth = ((Parameters) getParams()).getInt("depth", -1);
         HitonMb search =
                 new HitonMb(getIndependenceTest(), pcDepth, false);
 //        Parameters params = getParams();
@@ -106,7 +106,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
 //        }
 //        Knowledge knowledge = getParams().getKnowledge();
 //        search.setKnowledge(knowledge);
-        String targetName = ((Parameters) getParams()).getTargetName();
+        String targetName = ((Parameters) getParams()).getString("targetName", null);
         List<Node> nodes = search.findMb(targetName);
 
         Graph graph = new EdgeListGraph();
@@ -133,7 +133,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
         }
 
         Parameters params = (Parameters) getParams();
-        IndTestType testType = params.getIndTestType();
+        IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 

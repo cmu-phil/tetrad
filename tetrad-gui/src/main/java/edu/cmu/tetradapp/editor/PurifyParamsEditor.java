@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -70,12 +71,12 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setup() {
-        DoubleTextField alphaField = new DoubleTextField(params.getAlpha(), 4,
+        DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    getParams().setAlpha(value);
+                    getParams().set("alpha", 0.001);
                     return value;
                 }
                 catch (Exception e) {
@@ -86,13 +87,13 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
 
         final TestType[] descriptions = TestType.getTestDescriptions();
         JComboBox testSelector = new JComboBox(descriptions);
-        testSelector.setSelectedItem(params.getTetradTestType());
+        testSelector.setSelectedItem((TestType) params.get("tetradTestType", TestType.TETRAD_WISHART));
 
         testSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JComboBox combo = (JComboBox) e.getSource();
                 TestType testType = (TestType) combo.getSelectedItem();
-                getParams().setTetradTestType(testType);
+                getParams().set("tetradTestType", testType);
             }
         });
 
@@ -127,7 +128,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
             b.add(b3);
         }
         else {
-            this.params.setTetradTestType(TestType.DISCRETE_LRT);
+            this.params.set("tetradTestType", TestType.DISCRETE_LRT);
         }
 
         setLayout(new BorderLayout());
@@ -167,7 +168,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
 //            }
         }
 
-        getParams().setVarNames(params.getVarNames());
+        getParams().set("varNames", (java.util.List<String>) params.get("varNames", null));
         return discreteModel;
     }
 
@@ -177,7 +178,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
      */
     private void openClusterEditor() {
         ClusterEditor clusterEditor = new ClusterEditor(
-                getParams().getClusters(), getParams().getVarNames());
+                (Clusters) getParams().get("clusters", null), (java.util.List<String>) getParams().get("varNames", null));
 
         JOptionPane.showMessageDialog(editClusters, clusterEditor);
 

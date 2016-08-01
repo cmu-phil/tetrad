@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -95,7 +96,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     }
 
     public void setup() {
-        this.varNames = params.getVarNames();
+        this.varNames = (List<String>) params.get("varNames", null);
 
         DataModel dataModel1 = null;
         Graph graph = null;
@@ -145,15 +146,15 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
                             "passed to the search).");
         }
 
-        this.params.setVarNames(varNames);
+        this.params.set("varNames", varNames);
         JButton knowledgeButton = new JButton("Edit");
 
         IntTextField depthField =
-                new IntTextField(this.params.getDepth(), 4);
+                new IntTextField(this.params.getInt("depth", -1), 4);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    PcSearchParamEditor.this.params.setDepth(value);
+                    PcSearchParamEditor.this.params.set("depth", value);
                     Preferences.userRoot().putInt("depth", value);
                     return value;
                 }
@@ -163,14 +164,14 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
             }
         });
 
-        double alpha = this.params.getAlpha();
+        double alpha = params.getDouble("alpha", 0.001);
 
         if (!Double.isNaN(alpha)) {
             alphaField = new DoubleTextField(alpha, 4, NumberFormatUtil.getInstance().getNumberFormat());
             alphaField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
-                        PcSearchParamEditor.this.params.setAlpha(value);
+                        PcSearchParamEditor.this.params.set("alpha", 0.001);
                         Preferences.userRoot().putDouble("alpha", value);
                         return value;
                     }
@@ -228,10 +229,10 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
                     "null if you want to launch a OldKnowledgeEditor.");
         }
 
-        IKnowledge knowledge = this.getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
 
         KnowledgeEditor knowledgeEditor = new KnowledgeEditor(knowledge,
-                varNames, params.getSourceGraph());
+                varNames, (Graph) params.get("sourceGraph", null));
         Dialog owner = (Dialog) this.getTopLevelAncestor();
 
         EditorWindow window = new EditorWindow(knowledgeEditor,

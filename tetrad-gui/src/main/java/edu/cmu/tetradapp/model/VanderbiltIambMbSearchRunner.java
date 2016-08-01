@@ -38,7 +38,7 @@ public class VanderbiltIambMbSearchRunner extends AbstractMBSearchRunner {
 
     public void execute() throws Exception {
         Iamb search = new Iamb(getIndependenceTest());
-        this.setSearchResults(search.findMb(this.getParams().getTargetName()));
+        this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());
     }
 }

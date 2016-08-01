@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.performance.ComparisonParameters;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ProbUtils;
@@ -120,13 +121,13 @@ public final class SemEstimatorEditor extends JPanel {
             }
         });
 
-        String semOptimizerType = wrapper.getParams().getSemOptimizerType();
+        String semOptimizerType = wrapper.getParams().getString("semOptimizerType", "Regression");
 
         optimizerCombo.setSelectedItem(semOptimizerType);
-        SemIm.ScoreType scoreType = wrapper.getParams().getScoreType();
+        SemIm.ScoreType scoreType = (SemIm.ScoreType) wrapper.getParams().get("scoreType", ComparisonParameters.ScoreType.SemBic);
         if (scoreType == null) scoreType = SemIm.ScoreType.Fgls;
         scoreBox.setSelectedItem(scoreType.toString());
-        restarts.setValue(wrapper.getParams().getNumRestarts());
+        restarts.setValue(wrapper.getParams().getInt("numRestarts", 1));
 
         JButton estimateButton = new JButton("Estimate Again");
 

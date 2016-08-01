@@ -121,7 +121,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
     }
 
     public List<String> getVarNames() {
-        return getAlgorithmRunner().getParams().getVarNames();
+        return (List<String>) getAlgorithmRunner().getParams().get("varNames", null);
     }
 
     public JPanel getToolbar() {
@@ -151,11 +151,11 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
             }
         }
 
-        if (getAlgorithmRunner().getParams().getIndClass() == TimeLagGraph.class) {
+        if (getAlgorithmRunner().getSourceGraph() instanceof TimeLagGraph) {
             return new TimeSeriesIndTestParamsEditor(getAlgorithmRunner().getParams());
         }
 
-        if (getAlgorithmRunner().getParams().getIndClass().equals(Graph.class)) {
+        if (getAlgorithmRunner().getSourceGraph() instanceof Graph) {
             return new IndTestParamsEditor(params);
         }
 

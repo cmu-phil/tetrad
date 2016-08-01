@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -225,7 +226,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                     Parameters searchParams = getAlgorithmRunner().getParams();
 
                     if (searchParams != null) {
-                        IKnowledge knowledge = searchParams.getKnowledge();
+                        IKnowledge knowledge = (IKnowledge) searchParams.get("knowledge", new Knowledge2());
                         if (!knowledge.isEmpty()) {
                             JOptionPane.showMessageDialog(
                                     JOptionUtils.centeringComp(),
@@ -361,7 +362,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         Graph latestWorkbenchGraph = null;
 
         if (searchParams != null) {
-            latestWorkbenchGraph = searchParams.getSourceGraph();
+            latestWorkbenchGraph = (Graph) searchParams.get("sourceGraph", null);
         }
 
         if (latestWorkbenchGraph == null) {
@@ -452,7 +453,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             return null;
         }
 
-        Graph graph = algorithmRunner.getParams().getSourceGraph();
+        Graph graph = (Graph) algorithmRunner.getParams().get("sourceGraph", null);
 
         if (graph == null) {
             return algorithmRunner.getSourceGraph();
@@ -478,17 +479,17 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             }
 
             if (searchParams != null) {
-                searchParams.setSourceGraph(graph);
+                searchParams.set("sourceGraph", graph);
             }
         } catch (IOException e) {
             e.printStackTrace();
 
             if (searchParams != null) {
-                searchParams.setSourceGraph(null);
+                searchParams.set("sourceGraph", (Graph) null);
             }
         } catch (ClassNotFoundException e) {
             if (searchParams != null) {
-                searchParams.setSourceGraph(null);
+                searchParams.set("sourceGraph", (Graph) null);
             }
 
             e.printStackTrace();
@@ -500,11 +501,11 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     }
 
     public void setTestType(IndTestType testType) {
-        getAlgorithmRunner().getParams().setIndTestType(testType);
+        getAlgorithmRunner().getParams().set("indTestType", testType);
     }
 
     public IndTestType getTestType() {
-        return getAlgorithmRunner().getParams().getIndTestType();
+        return (IndTestType) getAlgorithmRunner().getParams().get("indTestType", IndTestType.FISHER_Z);
     }
 
     public DataModel getDataModel() {
@@ -512,7 +513,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     }
 
     public Object getSourceGraph() {
-        return getAlgorithmRunner().getParams().getSourceGraph();
+        return (Graph) getAlgorithmRunner().getParams().get("sourceGraph", null);
     }
 }
 

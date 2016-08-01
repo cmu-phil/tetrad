@@ -71,7 +71,7 @@ public class InverseCorrelationRunner extends AbstractAlgorithmRunner
 
             Parameters params = getParams();
 
-            InverseCorrelation search = new InverseCorrelation(dataSet, params.getThr());
+            InverseCorrelation search = new InverseCorrelation(dataSet, params.getDouble("thr", 1e-4));
             Graph graph = search.search();
 
             setResultGraph(graph);

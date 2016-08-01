@@ -392,7 +392,7 @@ public class FofcSearchEditor extends JPanel {
 
         Graph sourceGraph = getMimRunner().getSourceGraph();
         Graph latestWorkbenchGraph =
-                getMimRunner().getParams().getSourceGraph();
+                (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
                 latestWorkbenchGraph);
@@ -444,7 +444,7 @@ public class FofcSearchEditor extends JPanel {
     }
 
     public Graph getLatestWorkbenchGraph() {
-        Graph graph = getMimRunner().getParams().getSourceGraph();
+        Graph graph = (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         if (graph == null) {
             return getMimRunner().getSourceGraph();
@@ -462,13 +462,13 @@ public class FofcSearchEditor extends JPanel {
 
         try {
             Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();
-            getMimRunner().getParams().setSourceGraph(graph);
+            getMimRunner().getParams().set("sourceGraph", graph);
         }
         catch (IOException e) {
-            getMimRunner().getParams().setSourceGraph(null);
+            getMimRunner().getParams().set("sourceGraph", (Graph) null);
         }
         catch (ClassNotFoundException e) {
-            getMimRunner().getParams().setSourceGraph(null);
+            getMimRunner().getParams().set("sourceGraph", (Graph) null);
             e.printStackTrace();
         }
     }
@@ -499,7 +499,7 @@ public class FofcSearchEditor extends JPanel {
 
         if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            params.setVarNames(runner.getParams().getVarNames());
+            params.set("varNames", (java.util.List<String>) runner.getParams().get("varNames", null));
             return new FofcIndTestParamsEditor(params);
         }
 

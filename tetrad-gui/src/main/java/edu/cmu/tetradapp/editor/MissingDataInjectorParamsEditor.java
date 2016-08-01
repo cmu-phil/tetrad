@@ -70,11 +70,11 @@ public class MissingDataInjectorParamsEditor extends JPanel implements  Paramete
         setLayout(new BorderLayout());
 
         final DoubleTextField probField =
-                new DoubleTextField(params.getProb(), 6, NumberFormatUtil.getInstance().getNumberFormat());
+                new DoubleTextField(params.getDouble("prob", 0.02), 6, NumberFormatUtil.getInstance().getNumberFormat());
         probField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setProb(value);
+                    params.set("prob", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {

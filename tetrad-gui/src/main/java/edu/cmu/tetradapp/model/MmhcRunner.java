@@ -21,6 +21,8 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -70,11 +72,11 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
     public void execute() {
         Mmhc search;
 
-        int depth = getParams().getDepth();
+        int depth = getParams().getInt("depth", -1);
 
         search = new Mmhc(getIndependenceTest(), getIndependenceTest().getDataSets().get(0));
         search.setDepth(depth);
-        search.setKnowledge(getParams().getKnowledge());
+        search.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
 
         Graph graph = search.search();
         setResultGraph(graph);
@@ -115,7 +117,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -131,7 +133,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 }

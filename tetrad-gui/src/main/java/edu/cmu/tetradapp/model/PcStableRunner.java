@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
@@ -116,7 +117,7 @@ public class PcStableRunner extends AbstractAlgorithmRunner
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -128,8 +129,8 @@ public class PcStableRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
-        int depth = getParams().getDepth();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        int depth = getParams().getInt("depth", -1);
 
         PcStable pc = new PcStable(getIndependenceTest());
         pc.setKnowledge(knowledge);
@@ -158,7 +159,7 @@ public class PcStableRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -195,7 +196,7 @@ public class PcStableRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        return getParams().isAggressivelyPreventCycles();
+        return getParams().getBoolean("aggressivelyPreventCycles", false);
     }
 
 }

@@ -111,7 +111,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         DataSet dataSet = (DataSet) dataModel;
 
         this.params = params;
-        this.targetName = params.getTargetName();
+        this.targetName = params.getString("targetName", null);
         this.dataSet = dataSet;
 
         TetradLogger.getInstance().log("info", "Linear Regression");
@@ -165,7 +165,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      */
     public double getAlpha(){
         if(this.params != null){
-            return this.params.getAlpha();
+            return this.params.getDouble("alpha", 0.001);
         }
         return -1.0;
     }
@@ -199,15 +199,15 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      */
     public void execute() {
 
-        if (params.getRegressorNames().length == 0 ||
-                params.getTargetName() == null) {
+        if (((String[]) params.get("regressorNames", null)).length == 0 ||
+                params.getString("targetName", null) == null) {
             report = "Response and predictor variables not set.";
             outGraph = new EdgeListGraph();
             return;
         }
 
-        if (Arrays.asList(params.getRegressorNames()).contains(
-                params.getTargetName())) {
+        if (Arrays.asList((String[]) params.get("regressorNames", null)).contains(
+                params.getString("targetName", null))) {
             report = "Response ar must not be a predictor.";
             outGraph = new EdgeListGraph();
             return;
@@ -215,8 +215,8 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
 
         //Regression regression = new Regression();
         //String targetName = ((Parameters) getParams()).getTargetName();
-        String targetName = params.getTargetName();
-        double alpha = params.getAlpha();
+        String targetName = params.getString("targetName", null);
+        double alpha = params.getDouble("alpha", 0.001);
 
         DataSet regressorsDataSet = dataSet.copy();
         Node target = regressorsDataSet.getVariable(targetName);
@@ -230,7 +230,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         }
 
         //Get the list of regressors selected by the user
-        String[] regressorNames = params.getRegressorNames();
+        String[] regressorNames = (String[]) params.get("regressorNames", null);
         List regressorNamesList = Arrays.asList(regressorNames);
 
         List<Node> regressorNodes = new ArrayList<Node>();

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.performance.ComparisonParameters;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.*;
@@ -110,8 +111,8 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 SemPm semPm = semPmWrapper.getSemPm();
                 this.semPm = semPm;
                 SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
-                estimator.setNumRestarts(getParams().getNumRestarts());
-                estimator.setScoreType(getParams().getScoreType());
+                estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", ComparisonParameters.ScoreType.SemBic));
                 if (!degreesOfFreedomCheck(semPm)) return true;
                 estimator.estimate();
 
@@ -121,8 +122,8 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 SemPm semPm = semPmWrapper.getSemPm();
                 this.semPm = semPm;
                 SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
-                estimator.setNumRestarts(getParams().getNumRestarts());
-                estimator.setScoreType(getParams().getScoreType());
+                estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
+                estimator.setScoreType((SemIm.ScoreType) getParams().get("scoreType", ComparisonParameters.ScoreType.SemBic));
                 if (!degreesOfFreedomCheck(semPm)) return true;
                 estimator.estimate();
 
@@ -197,7 +198,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
         if (!degreesOfFreedomCheck(semPm)) return;
         this.semEstimator.setTrueSemIm(semIm);
-        this.semEstimator.setNumRestarts(getParams().getNumRestarts());
+        this.semEstimator.setNumRestarts(getParams().getInt("numRestarts", 1));
         this.semEstimator.estimate();
 
         this.params = params;
@@ -243,11 +244,11 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
     public String getSemOptimizerType() {
-        return getParams().getSemOptimizerType();
+        return getParams().getString("semOptimizerType", "Regression");
     }
 
     public void setSemOptimizerType(String type) {
-        getParams().setSemOptimizerType(type);
+        getParams().set("semOptimizerType", type);
     }
 
     public Graph getGraph() {
@@ -313,7 +314,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 
     private SemOptimizer getOptimizer() {
         SemOptimizer optimizer;
-        String type = getParams().getSemOptimizerType();
+        String type = getParams().getString("semOptimizerType", "Regression");
 
         if ("Regression".equals(type)) {
             SemOptimizer defaultOptimization = getDefaultOptimization();
@@ -321,7 +322,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
             if (!(defaultOptimization instanceof  SemOptimizerRegression)) {
                 optimizer = defaultOptimization;
                 type = getType(defaultOptimization);
-                getParams().setSemOptimizerType(type);
+                getParams().set("semOptimizerType", type);
             }
             else {
                 optimizer = new SemOptimizerRegression();
@@ -343,7 +344,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
                 String _type = getType(optimizer);
 
                 if (_type != null) {
-                    getParams().setSemOptimizerType(_type);
+                    getParams().set("semOptimizerType", _type);
                 }
             } else {
                 optimizer = null;
@@ -390,19 +391,19 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
     public SemIm.ScoreType getScoreType() {
-        return params.getScoreType();
+        return (SemIm.ScoreType) params.get("scoreType", ComparisonParameters.ScoreType.SemBic);
     }
 
     public void setScoreType(SemIm.ScoreType scoreType) {
-        params.setScoreType(scoreType);
+        params.set("scoreType", scoreType);
     }
 
     public void setNumRestarts(int numRestarts) {
-        getParams().setNumRestarts(numRestarts);
+        getParams().set("numRestarts", numRestarts);
     }
 
     public int getNumRestarts() {
-        return getParams().getNumRestarts();
+        return getParams().getInt("numRestarts", 1);
     }
 
 
@@ -429,7 +430,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
             optimizer = new SemOptimizerRegression();
         }
 
-        optimizer.setNumRestarts(getParams().getNumRestarts());
+        optimizer.setNumRestarts(getParams().getInt("numRestarts", 1));
 
         return optimizer;
 

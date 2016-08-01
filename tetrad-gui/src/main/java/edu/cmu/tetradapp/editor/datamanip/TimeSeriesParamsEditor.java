@@ -68,7 +68,7 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
      * Builds the panel.
      */
     public void setup() {
-        SpinnerNumberModel model = new SpinnerNumberModel(this.params.getNumOfTimeLags(),
+        SpinnerNumberModel model = new SpinnerNumberModel(this.params.getInt("numTimeLags", 1),
                 0, Integer.MAX_VALUE, 1);
         JSpinner jSpinner = new JSpinner(model);
         jSpinner.setPreferredSize(jSpinner.getPreferredSize());
@@ -76,7 +76,7 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
         model.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
-                params.setNumOfTimeLags(model.getNumber().intValue());
+                params.set("numTimeLags", model.getNumber().intValue());
             }
         });
 

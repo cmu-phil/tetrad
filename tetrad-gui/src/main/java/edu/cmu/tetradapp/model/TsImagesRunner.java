@@ -310,7 +310,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        double penaltyDiscount = getParams().getPenaltyDiscount();
+        double penaltyDiscount = getParams().getDouble("penaltyDiscount", 4);
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
@@ -323,8 +323,8 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 fgs = new TsGFci(gesScore);
             } else if (dataSet.isDiscrete()) {
-                double samplePrior = getParams().getSamplePrior();
-                double structurePrior = getParams().getStructurePrior();
+                double samplePrior = getParams().getDouble("samplePrior", 1);
+                double structurePrior = getParams().getDouble("structurePrior", 1);
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
@@ -361,8 +361,8 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
                 fgs = new TsGFci(fgsScore);
 
             } else if (allDiscrete(list)) {
-                double structurePrior = getParams().getStructurePrior();
-                double samplePrior = getParams().getSamplePrior();
+                double structurePrior = getParams().getDouble("structurePrior", 1);
+                double samplePrior = getParams().getDouble("samplePrior", 1);
 
                 BdeuScoreImages fgsScore = new BdeuScoreImages(list);
                 fgsScore.setSamplePrior(samplePrior);
@@ -376,7 +376,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
             System.out.println("No viable input.");
         }
 
-        fgs.setKnowledge(getParams().getKnowledge());
+        fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
 //        fgs.setNumPatternsToStore(params.getNumPatternsToSave()); // removed for TsGFci
 //        fgs.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed()); // removed for TsGFci
         fgs.setVerbose(true);
@@ -384,8 +384,8 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -515,7 +515,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 

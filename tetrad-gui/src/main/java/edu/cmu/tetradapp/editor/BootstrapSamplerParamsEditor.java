@@ -81,24 +81,13 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
     private void buildGui() {
         setLayout(new BorderLayout());
 
-        int sampleSize;
-
-        if (params.isSampleSizeSet()) {
-            sampleSize = params.getSampleSize();
-        }
-        else {
-            sampleSize = parentDataSet.getNumRows();
-            params.setSampleSize(sampleSize);
-        }
-
-        final IntTextField sampleSizeField = new IntTextField(sampleSize, 6);
+        final IntTextField sampleSizeField = new IntTextField(params.getInt("sampleSize", 1000), 6);
         sampleSizeField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params.setSampleSize(value);
+                    params.set("sampleSize", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }

@@ -210,7 +210,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     public void execute() {
         DataModel dataModel = getDataModel();
 
-        IKnowledge knowledge = params2.getKnowledge();
+        IKnowledge knowledge = (IKnowledge) params2.get("knowledge", new Knowledge2());
 
         if (initialGraph == null) {
             initialGraph = new EdgeListGraph(dataModel.getVariables());
@@ -252,9 +252,9 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
         Parameters params = (Parameters) getParams();
 
-        search.setAlpha(params.getAlpha());
-        search.setBeamWidth(params.getBeamWidth());
-        search.setHighPValueAlpha(params.getZeroEdgeP());
+        search.setAlpha(params.getDouble("alpha", 0.001));
+        search.setBeamWidth(params.getInt("beamWidth", 5));
+        search.setHighPValueAlpha(params.getDouble("zeroEdgeP", 0.05));
         this.graph = search.search();
 
 //        this.graph = search.getNewSemIm().getSemPm().getGraph();
@@ -280,7 +280,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(params.getKnowledge());
+        rules.setKnowledge((IKnowledge) params.get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -294,7 +294,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     }
 
     private boolean isAggressivelyPreventCycles() {
-        return params.isAggressivelyPreventCycles();
+        return params.getBoolean("aggressivelyPreventCycles", false);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {

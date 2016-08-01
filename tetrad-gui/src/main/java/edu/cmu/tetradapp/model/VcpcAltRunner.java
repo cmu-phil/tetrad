@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
@@ -145,7 +146,7 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         Parameters searchParams = (Parameters) getParams();
 
         Parameters params =
@@ -155,7 +156,7 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
         VcpcAlt VcpcAlt = new VcpcAlt(getIndependenceTest());
         VcpcAlt.setKnowledge(knowledge);
         VcpcAlt.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        VcpcAlt.setDepth(params.getDepth());
+        VcpcAlt.setDepth(params.getInt("depth", -1));
         Graph graph = VcpcAlt.search();
 
         if (getSourceGraph() != null) {
@@ -178,7 +179,7 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -216,7 +217,7 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
     public ImpliedOrientation getMeekRules() {
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        meekRules.setKnowledge(getParams().getKnowledge());
+        meekRules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return meekRules;
     }
 
@@ -230,7 +231,7 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
     private boolean isAggressivelyPreventCycles() {
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            return ((Parameters) params).isAggressivelyPreventCycles();
+            return ((Parameters) params).getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

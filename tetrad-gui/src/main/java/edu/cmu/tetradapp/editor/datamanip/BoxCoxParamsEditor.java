@@ -68,12 +68,12 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
      * Builds the panel.
      */
     public void setup() {
-        DoubleTextField lambda = new DoubleTextField(params.getLambda(), 8, new DecimalFormat("0.0"));
+        DoubleTextField lambda = new DoubleTextField(params.getDouble("lambda", 0), 8, new DecimalFormat("0.0"));
 
         lambda.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 if (value >= 0) {
-                    params.setLambda(value);
+                    params.set("lambda", value);
                     return value;
                 }
                 else {

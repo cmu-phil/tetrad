@@ -63,20 +63,20 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
     public BuildPureClustersRunner(DataWrapper dataWrapper,
                                    Parameters pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
 
     }
 
     public BuildPureClustersRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
                                    Parameters pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = semIm.getSemPm().getGraph();
     }
 
     public BuildPureClustersRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
                                    Parameters pureClustersParams) {
-        super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
+        super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
 
@@ -99,7 +99,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     public void execute() {
         boolean rKey = Preferences.userRoot().getBoolean("BPCrDown", false);
 
-        BpcAlgorithmType algorithm = getParams().getBpcAlgorithmType();
+        BpcAlgorithmType algorithm = (BpcAlgorithmType) getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS);
 
         Graph searchGraph;
 
@@ -108,14 +108,14 @@ public class BuildPureClustersRunner extends AbstractMimRunner
             Object source = getData();
 
             if (source instanceof DataSet) {
-                washdown = new Washdown((DataSet) source, getParams().getAlpha());
+                washdown = new Washdown((DataSet) source, getParams().getDouble("alpha", 0.001));
             } else {
-                washdown = new Washdown((CovarianceMatrix) source, getParams().getAlpha());
+                washdown = new Washdown((CovarianceMatrix) source, getParams().getDouble("alpha", 0.001));
             }
 
             searchGraph = washdown.search();
         } else {
-            TestType tetradTestType = getParams().getTetradTestType();
+            TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
 
             if (algorithm == BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN) {
                 BpcTetradPurifyWashdown bpc;
@@ -125,11 +125,11 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                     bpc = new BpcTetradPurifyWashdown(
                             (DataSet) source,
                             tetradTestType,
-                            getParams().getAlpha());
+                            getParams().getDouble("alpha", 0.001));
 
                 } else {
                     bpc = new BpcTetradPurifyWashdown((ICovarianceMatrix) source,
-                            tetradTestType, getParams().getAlpha());
+                            tetradTestType, getParams().getDouble("alpha", 0.001));
 
                 }
 
@@ -138,17 +138,17 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                 BuildPureClusters bpc;
                 DataModel source = getData();
 
-                TestType testType = getParams().getTetradTestType();
+                TestType testType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
                 TestType purifyType = TestType.TETRAD_BASED;
 
                 if (source instanceof ICovarianceMatrix) {
                     bpc = new BuildPureClusters((ICovarianceMatrix) source,
-                            getParams().getAlpha(),
+                            getParams().getDouble("alpha", 0.001),
                             testType,
                             purifyType);
                 } else if (source instanceof DataSet) {
                     bpc = new BuildPureClusters(
-                            (DataSet) source, getParams().getAlpha(),
+                            (DataSet) source, getParams().getDouble("alpha", 0.001),
                             testType,
                             purifyType);
                 } else {

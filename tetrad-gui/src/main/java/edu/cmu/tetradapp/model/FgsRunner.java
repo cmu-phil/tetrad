@@ -300,10 +300,10 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             fgs = new Fgs2(gesScore);
-            fgs.setKnowledge(getParams().getKnowledge());
+            fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             fgs.setVerbose(true);
         } else {
-            double penaltyDiscount = params.getPenaltyDiscount();
+            double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
             if (model instanceof DataSet) {
                 DataSet dataSet = (DataSet) model;
@@ -317,8 +317,8 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                     System.out.println("Score done");
                     fgs = new Fgs2(gesScore);
                 } else if (dataSet.isDiscrete()) {
-                    double samplePrior = ((Parameters) getParams()).getSamplePrior();
-                    double structurePrior = ((Parameters) getParams()).getStructurePrior();
+                    double samplePrior = ((Parameters) getParams()).getDouble("samplePrior", 1);
+                    double structurePrior = ((Parameters) getParams()).getDouble("structurePrior", 1);
                     BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
@@ -350,9 +350,9 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                 }
 
                 if (allContinuous(list)) {
-                    double penalty = getParams().getPenaltyDiscount();
+                    double penalty = getParams().getDouble("penaltyDiscount", 4);
 
-                    if (params.isFirstNontriangular()) {
+                    if (params.getBoolean("firstNontriangular", false)) {
                         SemBicScoreImages fgsScore = new SemBicScoreImages(list);
                         fgsScore.setPenaltyDiscount(penalty);
                         fgs = new Fgs2(fgsScore);
@@ -362,14 +362,14 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                         fgs = new Fgs2(fgsScore);
                     }
                 } else if (allDiscrete(list)) {
-                    double structurePrior = getParams().getStructurePrior();
-                    double samplePrior = getParams().getSamplePrior();
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
 
                     BdeuScoreImages fgsScore = new BdeuScoreImages(list);
                     fgsScore.setSamplePrior(samplePrior);
                     fgsScore.setStructurePrior(structurePrior);
 
-                    if (params.isFirstNontriangular()) {
+                    if (params.getBoolean("firstNontriangular", false)) {
                         fgs = new Fgs2(fgsScore);
                     } else {
                         fgs = new Fgs2(fgsScore);
@@ -383,16 +383,16 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
         }
 
         fgs.setInitialGraph(initialGraph);
-        fgs.setKnowledge(getParams().getKnowledge());
-        fgs.setNumPatternsToStore(params.getNumPatternsToSave());
+        fgs.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        fgs.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
         fgs.setVerbose(true);
-        fgs.setFaithfulnessAssumed(params.isFaithfulnessAssumed());
+        fgs.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
         Graph graph = fgs.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (getParams().getKnowledge().isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParams().getKnowledge());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -527,7 +527,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -535,7 +535,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
         Parameters params = (Parameters) getParams();
-        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getPenaltyDiscount()));
+        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
         return paramSettings;
     }
 

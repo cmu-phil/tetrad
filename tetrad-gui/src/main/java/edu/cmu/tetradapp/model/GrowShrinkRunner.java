@@ -45,7 +45,7 @@ public class GrowShrinkRunner extends AbstractMBSearchRunner {
     public void execute() throws Exception {
         validate();
         GrowShrink search = new GrowShrink(this.getIndependenceTest());
-        setSearchResults(search.findMb(this.getParams().getTargetName()));
+        setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         setSearchName(search.getAlgorithmName());
     }
 }

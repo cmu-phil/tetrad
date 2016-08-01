@@ -67,7 +67,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
 
     public MeasurementModelWrapper(Parameters params) {
         this.setVarNames(new ArrayList<String>());
-        this.setClusters(params.getClusters());
+        this.setClusters((Clusters) params.get("clusters", null));
         this.params = params;
     }
 
@@ -89,19 +89,19 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
             setClusters(clusters);
             this.params = params;
 
-            getParams().setClusters(clusters);
-            getParams().setVarNames(nodeNames);
+            getParams().set("clusters", clusters);
+            getParams().set("varNames", nodeNames);
         }
         else {
             this.setVarNames(knowledgeInput.getVariableNames());
-            this.setClusters(params.getClusters());
+            this.setClusters((Clusters) params.get("clusters", null));
             this.params = params;
         }
     }
 
     public MeasurementModelWrapper(DataWrapper dataWrapper, Parameters params) {
         this.setVarNames(dataWrapper.getVarNames());
-        this.setClusters(params.getClusters());
+        this.setClusters((Clusters) params.get("clusters", null));
         this.data = (DataSet) dataWrapper.getSelectedDataModel();
         this.params = params;
     }

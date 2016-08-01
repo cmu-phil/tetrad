@@ -103,7 +103,7 @@ public final class GraphComparison implements SessionModel {
 
         this.params = params;
 
-        String referenceName = this.params.getReferenceGraphName();
+        String referenceName = this.params.getString("referenceGraphName", null);
 
         if (referenceName == null) {
             throw new IllegalArgumentException("Must specify a reference graph.");
@@ -127,7 +127,7 @@ public final class GraphComparison implements SessionModel {
         //Normally, one's target graph won't have latents, so we'll want to
         // remove them from the ref graph to compare, but algorithm like
         // MimBuild might not want to do this.
-        if (this.params != null && this.params.isKeepLatents()) {
+        if (this.params != null && this.params.getBoolean("keepLatents", false)) {
             alteredRefGraph = this.referenceGraph;
         } else {
             alteredRefGraph = removeLatent(this.referenceGraph);
@@ -136,9 +136,9 @@ public final class GraphComparison implements SessionModel {
         GraphUtils.GraphComparison comparison = SearchGraphUtils.
                 getGraphComparison(targetGraph, alteredRefGraph);
 
-        if (this.params != null) {
-            this.params.addRecord(comparison);
-        }
+//        if (this.params != null) {
+//            this.params.addRecord(comparison);
+//        }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
         TetradLogger.getInstance().log("comparison", getComparisonString());
@@ -179,14 +179,14 @@ public final class GraphComparison implements SessionModel {
         DagWrapper wrapper1 = DagWrapper.serializableInstance();
         wrapper1.setName("Ref");
         DagWrapper wrapper2 = DagWrapper.serializableInstance();
-        new Parameters().setReferenceGraphName("Ref");
+        new Parameters().set("referenceGraphName", "Ref");
         return new GraphComparison(wrapper1, wrapper2, new Parameters());
     }
 
     //==============================PUBLIC METHODS========================//
 
     public DataSet getDataSet() {
-        return params.getDataSet();
+        return (DataSet) params.get("dataSet", null);
     }
 
     public String getName() {
@@ -198,8 +198,10 @@ public final class GraphComparison implements SessionModel {
     }
 
     public String getComparisonString() {
-        return SearchGraphUtils.graphComparisonString(getParams().getTargetGraphName(), targetGraph,
-                getParams().getReferenceGraphName(), referenceGraph, false);
+        String refName = getParams().getString("referenceGraphName", null);
+        String targetName = getParams().getString("targetGraphName", null);
+        return SearchGraphUtils.graphComparisonString(targetName, targetGraph,
+                refName, referenceGraph, false);
     }
 
     //adjacent to the latent node with an undirected edge (edge type doesnt matter).

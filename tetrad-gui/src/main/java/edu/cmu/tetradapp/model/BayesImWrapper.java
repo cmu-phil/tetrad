@@ -70,11 +70,11 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
         BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
 
-        if (params.getInitializationMode().equals("manualRetain")) {
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             this.bayesIm = new MlBayesIm(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
-        } else if (params.getInitializationMode().equals("randomRetain")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
             this.bayesIm = new MlBayesIm(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
-        } else if (params.getInitializationMode().equals("randomOverwrite")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             this.bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
         }
         log(bayesIm);
@@ -139,11 +139,11 @@ public class BayesImWrapper implements SessionModel, Memorable, GraphSource, Kno
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
-        if (params.getInitializationMode().equals("manualRetain")) {
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             this.bayesIm = new MlBayesIm(bayesPm);
-        } else if (params.getInitializationMode().equals("randomRetain")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
             this.bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
-        } else if (params.getInitializationMode().equals("randomOverwrite")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             this.bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
         }
         log(bayesIm);

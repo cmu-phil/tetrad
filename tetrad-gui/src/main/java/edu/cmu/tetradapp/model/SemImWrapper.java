@@ -96,7 +96,7 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         SemPm semPm = new SemPm(semPmWrapper.getSemPm());
         SemIm oldSemIm = oldSemImWrapper.getSemIm();
 
-        if (!params.isRetainPreviousValues()) {
+        if (!params.getBoolean("retainPreviousValues", false)) {
             this.semIm = new SemIm(semPm, params);
         } else {
             this.semIm = new SemIm(semPm, oldSemIm, params);

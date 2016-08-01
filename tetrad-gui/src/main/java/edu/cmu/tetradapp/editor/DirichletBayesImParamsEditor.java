@@ -87,11 +87,11 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
         group.add(randomRetain);
 
         final DoubleTextField symmetricAlphaField = new DoubleTextField(
-                params.getSymmetricAlpha(), 5, NumberFormatUtil.getInstance().getNumberFormat());
+                params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
         symmetricAlphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setSymmetricAlpha(value);
+                    params.set("symmetricAlpha", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -100,11 +100,11 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
             }
         });
 
-        if (getParams().getInitializationMode().equals("manualRetain")) {
+        if (getParams().getString("initializationMode", "manualRetain").equals("manualRetain")) {
             manualRetain.setSelected(true);
             symmetricAlphaField.setEnabled(false);
         }
-        else if (getParams().getInitializationMode().equals("symmetricPrior")) {
+        else if (getParams().getString("initializationMode", "manualRetain").equals("symmetricPrior")) {
             randomRetain.setSelected(true);
             symmetricAlphaField.setEnabled(true);
         }
@@ -114,14 +114,14 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
 
         manualRetain.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode("manualRetain");
+                getParams().set("initializationMode", "manualRetain");
                 symmetricAlphaField.setEnabled(false);
             }
         });
 
         randomRetain.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().setInitializationMode("symmetricPrior");
+                getParams().set("initializationMode", "symmetricPrior");
                 symmetricAlphaField.setEnabled(true);
             }
         });

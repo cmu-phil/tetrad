@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
@@ -148,7 +149,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 
         if (trueGraph != null) {
             CpcOrienter orienter = new CpcOrienter(getIndependenceTest(), knowledge);
@@ -173,7 +174,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
             Cpc cpc = new Cpc(getIndependenceTest());
             cpc.setKnowledge(knowledge);
             cpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-            cpc.setDepth(getParams().getDepth());
+            cpc.setDepth(getParams().getInt("depth", -1));
             Graph graph = cpc.search();
 
             if (getSourceGraph() != null) {
@@ -200,7 +201,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (getParams()).getIndTestType();
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -243,7 +244,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
     public ImpliedOrientation getMeekRules() {
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        meekRules.setKnowledge(getParams().getKnowledge());
+        meekRules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return meekRules;
     }
 
@@ -262,7 +263,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        return getParams().isAggressivelyPreventCycles();
+        return getParams().getBoolean("aggressivelyPreventCycles", false);
     }
 
     private void setCpcFields(Cpc cpc) {

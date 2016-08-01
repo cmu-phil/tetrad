@@ -32,8 +32,6 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -108,13 +106,15 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         this.params = params;
 
-        String referenceName = this.params.getReferenceGraphName();
-        String datasetName = "Comparing " + params.getReferenceGraphName() + " to " + params.getTargetGraphName();
+        String referenceName = this.params.getString("referenceName", null);
+        params.getString("referenceName", null);
+        String targetName = params.getString("targetName", null);
+        String datasetName = "Comparing " + referenceName + " to " + targetName;
         this.getDataSet().setName(datasetName);
         if (referenceName == null) {
             this.referenceGraph = ((GraphSource) model1).getGraph();
             this.targetGraph = ((GraphSource) model2).getGraph();
-            this.params.setReferenceGraphName(model1.getName());
+            this.params.set("referenceName", model1.getName());
         } else if (referenceName.equals(model1.getName())) {
             this.referenceGraph = ((GraphSource) model1).getGraph();
             this.targetGraph = ((GraphSource) model2).getGraph();
@@ -135,7 +135,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         //Normally, one's target graph won't have latents, so we'll want to
         // remove them from the ref graph to compare, but algorithm like
         // MimBuild might not want to do this.
-        if (this.params != null && this.params.isKeepLatents()) {
+        if (this.params != null && this.params.getBoolean("keepLatents", false)) {
             alteredRefGraph = this.referenceGraph;
         } else {
             alteredRefGraph = removeLatent(this.referenceGraph);
@@ -144,9 +144,9 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         if (this.params != null) {
             GraphUtils.GraphComparison graphComparison = SearchGraphUtils.getGraphComparison2(targetGraph, alteredRefGraph);
 
-            List<GraphUtils.GraphComparison> records = this.params.getRecords();
+            List<GraphUtils.GraphComparison> records = (List<GraphUtils.GraphComparison>) this.params.get("records", null);
             records.add(graphComparison);
-            this.params.setRecords(records);
+            this.params.set("records", records);
 
             if (graphComparison.getAdjFn() != 0 || graphComparison.getAdjFp() != 0 ||
                     graphComparison.getAhdFn() != 0 || graphComparison.getAhdFp() != 0) {
@@ -185,7 +185,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     private String getCompareString() {
-        return params.getDataSet().toString();
+        return ((DataSet) params.get("dataSet", null)).toString();
     }
 
     /**
@@ -202,7 +202,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     //==============================PUBLIC METHODS========================//
 
     public DataSet getDataSet() {
-        return params.getDataSet();
+        return (DataSet) params.get("dataSet", null);
     }
 
     public String getName() {

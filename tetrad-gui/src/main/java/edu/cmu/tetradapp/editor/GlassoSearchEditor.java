@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -87,7 +88,7 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -178,15 +179,15 @@ public class GlassoSearchEditor extends AbstractSearchEditor
 
     public List<String> getVarNames() {
         Parameters params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        return (List<String>) params.get("varNames", null);
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//
@@ -209,11 +210,11 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     private JComponent getIndTestParamBox() {
         final Parameters params = (Parameters) getAlgorithmRunner().getParams();
 
-        IntTextField maxItField = new IntTextField(params.getMaxit(), 6);
+        IntTextField maxItField = new IntTextField((int) params.get("maxit", 10000), 6);
         maxItField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params.setMaxit(value);
+                    params.set("maxit", value);
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -221,12 +222,12 @@ public class GlassoSearchEditor extends AbstractSearchEditor
             }
         });
 
-        DoubleTextField thrField = new DoubleTextField(params.getThr(), 8,
+        DoubleTextField thrField = new DoubleTextField(params.getDouble("thr", 1e-4), 8,
                 new DecimalFormat("0.0########"), new DecimalFormat("0.00E00"), 1e-4);
         thrField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setThr(value);
+                    params.set("thr", value);
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -235,46 +236,46 @@ public class GlassoSearchEditor extends AbstractSearchEditor
         });
 
         JCheckBox iaCheckBox = new JCheckBox("Meinhausen-Buhlman");
-        iaCheckBox.setSelected(params.isIa());
+        iaCheckBox.setSelected(params.getBoolean("ia", false));
 
         iaCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-                params.setIa(checkBox.isSelected());
+                params.set("is", checkBox.isSelected());
             }
         });
 
         JCheckBox isCheckBox = new JCheckBox("Warm start");
-        isCheckBox.setSelected(params.isIa());
+        isCheckBox.setSelected(params.getBoolean("ia", false));
 
         isCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-                params.setIs(checkBox.isSelected());
+                params.set("is", checkBox.isSelected());
             }
         });
 
         JCheckBox itrCheckBox = new JCheckBox("Log trace");
-        itrCheckBox.setSelected(params.isIa());
+        itrCheckBox.setSelected(params.getBoolean("ia", false));
 
         itrCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-                params.setItr(checkBox.isSelected());
+                params.set("itr", checkBox.isSelected());
             }
         });
 
         JCheckBox ipenCheckBox = new JCheckBox("Penalize diagonal");
-        ipenCheckBox.setSelected(params.isIa());
+        ipenCheckBox.setSelected(params.getBoolean("ipen", false));
 
         ipenCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-                params.setIpen(checkBox.isSelected());
+                params.set("ipen", checkBox.isSelected());
             }
         });
 

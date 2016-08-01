@@ -64,12 +64,12 @@ class PcLocalIndTestParamsEditor extends JComponent {
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(params().getAlpha(), 8,
+        alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setAlpha(value);
+                    params().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -78,11 +78,11 @@ class PcLocalIndTestParamsEditor extends JComponent {
             }
         });
 
-        depthField = new IntTextField(params().getDepth(), 4);
+        depthField = new IntTextField(params().getInt("depth", -1), 4);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params().setDepth(value);
+                    params().set("depth", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {

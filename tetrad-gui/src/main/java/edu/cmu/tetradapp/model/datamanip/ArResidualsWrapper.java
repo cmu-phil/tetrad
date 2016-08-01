@@ -54,7 +54,7 @@ public class ArResidualsWrapper extends DataWrapper {
                 continue;
             }
 
-            DataModel model = TimeSeriesUtils.ar2((DataSet) selectedModel, params.getNumTimeLags());
+            DataModel model = TimeSeriesUtils.ar2((DataSet) selectedModel, params.getInt("numTimeLags", 1));
             model.setKnowledge(selectedModel.getKnowledge());
             convertedList.add(model);
             setSourceGraph(data.getSourceGraph());

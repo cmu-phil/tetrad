@@ -36,7 +36,6 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
-import java.util.prefs.Preferences;
 
 /**
  * Holds a tetrad dag with all of the constructors necessary for it to serve as
@@ -71,9 +70,9 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
     public DagWrapper(Parameters params) {
-        if (params.getNewGraphInitializationMode().equals("manual")) {
+        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             dag = new Dag();
-        } else if (params.getNewGraphInitializationMode().equals("random")) {
+        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
             this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
         }
@@ -81,7 +80,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     public DagWrapper(DagWrapper graphWrapper, Parameters params) {
-        if (params.getNewGraphInitializationMode().equals("manual")) {
+        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             this.dag = new Dag();
 //            try {
 //                this.dag = new Dag(graphWrapper.getDag());
@@ -89,7 +88,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 //                e.printStackTrace();
 //                this.dag = new Dag();
 //            }
-        } else if (params.getNewGraphInitializationMode().equals("random")) {
+        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
 
             this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
@@ -98,10 +97,10 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     public DagWrapper(SemGraphWrapper graphWrapper, Parameters params) {
-        if (params.getNewGraphInitializationMode().equals("manual")) {
+        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
 //            this.dag = new Dag(graphWrapper.getSemGraph());
             this.dag = new Dag();
-        } else if (params.getNewGraphInitializationMode().equals("random")) {
+        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
             this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
         }
@@ -109,7 +108,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     public DagWrapper(GraphWrapper graphWrapper, Parameters params) {
-        if (params.getNewGraphInitializationMode().equals("manual")) {
+        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             try {
 //                this.dag = new Dag(graphWrapper.getGraph());
                 this.dag = new Dag();
@@ -117,7 +116,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
                 e.printStackTrace();
                 this.dag = new Dag();      
             }
-        } else if (params.getNewGraphInitializationMode().equals("random")) {
+        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             this.dag = new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
         }
         log();

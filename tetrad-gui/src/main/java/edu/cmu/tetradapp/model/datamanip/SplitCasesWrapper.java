@@ -65,8 +65,9 @@ public class SplitCasesWrapper extends DataWrapper {
      */
     public static DataWrapper serializableInstance() {
         Parameters params = new Parameters();
-        params.setNumSplits(1);
-        params.setSpec(new SplitCasesSpec(1, new int[1], Collections.singletonList("1")));
+        params.set("numSplits", 1);
+        SplitCasesSpec spec = new SplitCasesSpec(1, new int[1], Collections.singletonList("1"));
+        params.set("splitCasesSpec", spec);
         return new SplitCasesWrapper(DataWrapper.serializableInstance(),
                 params);
     }
@@ -83,12 +84,12 @@ public class SplitCasesWrapper extends DataWrapper {
             indices.add(i);
         }
 
-        if (params.isDataShuffled()) {
+        if (params.getBoolean("dataShuffled", true)) {
             Collections.shuffle(indices);
         }
 
-        SplitCasesSpec spec = params.getSpec();
-        int numSplits = params.getNumSplits();
+        SplitCasesSpec spec = (SplitCasesSpec) params.get("splitCasesSpec", null);
+        int numSplits = params.getInt("numSplits", 3);
         int sampleSize = spec.getSampleSize();
         int[] breakpoints = spec.getBreakpoints();
         List<String> splitNames = spec.getSplitNames();

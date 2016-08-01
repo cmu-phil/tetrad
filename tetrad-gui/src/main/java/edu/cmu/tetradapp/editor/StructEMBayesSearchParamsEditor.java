@@ -62,11 +62,11 @@ public class StructEMBayesSearchParamsEditor extends JPanel implements Parameter
         setLayout(new BorderLayout());
 
         final DoubleTextField toleranceField =
-                new DoubleTextField(params.getTolerance(), 8, NumberFormatUtil.getInstance().getNumberFormat());
+                new DoubleTextField(params.getDouble("tolerance", 0.0001), 8, NumberFormatUtil.getInstance().getNumberFormat());
         toleranceField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setTolerance(value);
+                    params.set("tolerance", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {

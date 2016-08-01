@@ -51,7 +51,7 @@ public class BoxCoxWrapper extends DataWrapper {
             }
 
 //            DataModel model = boxCox((DataSet) selectedModel, params.getLambda());
-            DataModel model = yeoJohnson((DataSet) selectedModel, params.getLambda());
+            DataModel model = yeoJohnson((DataSet) selectedModel, params.getDouble("lambda", 0));
             convertedList.add(model);
             setSourceGraph(data.getSourceGraph());
         }

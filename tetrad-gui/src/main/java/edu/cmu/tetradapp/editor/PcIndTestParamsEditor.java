@@ -65,12 +65,12 @@ class PcIndTestParamsEditor extends JComponent {
 //                NumberFormatUtil.getInstance().getNumberFormat());
         NumberFormat numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
         NumberFormat smallNumberFormat = new DecimalFormat("0.0E0##");
-        alphaField = new DoubleTextField(params().getAlpha(), 6,
+        alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 6,
                 numberFormat, smallNumberFormat, .001);
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setAlpha(value);
+                    params().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -79,11 +79,11 @@ class PcIndTestParamsEditor extends JComponent {
             }
         });
 
-        depthField = new IntTextField(params().getDepth(), 4);
+        depthField = new IntTextField(params().getInt("depth", -1), 4);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params().setDepth(value);
+                    params().set("depth", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {

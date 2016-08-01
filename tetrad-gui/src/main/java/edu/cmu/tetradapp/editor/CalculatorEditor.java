@@ -233,7 +233,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 //                this.params.addEquation(eq.getUnparsedExpression());
             }
 
-            this.params.setEquations(_equations);
+            this.params.set("equations", _equations);
         }
 
         return true;
@@ -411,8 +411,8 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         String[] displayEquations;
 
         if (params != null) {
-            int size = params.getEquations().size();
-            displayEquations = params.getEquations().toArray(new String[size]);
+            int size = ((List<String>) params.get("equations", null)).size();
+            displayEquations = ((List<String>) params.get("equations", null)).toArray(new String[size]);
         }
         else {
             String _displayEquations = Preferences.userRoot().get("calculator_equations", "");

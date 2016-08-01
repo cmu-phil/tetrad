@@ -23,6 +23,9 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeEditor;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -89,7 +92,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
     }
 
     public void setup() {
-        this.varNames = params().getVarNames();
+        this.varNames = (List<String>) params().get("varNames", null);
 
         if (this.varNames == null) {
             this.varNames = getVarsFromData(parentModels);
@@ -103,7 +106,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
                         "Variables are not accessible.");
             }
 
-            params().setVarNames(varNames);
+            params().set("varNames", varNames);
         }
 
         setBorder(new MatteBorder(10, 10, 10, 10, super.getBackground()));
@@ -116,10 +119,10 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         varsBox.setMaximumSize(new Dimension(80, 24));
         varsBox.setPreferredSize(new Dimension(80, 24));
 
-        String targetName = params.getTargetName();
+        String targetName = params.getString("targetName", null);
         if (!Arrays.asList(variableNames).contains(targetName)) {
-            params.setTargetName(variableNames[0]);
-            targetName = params.getTargetName();
+            params.set("targetName", variableNames[0]);
+            targetName = params.getString("targetName", null);
         }
 
         if (targetName == null) {
@@ -129,24 +132,24 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         }
 
         setTargetName(targetName);
-        params().setTargetName(targetName());
+        params().set("targetName", targetName());
 
         varsBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 JComboBox box = (JComboBox) e.getSource();
                 setTargetName((String) box.getSelectedItem());
-                params().setTargetName(targetName());
+                params().set("targetName", targetName());
             }
         });
 
-        DoubleTextField alphaField = new DoubleTextField(params.getAlpha(), 8,
+        DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"));
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setAlpha(value);
+                    params().set("alpha", 0.001);
                     Preferences.userRoot().putDouble("alpha",
-                            params().getAlpha());
+                            params().getDouble("alpha", 0.001));
                     return value;
                 }
                 catch (Exception e) {
@@ -155,13 +158,13 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
             }
         });
 
-        IntTextField pcDepthField = new IntTextField(params().getDepth(), 4);
+        IntTextField pcDepthField = new IntTextField(params().getInt("depth", -1), 4);
         pcDepthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params().setDepth(value);
+                    params().set("depth", value);
                     Preferences.userRoot().putInt("pcDepth",
-                            params().getDepth());
+                            params().getInt("depth", -1));
                     return value;
                 }
                 catch (Exception e) {
@@ -178,12 +181,12 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         });
 
         JCheckBox preventCycles = new JCheckBox();
-        preventCycles.setSelected(params.isAggressivelyPreventCycles());
+        preventCycles.setSelected(params.getBoolean("aggressivelyPreventCycles", false));
         preventCycles.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox box = (JCheckBox) e.getSource();
                 Parameters p = params;
-                p.setAggressivelyPreventCycles(box.isSelected());
+                p.set("aggressivelyPreventCycles", box.isSelected());
             }
         });
 
@@ -276,13 +279,13 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
                     "null if you want to launch a OldKnowledgeEditor.");
         }
 
-        if (params().getKnowledge() == null) {
+        if ((IKnowledge) params().get("knowledge", new Knowledge2()) == null) {
             throw new NullPointerException(
                     "Knowledge in params object must " + "not be null.");
         }
 
         KnowledgeEditor knowledgeEditor = new KnowledgeEditor(
-                params().getKnowledge(), varNames, params.getSourceGraph());
+                (IKnowledge) params().get("knowledge", new Knowledge2()), varNames, (Graph) params.get("sourceGraph", null));
 
         EditorWindow editorWindow = new EditorWindow(knowledgeEditor,
                 knowledgeEditor.getName(), "Save", false, this);

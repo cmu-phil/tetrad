@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -96,7 +98,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
         Lingam lingam = new Lingam();
         Parameters params = (Parameters) getParams();
-        lingam.setPruneFactor(params.getPruneFactor());
+        lingam.setPruneFactor(params.getDouble("pruneFactor", 1.0));
         Graph graph = lingam.search(data);
 
 
@@ -138,7 +140,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getParams().getKnowledge());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -150,7 +152,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
     private boolean isAggressivelyPreventCycles() {
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            return ((Parameters) params).isAggressivelyPreventCycles();
+            return ((Parameters) params).getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

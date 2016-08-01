@@ -22,8 +22,8 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -90,7 +90,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     public void layoutByKnowledge() {
         GraphWorkbench resultWorkbench = getWorkbench();
         Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = getAlgorithmRunner().getParams().getKnowledge();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -123,20 +123,20 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 
         strongerDirection = new JCheckBox("Stronger Direction");
 
-        strongerDirection.setSelected(searchParams.isOrientStrongerDirection());
+        strongerDirection.setSelected(searchParams.getBoolean("orientStrongerDirection", true));
 
         strongerDirection.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox button = (JCheckBox) actionEvent.getSource();
-                searchParams.setOrientStrongerDirection(button.isSelected());
+                searchParams.set("orientStrongerDirection", button.isSelected());
             }
         });
 
-        selfLoopStrength = new DoubleTextField(searchParams.getSelfLoopStrength(), 5,
+        selfLoopStrength = new DoubleTextField(searchParams.getDouble("selfLoopStrength", 0.0), 5,
                 new DecimalFormat("0.0#####"));
         selfLoopStrength.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
-                searchParams.setSelfLoopStrength(value);
+                searchParams.set("selfLoopStrength", value);
                 return value;
             }
         });
@@ -146,35 +146,35 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         selfLoopStrength.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-                searchParams.setMeanCenterResiduals(checkBox.isSelected());
+                searchParams.set("meanCenterResiduals", checkBox.isSelected());
             }
         });
 
         JCheckBox orient2cycles = new JCheckBox("D");
 
-        orient2cycles.setSelected(searchParams.isR2Orient2Cycles());
+        orient2cycles.setSelected(searchParams.getBoolean("r2Orient2Cycles", false));
 
         orient2cycles.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-                searchParams.setR2Orient2Cycles(checkBox.isSelected());
+                searchParams.set("r2Orient2Cycles", checkBox.isSelected());
             }
         });
 
-        epsilon = new DoubleTextField(searchParams.getEpsilon(), 5,
+        epsilon = new DoubleTextField(searchParams.getDouble("epsilon", .1), 5,
                 new DecimalFormat("0.0#####"));
         epsilon.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
-                searchParams.setEpsilon(value);
+                searchParams.set("epsilon", value);
                 return value;
             }
         });
 
-        zeta = new DoubleTextField(searchParams.getZeta(), 5,
+        zeta = new DoubleTextField(searchParams.getDouble("zeta", 1), 5,
                 new DecimalFormat("0.0#####"));
         zeta.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
-                searchParams.setZeta(value);
+                searchParams.set("dataSet", value);
                 return value;
             }
         });
@@ -208,7 +208,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 //        rulebox.addItem("RC");
 //        rulebox.addItem("Nlo");
 
-        Lofs2.Rule _rule = searchParams.getRule();
+        Lofs2.Rule _rule = (Lofs2.Rule) searchParams.get("rule", Lofs2.Rule.R3);
         disableR4Items();
 
         if (_rule == Lofs2.Rule.R1) {
@@ -258,34 +258,34 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                 }
 
                 if ("R1".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.R1);
+                    searchParams.set("rule", Lofs2.Rule.R1);
                 } else if ("R1-TL".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.R1TimeLag);
+                    searchParams.set("rule", Lofs2.Rule.R1TimeLag);
                 } else if ("R2".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.R2);
+                    searchParams.set("rule", Lofs2.Rule.R2);
                 } else if ("R3".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.R3);
+                    searchParams.set("rule", Lofs2.Rule.R3);
                 } else if ("R4".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.R4);
+                    searchParams.set("rule", Lofs2.Rule.R4);
                 } else if ("EB".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.EB);
+                    searchParams.set("rule", Lofs2.Rule.EB);
                 } else if ("Tanh".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.Tanh);
+                    searchParams.set("rule", Lofs2.Rule.Tanh);
                 } else if ("Skew".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.Skew);
+                    searchParams.set("rule", Lofs2.Rule.Skew);
                 } else if ("SkewE".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.SkewE);
+                    searchParams.set("rule", Lofs2.Rule.SkewE);
                 } else if ("RSkew".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.RSkew);
+                    searchParams.set("rule", Lofs2.Rule.RSkew);
                 } else if ("RSkewE".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.RSkewE);
+                    searchParams.set("rule", Lofs2.Rule.RSkewE);
                 } else if ("Patel".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.Patel);
+                    searchParams.set("rule", Lofs2.Rule.Patel);
                 } else if ("FastICA (see console)".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.FastICA);
+                    searchParams.set("rule", Lofs2.Rule.FastICA);
                 } else if ("Nlo".equals(item)) {
-                    searchParams.setRule(Lofs2.Rule.Nlo);
-//                } else if ("IGCI".equals(item)) {
+                    searchParams.set("rule", Lofs2.Rule.Nlo);
+                    //                } else if ("IGCI".equals(item)) {
 //                    searchParams.setRule(Lofs2.Rule.IGCI);
 //                } else if ("RC".equals(item)) {
 //                    searchParams.setRule(Lofs2.Rule.RC);
@@ -303,7 +303,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 //        scoreBox.addItem("Maxent Approx");
 //        scoreBox.addItem("Other");
 
-        Lofs.Score _score = searchParams.getScore();
+        Lofs.Score _score = (Lofs.Score) searchParams.get("score", Lofs.Score.andersonDarling);
 
         if (_score == Lofs.Score.andersonDarling) {
             scoreBox.setSelectedItem("Anderson Darling");
@@ -332,29 +332,29 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                 System.out.println(item);
 
                 if ("Anderson Darling".equals(item)) {
-                    searchParams.setScore(Lofs.Score.andersonDarling);
+                    searchParams.set("score", Lofs.Score.andersonDarling);
                 } else if ("Skew".equals(item)) {
-                    searchParams.setScore(Lofs.Score.skew);
+                    searchParams.set("score", Lofs.Score.skew);
                 } else if ("Kurtosis".equals(item)) {
-                    searchParams.setScore(Lofs.Score.kurtosis);
+                    searchParams.set("score", Lofs.Score.kurtosis);
                 } else if ("Fifth Moment".equals(item)) {
-                    searchParams.setScore(Lofs.Score.fifthMoment);
+                    searchParams.set("score", Lofs.Score.fifthMoment);
                 } else if ("Entropy (delta = bins)".equals(item)) {
-                    searchParams.setScore(Lofs.Score.entropy);
+                    searchParams.set("score", Lofs.Score.entropy);
                 } else if ("Absolute Value".equals(item)) {
-                    searchParams.setScore(Lofs.Score.absoluteValue);
+                    searchParams.set("score", Lofs.Score.absoluteValue);
                 } else if ("E(e^X)".equals(item)) {
-                    searchParams.setScore(Lofs.Score.exp);
+                    searchParams.set("score", Lofs.Score.exp);
                 } else if ("Exp Unstandardized".equals(item)) {
-                    searchParams.setScore(Lofs.Score.expUnstandardized);
+                    searchParams.set("score", Lofs.Score.expUnstandardized);
                 } else if ("-e^(-X^2/2)".equals(item)) {
-                    searchParams.setScore(Lofs.Score.other);
+                    searchParams.set("score", Lofs.Score.other);
                 } else if ("Log Cosh".equals(item)) {
-                    searchParams.setScore(Lofs.Score.logcosh);
+                    searchParams.set("score", Lofs.Score.logcosh);
                 } else if ("Maxent Approx".equals(item)) {
-                    searchParams.setScore(Lofs.Score.entropy);
+                    searchParams.set("score", Lofs.Score.entropy);
                 } else if ("Other".equals(item)) {
-                    searchParams.setScore(Lofs.Score.other);
+                    searchParams.set("score", Lofs.Score.other);
                 } else {
                     throw new IllegalStateException();
                 }
@@ -532,7 +532,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         meekOrient.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ImpliedOrientation rules = getAlgorithmRunner().getMeekRules();
-                rules.setKnowledge(getAlgorithmRunner().getParams().getKnowledge());
+                rules.setKnowledge((IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2()));
                 rules.orientImplied(getGraph());
                 getGraphHistory().add(getGraph());
                 getWorkbench().setGraph(getGraph());
@@ -607,7 +607,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 
     public List<String> getVarNames() {
         Parameters params = getAlgorithmRunner().getParams();
-        return params.getVarNames();
+        return (List<String>) params.get("varNames", null);
     }
 
     public void setTestType(IndTestType testType) {
@@ -619,11 +619,11 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().setKnowledge(knowledge);
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return getAlgorithmRunner().getParams().getKnowledge();
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//

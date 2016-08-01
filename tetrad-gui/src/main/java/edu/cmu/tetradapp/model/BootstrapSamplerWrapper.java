@@ -60,7 +60,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
         for (DataModel dataModel : oldDataSets) {
             DataSet dataSet = (DataSet) dataModel;
             BootstrapSampler sampler = new BootstrapSampler();
-            DataSet bootstrap = sampler.sample(dataSet, params.getSampleSize());
+            DataSet bootstrap = sampler.sample(dataSet, params.getInt("sampleSize", 1000));
             bootstraps.add(bootstrap);
             if (oldDataSets.getSelectedModel() == dataModel) {
                 bootstraps.setSelectedModel(bootstrap);
@@ -73,7 +73,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
         DataModel dataModel = wrapper.getSelectedDataModel();
         DataSet dataSet = (DataSet) dataModel;
         BootstrapSampler sampler = new BootstrapSampler();
-        this.outputDataSet = sampler.sample(dataSet, params.getSampleSize());
+        this.outputDataSet = sampler.sample(dataSet, params.getInt("sampleSize", 1000));
 
         LogDataUtils.logDataModelList("Bootstrap sample of data in the parent node.", getDataModelList());
 

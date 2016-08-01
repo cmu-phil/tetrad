@@ -92,7 +92,7 @@ public class EvidenceWizardSingleObs extends JPanel {
         add(Box.createVerticalStrut(10));
 
         evidenceEditor = new EvidenceEditorObs(updaterWrapper.getBayesUpdater().getEvidence());
-        getUpdaterWrapper().getParams().setEvidence(evidenceEditor.getEvidence());
+        getUpdaterWrapper().getParams().set("evidence", evidenceEditor.getEvidence());
         add(evidenceEditor);
         add(Box.createVerticalStrut(10));
 
@@ -116,8 +116,8 @@ public class EvidenceWizardSingleObs extends JPanel {
                 Node tetradNode = graphNode.getModelNode();
                 String selectedNodeName = tetradNode.getName();
 
-                getUpdaterWrapper().getParams().setEvidence(evidenceEditor.getEvidence());
-                getUpdaterWrapper().getParams().setVariable((DiscreteVariable)
+                getUpdaterWrapper().getParams().set("evidence", evidenceEditor.getEvidence());
+                getUpdaterWrapper().getParams().set("variable", (DiscreteVariable)
                         (updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode)));
                 getUpdaterWrapper().getBayesUpdater().setEvidence(evidenceEditor.getEvidence());
 

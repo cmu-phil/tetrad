@@ -90,7 +90,7 @@ public class EvidenceWizardMultipleObs extends JPanel {
         add(b0);
         add(Box.createVerticalStrut(10));
         evidenceEditor = new EvidenceEditorObs(updaterWrapper.getBayesUpdater().getEvidence());
-        getUpdaterWrapper().getParams().setEvidence(evidenceEditor.getEvidence());
+        getUpdaterWrapper().getParams().set("evidence", evidenceEditor.getEvidence());
         add(evidenceEditor);
         add(Box.createVerticalStrut(10));
 

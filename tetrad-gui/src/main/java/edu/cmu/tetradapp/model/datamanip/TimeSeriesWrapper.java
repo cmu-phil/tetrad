@@ -52,7 +52,7 @@ public class TimeSeriesWrapper extends DataWrapper {
             }
 
             DataSet dataSet = (DataSet) dataModel;
-            DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, params.getNumOfTimeLags());
+            DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, params.getInt("numTimeLags", 1));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }

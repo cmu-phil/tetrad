@@ -59,12 +59,12 @@ class FciIndTestParamsEditorOld extends JComponent {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(params().getAlpha(), 8,
+        alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"));
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params().setAlpha(value);
+                    params().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -73,11 +73,11 @@ class FciIndTestParamsEditorOld extends JComponent {
             }
         });
 
-        depthField = new IntTextField(params().getDepth(), 5);
+        depthField = new IntTextField(params().getInt("depth", -1), 5);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
-                    params().setDepth(value);
+                    params().set("depth", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {

@@ -38,8 +38,8 @@ public class HitonVariantMbSearchRunner extends AbstractMBSearchRunner {
 
     public void execute() throws Exception {
         HitonVariant search = new HitonVariant(getIndependenceTest(),
-                getParams().getDepth());
-        this.setSearchResults(search.findMb(this.getParams().getTargetName()));
+                getParams().getInt("depth", -1));
+        this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());
     }
 }

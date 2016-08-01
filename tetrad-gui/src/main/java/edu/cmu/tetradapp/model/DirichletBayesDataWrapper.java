@@ -38,8 +38,8 @@ public class DirichletBayesDataWrapper extends DataWrapper
 
     public DirichletBayesDataWrapper(DirichletBayesImWrapper wrapper,
             Parameters params) {
-        int sampleSize = params.getSampleSize();
-        boolean latentDataSaved = params.isLatentDataSaved();
+        int sampleSize = params.getInt("sampleSize", 1000);
+        boolean latentDataSaved = params.getBoolean("latentDataSaved", false);
         setDataModel(wrapper.getDirichletBayesIm().simulateData(sampleSize, latentDataSaved));
         setSourceGraph(wrapper.getDirichletBayesIm().getDag());
         LogDataUtils.logDataModelList("Data simulated from a Dirichlet Bayes net.", getDataModelList());

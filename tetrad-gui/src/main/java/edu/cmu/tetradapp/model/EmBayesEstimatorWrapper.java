@@ -111,7 +111,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         this.dataSet = estimator.getMixedDataSet();
 
         try {
-            estimator.maximization(params.getTolerance());
+            estimator.maximization(params.getDouble("tolerance", 0.0001));
             this.estimateBayesIm = estimator.getEstimatedIm();
         }
         catch (IllegalArgumentException e) {
@@ -149,7 +149,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         System.out.println("B" + dataSet.getVariables());
 
         try {
-            estimator.maximization(params.getTolerance());
+            estimator.maximization(params.getDouble("tolerance", 0.0001));
             this.estimateBayesIm = estimator.getEstimatedIm();
         }
         catch (IllegalArgumentException e) {

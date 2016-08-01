@@ -45,13 +45,13 @@ class PurifyIndTestParamsEditor extends JPanel {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getAlpha(), 8,
+        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    getParams().setAlpha(value);
+                    getParams().set("alpha", 0.001);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -66,13 +66,13 @@ class PurifyIndTestParamsEditor extends JPanel {
         if (!discreteData) {
             final TestType[] descriptions = TestType.getTestDescriptions();
             testSelector = new JComboBox(descriptions);
-            testSelector.setSelectedItem(getParams().getTetradTestType());
+            testSelector.setSelectedItem((TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
             testSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     JComboBox combo = (JComboBox) e.getSource();
                     TestType index = (TestType) combo.getSelectedItem();
-                    getParams().setTetradTestType(index);
+                    getParams().set("tetradTestType", index);
                 }
             });
 

@@ -120,16 +120,16 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
     private void setup(BayesIm bayesIm, Parameters params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
-        if (params.getEvidence() == null || params.getEvidence().isIncompatibleWith(bayesIm)) {
+        if ((Evidence) params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
             bayesUpdater = new RowSummingExactUpdater(bayesIm);
         }
         else {
             bayesUpdater = new RowSummingExactUpdater(bayesIm,
-                    params.getEvidence());
+                    (Evidence) params.get("evidence", null));
         }
 
 
-        Node node = getParams().getVariable();
+        Node node = (Node) getParams().get("variable", null);
 
         if (node != null) {
             NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -143,7 +143,7 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
 
             TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
             TetradLogger.getInstance().log("details", "\nEvidence:");
-            Evidence evidence = getParams().getEvidence();
+            Evidence evidence = (Evidence) getParams().get("evidence", null);
             Proposition proposition = evidence.getProposition();
 
             for (int i = 0; i < proposition.getNumVariables(); i++) {

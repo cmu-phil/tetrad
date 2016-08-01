@@ -72,11 +72,11 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
         setLayout(new BorderLayout());
 
         final DoubleTextField symmetricAlphaField = new DoubleTextField(
-                params.getSymmetricAlpha(), 5, NumberFormatUtil.getInstance().getNumberFormat());
+                params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
         symmetricAlphaField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setSymmetricAlpha(value);
+                    params.set("symmetricAlpha", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
