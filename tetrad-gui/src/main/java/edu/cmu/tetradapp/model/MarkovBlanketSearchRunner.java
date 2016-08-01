@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.Executable;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ public interface MarkovBlanketSearchRunner extends Executable {
     /**
      * @return the search params.
      */
-    Params getParams();
+    Parameters getParams();
 
 
     /**

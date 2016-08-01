@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,9 +39,9 @@ import java.util.List;
  * @author Ricardo Silva
  */
 class MimBuildIndTestParamsEditor extends JComponent {
-    private Params params;
+    private Parameters params;
 
-    public MimBuildIndTestParamsEditor(final Params params) {
+    public MimBuildIndTestParamsEditor(final Parameters params) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
@@ -184,7 +184,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
         return params.getVarNames();
     }
 
-    private Params getParams() {
+    private Parameters getParams() {
         return params;
     }
 }

@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -38,7 +38,7 @@ class FciIndTestParamsEditorOld extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private Params params = null;
+    private Parameters params = null;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -55,7 +55,7 @@ class FciIndTestParamsEditorOld extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public FciIndTestParamsEditorOld(Params params) {
+    public FciIndTestParamsEditorOld(Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
@@ -126,7 +126,7 @@ class FciIndTestParamsEditorOld extends JComponent {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private Params params() {
+    private Parameters params() {
         return params;
     }
 }

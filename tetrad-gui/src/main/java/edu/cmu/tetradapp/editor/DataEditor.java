@@ -640,16 +640,16 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         tools.add(new DescriptiveStatsAction(this));
 //        tools.add(new ConditionalIndependenceTestAction(this));
 
-//        final Params _params = dataWrapper.getParams();
+//        final Parameters _params = dataWrapper.getParams();
 //
-//        if (_params instanceof Params || _params instanceof Params) {
+//        if (_params instanceof Parameters || _params instanceof Parameters) {
 //            JMenuItem drawSample = new JMenuItem("Draw New Sample");
 //            tools.add(drawSample);
 //
 //            drawSample.addActionListener(new ActionListener() {
 //                public void actionPerformed(ActionEvent event) {
-//                    if (_params instanceof Params) {
-//                        Params params = (Params) _params;
+//                    if (_params instanceof Parameters) {
+//                        Parameters params = (Parameters) _params;
 //
 //                        BayesDataParamsEditor paramsEditor = new BayesDataParamsEditor();
 //                        paramsEditor.setParams(params);
@@ -674,8 +674,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 //                        selectFirstTab();
 //                        firePropertyChange("modelChanged", null, null);
 //                    }
-//                    else if (_params instanceof Params) {
-//                        Params params = (Params) _params;
+//                    else if (_params instanceof Parameters) {
+//                        Parameters params = (Parameters) _params;
 //                        SemDataWrapper wrapper = (SemDataWrapper) dataWrapper;
 //
 //                        SemDataParamsEditor paramsEditor = new SemDataParamsEditor();

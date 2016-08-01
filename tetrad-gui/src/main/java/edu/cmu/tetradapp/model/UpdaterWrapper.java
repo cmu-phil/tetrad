@@ -21,8 +21,8 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.bayes.ManipulatingBayesUpdater;
-import edu.cmu.tetrad.util.Params;
 
 /**
  * Stuff the GUI needs to know. Wrapped so that the GUI can access the params.
@@ -34,7 +34,7 @@ public interface UpdaterWrapper {
     /**
      * Makes the params object accessible to the GUI.
      */
-    Params getParams();
+    Parameters getParams();
 
     ManipulatingBayesUpdater getBayesUpdater();
 }

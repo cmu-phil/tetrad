@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.TimeLagGraph;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.FactorAnalysisRunner;
 import edu.cmu.tetradapp.model.IFgsRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -131,7 +131,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
     //================================PRIVATE METHODS====================//
 
     private JComponent getIndTestParamBox() {
-        Params params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return getIndTestParamBox(params);
     }
 
@@ -139,23 +139,23 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Params params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof IFgsRunner) {
                 IFgsRunner gesRunner = ((IFgsRunner) getAlgorithmRunner());
                 return new FgsIndTestParamsEditor(params, gesRunner.getType());
             }
         }
 
-        if (getAlgorithmRunner().getParams().getIndClass() instanceof TimeLagGraph) {
+        if (getAlgorithmRunner().getParams().getIndClass() == TimeLagGraph.class) {
             return new TimeSeriesIndTestParamsEditor(getAlgorithmRunner().getParams());
         }
 
-        if (getAlgorithmRunner().getParams().getIndClass() instanceof Graph) {
+        if (getAlgorithmRunner().getParams().getIndClass().equals(Graph.class)) {
             return new IndTestParamsEditor(params);
         }
 

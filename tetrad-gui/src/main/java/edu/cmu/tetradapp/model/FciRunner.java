@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
@@ -43,47 +43,47 @@ public class FciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public FciRunner(DataWrapper dataWrapper, Params params) {
+    public FciRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FciRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FciRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
 
-    public FciRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public FciRunner(Graph graph, Params params) {
+    public FciRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
-    public FciRunner(Graph graph, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FciRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
-    public FciRunner(GraphWrapper graphWrapper, Params params) {
+    public FciRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public FciRunner(DagWrapper dagWrapper, Params params) {
+    public FciRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public FciRunner(SemGraphWrapper dagWrapper, Params params) {
+    public FciRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public FciRunner(IndependenceFactsModel model, Params params) {
+    public FciRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public FciRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -94,7 +94,7 @@ public class FciRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static FciRunner serializableInstance() {
-        return new FciRunner(Dag.serializableInstance(), new Params());
+        return new FciRunner(Dag.serializableInstance(), new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -143,14 +143,14 @@ public class FciRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        Params params = getParams();
+        Parameters params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof Params) {
-            Params _params = (Params) params;
+        if (getParams() instanceof Parameters) {
+            Parameters _params = (Parameters) params;
             testType = _params.getIndTestType();
         } else {
-            Params _params = (Params) params;
+            Parameters _params = (Parameters) params;
             testType = _params.getIndTestType();
         }
 

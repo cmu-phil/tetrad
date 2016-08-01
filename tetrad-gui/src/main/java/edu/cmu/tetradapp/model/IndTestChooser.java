@@ -21,10 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
 import java.util.ArrayList;
@@ -36,16 +36,16 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public final class IndTestChooser {
-    public IndependenceTest getTest(Object dataSource, Params params) {
+    public IndependenceTest getTest(Object dataSource, Parameters params) {
         return getTest(dataSource, params, IndTestType.DEFAULT);
     }
 
     /**
      * @return an independence checker appropriate to the given data source.
-     * Also sets the Params on the params to an appropriate type object
+     * Also sets the Parameters on the params to an appropriate type object
      * (using the existing one if it's of the right type).
      */
-    public IndependenceTest getTest(Object dataSource, Params params,
+    public IndependenceTest getTest(Object dataSource, Parameters params,
                                     IndTestType testType) {
 
         if (dataSource == null) {
@@ -120,7 +120,7 @@ public final class IndTestChooser {
     }
 
     private IndependenceTest getMixedTest(DataSet dataSet,
-                                          Params params, IndTestType testType) {
+                                          Parameters params, IndTestType testType) {
 
         if (IndTestType.MIXED_MLR == testType) {
             return new IndTestMultinomialLogisticRegressionWald(dataSet, params.getAlpha(), false);
@@ -134,7 +134,7 @@ public final class IndTestChooser {
     }
 
     private IndependenceTest getContinuousTest(DataSet dataSet,
-                                               Params params, IndTestType testType) {
+                                               Parameters params, IndTestType testType) {
         if (IndTestType.CONDITIONAL_CORRELATION == testType) {
             return new IndTestConditionalCorrelation(dataSet, params.getAlpha());
         }
@@ -163,7 +163,7 @@ public final class IndTestChooser {
     }
 
     private IndependenceTest getMultiContinuousTest(List<DataSet> dataSets,
-                                                    Params params, IndTestType testType) {
+                                                    Parameters params, IndTestType testType) {
         if (IndTestType.POOL_RESIDUALS_FISHER_Z == testType) {
             return new IndTestFisherZPercentIndependent(dataSets, params.getAlpha());
         }
@@ -193,7 +193,7 @@ public final class IndTestChooser {
         }
     }
 
-    private IndependenceTest getDiscreteTest(DataSet dataDiscrete, Params params, IndTestType testType) {
+    private IndependenceTest getDiscreteTest(DataSet dataDiscrete, Parameters params, IndTestType testType) {
         if (IndTestType.G_SQUARE == testType) {
             return new IndTestGSquare(dataDiscrete, params.getAlpha());
         }
@@ -208,7 +208,7 @@ public final class IndTestChooser {
         }
     }
 
-    private IndependenceTest getGraphTest(Graph graph, Params params,
+    private IndependenceTest getGraphTest(Graph graph, Parameters params,
                                           IndTestType testType) {
         if (IndTestType.D_SEPARATION == testType) {
             return new IndTestDSep(graph);
@@ -219,13 +219,13 @@ public final class IndTestChooser {
     }
 
     private IndependenceTest getCovMatrixTest(ICovarianceMatrix covMatrix,
-                                              Params params) {
+                                              Parameters params) {
         return new IndTestFisherZ(covMatrix,
                 params.getAlpha());
     }
 
     private IndependenceTest timeSeriesTest(TimeSeriesData data,
-                                            Params params) {
+                                            Parameters params) {
         IndTestTimeSeries test = new IndTestTimeSeries(data.getData(), data.getVariables());
         test.setAlpha(params.getAlpha());
         test.setNumLags(params.getNumLags());

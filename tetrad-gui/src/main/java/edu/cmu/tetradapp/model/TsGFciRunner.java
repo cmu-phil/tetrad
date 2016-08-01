@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeListener;
@@ -49,14 +49,14 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-//    public GFciRunner(DataWrapper dataWrapper, Params params) {
+//    public GFciRunner(DataWrapper dataWrapper, Parameters params) {
 //        super(dataWrapper, params, null);
 //    }
 //
 //    /**
 //     * Constucts a wrapper for the given EdgeListGraph.
 //     */
-//    public GFciRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+//    public GFciRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
 //        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
 //    }
 
@@ -65,51 +65,51 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public TsGFciRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsGFciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public TsGFciRunner(Graph graph, Params params) {
+    public TsGFciRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
 
-    public TsGFciRunner(GraphWrapper graphWrapper, Params params) {
+    public TsGFciRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public TsGFciRunner(DagWrapper dagWrapper, Params params) {
+    public TsGFciRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public TsGFciRunner(SemGraphWrapper dagWrapper, Params params) {
+    public TsGFciRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public TsGFciRunner(IndependenceFactsModel model, Params params) {
+    public TsGFciRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public TsGFciRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsGFciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
-//    public GFciRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+//    public GFciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
 //        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
 //    }
 
-    public TsGFciRunner(DataWrapper dataWrapper, Params params) {
+    public TsGFciRunner(DataWrapper dataWrapper, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
     }
 
-//    public GFciRunner(DataWrapper dataWrapper, GraphSource graph, Params params) {
+//    public GFciRunner(DataWrapper dataWrapper, GraphSource graph, Parameters params) {
 //        super(new MergeDatasetsWrapper(dataWrapper), params, null);
 ////        if (graph == dataWrapper) throw new IllegalArgumentException();
 //        if (graph == this) throw new IllegalArgumentException();
 //        this.initialGraph = graph.getGraph();
 //    }
 //
-//    public GFciRunner(DataWrapper dataWrapper, GraphSource graph, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+//    public GFciRunner(DataWrapper dataWrapper, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
 //        super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
 //        if (graph == this) throw new IllegalArgumentException();
 //        this.initialGraph = graph.getGraph();
@@ -117,7 +117,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
 
     public TsGFciRunner(DataWrapper dataWrapper1,
                         DataWrapper dataWrapper2,
-                        Params params) {
+                        Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -129,7 +129,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
     public TsGFciRunner(DataWrapper dataWrapper1,
                         DataWrapper dataWrapper2,
                         DataWrapper dataWrapper3,
-                        Params params) {
+                        Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -144,7 +144,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                         DataWrapper dataWrapper2,
                         DataWrapper dataWrapper3,
                         DataWrapper dataWrapper4,
-                        Params params) {
+                        Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -161,7 +161,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                         DataWrapper dataWrapper3,
                         DataWrapper dataWrapper4,
                         DataWrapper dataWrapper5,
-                        Params params) {
+                        Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -180,7 +180,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                         DataWrapper dataWrapper4,
                         DataWrapper dataWrapper5,
                         DataWrapper dataWrapper6,
-                        Params params) {
+                        Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -201,7 +201,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                         DataWrapper dataWrapper5,
                         DataWrapper dataWrapper6,
                         DataWrapper dataWrapper7,
-                        Params params) {
+                        Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -224,7 +224,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                         DataWrapper dataWrapper6,
                         DataWrapper dataWrapper7,
                         DataWrapper dataWrapper8,
-                        Params params) {
+                        Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -249,7 +249,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                         DataWrapper dataWrapper7,
                         DataWrapper dataWrapper8,
                         DataWrapper dataWrapper9,
-                        Params params) {
+                        Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -276,7 +276,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                         DataWrapper dataWrapper8,
                         DataWrapper dataWrapper9,
                         DataWrapper dataWrapper10,
-                        Params params) {
+                        Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -294,11 +294,11 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
 
     }
 
-    public TsGFciRunner(GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsGFciRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-//    public GFciRunner(GraphWrapper graphWrapper, Params params) {
+//    public GFciRunner(GraphWrapper graphWrapper, Parameters params) {
 //        super(graphWrapper.getGraph(), params, null);
 //    }
 
@@ -309,7 +309,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static TsGFciRunner serializableInstance() {
-        return new TsGFciRunner(Dag.serializableInstance(), new Params());
+        return new TsGFciRunner(Dag.serializableInstance(), new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -320,9 +320,9 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
      */
 //    public void execute() {
 //        IKnowledge knowledge = getParams().getKnowledge();
-//        Params searchParams = getParams();
+//        Parameters searchParams = getParams();
 //
-//        Params params = (Params) searchParams;
+//        Parameters params = (Parameters) searchParams;
 //
 //        Graph graph;
 //
@@ -374,7 +374,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        Params params = (Params) getParams();
+        Parameters params = (Parameters) getParams();
         double penaltyDiscount = params.getPenaltyDiscount();
 
         if (model instanceof Graph) {
@@ -398,8 +398,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                     gfci.setKnowledge(getParams().getKnowledge());
                 }
 //                else if (dataSet.isDiscrete()) {
-//                    double samplePrior = ((Params) getParams()).getSamplePrior();
-//                    double structurePrior = ((Params) getParams()).getStructurePrior();
+//                    double samplePrior = ((Parameters) getParams()).getSamplePrior();
+//                    double structurePrior = ((Parameters) getParams()).getStructurePrior();
 //                    BDeuScore score = new BDeuScore(dataSet);
 //                    score.setSamplePrior(samplePrior);
 //                    score.setStructurePrior(structurePrior);
@@ -429,8 +429,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
-//                Params Params = (Params) getParams();
-//                Params params = (Params) Params;
+//                Parameters Parameters = (Parameters) getParams();
+//                Parameters params = (Parameters) Parameters;
 
                 if (allContinuous(list)) {
                     double penalty = params.getPenaltyDiscount();
@@ -441,8 +441,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                     gfci.setKnowledge(getParams().getKnowledge());
                 }
 //                else if (allDiscrete(list)) {
-//                    double structurePrior = ((Params) getParams()).getStructurePrior();
-//                    double samplePrior = ((Params) getParams()).getSamplePrior();
+//                    double structurePrior = ((Parameters) getParams()).getStructurePrior();
+//                    double samplePrior = ((Parameters) getParams()).getSamplePrior();
 //
 //                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
 //                    fgsScore.setSamplePrior(samplePrior);
@@ -518,14 +518,14 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        Params params = getParams();
+        Parameters params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof Params) {
-            Params _params = (Params) params;
+        if (getParams() instanceof Parameters) {
+            Parameters _params = (Parameters) params;
             testType = _params.getIndTestType();
         } else {
-            Params _params = (Params) params;
+            Parameters _params = (Parameters) params;
             testType = _params.getIndTestType();
         }
 

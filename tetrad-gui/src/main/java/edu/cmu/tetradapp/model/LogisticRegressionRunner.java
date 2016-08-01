@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.search.ImpliedOrientation;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -53,7 +53,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
     /**
      * @serial Cannot be null.
      */
-    private Params params;
+    private Parameters params;
 
     /**
      * @serial Cannot be null.
@@ -93,7 +93,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * containing either a DataSet or a DataSet as its selected model.
      */
     public LogisticRegressionRunner(DataWrapper dataWrapper,
-                                    Params params) {
+                                    Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -146,7 +146,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         }
 
         DataWrapper dataWrapper = new DataWrapper(dataSet);
-        return new LogisticRegressionRunner(dataWrapper, new Params());
+        return new LogisticRegressionRunner(dataWrapper, new Parameters());
     }
 
     //===========================PUBLIC METHODS============================//
@@ -155,7 +155,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         return this.dataSet;
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 
@@ -175,7 +175,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         return this.result;
     }
 
-    public Params getParams() {
+    public Parameters getParams() {
         return params;
     }
 
@@ -214,7 +214,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         }
 
         //Regression regression = new Regression();
-        //String targetName = ((Params) getParams()).getTargetName();
+        //String targetName = ((Parameters) getParams()).getTargetName();
         String targetName = params.getTargetName();
         double alpha = params.getAlpha();
 

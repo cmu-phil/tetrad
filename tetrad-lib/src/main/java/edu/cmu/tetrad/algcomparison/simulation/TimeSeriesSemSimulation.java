@@ -48,7 +48,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
         for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
 //            SemPm pm = new SemPm(graph);
-//            Params params = new Params();
+//            Parameters params = new Parameters();
 //            params.setVarRange(parameters.getDouble("varLow"), parameters.getDouble("varHigh"));
 //            SemIm im = new SemIm(pm);
 //            dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));

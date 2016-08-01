@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.ScoredGraph;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -66,7 +66,7 @@ public interface IGesRunner {
 
     Graph getResultGraph();
 
-    Params getParams();
+    Parameters getParams();
 
     Graph getSourceGraph();
 

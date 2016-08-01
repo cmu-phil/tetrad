@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.Ccd;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -51,15 +51,15 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CcdRunner(DataWrapper dataWrapper, Params params) {
+    public CcdRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public CcdRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, Params params) {
+    public CcdRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public CcdRunner(DataWrapper dataWrapper, GraphWrapper initialGraph, Params params) {
+    public CcdRunner(DataWrapper dataWrapper, GraphWrapper initialGraph, Parameters params) {
         super(dataWrapper, params);
         setInitialGraph(initialGraph.getGraph());
     }
@@ -68,7 +68,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(GraphSource graphWrapper, Params params) {
+    public CcdRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -76,33 +76,33 @@ public class CcdRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(GraphWrapper graphWrapper, Params params) {
+    public CcdRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Params params) {
+    public CcdRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(DagWrapper dagWrapper, Params params) {
+    public CcdRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CcdRunner(SemGraphWrapper dagWrapper, Params params) {
+    public CcdRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CcdRunner(IndependenceFactsModel model, Params params) {
+    public CcdRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public CcdRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -112,7 +112,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static CcdRunner serializableInstance() {
-        return new CcdRunner(DataWrapper.serializableInstance(), new Params());
+        return new CcdRunner(DataWrapper.serializableInstance(), new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//

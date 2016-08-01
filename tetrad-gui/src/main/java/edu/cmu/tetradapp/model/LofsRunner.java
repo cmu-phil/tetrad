@@ -28,7 +28,7 @@ import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -52,19 +52,19 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
 
 // ============================CONSTRUCTORS============================//
 
-    // public LingamPatternRunner(DataWrapper dataWrapper, Params
+    // public LingamPatternRunner(DataWrapper dataWrapper, Parameters
     // params) {
     // super(dataWrapper, params);
     // }
 
     public LofsRunner(GraphWrapper graphWrapper,
-                      DataWrapper dataWrapper, Params params) {
+                      DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = graphWrapper.getGraph();
     }
 
     public LofsRunner(GraphWrapper graphWrapper,
-                      DataWrapper dataWrapper, Params params,
+                      DataWrapper dataWrapper, Parameters params,
                       KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = graphWrapper.getGraph();
@@ -73,7 +73,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LofsRunner(GraphSource graphWrapper, Params params,
+    public LofsRunner(GraphSource graphWrapper, Parameters params,
                       KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
@@ -81,109 +81,109 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LofsRunner(GraphSource graphWrapper, Params params) {
+    public LofsRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
     public LofsRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                      Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcStableRunner wrapper, DataWrapper dataWrapper,
-                      Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcStableRunner wrapper, DataWrapper dataWrapper,
-                      Params params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                      Params params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(FasRunner wrapper, DataWrapper dataWrapper,
-                      Params params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(FasRunner wrapper, DataWrapper dataWrapper,
-                      Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                      Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                      Params params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                      Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                      Params params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(FciRunner wrapper, DataWrapper dataWrapper,
-                      Params params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(FciRunner wrapper, DataWrapper dataWrapper,
-                      Params params, GraphWrapper graph) {
+                      Parameters params, GraphWrapper graph) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
         this.trueGraph = graph.getGraph();
     }
 
     public LofsRunner(CcdRunner wrapper, DataWrapper dataWrapper,
-                      Params params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(CcdRunner2 wrapper, DataWrapper dataWrapper,
-                      Params params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                      Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                      Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                      Params params) {
+                      Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                      GraphWrapper graphWrapper, Params params) {
+                      GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
         this.trueGraph = graphWrapper.getGraph();
@@ -204,7 +204,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
      */
     public static LingamStructureRunner serializableInstance() {
         return new LingamStructureRunner(DataWrapper.serializableInstance(),
-                new Params(), KnowledgeBoxModel.serializableInstance());
+                new Parameters(), KnowledgeBoxModel.serializableInstance());
     }
 
     // ============================PUBLIC METHODS==========================//
@@ -295,7 +295,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     }
 
     private Graph applyLofs(DataModelList dataSets, Graph pattern) {
-        final Params params = (Params) getParams();
+        final Parameters params = (Parameters) getParams();
         List<DataSet> _dataSets = new ArrayList<DataSet>();
 
         for (DataModel dataModel : dataSets) {

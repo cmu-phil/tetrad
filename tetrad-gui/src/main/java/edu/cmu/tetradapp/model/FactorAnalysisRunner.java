@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -52,7 +53,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FactorAnalysisRunner(DataWrapper dataWrapper, Params pc) {
+    public FactorAnalysisRunner(DataWrapper dataWrapper, Parameters pc) {
         super(dataWrapper, pc, null);
     }
 
@@ -62,7 +63,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * @see TetradSerializableUtils
      */
     public static FactorAnalysisRunner serializableInstance() {
-        return new FactorAnalysisRunner(DataWrapper.serializableInstance(), new Params());
+        return new FactorAnalysisRunner(DataWrapper.serializableInstance(), new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

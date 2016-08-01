@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -41,14 +41,14 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public TsFciRunner2(DataWrapper dataWrapper, Params params) {
+    public TsFciRunner2(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public TsFciRunner2(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner2(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     /**
@@ -56,32 +56,32 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public TsFciRunner2(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner2(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner2(Graph graph, Params params) {
+    public TsFciRunner2(Graph graph, Parameters params) {
         super(graph, params);
     }
 
 
-    public TsFciRunner2(GraphWrapper graphWrapper, Params params) {
+    public TsFciRunner2(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public TsFciRunner2(DagWrapper dagWrapper, Params params) {
+    public TsFciRunner2(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public TsFciRunner2(SemGraphWrapper dagWrapper, Params params) {
+    public TsFciRunner2(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public TsFciRunner2(IndependenceFactsModel model, Params params) {
+    public TsFciRunner2(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public TsFciRunner2(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner2(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -92,7 +92,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
      */
     public static TsFciRunner2 serializableInstance() {
         return new TsFciRunner2(Dag.serializableInstance(),
-                new Params());
+                new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -103,9 +103,9 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
      */
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
-        Params searchParams = getParams();
+        Parameters searchParams = getParams();
 
-        Params params = (Params) searchParams;
+        Parameters params = (Parameters) searchParams;
 
         Graph graph;
 
@@ -150,15 +150,15 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        Params params = getParams();
+        Parameters params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof Params) {
-            Params _params = (Params) params;
+        if (getParams() instanceof Parameters) {
+            Parameters _params = (Parameters) params;
             testType = _params.getIndTestType();
         }
         else {
-            Params _params = (Params) params;
+            Parameters _params = (Parameters) params;
             testType = _params.getIndTestType();
         }
 

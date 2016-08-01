@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,7 +36,7 @@ import java.awt.*;
 public final class LogisticRegressionParamsEditor extends JPanel implements ParameterEditor {
 
 
-    private Params params;
+    private Parameters params;
     private Object[] parentModels;
 
 
@@ -47,8 +47,8 @@ public final class LogisticRegressionParamsEditor extends JPanel implements Para
 
     }
 
-    public void setParams(Params params) {
-       this.params = (Params)params;
+    public void setParams(Parameters params) {
+       this.params = (Parameters)params;
     }
 
     public void setParentModels(Object[] parentModels) {

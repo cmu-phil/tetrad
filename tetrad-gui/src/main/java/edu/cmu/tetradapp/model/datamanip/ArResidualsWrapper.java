@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -42,7 +42,7 @@ public class ArResidualsWrapper extends DataWrapper {
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public ArResidualsWrapper(DataWrapper data, Params params) {
+    public ArResidualsWrapper(DataWrapper data, Parameters params) {
         DataModelList list = data.getDataModelList();
         DataModelList convertedList = new DataModelList();
         DataModelList dataSets = data.getDataModelList();
@@ -81,7 +81,7 @@ public class ArResidualsWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
-        return new ArResidualsWrapper(DataWrapper.serializableInstance(), new Params());
+        return new ArResidualsWrapper(DataWrapper.serializableInstance(), new Parameters());
     }
 }
 

@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -29,7 +30,6 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
@@ -62,20 +62,20 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      */
 
     public BuildPureClustersRunner(DataWrapper dataWrapper,
-                                   Params pureClustersParams) {
+                                   Parameters pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
 
     }
 
     public BuildPureClustersRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
-                                   Params pureClustersParams) {
+                                   Parameters pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = semIm.getSemPm().getGraph();
     }
 
     public BuildPureClustersRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
-                                   Params pureClustersParams) {
+                                   Parameters pureClustersParams) {
         super(dataWrapper, pureClustersParams.getClusters(), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
@@ -87,7 +87,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      */
     public static BuildPureClustersRunner serializableInstance() {
         return new BuildPureClustersRunner(DataWrapper.serializableInstance(),
-                new Params());
+                new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

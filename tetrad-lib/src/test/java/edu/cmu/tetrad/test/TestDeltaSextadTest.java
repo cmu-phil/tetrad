@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
@@ -29,7 +30,6 @@ import edu.cmu.tetrad.search.IntSextad;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.Params;
 import org.junit.Test;
 
 import java.io.File;
@@ -275,7 +275,7 @@ public class TestDeltaSextadTest {
 
         SemPm pm = new SemPm(graph);
 
-        Params params = new Params();
+        Parameters params = new Parameters();
 //        params.setCoefRange(0.3, 0.8);
 
         return new SemIm(pm, params);

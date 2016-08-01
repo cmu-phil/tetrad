@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -68,7 +68,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      *
      * @serial not null.
      */
-    private Params params;
+    private Parameters params;
 
     /**
      * The name of the search algorithm
@@ -83,7 +83,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @param source - The source data the search is acting on.
      * @param params - The params for the search.
      */
-    public AbstractMBSearchRunner(DataModel source, Params params) {
+    public AbstractMBSearchRunner(DataModel source, Parameters params) {
         super(castData(source));
         if (source == null) {
             throw new NullPointerException("The source data was null.");
@@ -99,7 +99,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     /**
      * @return the parameters for the search.
      */
-    public Params getParams() {
+    public Parameters getParams() {
         return this.params;
     }
 

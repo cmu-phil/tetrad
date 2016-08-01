@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -56,7 +56,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     /**
      * @serial Cannot be null.
      */
-    private Params params;
+    private Parameters params;
 
     /**
      * The target workbench.
@@ -86,9 +86,9 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public TabularComparison(SessionModel model1, SessionModel model2,
-                             Params params) {
+                             Parameters params) {
         if (params == null) {
-            throw new NullPointerException("Params must not be null");
+            throw new NullPointerException("Parameters must not be null");
         }
 
         // Need to be able to construct this object even if the models are
@@ -160,26 +160,26 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     public TabularComparison(GraphWrapper referenceGraph,
                              AbstractAlgorithmRunner algorithmRunner,
-                             Params params) {
+                             Parameters params) {
         this(referenceGraph, (SessionModel) algorithmRunner,
                 params);
     }
 
     public TabularComparison(GraphWrapper referenceWrapper,
-                             GraphWrapper targetWrapper, Params params) {
+                             GraphWrapper targetWrapper, Parameters params) {
         this(referenceWrapper, (SessionModel) targetWrapper,
                 params);
     }
 
     public TabularComparison(DagWrapper referenceGraph,
                              AbstractAlgorithmRunner algorithmRunner,
-                             Params params) {
+                             Parameters params) {
         this(referenceGraph, (SessionModel) algorithmRunner,
                 params);
     }
 
     public TabularComparison(DagWrapper referenceWrapper,
-                             GraphWrapper targetWrapper, Params params) {
+                             GraphWrapper targetWrapper, Parameters params) {
         this(referenceWrapper, (SessionModel) targetWrapper,
                 params);
     }
@@ -196,7 +196,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     public static TabularComparison serializableInstance() {
         return new TabularComparison(DagWrapper.serializableInstance(),
                 DagWrapper.serializableInstance(),
-                new Params());
+                new Parameters());
     }
 
     //==============================PUBLIC METHODS========================//

@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 
 import javax.swing.*;
@@ -76,7 +76,7 @@ public interface SessionNodeModelConfig {
     /**
      * @return a newly created instance of the parameters for this model.
      */
-    Params getParametersInstance();
+    Parameters getParametersInstance();
 
 
     /**

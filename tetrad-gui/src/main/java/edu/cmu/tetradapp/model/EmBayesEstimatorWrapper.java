@@ -27,7 +27,7 @@ import edu.cmu.tetrad.bayes.EmBayesEstimator;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -90,7 +90,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 //    }
 
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper, Params params) {
+            BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -124,7 +124,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     }
 
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-            BayesImWrapper bayesImWrapper, Params params) {
+            BayesImWrapper bayesImWrapper, Parameters params) {
         TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
 
         if (dataWrapper == null) {
@@ -169,7 +169,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
      */
     public static EmBayesEstimatorWrapper serializableInstance() {
         return new EmBayesEstimatorWrapper(DataWrapper.serializableInstance(),
-                BayesPmWrapper.serializableInstance(), new Params());
+                BayesPmWrapper.serializableInstance(), new Parameters());
     }
 
     //================================PUBLIC METHODS======================//

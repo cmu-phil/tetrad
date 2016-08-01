@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
@@ -50,7 +50,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
     /**
      * The parameter wrapper being viewed.
      */
-    private Params params;
+    private Parameters params;
     private Object[] parentModels;
 
     /**
@@ -60,12 +60,12 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
     public BuildPureClustersParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (Params) params;
+        this.params = (Parameters) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -183,7 +183,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         return false;
     }
 
-    private Params getParams() {
+    private Parameters getParams() {
         return params;
     }
 }

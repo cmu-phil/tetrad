@@ -21,12 +21,12 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Cefs;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.LinkedList;
@@ -50,7 +50,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CeFanSearchRunner(DataWrapper dataWrapper, Params params) {
+    public CeFanSearchRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -59,34 +59,34 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(Graph graph, Params params) {
+    public CeFanSearchRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(GraphWrapper graphWrapper, Params params) {
+    public CeFanSearchRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(DagWrapper dagWrapper, Params params) {
+    public CeFanSearchRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
     public CeFanSearchRunner(SemGraphWrapper dagWrapper,
-            Params params) {
+            Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CeFanSearchRunner(IndependenceFactsModel model, Params params) {
+    public CeFanSearchRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public CeFanSearchRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CeFanSearchRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -97,7 +97,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static CeFanSearchRunner serializableInstance() {
-        return new CeFanSearchRunner(Dag.serializableInstance(), new Params());
+        return new CeFanSearchRunner(Dag.serializableInstance(), new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -107,14 +107,14 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((Params) getParams()).getDepth();
+        int pcDepth = ((Parameters) getParams()).getDepth();
         Cefs search =
                 new Cefs(getIndependenceTest(), pcDepth);
-        Params params = getParams();
-        if(params instanceof Params){
+        Parameters params = getParams();
+        if(params instanceof Parameters){
             search.setAggressivelyPreventCycles(params.isAggressivelyPreventCycles());
         }
-        String targetName = ((Params) getParams()).getTargetName();
+        String targetName = ((Parameters) getParams()).getTargetName();
         Graph graph = search.search(targetName);
         setResultGraph(graph);
 
@@ -136,7 +136,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        Params params = (Params) getParams();
+        Parameters params = (Parameters) getParams();
         IndTestType testType = params.getIndTestType();
         return new IndTestChooser().getTest(dataModel, params, testType);
     }

@@ -36,7 +36,7 @@ import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -179,8 +179,8 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-        if (getAlgorithmRunner().getParams() instanceof Params) {
-            Params params = (Params) getAlgorithmRunner().getParams();
+        if (getAlgorithmRunner().getParams() instanceof Parameters) {
+            Parameters params = (Parameters) getAlgorithmRunner().getParams();
             JCheckBox preventCycles = new JCheckBox("Aggressively Prevent Cycles");
             preventCycles.setHorizontalTextPosition(AbstractButton.RIGHT);
             preventCycles.setSelected(params.isAggressivelyPreventCycles());
@@ -188,7 +188,7 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
             preventCycles.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     JCheckBox box = (JCheckBox) e.getSource();
-                    Params params = (Params) getAlgorithmRunner().getParams();
+                    Parameters params = (Parameters) getAlgorithmRunner().getParams();
                     params.setAggressivelyPreventCycles(box.isSelected());
                 }
             });
@@ -552,7 +552,7 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        Params params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return params.getVarNames();
     }
 
@@ -740,36 +740,36 @@ public class PcLocalSearchEditor extends AbstractSearchEditor
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Params params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof IFgsRunner) {
                 IFgsRunner fgsRunner = ((IFgsRunner) getAlgorithmRunner());
                 return new FgsIndTestParamsEditor(params, fgsRunner.getType());
             }
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new TimeSeriesIndTestParamsEditor(params);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new IndTestParamsEditor(params);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new DiscDetIndepParamsEditor(
-                    (Params) params);
+                    (Parameters) params);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new PcIndTestParamsEditor(params);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new FciIndTestParamsEditor(params);
         }
 

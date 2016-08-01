@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -52,7 +52,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public GlassoRunner(DataWrapper dataWrapper, Params params) {
+    public GlassoRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -63,7 +63,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
 //     * @see TetradSerializableUtils
      */
     public static GlassoRunner serializableInstance() {
-        return new GlassoRunner(DataWrapper.serializableInstance(), new Params());
+        return new GlassoRunner(DataWrapper.serializableInstance(), new Parameters());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -82,7 +82,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         Object dataModel = getDataModel();
-        Params params = (Params) getParams();
+        Parameters params = (Parameters) getParams();
 
         if (dataModel instanceof DataSet) {
             DataSet dataSet = (DataSet) dataModel;
@@ -160,9 +160,9 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles(){
-        Params params = getParams();
-        if(params instanceof Params){
-           return ((Params)params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if(params instanceof Parameters){
+           return ((Parameters)params).isAggressivelyPreventCycles();
         }
         return false;
     }

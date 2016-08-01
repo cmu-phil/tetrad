@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -73,7 +73,7 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         log(semIm);
     }
 
-    public SemImWrapper(SemPmWrapper semPmWrapper, Params params) {
+    public SemImWrapper(SemPmWrapper semPmWrapper, Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
@@ -84,13 +84,13 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
-                        Params params) {
+                        Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
         if (params == null) {
-            throw new NullPointerException("Params must not be null.");
+            throw new NullPointerException("Parameters must not be null.");
         }
 
         SemPm semPm = new SemPm(semPmWrapper.getSemPm());
@@ -138,7 +138,7 @@ public class SemImWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     public static SemImWrapper serializableInstance() {
         return new SemImWrapper(SemPmWrapper.serializableInstance(),
                 new SemImWrapper(SemPmWrapper.serializableInstance(),
-                        new Params()), new Params());
+                        new Parameters()), new Parameters());
     }
 
     //===========================PUBLIC METHODS=========================//

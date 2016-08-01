@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -38,7 +38,7 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private Params params = null;
+    private Parameters params = null;
 
     /**
      * Edits the alpha value, in [0, 1].
@@ -53,7 +53,7 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public TimeSeriesIndTestParamsEditor(Params simulator) {
+    public TimeSeriesIndTestParamsEditor(Parameters simulator) {
         params = simulator;
 
         alphaField = new DoubleTextField(getLagIndTestParams().getAlpha(), 5,
@@ -125,7 +125,7 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private Params getLagIndTestParams() {
+    private Parameters getLagIndTestParams() {
         return params;
     }
 }

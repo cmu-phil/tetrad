@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeEditor;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -55,7 +55,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     /**
      * The parameter object being edited.
      */
-    private Params params;
+    private Parameters params;
 
     /**
      * A text field for editing the alpha getValue.
@@ -78,12 +78,12 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     public PcSearchParamEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (Params) params;
+        this.params = (Parameters) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -240,7 +240,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
         window.setVisible(true);
     }
 
-    private Params getParams() {
+    private Parameters getParams() {
         return params;
     }
 }

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
@@ -46,7 +46,7 @@ import java.util.Set;
  */
 public class GraphSelectionWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer {
     static final long serialVersionUID = 23L;
-    private final Params params;
+    private final Parameters params;
 
     public enum Type {
         adjacents, adjacentsOfAdjacents, adjacentsOfAdjacentsOfAdjacents, markovBlankets, treks, trekEdges,
@@ -58,7 +58,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
     //=============================CONSTRUCTORS==========================//
 
-    public GraphSelectionWrapper(Graph graph, Params params) {
+    public GraphSelectionWrapper(Graph graph, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -83,16 +83,16 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
         log();
     }
 
-    public GraphSelectionWrapper(Graph graph, Params params, String message) {
+    public GraphSelectionWrapper(Graph graph, Parameters params, String message) {
         this(graph, params);
         TetradLogger.getInstance().log("info", message);
     }
 
-    public GraphSelectionWrapper(Params params) {
+    public GraphSelectionWrapper(Parameters params) {
         this(new EdgeListGraphSingleConnections(), params);
     }
 
-    public GraphSelectionWrapper(GraphSource graph, Params params) {
+    public GraphSelectionWrapper(GraphSource graph, Parameters params) {
         this(graph.getGraph(), params);
     }
 
@@ -102,7 +102,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
      * @see TetradSerializableUtils
      */
     public static GraphSelectionWrapper serializableInstance() {
-        return new GraphSelectionWrapper(Dag.serializableInstance(), new Params());
+        return new GraphSelectionWrapper(Dag.serializableInstance(), new Parameters());
     }
 
     //===============================================PUBLIC METHODS================================//

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
@@ -47,7 +47,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameter wrapper being viewed.
      */
-    private Params params;
+    private Parameters params;
     private Object[] parentModels;
     private JButton editClusters;
 
@@ -57,12 +57,12 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
     public PurifyParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (Params) params;
+        this.params = (Parameters) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -138,7 +138,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
         return false;
     }
 
-    private boolean setVarNames(Object[] parentModels, Params params) {
+    private boolean setVarNames(Object[] parentModels, Parameters params) {
         DataModel dataModel = null;
 
         for (Object parentModel : parentModels) {
@@ -187,7 +187,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
 //        window.setVisible(true);
     }
 
-    private Params getParams() {
+    private Parameters getParams() {
         return this.params;
     }
 }

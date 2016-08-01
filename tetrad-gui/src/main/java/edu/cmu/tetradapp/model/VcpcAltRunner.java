@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -47,46 +47,46 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public VcpcAltRunner(DataWrapper dataWrapper, Params params) {
+    public VcpcAltRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public VcpcAltRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(Graph graph, Params params) {
+    public VcpcAltRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(Graph graph, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(GraphWrapper graphWrapper, Params params) {
+    public VcpcAltRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
@@ -94,41 +94,41 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(GraphSource graphWrapper, Params params) {
+    public VcpcAltRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public VcpcAltRunner(DagWrapper dagWrapper, Params params) {
+    public VcpcAltRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public VcpcAltRunner(DagWrapper dagWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(DagWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
 
-    public VcpcAltRunner(SemGraphWrapper dagWrapper, Params params) {
+    public VcpcAltRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public VcpcAltRunner(SemGraphWrapper dagWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(SemGraphWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public VcpcAltRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params) {
+    public VcpcAltRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.trueGraph = graphWrapper.getGraph();
     }
 
-    public VcpcAltRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.trueGraph = graphWrapper.getGraph();
     }
 
-    public VcpcAltRunner(IndependenceFactsModel model, Params params) {
+    public VcpcAltRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public VcpcAltRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -139,17 +139,17 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
      */
     public static VcpcAltRunner serializableInstance() {
         return new VcpcAltRunner(Dag.serializableInstance(),
-                new Params());
+                new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
-        Params searchParams = (Params) getParams();
+        Parameters searchParams = (Parameters) getParams();
 
-        Params params =
-                (Params) searchParams;
+        Parameters params =
+                (Parameters) searchParams;
 
 
         VcpcAlt VcpcAlt = new VcpcAlt(getIndependenceTest());
@@ -228,9 +228,9 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        Params params = getParams();
-        if (params instanceof Params) {
-            return ((Params) params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if (params instanceof Parameters) {
+            return ((Parameters) params).isAggressivelyPreventCycles();
         }
         return false;
     }

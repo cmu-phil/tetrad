@@ -25,7 +25,7 @@ import edu.cmu.tetrad.calculator.expression.*;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
 
@@ -51,7 +51,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     /**
      * The calculator's params.
      */
-    private Params params;
+    private Parameters params;
 
 
     /**
@@ -115,9 +115,10 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
     /**
      * Sets the calculator's params.
+     * @param params
      */
-    public void setParams(Params params) {
-        this.params = (Params) params;
+    public void setParams(Parameters params) {
+        this.params = (Parameters) params;
     }
 
 

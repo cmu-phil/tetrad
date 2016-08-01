@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.LogDataUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class MissingDataInjectorWrapper extends DataWrapper {
     //============================CONSTRUCTORS=============================//
 
     public MissingDataInjectorWrapper(DataWrapper wrapper,
-            Params params) {
+            Parameters params) {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 
@@ -77,7 +77,7 @@ public class MissingDataInjectorWrapper extends DataWrapper {
     public static DataWrapper serializableInstance() {
         return new MissingDataInjectorWrapper(
                 DataWrapper.serializableInstance(),
-                new Params());
+                new Parameters());
     }
 
     //==========================PUBLIC METHODS============================//

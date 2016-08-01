@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -119,7 +119,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        final Params searchParams = (Params) getAlgorithmRunner().getParams();
+        final Parameters searchParams = (Parameters) getAlgorithmRunner().getParams();
 
         strongerDirection = new JCheckBox("Stronger Direction");
 
@@ -606,7 +606,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        Params params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return params.getVarNames();
     }
 
@@ -651,41 +651,41 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Params params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof IFgsRunner) {
                 IFgsRunner gesRunner = ((IFgsRunner) getAlgorithmRunner());
                 return new FgsIndTestParamsEditor(params, gesRunner.getType());
             }
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new TimeSeriesIndTestParamsEditor(
                     params);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new IndTestParamsEditor(params);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new DiscDetIndepParamsEditor(params);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof LingamPatternRunner) {
-                return new PcLingamIndTestParamsEditor((Params) params);
+                return new PcLingamIndTestParamsEditor((Parameters) params);
             }
 
             if (getAlgorithmRunner() instanceof LofsRunner) {
-                return new PcLingamIndTestParamsEditor((Params) params);
+                return new PcLingamIndTestParamsEditor((Parameters) params);
             }
 
-            return new PcIndTestParamsEditor((Params) params);
+            return new PcIndTestParamsEditor((Parameters) params);
         }
 
         return new IndTestParamsEditor(params);

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import javax.swing.*;
@@ -48,7 +48,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcdRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcdRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -57,63 +57,63 @@ public class PcdRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcdRunner(DataWrapper dataWrapper, Params params) {
+    public PcdRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcdRunner(Graph graph, Params params) {
+    public PcdRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcdRunner(Graph graph, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcdRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcdRunner(GraphWrapper graphWrapper, Params params) {
+    public PcdRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcdRunner(GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcdRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcdRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcdRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcdRunner(GraphSource graphWrapper, Params params) {
+    public PcdRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
     
-    public PcdRunner(DagWrapper dagWrapper, Params params) {
+    public PcdRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public PcdRunner(DagWrapper dagWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcdRunner(DagWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
 
-    public PcdRunner(SemGraphWrapper dagWrapper, Params params) {
+    public PcdRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public PcdRunner(SemGraphWrapper dagWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcdRunner(SemGraphWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
@@ -135,17 +135,17 @@ public class PcdRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static PcdRunner serializableInstance() {
-        return new PcdRunner(Dag.serializableInstance(), new Params());
+        return new PcdRunner(Dag.serializableInstance(), new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
-        Params searchParams = (Params) getParams();
+        Parameters searchParams = (Parameters) getParams();
 
-        Params params =
-                (Params) searchParams;
+        Parameters params =
+                (Parameters) searchParams;
 
         Pcd pc = new Pcd(getIndependenceTest());
         pc.setKnowledge(knowledge);

@@ -30,7 +30,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Lingam;
 import edu.cmu.tetrad.search.MeekRules;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -52,7 +52,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
     //============================CONSTRUCTORS============================//
 
-    public LingamStructureRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingamStructureRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -63,7 +63,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
      */
     public static LingamStructureRunner serializableInstance() {
         return new LingamStructureRunner(DataWrapper.serializableInstance(),
-                new Params(), KnowledgeBoxModel.serializableInstance());
+                new Parameters(), KnowledgeBoxModel.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -95,7 +95,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
 
         Lingam lingam = new Lingam();
-        Params params = (Params) getParams();
+        Parameters params = (Parameters) getParams();
         lingam.setPruneFactor(params.getPruneFactor());
         Graph graph = lingam.search(data);
 
@@ -148,9 +148,9 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
     }
 
     private boolean isAggressivelyPreventCycles() {
-        Params params = getParams();
-        if (params instanceof Params) {
-            return ((Params) params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if (params instanceof Parameters) {
+            return ((Parameters) params).isAggressivelyPreventCycles();
         }
         return false;
     }

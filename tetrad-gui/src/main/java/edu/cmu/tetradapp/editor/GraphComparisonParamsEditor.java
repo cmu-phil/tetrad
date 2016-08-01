@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.GraphSource;
 
 import javax.swing.*;
@@ -42,7 +42,7 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
     /**
      * The parameters object being edited.
      */
-    private Params params = null;
+    private Parameters params = null;
 
     /**
      * The first graph source.
@@ -61,12 +61,12 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
     public GraphComparisonParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (Params) params;
+        this.params = (Parameters) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -253,7 +253,7 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private synchronized Params getParams() {
+    private synchronized Parameters getParams() {
         return this.params;
     }
 }

@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -123,7 +123,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
         JCheckBox doRuleR1CheckBox = new JCheckBox("R1");
         JCheckBox doRuleR2CheckBox = new JCheckBox("R2");
 
-        final Params searchParams = (Params) getAlgorithmRunner().getParams();
+        final Parameters searchParams = (Parameters) getAlgorithmRunner().getParams();
 
         JRadioButton B = new JRadioButton("B");
         JRadioButton A = new JRadioButton("A");
@@ -481,7 +481,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        Params params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return params.getVarNames();
     }
 
@@ -519,7 +519,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        Params params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return getIndTestParamBox(params);
     }
 
@@ -527,41 +527,41 @@ public class LofsSearchEditor extends AbstractSearchEditor
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Params params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof IFgsRunner) {
                 IFgsRunner fgsRunner = ((IFgsRunner) getAlgorithmRunner());
                 return new FgsIndTestParamsEditor(params, fgsRunner.getType());
             }
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new TimeSeriesIndTestParamsEditor(params);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new IndTestParamsEditor(params);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             return new DiscDetIndepParamsEditor(
-                    (Params) params);
+                    (Parameters) params);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof LingamPatternRunner) {
-                return new PcLingamIndTestParamsEditor((Params) params);
+                return new PcLingamIndTestParamsEditor((Parameters) params);
             }
 
             if (getAlgorithmRunner() instanceof LofsRunner) {
-                return new PcLingamIndTestParamsEditor((Params) params);
+                return new PcLingamIndTestParamsEditor((Parameters) params);
             }
 
-            return new PcIndTestParamsEditor((Params) params);
+            return new PcIndTestParamsEditor((Parameters) params);
         }
 
         return new IndTestParamsEditor(params);

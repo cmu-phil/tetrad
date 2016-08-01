@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
@@ -59,7 +60,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     private boolean multipleResults = false;
 
     private List<SemEstimator> multipleResultList = new ArrayList<SemEstimator>();
-    private Params params;
+    private Parameters params;
 
     //==============================CONSTRUCTORS==========================//
 
@@ -69,13 +70,13 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
      * pops up a dialog. This is irritating when running unit tests.
      * jdramsey 8/29/07
      */
-    private SemEstimatorWrapper(DataSet dataSet, SemPm semPm, Params params) {
+    private SemEstimatorWrapper(DataSet dataSet, SemPm semPm, Parameters params) {
         this.params = params;
         this.semEstimator = new SemEstimator(dataSet, semPm, getOptimizer());
     }
 
     public SemEstimatorWrapper(DataWrapper dataWrapper,
-                               SemPmWrapper semPmWrapper, Params params) {
+                               SemPmWrapper semPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException("Data wrapper must not be null.");
         }
@@ -134,7 +135,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
     public SemEstimatorWrapper(DataWrapper dataWrapper,
-                               SemImWrapper semImWrapper, Params params) {
+                               SemImWrapper semImWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -175,7 +176,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     public SemEstimatorWrapper(DataWrapper dataWrapper,
                                SemPmWrapper semPmWrapper,
                                SemImWrapper semImWrapper,
-                               Params params) {
+                               Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -223,7 +224,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         Dag dag = new Dag();
         dag.addNode(x);
         SemPm pm = new SemPm(dag);
-        Params params1 = new Params();
+        Parameters params1 = new Parameters();
         return new SemEstimatorWrapper(dataSet, pm, params1);
     }
 
@@ -306,7 +307,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
         this.multipleResultList = multipleResultList;
     }
 
-    public Params getParams() {
+    public Parameters getParams() {
         return params;
     }
 

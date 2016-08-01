@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
@@ -52,11 +53,11 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
     /**
      * The params object, so the GUI can remember stuff for logging.
      */
-    private Params params;
+    private Parameters params;
 
     //==========================CONSTRUCTORS=========================//
 
-    public ApproximateUpdaterWrapper(BayesImWrapper wrapper, Params params) {
+    public ApproximateUpdaterWrapper(BayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -65,7 +66,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
     }
 
 
-    public ApproximateUpdaterWrapper(DirichletBayesImWrapper wrapper, Params params) {
+    public ApproximateUpdaterWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -73,7 +74,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
         setup(bayesIm, params);
     }
 
-    public ApproximateUpdaterWrapper(BayesEstimatorWrapper wrapper, Params params) {
+    public ApproximateUpdaterWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -81,7 +82,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
         setup(bayesIm, params);
     }
 
-    public ApproximateUpdaterWrapper(DirichletEstimatorWrapper wrapper, Params params) {
+    public ApproximateUpdaterWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -96,7 +97,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
      */
     public static ApproximateUpdaterWrapper serializableInstance() {
         return new ApproximateUpdaterWrapper(
-                BayesImWrapper.serializableInstance(), new Params());
+                BayesImWrapper.serializableInstance(), new Parameters());
     }
 
     //============================PUBLIC METHODS=========================//
@@ -107,7 +108,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
 
     //============================PRIVATE METHODS========================//
 
-    private void setup(BayesIm bayesIm, Params params) {
+    private void setup(BayesIm bayesIm, Parameters params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.getEvidence() == null || params.getEvidence().isIncompatibleWith(bayesIm)) {
@@ -194,7 +195,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
         this.name = name;
     }
 
-    public Params getParams() {
+    public Parameters getParams() {
         return params;
     }
 }

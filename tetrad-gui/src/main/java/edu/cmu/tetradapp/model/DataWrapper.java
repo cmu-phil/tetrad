@@ -30,7 +30,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -80,7 +80,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     /**
      * The params being edited.
      */
-    private Params params = null;
+    private Parameters params = null;
     private Map<String, String> allParamSettings;
 
     //==============================CONSTRUCTORS===========================//
@@ -419,11 +419,11 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * This method is overridden by classes that can identify parameters.
      * @return null
      */
-    public Params getParams() {
+    public Parameters getParams() {
         return this.params;
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 

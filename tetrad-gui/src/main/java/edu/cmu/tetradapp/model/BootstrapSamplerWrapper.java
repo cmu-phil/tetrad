@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
     //=============================CONSTRUCTORS===========================//
 
     public BootstrapSamplerWrapper(DataWrapper wrapper,
-            Params params) {
+            Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -86,7 +86,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
      */
     public static DataWrapper serializableInstance() {
         return new BootstrapSamplerWrapper(DataWrapper.serializableInstance(),
-                new Params());
+                new Parameters());
     }
 
     //=============================PUBLIC METHODS=========================//

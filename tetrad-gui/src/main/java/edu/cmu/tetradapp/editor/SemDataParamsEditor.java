@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -40,7 +40,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private transient Params params = null;
+    private transient Parameters params = null;
 
     /**
      * Constructs a dialog to edit the given workbench OldSem simulation
@@ -49,12 +49,12 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
     public SemDataParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (Params) params;
+        this.params = (Parameters) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -151,7 +151,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.).
      */
-    private synchronized Params getParams() {
+    private synchronized Parameters getParams() {
         return this.params;
     }
 }

@@ -31,7 +31,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.ClusterUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -61,17 +61,17 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     private String name;
     private DataSet data;
     private Graph sourceGraph;
-    private Params params;
+    private Parameters params;
 
     //=============================CONSTRUCTORS==========================//
 
-    public MeasurementModelWrapper(Params params) {
+    public MeasurementModelWrapper(Parameters params) {
         this.setVarNames(new ArrayList<String>());
         this.setClusters(params.getClusters());
         this.params = params;
     }
 
-    public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, Params params) {
+    public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, Parameters params) {
         if (knowledgeInput instanceof GraphSource) {
             GraphSource graphWrapper = (GraphSource) knowledgeInput;
             Graph mim = graphWrapper.getGraph();
@@ -99,7 +99,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         }
     }
 
-    public MeasurementModelWrapper(DataWrapper dataWrapper, Params params) {
+    public MeasurementModelWrapper(DataWrapper dataWrapper, Parameters params) {
         this.setVarNames(dataWrapper.getVarNames());
         this.setClusters(params.getClusters());
         this.data = (DataSet) dataWrapper.getSelectedDataModel();
@@ -107,7 +107,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     }
 
     public static MeasurementModelWrapper serializableInstance() {
-        return new MeasurementModelWrapper(DataWrapper.serializableInstance(), new Params());
+        return new MeasurementModelWrapper(DataWrapper.serializableInstance(), new Parameters());
     }
 
     public void setName(String name) {
@@ -165,12 +165,12 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         return sourceGraph;
     }
 
-    public Params getParams() {
+    public Parameters getParams() {
         return params;
     }
 
     public void resetParams(Object params) {
-        this.params = (Params) params;
+        this.params = (Parameters) params;
     }
 
     public Object getResettableParams() {

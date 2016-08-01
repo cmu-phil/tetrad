@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FgsMbRunner(DataWrapper dataWrapper, Params params,
+    public FgsMbRunner(DataWrapper dataWrapper, Parameters params,
                        KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
@@ -67,58 +67,58 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FgsMbRunner(DataWrapper dataWrapper, Params params) {
+    public FgsMbRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(Graph graph, Params params) {
+    public FgsMbRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(GraphWrapper dagWrapper, Params params) {
+    public FgsMbRunner(GraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(GraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Params params) {
+    public FgsMbRunner(GraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(DagWrapper dagWrapper, Params params) {
+    public FgsMbRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
     /**
      * Constructs a wrapper for the given EdgeListGraph.
      */
-    public FgsMbRunner(DagWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Params params) {
+    public FgsMbRunner(DagWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
 
-    public FgsMbRunner(SemGraphWrapper dagWrapper, Params params) {
+    public FgsMbRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public FgsMbRunner(SemGraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Params params) {
+    public FgsMbRunner(SemGraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public FgsMbRunner(IndependenceFactsModel model, Params params) {
+    public FgsMbRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public FgsMbRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsMbRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -130,7 +130,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      */
     public static FgsMbRunner serializableInstance() {
         return new FgsMbRunner(DataWrapper.serializableInstance(),
-                new Params(), KnowledgeBoxModel
+                new Parameters(), KnowledgeBoxModel
                 .serializableInstance());
     }
 
@@ -142,7 +142,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      */
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
-        String targetName = ((Params) getParams()).getTargetName();
+        String targetName = ((Parameters) getParams()).getTargetName();
 
         Object model = getDataModel();
 
@@ -157,7 +157,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        Params params = (Params) getParams();
+        Parameters params = (Parameters) getParams();
         Node target = null;
 
         if (model instanceof Graph) {
@@ -176,8 +176,8 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 score.setPenaltyDiscount(params.getPenaltyDiscount());
                 fgs = new FgsMb2(score);
             } else if (dataSet.isDiscrete()) {
-                double samplePrior = 1;//((Params) getParams()).getSamplePrior();
-                double structurePrior = 1;//((Params) getParams()).getStructurePrior();
+                double samplePrior = 1;//((Parameters) getParams()).getSamplePrior();
+                double structurePrior = 1;//((Parameters) getParams()).getStructurePrior();
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
@@ -311,7 +311,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
         fgs.setKnowledge(getParams().getKnowledge());
         fgs.setNumPatternsToStore(params.getNumPatternsToSave());
         fgs.setVerbose(true);
-//        fgs.setHeuristicSpeedup(((Params) params.getIndTestParams()).isFaithfulnessAssumed());
+//        fgs.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed());
         fgs.setMaxIndegree(params.getDepth());
         Graph graph = fgs.search(target);
 
@@ -341,7 +341,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
             dataModel = getSourceGraph();
         }
 
-        Params params = getParams();
+        Parameters params = getParams();
         IndTestType testType = params.getIndTestType();
         return new IndTestChooser().getTest(dataModel, params, testType);
     }

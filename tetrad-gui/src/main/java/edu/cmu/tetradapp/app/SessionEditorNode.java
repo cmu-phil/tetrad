@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.*;
@@ -741,7 +742,7 @@ public final class SessionEditorNode extends DisplayNode {
                     return;
                 }
 
-                Params param = getSessionNode().getParam(modelClass);
+                Parameters param = getSessionNode().getParam(modelClass);
                 Object[] arguments =
                         getSessionNode().getModelConstructorArguments(
                                 modelClass);
@@ -978,7 +979,7 @@ public final class SessionEditorNode extends DisplayNode {
         // before creating the model since it will be an argument to the
         // constructor of the model.)
         if (sessionNode.existsParameterizedConstructor(modelClass)) {
-            Params params = sessionNode.getParam(modelClass);
+            Parameters params = sessionNode.getParam(modelClass);
             Object[] arguments = sessionNode.getModelConstructorArguments(
                     modelClass);
 
@@ -1189,7 +1190,7 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * Tries to edit the parameters, returns true if successfully otherwise false is returned
      */
-    private boolean editParameters(final Class modelClass, Params params,
+    private boolean editParameters(final Class modelClass, Parameters params,
                                    Object[] parentModels)
             throws Exception {
         if (parentModels == null) {
@@ -1197,7 +1198,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
 
         if (params == null) {
-            throw new NullPointerException("Params cannot be null.");
+            throw new NullPointerException("Parameters cannot be null.");
         }
 
 
@@ -1309,7 +1310,7 @@ public final class SessionEditorNode extends DisplayNode {
                     continue;
 //                    throw new NullPointerException("No configuration found for model: " + clazz);
                 }
-                Params param = modelConfig.getParametersInstance();
+                Parameters param = modelConfig.getParametersInstance();
                 if (param != null) {
                     sessionNode.putParam(clazz, param);
                 }

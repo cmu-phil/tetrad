@@ -23,6 +23,7 @@ package edu.cmu.tetrad.test;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
@@ -343,7 +344,7 @@ public class TestSemIm {
         g.addBidirectedEdge(x1, x2);
 
         SemPm semPm = new SemPm(g);
-        Params params = new Params();
+        Parameters params = new Parameters();
         SemIm semIm = new SemIm(semPm, params);
 
         SemIm modified = modifySemImStandardizedInterventionOnTargetParents(semIm, x4);

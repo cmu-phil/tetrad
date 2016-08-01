@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -521,7 +522,7 @@ public class MimSearchEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        edu.cmu.tetrad.util.Params params = getMimRunner().getParams();
+        edu.cmu.tetrad.algcomparison.utils.Parameters params = getMimRunner().getParams();
         return getIndTestParamBox(params);
     }
 
@@ -529,12 +530,12 @@ public class MimSearchEditor extends JPanel {
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(edu.cmu.tetrad.util.Params params) {
+    private JComponent getIndTestParamBox(edu.cmu.tetrad.algcomparison.utils.Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        if (params instanceof edu.cmu.tetrad.util.Params) {
+        if (params instanceof edu.cmu.tetrad.algcomparison.utils.Parameters) {
             MimRunner runner = getMimRunner();
             params.setVarNames(runner.getParams().getVarNames());
             DataModel dataModel = runner.getData();
@@ -550,7 +551,7 @@ public class MimSearchEditor extends JPanel {
             }
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
             params.setVarNames(runner.getParams().getVarNames());
 
@@ -563,7 +564,7 @@ public class MimSearchEditor extends JPanel {
             return new PurifyIndTestParamsEditor(params, discreteData);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
             params.setVarNames(runner.getParams().getVarNames());
             return new MimBuildIndTestParamsEditor(params);

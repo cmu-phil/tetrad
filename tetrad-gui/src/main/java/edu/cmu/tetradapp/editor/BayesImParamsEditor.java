@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -39,7 +39,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private Params params = null;
+    private Parameters params = null;
 
     /**
      * Constructs a dialog to edit the given workbench Bayes simulation
@@ -48,7 +48,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     public BayesImParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -172,7 +172,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
      *
      * @return the stored simulation parameters model.
      */
-    private synchronized Params getParams() {
+    private synchronized Parameters getParams() {
         return this.params;
     }
 }

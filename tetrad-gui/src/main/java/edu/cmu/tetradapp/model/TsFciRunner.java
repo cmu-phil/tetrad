@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
@@ -44,52 +44,52 @@ public class TsFciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public TsFciRunner(DataWrapper dataWrapper, Params params) {
+    public TsFciRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public TsFciRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
 
-    public TsFciRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner(Graph graph, Params params) {
+    public TsFciRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
-    public TsFciRunner(Graph graph, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner(TimeLagGraphWrapper model, Params params/*, KnowledgeBoxModel knowledgeBoxModel*/) {
+    public TsFciRunner(TimeLagGraphWrapper model, Parameters params/*, KnowledgeBoxModel knowledgeBoxModel*/) {
         super(model.getGraph(), params);
         this.knowledge = model.getKnowledge();
     }
 
-    public TsFciRunner(GraphWrapper graphWrapper, Params params) {
+    public TsFciRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public TsFciRunner(DagWrapper dagWrapper, Params params) {
+    public TsFciRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public TsFciRunner(SemGraphWrapper dagWrapper, Params params) {
+    public TsFciRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public TsFciRunner(IndependenceFactsModel model, Params params) {
+    public TsFciRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public TsFciRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public TsFciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -100,7 +100,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static TsFciRunner serializableInstance() {
-        return new TsFciRunner(Dag.serializableInstance(), new Params());
+        return new TsFciRunner(Dag.serializableInstance(), new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -113,9 +113,9 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         if(this.knowledge == null) {
             knowledge = getParams().getKnowledge();
         } /*else {knowledge = this.knowledge;}*/
-        Params searchParams = getParams();
+        Parameters searchParams = getParams();
 
-        Params params = (Params) searchParams;
+        Parameters params = (Parameters) searchParams;
 
 //            Cfci fciSearch =
 //                    new Cfci(getIndependenceTest(), knowledge);
@@ -166,14 +166,14 @@ public class TsFciRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        Params params = getParams();
+        Parameters params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof Params) {
-            Params _params = (Params) params;
+        if (getParams() instanceof Parameters) {
+            Parameters _params = (Parameters) params;
             testType = _params.getIndTestType();
         } else {
-            Params _params = (Params) params;
+            Parameters _params = (Parameters) params;
             testType = _params.getIndTestType();
         }
 

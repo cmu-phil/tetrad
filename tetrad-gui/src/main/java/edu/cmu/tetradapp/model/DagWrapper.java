@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -28,7 +29,6 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -70,7 +70,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-    public DagWrapper(Params params) {
+    public DagWrapper(Parameters params) {
         if (params.getNewGraphInitializationMode().equals("manual")) {
             dag = new Dag();
         } else if (params.getNewGraphInitializationMode().equals("random")) {
@@ -80,7 +80,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         log();
     }
 
-    public DagWrapper(DagWrapper graphWrapper, Params params) {
+    public DagWrapper(DagWrapper graphWrapper, Parameters params) {
         if (params.getNewGraphInitializationMode().equals("manual")) {
             this.dag = new Dag();
 //            try {
@@ -97,7 +97,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         log();
     }
 
-    public DagWrapper(SemGraphWrapper graphWrapper, Params params) {
+    public DagWrapper(SemGraphWrapper graphWrapper, Parameters params) {
         if (params.getNewGraphInitializationMode().equals("manual")) {
 //            this.dag = new Dag(graphWrapper.getSemGraph());
             this.dag = new Dag();
@@ -108,7 +108,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         log();
     }
 
-    public DagWrapper(GraphWrapper graphWrapper, Params params) {
+    public DagWrapper(GraphWrapper graphWrapper, Parameters params) {
         if (params.getNewGraphInitializationMode().equals("manual")) {
             try {
 //                this.dag = new Dag(graphWrapper.getGraph());

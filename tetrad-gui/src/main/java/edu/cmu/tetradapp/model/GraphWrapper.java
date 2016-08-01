@@ -33,7 +33,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -86,7 +86,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-    public GraphWrapper(Params params) {
+    public GraphWrapper(Parameters params) {
         if (params.getNewGraphInitializationMode().equals("manual")) {
             this.graph = new EdgeListGraph();
         } else if (params.getNewGraphInitializationMode().equals("random")) {
@@ -107,7 +107,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         log();
     }
 
-    public GraphWrapper(GraphSource graphSource, Params params) {
+    public GraphWrapper(GraphSource graphSource, Parameters params) {
         if (getGraph() != null) {
             this.graph = new EdgeListGraph(getGraph());
         } else if (params.getNewGraphInitializationMode().equals("random")) {

@@ -31,7 +31,7 @@ import edu.cmu.tetrad.sem.DagScorer;
 import edu.cmu.tetrad.sem.Scorer;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.PValueImproverWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
@@ -55,7 +55,7 @@ import java.util.Map;
 public class PValueImproverEditor extends JPanel implements LayoutEditable {
     private GraphWorkbench graphWorkbench;
     private PValueImproverWrapper wrapper;
-    private Params params;
+    private Parameters params;
 
     private DoubleTextField alphaField;
     private IntTextField beamWidthField;
@@ -67,7 +67,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
 
     public PValueImproverEditor(final PValueImproverWrapper wrapper) {
         this.setWrapper(wrapper);
-        this.params = (Params) wrapper.getParams();
+        this.params = (Parameters) wrapper.getParams();
 
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -88,7 +88,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
             setNewSemIm(im2);
         }
 
-        final Params params = (Params) getParams();
+        final Parameters params = (Parameters) getParams();
         double alpha = params.getAlpha();
         int beamWidth = params.getBeamWidth();
         double zeroEdgeP = params.getZeroEdgeP();
@@ -381,7 +381,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         firePropertyChange("modelChanged", null, null);
     }
 
-    public Params getParams() {
+    public Parameters getParams() {
         return params;
     }
 

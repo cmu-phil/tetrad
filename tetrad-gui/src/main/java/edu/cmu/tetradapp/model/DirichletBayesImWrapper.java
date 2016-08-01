@@ -29,7 +29,7 @@ import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -58,13 +58,13 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
     //===========================CONSTRUCTORS=============================//
 
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-            Params params) {
+            Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
 
         if (params == null) {
-            throw new NullPointerException("Params must not be null.");
+            throw new NullPointerException("Parameters must not be null.");
         }
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
@@ -126,7 +126,7 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
     public static DirichletBayesImWrapper serializableInstance() {
         return new DirichletBayesImWrapper(
                 BayesPmWrapper.serializableInstance(),
-                new Params());
+                new Parameters());
     }
 
     //================================PUBLIC METHODS=======================//

@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -41,7 +41,7 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
     /**
      * The objects storing values of parameters needed to simulate data.
      */
-    private Params params;
+    private Parameters params;
 
     /**
      * Blank constructor.
@@ -52,9 +52,10 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
     /**
      * Sets the parameter-storing object. This is a separate method because
      * a blank constructor is needed.
+     * @param params
      */
-    public void setParams(Params params) {
-        this.params = (Params) params;
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 
     /**
@@ -148,7 +149,7 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private synchronized Params getParams() {
+    private synchronized Parameters getParams() {
 
         // Unused.
         //        String ret = (this.getMappings == null)

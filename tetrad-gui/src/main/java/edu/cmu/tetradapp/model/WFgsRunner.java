@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
@@ -53,7 +53,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     //============================CONSTRUCTORS============================//
 
-    public WFgsRunner(DataWrapper dataWrapper, Params params) {
+    public WFgsRunner(DataWrapper dataWrapper, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
     }
 
@@ -63,7 +63,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
      * @see TetradSerializableUtils
      */
     public static WFgsRunner serializableInstance() {
-        return new WFgsRunner(DataWrapper.serializableInstance(), new Params());
+        return new WFgsRunner(DataWrapper.serializableInstance(), new Parameters());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -77,7 +77,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
         DataSet dataSet = (DataSet) getDataModel();
 
-        Params params = (Params) getParams();
+        Parameters params = (Parameters) getParams();
 
         double penaltyDiscount = params.getPenaltyDiscount();
 
@@ -229,7 +229,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        Params params = (Params) getParams();
+        Parameters params = (Parameters) getParams();
         paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getPenaltyDiscount()));
         return paramSettings;
     }

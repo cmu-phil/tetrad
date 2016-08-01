@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcLocalRunner(DataWrapper dataWrapper, Params params) {
+    public PcLocalRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.sourceGraph = dataWrapper.getSourceGraph();
     }
@@ -60,7 +60,7 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcLocalRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcLocalRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.sourceGraph = dataWrapper.getSourceGraph();
     }
@@ -68,7 +68,7 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcLocalRunner(Graph graph, Params params) {
+    public PcLocalRunner(Graph graph, Parameters params) {
         super(graph, params);
         this.sourceGraph = graph;
     }
@@ -76,24 +76,24 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcLocalRunner(GraphWrapper graphWrapper, Params params) {
+    public PcLocalRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
         this.sourceGraph = graphWrapper.getGraph();
     }
 
-    public PcLocalRunner(DagWrapper graphWrapper, Params params) {
+    public PcLocalRunner(DagWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getDag(), params);
     }
 
-    public PcLocalRunner(SemGraphWrapper graphWrapper, Params params) {
+    public PcLocalRunner(SemGraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public PcLocalRunner(IndependenceFactsModel model, Params params) {
+    public PcLocalRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public PcLocalRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcLocalRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -103,7 +103,7 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static PcLocalRunner serializableInstance() {
-        return new PcLocalRunner(Dag.serializableInstance(), new Params());
+        return new PcLocalRunner(Dag.serializableInstance(), new Parameters());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -124,7 +124,7 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
         IKnowledge knowledge = getParams().getKnowledge();
 
         IndependenceTest independenceTest = getIndependenceTest();
-        Params testParams = (Params) getParams();
+        Parameters testParams = (Parameters) getParams();
 
         PcLocal search = new PcLocal(independenceTest);
 
@@ -237,9 +237,9 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        Params params = getParams();
-        if (params instanceof Params) {
-            return ((Params) params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if (params instanceof Parameters) {
+            return ((Parameters) params).isAggressivelyPreventCycles();
         }
         return false;
     }

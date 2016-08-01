@@ -7,7 +7,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ public class SemSimulation implements Simulation {
     }
 
     @Override
-    public void createData(Parameters parameters) {
+    public void createData(edu.cmu.tetrad.algcomparison.utils.Parameters parameters) {
         this.graph = randomGraph.createGraph(parameters);
 
         dataSets = new ArrayList<>();
@@ -33,7 +32,7 @@ public class SemSimulation implements Simulation {
         for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             SemPm pm = new SemPm(graph);
-            Params params = new Params();
+            Parameters params = new Parameters();
             SemIm im = new SemIm(pm);
             dataSets.add(im.simulateData(parameters.getInt("sampleSize", 1000), false));
         }

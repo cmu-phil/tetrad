@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,7 +39,7 @@ public class MissingDataInjectorParamsEditor extends JPanel implements  Paramete
     /**
      * The parameters object being edited.
      */
-    private Params params = null;
+    private Parameters params = null;
 
     //========================= Public Methods =======================================//
 
@@ -47,8 +47,8 @@ public class MissingDataInjectorParamsEditor extends JPanel implements  Paramete
         buildGui();
     }
 
-    public void setParams(Params params) {
-        this.params = (Params)params;
+    public void setParams(Parameters params) {
+        this.params = (Parameters)params;
     }
 
     public void setParentModels(Object[] parentModels) {

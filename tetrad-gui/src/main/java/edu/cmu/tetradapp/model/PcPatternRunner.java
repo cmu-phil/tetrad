@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcPatternRunner(DataWrapper dataWrapper, Params params) {
+    public PcPatternRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -55,44 +55,44 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcPatternRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcPatternRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcPatternRunner(Graph graph, Params params) {
+    public PcPatternRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcPatternRunner(GraphWrapper graphWrapper, Params params) {
+    public PcPatternRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcPatternRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcPatternRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public PcPatternRunner(DagWrapper dagWrapper, Params params) {
+    public PcPatternRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public PcPatternRunner(SemGraphWrapper dagWrapper, Params params) {
+    public PcPatternRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public PcPatternRunner(IndependenceFactsModel model, Params params) {
+    public PcPatternRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public PcPatternRunner(IndependenceFactsModel model, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcPatternRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -102,7 +102,7 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static PcPatternRunner serializableInstance() {
-        return new PcPatternRunner(Dag.serializableInstance(), new Params());
+        return new PcPatternRunner(Dag.serializableInstance(), new Parameters());
     }
 
     public ImpliedOrientation getMeekRules() {
@@ -185,9 +185,9 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles(){
-        Params params = getParams();
-        if(params instanceof Params){
-            return ((Params)params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if(params instanceof Parameters){
+            return ((Parameters)params).isAggressivelyPreventCycles();
         }
         return false;
     }

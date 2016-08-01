@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
@@ -55,22 +55,22 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
     //============================CONSTRUCTORS============================//
 
-    public FgsRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
     }
 
-    public FgsRunner(DataWrapper dataWrapper, Params params) {
+    public FgsRunner(DataWrapper dataWrapper, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphSource graph, Params params) {
+    public FgsRunner(DataWrapper dataWrapper, GraphSource graph, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
 //        if (graph == dataWrapper) throw new IllegalArgumentException();
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
     }
 
-    public FgsRunner(DataWrapper dataWrapper, GraphSource graph, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner(DataWrapper dataWrapper, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrapper), params, knowledgeBoxModel);
         if (graph == this) throw new IllegalArgumentException();
         this.initialGraph = graph.getGraph();
@@ -78,7 +78,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
     public FgsRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
-                     Params params) {
+                     Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -90,7 +90,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     public FgsRunner(DataWrapper dataWrapper1,
                      DataWrapper dataWrapper2,
                      DataWrapper dataWrapper3,
-                     Params params) {
+                     Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -105,7 +105,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                      DataWrapper dataWrapper2,
                      DataWrapper dataWrapper3,
                      DataWrapper dataWrapper4,
-                     Params params) {
+                     Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -122,7 +122,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                      DataWrapper dataWrapper3,
                      DataWrapper dataWrapper4,
                      DataWrapper dataWrapper5,
-                     Params params) {
+                     Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -141,7 +141,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                      DataWrapper dataWrapper4,
                      DataWrapper dataWrapper5,
                      DataWrapper dataWrapper6,
-                     Params params) {
+                     Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -162,7 +162,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                      DataWrapper dataWrapper5,
                      DataWrapper dataWrapper6,
                      DataWrapper dataWrapper7,
-                     Params params) {
+                     Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -185,7 +185,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                      DataWrapper dataWrapper6,
                      DataWrapper dataWrapper7,
                      DataWrapper dataWrapper8,
-                     Params params) {
+                     Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -210,7 +210,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                      DataWrapper dataWrapper7,
                      DataWrapper dataWrapper8,
                      DataWrapper dataWrapper9,
-                     Params params) {
+                     Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -237,7 +237,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                      DataWrapper dataWrapper8,
                      DataWrapper dataWrapper9,
                      DataWrapper dataWrapper10,
-                     Params params) {
+                     Parameters params) {
 
         super(new MergeDatasetsWrapper(
                         dataWrapper1,
@@ -255,11 +255,11 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
 
     }
 
-    public FgsRunner(GraphWrapper graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public FgsRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public FgsRunner(GraphWrapper graphWrapper, Params params) {
+    public FgsRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -270,7 +270,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
      */
     public static FgsRunner serializableInstance() {
         return new FgsRunner(DataWrapper.serializableInstance(),
-                new Params(), KnowledgeBoxModel.serializableInstance());
+                new Parameters(), KnowledgeBoxModel.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -295,7 +295,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        Params params = (Params) getParams();
+        Parameters params = (Parameters) getParams();
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
@@ -317,8 +317,8 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
                     System.out.println("Score done");
                     fgs = new Fgs2(gesScore);
                 } else if (dataSet.isDiscrete()) {
-                    double samplePrior = ((Params) getParams()).getSamplePrior();
-                    double structurePrior = ((Params) getParams()).getStructurePrior();
+                    double samplePrior = ((Parameters) getParams()).getSamplePrior();
+                    double structurePrior = ((Parameters) getParams()).getStructurePrior();
                     BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
@@ -534,7 +534,7 @@ public class FgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, Gr
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        Params params = (Params) getParams();
+        Parameters params = (Parameters) getParams();
         paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getPenaltyDiscount()));
         return paramSettings;
     }

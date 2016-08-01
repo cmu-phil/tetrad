@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.BpcAlgorithmType;
 import edu.cmu.tetrad.search.TestType;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,10 +39,10 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class BuildPureClustersIndTestParamsEditor2 extends JComponent {
-    private Params paramsPureClusters;
+    private Parameters paramsPureClusters;
 
     public BuildPureClustersIndTestParamsEditor2(
-            Params paramsPureClusters,
+            Parameters paramsPureClusters,
             boolean discreteData) {
         this.paramsPureClusters = paramsPureClusters;
 
@@ -183,7 +183,7 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
 //        }
     }
 
-    private Params getParams() {
+    private Parameters getParams() {
         return this.paramsPureClusters;
     }
 

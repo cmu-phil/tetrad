@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 /**
  * Implements an editor some specific type of parameter object. It is assumed
@@ -36,8 +36,9 @@ public interface ParameterEditor {
 
     /**
      * Sets the parameter object to be edited.
+     * @param params
      */
-    void setParams(Params params);
+    void setParams(Parameters params);
 
     /**
      * Sets the parent models that can be exploited for information in the

@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.FindTwoFactorClusters;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -38,9 +38,9 @@ import java.text.NumberFormat;
  * @author Joseph Ramsey
  */
 class FtfcIndTestParamsEditor extends JComponent {
-    private Params FtfcParams;
+    private Parameters FtfcParams;
 
-    public FtfcIndTestParamsEditor(Params paramsPureClusters) {
+    public FtfcIndTestParamsEditor(Parameters paramsPureClusters) {
         this.FtfcParams = paramsPureClusters;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
@@ -91,7 +91,7 @@ class FtfcIndTestParamsEditor extends JComponent {
         add(Box.createHorizontalGlue());
     }
 
-    private Params getParams() {
+    private Parameters getParams() {
         return this.FtfcParams;
     }
 

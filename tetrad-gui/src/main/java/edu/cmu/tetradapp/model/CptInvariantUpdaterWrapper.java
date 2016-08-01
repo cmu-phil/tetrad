@@ -21,10 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
@@ -53,11 +53,11 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
     /**
      * The params object, so the GUI can remember stuff for logging.
      */
-    private Params params;
+    private Parameters params;
 
     //============================CONSTRUCTORS==========================//
 
-    public CptInvariantUpdaterWrapper(BayesImWrapper wrapper, Params params) {
+    public CptInvariantUpdaterWrapper(BayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -65,7 +65,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(DirichletBayesImWrapper wrapper, Params params) {
+    public CptInvariantUpdaterWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -73,7 +73,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(BayesEstimatorWrapper wrapper, Params params) {
+    public CptInvariantUpdaterWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -81,7 +81,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(DirichletEstimatorWrapper wrapper, Params params) {
+    public CptInvariantUpdaterWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -96,7 +96,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
      */
     public static CptInvariantUpdaterWrapper serializableInstance() {
         return new CptInvariantUpdaterWrapper(
-                BayesImWrapper.serializableInstance(), new Params());
+                BayesImWrapper.serializableInstance(), new Parameters());
     }
 
     //=============================PUBLIC METHODS==========================//
@@ -115,7 +115,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
 
     //============================PRIVATE METHODS=========================//
 
-    private void setup(BayesIm bayesIm, Params params) {
+    private void setup(BayesIm bayesIm, Parameters params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.getEvidence() == null || params.getEvidence().isIncompatibleWith(bayesIm)) {
@@ -193,7 +193,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         }
     }
 
-    public Params getParams() {
+    public Parameters getParams() {
         return params;
     }
 }

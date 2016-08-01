@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Ling;
 import edu.cmu.tetrad.search.MeekRules;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -51,24 +51,24 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
     //============================CONSTRUCTORS============================//
 
     public LingRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, new Params(), knowledgeBoxModel);
+        super(dataWrapper, new Parameters(), knowledgeBoxModel);
     }
 
     public LingRunner(DataWrapper dataWrapper) {
-        super(dataWrapper, new Params(), null);
+        super(dataWrapper, new Parameters(), null);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingRunner(GraphSource graphWrapper, Params params) {
+    public LingRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
     /**
@@ -101,7 +101,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 //        }
 //
 //        Ling ling = new Ling(data);
-//        Params searchParams = (Params) getParams();
+//        Parameters searchParams = (Parameters) getParams();
 //        ling.setThreshold(searchParams.getThreshold());
 //        Ling.StoredGraphs graphs = ling.search();
 //        Graph graph = null;
@@ -148,7 +148,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
         }
 
         Ling ling = new Ling(data);
-        Params searchParams = (Params) getParams();
+        Parameters searchParams = (Parameters) getParams();
         ling.setThreshold(searchParams.getThreshold());
         Ling.StoredGraphs graphs = ling.search();
         Graph graph = null;
@@ -226,9 +226,9 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
     }
 
     private boolean isAggressivelyPreventCycles() {
-        Params params = getParams();
-        if (params instanceof Params) {
-            return ((Params) params).isAggressivelyPreventCycles();
+        Parameters params = getParams();
+        if (params instanceof Parameters) {
+            return ((Parameters) params).isAggressivelyPreventCycles();
         }
         return false;
     }

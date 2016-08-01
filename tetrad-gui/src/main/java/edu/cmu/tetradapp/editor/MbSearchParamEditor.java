@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.knowledge_editor.KnowledgeEditor;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -53,7 +53,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
     /**
      * The parameter object being edited.
      */
-    private Params params;
+    private Parameters params;
 
     /**
      * The name of the target variable or node in the PCX search.
@@ -72,12 +72,12 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
     public MbSearchParamEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (Params) params;
+        this.params = (Parameters) params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -182,7 +182,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         preventCycles.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox box = (JCheckBox) e.getSource();
-                Params p = params;
+                Parameters p = params;
                 p.setAggressivelyPreventCycles(box.isSelected());
             }
         });
@@ -290,7 +290,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         editorWindow.setVisible(true);
     }
 
-    private Params params() {
+    private Parameters params() {
         return this.params;
     }
 

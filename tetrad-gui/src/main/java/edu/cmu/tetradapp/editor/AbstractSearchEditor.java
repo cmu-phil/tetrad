@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.AlgorithmRunner;
@@ -222,7 +222,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                 setErrorMessage(null);
 
                 if (!knowledgeMessageShown) {
-                    Params searchParams = getAlgorithmRunner().getParams();
+                    Parameters searchParams = getAlgorithmRunner().getParams();
 
                     if (searchParams != null) {
                         IKnowledge knowledge = searchParams.getKnowledge();
@@ -357,7 +357,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         Graph resultGraph = resultGraph();
 
         Graph sourceGraph = algorithmRunner.getSourceGraph();
-        Params searchParams = algorithmRunner.getParams();
+        Parameters searchParams = algorithmRunner.getParams();
         Graph latestWorkbenchGraph = null;
 
         if (searchParams != null) {
@@ -468,7 +468,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             return;
         }
 
-        Params searchParams = algorithmRunner.getParams();
+        Parameters searchParams = algorithmRunner.getParams();
 
         try {
             Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();

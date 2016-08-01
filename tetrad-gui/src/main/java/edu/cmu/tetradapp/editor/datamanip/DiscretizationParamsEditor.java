@@ -21,9 +21,9 @@
 
 package edu.cmu.tetradapp.editor.datamanip;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.IntSpinner;
@@ -253,8 +253,9 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     /**
      * Sets the previous params, must be <code>DiscretizationParams</code>.
+     * @param params
      */
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
 //        this.params = (DiscretizationParams) params;
     }
 

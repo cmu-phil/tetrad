@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.MarkovBlanketSearchRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -90,7 +90,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
             throw new NullPointerException();
         }
         this.algorithmRunner = algorithmRunner;
-        Params params = algorithmRunner.getParams();
+        Parameters params = algorithmRunner.getParams();
         List<String> vars = algorithmRunner.getSource().getVariableNames();
         if (params.getTargetName() == null && !vars.isEmpty()) {
             params.setTargetName(vars.get(0));
@@ -334,7 +334,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     }
 
 
-    private Params getParams() {
+    private Parameters getParams() {
         return this.algorithmRunner.getParams();
     }
 

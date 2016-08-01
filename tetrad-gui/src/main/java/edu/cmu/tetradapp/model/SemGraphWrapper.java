@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -70,7 +70,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	}
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-	public SemGraphWrapper(Params params) {
+	public SemGraphWrapper(Parameters params) {
 		if (params.getNewGraphInitializationMode().equals("manual")) {
 			semGraph = new SemGraph();
 			semGraph.setShowErrorTerms(false);
@@ -81,7 +81,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		log();
 	}
 
-	public SemGraphWrapper(SemGraphWrapper graphWrapper, Params params) {
+	public SemGraphWrapper(SemGraphWrapper graphWrapper, Parameters params) {
 		if (params.getNewGraphInitializationMode().equals("manual")) {
             try {
 				this.semGraph = new SemGraph(graphWrapper.getSemGraph());
@@ -98,7 +98,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		log();
 	}
 
-	public SemGraphWrapper(DagWrapper graphWrapper, Params params) {
+	public SemGraphWrapper(DagWrapper graphWrapper, Parameters params) {
 		if (params.getNewGraphInitializationMode().equals("manual")) {
 			this.semGraph = new SemGraph(graphWrapper.getDag());
 			this.semGraph.setShowErrorTerms(false);
@@ -109,7 +109,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		log();
 	}
 
-	public SemGraphWrapper(GraphWrapper graphWrapper, Params params) {
+	public SemGraphWrapper(GraphWrapper graphWrapper, Parameters params) {
 		if (params.getNewGraphInitializationMode().equals("manual")) {
 			this.semGraph = new SemGraph(graphWrapper.getGraph());
 			this.semGraph.setShowErrorTerms(false);

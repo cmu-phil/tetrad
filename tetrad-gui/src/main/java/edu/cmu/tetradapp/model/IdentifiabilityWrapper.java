@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
@@ -58,11 +59,11 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
     /**
      * The params object, so the GUI can remember stuff for logging.
      */
-    private Params params;
+    private Parameters params;
 
     //=============================CONSTRUCTORS============================//
 
-    public IdentifiabilityWrapper(BayesImWrapperObs wrapper, Params params) {
+    public IdentifiabilityWrapper(BayesImWrapperObs wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -71,7 +72,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 /*
-    public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, Params params) {
+    public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -79,7 +80,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 
-    public RowSummingExactWrapper(BayesEstimatorWrapper wrapper, Params params) {
+    public RowSummingExactWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -88,7 +89,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         setup(bayesIm, params);
     }
 
-    public RowSummingExactWrapper(DirichletEstimatorWrapper wrapper, Params params) {
+    public RowSummingExactWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -104,7 +105,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      */
     public static IdentifiabilityWrapper serializableInstance() {
         return new IdentifiabilityWrapper(
-                BayesImWrapperObs.serializableInstance(), new Params());
+                BayesImWrapperObs.serializableInstance(), new Parameters());
     }
 
     //==============================PUBLIC METHODS========================//
@@ -123,7 +124,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //===============================PRIVATE METHODS======================//
 
-    private void setup(BayesIm bayesIm, Params params) {
+    private void setup(BayesIm bayesIm, Parameters params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.getEvidence() == null || params.getEvidence().isIncompatibleWith(bayesIm)) {
@@ -202,7 +203,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         }
     }
 
-    public Params getParams() {
+    public Parameters getParams() {
         return params;
     }
 }

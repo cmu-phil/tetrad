@@ -30,7 +30,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Lingam;
 import edu.cmu.tetrad.search.MeekRules;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -52,32 +52,32 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
     //============================CONSTRUCTORS============================//
 
     public LingamRunner(DataWrapper dataWrapper) {
-        super(dataWrapper, new Params(), null);
+        super(dataWrapper, new Parameters(), null);
     }
     
-    public LingamRunner(DataWrapper dataWrapper, Params params) {
+    public LingamRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     public LingamRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, new Params(), knowledgeBoxModel);
+        super(dataWrapper, new Parameters(), knowledgeBoxModel);
     }
 
-    public LingamRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, Params params) {
+    public LingamRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamRunner(GraphSource graphWrapper, Params params, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingamRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
     
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamRunner(GraphSource graphWrapper, Params params) {
+    public LingamRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
     
@@ -120,7 +120,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
 //        Graph graph = lingam.lingam(data).getGraph();
 
         Lingam lingam = new Lingam();
-        Params params = (Params) getParams();
+        Parameters params = (Parameters) getParams();
         lingam.setPruneFactor(params.getPruneFactor());
         Graph graph = lingam.search(data);
 

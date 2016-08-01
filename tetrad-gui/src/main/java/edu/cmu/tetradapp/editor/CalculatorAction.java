@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.calculator.Transformation;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.HasCalculatorParams;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -83,7 +83,7 @@ public class CalculatorAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         final CalculatorEditor editor = new CalculatorEditor();
 
-        Params params = wrapper.getParams();
+        Parameters params = wrapper.getParams();
 
         if (params instanceof HasCalculatorParams) {
             params = ((HasCalculatorParams)params).getCalculatorParams();

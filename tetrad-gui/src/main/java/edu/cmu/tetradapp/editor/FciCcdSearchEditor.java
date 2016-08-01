@@ -29,7 +29,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -345,7 +345,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        Params params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return params.getVarNames();
     }
 
@@ -383,7 +383,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        Params params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return getIndTestParamBox(params);
     }
 
@@ -391,12 +391,12 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Params params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             FgsRunner fgsRunner = ((FgsRunner) getAlgorithmRunner());
             return new FgsIndTestParamsEditor(params, fgsRunner.getType());
         }
@@ -410,8 +410,8 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 //            return new IndTestParamsEditor((GraphIndTestParams) params);
 //        }
 //
-//        if (params instanceof Params) {
-//            return new PcIndTestParamsEditor((Params) params);
+//        if (params instanceof Parameters) {
+//            return new PcIndTestParamsEditor((Parameters) params);
 //        }
 
 //        if (params instanceof ParamsOld) {
@@ -419,12 +419,12 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 ////            return new ParamsEditorOld((ParamsOld) params);
 //        }
 //
-//        if (params instanceof Params) {
-//            return new ParamsEditor((Params) params);
+//        if (params instanceof Parameters) {
+//            return new ParamsEditor((Parameters) params);
 //        }
 //
-//        if (params instanceof Params) {
-//            return new ParamsEditor((Params) params);
+//        if (params instanceof Parameters) {
+//            return new ParamsEditor((Parameters) params);
 //        }
 
         return new IndTestParamsEditor(params);

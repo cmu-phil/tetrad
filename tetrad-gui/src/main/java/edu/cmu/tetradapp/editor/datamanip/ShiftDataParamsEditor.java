@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ShiftSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -51,7 +51,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The params.
      */
-    private Params params;
+    private Parameters params;
     private Object[] parentModels;
     private ShiftSearch search;
 
@@ -66,8 +66,9 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * Sets the parameters.
+     * @param params
      */
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 

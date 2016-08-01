@@ -26,7 +26,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -45,7 +45,7 @@ import java.util.Map;
 public class SemDataWrapper extends DataWrapper implements SessionModel,
         SimulationParamsSource {
     static final long serialVersionUID = 23L;
-    private Params params;
+    private Parameters params;
     private Simulator semIm = null;
     private long seed;
     private transient DataModelList dataModelList;
@@ -54,7 +54,7 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
 
     //==============================CONSTRUCTORS=============================//
 
-    public SemDataWrapper(SemImWrapper wrapper, Params params) {
+    public SemDataWrapper(SemImWrapper wrapper, Parameters params) {
         SemIm semIm = null;
 
         try {
@@ -68,20 +68,20 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
         try {
             params = new MarshalledObject<>(params).get();
         } catch (Exception e) {
-            throw new RuntimeException("Could not clone the Params.");
+            throw new RuntimeException("Could not clone the Parameters.");
         }
 
         setParams(params);
 
         setSeed();
 
-//        DataModelList dataModelList = simulateData((Params) getParams(), semIm);
+//        DataModelList dataModelList = simulateData((Parameters) getParams(), semIm);
 //        setDataModel(dataModelList);
         setSourceGraph(semIm.getSemPm().getGraph());
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
-    public SemDataWrapper(SemEstimatorWrapper wrapper, Params params) {
+    public SemDataWrapper(SemEstimatorWrapper wrapper, Parameters params) {
         SemIm semIm = null;
         try {
             semIm = new MarshalledObject<>(wrapper.getEstimatedSemIm()).get();
@@ -94,21 +94,21 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
         try {
             params = new MarshalledObject<>(params).get();
         } catch (Exception e) {
-            throw new RuntimeException("Could not clone the Params.");
+            throw new RuntimeException("Could not clone the Parameters.");
         }
 
         setParams(params);
 
         setSeed();
 
-//        DataModelList dataModelList = simulateData((Params) getParams(), semIm);
+//        DataModelList dataModelList = simulateData((Parameters) getParams(), semIm);
 //        setDataModel(dataModelList);
         setSourceGraph(wrapper.getSemEstimator().getEstimatedSem().getSemPm().getGraph());
         setParams(params);
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
-    public SemDataWrapper(SemUpdaterWrapper wrapper, Params params) {
+    public SemDataWrapper(SemUpdaterWrapper wrapper, Parameters params) {
         SemIm semIm = null;
         try {
             semIm = new MarshalledObject<>(wrapper.getSemUpdater().getManipulatedSemIm()).get();
@@ -121,7 +121,7 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
         try {
             params = new MarshalledObject<>(params).get();
         } catch (Exception e) {
-            throw new RuntimeException("Could not clone the Params.");
+            throw new RuntimeException("Could not clone the Parameters.");
         }
 
         setParams(params);
@@ -132,7 +132,7 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
-    public SemDataWrapper(StandardizedSemImWrapper wrapper, Params params) {
+    public SemDataWrapper(StandardizedSemImWrapper wrapper, Parameters params) {
         Simulator semIm = null;
         try {
             semIm = new MarshalledObject<>(wrapper.getStandardizedSemIm()).get();
@@ -145,7 +145,7 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
         try {
             params = new MarshalledObject<>(params).get();
         } catch (Exception e) {
-            throw new RuntimeException("Could not clone the Params.");
+            throw new RuntimeException("Could not clone the Parameters.");
         }
 
         setParams(params);
@@ -222,11 +222,11 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
-        return new SemDataWrapper(SemImWrapper.serializableInstance(), new Params());
+        return new SemDataWrapper(SemImWrapper.serializableInstance(), new Parameters());
     }
 
-    public void setParams(Params params) {
-        this.params = (Params) params;
+    public void setParams(Parameters params) {
+        this.params = (Parameters) params;
     }
 
     @Override

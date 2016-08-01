@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.*;
@@ -29,7 +30,6 @@ import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.search.Mimbuild2;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -54,8 +54,9 @@ public class TestMimbuild2 {
 
             Graph mimStructure = structure(mim);
 
-            Params params = new Params();
-            params.setCoefRange(.5, 1.5);
+            Parameters params = new Parameters();
+            params.set("coefLow", .5);
+            params.set("coefHigh", 1.5);
 
             SemPm pm = new SemPm(mim);
             SemIm im = new SemIm(pm, params);
@@ -96,20 +97,12 @@ public class TestMimbuild2 {
 
             for (int mimbuildMethod : new int[]{2}) {
                 if (mimbuildMethod == 2) {
-//                    System.out.println("Mimbuild 2\n");
                     Mimbuild2 mimbuild = new Mimbuild2();
                     mimbuild.setAlpha(0.001);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
-                    ICovarianceMatrix latentcov = mimbuild.getLatentsCov();
-//                    System.out.println("\nCovariance over the latents");
-//                    System.out.println(latentcov);
-//                    System.out.println("Estimated\n" + mimbuildStructure);
                     int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
-//                    System.out.println("SHD = " + shd);
-
-                    assertEquals(7, shd);
-//                    System.out.println();
+                    assertEquals(9, shd);
                 } else if (mimbuildMethod == 3) {
 //                    System.out.println("Mimbuild Trek\n");
                     MimbuildTrek mimbuild = new MimbuildTrek();
@@ -177,7 +170,7 @@ public class TestMimbuild2 {
 //        Graph mimStructure = structure(mim);
 //
 //        SemPm pm = new SemPm(mim);
-//        Params params = new Params();
+//        Parameters params = new Parameters();
 //        params.setCoefRange(0.5, 1.5);
 //
 //        NumberFormat nf = new DecimalFormat("0.0000");
@@ -379,7 +372,7 @@ public class TestMimbuild2 {
 //        System.out.println("\n\nTrue graph:");
 //        System.out.println(mimStructure);
 //
-//        Params params = new Params();
+//        Parameters params = new Parameters();
 //        params.setCoefRange(0.5, 1.5);
 //
 //        SemIm im = new SemIm(pm, params);
@@ -445,7 +438,7 @@ public class TestMimbuild2 {
 //        Graph mimStructure = structure(mim);
 //
 //        SemPm pm = new SemPm(mim);
-//        Params params = new Params();
+//        Parameters params = new Parameters();
 //        params.setCoefRange(0.5, 1.5);
 //
 //        NumberFormat nf = new DecimalFormat("0.0000");

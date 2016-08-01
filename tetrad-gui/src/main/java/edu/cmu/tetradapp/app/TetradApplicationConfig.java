@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetrad.util.DefaultTetradLoggerConfig;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradLoggerConfig;
 import edu.cmu.tetradapp.editor.ParameterEditor;
@@ -571,13 +571,13 @@ public class TetradApplicationConfig {
             }
         }
 
-        public Params getParametersInstance() {
+        public Parameters getParametersInstance() {
             if (this.params != null) {
                 try {
-                    return (Params) this.params.newInstance();
+                    return (Parameters) this.params.newInstance();
                 }
                 catch (ClassCastException e) {
-                    throw new IllegalStateException("Model params doesn't implement Params", e);
+                    throw new IllegalStateException("Model params doesn't implement Parameters", e);
                 }
                 catch (Exception e) {
                     throw new IllegalStateException("Error instantiating params, must be empty constructor", e);
@@ -592,7 +592,7 @@ public class TetradApplicationConfig {
                     return (ParameterEditor) this.paramsEditor.newInstance();
                 }
                 catch (ClassCastException e) {
-                    throw new IllegalStateException("Params editor must implement ParameterEditor", e);
+                    throw new IllegalStateException("Parameters editor must implement ParameterEditor", e);
                 }
                 catch (Exception e) {
                     throw new IllegalStateException("Error intatiating params editor, must have empty constructor", e);

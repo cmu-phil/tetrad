@@ -21,14 +21,14 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 /**
  * Tags classes that store calculator params.
  */
 public interface HasCalculatorParams {
 
-    public Params getCalculatorParams();
+    public Parameters getCalculatorParams();
 }
 
 

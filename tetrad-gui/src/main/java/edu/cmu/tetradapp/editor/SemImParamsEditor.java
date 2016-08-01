@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -42,7 +42,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private Params params = null;
+    private Parameters params = null;
 
     /**
      * Constructs a dialog to edit the given workbench SEM simulation
@@ -51,7 +51,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
     public SemImParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -81,7 +81,8 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         coefLowField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setCoefRange(value, params.getCoefHigh());
+                    getParams().set("coefLow", value);
+                    getParams().set("coefHigh", params.getCoefHigh());
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -97,7 +98,8 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         coefHighField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setCoefRange(params.getCoefLow(), value);
+                    getParams().set("coefLow", params.getCoefLow());
+                    getParams().set("coefHigh", value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -136,13 +138,13 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        final DoubleTextField varLowField = new DoubleTextField(params.getVarLow(),
+        final DoubleTextField varLowField = new DoubleTextField(params.getDouble("varLow", 1),
                 6, decimalFormat);
 
         varLowField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setVarRange(value, params.getVarHigh());
+                    params.setVarRange(value, params.getDouble("varHigh", 3));
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -151,13 +153,13 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        final DoubleTextField varHighField = new DoubleTextField(params.getVarHigh(),
+        final DoubleTextField varHighField = new DoubleTextField(params.getDouble("varHigh", 3),
                 6, decimalFormat);
 
         varHighField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 try {
-                    params.setVarRange(params.getVarLow(), value);
+                    params.setVarRange(params.getDouble("varLow", 1), value);
                     return value;
                 }
                 catch (IllegalArgumentException e) {
@@ -262,7 +264,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
      * @return the getMappings object being edited. (This probably should not be
      * public, but it is needed so that the textfields can edit the model.)
      */
-    private synchronized Params getParams() {
+    private synchronized Parameters getParams() {
         return this.params;
     }
 

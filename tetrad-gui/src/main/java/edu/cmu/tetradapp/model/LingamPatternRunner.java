@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -48,19 +48,19 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
 
     // ============================CONSTRUCTORS============================//
 
-    // public LingamPatternRunner(DataWrapper dataWrapper, Params
+    // public LingamPatternRunner(DataWrapper dataWrapper, Parameters
     // params) {
     // super(dataWrapper, params);
     // }
 
     public LingamPatternRunner(GraphWrapper graphWrapper,
-                               DataWrapper dataWrapper, Params params) {
+                               DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = graphWrapper.getGraph();
     }
 
     public LingamPatternRunner(GraphWrapper graphWrapper,
-                               DataWrapper dataWrapper, Params params,
+                               DataWrapper dataWrapper, Parameters params,
                                KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = graphWrapper.getGraph();
@@ -69,7 +69,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamPatternRunner(GraphSource graphWrapper, Params params,
+    public LingamPatternRunner(GraphSource graphWrapper, Parameters params,
                                KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
@@ -77,54 +77,54 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamPatternRunner(GraphSource graphWrapper, Params params) {
+    public LingamPatternRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
     public LingamPatternRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                               Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(PcRunner wrapper, DataWrapper dataWrapper,
-                               Params params) {
+                               Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                               Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(CpcRunner wrapper, DataWrapper dataWrapper,
-                               Params params) {
+                               Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                               Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
-                               Params params) {
+                               Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                               Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                               Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.pattern = wrapper.getGraph();
     }
 
     public LingamPatternRunner(IGesRunner wrapper, DataWrapper dataWrapper,
-                               Params params) {
+                               Parameters params) {
         super(dataWrapper, params, null);
         this.pattern = wrapper.getGraph();
     }
@@ -136,7 +136,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
      */
     public static LingamStructureRunner serializableInstance() {
         return new LingamStructureRunner(DataWrapper.serializableInstance(),
-                new Params(), KnowledgeBoxModel
+                new Parameters(), KnowledgeBoxModel
                         .serializableInstance());
     }
 

@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
@@ -524,7 +524,7 @@ public class MimSearchEditor2 extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        Params params = getMimRunner().getParams();
+        Parameters params = getMimRunner().getParams();
         return getIndTestParamBox(params);
     }
 
@@ -532,12 +532,12 @@ public class MimSearchEditor2 extends JPanel {
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Params params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
             params.setVarNames(runner.getParams().getVarNames());
             DataModel dataModel = runner.getData();
@@ -553,7 +553,7 @@ public class MimSearchEditor2 extends JPanel {
             }
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
             params.setVarNames(runner.getParams().getVarNames());
 
@@ -566,14 +566,14 @@ public class MimSearchEditor2 extends JPanel {
             return new PurifyIndTestParamsEditor(params, discreteData);
         }
 
-        if (params instanceof Params) {
+        if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
             params.setVarNames(runner.getParams().getVarNames());
             return new MimBuildIndTestParamsEditor(params);
         }
 
         throw new IllegalArgumentException(
-                "Unrecognized Params: " + params.getClass());
+                "Unrecognized Parameters: " + params.getClass());
     }
 }
 

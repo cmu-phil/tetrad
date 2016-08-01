@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.search.mb.IambnPc;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 /**
  * @author Tyler Gibson
@@ -31,7 +31,7 @@ public class VanderbiltInterIambnPcMbSearchRunner extends AbstractMBSearchRunner
     static final long serialVersionUID = 23L;
 
 
-    public VanderbiltInterIambnPcMbSearchRunner(DataWrapper data, Params params) {
+    public VanderbiltInterIambnPcMbSearchRunner(DataWrapper data, Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 

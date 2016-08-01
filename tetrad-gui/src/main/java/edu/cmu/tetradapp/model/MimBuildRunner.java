@@ -30,7 +30,7 @@ import edu.cmu.tetrad.search.MimUtils;
 import edu.cmu.tetrad.search.Mimbuild2;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -55,7 +55,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
     public MimBuildRunner(DataWrapper dataWrapper,
                           MeasurementModelWrapper mmWrapper,
-                          Params params) {
+                          Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
@@ -64,7 +64,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
     public MimBuildRunner(DataWrapper dataWrapper,
                           FofcRunner mmWrapper,
-                          Params params) {
+                          Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
@@ -73,7 +73,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
     public MimBuildRunner(DataWrapper dataWrapper,
                           MeasurementModelWrapper mmWrapper,
-                          Params params,
+                          Parameters params,
                           KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
@@ -84,7 +84,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
     public MimBuildRunner(MeasurementModelWrapper mmWrapper,
                           DataWrapper dataWrapper,
-                          Params params) {
+                          Parameters params) {
         super(mmWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
         setClusters(mmWrapper.getClusters());
@@ -92,7 +92,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     }
 
     public MimBuildRunner(MeasurementModelWrapper mmWrapper,
-                          Params params,
+                          Parameters params,
                           KnowledgeBoxModel knowledgeBoxModel) {
         super(mmWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
@@ -101,13 +101,13 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         params.setKnowledge(knowledgeBoxModel.getKnowledge());
     }
 
-//    public MimBuildRunner(DataWrapper dataWrapper, Params params) {
+//    public MimBuildRunner(DataWrapper dataWrapper, Parameters params) {
 //        super(dataWrapper, params.getClusters(), params);
 //        this.dataSet = (DataSet) getContinuousData();
 //        setClusters(params.getClusters());
 //    }
 
-    public MimBuildRunner(DataWrapper dataWrapper, Params params, KnowledgeBoxModel knowledgeBox) {
+    public MimBuildRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBox) {
         super(dataWrapper, params.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(params.getClusters());
@@ -115,7 +115,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     }
 
     public MimBuildRunner(BuildPureClustersRunner pureClustersRunner,
-                          Params params) {
+                          Parameters params) {
         super(pureClustersRunner, params);
 
         if (getData() instanceof CovarianceMatrix) {
@@ -129,33 +129,33 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         setClusters(params.getClusters());
     }
 
-    public MimBuildRunner(BuildPureClustersRunner bpcRunner, KnowledgeBoxModel knowledgeBox, Params params) {
+    public MimBuildRunner(BuildPureClustersRunner bpcRunner, KnowledgeBoxModel knowledgeBox, Parameters params) {
         super(bpcRunner, params);
         this.dataSet = (DataSet) getData();
         setClusters(params.getClusters());
         params.setKnowledge(knowledgeBox.getKnowledge());
     }
 
-    public MimBuildRunner(PurifyRunner runner, Params params) {
+    public MimBuildRunner(PurifyRunner runner, Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
         setClusters(params.getClusters());
     }
 
-    public MimBuildRunner(PurifyRunner runner, KnowledgeBoxModel knowledgeBox, Params params) {
+    public MimBuildRunner(PurifyRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
         setClusters(params.getClusters());
         params.setKnowledge(knowledgeBox.getKnowledge());
     }
 
-    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, Params params) {
+    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
         setClusters(params.getClusters());
     }
 
-    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBox, Params params) {
+    public MimBuildRunner(PurifyRunner runner, DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBox, Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
         setClusters(params.getClusters());
@@ -163,13 +163,13 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     }
 
 
-    public MimBuildRunner(MimBuildRunner runner, Params params) {
+    public MimBuildRunner(MimBuildRunner runner, Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
         setClusters(params.getClusters());
     }
 
-    public MimBuildRunner(MimBuildRunner runner, KnowledgeBoxModel knowledgeBox, Params params) {
+    public MimBuildRunner(MimBuildRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
         setClusters(params.getClusters());
@@ -188,9 +188,9 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     public static MimBuildRunner serializableInstance() {
         DataSet dataSet = DataUtils.discreteSerializableInstance();
         DataWrapper dataWrapper = new DataWrapper(dataSet);
-        MeasurementModelWrapper mmWrapper = new MeasurementModelWrapper(dataWrapper, new Params());
+        MeasurementModelWrapper mmWrapper = new MeasurementModelWrapper(dataWrapper, new Parameters());
         return new MimBuildRunner(mmWrapper, DataWrapper.serializableInstance(),
-                new Params());
+                new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

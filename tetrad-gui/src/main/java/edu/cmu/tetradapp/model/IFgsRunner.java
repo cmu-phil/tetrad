@@ -3,7 +3,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ScoredGraph;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ public interface IFgsRunner {
 
     List<ScoredGraph> getTopGraphs();
 
-    Params getParams();
+    Parameters getParams();
 
     Graph getSourceGraph();
 

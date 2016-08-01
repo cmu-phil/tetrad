@@ -60,7 +60,7 @@ public class Params implements TetradSerializable {
     private IKnowledge knowledge;
     private IndependenceFacts independenceFacts;
     private List<String> varNames;
-    private Object indClass;
+    private Class indClass;
     private int numTimePoints;
     private double alpha;
     private int numLags;
@@ -70,7 +70,7 @@ public class Params implements TetradSerializable {
     private boolean randomGraphAddCycles;
     private int newGraphNumMeasuredNodes;
     private int newGraphNumEdges;
-    private Params indTestParams;
+    private Parameters indTestParams;
     private double samplePrior;
     private double structurePrior;
     private double penaltyDiscount;
@@ -82,8 +82,8 @@ public class Params implements TetradSerializable {
     private boolean latentDataSaved;
     private int numDataSets;
     private Clusters clusters;
-    private Object tetradTestType;
-    private Object purifyTestType;
+    private TestType tetradTestType;
+    private TestType purifyTestType;
     private Evidence evidence;
     private Node variable;
     private String initializationMode;
@@ -119,7 +119,6 @@ public class Params implements TetradSerializable {
     private int maxReachablePathLength;
     private boolean possibleDsepDone;
     private int numOfTimeLags;
-    private Object mimIndTestParams;
     private int numTimeLags;
     private double lambda;
     private boolean includeLatents;
@@ -183,28 +182,11 @@ public class Params implements TetradSerializable {
         return covHigh;
     }
 
-    public double getVarLow() {
-        return varLow;
-    }
-
-    public double getVarHigh() {
-        return varHigh;
-    }
-
-    public void setCoefRange(double v, double v1) {
-
-    }
-
-    public void setVarRange(int i, int i1) {
-
-    }
-
     public void setEquations(List<String> equations) {
         this.equations = equations;
     }
 
     public List<String> getEquations() {
-
         return equations;
     }
 
@@ -220,8 +202,9 @@ public class Params implements TetradSerializable {
         this.newGraphInitializationMode = newGraphInitializationMode;
     }
 
-    public void setCovRange(double value, double covHigh) {
-
+    public void setCovRange(double low, double high) {
+        parameters.set("covLow", low);
+        parameters.set("high", high);
     }
 
     public void setVarRange(double value, double varHigh) {
@@ -273,10 +256,6 @@ public class Params implements TetradSerializable {
         this.independenceFacts = independenceFacts;
     }
 
-    public IndependenceFacts getIndependenceFacts() {
-        return independenceFacts;
-    }
-
     public List<String> getVarNames() {
         return varNames;
     }
@@ -285,7 +264,7 @@ public class Params implements TetradSerializable {
         this.varNames = varNames;
     }
 
-    public Object getIndClass() {
+    public Class getIndClass() {
         return indClass;
     }
 
@@ -331,10 +310,6 @@ public class Params implements TetradSerializable {
 
     public IndTestType getIndTestType() {
         return indTestType;
-    }
-
-    public void setRandomGraphAddCycles(boolean randomGraphAddCycles) {
-        this.randomGraphAddCycles = randomGraphAddCycles;
     }
 
     public boolean isRandomGraphAddCycles() {
@@ -445,7 +420,7 @@ public class Params implements TetradSerializable {
         return purifyTestType;
     }
 
-    public void setPurifyTestType(Object purifyTestType) {
+    public void setPurifyTestType(TestType purifyTestType) {
         this.purifyTestType = purifyTestType;
     }
 
@@ -464,7 +439,6 @@ public class Params implements TetradSerializable {
     public void setVariable(Node variable) {
         this.variable = variable;
     }
-
 
     public void setSampleSize(int sampleSize) {
         this.sampleSize = sampleSize;
@@ -538,10 +512,6 @@ public class Params implements TetradSerializable {
         this.latentVarNames = latentVarNames;
     }
 
-    public ArrayList<String> getLatentVarNames() {
-        return latentVarNames;
-    }
-
     public boolean isShowMaxP() {
         return showMaxP;
     }
@@ -586,16 +556,8 @@ public class Params implements TetradSerializable {
         this.maxAlpha = maxAlpha;
     }
 
-    public double getMaxAlpha() {
-        return maxAlpha;
-    }
-
     public boolean isFirstNontriangular() {
         return firstNontriangular;
-    }
-
-    public void setFirstNontriangular(boolean firstNontriangular) {
-        this.firstNontriangular = firstNontriangular;
     }
 
     public double getPruneFactor() {
@@ -742,20 +704,8 @@ public class Params implements TetradSerializable {
         this.numOfTimeLags = numOfTimeLags;
     }
 
-    public Object getMimIndTestParams() {
-        return mimIndTestParams;
-    }
-
-    public void setMimIndTestParams(Object mimIndTestParams) {
-        this.mimIndTestParams = mimIndTestParams;
-    }
-
     public int getNumTimeLags() {
         return numTimeLags;
-    }
-
-    public void setNumTimeLags(int numTimeLags) {
-        this.numTimeLags = numTimeLags;
     }
 
     public double getLambda() {
@@ -768,10 +718,6 @@ public class Params implements TetradSerializable {
 
     public void setIncludeLatents(boolean includeLatents) {
         this.includeLatents = includeLatents;
-    }
-
-    public boolean isIncludeLatents() {
-        return includeLatents;
     }
 
     public void setResetTableOnExecute(boolean resetTableOnExecute) {
@@ -922,10 +868,6 @@ public class Params implements TetradSerializable {
         return sampleSizeSet;
     }
 
-    public void setSampleSizeSet(boolean sampleSizeSet) {
-        this.sampleSizeSet = sampleSizeSet;
-    }
-
     public double getBias() {
         return bias;
     }
@@ -940,14 +882,6 @@ public class Params implements TetradSerializable {
 
     public void setTimeLimit(double timeLimit) {
         this.timeLimit = timeLimit;
-    }
-
-    public GlyphLayout getSpecs() {
-        return specs;
-    }
-
-    public void setSpecs(GlyphLayout specs) {
-        this.specs = specs;
     }
 
     public int getMaxit() {

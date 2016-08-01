@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
 
@@ -58,7 +58,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
     /**
      * The params that are being edited.
      */
-    private Params params;
+    private Parameters params;
 
 
     /**
@@ -95,10 +95,10 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
 
 
     /**
-     * Constructs the editor given the <code>Params</code> and the <code>DataModel</code>
+     * Constructs the editor given the <code>Parameters</code> and the <code>DataModel</code>
      * that should be used.
      */
-    public ConditionalIndependenceParamsPanel(Params params, DataModel model) {
+    public ConditionalIndependenceParamsPanel(Parameters params, DataModel model) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         if (params == null) {
             throw new NullPointerException("The given params must not be null");
@@ -120,7 +120,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
         PREDICTORS_LIST = createList();
         VariableListModel predictorsModel = (VariableListModel) getPredictorsList().getModel();
         SOURCE_LIST = createList();
-        if (params instanceof Params && model instanceof DataSet) {
+        if (params instanceof Parameters && model instanceof DataSet) {
             buildMap((DataSet) model);
             getSourceList().setCellRenderer(new LogisticRegRenderer());
         }
@@ -237,7 +237,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
                 } else if (1 < selected.size()) {
                     JOptionPane.showMessageDialog(ConditionalIndependenceParamsPanel.this, "Cannot have more than one response variable");
                     return;
-                } else if(params instanceof Params && !isBinary((String)selected.get(0))){
+                } else if(params instanceof Parameters && !isBinary((String)selected.get(0))){
                     JOptionPane.showMessageDialog(ConditionalIndependenceParamsPanel.this,
                             "Response variable must be binary.");
                     return;
@@ -262,7 +262,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
                 } else if (1 < selected.size()) {
                     JOptionPane.showMessageDialog(ConditionalIndependenceParamsPanel.this, "Cannot have more than one response variable");
                     return;
-                } else if(params instanceof Params && !isBinary((String)selected.get(0))){
+                } else if(params instanceof Parameters && !isBinary((String)selected.get(0))){
                     JOptionPane.showMessageDialog(ConditionalIndependenceParamsPanel.this,
                             "Response variable must be binary.");
                     return;
@@ -547,7 +547,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
                                     "There can only be one response variable.");
                             dtde.rejectDrop();
                             return;
-                        } else if (params instanceof Params && !isBinary((String) vars.get(0))) {
+                        } else if (params instanceof Parameters && !isBinary((String) vars.get(0))) {
                             JOptionPane.showMessageDialog(ConditionalIndependenceParamsPanel.this,
                                     "The response variable must be binary");
                             dtde.rejectDrop();

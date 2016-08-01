@@ -21,12 +21,12 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.Executable;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
 
 /**
  * Specifies the methods that all algorithm runners must implement. All
@@ -47,7 +47,7 @@ public interface MimRunner extends SessionModel, Executable {
     /**
      * @return the search parameters for this algorithm.
      */
-    Params getParams();
+    Parameters getParams();
 
     /**
      * @return the graph from which data was originally generated, if such a

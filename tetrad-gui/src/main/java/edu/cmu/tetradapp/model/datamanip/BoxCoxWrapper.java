@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -38,7 +38,7 @@ public class BoxCoxWrapper extends DataWrapper {
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public BoxCoxWrapper(DataWrapper data, Params params) {
+    public BoxCoxWrapper(DataWrapper data, Parameters params) {
         DataModelList list = data.getDataModelList();
         DataModelList convertedList = new DataModelList();
         DataModelList dataSets = data.getDataModelList();
@@ -130,7 +130,7 @@ public class BoxCoxWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
-        return new BoxCoxWrapper(DataWrapper.serializableInstance(), new Params());
+        return new BoxCoxWrapper(DataWrapper.serializableInstance(), new Parameters());
     }
 }
 

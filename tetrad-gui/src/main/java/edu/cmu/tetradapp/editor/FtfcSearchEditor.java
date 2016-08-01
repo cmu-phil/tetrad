@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -478,7 +479,7 @@ public class FtfcSearchEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        edu.cmu.tetrad.util.Params params = getMimRunner().getParams();
+        edu.cmu.tetrad.algcomparison.utils.Parameters params = getMimRunner().getParams();
         return getIndTestParamBox(params);
     }
 
@@ -486,7 +487,7 @@ public class FtfcSearchEditor extends JPanel {
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Params params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }

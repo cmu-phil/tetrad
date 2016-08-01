@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -28,7 +29,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.session.ParamsResettable;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
@@ -57,7 +57,7 @@ public abstract class AbstractAlgorithmRunner
      *
      * @serial Cannot be null.
      */
-    private Params params;
+    private Parameters params;
 
     /**
      * Keeps a reference to the dataModel source that has been provided
@@ -104,7 +104,7 @@ public abstract class AbstractAlgorithmRunner
      * @param knowledgeBoxModel
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
-                                   Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                                   Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -141,7 +141,7 @@ public abstract class AbstractAlgorithmRunner
      * @param knowledgeBoxModel
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
-                                   Params params, KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+                                   Parameters params, KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -168,7 +168,7 @@ public abstract class AbstractAlgorithmRunner
         transferVarNamesToParams(names);
     }
 
-    public AbstractAlgorithmRunner(DataWrapper dataWrapper, Params params) {
+    public AbstractAlgorithmRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -194,13 +194,13 @@ public abstract class AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given graph.
      */
-    public AbstractAlgorithmRunner(Graph sourceGraph, Params params) {
+    public AbstractAlgorithmRunner(Graph sourceGraph, Parameters params) {
         if (sourceGraph == null) {
             throw new NullPointerException(
                     "Source graph must not be null.");
         }
         if (params == null) {
-            throw new NullPointerException("Params must not be null.");
+            throw new NullPointerException("Parameters must not be null.");
         }
         this.params = params;
         List<String> names = measuredNames(sourceGraph);
@@ -208,7 +208,7 @@ public abstract class AbstractAlgorithmRunner
         this.sourceGraph = sourceGraph;
     }
 
-    public AbstractAlgorithmRunner(Graph graph, Params params,
+    public AbstractAlgorithmRunner(Graph graph, Parameters params,
                                    KnowledgeBoxModel knowledgeBoxModel) {
         this(graph, params);
         if (knowledgeBoxModel != null) {
@@ -216,12 +216,12 @@ public abstract class AbstractAlgorithmRunner
         }
     }
 
-    public AbstractAlgorithmRunner(Params params, Graph... graphs) {
+    public AbstractAlgorithmRunner(Parameters params, Graph... graphs) {
         this.graphs = Arrays.asList(graphs);
         this.params = params;
     }
 
-    public AbstractAlgorithmRunner(Params params, KnowledgeBoxModel knowledgeBoxModel, Graph... graphs) {
+    public AbstractAlgorithmRunner(Parameters params, KnowledgeBoxModel knowledgeBoxModel, Graph... graphs) {
         this.graphs = Arrays.asList(graphs);
         this.params = params;
         if (knowledgeBoxModel != null) {
@@ -230,7 +230,7 @@ public abstract class AbstractAlgorithmRunner
     }
 
     public AbstractAlgorithmRunner(IndependenceFactsModel model,
-                                   Params params, KnowledgeBoxModel knowledgeBoxModel) {
+                                   Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         if (model == null) {
             throw new NullPointerException();
         }
@@ -251,7 +251,7 @@ public abstract class AbstractAlgorithmRunner
         this.dataModel = dataSource;
     }
 
-    public AbstractAlgorithmRunner(Graph graph, Params params,
+    public AbstractAlgorithmRunner(Graph graph, Parameters params,
                                    KnowledgeBoxModel knowledgeBoxModel, IndependenceFacts facts) {
         this(graph, params);
         if (knowledgeBoxModel != null) {
@@ -323,7 +323,7 @@ public abstract class AbstractAlgorithmRunner
         this.resultGraph = resultGraph;
     }
 
-    public final Params getParams() {
+    public final Parameters getParams() {
         return this.params;
     }
 
@@ -332,7 +332,7 @@ public abstract class AbstractAlgorithmRunner
     }
 
     public void resetParams(Object params) {
-        this.params = (Params) params;
+        this.params = (Parameters) params;
     }
 
     //===========================PRIVATE METHODS==========================//

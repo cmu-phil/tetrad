@@ -30,7 +30,7 @@ import edu.cmu.tetrad.search.MimUtils;
 import edu.cmu.tetrad.search.MimbuildTrek;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -55,7 +55,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     public MimBuildTrekRunner(DataWrapper dataWrapper,
                               MeasurementModelWrapper mmWrapper,
-                              Params params) {
+                              Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
@@ -64,7 +64,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     public MimBuildTrekRunner(DataWrapper dataWrapper,
                               BuildPureClustersRunner mmWrapper,
-                              Params params) {
+                              Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
@@ -73,7 +73,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     public MimBuildTrekRunner(DataWrapper dataWrapper,
                               MeasurementModelWrapper mmWrapper,
-                              Params params,
+                              Parameters params,
                               KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
@@ -84,20 +84,20 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     public MimBuildTrekRunner(MeasurementModelWrapper mmWrapper,
                               DataWrapper dataWrapper,
-                              Params params) {
+                              Parameters params) {
         super(mmWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
         setClusters(mmWrapper.getClusters());
         params.setClusters(mmWrapper.getClusters());
     }
 
-     public MimBuildTrekRunner(MimBuildTrekRunner runner, Params params) {
+     public MimBuildTrekRunner(MimBuildTrekRunner runner, Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
         setClusters(params.getClusters());
     }
 
-    public MimBuildTrekRunner(MimBuildTrekRunner runner, KnowledgeBoxModel knowledgeBox, Params params) {
+    public MimBuildTrekRunner(MimBuildTrekRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
         setClusters(params.getClusters());
@@ -116,9 +116,9 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
     public static MimBuildTrekRunner serializableInstance() {
         DataSet dataSet = DataUtils.discreteSerializableInstance();
         DataWrapper dataWrapper = new DataWrapper(dataSet);
-        MeasurementModelWrapper mmWrapper = new MeasurementModelWrapper(dataWrapper, new Params());
+        MeasurementModelWrapper mmWrapper = new MeasurementModelWrapper(dataWrapper, new Parameters());
         return new MimBuildTrekRunner(mmWrapper, DataWrapper.serializableInstance(),
-                new Params());
+                new Parameters());
     }
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//

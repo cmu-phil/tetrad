@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.session;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.*;
 
 import javax.swing.*;
@@ -124,7 +125,7 @@ public class SessionNode implements TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Map<Class, Params> paramMap = new HashMap<Class, Params>();
+    private Map<Class, Parameters> paramMap = new HashMap<>();
 
     /**
      * The set of parents of this node--a Set of SessionNodes. Must be kept in
@@ -936,7 +937,7 @@ public class SessionNode implements TetradSerializable {
     /**
      * Sets the parameter object for the given model class to the given object.
      */
-    public void putParam(Class modelClass, Params param) {
+    public void putParam(Class modelClass, Parameters param) {
         if (param instanceof SessionListener) {
             SessionListener listener = (SessionListener) param;
             getSessionSupport().addSessionListener(listener);
@@ -948,7 +949,7 @@ public class SessionNode implements TetradSerializable {
     /**
      * Gets the parameter object for the givem model class.
      */
-    public Params getParam(Class modelClass) {
+    public Parameters getParam(Class modelClass) {
         return paramMap.get(modelClass);
     }
 

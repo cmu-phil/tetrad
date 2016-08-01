@@ -30,7 +30,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.Mbfs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -93,7 +93,7 @@ public class MbSearchEditor extends AbstractSearchEditor
     }
 
     public java.util.List<String> getVarNames() {
-        Params params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return params.getVarNames();
     }
 
@@ -271,13 +271,13 @@ public class MbSearchEditor extends AbstractSearchEditor
     }
 
     private Box getSearchParamBox() {
-        if (!(getAlgorithmRunner().getParams() instanceof Params)) {
+        if (!(getAlgorithmRunner().getParams() instanceof Parameters)) {
             throw new IllegalStateException();
         }
 
         Box b = Box.createHorizontalBox();
-        Params params =
-                (Params) getAlgorithmRunner().getParams();
+        Parameters params =
+                (Parameters) getAlgorithmRunner().getParams();
         MbSearchParamEditor comp = new MbSearchParamEditor();
         comp.setParams(params);
 

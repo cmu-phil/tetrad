@@ -29,7 +29,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.IonJoeModifications;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
@@ -51,49 +51,49 @@ public class IonRunner extends AbstractAlgorithmRunner
                                                                                          
     //=========================CONSTRUCTORS================================//
 
-    public IonRunner(IonInput pag, Params params) {
+    public IonRunner(IonInput pag, Parameters params) {
         super(params, pag.getGraph());
     }
 
-    public IonRunner(IonInput pag1, IonInput pag2, Params params) {
+    public IonRunner(IonInput pag1, IonInput pag2, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph());
     }
 
-    public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, Params params) {
+    public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph());
     }
 
-    public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4, Params params) {
+    public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph());
     }
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
-                     IonInput pag5, Params params) {
+                     IonInput pag5, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph());
     }
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
-                     IonInput pag5, IonInput pag6, Params params) {
+                     IonInput pag5, IonInput pag6, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph());
     }
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
-                     IonInput pag5, IonInput pag6, IonInput pag7, Params params) {
+                     IonInput pag5, IonInput pag6, IonInput pag7, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph());
     }
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
-                     IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8, Params params) {
+                     IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph(), pag8.getGraph());
     }
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8,
-                     IonInput pag9, Params params) {
+                     IonInput pag9, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph(), pag8.getGraph(),
                 pag9.getGraph());
@@ -101,55 +101,55 @@ public class IonRunner extends AbstractAlgorithmRunner
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8,
-                     IonInput pag9, IonInput pag10, Params params) {
+                     IonInput pag9, IonInput pag10, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph(), pag8.getGraph(),
                 pag9.getGraph(), pag10.getGraph());
     }
 
-    public IonRunner(IonInput pag, KnowledgeBoxModel knowledge, Params params) {
+    public IonRunner(IonInput pag, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag.getGraph());
     }
 
-    public IonRunner(IonInput pag1, IonInput pag2, KnowledgeBoxModel knowledge, Params params) {
+    public IonRunner(IonInput pag1, IonInput pag2, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph());
     }
 
-    public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, KnowledgeBoxModel knowledge, Params params) {
+    public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph());
     }
 
-    public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4, KnowledgeBoxModel knowledge, Params params) {
+    public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph());
     }
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
-                     IonInput pag5, KnowledgeBoxModel knowledge, Params params) {
+                     IonInput pag5, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph());
     }
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
-                     IonInput pag5, IonInput pag6, KnowledgeBoxModel knowledge, Params params) {
+                     IonInput pag5, IonInput pag6, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph());
     }
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
-                     IonInput pag5, IonInput pag6, IonInput pag7, KnowledgeBoxModel knowledge, Params params) {
+                     IonInput pag5, IonInput pag6, IonInput pag7, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph());
     }
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
-                     IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8, KnowledgeBoxModel knowledge, Params params) {
+                     IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph(), pag8.getGraph());
     }
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8,
-                     IonInput pag9, KnowledgeBoxModel knowledge, Params params) {
+                     IonInput pag9, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph(), pag8.getGraph(),
                 pag9.getGraph());
@@ -157,24 +157,24 @@ public class IonRunner extends AbstractAlgorithmRunner
 
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8,
-                     IonInput pag9, IonInput pag10, KnowledgeBoxModel knowledge, Params params) {
+                     IonInput pag9, IonInput pag10, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph(), pag8.getGraph(),
                 pag9.getGraph(), pag10.getGraph());
     }
-    public IonRunner(FciRunner fci, Params params) {
+    public IonRunner(FciRunner fci, Parameters params) {
         super(params, fci.getResultGraph());
     }
 
-    public IonRunner(FciRunner fci1, FciRunner fci2, Params params) {
+    public IonRunner(FciRunner fci1, FciRunner fci2, Parameters params) {
         super(params, fci1.getResultGraph(), fci2.getResultGraph());
     }
 
-    public IonRunner(FciRunner fci1, FciRunner fci2, FciRunner fci3, Params params) {
+    public IonRunner(FciRunner fci1, FciRunner fci2, FciRunner fci3, Parameters params) {
         super(params, fci1.getResultGraph(), fci2.getResultGraph(), fci3.getResultGraph());
     }
 
-    public IonRunner(FciRunner fci1, FciRunner fci2, FciRunner fci3, FciRunner fci4, Params params) {
+    public IonRunner(FciRunner fci1, FciRunner fci2, FciRunner fci3, FciRunner fci4, Parameters params) {
         super(params, fci1.getResultGraph(), fci2.getResultGraph(), fci3.getResultGraph(), fci4.getResultGraph());
     }
 
@@ -184,7 +184,7 @@ public class IonRunner extends AbstractAlgorithmRunner
      * @see TetradSerializableUtils
      */
     public static IonRunner serializableInstance() {
-        return new IonRunner(new GraphWrapper(new EdgeListGraph()), new Params());
+        return new IonRunner(new GraphWrapper(new EdgeListGraph()), new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -198,8 +198,8 @@ public class IonRunner extends AbstractAlgorithmRunner
 
         IonJoeModifications ion = new IonJoeModifications(getGraphs());
 
-        ion.setAdjacencySearch(((Params) getParams()).isPruneByAdjacencies());
-        ion.setPathLengthSearch(((Params) getParams()).isPruneByPathLength());
+        ion.setAdjacencySearch(((Parameters) getParams()).isPruneByAdjacencies());
+        ion.setPathLengthSearch(((Parameters) getParams()).isPruneByPathLength());
         ion.setKnowledge(getParams().getKnowledge());
         
         List<Graph> graphs = ion.search();

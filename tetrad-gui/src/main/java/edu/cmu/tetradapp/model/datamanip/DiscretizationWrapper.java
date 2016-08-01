@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 
@@ -53,7 +53,7 @@ public class DiscretizationWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      */
-    public DiscretizationWrapper(DataWrapper data, Params params) {
+    public DiscretizationWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -92,7 +92,7 @@ public class DiscretizationWrapper extends DataWrapper {
      * @see TetradSerializableUtils
      */
     public static DiscretizationWrapper serializableInstance() {
-        return new DiscretizationWrapper(DataWrapper.serializableInstance(), new Params());
+        return new DiscretizationWrapper(DataWrapper.serializableInstance(), new Parameters());
     }
 
     //=============================== Private Methods =========================//

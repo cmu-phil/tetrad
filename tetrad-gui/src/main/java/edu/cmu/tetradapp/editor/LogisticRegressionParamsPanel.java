@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphWrapper;
@@ -56,7 +56,7 @@ final class LogisticRegressionParamsPanel extends JPanel
     /**
      * The parameter object being edited.
      */
-    private Params params;
+    private Parameters params;
 
     /**
      * The name of the target variable or node in the regression.
@@ -89,7 +89,7 @@ final class LogisticRegressionParamsPanel extends JPanel
     /**
      * Opens up an editor to let the user view the given RegressionRunner.
      */
-    public LogisticRegressionParamsPanel(Params params,
+    public LogisticRegressionParamsPanel(Parameters params,
                                          Object[] parentModels) {
         for (Object parentModel : parentModels) {
             if (parentModel instanceof DataWrapper) {
@@ -106,7 +106,7 @@ final class LogisticRegressionParamsPanel extends JPanel
 
         if (params == null) {
             throw new NullPointerException(
-                    "Params must not be null.");
+                    "Parameters must not be null.");
         }
 
         this.params = params;
@@ -346,7 +346,7 @@ final class LogisticRegressionParamsPanel extends JPanel
         regressorNames = names;
     }
 
-    private Params params() {
+    private Parameters params() {
         return this.params;
     }
 

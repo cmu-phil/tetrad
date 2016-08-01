@@ -601,7 +601,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         private final GraphSelectionWrapper wrapper;
 
         /**
-         * Constructs the editor given the <code>Params</code> and the <code>DataModel</code>
+         * Constructs the editor given the <code>Parameters</code> and the <code>DataModel</code>
          * that should be used.
          */
         public GraphSelectionEditorPanel(GraphSelectionWrapper graphSelectionWrapper) {

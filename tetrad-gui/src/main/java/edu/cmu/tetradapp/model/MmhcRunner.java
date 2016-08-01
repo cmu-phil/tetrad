@@ -30,7 +30,7 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.search.mb.Mmhc;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.LinkedList;
@@ -47,7 +47,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
 
     //============================CONSTRUCTORS============================//
 
-    public MmhcRunner(DataWrapper dataWrapper, Params params) {
+    public MmhcRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -57,7 +57,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
      * @see TetradSerializableUtils
      */
     public static MmhcRunner serializableInstance() {
-        return new MmhcRunner(DataWrapper.serializableInstance(), new Params());
+        return new MmhcRunner(DataWrapper.serializableInstance(), new Parameters());
     }                                                     
 
     //============================PUBLIC METHODS==========================//

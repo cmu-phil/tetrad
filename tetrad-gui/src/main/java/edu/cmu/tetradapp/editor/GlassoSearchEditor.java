@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
@@ -177,7 +177,7 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        Params params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return params.getVarNames();
     }
 
@@ -207,7 +207,7 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        final Params params = (Params) getAlgorithmRunner().getParams();
+        final Parameters params = (Parameters) getAlgorithmRunner().getParams();
 
         IntTextField maxItField = new IntTextField(params.getMaxit(), 6);
         maxItField.setFilter(new IntTextField.Filter() {

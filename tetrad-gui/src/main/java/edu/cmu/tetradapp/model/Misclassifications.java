@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.*;
@@ -86,7 +87,7 @@ public final class Misclassifications implements SessionModel {
     /**
      * @serial Cannot be null.
      */
-    private Params params;
+    private Parameters params;
 
     /**
      * The target workbench.
@@ -118,9 +119,9 @@ public final class Misclassifications implements SessionModel {
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public Misclassifications(SessionModel model1, SessionModel model2,
-                              Params params) {
+                              Parameters params) {
         if (params == null) {
-            throw new NullPointerException("Params must not be null");
+            throw new NullPointerException("Parameters must not be null");
         }
 
         if (model1 instanceof VcpcRunner && model2 instanceof PcRunner) {
@@ -1118,7 +1119,7 @@ public final class Misclassifications implements SessionModel {
         this.trueGraph = trueGraph;
     }
 
-    public Params getParams() {
+    public Parameters getParams() {
         return params;
     }
 

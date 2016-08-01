@@ -28,7 +28,7 @@ import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -44,14 +44,14 @@ import java.rmi.MarshalledObject;
 public class GeneralizedSemDataWrapper extends DataWrapper implements SessionModel {
     static final long serialVersionUID = 23L;
     private GeneralizedSemIm semIm = null;
-    private Params params;
+    private Parameters params;
     private long seed;
 
     private transient DataModelList dataModelList;
 
     //==============================CONSTRUCTORS=============================//
 
-    public GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, Params params) {
+    public GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, Parameters params) {
         GeneralizedSemIm semIm = null;
 
         try {
@@ -65,7 +65,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
         try {
             params = new MarshalledObject<>(params).get();
         } catch (Exception e) {
-            throw new RuntimeException("Could not clone the Params.");
+            throw new RuntimeException("Could not clone the Parameters.");
         }
 
         setParams(params);
@@ -89,7 +89,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
      */
     public static DataWrapper serializableInstance() {
         return new GeneralizedSemDataWrapper(GeneralizedSemImWrapper.serializableInstance(),
-                new Params());
+                new Parameters());
     }
 
     /**
@@ -110,7 +110,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
         // These are generated from seeds.
     }
 
-    private DataModelList simulateData(Simulator simulator, Params params) {
+    private DataModelList simulateData(Simulator simulator, Parameters params) {
         if (this.dataModelList != null) {
             return this.dataModelList;
         }
@@ -141,8 +141,8 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
 //        this.dataModelList = dataModelList;
     }
 
-    public void setParams(Params params) {
-        this.params = (Params) params;
+    public void setParams(Parameters params) {
+        this.params = (Parameters) params;
     }
 
     private void setSeed() {

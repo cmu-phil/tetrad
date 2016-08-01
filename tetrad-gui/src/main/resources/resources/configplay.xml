@@ -615,7 +615,7 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-class>
-                    edu.cmu.tetradapp.model.datamanip.Params
+                    edu.cmu.tetradapp.model.datamanip.Parameters
                 </params-class>
                 <params-editor-class>edu.cmu.tetradapp.editor.datamanip.ParamsEditor
                 </params-editor-class>
@@ -715,7 +715,7 @@
                 <model-class>edu.cmu.tetradapp.model.datamanip.TimeSeriesWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-                <params-class>edu.cmu.tetradapp.model.datamanip.Params
+                <params-class>edu.cmu.tetradapp.model.datamanip.Parameters
                 </params-class>
                 <params-editor-class>
                     edu.cmu.tetradapp.editor.datamanip.ParamsEditor
@@ -730,7 +730,7 @@
                 <model-class>edu.cmu.tetradapp.model.datamanip.TimeSeriesWrapper2
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-                <params-class>edu.cmu.tetradapp.model.datamanip.Params
+                <params-class>edu.cmu.tetradapp.model.datamanip.Parameters
                 </params-class>
                 <params-editor-class>
                     edu.cmu.tetradapp.editor.datamanip.ParamsEditor

@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -39,7 +39,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     /**
      * The parameters object being edited.
      */
-    private Params params = null;
+    private Parameters params = null;
 
     /**
      * Lets the user edit the number of nodes.
@@ -58,7 +58,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     public BayesPmParamsEditor() {
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -204,7 +204,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
      *
      * @return the stored simulation parameters model.
      */
-    private synchronized Params getParams() {
+    private synchronized Parameters getParams() {
         return this.params;
     }
 }

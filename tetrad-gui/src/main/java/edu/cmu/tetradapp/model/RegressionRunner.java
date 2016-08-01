@@ -31,7 +31,7 @@ import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.ImpliedOrientation;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -56,7 +56,7 @@ public class RegressionRunner implements AlgorithmRunner {
     /**
      * @serial Cannot be null.
      */
-    private Params params;
+    private Parameters params;
 
     /**
      * @serial Cannot be null.
@@ -87,7 +87,7 @@ public class RegressionRunner implements AlgorithmRunner {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public RegressionRunner(DataWrapper dataWrapper, Params params) {
+    public RegressionRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -141,7 +141,7 @@ public class RegressionRunner implements AlgorithmRunner {
         }
 
         DataWrapper dataWrapper = new DataWrapper(_dataSet);
-        return new RegressionRunner(dataWrapper, new Params());
+        return new RegressionRunner(dataWrapper, new Parameters());
     }
 
     //===========================PUBLIC METHODS============================//
@@ -151,11 +151,11 @@ public class RegressionRunner implements AlgorithmRunner {
         return this.dataSet;
     }
 
-    public void setParams(Params params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 
-    public Params getParams() {
+    public Parameters getParams() {
         return params;
     }
 

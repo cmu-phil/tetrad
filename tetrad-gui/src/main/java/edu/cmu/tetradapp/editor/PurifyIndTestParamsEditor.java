@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.TestType;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
@@ -39,9 +39,9 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class PurifyIndTestParamsEditor extends JPanel {
-    private Params params;
+    private Parameters params;
 
-    public PurifyIndTestParamsEditor(Params params, boolean discreteData) {
+    public PurifyIndTestParamsEditor(Parameters params, boolean discreteData) {
         this.params = params;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
@@ -120,7 +120,7 @@ class PurifyIndTestParamsEditor extends JPanel {
         add(b, BorderLayout.CENTER);
     }
 
-    private Params getParams() {
+    private Parameters getParams() {
         return this.params;
     }
 }
