@@ -34,8 +34,6 @@ import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;

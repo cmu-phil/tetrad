@@ -58,7 +58,7 @@ import java.util.*;
  * <p>
  * Knowledge may be associated with the tetradMatrix set, using the
  * <code>setKnowledge</code> method. This knowledge is not used internally to
- * the tetradMatrix set, but it may be retrieved by algorithms and used.
+ * the tetradMatrix set, but it may be retrieved by algorithm and used.
  * <p>
  * This tetradMatrix set replaces an earlier Minitab-style DataSet class. The reasons
  * for replacement are as follows.

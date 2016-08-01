@@ -21,9 +21,9 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.BayesProperties;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.*;
@@ -43,13 +43,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.text.NumberFormat;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
- * Edits some algorithms to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket patterns.
  *
  * @author Joseph Ramsey
  */
@@ -58,6 +57,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
     //    private JTextArea modelStatsText;
     private JTextArea logBayesFactorsScroll;
+    private JTextArea modelStatisticsScroll;
     //    private JTextArea bootstrapEdgeCountsScroll;
     private JTabbedPane tabbedPane;
     private boolean alreadyLaidOut = false;
@@ -82,6 +82,14 @@ public class FgsSearchEditor extends AbstractSearchEditor
     }
 
     public FgsSearchEditor(ImagesRunner runner) {
+        super(runner, "Result Pattern");
+    }
+
+    public FgsSearchEditor(TsFgsRunner runner) {
+        super(runner, "Result Pattern");
+    }
+
+    public FgsSearchEditor(TsImagesRunner runner) {
         super(runner, "Result Pattern");
     }
 
@@ -619,8 +627,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Pattern pattern = new Pattern(resultGraph);
-            Graph dag = SearchGraphUtils.dagFromPattern(pattern);
+            Graph dag = SearchGraphUtils.dagFromPattern(resultGraph);
 
 //            DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
 //            String report;
@@ -657,6 +664,17 @@ public class FgsSearchEditor extends AbstractSearchEditor
 //            JPanel bootstrapPanel = new JPanel();
 //            bootstrapPanel.setLayout(new BorderLayout());
 //            bootstrapPanel.add(bootstrapEdgeCountsScroll, BorderLayout.CENTER);
+
+            modelStatisticsScroll = new JTextArea();
+//            bootstrapEdgeCountsScroll = new JTextArea();
+
+//            modelStatsText.setLineWrap(true);
+//            modelStatsText.setWrapStyleWord(true);
+//            modelStatsText.setText(report);
+
+            modelStatisticsScroll.setLineWrap(true);
+            modelStatisticsScroll.setWrapStyleWord(true);
+            modelStatisticsScroll.setText(reportIfDiscrete(dag, (DataSet) getDataModel()));
 
             Box b = Box.createHorizontalBox();
             b.add(new JLabel("# Bootstraps = "));
@@ -698,8 +716,60 @@ public class FgsSearchEditor extends AbstractSearchEditor
 //            tabbedPane.addTab("DAG Model Statistics", new JScrollPane(modelStatsText));
             tabbedPane.addTab("Log Bayes Factors", new JScrollPane(logBayesFactorsScroll));
 //            tabbedPane.addTab("Edge Bootstraps", new JScrollPane(bootstrapPanel));
+            tabbedPane.addTab("Model Stats", new JScrollPane(modelStatisticsScroll));
         }
     }
+
+    private String reportIfDiscrete(Graph dag, DataSet dataSet) {
+        List vars = dataSet.getVariables();
+        Map<String, DiscreteVariable> nodesToVars =
+                new HashMap<String, DiscreteVariable>();
+        for (int i = 0; i < dataSet.getNumColumns(); i++) {
+            DiscreteVariable var = (DiscreteVariable) vars.get(i);
+            String name = var.getName();
+            Node node = new GraphNode(name);
+            nodesToVars.put(node.getName(), var);
+        }
+
+        BayesPm bayesPm = new BayesPm(new Dag(dag));
+        List<Node> nodes = bayesPm.getDag().getNodes();
+
+        for (Node node : nodes) {
+            Node var = nodesToVars.get(node.getName());
+
+            if (var instanceof DiscreteVariable) {
+                DiscreteVariable var2 = nodesToVars.get(node.getName());
+                int numCategories = var2.getNumCategories();
+                List<String> categories = new ArrayList<String>();
+                for (int j = 0; j < numCategories; j++) {
+                    categories.add(var2.getCategory(j));
+                }
+                bayesPm.setCategories(node, categories);
+            }
+        }
+
+
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(4);
+
+        StringBuilder buf = new StringBuilder();
+
+        BayesProperties properties = new BayesProperties(dataSet);
+
+        double p = properties.getLikelihoodRatioP(dag);
+        double chisq = properties.getChisq();
+        double bic = properties.getBic();
+        double dof = properties.getDof();
+
+        buf.append("\nP  = ").append(p);
+        buf.append("\nDOF = ").append(dof);
+        buf.append("\nChiSq = ").append(nf.format(chisq));
+        buf.append("\nBIC = ").append(nf.format(bic));
+        buf.append("\n\nH0: Complete DAG.");
+
+        return buf.toString();
+    }
+
 
     private void removeStatsTabs() {
         for (int i = tabbedPane.getTabCount() - 1; i >= 0; i--) {

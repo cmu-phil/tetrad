@@ -28,7 +28,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Edits parameters for Markov blanket search algorithms.
+ * Edits parameters for Markov blanket search algorithm.
  *
  * @author Ricardo Silva (GES version)
  * @author Frank Wimberly adapted for PCX.

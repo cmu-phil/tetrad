@@ -49,8 +49,8 @@ paragraph. Zipped archives of these serialized exemplars are saved out in the
 archives directory from previous published versions. Whenever unit
 tests are run, these archives are unzipped, and all of the serialized objects they
 contain are deserialized. If it's ever the case that a class has been renamed or
-moved, or a field type for a field by name 'n' has been changed to an incompatible
-type (or anything else that would prevent bare deserialization of an object from
+moved, or a field test for a field by name 'n' has been changed to an incompatible
+test (or anything else that would prevent bare deserialization of an object from
 finishing), an exception will be thrown with a descriptive message. The only way
 an old session might not deserialize with the current version of Tetrad if this test
 passes is if some object it contains is incompatible with some check that's
@@ -70,16 +70,16 @@ names are the same, between a new version and an old version, their types must
 be compatible, or the archive deserialization test will throw an exception.
 
 There are many ways for the current version of Tetrad to misinterpretation coltData
-from old sessions by, e.g., switching two fields of the same type, ignoring
+from old sessions by, e.g., switching two fields of the same test, ignoring
 coltData from the objects that used to contain it, and so on. These more sophisticated
 methods of misinterpreting old sessions cannot generally be detected by an automatic
 algorithm, or at least not in any sensible way. The programmer just has to watch
 out for them and perhaps add specific tests for them. For instance, if the
-programmer decides to use a new type of coltData set for a class, then the old coltData
-set needs to be converted to the new coltData type in order to make sure old sessions
+programmer decides to use a new test of coltData set for a class, then the old coltData
+set needs to be converted to the new coltData test in order to make sure old sessions
 will load.
 
-The last problem (P4) is solved by defining a type called "TetradSession" that
+The last problem (P4) is solved by defining a test called "TetradSession" that
 contains a SessionWrapper in addition to some metadata, such as version number,
 and by adding up-to-date version numbers (automatically stamped) to the "About
 Tetrad" menu item.

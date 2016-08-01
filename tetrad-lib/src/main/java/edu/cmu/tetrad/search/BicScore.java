@@ -23,25 +23,20 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.dist.Discrete;
-import org.apache.commons.math3.special.Gamma;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * Calculates the BDeu score.
+ * Calculates the discrete BIC score.
  */
 public class BicScore implements LocalDiscreteScore, IBDeuScore {
     private List<Node> variables;
     private int[][] data;
     private int sampleSize;
 
-    private double samplePrior = 1;
-    private double structurePrior = 1;
+    private double penaltyDiscount = 1;
 
     private int[] numCategories;
-    private double penaltyDiscount = 2;
 
     public BicScore(DataSet dataSet) {
         if (dataSet == null) {
@@ -157,7 +152,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         }
 
         //Finally, compute the score
-        double prob = 0.0;
+        double lik = 0.0;
 
         for (int rowIndex = 0; rowIndex < r; rowIndex++) {
             for (int childValue = 0; childValue < c; childValue++) {
@@ -165,14 +160,14 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
                 int rowCount = n_j[rowIndex];
 
                 if (cellCount == 0) continue;
-                prob += cellCount * Math.log(cellCount / (double) rowCount);
+                lik += cellCount * Math.log(cellCount / (double) rowCount);
             }
         }
 
         int params = r * (c - 1);
         int n = getSampleSize();
 
-        return 2 * prob - params * Math.log(n);
+        return 2 * lik - penaltyDiscount * params * Math.log(n);
     }
 
     private double getPriorForStructure(int numParents) {
@@ -225,11 +220,6 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
     }
 
     @Override
-    public boolean isDiscrete() {
-        return true;
-    }
-
-    @Override
     public double getParameter1() {
         return 0;
     }
@@ -255,22 +245,22 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
     @Override
     public double getStructurePrior() {
-        return structurePrior;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public double getSamplePrior() {
-        return samplePrior;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setSamplePrior(double samplePrior) {
-        this.samplePrior = samplePrior;
+        throw new UnsupportedOperationException();
     }
 
     public void setVariables(List<Node> variables) {

@@ -32,7 +32,7 @@ import java.util.*;
 
 /**
  * Utilities for resolving inconsistencies that arise between sepsets learned for overlapping datasets. This occurs
- * frequently when using the DCI and ION algorithms. f
+ * frequently when using the DCI and ION algorithm. f
  *
  * @author Robert Tillman
  */

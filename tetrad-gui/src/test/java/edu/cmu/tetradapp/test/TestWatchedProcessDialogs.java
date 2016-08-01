@@ -30,7 +30,7 @@ import java.lang.reflect.Modifier;
 /**
  * Tests to make sure the field <code>showDialog</code> in WatchProcess is set
  * to <code>true</code>. This must be the case in order for the little progress
- * dialogs to be displayed while algorithms are running, etc. It is convenient
+ * dialogs to be displayed while algorithm are running, etc. It is convenient
  * to set this to false while debugging, but Tetrad must not be posted with this
  * set to false.
  *

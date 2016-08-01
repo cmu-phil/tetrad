@@ -5,10 +5,6 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.LogisticRegression;
-import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.dist.Discrete;
 
 import java.util.*;
 
@@ -36,9 +32,13 @@ public class WFgs implements GraphSearch {
             variablesPerNode.put(node, nodes);
         }
 
-//        internalData = DataUtils.center(internalData);
+        System.out.println("Data expanded.");
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(internalData));
+        ICovarianceMatrix covariances = new CovarianceMatrix(internalData);
+
+        System.out.println("Cov matrix made.");
+
+        SemBicScore score = new SemBicScore(covariances);
         this.score = score;
         this.fgs = new Fgs2(score);
     }
@@ -53,7 +53,7 @@ public class WFgs implements GraphSearch {
         List<Node> variables = new ArrayList<>();
 
         for (int i = 0; i < varCats.size() - 1; i++) {
-            Node newVar = new ContinuousVariable(node.getName() + ".MULTINOM" + "." + varCats.get(i));
+            Node newVar = new ContinuousVariable(node.getName() + "." + varCats.get(i));
             variables.add(newVar);
             dataSet.addVariable(newVar);
             int newVarIndex = dataSet.getColumn(newVar);
@@ -75,7 +75,7 @@ public class WFgs implements GraphSearch {
 
     public Graph search() {
         score.setPenaltyDiscount(penaltyDiscount);
-        Graph pattern = fgs.search();
+        Graph g = fgs.search();
 
         Graph out = new EdgeListGraph(searchVariables);
 
@@ -87,27 +87,26 @@ public class WFgs implements GraphSearch {
                 List<Node> xNodes = variablesPerNode.get(x);
                 List<Node> yNodes = variablesPerNode.get(y);
 
-                int numEdges = 0;
-                int numRight = 0;
-                int numLeft = 0;
+                int left = 0;
+                int right = 0;
+                int total = 0;
 
                 for (int k = 0; k < xNodes.size(); k++) {
                     for (int l = 0; l < yNodes.size(); l++) {
-                        Edge e = pattern.getEdge(xNodes.get(k), yNodes.get(l));
+                        Edge e = g.getEdge(xNodes.get(k), yNodes.get(l));
+
                         if (e != null) {
-                            numEdges++;
-                            if (e.pointsTowards(xNodes.get(k))) numLeft++;
-                            if (e.pointsTowards(yNodes.get(l))) numRight++;
+                            total++;
+                            if (e.pointsTowards(xNodes.get(k))) left++;
+                            if (e.pointsTowards(yNodes.get(l))) right++;
                         }
                     }
                 }
 
-                if (numEdges > 0) {
-                    if (numLeft > 0 && numRight == 0) out.addDirectedEdge(y, x);
-                    else if (numRight > 0 && numLeft == 0) out.addDirectedEdge(x, y);
-                    else {
-                        out.addUndirectedEdge(x, y);
-                    }
+                if (total > 0) {
+                    if (left == total) out.addDirectedEdge(y, x);
+                    else if (right == total) out.addDirectedEdge(x, y);
+                    else out.addUndirectedEdge(x, y);
                 }
             }
         }

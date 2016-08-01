@@ -186,15 +186,15 @@ public class TestGFci {
 //            GFci gfci = new GFci(new IndTestDSep(dag));
             gfci.setFaithfulnessAssumed(faithfulnessAssumed);
             Graph pattern1 = gfci.search();
-            DagToPag2 dagToPag2 = new DagToPag2(dag);
-            dagToPag2.setCompleteRuleSetUsed(completeRuleSetUsed);
-            Graph pattern2 = dagToPag2.convert();
+            DagToPag dagToPag = new DagToPag(dag);
+            dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+            Graph pattern = dagToPag.convert();
 
 //            System.out.println(pattern1);
 //            System.out.println(pattern2);
 //
 //            System.out.println(MisclassificationUtils.edgeMisclassifications(pattern1, pattern2));
-            assertEquals(pattern2, pattern1);
+            assertEquals(pattern, pattern1);
         }
     }
 
@@ -237,9 +237,9 @@ public class TestGFci {
 
         System.out.println("Elapsed " + (stop - start) + " ms");
 
-        DagToPag2 dagToPag2 = new DagToPag2(g);
-        dagToPag2.setVerbose(true);
-        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dagToPag2.convert()));
+        DagToPag dagToPag = new DagToPag(g);
+        dagToPag.setVerbose(true);
+        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dagToPag.convert()));
 
     }
 }

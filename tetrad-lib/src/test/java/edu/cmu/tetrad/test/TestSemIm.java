@@ -360,13 +360,19 @@ public class TestSemIm {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph g = new EdgeListGraph(nodes);
+        Graph g = GraphUtils.randomGraphRandomForwardEdges(10, 0, 10, 10, 10, 10, false);
+
 //        SemPm pm = new SemPm(g);
 //        SemIm im = new SemIm(pm);
 //        DataSet d = im.simulateData(1000, false);
 
-        LargeSemSimulator ls = new LargeSemSimulator(g);
-        ls.simulateDataAcyclic(1000);
+        LargeSemSimulator sim = new LargeSemSimulator(g);
+//        sim.simulateDataAcyclic(1000);
+
+        System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
+        System.out.println("dim = " + sim.getCoefficientMatrix()[1][1]);
+
+//        System.out.println(sim.simulateDataAcyclic(1000));
 
     }
 

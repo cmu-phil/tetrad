@@ -27,8 +27,8 @@ public class Comparison {
      * printing out error statistics.
      */
     public static ComparisonResult compare(ComparisonParameters params) {
-        DataSet dataSet = null;
-        Graph trueDag = null;
+        DataSet dataSet;
+        Graph trueDag;
         IndependenceTest test = null;
         Score score = null;
 
@@ -43,10 +43,6 @@ public class Comparison {
 
             trueDag = loadGraphFile(params.getGraphFile());
         } else {
-//            if (params.getDataType() == null) {
-//                throw new IllegalArgumentException("Data type not set.");
-//            }
-
             if (params.getNumVars() == -1) {
                 throw new IllegalArgumentException("Number of variables not set.");
             }

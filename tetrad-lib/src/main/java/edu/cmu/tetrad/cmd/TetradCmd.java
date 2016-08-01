@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Runs several algorithms from Tetrad. Documentation is available
+ * Runs several algorithm from Tetrad. Documentation is available
  * in the wiki of the Tetrad project on GitHub. This will be replaced by
  * the package tetrad-cli.
  *

@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * Reimplemented HITON for purposes of comparison to other algorithms, to get it closer to the published definition.
+ * Reimplemented HITON for purposes of comparison to other algorithm, to get it closer to the published definition.
  *
  * @author Joseph Ramsey
  */

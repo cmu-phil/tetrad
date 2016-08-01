@@ -39,7 +39,7 @@ public final class Clusters implements TetradSerializable {
     /**
      * This is used to store information on pure measurement models (when the
      * graph is a measurement/structural model). The information is stored
-     * variable clusters, and is used by algorithms such as Purify and MIM Build
+     * variable clusters, and is used by algorithm such as Purify and MIM Build
      * (R. Silva, 04/2003)
      *
      * @serial
@@ -92,7 +92,7 @@ public final class Clusters implements TetradSerializable {
     /**
      * Adds the given variable to the given index.  If a variable which is being
      * added is already in a index, it is moved to the new index. This
-     * information is used specifically by algorithms such as Purify and MIM
+     * information is used specifically by algorithm such as Purify and MIM
      * Build. </p> The first variation only put an Integer associated with the
      * index, i.e., the clusterings forms a partition where the integer
      * represents the index id for the corresponding variable. </p> The second

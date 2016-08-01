@@ -26,7 +26,10 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Collections;
 
 
 /**
@@ -43,7 +46,7 @@ import java.util.*;
  * @author Joseph Ramsey
  * @author Choh-Man Teng
  */
-public final class DagToPag2 {
+public final class TsDagToPag {
 
     private final Graph dag;
 //    private final IndTestDSep dsep;
@@ -56,7 +59,7 @@ public final class DagToPag2 {
     /**
      * Glag for complete rule set, true if should use complete rule set, false otherwise.
      */
-    private boolean completeRuleSetUsed = false;
+    private boolean completeRuleSetUsed = true;
 
     /**
      * The logger to use.
@@ -75,15 +78,49 @@ public final class DagToPag2 {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public DagToPag2(Graph dag) {
+    public TsDagToPag(Graph dag) {
         this.dag = dag;
+        int numLags = 1; // need to fix this!
+        List<Node> variables = dag.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge = new Knowledge2();
+        int lag;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+                laglist.add(lag);
+            }
+        }
+        numLags = Collections.max(laglist);
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
+            if(varName.indexOf(':')== -1){
+                lag = 0;
+                laglist.add(lag);
+            } else {
+                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                lag = Integer.parseInt(tmp);
+                laglist.add(lag);
+            }
+            knowledge.addToTier(numLags - lag, node.getName());
+        }
+
+        this.setKnowledge(knowledge);
+
     }
 
     //========================PUBLIC METHODS==========================//
 
     public Graph convert() {
         logger.log("info", "Starting DAG to PAG.");
-
+//        System.out.println("Knowledge is = " + knowledge);
         if (verbose) {
             System.out.println("DAG to PAG: Starting adjacency search");
         }
@@ -94,16 +131,19 @@ public final class DagToPag2 {
             System.out.println("DAG to PAG: Starting collider orientation");
         }
 
-        orientUnshieldedColliders2(graph, dag);
+        orientUnshieldedColliders(graph, dag);
 
         if (verbose) {
             System.out.println("DAG to PAG: Starting final orientation");
         }
 
         final FciOrient fciOrient = new FciOrient(new DagSepsets(dag));
+        System.out.println("Complete rule set is used? " + completeRuleSetUsed);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setKnowledge(knowledge);
+        fciOrient.ruleR0(graph);
         fciOrient.doFinalOrientation(graph);
 
         if (verbose) {
@@ -126,71 +166,22 @@ public final class DagToPag2 {
         Graph graph = new EdgeListGraphSingleConnections(measured);
 
         for (int i = 0; i < measured.size(); i++) {
-            addAdjacencies(measured.get(i), dag, graph);
+            for (int j = i + 1; j < measured.size(); j++) {
+                Node n1 = measured.get(i);
+                Node n2 = measured.get(j);
+
+                final List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, dag);
+
+                boolean exists = inducingPath != null;
+
+                if (exists) {
+                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                }
+            }
         }
 
         return graph;
     }
-
-    public static Set<Node> addAdjacencies(Node x, Graph dag, Graph builtGraph) {
-        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-
-        final LinkedList<Node> path = new LinkedList<>();
-        path.add(x);
-
-        Set<Node> induced = new HashSet<>();
-
-        for (Node b : dag.getAdjacentNodes(x)) {
-            collectInducedNodesVisit2(dag, x, b, path, builtGraph);
-        }
-
-        return induced;
-    }
-
-    public static void collectInducedNodesVisit2(Graph dag, Node x, Node b, LinkedList<Node> path,
-                                                    Graph builtGraph) {
-
-        if (path.contains(b)) {
-            return;
-        }
-
-        path.addLast(b);
-
-        if (b.getNodeType() == NodeType.MEASURED && path.size() >= 2) {
-            Node y = path.getLast();
-
-            for (int i = 0; i < path.size() - 2; i++) {
-                Node _a = path.get(i);
-                Node _b = path.get(i + 1);
-                Node _c = path.get(i + 2);
-
-                if (_b.getNodeType() == NodeType.MEASURED) {
-                    if (!dag.isDefCollider(_a, _b, _c)) {
-                        path.removeLast();
-                        return;
-                    }
-                }
-
-                if (dag.isDefCollider(_a, _b, _c)) {
-                    if (!(dag.isAncestorOf(_b, x) || dag.isAncestorOf(_b, y))) {
-                        path.removeLast();
-                        return;
-                    }
-                }
-            }
-
-            if (!builtGraph.isAdjacentTo(x, b)) {
-                builtGraph.addEdge(Edges.nondirectedEdge(x, b));
-            }
-        }
-
-        for (Node c : dag.getAdjacentNodes(b)) {
-            collectInducedNodesVisit2(dag, x, c, path, builtGraph);
-        }
-
-        path.removeLast();
-    }
-
 
     private void orientUnshieldedColliders(Graph graph, Graph dag) {
         graph.reorientAllWith(Endpoint.CIRCLE);
@@ -238,51 +229,9 @@ public final class DagToPag2 {
         }
     }
 
-    private void orientUnshieldedColliders2(Graph graph, Graph dag) {
-        graph.reorientAllWith(Endpoint.CIRCLE);
-
-        List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<Node>();
-
-        for (Node node : allNodes) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                measured.add(node);
-            }
-        }
-
-        for (Node b : measured) {
-            List<Node> adjb = graph.getAdjacentNodes(b);
-
-            if (adjb.size() < 2) continue;
-
-            for (int i = 0; i < adjb.size(); i++) {
-                for (int j = i + 1; j < adjb.size(); j++) {
-                    Node a = adjb.get(i);
-                    Node c = adjb.get(j);
-
-                    List<Node> d = new ArrayList<>();
-                    d.add(a);
-                    d.add(c);
-
-                    List<Node> anc = dag.getAncestors(d);
-
-                    if (!graph.isAdjacentTo(a, c) && !anc.contains(b)) {
-
-//                        if (verbose) {
-//                            System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
-//                        }
-
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
-                    }
-                }
-            }
-        }
-    }
-
     private boolean foundCollider(Graph dag, Node a, Node b, Node c) {
-        boolean ipba = existsInducingPathInto(b, a, dag);
-        boolean ipbc = existsInducingPathInto(b, c, dag);
+        boolean ipba = existsInducingPathInto(b, a, dag, knowledge);
+        boolean ipbc = existsInducingPathInto(b, c, dag, knowledge);
 
         if (!(ipba && ipbc)) {
             printTrueDefCollider(a, b, c, false);
@@ -308,7 +257,7 @@ public final class DagToPag2 {
         }
     }
 
-    public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
+    public static boolean existsInducingPathInto(Node x, Node y, Graph graph, IKnowledge knowledge) {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
         if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
 
@@ -319,7 +268,7 @@ public final class DagToPag2 {
             Edge edge = graph.getEdge(x, b);
             if (!edge.pointsTowards(x)) continue;
 
-            if (GraphUtils.existsInducingPathVisit(graph, x, b, x, y, path)) {
+            if (existsInducingPathVisitts(graph, x, b, x, y, path, knowledge)) {
                 return true;
             }
         }
@@ -415,6 +364,43 @@ public final class DagToPag2 {
     public void setTruePag(Graph truePag) {
         this.truePag = truePag;
     }
+
+
+    public static boolean existsInducingPathVisitts(Graph graph, Node a, Node b, Node x, Node y,
+                                                  LinkedList<Node> path, IKnowledge knowledge) {
+        if (path.contains(b)) {
+            return false;
+        }
+
+        path.addLast(b);
+
+        if (b == y) return true;
+
+        for (Node c : graph.getAdjacentNodes(b)) {
+            if (c == a) continue;
+
+            if (b.getNodeType() == NodeType.MEASURED) {
+                if (!graph.isDefCollider(a, b, c)) continue;
+
+            }
+
+            if (graph.isDefCollider(a, b, c)) {
+                if (!((graph.isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(),x.getName())) ||
+                        (graph.isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(),x.getName())))) {
+                    continue;
+                }
+            }
+
+            if (existsInducingPathVisitts(graph, b, c, x, y, path, knowledge)) {
+                return true;
+            }
+        }
+
+        path.removeLast();
+        return false;
+    }
+
+
 }
 
 

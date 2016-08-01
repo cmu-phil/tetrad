@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * An interface for Purify algorithms.
+ * An interface for Purify algorithm.
  */
 public interface IPurify {
     List<List<Node>> purify(List<List<Node>> partition);

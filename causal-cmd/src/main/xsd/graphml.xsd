@@ -11,11 +11,11 @@ and open the template in the editor.
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified">
-    
+
     <xs:annotation>
         <xs:documentation
-            source="http://graphml.graphdrawing.org/"
-            xml:lang="en">
+                source="http://graphml.graphdrawing.org/"
+                xml:lang="en">
             This document defines the GraphML language including GraphML attributes and GraphML parseinfo.
         </xs:documentation>
     </xs:annotation>
@@ -51,8 +51,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/(Dokumentation der Attributes Erweiterung; entsprechende Stelle.html)"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/(Dokumentation der Attributes Erweiterung; entsprechende Stelle.html)"
+                    xml:lang="en">
                 Simple type for the attr.name attribute of &lt;key>.
                 key.name.type is final, that is, it may not be extended
                 or restricted.
@@ -71,8 +71,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/(Dokumentation der Attributes Erweiterung; entsprechende Stelle.html)"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/(Dokumentation der Attributes Erweiterung; entsprechende Stelle.html)"
+                    xml:lang="en">
                 Simple type for the attr.type attribute of &lt;key>.
                 key.type.type is final, that is, it may not be extended
                 or restricted.
@@ -97,8 +97,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Definition of the attribute group key.attributes.attrib.
                 This group consists of the two optional attributes
                 - attr.name (gives the name for the data function)
@@ -114,8 +114,8 @@ and open the template in the editor.
 
     <xs:annotation>
         <xs:documentation
-            source="http://graphml.graphdrawing.org/"
-            xml:lang="en">
+                source="http://graphml.graphdrawing.org/"
+                xml:lang="en">
             Simple type definitions for the new graph attributes.
         </xs:documentation>
     </xs:annotation>
@@ -124,8 +124,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Simple type for the parse.order attribute of &lt;graph>.
                 graph.order.type is final, that is, it may not be extended
                 or restricted.
@@ -145,8 +145,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Simple type for the parse.nodes attribute of &lt;graph>.
                 graph.nodes.type is final, that is, it may not be extended
                 or restricted.
@@ -162,8 +162,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Simple type for the parse.edges attribute of &lt;graph>.
                 graph.edges.type is final, that is, it may not be extended
                 or restricted.
@@ -179,8 +179,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Simple type for the parse.maxindegree attribute of &lt;graph>.
                 graph.maxindegree.type is final, that is, it may not be extended
                 or restricted.
@@ -196,8 +196,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Simple type for the parse.maxoutdegree attribute of &lt;graph>.
                 graph.maxoutdegree.type is final, that is, it may not be extended
                 or restricted.
@@ -213,8 +213,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Simple type for the parse.nodeids attribute of &lt;graph>.
                 graph.nodeids.type is final, that is, it may not be extended
                 or restricted.
@@ -233,8 +233,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Simple type for the parse.edgeids attribute of &lt;graph>.
                 graph.edgeids.type is final, that is, it may not be extended
                 or restricted.
@@ -253,8 +253,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Definition of the attribute group graph.parseinfo.attrib.
                 This group consists of the seven attributes
                 - parse.nodeids (fixed to 'canonical' meaning that the id attribute
@@ -283,8 +283,8 @@ and open the template in the editor.
 
     <xs:annotation>
         <xs:documentation
-            source="http://graphml.graphdrawing.org/"
-            xml:lang="en">
+                source="http://graphml.graphdrawing.org/"
+                xml:lang="en">
             Simple type definitions for the new node attributes.
         </xs:documentation>
     </xs:annotation>
@@ -293,8 +293,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Simple type for the parse.indegree attribute of &lt;node>.
                 node.indegree.type is final, that is, it may not be extended
                 or restricted.
@@ -310,8 +310,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Simple type for the parse.outdegree attribute of &lt;node>.
                 node.outdegree.type is final, that is, it may not be extended
                 or restricted.
@@ -327,8 +327,8 @@ and open the template in the editor.
 
         <xs:annotation>
             <xs:documentation
-                source="http://graphml.graphdrawing.org/"
-                xml:lang="en">
+                    source="http://graphml.graphdrawing.org/"
+                    xml:lang="en">
                 Definition of the attribute group node.parseinfo.attrib.
                 This group consists of two attributes
                 - parse.indegree (optional; indegree of this node),

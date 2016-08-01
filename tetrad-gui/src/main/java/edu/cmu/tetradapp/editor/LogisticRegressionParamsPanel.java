@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 /**
- * Edits parameters for Markov blanket search algorithms.
+ * Edits parameters for Markov blanket search algorithm.
  *
  * @author Frank Wimberly
  */

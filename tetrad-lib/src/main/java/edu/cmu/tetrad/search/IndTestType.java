@@ -21,59 +21,66 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.ObjectStreamException;
 
 /**
- * A typesafe enumeration of the types of independence tests that are used for basic search algorithms in this package.
+ * A typesafe enumeration of the types of independence tests that are used for basic search algorithm in this package.
  *
  * @author Joseph Ramsey
  */
 public final class IndTestType implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    public static final IndTestType DEFAULT = new IndTestType("Default");
+    public static final IndTestType DEFAULT = new IndTestType("Default", null);
     public static final IndTestType CORRELATION_T =
-            new IndTestType("Correlation T Test");
-    public static final IndTestType FISHER_Z = new IndTestType("Fisher's Z");
+            new IndTestType("Correlation T Test", DataType.Continuous);
+    public static final IndTestType FISHER_Z = new IndTestType("Fisher's Z", DataType.Continuous);
     public static final IndTestType LINEAR_REGRESSION =
-            new IndTestType("Linear Regression");
+            new IndTestType("Linear Regression", DataType.Continuous);
     public static final IndTestType CONDITIONAL_CORRELATION =
-            new IndTestType("Conditional Correlation Test");
-    public static final IndTestType BIC_BUMP =
-            new IndTestType("BIC Bump");
+            new IndTestType("Conditional Correlation Test", DataType.Continuous);
+    public static final IndTestType SEM_BIC =
+            new IndTestType("SEM BIC used as a Test", DataType.Continuous);
     public static final IndTestType LOGISTIC_REGRESSION =
-            new IndTestType("Logistic Regression");
-    public static final IndTestType MULTINOMIAL_LOGISTIC_REGRESSION =
-            new IndTestType("Multinomial Logistic Regression");
+            new IndTestType("Logistic Regression", DataType.Continuous);
+    public static final IndTestType MIXED_MLR =
+            new IndTestType("Multinomial Logistic Regression", DataType.Mixed);
     public static final IndTestType FISHER_ZD =
-            new IndTestType("Fisher's Z (Deterministic)");
+            new IndTestType("Fisher's Z (Deterministic)", DataType.Continuous);
     public static final IndTestType FISHER_Z_BOOTSTRAP =
-            new IndTestType("Fisher's Z (Bootstrap)");
-    public static final IndTestType G_SQUARE = new IndTestType("G Square");
-    public static final IndTestType CHI_SQUARE = new IndTestType("Chi Square");
+            new IndTestType("Fisher's Z (Bootstrap)", DataType.Continuous);
+    public static final IndTestType G_SQUARE = new IndTestType("G Square", DataType.Discrete);
+    public static final IndTestType CHI_SQUARE = new IndTestType("Chi Square", DataType.Discrete);
     public static final IndTestType D_SEPARATION =
-            new IndTestType("D-Separation");
+            new IndTestType("D-Separation", DataType.Graph);
     public static final IndTestType TIME_SERIES =
-            new IndTestType("Time Series");
+            new IndTestType("Time Series", DataType.Continuous);
     public static final IndTestType INDEPENDENCE_FACTS =
-            new IndTestType("Independence Facts");
+            new IndTestType("Independence Facts", DataType.Graph);
     public static final IndTestType POOL_RESIDUALS_FISHER_Z =
-            new IndTestType("Fisher Z Pooled Residuals");
-    public static final IndTestType FISHER = new IndTestType("Fisher (Fisher Z)");
-    public static final IndTestType TIPPETT = new IndTestType("Tippett (Fisher Z)");
+            new IndTestType("Fisher Z Pooled Residuals", DataType.Continuous);
+    public static final IndTestType FISHER = new IndTestType("Fisher (Fisher Z)", DataType.Continuous);
+    public static final IndTestType TIPPETT = new IndTestType("Tippett (Fisher Z)", DataType.Continuous);
+    public static final IndTestType MIXED_REGR_LRT = new IndTestType("Mixed Regression Likelihood Ratio Test",
+                DataType.Mixed);
+    public static final IndTestType MIXED_CG_LRT
+            = new IndTestType("Mixed Conditional Gaussian Likelihood Ratio Test", DataType.Mixed);
 
     /**
-     * The name of this type.
+     * The name of this dataType.
      */
     private final transient String name;
+    private final DataType dataType;
 
     /**
      * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
-    protected IndTestType(String name) {
+    protected IndTestType(String name, DataType type) {
         this.name = name;
+        this.dataType = type;
     }
 
     /**
@@ -84,7 +91,7 @@ public final class IndTestType implements TetradSerializable {
     }
 
     /**
-     * Prints out the name of the type.
+     * Prints out the name of the dataType.
      */
     public String toString() {
         return name;
@@ -94,8 +101,8 @@ public final class IndTestType implements TetradSerializable {
     private static int nextOrdinal = 0;
     private final int ordinal = nextOrdinal++;
     private static final IndTestType[] TYPES = {DEFAULT, CORRELATION_T, FISHER_Z,
-            LINEAR_REGRESSION, CONDITIONAL_CORRELATION, BIC_BUMP, LOGISTIC_REGRESSION,
-            MULTINOMIAL_LOGISTIC_REGRESSION, FISHER_ZD,
+            LINEAR_REGRESSION, CONDITIONAL_CORRELATION, SEM_BIC, LOGISTIC_REGRESSION,
+            MIXED_MLR, FISHER_ZD,
             FISHER_Z_BOOTSTRAP,
             G_SQUARE, CHI_SQUARE,
             D_SEPARATION, TIME_SERIES,
@@ -106,6 +113,10 @@ public final class IndTestType implements TetradSerializable {
 
     Object readResolve() throws ObjectStreamException {
         return TYPES[ordinal]; // Canonicalize.
+    }
+
+    public DataType getDataType() {
+        return dataType;
     }
 }
 

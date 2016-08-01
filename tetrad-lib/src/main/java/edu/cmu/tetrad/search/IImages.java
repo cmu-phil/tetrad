@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.SortedSet;
 
 /**
- * An interface for Images algorithms.
+ * An interface for Images algorithm.
  */
 public interface IImages extends GraphScorer {
     boolean isAggressivelyPreventCycles();

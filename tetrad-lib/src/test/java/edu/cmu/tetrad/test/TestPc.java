@@ -503,7 +503,7 @@ public class TestPc {
         System.out.println(algorithms[t] + " avg num tails " + nf.format(avgNumTails));
         System.out.println(algorithms[t] + " avg num bidirected " + nf.format(avgNumBidirected));
         System.out.println(algorithms[t] + " avg elapsed " + nf.format(avgElapsed));
-//        System.out.println(algorithms[t] + " avg precision / elapsed " + nf2.format(avgRatioPrecisionToElapsed));
+//        System.out.println(algorithm[t] + " avg precision / elapsed " + nf2.format(avgRatioPrecisionToElapsed));
 
         return ret;
     }
@@ -706,7 +706,7 @@ public class TestPc {
             DataSet data = im.simulateData(sampleSize, false);
 
 //            Graph comparison = dag;
-            Graph comparison = new DagToPag2(dag).convert();
+            Graph comparison = new DagToPag(dag).convert();
 //            Graph comparison = new Pc(new IndTestDSep(dag)).search();
 
             IndTestFisherZ test = new IndTestFisherZ(data, alpha);

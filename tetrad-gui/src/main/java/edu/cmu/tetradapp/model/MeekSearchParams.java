@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 /**
- * Search params for algorithms that use the <code>MeekRules</code>.
+ * Search params for algorithm that use the <code>MeekRules</code>.
  *
  * @author Tyler Gibson
  */

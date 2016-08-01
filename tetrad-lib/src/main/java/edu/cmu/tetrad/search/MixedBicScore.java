@@ -174,11 +174,6 @@ public class MixedBicScore implements Score {
     }
 
     @Override
-    public boolean isDiscrete() {
-        return false;
-    }
-
-    @Override
     public double getParameter1() {
         return penaltyDiscount;
     }

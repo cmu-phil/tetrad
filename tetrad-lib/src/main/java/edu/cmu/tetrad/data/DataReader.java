@@ -212,7 +212,7 @@ public final class DataReader {
      * RectangularDataSet if successful.
      *
      * @throws IOException if the file cannot be read.
-     * @deprecated use the data readers from edu.cmu.tetrad.io package
+//     * @deprecated use the data readers from edu.cmu.tetrad.io package // Can't deprecate this yet.
      */
     public DataSet parseTabular(File file) throws IOException {
         FileReader reader = null, reader2 = null;

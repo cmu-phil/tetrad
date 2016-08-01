@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.performance;
 
 /**
- * Created by jdramsey on 3/24/16.
+ * Created by jdramsey on 3/24/16. Edited by dmalinsky 5/20/16.
  */
 public class ComparisonParameters {
     private DataType dataType = null;
@@ -19,6 +19,10 @@ public class ComparisonParameters {
     private String dataFile = null;
     private String graphFile;
     private boolean oneEdgeFaithfulnessAssumed = false;
+    private boolean noData = false;
+    private boolean dataFromFile = false;
+    private int graphNum = 0;
+    private int trial = 0;
 
     public ComparisonParameters() {
 
@@ -37,6 +41,8 @@ public class ComparisonParameters {
         this.dataFile = params.dataFile;
         this.graphFile = params.graphFile;
         this.oneEdgeFaithfulnessAssumed = params.oneEdgeFaithfulnessAssumed;
+        this.noData = params.noData;
+        this.dataFromFile = params.dataFromFile;
     }
 
     public void setDataType(DataType dataType) {
@@ -136,6 +142,8 @@ public class ComparisonParameters {
         } else if (algorithm == Algorithm.FCI) {
             resultType = ResultType.PAG;
         } else if (algorithm == Algorithm.GFCI) {
+            resultType = ResultType.PAG;
+        } else if (algorithm == Algorithm.TsFCI) {
             resultType = ResultType.PAG;
         } else {
             throw new IllegalArgumentException("Result type of algorithm not set.");
@@ -238,14 +246,14 @@ public class ComparisonParameters {
         }
 
 
-        if (dataFile != null) {
-            b.append("\nData File = " + dataFile);
-        }
-
-
-        if (graphFile != null) {
-            b.append("\nGraph File = " + graphFile);
-        }
+//        if (dataFile != null) {
+//            b.append("\nData File = " + dataFile);
+//        }
+//
+//
+//        if (graphFile != null) {
+//            b.append("\nGraph File = " + graphFile);
+//        }
 
         if (oneEdgeFaithfulnessAssumed) {
             b.append("\nOne Edge Faithfulnes = true");
@@ -279,9 +287,41 @@ public class ComparisonParameters {
     }
 
 
+    public void setNoData(boolean noData) {
+        this.noData = noData;
+    }
+
+    public boolean isNoData() { return noData; }
+
+    public boolean isDataFromFile() { return dataFromFile; }
+
+    public void setDataFromFile(boolean dataFromFile) {
+        this.dataFromFile = dataFromFile;
+    }
+
+    public void setGraphFile(String graphFile) {
+        this.graphFile = graphFile;
+    }
+
+    public void setGraphNum(int graphNum) {
+        this.graphNum = graphNum;
+    }
+
+    public int getGraphNum() {
+        return graphNum;
+    }
+
+    public void setTrial(int trial) {
+        this.trial = trial;
+    }
+
+    public int getTrial() {
+        return trial;
+    }
+
     public enum DataType {Continuous, Discrete}
     public enum ResultType {Pattern, PAG}
     public enum IndependenceTestType {FisherZ, ChiSquare}
     public enum ScoreType {SemBic, BDeu}
-    public enum Algorithm {PC, CPC, FGS, FGS2, PCLocal, PCMax, FCI, GFCI}
+    public enum Algorithm {PC, CPC, FGS, FGS2, PCLocal, PCMax, FCI, GFCI, TsFCI}
 }

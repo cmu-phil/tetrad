@@ -39,7 +39,7 @@ import java.util.*;
 import static java.lang.Math.round;
 
 /**
- * Runs some basic performance tests of various algorithms.
+ * Runs some basic performance tests of various algorithm.
  *
  * @author Joseph Ramsey
  */
@@ -800,7 +800,7 @@ public class PerformanceTests {
 
             System.out.println(new Date());
 
-//            System.out.println("Replacing nodes");
+//            System.out.println("Replacing nodes");d
 //
 //            estPattern = GraphUtils.replaceNodes(estPattern, dag.getNodes());
 
@@ -977,7 +977,7 @@ public class PerformanceTests {
             fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
-//            fgs.setFaithfulnessAssumed(faithfulness);
+//            fgs.setHeuristicSpeedup(faithfulness);
             fgs.setMaxIndegree(maxIndegree);
             fgs.setCycleBound(-1);
         } else {
@@ -1022,7 +1022,7 @@ public class PerformanceTests {
             fgs.setVerbose(true);
             fgs.setNumPatternsToStore(0);
             fgs.setOut(System.out);
-//            fgs.setFaithfulnessAssumed(faithfulness);
+//            fgs.setHeuristicSpeedup(faithfulness);
             fgs.setMaxIndegree(maxIndegree);
             fgs.setCycleBound(-1);
 
@@ -1164,7 +1164,7 @@ public class PerformanceTests {
         boolean completeRuleSetUsed = false;
         boolean faithfulnessAssumed = true;
 
-        init(new File("fci.algorithms.comparison" + numVars + "." + (int) (edgeFactor * numVars) +
+        init(new File("fci.algorithm.comparison" + numVars + "." + (int) (edgeFactor * numVars) +
                 "." + numCases + ".txt"), "Num runs = " + numRuns);
         out.println("Num vars = " + numVars);
         out.println("Num edges = " + (int) (numVars * edgeFactor));
@@ -1420,55 +1420,6 @@ public class PerformanceTests {
         System.out.println("Fas but not FAS1 " + topEdges);
 
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
-    }
-
-    @Test
-    public void testDagToPagOnly() {
-        int numVars = 20;
-        double edgeFactor = 1.0;
-        int numLatents = 5;
-
-        System.out.println("Making list of vars");
-
-        List<Node> vars = new ArrayList<Node>();
-
-        for (int i = 0; i < numVars; i++) {
-            vars.add(new ContinuousVariable("X" + i));
-        }
-
-        System.out.println("Finishing list of vars");
-
-        System.out.println("Making graph");
-
-        System.out.println("Finishing list of vars");
-
-//        Graph dag = DataGraphUtils.randomDagQuick2(vars, 0, (int) (vars.size() * edgeFactor));
-        Dag dag = new Dag(getLatentGraph(vars, edgeFactor, numLatents));
-
-        System.out.println(dag);
-
-        System.out.println("Graph done");
-
-        long time2a = System.currentTimeMillis();
-
-        final DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(true);
-        Graph left = dagToPag.convert();
-
-        final DagToPag2 dagToPag2 = new DagToPag2(dag);
-        dagToPag2.setCompleteRuleSetUsed(true);
-        Graph top = dagToPag2.convert();
-
-        long time2b = System.currentTimeMillis();
-
-//        top = DataGraphUtils.replaceNodes(top, left.getNodes());
-
-//        int[][] counts = edgeMisclassificationCounts(left, top);
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(left, top, true);
-        System.out.println(GraphUtils.edgeMisclassifications(counts));
-
-//        System.out.println("Elapsed fci = " + (time1b - time1a) + " ms");
-        System.out.println("Elapsed dagtopag = " + (time2b - time2a) + " ms");
     }
 
 //    public void testIcaOutputForDan() {

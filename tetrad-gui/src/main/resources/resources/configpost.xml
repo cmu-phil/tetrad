@@ -137,6 +137,17 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor
                 </editor-class>
             </model>
+            <model name="Generate PAG from tsDag" acronym="PAG from tsDag"
+                   help="graph">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="pag" description="PAG" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.TsPagFromDagGraphWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.GraphEditor
+                </editor-class>
+            </model>
             <model name="Make Bidirected Edges Undirected" acronym="Make bidirected undirected"
                    help="graph">
                 <logger>
@@ -686,6 +697,21 @@
                     <event id="data" description="Data"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.datamanip.TimeSeriesWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-class>edu.cmu.tetradapp.model.datamanip.TimeSeriesParams
+                </params-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.datamanip.TimeSeriesParamsEditor
+                </params-editor-class>
+            </model>
+            <model name="Convert to Time Lag Data with Index" acronym="Time Lag w Index"
+                   help="data" category="Convert">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.datamanip.TimeSeriesWrapper2
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-class>edu.cmu.tetradapp.model.datamanip.TimeSeriesParams
@@ -1574,6 +1600,23 @@
                 <params-class>edu.cmu.tetradapp.model.GFciSearchParams
                 </params-class>
             </model>
+            <model name="tsGFCI" acronym="tsGFCI" help="tsGFCI"
+                   category="PAG searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="tripleClassifications" description="Triple Classifications" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.TsGFciRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.GFciSearchParams
+                </params-class>
+            </model>
             <model name="ION" acronym="ION" help="ion" category="PAG searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1660,6 +1703,40 @@
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
             </model>
+            <model name="tsFCI" acronym="tsFCI" help="tsFCI"
+                   category="PAG searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
+                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
+                    <event id="tripleClassifications" description="Triple Classifications" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.TsFciRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FciSearchParams
+                </params-class>
+            </model>
+            <model name="TsFGS" acronym="TsFGS" help="fgs"
+                   category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="insertedEdges" description="Inserted Edges" default="on"/>
+                    <event id="deletedEdges" description="Deleted Edges" default="on"/>
+                    <event id="directedEdges" description="Directed Edges" default="on"/>
+                    <event id="edgeEvaluations" description="Edge Evaluations"/>
+                    <event id="impliedOrientations" description="Implied Orientations"/>
+                    <event id="rebuiltPatterns" description="Rebuilt Patterns"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.TsFgsRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
+            </model>
             <model name="IMaGES" acronym="IMaGES" help="fgs"
                    category="Pattern Searches">
                 <logger>
@@ -1676,6 +1753,23 @@
                 <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
+            </model>
+            <model name="TsIMaGES" acronym="TsIMaGES" help="fgs"
+                   category="Pattern Searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="insertedEdges" description="Inserted Edges" default="on"/>
+                    <event id="deletedEdges" description="Deleted Edges" default="on"/>
+                    <event id="directedEdges" description="Directed Edges" default="on"/>
+                    <event id="edgeEvaluations" description="Edge Evaluations"/>
+                    <event id="impliedOrientations" description="Implied Orientations"/>
+                    <event id="rebuiltPatterns" description="Rebuilt Patterns"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.TsImagesRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.GFciSearchParams</params-class>
             </model>
             <!--Heuristic Best Significant Model Search-->
             <model name="BFF" acronym="BFF" help="bff"

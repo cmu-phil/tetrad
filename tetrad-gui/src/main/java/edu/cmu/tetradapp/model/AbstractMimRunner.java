@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Implements a stub that basic algorithm wrappers can extend if they take
  * either a dataModel model or a workbench model as parent. Contains basic
- * methods for executing algorithms and returning results.
+ * methods for executing algorithm and returning results.
  *
  * @author Joseph Ramsey
  */
@@ -243,7 +243,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
             throw new IllegalArgumentException("<html>" +
                     "This dataModel set contains a mixture of discrete and continuous " +
-                    "<br>columns; there are no algorithms in Tetrad currently to " +
+                    "<br>columns; there are no algorithm in Tetrad currently to " +
                     "<br>search over such data sets." + "</html>");
         } else if (dataModel instanceof ICovarianceMatrix) {
             return dataModel;

@@ -43,8 +43,6 @@ public interface Score {
 
     boolean isEffectEdge(double bump);
 
-    boolean isDiscrete();
-
     double getParameter1();
 
     void setParameter1(double alpha);

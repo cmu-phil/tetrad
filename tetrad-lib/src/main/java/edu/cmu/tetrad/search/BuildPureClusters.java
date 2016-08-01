@@ -892,7 +892,7 @@ public final class BuildPureClusters {
 //    }
 
     //*********************************************************
-    // * GRAPH ALGORITHMICAL TOOLS
+    // * Graph ALGORITHMICAL TOOLS
     // *********************************************************/
 
     /**

@@ -132,7 +132,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         Graph alteredRefGraph;
 
         //Normally, one's target graph won't have latents, so we'll want to
-        // remove them from the ref graph to compare, but algorithms like
+        // remove them from the ref graph to compare, but algorithm like
         // MimBuild might not want to do this.
         if (this.params != null && this.params.isKeepLatents()) {
             alteredRefGraph = this.referenceGraph;

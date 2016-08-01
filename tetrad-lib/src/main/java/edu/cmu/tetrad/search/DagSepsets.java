@@ -88,5 +88,8 @@ public class DagSepsets implements SepsetProducer {
         this.verbose = verbose;
     }
 
+    public Graph getDag() {
+        return dag;
+    }
 }
 

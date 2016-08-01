@@ -33,7 +33,7 @@ import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
 /**
- * Graph utilities for search algorithms. Lots of orientation method, for instance.
+ * Graph utilities for search algorithm. Lots of orientation method, for instance.
  *
  * @author Joseph Ramsey
  */
@@ -1479,8 +1479,8 @@ public final class SearchGraphUtils {
      * Double checks a sepset map against a pattern to make sure that X is adjacent to Y in the pattern iff {X, Y} is
      * not in the domain of the sepset map.
      *
-     * @param sepset  a sepset map, over variables V.
-     * @param pattern a pattern over variables W, V subset of W.
+     * @param sepset  a sepset map, over variables v.
+     * @param pattern a pattern over variables W, v subset of W.
      * @return true if the sepset map is consistent with the pattern.
      */
     public static boolean verifySepsetIntegrity(SepsetMap sepset, Graph pattern) {
@@ -1510,8 +1510,8 @@ public final class SearchGraphUtils {
      * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
      * criteria in the given legal pairs object.
      * <p>
-     * A variable V is reachable from initialNodes iff for some variable X in initialNodes thers is a path U [X, Y1,
-     * ..., V] such that legalPairs.isLegalFirstNode(X, Y1) and for each [H1, H2, H3] as subpaths of U,
+     * A variable v is reachable from initialNodes iff for some variable X in initialNodes thers is a path U [X, Y1,
+     * ..., v] such that legalPairs.isLegalFirstNode(X, Y1) and for each [H1, H2, H3] as subpaths of U,
      * legalPairs.isLegalPairs(H1, H2, H3).
      * <p>
      * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, & Pearl (1990).
