@@ -1231,7 +1231,7 @@ public class Comparison {
 
             if (overriddenParameters.size() > 0) {
                 for (String parameter : new ArrayList<>(overriddenParameters)) {
-                    description.append(", " + parameter + " = " + parameters.getValues(parameter, null)[0]);
+                    description.append(", " + parameter + " = " + parameters.get(parameter, null));
                 }
             }
 
@@ -1254,7 +1254,7 @@ public class Comparison {
         }
 
         public Object getValue(String parameter) {
-            return parameters.getValues(parameter, null)[0];
+            return parameters.get(parameter, null);
         }
 
         public Algorithm getAlgorithm() {
@@ -1338,7 +1338,7 @@ public class Comparison {
             }
 
             for (String param : simulation.getParameters()) {
-                this.parameters.set(param, parameters.getValues(param, null)[0]);
+                this.parameters.set(param, parameters.get(param, null));
             }
         }
 

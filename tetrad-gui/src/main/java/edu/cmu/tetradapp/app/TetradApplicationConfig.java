@@ -210,8 +210,8 @@ public class TetradApplicationConfig {
                     modelClass = loadClass(loader, element.getValue());
                 } else if ("editor-class".equals(element.getQualifiedName())) {
                     editorClass = loadClass(loader, element.getValue());
-                } else if ("params-class".equals(element.getQualifiedName())) {
-                    paramsClass = loadClass(loader, element.getValue());
+//                } else if ("params-class".equals(element.getQualifiedName())) {
+//                    paramsClass = loadClass(loader, element.getValue());
                 } else if ("params-editor-class".equals(element.getQualifiedName())) {
                     paramsEditorClass = loadClass(loader, element.getValue());
                 } else if ("logger".equals(element.getQualifiedName())) {

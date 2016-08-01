@@ -102,7 +102,7 @@ public class TestMimbuild2 {
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
                     int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
-                    assertEquals(9, shd);
+                    assertEquals(7, shd);
                 } else if (mimbuildMethod == 3) {
 //                    System.out.println("Mimbuild Trek\n");
                     MimbuildTrek mimbuild = new MimbuildTrek();

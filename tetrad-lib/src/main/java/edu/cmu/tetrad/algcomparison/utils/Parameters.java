@@ -12,6 +12,8 @@ import java.util.*;
  * @author jdramsey
  */
 public class Parameters implements TetradSerializable {
+    static final long serialVersionUID = 23L;
+
     private Map<String, Object[]> parameters = new LinkedHashMap<>();
     private Set<String> usedParameters = new LinkedHashSet<>();
     private Map<String, Object> overriddenParameters = new HashMap<>();
@@ -23,6 +25,10 @@ public class Parameters implements TetradSerializable {
         this.parameters = new LinkedHashMap<>(parameters.parameters);
         this.usedParameters = new LinkedHashSet<>(parameters.usedParameters);
         this.overriddenParameters = new HashMap<>(parameters.overriddenParameters);
+    }
+
+    public static Parameters serializableInstance() {
+        return new Parameters();
     }
 
     /**
@@ -54,16 +60,16 @@ public class Parameters implements TetradSerializable {
             return ((Number) o).intValue();
         }
 
-        if (getNumValues(name) != 1) {
-            throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
-        }
-
         usedParameters.add(name);
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
             return defaultValue;
         } else {
+            if (getNumValues(name) != 1) {
+                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+            }
+
             Object o = objects[0];
             return ((Number) o).intValue();
         }
@@ -75,16 +81,16 @@ public class Parameters implements TetradSerializable {
             return (Boolean) o;
         }
 
-        if (getNumValues(name) != 1) {
-            throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
-        }
-
         usedParameters.add(name);
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
             return defaultValue;
         } else {
+            if (getNumValues(name) != 1) {
+                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+            }
+
             Object o = objects[0];
             return (Boolean) o;
         }
@@ -103,16 +109,16 @@ public class Parameters implements TetradSerializable {
             return ((Number) o).doubleValue();
         }
 
-        if (getNumValues(name) != 1) {
-            throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
-        }
-
         usedParameters.add(name);
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
             return defaultValue;
         } else {
+            if (getNumValues(name) != 1) {
+                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+            }
+
             Object o = objects[0];
             return ((Number) o).intValue();
         }
@@ -131,15 +137,16 @@ public class Parameters implements TetradSerializable {
             return (String) o;
         }
 
-        if (getNumValues(name) != 1) {
-            throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
-        }
         usedParameters.add(name);
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
             return defaultValue;
         } else {
+            if (getNumValues(name) != 1) {
+                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+            }
+
             Object o = objects[0];
             return (String) o;
         }
@@ -157,11 +164,16 @@ public class Parameters implements TetradSerializable {
             return overriddenParameters.get(name);
         }
 
+        usedParameters.add(name);
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
             return defaultValue;
         } else {
+            if (getNumValues(name) != 1) {
+                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+            }
+
             return objects[0];
         }
     }
@@ -216,7 +228,7 @@ public class Parameters implements TetradSerializable {
     public int getNumValues(String parameter) {
         Object[] objects = parameters.get(parameter);
         if (objects == null) {
-            throw new IllegalArgumentException("Expecting a value for parameter '" + parameter + "'");
+            return 0;
         }
         return objects.length;
     }
