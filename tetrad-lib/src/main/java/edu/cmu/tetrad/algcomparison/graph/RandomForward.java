@@ -15,13 +15,13 @@ public class RandomForward implements RandomGraph {
     @Override
     public Graph createGraph(Parameters parameters) {
         return GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+                parameters.getInt("numMeasures", 10),
+                parameters.getInt("numLatents", 0),
+                parameters.getInt("avgDegree", 2) * parameters.getInt("numMeasures", 10) / 2,
+                parameters.getInt("maxDegree", 100),
+                parameters.getInt("maxIndegree", 100),
+                parameters.getInt("maxOutdegree", 100),
+                parameters.getBoolean("connected", false));
     }
 
     @Override

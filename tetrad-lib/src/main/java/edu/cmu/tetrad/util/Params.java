@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.util;
 
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.bayes.Evidence;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
@@ -40,19 +41,20 @@ import java.util.List;
  */
 public class Params implements TetradSerializable {
     long serialVersionUID = 23L;
+
+    Parameters parameters = new Parameters();
+
     private boolean retainPreviousValues;
-    private double coefLow;
-    private double coefHigh;
     private boolean coefSymmetric;
-    private double covLow;
-    private double covHigh;
-    private double varLow;
-    private double varHigh;
-    private List<String> equations;
-    private boolean cyclicAllowed;
+    private double covLow = 0.05;
+    private double covHigh = 0.1;
+    private double varLow = 1;
+    private double varHigh = 3;
+    private List<String> equations = new ArrayList<>();
+    private boolean cyclicAllowed = false;
     private String newGraphInitializationMode;
-    private boolean covSymmetric;
-    private int numRestarts;
+    private boolean covSymmetric = true;
+    private int numRestarts = 1;
     private SemIm.ScoreType scoreType;
     private String semOptimizerType;
     private IKnowledge knowledge;
@@ -162,11 +164,11 @@ public class Params implements TetradSerializable {
     }
 
     public double getCoefLow() {
-        return coefLow;
+        return parameters.getDouble("coefLow", 0.5);
     }
 
     public double getCoefHigh() {
-        return coefHigh;
+        return parameters.getDouble("coefHigh", 1.5);
     }
 
     public boolean isCoefSymmetric() {

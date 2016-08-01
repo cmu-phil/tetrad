@@ -23,7 +23,7 @@ public class SemBicTest implements IndependenceWrapper {
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
         List<DataModel> dataModels = new ArrayList<>();
         dataModels.add(dataSet);
-        return new IndTestScore(new SemBicScoreImages(dataModels), parameters.getDouble("alpha"));
+        return new IndTestScore(new SemBicScoreImages(dataModels), parameters.getDouble("alpha", .001));
     }
 
     @Override

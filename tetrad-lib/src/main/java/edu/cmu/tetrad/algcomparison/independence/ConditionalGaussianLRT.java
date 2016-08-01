@@ -19,7 +19,7 @@ public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        return new IndTestConditionalGaussianLrt(dataSet, parameters.getDouble("alpha"));
+        return new IndTestConditionalGaussianLrt(dataSet, parameters.getDouble("alpha", .001));
     }
 
     @Override

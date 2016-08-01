@@ -35,10 +35,10 @@ public class LeeHastieSimulation implements Simulation {
     public void createData(Parameters parameters) {
         this.graph = randomGraph.createGraph(parameters);
 
-        double percentDiscrete = parameters.getDouble("percentDiscrete");
+        double percentDiscrete = parameters.getDouble("percentDiscrete", 4);
 
-        boolean discrete = parameters.getString("dataType").equals("discrete");
-        boolean continuous = parameters.getString("dataType").equals("continuous");
+        boolean discrete = parameters.getString("dataType", "continuous").equals("discrete");
+        boolean continuous = parameters.getString("dataType", "continuous").equals("continuous");
 
         if (discrete && percentDiscrete != 100.0) {
             throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 0.0.");
@@ -51,7 +51,7 @@ public class LeeHastieSimulation implements Simulation {
 
         this.dataSets = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             dataSets.add(dataSet);
@@ -101,8 +101,8 @@ public class LeeHastieSimulation implements Simulation {
         Collections.shuffle(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
-            if (i < nodes.size() * parameters.getDouble("percentDiscrete") * 0.01) {
-                nd.put(nodes.get(i).getName(), parameters.getInt("numCategories"));
+            if (i < nodes.size() * parameters.getDouble("percentDiscrete", 0) * 0.01) {
+                nd.put(nodes.get(i).getName(), parameters.getInt("numCategories", 2));
             } else {
                 nd.put(nodes.get(i).getName(), 0);
             }
@@ -113,7 +113,7 @@ public class LeeHastieSimulation implements Simulation {
         GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
         GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 
-        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), false);
+        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize", 1000), false);
         return MixedUtils.makeMixedData(ds, nd);
     }
 

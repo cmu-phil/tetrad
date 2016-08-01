@@ -33,7 +33,7 @@ public class GeneralSemSimulation implements Simulation {
 
         this.dataSets = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             this.dataSets.add(dataSet);
@@ -43,7 +43,7 @@ public class GeneralSemSimulation implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         GeneralizedSemPm pm = getPm(graph, parameters);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
-        return im.simulateData(parameters.getInt("sampleSize"), false);
+        return im.simulateData(parameters.getInt("sampleSize", 1000), false);
     }
 
     @Override
@@ -87,9 +87,9 @@ public class GeneralSemSimulation implements Simulation {
         List<Node> variablesNodes = pm.getVariableNodes();
         List<Node> errorNodes = pm.getErrorNodes();
 
-        String measuredFunction = parameters.getString("generalSemFunctionTemplateMeasured");
-        String latentFunction = parameters.getString("generalSemFunctionTemplateLatent");
-        String error = parameters.getString("generalSemErrorTemplate");
+        String measuredFunction = parameters.getString("generalSemFunctionTemplateMeasured", "TSUM(NEW(B)*$)");
+        String latentFunction = parameters.getString("generalSemFunctionTemplateLatent", "TSUM(NEW(B)*$)");
+        String error = parameters.getString("generalSemErrorTemplate", "Beta(2, 5)");
 
         try {
             for (Node node : variablesNodes) {

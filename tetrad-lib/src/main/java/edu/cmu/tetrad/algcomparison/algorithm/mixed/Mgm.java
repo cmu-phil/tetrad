@@ -17,9 +17,9 @@ import java.util.List;
 public class Mgm implements Algorithm {
     public Graph search(DataSet ds, Parameters parameters) {
         MGM m = new MGM(ds, new double[]{
-                parameters.getDouble("mgmParam1"),
-                parameters.getDouble("mgmParam2"),
-                parameters.getDouble("mgmParam3")
+                parameters.getDouble("mgmParam1", .1),
+                parameters.getDouble("mgmParam2", .1),
+                parameters.getDouble("mgmParam3", .1)
         });
         return m.search();
     }

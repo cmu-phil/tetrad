@@ -18,7 +18,7 @@ public class GSquare implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        return new IndTestGSquare(dataSet, parameters.getDouble("alpha"));
+        return new IndTestGSquare(dataSet, parameters.getDouble("alpha", 0.001));
     }
 
     @Override

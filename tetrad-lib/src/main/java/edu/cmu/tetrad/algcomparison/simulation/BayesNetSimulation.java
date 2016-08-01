@@ -30,7 +30,7 @@ public class BayesNetSimulation implements Simulation {
 
         dataSets = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             dataSets.add(dataSet);
@@ -73,9 +73,9 @@ public class BayesNetSimulation implements Simulation {
 
 
     private DataSet simulate(Graph graph, Parameters parameters) {
-        int numCategories = parameters.getInt("numCategories");
+        int numCategories = parameters.getInt("numCategories", 2);
         BayesPm pm = new BayesPm(graph, numCategories, numCategories);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-        return im.simulateData(parameters.getInt("sampleSize"), false);
+        return im.simulateData(parameters.getInt("sampleSize", 1000), false);
     }
 }

@@ -19,7 +19,7 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
     public edu.cmu.tetrad.search.IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
         return new IndTestMultinomialLogisticRegressionWald(
                 dataSet,
-                parameters.getDouble("alpha"),
+                parameters.getDouble("alpha", .001),
                 false);
     }
 

@@ -158,7 +158,7 @@ public class Comparison {
 
                     for (int h = 0; h < dims.length; h++) {
                         String p = varyingParameters.get(h);
-                        Object[] values = parameters.getValues(p);
+                        Object[] values = parameters.getValues(p, new Object[choice.length]);
                         Object value = values[choice[h]];
                         wrapper.setValue(p, value);
                     }
@@ -186,7 +186,7 @@ public class Comparison {
             }
         }
 
-        int numRuns = parameters.getInt("numRuns");
+        int numRuns = parameters.getInt("numRuns", 1);
 
         // Run all of the algorithms and compile statistics.
         double[][][][] allStats = calcStats(algorithmSimulationWrappers, statistics, numRuns, parameters);
@@ -577,7 +577,7 @@ public class Comparison {
         for (int i = 0; i < parameters.size(); i++) {
             out.print(parameters.get(i));
             out.print(" = ");
-            Object[] values = allParams.getValues(parameters.get(i));
+            Object[] values = allParams.getValues(parameters.get(i), null);
             if (values == null || values.length == 0) {
                 out.print("no default");
 
@@ -637,7 +637,7 @@ public class Comparison {
 
                 for (int h = 0; h < dims.length; h++) {
                     String p = varyingParameters.get(h);
-                    Object[] values = parameters.getValues(p);
+                    Object[] values = parameters.getValues(p, new Object[choice.length]);
                     Object value = values[choice[h]];
                     wrapper.setValue(p, value);
                 }
@@ -777,7 +777,7 @@ public class Comparison {
                 Collections.shuffle(indices);
 
                 List<DataSet> dataSets = new ArrayList<>();
-                int randomSelection = algorithmWrapper.getAlgorithmSpecificParameters().getInt("randomSelection");
+                int randomSelection = algorithmWrapper.getAlgorithmSpecificParameters().getInt("randomSelection", 1);
                 for (int i = 0; i < Math.min(numDataSets, randomSelection); i++) {
                     dataSets.add(simulationWrapper.getSimulation().getDataSet(indices.get(i)));
                 }
@@ -1231,7 +1231,7 @@ public class Comparison {
 
             if (overriddenParameters.size() > 0) {
                 for (String parameter : new ArrayList<>(overriddenParameters)) {
-                    description.append(", " + parameter + " = " + parameters.getValues(parameter)[0]);
+                    description.append(", " + parameter + " = " + parameters.getValues(parameter, null)[0]);
                 }
             }
 
@@ -1254,7 +1254,7 @@ public class Comparison {
         }
 
         public Object getValue(String parameter) {
-            return parameters.getValues(parameter)[0];
+            return parameters.getValues(parameter, null)[0];
         }
 
         public Algorithm getAlgorithm() {
@@ -1338,7 +1338,7 @@ public class Comparison {
             }
 
             for (String param : simulation.getParameters()) {
-                this.parameters.set(param, parameters.getValues(param)[0]);
+                this.parameters.set(param, parameters.getValues(param, null)[0]);
             }
         }
 
@@ -1378,7 +1378,7 @@ public class Comparison {
         }
 
         public Object getValue(String parameter) {
-            Object[] values = parameters.getValues(parameter);
+            Object[] values = parameters.getValues(parameter, null);
 
             if (values == null || values.length == 0) {
                 throw new NullPointerException("Expecting parameter to be defined: " + parameter);

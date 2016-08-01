@@ -30,12 +30,12 @@ public class SemSimulation implements Simulation {
 
         dataSets = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             SemPm pm = new SemPm(graph);
             Params params = new Params();
             SemIm im = new SemIm(pm);
-            dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
+            dataSets.add(im.simulateData(parameters.getInt("sampleSize", 1000), false));
         }
     }
 

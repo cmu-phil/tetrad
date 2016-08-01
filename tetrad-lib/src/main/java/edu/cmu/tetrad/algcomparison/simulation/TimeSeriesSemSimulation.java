@@ -27,13 +27,13 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         dataSets = new ArrayList<>();
 
         this.graph = GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("numLatents"),
-                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
-                parameters.getInt("maxDegree"),
-                parameters.getInt("maxIndegree"),
-                parameters.getInt("maxOutdegree"),
-                parameters.getInt("connected") == 1);
+                parameters.getInt("numMeasures", 10),
+                parameters.getInt("numLatents", 0),
+                parameters.getInt("avgDegree", 2) * parameters.getInt("numMeasures", 10) / 2,
+                parameters.getInt("maxDegree", 100),
+                parameters.getInt("maxIndegree", 100),
+                parameters.getInt("maxOutdegree", 100),
+                parameters.getInt("connected", 100) == 1);
         this.graph = TimeSeriesUtils.GraphToLagGraph(graph);
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
@@ -46,7 +46,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 //                parameters.getInt("maxOutdegree"),
 //                parameters.getInt("connected") == 1);
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
 //            SemPm pm = new SemPm(graph);
 //            Params params = new Params();
 //            params.setVarRange(parameters.getDouble("varLow"), parameters.getDouble("varHigh"));
@@ -54,15 +54,15 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 //            dataSets.add(im.simulateData(parameters.getInt("sampleSize"), false));
 
             LargeSemSimulator sim = new LargeSemSimulator(graph);
-            if(parameters.getDouble("coefHigh") > 0.80) {
+            if(parameters.getDouble("coefHigh", 1.5) > 0.80) {
                 System.out.println("Coefficients have been set (perhaps by default) too " +
                         "high for stationary time series.");
                 System.out.println("Setting coefficient range to [0.20,0.60].");
                 sim.setCoefRange(0.20, 0.60);
-            } else sim.setCoefRange(parameters.getDouble("coefLow"), parameters.getDouble("coefHigh"));
+            } else sim.setCoefRange(parameters.getDouble("coefLow", .5), parameters.getDouble("coefHigh", 1.5));
             boolean isStableTetradMatrix;
             int attempt = 1;
-            int tierSize = parameters.getInt("numMeasures") + parameters.getInt("numLatents"); //params.getNumVars();
+            int tierSize = parameters.getInt("numMeasures", 10) + parameters.getInt("numLatents", 0); //params.getNumVars();
             int[] sub = new int[tierSize];
             int[] sub2 = new int[tierSize];
             for(int j = 0; j < tierSize; j++){
@@ -71,7 +71,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             }
             DataSet dataSet;
             do {
-                dataSet = sim.simulateDataAcyclic(parameters.getInt("sampleSize")); //params.getSampleSize());
+                dataSet = sim.simulateDataAcyclic(parameters.getInt("sampleSize", 1000)); //params.getSampleSize());
 
                 TetradMatrix coefMat = new TetradMatrix(sim.getCoefficientMatrix());
                 TetradMatrix B = coefMat.getSelection(sub, sub);
@@ -87,7 +87,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
                 System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
                 System.out.println("Made " + (attempt-1) + " attempts to get stable matrix.");
                 sim.setCoefRange(0.15, 0.3);
-                dataSet = sim.simulateDataAcyclic(parameters.getInt("sampleSize"));//params.getSampleSize());
+                dataSet = sim.simulateDataAcyclic(parameters.getInt("sampleSize", 1000));//params.getSampleSize());
             } //else System.out.println("Coefficient matrix is stable.");
             dataSets.add(dataSet);
         }

@@ -23,8 +23,8 @@ package edu.cmu.tetrad.algcomparison.myexamples.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsGfci;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsFci;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -41,7 +41,7 @@ public class ExampleCompareSimulationTimeSeries {
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 10);
-        parameters.set("avgDegree", 4);
+        parameters.set("avgDegree", 2);
         parameters.set("sampleSize", 500);
         parameters.set("penaltyDiscount", 4);
         parameters.set("alpha", 1e-4, 1e-3, 1e-2);
@@ -67,8 +67,8 @@ public class ExampleCompareSimulationTimeSeries {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new TsFci(new FisherZ()));
-        algorithms.add(new TsGfci(new SemBicScore()));
+        algorithms.add(new TsFci(new FisherZ()));
+//        algorithms.add(new TsGfci(new SemBicScore()));
 
         Simulations simulations = new Simulations();
 

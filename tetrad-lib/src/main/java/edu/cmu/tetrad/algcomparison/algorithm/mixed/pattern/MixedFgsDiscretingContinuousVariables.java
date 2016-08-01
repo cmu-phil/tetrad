@@ -32,7 +32,7 @@ public class MixedFgsDiscretingContinuousVariables implements Algorithm {
 
         for (Node node : nodes) {
             if (node instanceof ContinuousVariable) {
-                discretizer.equalIntervals(node, parameters.getInt("numCategories"));
+                discretizer.equalIntervals(node, parameters.getInt("numCategories", 2));
             }
         }
 

@@ -19,7 +19,7 @@ public class DiscreteBicScore implements ScoreWrapper {
     public Score getScore(DataSet dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.BicScore score
                 = new edu.cmu.tetrad.search.BicScore(dataSet);
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount", 4));
         return score;
     }
 

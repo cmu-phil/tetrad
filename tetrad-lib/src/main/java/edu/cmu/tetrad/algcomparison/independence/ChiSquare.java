@@ -18,7 +18,7 @@ public class ChiSquare implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        return new IndTestChiSquare(dataSet, parameters.getDouble("alpha"));
+        return new IndTestChiSquare(dataSet, parameters.getDouble("alpha", .001));
     }
 
     @Override

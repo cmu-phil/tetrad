@@ -85,9 +85,10 @@ public class Parameters {
      * Returns the integer values of the given parameter.
      *
      * @param name The name of the parameter.
+     * @param defaultValue
      * @return The integer value of this parameter.
      */
-    public int getInt(String name) {
+    public int getInt(String name, int defaultValue) {
         if (overriddenParameters.containsKey(name)) {
             Object o = overriddenParameters.get(name);
             return ((Number) o).intValue();
@@ -98,17 +99,45 @@ public class Parameters {
         }
 
         usedParameters.add(name);
-        Object o = parameters.get(name)[0];
-        return ((Number) o).intValue();
+        Object[] objects = parameters.get(name);
+
+        if (objects == null) {
+            return defaultValue;
+        } else {
+            Object o = objects[0];
+            return ((Number) o).intValue();
+        }
+    }
+
+    public boolean getBoolean(String name, boolean defaultValue) {
+        if (overriddenParameters.containsKey(name)) {
+            Object o = overriddenParameters.get(name);
+            return (Boolean) o;
+        }
+
+        if (getNumValues(name) != 1) {
+            throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+        }
+
+        usedParameters.add(name);
+        Object[] objects = parameters.get(name);
+
+        if (objects == null) {
+            return defaultValue;
+        } else {
+            Object o = objects[0];
+            return (Boolean) o;
+        }
     }
 
     /**
      * Returns the double values of the given parameter.
      *
      * @param name The name of the parameter.
+     * @param defaultValue
      * @return The double value of this parameter.
      */
-    public double getDouble(String name) {
+    public double getDouble(String name, double defaultValue) {
         if (overriddenParameters.containsKey(name)) {
             Object o = overriddenParameters.get(name);
             return ((Number) o).doubleValue();
@@ -119,22 +148,24 @@ public class Parameters {
         }
 
         usedParameters.add(name);
-        Object o = parameters.get(name)[0];
+        Object[] objects = parameters.get(name);
 
-        if (!(o instanceof Number)) {
-            throw new IllegalArgumentException("Not a Number parameter: " + name);
+        if (objects == null) {
+            return defaultValue;
+        } else {
+            Object o = objects[0];
+            return ((Number) o).intValue();
         }
-
-        return ((Number) o).doubleValue();
     }
 
     /**
      * Returns the string values of the given parameter.
      *
      * @param name The name of the parameter.
+     * @param defaultValue
      * @return The double value of this parameter.
      */
-    public String getString(String name) {
+    public String getString(String name, String defaultValue) {
         if (overriddenParameters.containsKey(name)) {
             Object o = overriddenParameters.get(name);
             return (String) o;
@@ -144,27 +175,56 @@ public class Parameters {
             throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
         }
         usedParameters.add(name);
-        Object o = parameters.get(name)[0];
-        return (String) o;
+        Object[] objects = parameters.get(name);
+
+        if (objects == null) {
+            return defaultValue;
+        } else {
+            Object o = objects[0];
+            return (String) o;
+        }
     }
 
     /**
      * Returns the object for the given parameter.
      *
      * @param name The name of the parameter.
+     * @param defaultValue
      * @return the object value.
      */
-    public Object get(String name) {
+    public Object get(String name, Object defaultValue) {
         if (overriddenParameters.containsKey(name)) {
-            Object o = overriddenParameters.get(name);
-            return (String) o;
+            return overriddenParameters.get(name);
         }
 
-        if (getNumValues(name) != 1) {
-            throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
+        Object[] objects = parameters.get(name);
+
+        if (objects == null) {
+            return defaultValue;
+        } else {
+            return objects[0];
         }
-        usedParameters.add(name);
-        return parameters.get(name)[0];
+    }
+
+    /**
+     * Returns the values set for the given parameter. Usually of length 1.
+     *
+     * @param name The name of the parameter.
+     * @param defaultValue
+     * @return The array of values.
+     */
+    public Object[] getValues(String name, Object[] defaultValue) {
+        if (overriddenParameters.containsKey(name)) {
+            return (Object[]) overriddenParameters.get(name);
+        }
+
+        Object[] objects = parameters.get(name);
+
+        if (objects == null) {
+            return defaultValue;
+        } else {
+            return objects;
+        }
     }
 
     /**
@@ -199,16 +259,6 @@ public class Parameters {
             throw new IllegalArgumentException("Expecting a value for parameter '" + parameter + "'");
         }
         return objects.length;
-    }
-
-    /**
-     * Returns the values set for the given parameter. Usually of length 1.
-     *
-     * @param parameter The name of the parameter.
-     * @return The array of values.
-     */
-    public Object[] getValues(String parameter) {
-        return parameters.get(parameter);
     }
 
     /**

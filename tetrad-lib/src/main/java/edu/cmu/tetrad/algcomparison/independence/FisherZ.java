@@ -18,7 +18,7 @@ public class FisherZ implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        return new IndTestFisherZ(dataSet, parameters.getDouble("alpha"));
+        return new IndTestFisherZ(dataSet, parameters.getDouble("alpha", 0.001));
     }
 
     @Override

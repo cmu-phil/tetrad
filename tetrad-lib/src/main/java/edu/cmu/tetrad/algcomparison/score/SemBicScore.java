@@ -20,7 +20,7 @@ public class SemBicScore implements ScoreWrapper {
     public Score getScore(DataSet dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.SemBicScore semBicScore
                 = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount", 4));
         return semBicScore;
     }
 

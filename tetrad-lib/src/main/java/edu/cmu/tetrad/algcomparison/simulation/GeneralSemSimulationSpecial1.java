@@ -36,7 +36,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
         this.dataSets = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
+        for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             this.dataSets.add(dataSet);
@@ -46,7 +46,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         GeneralizedSemPm pm = getPm(graph);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
-        return im.simulateData(parameters.getInt("sampleSize"), false);
+        return im.simulateData(parameters.getInt("sampleSize", 1000), false);
     }
 
     @Override

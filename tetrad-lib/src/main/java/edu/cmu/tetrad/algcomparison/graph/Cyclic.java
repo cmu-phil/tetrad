@@ -16,8 +16,8 @@ public class Cyclic implements RandomGraph {
 
     @Override
     public Graph createGraph(Parameters parameters) {
-        return GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
-                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2);
+        return GraphUtils.cyclicGraph2(parameters.getInt("numMeasures", 10),
+                parameters.getInt("avgDegree", 2) * parameters.getInt("numMeasures", 10) / 2);
 
     }
 

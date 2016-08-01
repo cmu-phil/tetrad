@@ -18,7 +18,7 @@ public class ConditionalCorrelation implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        return new IndTestConditionalCorrelation(dataSet, parameters.getDouble("alpha"));
+        return new IndTestConditionalCorrelation(dataSet, parameters.getDouble("alpha", .001));
     }
 
     @Override
