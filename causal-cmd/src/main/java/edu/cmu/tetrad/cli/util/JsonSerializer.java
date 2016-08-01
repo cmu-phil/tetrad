@@ -63,6 +63,7 @@ public class JsonSerializer {
         jsonGraph.edgeSets.add(new JsonEdgeSet());
         List<Edge> edges = new ArrayList<>(edgesSet);
         Edges.sortEdges(edges);
+        jsonGraph.edgeSets.get(0).name = graphId;
         for (Edge edge : edges) {
             JsonEdge jsonEdge = new JsonEdge();
             jsonEdge.source = nodeIndexMap.get(edge.getNode1());
