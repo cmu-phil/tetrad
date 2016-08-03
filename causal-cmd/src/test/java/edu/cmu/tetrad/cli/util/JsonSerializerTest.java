@@ -26,7 +26,7 @@ public class JsonSerializerTest {
 
     @AfterClass
     public static void tearDownClass() {
-        // tmpDir.delete();
+        tmpDir.delete();
     }
 
     @Test
