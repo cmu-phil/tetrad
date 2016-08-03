@@ -14,6 +14,7 @@ import edu.cmu.tetrad.search.SemBicScoreImages;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Wraps the tsIMaGES algorithm for continuous variables.
@@ -64,7 +65,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm {
     }
 
     @Override
-    public List<String> getParameters() {
+    public Map<String, Object> getParameters() {
         return new Fgs(new SemBicScore()).getParameters();
     }
 }

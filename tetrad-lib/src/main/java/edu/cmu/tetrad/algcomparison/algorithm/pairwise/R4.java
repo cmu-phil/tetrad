@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.Lofs2;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * R4.
@@ -57,7 +58,7 @@ public class R4 implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public List<String> getParameters() {
+    public Map<String, Object> getParameters() {
         return initialGraph.getParameters();
     }
 }

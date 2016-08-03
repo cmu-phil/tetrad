@@ -9,7 +9,9 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.pitt.csb.mgm.MGM;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jdramsey
@@ -38,11 +40,11 @@ public class Mgm implements Algorithm {
     }
 
     @Override
-    public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("mgmParam1");
-        parameters.add("mgmParam2");
-        parameters.add("mgmParam3");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        parameters.put("mgmParam1", 0.01);
+        parameters.put("mgmParam2", 0.01);
+        parameters.put("mgmParam3", 0.01);
         return parameters;
     }
 }

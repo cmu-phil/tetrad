@@ -19,75 +19,21 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.app;
+package edu.cmu.tetrad.algcomparison.myexamples;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
-import edu.cmu.tetradapp.editor.ParameterEditor;
-
-import javax.swing.*;
+import edu.cmu.tetrad.algcomparison.Comparison;
 
 /**
- * Represents the configuration details for a particular model
+ * An example script to save out data files and graphs from a simulation.
  *
- * @author Tyler Gibson
+ * @author jdramsey
  */
-public interface SessionNodeModelConfig {
-
-    /**
-     * @return the identifier to use for help.
-     */
-    String getHelpIdentifier();
-
-
-    /**
-     * @return the category that this model config belongs to or null if there isn't one.
-     * This allows you to organize models into various groupings.
-     */
-    String getCategory();
-
-
-    /**
-     * @return the <code>Class</code> that represents the model.
-     */
-    Class getModel();
-
-
-    /**
-     * @return a descriptive name for the model.
-     */
-    String getName();
-
-
-    /**
-     * @return the acronym for the model.
-     */
-    String getAcronym();
-
-
-
-    /**
-     * @return an instance of the editor to use for the model.
-     *
-     * @throws IllegalArgumentException - Throws an exception of the arguments aren't of the right sort.
-     */
-    JPanel getEditorInstance(Object[] arguments);
-
-
-//    /**
-//     * @return a newly created instance of the parameters for this model.
-//     */
-//    Parameters getParametersInstance();
-
-
-    /**
-     * @return a newly created instance of the parameter editor for the params
-     * returned by <code>getParametersInstance()</code> or null if there is no such
-     * editor.
-     */
-    ParameterEditor getParameterEditorInstance();
-
-
+public class RunConfig {
+    public static void main(String... args) {
+        new Comparison().configuration("comparison/Config.txt");
+    }
 }
+
 
 
 

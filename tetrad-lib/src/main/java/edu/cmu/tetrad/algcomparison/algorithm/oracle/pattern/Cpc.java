@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * CPC.
@@ -63,7 +64,7 @@ public class Cpc implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public List<String> getParameters() {
+    public Map<String, Object> getParameters() {
         return test.getParameters();
     }
 }

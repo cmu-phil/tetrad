@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * FCI.
@@ -63,7 +64,7 @@ public class Fci implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public List<String> getParameters() {
+    public Map<String, Object> getParameters() {
         return test.getParameters();
     }
 }

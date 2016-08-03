@@ -2,15 +2,17 @@ package edu.cmu.tetrad.algcomparison.graph;
 
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * An interface to represent a random graph of some sort.
  *
  * @author jdramsey
  */
-public interface RandomGraph {
+public interface RandomGraph extends TetradSerializable {
 
     /**
      * @param parameters Whatever parameters are need for the given graph. See
@@ -32,5 +34,5 @@ public interface RandomGraph {
      *
      * @return A list of String names of parameters.
      */
-    List<String> getParameters();
+    Map<String, Object> getParameters();
 }

@@ -8,7 +8,9 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Experimental;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Wrapper for Fisher Z test.
@@ -34,8 +36,9 @@ public class ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
     }
 
     @Override
-    public List<String> getParameters() {
-        return Collections.singletonList("penaltyDiscount");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        parameters.put("penaltyDiscount", 4);
+        return parameters;
     }
-
 }

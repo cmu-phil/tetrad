@@ -12,6 +12,7 @@ import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.search.GFci;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * tsGFCI.
@@ -47,7 +48,7 @@ public class TsGfci implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public List<String> getParameters() {
+    public Map<String, Object> getParameters() {
         return score.getParameters();
     }
 

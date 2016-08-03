@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetrad.util.DefaultTetradLoggerConfig;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradLoggerConfig;
 import edu.cmu.tetradapp.editor.ParameterEditor;
@@ -33,13 +32,9 @@ import nu.xom.Element;
 import nu.xom.Elements;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.*;
-import java.util.List;
 import java.util.prefs.Preferences;
 
 /**
@@ -571,20 +566,20 @@ public class TetradApplicationConfig {
             }
         }
 
-        public Parameters getParametersInstance() {
-            if (this.params != null) {
-                try {
-                    return (Parameters) this.params.newInstance();
-                }
-                catch (ClassCastException e) {
-                    throw new IllegalStateException("Model params doesn't implement Parameters", e);
-                }
-                catch (Exception e) {
-                    throw new IllegalStateException("Error instantiating params, must be empty constructor", e);
-                }
-            }
-            return null;
-        }
+//        public Parameters getParametersInstance() {
+//            if (this.params != null) {
+//                try {
+//                    return (Parameters) this.params.newInstance();
+//                }
+//                catch (ClassCastException e) {
+//                    throw new IllegalStateException("Model params doesn't implement Parameters", e);
+//                }
+//                catch (Exception e) {
+//                    throw new IllegalStateException("Error instantiating params, must be empty constructor", e);
+//                }
+//            }
+//            return null;
+//        }
 
         public ParameterEditor getParameterEditorInstance() {
             if (this.paramsEditor != null) {

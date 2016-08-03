@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.utils;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.*;
+import java.util.function.BooleanSupplier;
 
 /**
  * Stores a list of named parameters with their values. Stores default values for known
@@ -19,9 +20,51 @@ public class Parameters implements TetradSerializable {
     private Map<String, Object> overriddenParameters = new HashMap<>();
 
     public Parameters() {
+        // Defaults
+//        set("numMeasures", 10);
+//        set("numLatents", 0);
+//        set("avgDegree", 2);
+//        set("maxDegree", 100);
+//        set("maxIndegree", 100);
+//        set("maxOutdegree", 100);
+//        set("connected", false);
+//        set("sampleSize", 1000);
+//        set("numRuns", 1);
+//        set("alpha", 0.001);
+//        set("penaltyDiscount", 4);
+//        set("fgsDepth", -1);
+//        set("depth", -1);
+//        set("coefLow", 0.5);
+//        set("coefHigh", 1.5);
+//        set("variance", -1);
+//        set("varianceLow", 1.0);
+//        set("varianceHigh", 3.0);
+//        set("printWinners", 0);
+//        set("printAverages", 0);
+//        set("printAverageTables", 1);
+//        set("printGraph", 0);
+//        set("percentDiscrete", 50);
+//        set("ofInterestCutoff", 0.05);
+//        set("printGraphs", 0);
+//        set("numCategories", 4);
+//        set("samplePrior", 1);
+//        set("structurePrior", 1);
+//        set("mgmParam1", 0.1);
+//        set("mgmParam2", 0.1);
+//        set("mgmParam3", 0.1);
+//        set("scaleFreeAlpha", 0.9);
+//        set("scaleFreeBeta", 0.05);
+//        set("scaleFreeDeltaIn", 3);
+//        set("scaleFreeDeltaOut", 3);
+//        set("generalSemFunctionTemplateMeasured", "TSUM(NEW(B)*$)");
+//        set("generalSemFunctionTemplateLatent", "TSUM(NEW(B)*$)");
+//        set("generalSemErrorTemplate", "Beta(2, 5)");
+//        set("varLow", 1);
+//        set("varHigh", 3);
     }
 
     public Parameters(Parameters parameters) {
+        if (parameters == null) throw new NullPointerException();
         this.parameters = new LinkedHashMap<>(parameters.parameters);
         this.usedParameters = new LinkedHashSet<>(parameters.usedParameters);
         this.overriddenParameters = new HashMap<>(parameters.overriddenParameters);
@@ -51,112 +94,44 @@ public class Parameters implements TetradSerializable {
      * Returns the integer values of the given parameter.
      *
      * @param name         The name of the parameter.
-     * @param defaultValue
+     * @param defaultValue The value of the parameter, if it has not already been set.
      * @return The integer value of this parameter.
      */
     public int getInt(String name, int defaultValue) {
-        if (overriddenParameters.containsKey(name)) {
-            Object o = overriddenParameters.get(name);
-            return ((Number) o).intValue();
-        }
-
-        usedParameters.add(name);
-        Object[] objects = parameters.get(name);
-
-        if (objects == null) {
-            return defaultValue;
-        } else {
-            if (getNumValues(name) != 1) {
-                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
-            }
-
-            Object o = objects[0];
-            return ((Number) o).intValue();
-        }
+        return (Integer) get(name, defaultValue);
     }
 
     public boolean getBoolean(String name, boolean defaultValue) {
-        if (overriddenParameters.containsKey(name)) {
-            Object o = overriddenParameters.get(name);
-            return (Boolean) o;
-        }
-
-        usedParameters.add(name);
-        Object[] objects = parameters.get(name);
-
-        if (objects == null) {
-            return defaultValue;
-        } else {
-            if (getNumValues(name) != 1) {
-                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
-            }
-
-            Object o = objects[0];
-            return (Boolean) o;
-        }
+        return (Boolean) get(name, defaultValue);
     }
 
     /**
      * Returns the double values of the given parameter.
      *
      * @param name         The name of the parameter.
-     * @param defaultValue
+     * @param defaultValue The value of the parameter, if it has not already been set.
      * @return The double value of this parameter.
      */
     public double getDouble(String name, double defaultValue) {
-        if (overriddenParameters.containsKey(name)) {
-            Object o = overriddenParameters.get(name);
-            return ((Number) o).doubleValue();
-        }
-
-        usedParameters.add(name);
-        Object[] objects = parameters.get(name);
-
-        if (objects == null) {
-            return defaultValue;
-        } else {
-            if (getNumValues(name) != 1) {
-                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
-            }
-
-            Object o = objects[0];
-            return ((Number) o).intValue();
-        }
+        return (Double) get(name, defaultValue);
     }
 
     /**
      * Returns the string values of the given parameter.
      *
      * @param name         The name of the parameter.
-     * @param defaultValue
+     * @param defaultValue The value of the parameter, if it has not already been set.
      * @return The double value of this parameter.
      */
     public String getString(String name, String defaultValue) {
-        if (overriddenParameters.containsKey(name)) {
-            Object o = overriddenParameters.get(name);
-            return (String) o;
-        }
-
-        usedParameters.add(name);
-        Object[] objects = parameters.get(name);
-
-        if (objects == null) {
-            return defaultValue;
-        } else {
-            if (getNumValues(name) != 1) {
-                throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
-            }
-
-            Object o = objects[0];
-            return (String) o;
-        }
+        return (String) get(name, defaultValue);
     }
 
     /**
      * Returns the object for the given parameter.
      *
      * @param name         The name of the parameter.
-     * @param defaultValue
+     * @param defaultValue The value of the parameter, if it has not already been set.
      * @return the object value.
      */
     public Object get(String name, Object defaultValue) {
@@ -168,6 +143,7 @@ public class Parameters implements TetradSerializable {
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
+            set(name, defaultValue);
             return defaultValue;
         } else {
             if (getNumValues(name) != 1) {
@@ -182,7 +158,7 @@ public class Parameters implements TetradSerializable {
      * Returns the values set for the given parameter. Usually of length 1.
      *
      * @param name         The name of the parameter.
-     * @param defaultValue
+     * @param defaultValue The value of the parameter, if it has not already been set.
      * @return The array of values.
      */
     public Object[] getValues(String name, Object[] defaultValue) {

@@ -32,8 +32,6 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        this.randomGraph = randomGraph;
-
         this.dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
@@ -74,10 +72,10 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     }
 
     @Override
-    public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
-        parameters.add("numRuns");
-        parameters.add("sampleSize");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = randomGraph.getParameters();
+        parameters.put("numRuns", 1);
+        parameters.put("sampleSize", 1000);
         return parameters;
     }
 

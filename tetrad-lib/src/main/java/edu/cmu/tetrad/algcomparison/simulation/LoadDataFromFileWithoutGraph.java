@@ -10,10 +10,7 @@ import edu.cmu.tetrad.graph.Graph;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jdramsey
@@ -58,8 +55,8 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     }
 
     @Override
-    public List<String> getParameters() {
-        return new ArrayList<>();
+    public Map<String, Object> getParameters() {
+        return new LinkedHashMap<>();
     }
 
     @Override

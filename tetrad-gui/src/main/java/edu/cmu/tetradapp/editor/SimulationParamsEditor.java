@@ -19,20 +19,63 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.myexamples.examples;
+package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetradapp.model.Simulation;
+
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * An example script to save out data files and graphs from a simulation.
+ * Edits the parameters for generating random graphs.
  *
- * @author jdramsey
+ * @author Joseph Ramsey
  */
-public class RunConfig {
-    public static void main(String... args) {
-        new Comparison().configuration("comparison/Config.txt");
+public class SimulationParamsEditor extends JPanel implements ParameterEditor {
+    private Parameters params = new Parameters();
+    private Object[] parentModels = new Object[0];
+
+    /**
+     * Constructs a dialog to edit the given workbench randomization
+     * parameters.
+     */
+    public SimulationParamsEditor() {
+    }
+
+    public void setParams(Parameters params) {
+        if (params == null) {
+            throw new NullPointerException();
+        }
+
+        this.params = params;
+    }
+
+    public void setParentModels(Object[] parentModels) {
+        this.parentModels = parentModels;
+    }
+
+    public void setup() {
+
+
+
+//        ParameterPanel parameterPanel = new ParameterPanel(params, );
+    }
+
+    public boolean mustBeShown() {
+        return false;
+    }
+
+    /**
+     * @return the getMappings object being edited. (This probably should not be
+     * public, but it is needed so that the textfields can edit the model.)
+     */
+    private synchronized Parameters getParams() {
+        return this.params;
     }
 }
+
 
 
 

@@ -6,7 +6,9 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.Score;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Wrapper for Fisher Z test.
@@ -35,11 +37,10 @@ public class BdeuScore implements ScoreWrapper {
     }
 
     @Override
-    public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("samplePrior");
-        parameters.add("structurePrior");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        parameters.put("samplePrior", 1);
+        parameters.put("structurePrior", 1);
         return parameters;
     }
-
 }

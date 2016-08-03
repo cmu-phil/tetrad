@@ -171,6 +171,7 @@ public class SessionNode implements TetradSerializable {
      */
     private transient SessionHandler sessionHandler;
     private TetradLoggerConfig loggerConfig = null;
+    private Parameters parameters = new Parameters();
 
     //==========================CONSTRUCTORS===========================//
 
@@ -577,7 +578,7 @@ public class SessionNode implements TetradSerializable {
 
         if (this.model == null) {
             TetradLogger.getInstance().log("info", getDisplayName() + " was not created.");
-                throw new CouldNotCreateModelException(modelClass);
+            throw new CouldNotCreateModelException(modelClass);
         }
 
         // If we're running a simulation, try executing the model.
@@ -1528,6 +1529,10 @@ public class SessionNode implements TetradSerializable {
         if (getModel() != null) {
             getModel().setName(displayName);
         }
+    }
+
+    public Parameters getParameters() {
+        return parameters;
     }
 
     /**

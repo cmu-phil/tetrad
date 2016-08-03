@@ -10,10 +10,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.pitt.csb.mgm.MixedUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * A version of the Lee & Hastic simulation which is guaranteed ot generate a discrete
@@ -74,12 +71,12 @@ public class LeeHastieSimulation implements Simulation {
     }
 
     @Override
-    public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
-        parameters.add("numRuns");
-        parameters.add("sampleSize");
-        parameters.add("numCategories");
-        parameters.add("percentDiscrete");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = randomGraph.getParameters();
+        parameters.put("numRuns", 1);
+        parameters.put("sampleSize", 1000);
+        parameters.put("numCategories", 2);
+        parameters.put("percentDiscrete", 50);
         return parameters;
     }
 

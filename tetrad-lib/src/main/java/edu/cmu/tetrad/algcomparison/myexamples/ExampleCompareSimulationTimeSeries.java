@@ -19,36 +19,32 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.myexamples.examples;
+package edu.cmu.tetrad.algcomparison.myexamples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpcs;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pcs;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsFci;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 
 /**
- * An example script to load in data sets and graphs from files and analyze them. The
- * files loaded must be in the same format as
- * </p>
- * new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
- * </p>
- * saves them. For other formats, specialty data loaders can be written to implement the
- * Simulation interface.
+ * An example script to simulate time series data and run a comparison analysis on it.
  *
- * @author jdramsey
+ * @authors jdramsey, dmalinsky
  */
-public class ExampleCompareFromFiles {
+public class ExampleCompareSimulationTimeSeries {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        // Can leave the simulation parameters out since
-        // we're loading from file here.
-        parameters.set("alpha", 1e-4);
+        parameters.set("numRuns", 10);
+        parameters.set("numMeasures", 10);
+        parameters.set("avgDegree", 2);
+        parameters.set("sampleSize", 500);
+        parameters.set("penaltyDiscount", 4);
+        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
 
         Statistics statistics = new Statistics();
 
@@ -65,22 +61,21 @@ public class ExampleCompareFromFiles {
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
-        statistics.setWeight("AHP", 1.0);
-        statistics.setWeight("AHR", 0.5);
 
         statistics.setSortByUtility(true);
         statistics.setShowUtilities(true);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ()));
-        algorithms.add(new Pcs(new FisherZ()));
-        algorithms.add(new Cpcs(new FisherZ()));
+        algorithms.add(new TsFci(new FisherZ()));
+//        algorithms.add(new TsGfci(new SemBicScore()));
 
-        new Comparison().compareAlgorithms("comparison/save1",
-                "comparison/Comparison.txt",
-                algorithms, statistics, parameters);
+        Simulations simulations = new Simulations();
+
+        simulations.add(new TimeSeriesSemSimulation());
+
+        new Comparison().compareAlgorithms("comparison/Comparison2.txt",
+                simulations, algorithms, statistics, parameters);
     }
 }
 

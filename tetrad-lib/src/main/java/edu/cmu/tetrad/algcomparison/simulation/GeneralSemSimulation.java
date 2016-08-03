@@ -1,48 +1,74 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.bayes.BayesIm;
+import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.sem.GeneralizedSemIm;
-import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.sem.TemplateExpander;
+import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jdramsey
  */
 public class GeneralSemSimulation implements Simulation {
-    private final RandomGraph randomGraph;
-    private Graph graph;
+    private RandomGraph randomGraph;
     private List<DataSet> dataSets;
+    private Graph graph;
+    private GeneralizedSemPm pm;
+    private GeneralizedSemIm im;
 
-    public GeneralSemSimulation(RandomGraph randomGraph) {
-        this.randomGraph = randomGraph;
+    public GeneralSemSimulation(RandomGraph graph) {
+        this.randomGraph = graph;
+    }
+
+    public GeneralSemSimulation(GeneralizedSemPm pm) {
+        this.randomGraph = new SingleGraph(pm.getGraph());
+        this.pm = pm;
+    }
+
+    public GeneralSemSimulation(GeneralizedSemIm im) {
+        this.randomGraph = new SingleGraph(im.getSemPm().getGraph());
+        this.im = im;
     }
 
     @Override
     public void createData(Parameters parameters) {
         this.graph = randomGraph.createGraph(parameters);
 
-        this.dataSets = new ArrayList<>();
+        dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
-            this.dataSets.add(dataSet);
+            dataSets.add(dataSet);
         }
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
-        GeneralizedSemPm pm = getPm(graph, parameters);
-        GeneralizedSemIm im = new GeneralizedSemIm(pm);
+        GeneralizedSemIm im = this.im;
+
+        if (im == null) {
+            GeneralizedSemPm pm = this.pm;
+
+            if (pm == null) {
+                pm = new GeneralizedSemPm(graph);
+            }
+
+            im = new GeneralizedSemIm(pm);
+        }
+
         return im.simulateData(parameters.getInt("sampleSize", 1000), false);
     }
 
@@ -71,13 +97,13 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     @Override
-    public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
-        parameters.add("numRuns");
-        parameters.add("sampleSize");
-        parameters.add("generalSemFunctionTemplateMeasured");
-        parameters.add("generalSemFunctionTemplateLatent");
-        parameters.add("generalSemErrorTemplate");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = randomGraph.getParameters();
+        parameters.put("numRuns", 1);
+        parameters.put("sampleSize", 1000);
+        parameters.put("generalSemFunctionTemplateMeasured", "TSUM(NEW(B)*$)");
+        parameters.put("generalSemFunctionTemplateLatent", "TSUM(NEW(B)*$)");
+        parameters.put("generalSemErrorTemplate", "Beta(2, 5)");
         return parameters;
     }
 

@@ -19,31 +19,66 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.myexamples.examples;
+package edu.cmu.tetrad.algcomparison.myexamples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.statistic.*;
 
 /**
- * An example script to save out data files and graphs from a simulation.
+ * An example script to simulate data and run a comparison analysis on it.
  *
  * @author jdramsey
  */
-public class ExampleSave {
+public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 4);
-        parameters.set("sampleSize", 100, 500, 1000);
+        parameters.set("sampleSize", 500);
+        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
 
-        Simulation simulation = new SemSimulation(new RandomForward());
-        new Comparison().saveDataSetAndGraphs("comparison/save1", simulation,
-                parameters);
+        Statistics statistics = new Statistics();
+
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new MathewsCorrAdj());
+        statistics.add(new MathewsCorrArrow());
+        statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
+        statistics.add(new SHD());
+        statistics.add(new ElapsedTime());
+
+        statistics.setWeight("AP", 1.0);
+        statistics.setWeight("AR", 0.5);
+
+        statistics.setSortByUtility(true);
+        statistics.setShowUtilities(true);
+
+        Algorithms algorithms = new Algorithms();
+
+        algorithms.add(new Pc(new FisherZ()));
+        algorithms.add(new Cpc(new FisherZ(), new Fgs(new SemBicScore())));
+        algorithms.add(new Pcs(new FisherZ()));
+        algorithms.add(new Cpcs(new FisherZ()));
+
+        Simulations simulations = new Simulations();
+
+        simulations.add(new SemSimulation(new RandomForward()));
+
+        new Comparison().compareAlgorithms("comparison/Comparison.txt",
+                simulations, algorithms, statistics, parameters);
     }
 }
 

@@ -8,9 +8,7 @@ import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SemBicScoreImages;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Wrapper for Fisher Z test.
@@ -37,8 +35,9 @@ public class SemBicTest implements IndependenceWrapper {
     }
 
     @Override
-    public List<String> getParameters() {
-        return Collections.singletonList("alpha");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("alpha", 0.001);
+        return params;
     }
-
 }

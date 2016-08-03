@@ -105,9 +105,8 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
         log(this.dirichletBayesIm);
     }
 
-    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-            BayesDataWrapper dataWrapper) {
-        this(bayesPmWrapper, (DataWrapper) dataWrapper);
+    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper, Simulation simulation) {
+        this(bayesPmWrapper, (DataWrapper) simulation);
     }
 
     public DirichletBayesImWrapper(DirichletEstimatorWrapper wrapper) {

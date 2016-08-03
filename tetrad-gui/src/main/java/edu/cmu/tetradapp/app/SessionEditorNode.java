@@ -1123,9 +1123,9 @@ public final class SessionEditorNode extends DisplayNode {
             Object parent2 = (i.next()).getModel();
 
             if ((parent1 instanceof SemPmWrapper &&
-                    parent2 instanceof BayesDataWrapper) || (
+                    parent2 instanceof Simulation) || (
                     parent2 instanceof SemPmWrapper &&
-                            parent1 instanceof BayesDataWrapper) || (
+                            parent1 instanceof Simulation) || (
                     parent2 instanceof SemPmWrapper &&
                             parent1 instanceof DirichletBayesDataWrapper)) {
                 return "Sem PM incompatible with discrete data.";
@@ -1310,10 +1310,8 @@ public final class SessionEditorNode extends DisplayNode {
                     continue;
 //                    throw new NullPointerException("No configuration found for model: " + clazz);
                 }
-                Parameters param = modelConfig.getParametersInstance();
-                if (param != null) {
-                    sessionNode.putParam(clazz, param);
-                }
+
+                sessionNode.putParam(clazz, new Parameters(sessionNode.getParameters()));
             }
         }
     }
@@ -1340,7 +1338,6 @@ public final class SessionEditorNode extends DisplayNode {
 
     /**
      * @return the model classes associated with the given button type.
-     *
      * @throws NullPointerException if no classes are stored for the given
      *                              type.
      */

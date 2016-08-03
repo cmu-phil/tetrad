@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.CpcStable;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * PC.
@@ -45,7 +46,7 @@ public class Cpcs implements Algorithm {
     }
 
     @Override
-    public List<String> getParameters() {
+    public Map<String, Object> getParameters() {
         return test.getParameters();
     }
 }

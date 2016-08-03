@@ -12,7 +12,9 @@ import edu.cmu.tetrad.sem.LargeSemSimulator;
 import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jdramsey
@@ -109,17 +111,17 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("numMeasures");
-        parameters.add("numLatents");
-        parameters.add("avgDegree");
-        parameters.add("maxDegree");
-        parameters.add("maxIndegree");
-        parameters.add("maxOutdegree");
-        parameters.add("numRuns");
-        parameters.add("sampleSize");
-        parameters.add("variance");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        parameters.put("numMeasures", 10);
+        parameters.put("numLatents", 0);
+        parameters.put("avgDegree", 2);
+        parameters.put("maxDegree", 100);
+        parameters.put("maxIndegree", 100);
+        parameters.put("maxOutdegree", 100);
+        parameters.put("numRuns", 1);
+        parameters.put("sampleSize", 1000);
+        parameters.put("variance", 1.0);
         return parameters;
     }
 

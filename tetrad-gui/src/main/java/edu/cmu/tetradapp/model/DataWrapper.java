@@ -179,7 +179,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel());
     }
 
-    public DataWrapper(RegressionRunner regression, SemDataWrapper wrapper) {
+    public DataWrapper(RegressionRunner regression, Simulation wrapper) {
         this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel());
     }
 

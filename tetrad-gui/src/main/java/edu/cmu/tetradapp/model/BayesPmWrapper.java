@@ -143,10 +143,10 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
         int lowerBound, upperBound;
 
-        if (params.getString("initializationMode", "manualRetain").equals("manual")) {
+        if (params.getString("initializationMode", "manual").equals("manual")) {
             lowerBound = upperBound = 2;
         }
-        else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
+        else if (params.getString("initializationMode", "manual").equals("automatic")) {
             lowerBound = params.getInt("lowerBoundNumVals", 2);
             upperBound = params.getInt("upperBoundNumVals", 2);
         }
@@ -245,19 +245,9 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
     }
 
     public BayesPmWrapper(GraphWrapper graphWrapper,
-            BayesDataWrapper dataWrapper) {
-        this(graphWrapper, (DataWrapper) dataWrapper);
+            Simulation simulation) {
+        this(graphWrapper, (DataWrapper) simulation);
     }
-
-    public BayesPmWrapper(GraphWrapper graphWrapper,
-            SemDataWrapper dataWrapper) {
-        this(graphWrapper, (DataWrapper) dataWrapper);
-    }
-
-//    public BayesPmWrapper(GraphWrapper graphWrapper,
-//            GeneSimDataWrapper dataWrapper) {
-//        this(graphWrapper, (DataWrapper) dataWrapper);
-//    }
 
     public BayesPmWrapper(AlgorithmRunner wrapper, Parameters params) {
         this(new Dag(wrapper.getResultGraph()), params);
@@ -267,23 +257,12 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
         this(new Dag(wrapper.getResultGraph()), dataWrapper);
     }
 
-    public BayesPmWrapper(AlgorithmRunner wrapper,
-            BayesDataWrapper dataWrapper) {
-        this(new Dag(wrapper.getResultGraph()), dataWrapper);
+    public BayesPmWrapper(AlgorithmRunner wrapper, Simulation simulation) {
+        this(new Dag(wrapper.getResultGraph()), simulation);
     }
 
-    public BayesPmWrapper(AlgorithmRunner wrapper, SemDataWrapper dataWrapper) {
-        this(new Dag(wrapper.getResultGraph()), dataWrapper);
-    }
-
-//    public BayesPmWrapper(AlgorithmRunner wrapper,
-//            GeneSimDataWrapper dataWrapper) {
-//        this(new Dag(wrapper.getResultGraph()), dataWrapper);
-//    }
-
-    public BayesPmWrapper(BayesEstimatorWrapper wrapper,
-                          BayesDataWrapper dataWrapper) {
-        this(new Dag(wrapper.getGraph()), dataWrapper);
+    public BayesPmWrapper(BayesEstimatorWrapper wrapper, Simulation simulation) {
+        this(new Dag(wrapper.getGraph()), simulation);
     }
 
     public BayesPmWrapper(BayesEstimatorWrapper wrapper,
@@ -402,18 +381,9 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
         log(bayesPm);                
     }
 
-    public BayesPmWrapper(DagWrapper dagWrapper, BayesDataWrapper dataWrapper) {
+    public BayesPmWrapper(DagWrapper dagWrapper, Simulation dataWrapper) {
         this(dagWrapper, (DataWrapper) dataWrapper);
     }
-
-    public BayesPmWrapper(DagWrapper dagWrapper, SemDataWrapper dataWrapper) {
-        this(dagWrapper, (DataWrapper) dataWrapper);
-    }
-
-//    public BayesPmWrapper(DagWrapper dagWrapper,
-//            GeneSimDataWrapper dataWrapper) {
-//        this(dagWrapper, (DataWrapper) dataWrapper);
-//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.

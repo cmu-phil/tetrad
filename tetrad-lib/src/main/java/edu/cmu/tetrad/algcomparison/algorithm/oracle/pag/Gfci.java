@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * GFCI.
@@ -43,7 +44,7 @@ public class Gfci implements Algorithm {
     }
 
     @Override
-    public List<String> getParameters() {
+    public Map<String, Object> getParameters() {
         return score.getParameters();
     }
 }

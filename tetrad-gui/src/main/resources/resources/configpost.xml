@@ -412,7 +412,7 @@
                     <event id="info" description="Information" default="on"/>
                     <event id="data" description="Data"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.BayesDataWrapper
+                <model-class>edu.cmu.tetradapp.model.Simulation
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-class>edu.cmu.tetradapp.model.BayesDataParams
@@ -436,20 +436,20 @@
                     edu.cmu.tetradapp.editor.BayesDataParamsEditor
                 </params-editor-class>
             </model>
-            <model name="SEM IM Simulated Data" acronym="SEM Data" help="data">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.SemDataWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-                <params-class>edu.cmu.tetradapp.model.SemDataParams
-                </params-class>
-                <params-editor-class>
-                    edu.cmu.tetradapp.editor.SemDataParamsEditor
-                </params-editor-class>
-            </model>
+            <!--<model name="SEM IM Simulated Data" acronym="SEM Data" help="data">-->
+                <!--<logger>-->
+                    <!--<event id="info" description="Information" default="on"/>-->
+                    <!--<event id="data" description="Data"/>-->
+                <!--</logger>-->
+                <!--<model-class>edu.cmu.tetradapp.model.SemDataWrapper-->
+                <!--</model-class>-->
+                <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+                <!--<params-class>edu.cmu.tetradapp.model.SemDataParams-->
+                <!--</params-class>-->
+                <!--<params-editor-class>-->
+                    <!--edu.cmu.tetradapp.editor.SemDataParamsEditor-->
+                <!--</params-editor-class>-->
+            <!--</model>-->
             <model name="Implied Covariance Matrix--Measured" acronym="Implied Covar Meas" help="data">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -477,20 +477,6 @@
                 <!--<params-editor-class>-->
                 <!--edu.cmu.tetradapp.editor.SemDataParamsEditor-->
                 <!--</params-editor-class>-->
-            </model>
-            <model name="Generalized SEM IM Simulated Data" acronym="Gen. SEM Data" help="data">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.GeneralizedSemDataWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-                <params-class>edu.cmu.tetradapp.model.SemDataParams
-                </params-class>
-                <params-editor-class>
-                    edu.cmu.tetradapp.editor.SemDataParamsEditor
-                </params-editor-class>
             </model>
             <!--<model name="SEM2 IM Simulated Data" acronym="SEM2 Data" help="data">-->
             <!--<model-class>edu.cmu.tetradapp.model.Sem2DataWrapper-->

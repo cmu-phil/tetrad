@@ -119,10 +119,6 @@ public class Comparison {
             List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters);
 
             for (SimulationWrapper wrapper : wrappers) {
-                for (String param : wrapper.getParameters()) {
-                    parameters.set(param, wrapper.getValue(param));
-                }
-
                 wrapper.createData(parameters);
                 wrapper.setParameters(parameters);
                 simulationWrappers.add(wrapper);
@@ -136,7 +132,7 @@ public class Comparison {
             List<Integer> _dims = new ArrayList<>();
             List<String> varyingParameters = new ArrayList<>();
 
-            for (String parameter : algorithm.getParameters()) {
+            for (String parameter : algorithm.getParameters().keySet()) {
                 if (parameters.getNumValues(parameter) > 1) {
                     _dims.add(parameters.getNumValues(parameter));
                     varyingParameters.add(parameter);
@@ -245,7 +241,7 @@ public class Comparison {
                     out.println("Simulation " + (++i) + ":");
                     out.println(simulation.getDescription());
 
-                    for (String param : simulation.getParameters()) {
+                    for (String param : simulation.getParameters().keySet()) {
                         out.println(param + " = " + simulation.getValue(param));
                     }
 
@@ -332,7 +328,7 @@ public class Comparison {
             int index = 0;
 
             for (SimulationWrapper simulationWrapper : simulationWrappers) {
-                for (String param : simulationWrapper.getParameters()) {
+                for (String param : simulationWrapper.getParameters().keySet()) {
                     parameters.set(param, simulationWrapper.getValue(param));
                 }
 
@@ -570,7 +566,7 @@ public class Comparison {
     }
 
     private void printParameters(HasParameters hasParameters, PrintStream out, Parameters allParams) {
-        List<String> parameters = hasParameters.getParameters();
+        List<String> parameters = new ArrayList<>(hasParameters.getParameters().keySet());
         if (parameters.isEmpty()) return;
         out.print("\tParameters: ");
 
@@ -615,7 +611,7 @@ public class Comparison {
         List<Integer> _dims = new ArrayList<>();
         List<String> varyingParameters = new ArrayList<>();
 
-        for (String parameter : simulation.getParameters()) {
+        for (String parameter : simulation.getParameters().keySet()) {
             if (parameters.getNumValues(parameter) > 1) {
                 _dims.add(parameters.getNumValues(parameter));
                 varyingParameters.add(parameter);
@@ -969,9 +965,9 @@ public class Comparison {
                         AlgorithmWrapper algorithmWrapper = wrappers.get(i).getAlgorithmWrapper();
                         double stat = Double.NaN;
 
-                        if ((simulationWrapper.getParameters().contains(statName))) {
+                        if ((simulationWrapper.getParameters().containsKey(statName))) {
                             stat = ((Number) simulationWrapper.getValue(statName)).doubleValue();
-                        } else if ((algorithmWrapper.getParameters().contains(statName))) {
+                        } else if ((algorithmWrapper.getParameters().containsKey(statName))) {
                             stat = ((Number) algorithmWrapper.getValue(statName)).doubleValue();
                         }
 
@@ -1244,8 +1240,8 @@ public class Comparison {
         }
 
         @Override
-        public List<String> getParameters() {
-            return new ArrayList<>(parameters.getParameters().keySet());
+        public Map<String, Object> getParameters() {
+            return algorithm.getParameters();
         }
 
         public void setValue(String parameter, Object value) {
@@ -1273,13 +1269,13 @@ public class Comparison {
     private class AlgorithmSimulationWrapper implements Algorithm {
         private SimulationWrapper simulationWrapper;
         private AlgorithmWrapper algorithmWrapper;
-        Set<String> parameters = new LinkedHashSet<>();
+        Map<String, Object> parameters = new LinkedHashMap<>();
 
         public AlgorithmSimulationWrapper(AlgorithmWrapper algorithm, SimulationWrapper simulation) {
             this.algorithmWrapper = algorithm;
             this.simulationWrapper = simulation;
-            parameters.addAll(algorithmWrapper.getParameters());
-            parameters.addAll(simulationWrapper.getParameters());
+            parameters.putAll(algorithmWrapper.getParameters());
+            parameters.putAll(simulationWrapper.getParameters());
         }
 
         @Override
@@ -1303,8 +1299,10 @@ public class Comparison {
         }
 
         @Override
-        public List<String> getParameters() {
-            return new ArrayList<>(parameters);
+        public Map<String, Object> getParameters() {
+            Map<String, Object> params = new LinkedHashMap<>(simulationWrapper.getParameters());
+            params.putAll(algorithmWrapper.getParameters());
+            return params;
         }
 
         public SimulationWrapper getSimulationWrapper() {
@@ -1318,7 +1316,6 @@ public class Comparison {
 
     private class SimulationWrapper implements Simulation {
         private Simulation simulation;
-        private Set<String> overriddenParameters = new LinkedHashSet<>();
         private Graph graph;
         private List<DataSet> dataSets;
         private Parameters parameters;
@@ -1335,10 +1332,6 @@ public class Comparison {
             this.dataSets = new ArrayList<>();
             for (int i = 0; i < simulation.getNumDataSets(); i++) {
                 this.dataSets.add(simulation.getDataSet(i));
-            }
-
-            for (String param : simulation.getParameters()) {
-                this.parameters.set(param, parameters.get(param, null));
             }
         }
 
@@ -1369,7 +1362,7 @@ public class Comparison {
         }
 
         @Override
-        public List<String> getParameters() {
+        public Map<String, Object> getParameters() {
             return simulation.getParameters();
         }
 

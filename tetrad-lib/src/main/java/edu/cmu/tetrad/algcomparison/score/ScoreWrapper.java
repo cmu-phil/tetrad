@@ -5,15 +5,17 @@ import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interface that algorithm must implement.
  *
  * @author jdramsey
  */
-public interface ScoreWrapper extends HasParameters {
+public interface ScoreWrapper extends HasParameters, TetradSerializable {
 
     /**
      * Returns true iff x and y are independent conditional on z for the given data set.
@@ -43,5 +45,5 @@ public interface ScoreWrapper extends HasParameters {
      *
      * @return A list of String names of parameters.
      */
-    List<String> getParameters();
+    Map<String, Object> getParameters();
 }

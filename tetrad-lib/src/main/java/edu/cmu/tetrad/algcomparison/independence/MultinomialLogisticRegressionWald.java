@@ -6,7 +6,9 @@ import edu.cmu.tetrad.data.DataType;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Wrapper for Fisher Z test.
@@ -34,8 +36,9 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
     }
 
     @Override
-    public List<String> getParameters() {
-        return Collections.singletonList("alpha");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("alpha", 0.001);
+        return params;
     }
-
 }

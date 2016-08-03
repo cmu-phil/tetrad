@@ -7,7 +7,9 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * LiNGAM.
@@ -35,7 +37,7 @@ public class Lingam implements Algorithm {
     }
 
     @Override
-    public List<String> getParameters() {
-        return new ArrayList<>();
+    public Map<String, Object> getParameters() {
+        return new LinkedHashMap<>();
     }
 }

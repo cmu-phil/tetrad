@@ -11,10 +11,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jdramsey
@@ -111,8 +108,8 @@ public class LoadContinuousDataAndGraphs implements Simulation {
     }
 
     @Override
-    public List<String> getParameters() {
-        return new ArrayList<>(parameterValues.keySet());
+    public Map<String, Object> getParameters() {
+        return new LinkedHashMap<>(parameterValues);
     }
 
     @Override

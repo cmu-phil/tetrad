@@ -84,9 +84,9 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         log();
     }
 
-    public StructEmBayesSearchRunner(BayesDataWrapper dataWrapper,
+    public StructEmBayesSearchRunner(Simulation simulation,
             BayesPmWrapper bayesPmWrapper) {
-        this((DataWrapper) dataWrapper, bayesPmWrapper);
+        this((DataWrapper) simulation, bayesPmWrapper);
     }
 
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,

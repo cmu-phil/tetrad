@@ -15,7 +15,9 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jdramsey
@@ -68,9 +70,9 @@ public class MixedFgsTreatingDiscreteAsContinuous implements Algorithm {
     }
 
     @Override
-    public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        parameters.put("penaltyDiscount", 4);
         return parameters;
     }
 }

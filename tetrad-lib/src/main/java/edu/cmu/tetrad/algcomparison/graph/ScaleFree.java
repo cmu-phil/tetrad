@@ -4,7 +4,9 @@ import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.GraphUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Returns a scale free graph.
@@ -31,14 +33,14 @@ public class ScaleFree implements RandomGraph {
     }
 
     @Override
-    public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("numMeasures");
-        parameters.add("numLatents");
-        parameters.add("scaleFreeAlpha");
-        parameters.add("scaleFreeBeta");
-        parameters.add("scaleFreeDeltaIn");
-        parameters.add("scaleFreeDeltaOut");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        parameters.put("numMeasures", 10);
+        parameters.put("numLatents", 0);
+        parameters.put("scaleFreeAlpha", 0.05);
+        parameters.put("scaleFreeBeta", 0.95);
+        parameters.put("scaleFreeDeltaIn", 3);
+        parameters.put("scaleFreeDeltaOut", 3);
         return parameters;
     }
 }

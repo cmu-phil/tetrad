@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * PC.
@@ -64,7 +65,7 @@ public class Pc implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public List<String> getParameters() {
+    public Map<String, Object> getParameters() {
         return test.getParameters();
     }
 }

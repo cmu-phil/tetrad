@@ -15,6 +15,7 @@ import edu.cmu.tetrad.search.Fgs2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jdramsey
@@ -83,9 +84,9 @@ public class MixedFgsDiscretingContinuousVariables implements Algorithm {
     }
 
     @Override
-    public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
-        parameters.add("numCategories");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = score.getParameters();
+        parameters.put("numCategories", 2);
         return parameters;
     }
 }

@@ -6,7 +6,9 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.Score;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Wrapper for Fisher Z test.
@@ -34,10 +36,9 @@ public class DiscreteBicScore implements ScoreWrapper {
     }
 
     @Override
-    public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        parameters.put("penaltyDiscount", 4);
         return parameters;
     }
-
 }

@@ -8,7 +8,9 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Experimental;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Wrapper for Fisher Z test.
@@ -33,8 +35,10 @@ public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental
     }
 
     @Override
-    public List<String> getParameters() {
-        return Collections.singletonList("alpha");
+    public Map<String, Object> getParameters() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("alpha", 0.001);
+        return params;
     }
 
 }

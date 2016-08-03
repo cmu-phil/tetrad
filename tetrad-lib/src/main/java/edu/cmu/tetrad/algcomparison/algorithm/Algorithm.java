@@ -5,15 +5,17 @@ import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interface that algorithm must implement.
  *
  * @author jdramsey
  */
-public interface Algorithm extends HasParameters {
+public interface Algorithm extends HasParameters, TetradSerializable {
 
     /**
      * Runs the search.
@@ -52,5 +54,5 @@ public interface Algorithm extends HasParameters {
      *
      * @return A list of String names of parameters.
      */
-    List<String> getParameters();
+    Map<String, Object> getParameters();
 }

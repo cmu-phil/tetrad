@@ -5,15 +5,17 @@ import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The interface that simulations must implement.
  *
  * @author jdramsey
  */
-public interface Simulation extends HasParameters {
+public interface Simulation extends HasParameters, TetradSerializable {
 
     /**
      * Creates a data set and simulates data.
@@ -51,5 +53,5 @@ public interface Simulation extends HasParameters {
      * @return Returns the parameters used in the simulation. These are the
      * parameters whose values can be varied.
      */
-    List<String> getParameters();
+    Map<String, Object> getParameters();
 }
