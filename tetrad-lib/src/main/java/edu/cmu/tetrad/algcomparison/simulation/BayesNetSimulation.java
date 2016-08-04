@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
@@ -12,12 +12,12 @@ import edu.cmu.tetrad.graph.Graph;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author jdramsey
  */
 public class BayesNetSimulation implements Simulation {
+    static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private BayesPm pm;
     private BayesIm im;

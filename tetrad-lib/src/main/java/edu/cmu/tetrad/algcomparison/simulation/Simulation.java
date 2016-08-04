@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -15,6 +15,7 @@ import java.util.List;
  * @author jdramsey
  */
 public interface Simulation extends HasParameters, TetradSerializable {
+    static final long serialVersionUID = 23L;
 
     /**
      * Creates a data set and simulates data.

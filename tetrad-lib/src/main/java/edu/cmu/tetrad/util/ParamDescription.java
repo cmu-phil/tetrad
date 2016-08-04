@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.utils;
+package edu.cmu.tetrad.util;
 
 /**
  * Describes a parameter.

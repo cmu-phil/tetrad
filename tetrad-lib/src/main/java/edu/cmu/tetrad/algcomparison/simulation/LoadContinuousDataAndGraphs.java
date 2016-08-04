@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -17,6 +17,7 @@ import java.util.*;
  * @author jdramsey
  */
 public class LoadContinuousDataAndGraphs implements Simulation {
+    static final long serialVersionUID = 23L;
     private String path;
     private Graph graph;
     private List<DataSet> dataSets;

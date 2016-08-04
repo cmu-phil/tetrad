@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;

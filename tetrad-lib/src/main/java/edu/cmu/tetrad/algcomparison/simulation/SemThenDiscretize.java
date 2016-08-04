@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Discretizer;
@@ -18,6 +18,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemThenDiscretize implements Simulation {
+    static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private Graph graph;
     private List<DataSet> dataSets;

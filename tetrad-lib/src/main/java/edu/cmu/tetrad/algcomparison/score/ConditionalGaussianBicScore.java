@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.ConditionalGaussianScore;
@@ -8,9 +8,7 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Experimental;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Wrapper for Fisher Z test.
@@ -18,7 +16,7 @@ import java.util.Map;
  * @author jdramsey
  */
 public class ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
-    private Score score;
+    static final long serialVersionUID = 23L;
 
     @Override
     public Score getScore(DataSet dataSet, Parameters parameters) {

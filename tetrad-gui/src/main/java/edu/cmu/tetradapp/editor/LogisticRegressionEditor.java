@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.LogisticRegressionRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;

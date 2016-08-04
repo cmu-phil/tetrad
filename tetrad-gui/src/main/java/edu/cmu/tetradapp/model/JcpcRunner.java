@@ -21,12 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 
-import java.util.ArrayList;
 import java.util.List;
 
 

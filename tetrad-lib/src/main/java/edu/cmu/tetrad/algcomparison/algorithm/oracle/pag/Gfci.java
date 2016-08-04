@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -17,6 +17,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Gfci implements Algorithm {
+    static final long serialVersionUID = 23L;
     private ScoreWrapper score;
 
     public Gfci(ScoreWrapper score) {

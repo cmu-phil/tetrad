@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.mixed.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -20,6 +20,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class MixedFgsDiscretingContinuousVariables implements Algorithm {
+    static final long serialVersionUID = 23L;
     private ScoreWrapper score;
 
     public MixedFgsDiscretingContinuousVariables(ScoreWrapper score) {

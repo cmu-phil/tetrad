@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -14,6 +14,7 @@ import java.util.List;
  * @author jdramsey
  */
 public interface IndependenceWrapper extends HasParameters, TetradSerializable {
+    static final long serialVersionUID = 23L;
 
     /**
      * Returns true iff x and y are independent conditional on z for the given data set.

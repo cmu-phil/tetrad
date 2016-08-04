@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -20,6 +20,7 @@ import java.util.List;
  * @author dmalinsky
  */
 public class TsGfci implements Algorithm, HasKnowledge {
+    static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IKnowledge knowledge = null;
 

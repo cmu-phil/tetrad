@@ -1,10 +1,9 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -13,6 +12,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class SingleGraph implements RandomGraph {
+    static final long serialVersionUID = 23L;
 
     private Graph graph;
 

@@ -1,6 +1,4 @@
-package edu.cmu.tetrad.algcomparison.utils;
-
-import edu.cmu.tetrad.util.TetradSerializable;
+package edu.cmu.tetrad.util;
 
 import java.util.*;
 

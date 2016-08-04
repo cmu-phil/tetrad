@@ -21,19 +21,16 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.algcomparison.utils.ParamDescription;
-import edu.cmu.tetrad.algcomparison.utils.ParamDescriptions;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.ParamDescriptions;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

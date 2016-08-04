@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -479,7 +479,7 @@ public class FtfcSearchEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        edu.cmu.tetrad.algcomparison.utils.Parameters params = getMimRunner().getParams();
+        Parameters params = getMimRunner().getParams();
         return getIndTestParamBox(params);
     }
 

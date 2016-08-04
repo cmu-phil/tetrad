@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -522,7 +522,7 @@ public class MimSearchEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        edu.cmu.tetrad.algcomparison.utils.Parameters params = getMimRunner().getParams();
+        Parameters params = getMimRunner().getParams();
         return getIndTestParamBox(params);
     }
 
@@ -530,12 +530,12 @@ public class MimSearchEditor extends JPanel {
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(edu.cmu.tetrad.algcomparison.utils.Parameters params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        if (params instanceof edu.cmu.tetrad.algcomparison.utils.Parameters) {
+        if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
             params.set("varNames", (java.util.List<String>) runner.getParams().get("varNames", null));
             DataModel dataModel = runner.getData();

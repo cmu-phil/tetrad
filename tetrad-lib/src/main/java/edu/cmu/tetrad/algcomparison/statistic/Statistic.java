@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @author jdramsey
  */
 public interface Statistic {
+    static final long serialVersionUID = 23L;
 
     /**
      * The abbreviation for the statistic. This will be printed at the top of each

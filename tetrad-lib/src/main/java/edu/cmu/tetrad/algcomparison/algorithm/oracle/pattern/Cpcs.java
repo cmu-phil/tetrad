@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -17,6 +17,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Cpcs implements Algorithm {
+    static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
 
     public Cpcs(IndependenceWrapper test) {

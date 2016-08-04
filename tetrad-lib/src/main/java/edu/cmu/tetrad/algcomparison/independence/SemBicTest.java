@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -16,6 +16,7 @@ import java.util.*;
  * @author jdramsey
  */
 public class SemBicTest implements IndependenceWrapper {
+    static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {

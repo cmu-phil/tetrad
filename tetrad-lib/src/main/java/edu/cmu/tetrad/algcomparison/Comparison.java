@@ -1209,6 +1209,7 @@ public class Comparison {
     }
 
     private class AlgorithmWrapper implements Algorithm {
+        static final long serialVersionUID = 23L;
         private Algorithm algorithm;
         private Parameters parameters;
         private List<String> overriddenParameters = new ArrayList<>();
@@ -1267,6 +1268,7 @@ public class Comparison {
     }
 
     private class AlgorithmSimulationWrapper implements Algorithm {
+        static final long serialVersionUID = 23L;
         private SimulationWrapper simulationWrapper;
         private AlgorithmWrapper algorithmWrapper;
         List<String> parameters = new ArrayList<>();
@@ -1315,6 +1317,7 @@ public class Comparison {
     }
 
     private class SimulationWrapper implements Simulation {
+        static final long serialVersionUID = 23L;
         private Simulation simulation;
         private Graph graph;
         private List<DataSet> dataSets;

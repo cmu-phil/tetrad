@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
 import edu.cmu.tetrad.algcomparison.utils.ParameterValues;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -16,6 +16,7 @@ import java.util.*;
  * @author jdramsey
  */
 public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath, ParameterValues {
+    static final long serialVersionUID = 23L;
     private DataSet dataSet;
     private int numDataSets = 1;
     private String path;

@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -22,6 +22,7 @@ import java.util.*;
  * @author jdramsey
  */
 public class GeneralSemSimulationSpecial1 implements Simulation {
+    static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private Graph graph;
     private List<DataSet> dataSets;

@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.*;

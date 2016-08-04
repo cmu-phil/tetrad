@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.TimeLagGraph;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.FactorAnalysisRunner;
 import edu.cmu.tetradapp.model.IFgsRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;

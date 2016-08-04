@@ -28,7 +28,7 @@ import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 

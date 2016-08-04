@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ShiftSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;

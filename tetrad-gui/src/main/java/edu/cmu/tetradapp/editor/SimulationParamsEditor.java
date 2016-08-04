@@ -21,12 +21,9 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
-import edu.cmu.tetradapp.model.Simulation;
+import edu.cmu.tetrad.util.Parameters;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Edits the parameters for generating random graphs.

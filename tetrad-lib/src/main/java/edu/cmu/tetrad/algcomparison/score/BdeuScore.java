@@ -1,14 +1,12 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.Score;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Wrapper for Fisher Z test.
@@ -16,6 +14,7 @@ import java.util.Map;
  * @author jdramsey
  */
 public class BdeuScore implements ScoreWrapper {
+    static final long serialVersionUID = 23L;
 
     @Override
     public Score getScore(DataSet dataSet, Parameters parameters) {

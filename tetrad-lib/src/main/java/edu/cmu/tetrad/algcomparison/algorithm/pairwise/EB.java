@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -17,6 +17,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class EB implements Algorithm, TakesInitialGraph {
+    static final long serialVersionUID = 23L;
     private Algorithm initialGraph = null;
 
     public EB(Algorithm initialGraph) {

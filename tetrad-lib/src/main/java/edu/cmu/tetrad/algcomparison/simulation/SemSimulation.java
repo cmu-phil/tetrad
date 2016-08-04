@@ -2,14 +2,13 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
-import org.apache.commons.math3.analysis.function.Sin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +17,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class SemSimulation implements Simulation {
+    static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private SemPm pm;
     private SemIm im;
@@ -44,7 +44,7 @@ public class SemSimulation implements Simulation {
     }
 
     @Override
-    public void createData(edu.cmu.tetrad.algcomparison.utils.Parameters parameters) {
+    public void createData(Parameters parameters) {
         this.graph = randomGraph.createGraph(parameters);
 
         dataSets = new ArrayList<>();

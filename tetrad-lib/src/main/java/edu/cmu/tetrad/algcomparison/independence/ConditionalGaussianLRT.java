@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestConditionalGaussianLrt;
@@ -8,9 +8,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Experimental;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Wrapper for Fisher Z test.
@@ -18,6 +16,7 @@ import java.util.Map;
  * @author jdramsey
  */
 public class ConditionalGaussianLRT implements IndependenceWrapper, Experimental {
+    static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {

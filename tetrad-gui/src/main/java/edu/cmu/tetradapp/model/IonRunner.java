@@ -30,7 +30,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.IonJoeModifications;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 

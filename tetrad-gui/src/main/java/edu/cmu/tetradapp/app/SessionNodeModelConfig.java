@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.editor.ParameterEditor;
 
 import javax.swing.*;

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
+import edu.cmu.tetrad.util.Parameters;
 
 import javax.swing.*;
 import java.awt.*;
