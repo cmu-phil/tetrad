@@ -33,9 +33,12 @@ public class ParamDescriptions {
         put("printAverages", new ParamDescription("True if averages should be printed", false));
         put("printAverageTables", new ParamDescription("True if average tables should be printed", true));
         put("printGraphs", new ParamDescription("True if graphs should be printed", false));
+        put("dataType", new ParamDescription("Categorical or discrete", "categorical"));
         put("percentDiscrete", new ParamDescription("Percentage of discrete variables (0 - 100) for mixed data", 50));
         put("ofInterestCutoff", new ParamDescription("Cutoff for graphs considered to be of interest", 0.05));
         put("numCategories", new ParamDescription("Number of categories", 4));
+        put("minCategories", new ParamDescription("Minimum number of categories", 2));
+        put("maxCategories", new ParamDescription("Maximum number of categories", 2));
         put("samplePrior", new ParamDescription("Sample prior", 1));
         put("structurePrior", new ParamDescription("Structure prior coefficient", 1));
         put("mgmParam1", new ParamDescription("MGM tuning parameter #1", 0.1));
@@ -63,6 +66,10 @@ public class ParamDescriptions {
     }
 
     public ParamDescription get(String name) {
+        if (!map.containsKey(name)) {
+            throw new IllegalArgumentException("Expecting a default value for " + name);
+        }
+
         return map.get(name);
     }
 

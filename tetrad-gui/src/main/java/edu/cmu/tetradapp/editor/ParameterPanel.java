@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.algcomparison.utils.ParamDescriptions;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
@@ -35,123 +36,113 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Edits a list of parameters given their defaults.
+ * Edits a list of parameters. Descriptions and defaults are looked up in ParamDescriptions.
  *
  * @author Joseph Ramsey
  */
 public class ParameterPanel extends JPanel {
-    java.util.List<JPanel> editors = new ArrayList<>();
-
-    public ParameterPanel(Parameters parameters, List<String> displayParams, List<Object> defaults) {
+    public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
+        Box a = Box.createHorizontalBox();
         Box b = Box.createVerticalBox();
-        b.setBorder(new TitledBorder("Edit Parameters:"));
+        a.add(Box.createHorizontalGlue());
+        a.add(b);
+        a.add(Box.createHorizontalGlue());
+        b.add(new JLabel("EDIT PARAMETERS:"));
 
-        for (int i = 0; i < displayParams.size(); i++) {
-            String parameter = displayParams.get(i);
-            Object defaultValue = defaults.get(i);
-            JPanel p;
+        for (String parameter : parametersToEdit) {
+            Object defaultValue = ParamDescriptions.instance().get(parameter).getDefaultValue();
+            JComponent p;
 
             if (defaultValue instanceof Double) {
-                p = new DoublePanel(parameters, parameter, ((Double) defaultValue).doubleValue());
+                p = getDoubleField(parameter, parameters, (Double) defaultValue);
             } else if (defaultValue instanceof Integer) {
-                p = new IntPanel(parameters, parameter, ((Integer) defaultValue).intValue());
+                p = getIntTextField(parameter, parameters, (Integer) defaultValue);
             } else if (defaultValue instanceof Boolean) {
-                p = new BooleanPanel(parameters, parameter, ((Boolean) defaultValue).booleanValue());
+                p = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
             } else {
                 throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
             }
 
-            editors.add(p);
-
             Box c = Box.createHorizontalBox();
             c.add(new JLabel(parameter));
-            c.add(Box.createVerticalGlue());
+            c.add(Box.createHorizontalGlue());
             c.add(p);
             b.add(c);
         }
 
+        b.add(Box.createVerticalGlue());
         setLayout(new BorderLayout());
-        add(b, BorderLayout.CENTER);
+        add(a, BorderLayout.CENTER);
     }
 
-    private class DoublePanel extends JPanel {
-        public DoublePanel(final Parameters parameters, final String parameter, double defaultValue) {
-            final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
-                    8, new DecimalFormat(("0.0000")));
+    private DoubleTextField getDoubleField(final String parameter, final Parameters parameters, double defaultValue) {
+        final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
+                8, new DecimalFormat(("0.0000")));
 
-            field.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
-                    if (value == field.getValue()) {
-                        return oldValue;
-                    }
-
-                    try {
-                        parameters.set(parameter, value);
-                    } catch (Exception e) {
-                        // Ignore.
-                    }
-
-                    return value;
+        field.setFilter(new DoubleTextField.Filter() {
+            public double filter(double value, double oldValue) {
+                if (value == field.getValue()) {
+                    return oldValue;
                 }
-            });
-        }
-    }
 
-    private class IntPanel extends JPanel {
-        private Parameters parameters;
-        private String parameter;
-
-        public IntPanel(final Parameters parameters, final String parameter, int defaultValue) {
-            this.parameters = parameters;
-            this.parameter = parameter;
-
-            final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 4);
-
-            field.setFilter(new IntTextField.Filter() {
-                public int filter(int value, int oldValue) {
-                    if (value == field.getValue()) {
-                        return oldValue;
-                    }
-
-                    try {
-                        parameters.set(parameter, value);
-                    } catch (Exception e) {
-                        // Ignore.
-                    }
-
-                    return value;
+                try {
+                    parameters.set(parameter, value);
+                } catch (Exception e) {
+                    // Ignore.
                 }
-            });
-        }
-    }
 
-    private class BooleanPanel extends JPanel {
-        private Parameters parameters;
-        private String parameter;
-
-        public BooleanPanel(final Parameters parameters, final String parameter, boolean defaultValue) {
-            this.parameters = parameters;
-            this.parameter = parameter;
-
-            JComboBox connectedBox = new JComboBox(new String[]{"No", "Yes"});
-
-            if (parameters.getBoolean(parameter, defaultValue)) {
-                connectedBox.setSelectedItem("Yes");
-            } else {
-                connectedBox.setSelectedItem("No");
+                return value;
             }
+        });
 
-            connectedBox.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (((JComboBox) e.getSource()).getSelectedItem().equals("YES")) {
-                        parameters.set(parameter, true);
-                    } else {
-                        parameters.set(parameter, false);
-                    }
+        return field;
+    }
+
+    private IntTextField getIntTextField(final String parameter, final Parameters parameters, int defaultValue) {
+        final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 4);
+
+        field.setFilter(new IntTextField.Filter() {
+            public int filter(int value, int oldValue) {
+                if (value == field.getValue()) {
+                    return oldValue;
                 }
-            });
+
+                try {
+                    parameters.set(parameter, value);
+                } catch (Exception e) {
+                    // Ignore.
+                }
+
+                return value;
+            }
+        });
+
+        return field;
+    }
+
+    private JComboBox getBooleanBox(final String parameter, final Parameters parameters, boolean defaultValue) {
+        JComboBox<String> box = new JComboBox<>(new String[]{"No", "Yes"});
+
+        if (parameters.getBoolean(parameter, defaultValue)) {
+            box.setSelectedItem("Yes");
+        } else {
+            box.setSelectedItem("No");
         }
+
+        box.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (((JComboBox) e.getSource()).getSelectedItem().equals("YES")) {
+                    parameters.set(parameter, true);
+                } else {
+                    parameters.set(parameter, false);
+                }
+            }
+        });
+
+        box.setMaximumSize(box.getPreferredSize());
+
+        return box;
     }
 }
 

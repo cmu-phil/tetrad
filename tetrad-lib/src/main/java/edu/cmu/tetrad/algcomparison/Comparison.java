@@ -973,7 +973,7 @@ public class Comparison {
                         if (Double.isNaN(stat)) {
                             for (String name : algorithmWrapper.getParameters()) {
                                 if (name.equals(statName)) {
-                                    stat = ((Number) algorithmWrapper.getValue(name)).doubleValue();
+                                    stat = ((Number) algorithmWrapper.parameters.get(name)).doubleValue();
                                     break;
                                 }
                             }
@@ -1255,10 +1255,6 @@ public class Comparison {
         public void setValue(String name, Object value) {
             parameters.set(name, value);
             this.overriddenParameters.add(name);
-        }
-
-        public Object getValue(String name) {
-            return parameters.get(name);
         }
 
         public Algorithm getAlgorithm() {

@@ -10,6 +10,14 @@ public class ParamDescription {
     private Object defaultValue;
 
     public ParamDescription(String description, Object defaultValue) {
+        if (description == null) {
+            throw new NullPointerException("Description is null.");
+        }
+
+        if (defaultValue == null) {
+            throw new NullPointerException("No default value for " + description);
+        }
+
         this.description = description;
         this.defaultValue = defaultValue;
     }

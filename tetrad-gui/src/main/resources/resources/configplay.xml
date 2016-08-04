@@ -387,10 +387,8 @@
                     <event id="info" description="Information" default="on"/>
                     <event id="data" description="Data"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.Simulation
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-                <params-editor-class>edu.cmu.tetradapp.editor.GraphParamsEditor</params-editor-class>
+                <model-class>edu.cmu.tetradapp.model.Simulation</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.SimulationEditor</editor-class>
             </model>
         </models>
         <display-component image="dataIcon.gif"/>
