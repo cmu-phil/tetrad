@@ -123,7 +123,7 @@ public class TestSerialization {
      * archived serialized class examplars can be loaded using the model
      * version.
      */
-    @Test
+//    @Test
     public void testLoadabilility() {
         String serializableScope = "target/classes/edu/cmu";
         String currentDirectory = "build/tetrad/serializable/model";
