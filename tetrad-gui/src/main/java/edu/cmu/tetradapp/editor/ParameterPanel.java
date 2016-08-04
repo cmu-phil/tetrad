@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.algcomparison.utils.ParamDescription;
 import edu.cmu.tetrad.algcomparison.utils.ParamDescriptions;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -44,10 +45,15 @@ public class ParameterPanel extends JPanel {
     public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
         Box a = Box.createHorizontalBox();
         Box b = Box.createVerticalBox();
-        a.add(Box.createHorizontalGlue());
         a.add(b);
         a.add(Box.createHorizontalGlue());
-        b.add(new JLabel("EDIT PARAMETERS:"));
+
+        Box d = Box.createHorizontalBox();
+        JLabel label = new JLabel("EDIT PARAMETERS:");
+        label.setFont(new Font("Dialog", Font.BOLD, 12));
+        d.add(label);
+        d.add(Box.createHorizontalGlue());
+        b.add(d);
 
         for (String parameter : parametersToEdit) {
             Object defaultValue = ParamDescriptions.instance().get(parameter).getDefaultValue();
@@ -64,7 +70,7 @@ public class ParameterPanel extends JPanel {
             }
 
             Box c = Box.createHorizontalBox();
-            c.add(new JLabel(parameter));
+            c.add(new JLabel(ParamDescriptions.instance().get(parameter).getDescription()));
             c.add(Box.createHorizontalGlue());
             c.add(p);
             b.add(c);
@@ -123,7 +129,11 @@ public class ParameterPanel extends JPanel {
     private JComboBox getBooleanBox(final String parameter, final Parameters parameters, boolean defaultValue) {
         JComboBox<String> box = new JComboBox<>(new String[]{"No", "Yes"});
 
-        if (parameters.getBoolean(parameter, defaultValue)) {
+        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+
+        System.out.println(parameter + " = " + aBoolean);
+
+        if (aBoolean) {
             box.setSelectedItem("Yes");
         } else {
             box.setSelectedItem("No");
@@ -132,7 +142,7 @@ public class ParameterPanel extends JPanel {
         box.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (((JComboBox) e.getSource()).getSelectedItem().equals("YES")) {
+                if (((JComboBox) e.getSource()).getSelectedItem().equals("Yes")) {
                     parameters.set(parameter, true);
                 } else {
                     parameters.set(parameter, false);

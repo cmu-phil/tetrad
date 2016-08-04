@@ -17,7 +17,7 @@ public class ParamDescriptions {
         put("maxDegree", new ParamDescription("Maximum degree of graph", 100));
         put("maxIndegree", new ParamDescription("Maximum indegree of graph", 100));
         put("maxOutdegree", new ParamDescription("Maximum outdegree of graph", 100));
-        put("connected", new ParamDescription("True if graph should be connected", false));
+        put("connected", new ParamDescription("Yes if graph should be connected", false));
         put("sampleSize", new ParamDescription("Sample size", 1000));
         put("numRuns", new ParamDescription("Number of runs", 1));
         put("alpha", new ParamDescription("Cutoff for p values (alpha)", 0.001));
@@ -26,13 +26,14 @@ public class ParamDescriptions {
         put("depth", new ParamDescription("Maximum size of conditioning set", -1));
         put("coefLow", new ParamDescription("Low end of coefficient range", 0.5));
         put("coefHigh", new ParamDescription("High end of coefficient range", 1.5));
-        put("variance", new ParamDescription("Variance", 1.0));
+        put("covLow", new ParamDescription("Low end of coefficient range", 0.5));
+        put("covHigh", new ParamDescription("High end of coefficient range", 1.5));
         put("varLow", new ParamDescription("Low end of variance range", 1));
         put("varHigh", new ParamDescription("High end of variance range", 3));
-        put("printWinners", new ParamDescription("True if winning models should be printed", false));
-        put("printAverages", new ParamDescription("True if averages should be printed", false));
-        put("printAverageTables", new ParamDescription("True if average tables should be printed", true));
-        put("printGraphs", new ParamDescription("True if graphs should be printed", false));
+        put("printWinners", new ParamDescription("Yes if winning models should be printed", false));
+        put("printAverages", new ParamDescription("Yes if averages should be printed", false));
+        put("printAverageTables", new ParamDescription("Yes if average tables should be printed", true));
+        put("printGraphs", new ParamDescription("Yes if graphs should be printed", false));
         put("dataType", new ParamDescription("Categorical or discrete", "categorical"));
         put("percentDiscrete", new ParamDescription("Percentage of discrete variables (0 - 100) for mixed data", 50));
         put("ofInterestCutoff", new ParamDescription("Cutoff for graphs considered to be of interest", 0.05));
@@ -54,9 +55,9 @@ public class ParamDescriptions {
                 new ParamDescription("General function template for latent variables", "TSUM(NEW(B)*$)"));
         put("generalSemErrorTemplate",
                 new ParamDescription("General function for error terms", "Beta(2, 5)"));
-        put("coefSymmetric", new ParamDescription("True if negative coefficient " +
+        put("coefSymmetric", new ParamDescription("Yes if negative coefficient " +
                         "values should be considered", true));
-        put("covSymmetric", new ParamDescription("True if negative covariance " +
+        put("covSymmetric", new ParamDescription("Yes if negative covariance " +
                         "values should be considered", true));
         put("retainPreviousValues", new ParamDescription("Retain previous values", false));
     }

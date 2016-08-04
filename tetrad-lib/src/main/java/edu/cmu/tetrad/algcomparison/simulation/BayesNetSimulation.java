@@ -47,6 +47,7 @@ public class BayesNetSimulation implements Simulation {
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
+            dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }
     }

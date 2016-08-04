@@ -89,6 +89,8 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
                 sim.setCoefRange(0.15, 0.3);
                 dataSet = sim.simulateDataAcyclic(parameters.getInt("sampleSize"));//params.getSampleSize());
             } //else System.out.println("Coefficient matrix is stable.");
+
+            dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }
     }
@@ -119,7 +121,6 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         parameters.add("maxOutdegree");
         parameters.add("numRuns");
         parameters.add("sampleSize");
-        parameters.add("variance");
         return parameters;
     }
 

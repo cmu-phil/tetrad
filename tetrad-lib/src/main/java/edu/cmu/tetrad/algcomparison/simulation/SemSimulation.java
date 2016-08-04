@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
+import org.apache.commons.math3.analysis.function.Sin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,7 @@ public class SemSimulation implements Simulation {
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
+            dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
         }
     }
@@ -72,10 +74,25 @@ public class SemSimulation implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        List<String> parameters = new ArrayList<>();
+
+        if (!(randomGraph instanceof SingleGraph)) {
+            parameters.addAll(randomGraph.getParameters());
+        }
+
+        if (im == null) {
+            parameters.add("coefLow");
+            parameters.add("coefHigh");
+            parameters.add("covLow");
+            parameters.add("covHigh");
+            parameters.add("varLow");
+            parameters.add("varHigh");
+            parameters.add("coefSymmetric");
+            parameters.add("covSymmetric");
+        }
+
         parameters.add("numRuns");
         parameters.add("sampleSize");
-        parameters.add("variance");
         return parameters;
     }
 

@@ -36,9 +36,11 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
-            DataSet dataSet = simulate(graph, parameters);
+            DataSet dataSet = simulate(randomGraph.createGraph(parameters), parameters);
+            dataSet.setName("" + (i + 1));
             this.dataSets.add(dataSet);
         }
+
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {

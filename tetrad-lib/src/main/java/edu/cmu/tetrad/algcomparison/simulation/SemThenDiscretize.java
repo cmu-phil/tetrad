@@ -4,29 +4,34 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.GeneralizedSemIm;
-import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.pitt.csb.mgm.MixedUtils;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * A version of the Lee & Hastic simulation which is guaranteed ot generate a discrete
- * data set.
- *
  * @author jdramsey
  */
-public class LeeHastieSimulation implements Simulation {
-    private RandomGraph randomGraph;
-    private List<DataSet> dataSets;
+public class SemThenDiscretize implements Simulation {
+    private final RandomGraph randomGraph;
     private Graph graph;
+    private List<DataSet> dataSets;
     private DataType dataType;
     private List<Node> shuffledOrder;
 
-    public LeeHastieSimulation(RandomGraph graph) {
-        this.randomGraph = graph;
+    public SemThenDiscretize(RandomGraph randomGraph) {
+        this.randomGraph = randomGraph;
+        this.dataType = DataType.Mixed;
+    }
+
+    public SemThenDiscretize(RandomGraph randomGraph, DataType dataType) {
+        this.randomGraph = randomGraph;
+        this.dataType = dataType;
     }
 
     @Override
@@ -47,8 +52,8 @@ public class LeeHastieSimulation implements Simulation {
         if (discrete) this.dataType = DataType.Discrete;
         if (continuous) this.dataType = DataType.Continuous;
 
-        this.dataSets = new ArrayList<>();
-        this.shuffledOrder = null;
+        dataSets = new ArrayList<>();
+        shuffledOrder = null;
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
@@ -64,13 +69,9 @@ public class LeeHastieSimulation implements Simulation {
     }
 
     @Override
-    public DataSet getDataSet(int index) {
-        return dataSets.get(index);
-    }
-
-    @Override
     public String getDescription() {
-        return "Lee & Hastie simulation using " + randomGraph.getDescription();
+        return "Simulation SEM data then discretizing some variables, using " +
+                randomGraph.getDescription();
     }
 
     @Override
@@ -89,38 +90,33 @@ public class LeeHastieSimulation implements Simulation {
     }
 
     @Override
+    public DataSet getDataSet(int index) {
+        return dataSets.get(index);
+    }
+
+    @Override
     public DataType getDataType() {
         return dataType;
     }
 
-    private DataSet simulate(Graph dag, Parameters parameters) {
-        HashMap<String, Integer> nd = new HashMap<>();
-
-        List<Node> nodes = dag.getNodes();
-
-        Collections.shuffle(nodes);
+    private DataSet simulate(Graph graph, Parameters parameters) {
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet continuousData = im.simulateData(parameters.getInt("sampleSize"), false);
 
         if (this.shuffledOrder == null) {
-            List<Node> shuffledNodes = new ArrayList<>(nodes);
+            List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
             Collections.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 
-        for (int i = 0; i < nodes.size(); i++) {
-            if (i < nodes.size() * parameters.getDouble("percentDiscrete") * 0.01) {
-                nd.put(shuffledOrder.get(i).getName(), parameters.getInt("numCategories"));
-            } else {
-                nd.put(shuffledOrder.get(i).getName(), 0);
-            }
+        Discretizer discretizer = new Discretizer(continuousData);
+
+        for (int i = 0; i < shuffledOrder.size() * parameters.getDouble("percentDiscrete") * 0.01; i++) {
+            discretizer.equalIntervals(continuousData.getVariable(shuffledOrder.get(i).getName()),
+                    parameters.getInt("numCategories"));
         }
 
-        Graph graph = MixedUtils.makeMixedGraph(dag, nd);
-
-        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
-        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
-
-        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt("sampleSize"), false);
-        return MixedUtils.makeMixedData(ds, nd);
+        return discretizer.discretize();
     }
-
 }
