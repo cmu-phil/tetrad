@@ -659,7 +659,7 @@ final class SemImGraphicalEditor extends JPanel {
             return;
         }
 
-        SemParam parameter = getEdgeParameter(edge);
+        Parameter parameter = getEdgeParameter(edge);
         double d = semIm().getParamValue(parameter);
 
         if (editor.isEditCovariancesAsCorrelations() &&
@@ -774,7 +774,7 @@ final class SemImGraphicalEditor extends JPanel {
 //            return;
 //        }
 
-        SemParam parameter = getNodeParameter(node);
+        Parameter parameter = getNodeParameter(node);
         if (editor.isEditCovariancesAsCorrelations() &&
                 parameter.getType() == ParamType.VAR) {
             return;
@@ -952,7 +952,7 @@ final class SemImGraphicalEditor extends JPanel {
     }
 
     private void resetEdgeLabel(Edge edge, TetradMatrix implCovar) {
-        SemParam parameter = getEdgeParameter(edge);
+        Parameter parameter = getEdgeParameter(edge);
 
         if (parameter != null) {
             double val = semIm().getParamValue(parameter);
@@ -1023,7 +1023,7 @@ final class SemImGraphicalEditor extends JPanel {
             return;
         }
 
-        SemParam parameter = semIm().getSemPm().getVarianceParameter(node);
+        Parameter parameter = semIm().getSemPm().getVarianceParameter(node);
         double meanOrIntercept = Double.NaN;
 
         JLabel label = new JLabel();
@@ -1101,8 +1101,8 @@ final class SemImGraphicalEditor extends JPanel {
         }
     }
 
-    private SemParam getNodeParameter(Node node) {
-        SemParam parameter = semIm().getSemPm().getMeanParameter(node);
+    private Parameter getNodeParameter(Node node) {
+        Parameter parameter = semIm().getSemPm().getMeanParameter(node);
 
         if (parameter == null) {
             parameter = semIm().getSemPm().getVarianceParameter(node);
@@ -1120,7 +1120,7 @@ final class SemImGraphicalEditor extends JPanel {
      * @throws IllegalArgumentException if the edge is neither directed nor
      *                                  bidirected.
      */
-    public SemParam getEdgeParameter(Edge edge) {
+    public Parameter getEdgeParameter(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {
             return semIm().getSemPm().getCoefficientParameter(edge.getNode1(), edge.getNode2());
         } else if (Edges.isBidirectedEdge(edge)) {
@@ -1133,7 +1133,7 @@ final class SemImGraphicalEditor extends JPanel {
 
     private void setEdgeValue(Edge edge, String text) {
         try {
-            SemParam parameter = getEdgeParameter(edge);
+            Parameter parameter = getEdgeParameter(edge);
             double d = new Double(text);
 
             if (editor.isEditCovariancesAsCorrelations() &&
@@ -1181,7 +1181,7 @@ final class SemImGraphicalEditor extends JPanel {
 
     private void setNodeValue(Node node, String text) {
         try {
-            SemParam parameter = getNodeParameter(node);
+            Parameter parameter = getNodeParameter(node);
             double d = new Double(text);
 
             if (parameter.getType() == ParamType.VAR && d >= 0) {
@@ -1262,7 +1262,7 @@ final class SemImGraphicalEditor extends JPanel {
             Node parentNode = (Node) parentNodeObj;
 //            Parameter edgeParam = semIm().getEstIm().getEdgeParameter(
 //                    semGraph.getEdge(parentNode, node));
-            SemParam edgeParam = getEdgeParameter(
+            Parameter edgeParam = getEdgeParameter(
                     semGraph.getDirectedEdge(parentNode, node));
 
             if (edgeParam != null) {
@@ -1494,13 +1494,13 @@ final class ParamTableModel extends AbstractTableModel {
 
     public Object getValueAt(int row, int column) {
         List nodes = semIm().getVariableNodes();
-        List parameters = new ArrayList<SemParam>(semIm().getFreeParameters());
+        List parameters = new ArrayList<Parameter>(semIm().getFreeParameters());
         parameters.addAll(semIm().getFixedParameters());
 
         int numParams = semIm.getNumFreeParams() + semIm().getFixedParameters().size();
 
         if (row < numParams) {
-            SemParam parameter = ((SemParam) parameters.get(row));
+            Parameter parameter = ((Parameter) parameters.get(row));
 
             switch (column) {
                 case 0:
@@ -1580,7 +1580,7 @@ final class ParamTableModel extends AbstractTableModel {
         return null;
     }
 
-    private double paramValue(SemParam parameter) {
+    private double paramValue(Parameter parameter) {
         double paramValue = semIm().getParamValue(parameter);
 
         if (editor.isEditCovariancesAsCorrelations()) {
@@ -1620,7 +1620,7 @@ final class ParamTableModel extends AbstractTableModel {
                 double value = Double.parseDouble((String) aValue);
 
                 if (rowIndex < semIm().getNumFreeParams()) {
-                    SemParam parameter = semIm.getFreeParameters().get(rowIndex);
+                    Parameter parameter = semIm.getFreeParameters().get(rowIndex);
 
                     if (parameter.getType() == ParamType.VAR) {
                         value = value * value;
@@ -1675,7 +1675,7 @@ final class ParamTableModel extends AbstractTableModel {
         }
     }
 
-    private String typeString(SemParam parameter) {
+    private String typeString(Parameter parameter) {
         ParamType type = parameter.getType();
 
         if (type == ParamType.COEF) {

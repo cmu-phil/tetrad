@@ -69,7 +69,7 @@ public class SemOptimizerPowell implements SemOptimizer {
 //            System.out.println("Trial " + (count + 1));
             SemIm _sem2 = new SemIm(semIm);
 
-            List<SemParam> freeParameters = _sem2.getFreeParameters();
+            List<Parameter> freeParameters = _sem2.getFreeParameters();
 
             double[] p = new double[freeParameters.size()];
 
@@ -139,7 +139,7 @@ public class SemOptimizerPowell implements SemOptimizer {
          */
         private final SemIm sem;
 
-        private List<SemParam> freeParameters;
+        private List<Parameter> freeParameters;
 
         /**
          * Constructs a new CoefFittingFunction for the given Sem.

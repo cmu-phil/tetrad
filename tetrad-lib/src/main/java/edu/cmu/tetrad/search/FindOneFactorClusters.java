@@ -1005,13 +1005,13 @@ public class FindOneFactorClusters {
         SemPm pm = new SemPm(g);
 
         for (Node node : upperLatents) {
-            SemParam p = pm.getParameter(node, node);
+            Parameter p = pm.getParameter(node, node);
             p.setFixed(true);
             p.setStartingValue(1.0);
         }
 
         for (Node node : lowerLatents) {
-            SemParam p = pm.getParameter(node, node);
+            Parameter p = pm.getParameter(node, node);
             p.setFixed(true);
             p.setStartingValue(1.0);
         }

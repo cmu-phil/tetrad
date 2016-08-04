@@ -348,7 +348,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
 
                     Node parent = parents.get(j);
 
-                    SemParam _parameter = semPm.getParameter(parent, node);
+                    Parameter _parameter = semPm.getParameter(parent, node);
                     String parameter = _parameter.getName();
                     Set<Node> nodes = new HashSet<Node>();
                     nodes.add(node);
@@ -377,7 +377,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
             }
 
             for (Node node : variableNodes) {
-                SemParam _parameter = semPm.getParameter(node, node);
+                Parameter _parameter = semPm.getParameter(node, node);
                 String parameter = _parameter.getName();
 
                 Set<Node> nodes = new HashSet<Node>();

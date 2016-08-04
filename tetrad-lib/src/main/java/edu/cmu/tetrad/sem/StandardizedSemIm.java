@@ -134,7 +134,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             List<Node> nodes = im.getVariableNodes();
             TetradMatrix impliedCovar = im.getImplCovar(true);
 
-            for (SemParam parameter : im.getSemPm().getParameters()) {
+            for (Parameter parameter : im.getSemPm().getParameters()) {
                 if (parameter.getType() == ParamType.COEF) {
                     Node a = parameter.getNodeA();
                     Node b = parameter.getNodeB();
@@ -169,7 +169,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
 
             edgeParameters = new HashMap<>();
 
-            for (SemParam parameter : imStandardized.getSemPm().getParameters()) {
+            for (Parameter parameter : imStandardized.getSemPm().getParameters()) {
                 if (parameter.getType() == ParamType.COEF) {
                     Node a = parameter.getNodeA();
                     Node b = parameter.getNodeB();

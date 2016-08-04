@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.ParamType;
-import edu.cmu.tetrad.sem.SemParam;
+import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -224,7 +224,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
                         Node x = edge.getNode1();
                         Node y = edge.getNode2();
 
-                        SemParam p;
+                        Parameter p;
 
                         if (edge.pointsTowards(x)) {
                             if (!(x.getNodeType() == NodeType.MEASURED
@@ -399,7 +399,7 @@ class SemPmGraphicalEditor extends JPanel {
     //========================PRIVATE PROTECTED METHODS======================//
 
     private void beginEdgeEdit(Edge edge) {
-        SemParam parameter = getEdgeParameter(edge);
+        Parameter parameter = getEdgeParameter(edge);
         ParameterEditor paramEditor = new ParameterEditor(parameter, semPm());
 
         paramEditor.addPropertyChangeListener(new PropertyChangeListener() {
@@ -423,7 +423,7 @@ class SemPmGraphicalEditor extends JPanel {
     }
 
     private void beginNodeEdit(Node node) {
-        SemParam parameter = getNodeParameter(node);
+        Parameter parameter = getNodeParameter(node);
 
         if (parameter == null) {
             throw new IllegalStateException(
@@ -487,7 +487,7 @@ class SemPmGraphicalEditor extends JPanel {
     }
 
     private void resetEdgeLabel(Edge edge) {
-        SemParam parameter = getEdgeParameter(edge);
+        Parameter parameter = getEdgeParameter(edge);
 
         if (parameter != null) {
             JLabel label = new JLabel();
@@ -512,7 +512,7 @@ class SemPmGraphicalEditor extends JPanel {
     }
 
     private void resetNodeLabel(Node node) {
-        SemParam parameter = getNodeParameter(node);
+        Parameter parameter = getNodeParameter(node);
 
         if (parameter == null) {
             workbench().setNodeLabel(node, null, 0, 0);
@@ -540,8 +540,8 @@ class SemPmGraphicalEditor extends JPanel {
         }
     }
 
-    private SemParam getNodeParameter(Node node) {
-        SemParam parameter = semPm().getMeanParameter(node);
+    private Parameter getNodeParameter(Node node) {
+        Parameter parameter = semPm().getMeanParameter(node);
 
         if (parameter == null) {
             parameter = semPm().getVarianceParameter(node);
@@ -560,7 +560,7 @@ class SemPmGraphicalEditor extends JPanel {
      * @throws IllegalArgumentException if the edge is neither directed nor
      *                                  bidirected.
      */
-    public SemParam getEdgeParameter(Edge edge) {
+    public Parameter getEdgeParameter(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {
             return semPm().getCoefficientParameter(edge.getNode1(), edge.getNode2());
         } else if (Edges.isBidirectedEdge(edge)) {
@@ -598,7 +598,7 @@ class SemPmGraphicalEditor extends JPanel {
 //            Parameter edgeParam = semPm().getEdgeParameter(
 //                    semGraph.getEdge(parentNode, node));
 
-            SemParam edgeParam = getEdgeParameter(
+            Parameter edgeParam = getEdgeParameter(
                     semGraph.getDirectedEdge(parentNode, node));
 
             if (edgeParam != null) {
@@ -680,13 +680,13 @@ class SemPmGraphicalEditor extends JPanel {
 
         // Needed to avoid paramName conflicts.
         private SemPm semPm;
-        private SemParam parameter;
+        private Parameter parameter;
         private String paramName;
         private boolean fixed;
         private boolean initializedRandomly;
         private double startingValue;
 
-        public ParameterEditor(SemParam parameter, SemPm semPm) {
+        public ParameterEditor(Parameter parameter, SemPm semPm) {
             if (parameter == null) {
                 throw new NullPointerException();
             }
@@ -713,7 +713,7 @@ class SemPmGraphicalEditor extends JPanel {
             nameField.setFilter(new StringTextField.Filter() {
                 public String filter(String value, String oldValue) {
                     try {
-                        SemParam paramForName =
+                        Parameter paramForName =
                                 semPm().getParameter(value);
 
                         // Ignore if paramName already exists.
@@ -886,7 +886,7 @@ class SemPmGraphicalEditor extends JPanel {
             this.initializedRandomly = initializedRandomly;
         }
 
-        public SemParam getParameter() {
+        public Parameter getParameter() {
             return parameter;
         }
     }

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.ParamType;
-import edu.cmu.tetrad.sem.SemParam;
+import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MatrixUtils;
@@ -699,7 +699,7 @@ public class PurifyScoreBased implements IPurify {
         List parameters = semIm.getFreeParameters();
         double paramValues[] = semIm.getFreeParamValues();
         for (int i = 0; i < parameters.size(); i++) {
-            SemParam parameter = (SemParam) parameters.get(i);
+            Parameter parameter = (Parameter) parameters.get(i);
             if (parameter.getType() == ParamType.COEF) {
                 Node from = parameter.getNodeA();
                 Node to = parameter.getNodeB();
@@ -933,7 +933,7 @@ public class PurifyScoreBased implements IPurify {
             }
         }
         for (Iterator it = semIm.getFreeParameters().iterator(); it.hasNext(); ) {
-            SemParam nextP = (SemParam) it.next();
+            Parameter nextP = (Parameter) it.next();
             if (nextP.getType() == ParamType.COEF) {
                 Node node1 = nextP.getNodeA();
                 Node node2 = nextP.getNodeB();

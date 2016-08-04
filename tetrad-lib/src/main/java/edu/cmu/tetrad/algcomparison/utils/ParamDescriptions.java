@@ -11,47 +11,51 @@ public class ParamDescriptions {
     private Map<String, ParamDescription> map = new HashMap<>();
 
     public ParamDescriptions() {
-        addParam("numMeasures", new ParamDescription("Number of measured variables", 10));
-        addParam("numLatents", new ParamDescription("Number of latent variables", 0));
-        addParam("avgDegree", new ParamDescription("Average degree of graph", 2));
-        addParam("maxDegree", new ParamDescription("Maximum degree of graph", 100));
-        addParam("maxIndegree", new ParamDescription("Maximum indegree of graph", 100));
-        addParam("maxOutdegree", new ParamDescription("Maximum outdegree of graph", 100));
-        addParam("connected", new ParamDescription("True if graph should be connected", 0));
-        addParam("sampleSize", new ParamDescription("Sample size", 1000));
-        addParam("numRuns", new ParamDescription("Number of runs", 1));
-        addParam("alpha", new ParamDescription("Cutoff for p values (alpha)", 0.001));
-        addParam("penaltyDiscount", new ParamDescription("Penalty discount", 4));
-        addParam("fgsDepth", new ParamDescription("Maximum number of new colliders", -1));
-        addParam("depth", new ParamDescription("Maximum size of conditioning set", -1));
-        addParam("coefLow", new ParamDescription("Low end of coefficient range", 0.5));
-        addParam("coefHigh", new ParamDescription("High end of coefficient range", 1.5));
-        addParam("variance", new ParamDescription("Variance", 1.0));
-        addParam("varLow", new ParamDescription("Low end of variance range", 1));
-        addParam("varHigh", new ParamDescription("High end of variance range", 3));
-        addParam("printWinners", new ParamDescription("True if winning models should be printed", false));
-        addParam("printAverages", new ParamDescription("True if averages should be printed", false));
-        addParam("printAverageTables", new ParamDescription("True if average tables should be printed", true));
-        addParam("printGraphs", new ParamDescription("True if graphs should be printed", false));
-        addParam("percentDiscrete", new ParamDescription("Percentage of discrete variables (0 - 100) for mixed data", 50));
-        addParam("ofInterestCutoff", new ParamDescription("Cutoff for graphs considered to be of interest", 0.05));
-        addParam("numCategories", new ParamDescription("Number of categories", 4));
-        addParam("samplePrior", new ParamDescription("Sample prior", 1));
-        addParam("structurePrior", new ParamDescription("Structure prior coefficient", 1));
-        addParam("mgmParam1", new ParamDescription("MGM tuning parameter #1", 0.1));
-        addParam("mgmParam2", new ParamDescription("MGM tuning parameter #2", 0.1));
-        addParam("mgmParam3", new ParamDescription("MGM tuning parameter #3", 0.1));
-        addParam("scaleFreeAlpha", new ParamDescription("For scale-free graphs, the parameter alpha", 0.05));
-        addParam("scaleFreeBeta", new ParamDescription("For scale-free graphs, the parameter beta", 0.05));
-        addParam("scaleFreeDeltaIn", new ParamDescription("For scale-free graphs, the parameter delta_in", 3));
-        addParam("scaleFreeDeltaOut", new ParamDescription("For scale-free graphs, the parameter delta_out", 3));
-        addParam("generalSemFunctionTemplateMeasured", 
+        put("numMeasures", new ParamDescription("Number of measured variables", 10));
+        put("numLatents", new ParamDescription("Number of latent variables", 0));
+        put("avgDegree", new ParamDescription("Average degree of graph", 2));
+        put("maxDegree", new ParamDescription("Maximum degree of graph", 100));
+        put("maxIndegree", new ParamDescription("Maximum indegree of graph", 100));
+        put("maxOutdegree", new ParamDescription("Maximum outdegree of graph", 100));
+        put("connected", new ParamDescription("True if graph should be connected", 0));
+        put("sampleSize", new ParamDescription("Sample size", 1000));
+        put("numRuns", new ParamDescription("Number of runs", 1));
+        put("alpha", new ParamDescription("Cutoff for p values (alpha)", 0.001));
+        put("penaltyDiscount", new ParamDescription("Penalty discount", 4));
+        put("fgsDepth", new ParamDescription("Maximum number of new colliders", -1));
+        put("depth", new ParamDescription("Maximum size of conditioning set", -1));
+        put("coefLow", new ParamDescription("Low end of coefficient range", 0.5));
+        put("coefHigh", new ParamDescription("High end of coefficient range", 1.5));
+        put("variance", new ParamDescription("Variance", 1.0));
+        put("varLow", new ParamDescription("Low end of variance range", 1));
+        put("varHigh", new ParamDescription("High end of variance range", 3));
+        put("printWinners", new ParamDescription("True if winning models should be printed", false));
+        put("printAverages", new ParamDescription("True if averages should be printed", false));
+        put("printAverageTables", new ParamDescription("True if average tables should be printed", true));
+        put("printGraphs", new ParamDescription("True if graphs should be printed", false));
+        put("percentDiscrete", new ParamDescription("Percentage of discrete variables (0 - 100) for mixed data", 50));
+        put("ofInterestCutoff", new ParamDescription("Cutoff for graphs considered to be of interest", 0.05));
+        put("numCategories", new ParamDescription("Number of categories", 4));
+        put("samplePrior", new ParamDescription("Sample prior", 1));
+        put("structurePrior", new ParamDescription("Structure prior coefficient", 1));
+        put("mgmParam1", new ParamDescription("MGM tuning parameter #1", 0.1));
+        put("mgmParam2", new ParamDescription("MGM tuning parameter #2", 0.1));
+        put("mgmParam3", new ParamDescription("MGM tuning parameter #3", 0.1));
+        put("scaleFreeAlpha", new ParamDescription("For scale-free graphs, the parameter alpha", 0.05));
+        put("scaleFreeBeta", new ParamDescription("For scale-free graphs, the parameter beta", 0.05));
+        put("scaleFreeDeltaIn", new ParamDescription("For scale-free graphs, the parameter delta_in", 3));
+        put("scaleFreeDeltaOut", new ParamDescription("For scale-free graphs, the parameter delta_out", 3));
+        put("generalSemFunctionTemplateMeasured",
                 new ParamDescription("General function template for measured variables", "TSUM(NEW(B)*$)"));
-        addParam("generalSemFunctionTemplateLatent", 
+        put("generalSemFunctionTemplateLatent",
                 new ParamDescription("General function template for latent variables", "TSUM(NEW(B)*$)"));
-        addParam("generalSemErrorTemplate", 
+        put("generalSemErrorTemplate",
                 new ParamDescription("General function for error terms", "Beta(2, 5)"));
-
+        put("coefSymmetric", new ParamDescription("True if negative coefficient " +
+                        "values should be considered", true));
+        put("covSymmetric", new ParamDescription("True if negative covariance " +
+                        "values should be considered", true));
+        put("retainPreviousValues", new ParamDescription("Retain previous values", false));
     }
 
     public static ParamDescriptions instance() {
@@ -62,7 +66,7 @@ public class ParamDescriptions {
         return map.get(name);
     }
 
-    public void addParam(String name, ParamDescription paramDescription) {
+    public void put(String name, ParamDescription paramDescription) {
         map.put(name, paramDescription);
     }
 }

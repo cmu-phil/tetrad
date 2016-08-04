@@ -3,11 +3,14 @@ package edu.cmu.tetrad.algcomparison.graph;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
- * Created by jdramsey on 7/29/16.
+ * Stores a single graph for use in simulations, etc.
+ *
+ * @author jdramsey
  */
 public class SingleGraph implements RandomGraph {
 
@@ -29,6 +32,6 @@ public class SingleGraph implements RandomGraph {
 
     @Override
     public List<String> getParameters() {
-        return new LinkedHashMap<>();
+        return new ArrayList<>();
     }
 }

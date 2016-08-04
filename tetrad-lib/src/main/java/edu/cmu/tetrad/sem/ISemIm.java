@@ -42,21 +42,21 @@ public interface ISemIm extends Simulator, TetradSerializable {
 
     void setFreeParamValues(double[] params);
 
-    double getParamValue(SemParam parameter);
+    double getParamValue(Parameter parameter);
 
-    void setParamValue(SemParam parameter, double value);
+    void setParamValue(Parameter parameter, double value);
 
-    void setFixedParamValue(SemParam parameter, double value);
+    void setFixedParamValue(Parameter parameter, double value);
 
     double getParamValue(Node nodeA, Node nodeB);
 
     void setParamValue(Node nodeA, Node nodeB, double value);
 
-    List<SemParam> getFreeParameters();
+    List<Parameter> getFreeParameters();
 
     int getNumFreeParams();
 
-    List<SemParam> getFixedParameters();
+    List<Parameter> getFixedParameters();
 
     int getSampleSize();
 
@@ -88,11 +88,11 @@ public interface ISemIm extends Simulator, TetradSerializable {
 
     void setMean(Node node, double value);
 
-    double getStandardError(SemParam parameter, int maxFreeParamsForStatistics);
+    double getStandardError(Parameter parameter, int maxFreeParamsForStatistics);
 
-    double getTValue(SemParam parameter, int maxFreeParamsForStatistics);
+    double getTValue(Parameter parameter, int maxFreeParamsForStatistics);
 
-    double getPValue(SemParam parameter, int maxFreeParamsForStatistics);
+    double getPValue(Parameter parameter, int maxFreeParamsForStatistics);
 
     double getPValue();
 

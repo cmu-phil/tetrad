@@ -104,7 +104,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
 //        new SemOptimizerPalCds().optimize2(_sem);
 
-        for (SemParam param : semIm.getFreeParameters()) {
+        for (Parameter param : semIm.getFreeParameters()) {
             Node nodeA = param.getNodeA();
             Node nodeB = param.getNodeB();
 
@@ -291,7 +291,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
          * The wrapped Sem.
          */
         private final SemIm sem;
-        private List<SemParam> freeParameters;
+        private List<Parameter> freeParameters;
         private boolean avoidNegativeVariances = false;
 
         /**

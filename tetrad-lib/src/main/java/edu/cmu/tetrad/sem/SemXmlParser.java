@@ -111,7 +111,7 @@ public class SemXmlParser {
             semIm.setParamValue(causeNode, effectNode, new Double(edge.getAttributeValue(SemXmlConstants.VALUE)));
             //semIm.getSemPm().getParameter(causeNode, effectNode).setFixed(new Boolean(edge.getAttributeValue(SemXmlConstants.FIXED)).booleanValue());
 
-            SemParam covarianceParameter = semIm.getSemPm().getCovarianceParameter(causeNode, effectNode);
+            Parameter covarianceParameter = semIm.getSemPm().getCovarianceParameter(causeNode, effectNode);
 
             if (covarianceParameter != null) {
                 Boolean aBoolean = Boolean.valueOf(edge.getAttributeValue(SemXmlConstants.FIXED));

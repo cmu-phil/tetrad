@@ -34,7 +34,7 @@ public class Parameters implements TetradSerializable {
 
     /**
      * Returns a list of the parameters whoese values were actually used in the course of
-     * the simulatoin.
+     * the simulation.
      *
      * @return This list, in String form.
      */
@@ -50,58 +50,118 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns the integer values of the given parameter.
+     * Returns the integer value of the given parameter, looking up its default in the
+     * ParamDescriptions map.
      *
      * @param name The name parameter.
      * @return The integer value of this parameter.
      */
     public int getInt(String name) {
-        return (Integer) get(name);
-    }
-
-    public boolean getBoolean(String parameter) {
-        return (Boolean) get(parameter);
+        return (Integer) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
     }
 
     /**
-     * Returns the double values of the given parameter.
+     * Returns the boolean value of the given parameter, looking up its default in the
+     * ParamDescriptions map.
      *
-     * @param name The name of the parameter.
+     * @param name The name parameter.
+     * @return The boolean value of this parameter.
+     */
+    public boolean getBoolean(String name) {
+        return (Boolean) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+    }
+
+    /**
+     * Returns the double value of the given parameter, looking up its default in the
+     * ParamDescriptions map.
+     *
+     * @param name The name parameter.
      * @return The double value of this parameter.
      */
     public double getDouble(String name) {
-        return (Double) get(name);
+        return (Double) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
     }
 
     /**
-     * Returns the string values of the given parameter.
+     * Returns the string value of the given parameter, looking up its default in the
+     * ParamDescriptions map.
      *
-     * @param parameter The parameter.
-     * @return The double value of this parameter.
+     * @param name The name parameter.
+     * @return The string value of this parameter.
      */
-    public String getString(String parameter) {
-        return (String) get(parameter);
+    public String getString(String name) {
+        return (String) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
     }
 
     /**
-     * Returns the object for the given parameter.
+     * Returns the object value of the given parameter, looking up its default in the
+     * ParamDescriptions map.
      *
-     * @param name The name of the parameter.
-     * @return the object value.
+     * @param name The name parameter.
+     * @return The object value of this parameter.
      */
     public Object get(String name) {
+        return get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+    }
+
+    /**
+     * Returns the integer value of the given parameter, looking up its default in the
+     * ParamDescriptions map.
+     *
+     * @param name The name parameter.
+     * @return The integer value of this parameter.
+     */
+    public int getInt(String name, int defaultValue) {
+        return (Integer) get(name, defaultValue);
+    }
+
+    /**
+     * Returns the boolean value of the given parameter, using the given default.
+     *
+     * @param name The name parameter.
+     * @return The boolean value of this parameter.
+     */
+    public boolean getBoolean(String name, boolean defaultValue) {
+        return (Boolean) get(name, defaultValue);
+    }
+
+    /**
+     * Returns the object value of the given parameter, using the given default.
+     *
+     * @param name The name parameter.
+     * @return The double value of this parameter.
+     */
+    public double getDouble(String name, double defaultValue) {
+        return (Double) get(name, defaultValue);
+    }
+
+    /**
+     * Returns the string value of the given parameter, using the given default.
+     *
+     * @param name The name parameter.
+     * @return The string value of this parameter.
+     */
+    public String getString(String name, String defaultValue) {
+        return (String) get(name, defaultValue);
+    }
+
+    /**
+     * Returns the object value of the given parameter, using the given default.
+     *
+     * @param name The name parameter.
+     * @return The object value of this parameter.
+     */
+    public Object get(String name, Object defaultValue) {
         if (overriddenParameters.containsKey(name)) {
             return overriddenParameters.get(name);
         }
-
-        ParamDescription paramDescription = ParamDescriptions.instance().get(name);
 
         usedParameters.add(name);
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
-            set(name, paramDescription.getDefaultValue());
-            return paramDescription.getDefaultValue();
+            set(name, defaultValue);
+            return defaultValue;
         } else {
             if (getNumValues(name) != 1) {
                 throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");

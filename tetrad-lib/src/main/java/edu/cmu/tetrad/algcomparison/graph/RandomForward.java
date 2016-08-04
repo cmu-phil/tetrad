@@ -4,23 +4,26 @@ import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by jdramsey on 7/29/16.
+ * Creates a random graph by adding forward edges.
+ *
+ * @author jdramsey
  */
 public class RandomForward implements RandomGraph {
 
     @Override
     public Graph createGraph(Parameters parameters) {
         return GraphUtils.randomGraphRandomForwardEdges(
-                parameters.getInt("numMeasures", 10),
-                parameters.getInt("numLatents", 0),
-                parameters.getInt("avgDegree", 2) * parameters.getInt("numMeasures", 10) / 2,
-                parameters.getInt("maxDegree", 100),
-                parameters.getInt("maxIndegree", 100),
-                parameters.getInt("maxOutdegree", 100),
-                parameters.getBoolean("connected", false));
+                parameters.getInt("numMeasures"),
+                parameters.getInt("numLatents"),
+                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
+                parameters.getInt("maxDegree"),
+                parameters.getInt("maxIndegree"),
+                parameters.getInt("maxOutdegree"),
+                parameters.getBoolean("connected"));
     }
 
     @Override
@@ -30,14 +33,14 @@ public class RandomForward implements RandomGraph {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<String>();
-        parameters.put("numMeasures", 10);
-        parameters.put("numLatents", 0);
-        parameters.put("avgDegree", 2);
-        parameters.put("maxDegree", 100);
-        parameters.put("maxIndegree", 100);
-        parameters.put("maxOutdegree", 100);
-        parameters.put("connected", false);
+        List<String> parameters = new ArrayList<>();
+        parameters.add("numMeasures");
+        parameters.add("numLatents");
+        parameters.add("avgDegree");
+        parameters.add("maxDegree");
+        parameters.add("maxIndegree");
+        parameters.add("maxOutdegree");
+        parameters.add("connected");
         return parameters;
     }
 }
