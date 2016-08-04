@@ -57,7 +57,7 @@ public class Parameters implements TetradSerializable {
      * @return The integer value of this parameter.
      */
     public int getInt(String name) {
-        return (Integer) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+        return ((Number) get(name, ParamDescriptions.instance().get(name).getDefaultValue())).intValue();
     }
 
     /**
@@ -79,7 +79,7 @@ public class Parameters implements TetradSerializable {
      * @return The double value of this parameter.
      */
     public double getDouble(String name) {
-        return (Double) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+        return ((Number) get(name, ParamDescriptions.instance().get(name).getDefaultValue())).doubleValue();
     }
 
     /**
@@ -112,7 +112,7 @@ public class Parameters implements TetradSerializable {
      * @return The integer value of this parameter.
      */
     public int getInt(String name, int defaultValue) {
-        return (Integer) get(name, defaultValue);
+        return ((Number) get(name, defaultValue)).intValue();
     }
 
     /**
@@ -132,7 +132,7 @@ public class Parameters implements TetradSerializable {
      * @return The double value of this parameter.
      */
     public double getDouble(String name, double defaultValue) {
-        return (Double) get(name, defaultValue);
+        return ((Number) get(name, defaultValue)).doubleValue();
     }
 
     /**
@@ -248,9 +248,5 @@ public class Parameters implements TetradSerializable {
      */
     public void set(String name, String value) {
         parameters.put(name, new String[]{value});
-    }
-
-    public Map<String, Object[]> getParameters() {
-        return parameters;
     }
 }

@@ -102,7 +102,7 @@ public class SemSimulation implements Simulation {
                     pm = new SemPm(graph);
                 }
 
-                im = new SemIm(pm);
+                im = new SemIm(pm, parameters);
             }
 
             return im.simulateData(parameters.getInt("sampleSize"), false);

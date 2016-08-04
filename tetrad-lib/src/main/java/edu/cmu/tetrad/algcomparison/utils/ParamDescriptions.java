@@ -17,7 +17,7 @@ public class ParamDescriptions {
         put("maxDegree", new ParamDescription("Maximum degree of graph", 100));
         put("maxIndegree", new ParamDescription("Maximum indegree of graph", 100));
         put("maxOutdegree", new ParamDescription("Maximum outdegree of graph", 100));
-        put("connected", new ParamDescription("True if graph should be connected", 0));
+        put("connected", new ParamDescription("True if graph should be connected", false));
         put("sampleSize", new ParamDescription("Sample size", 1000));
         put("numRuns", new ParamDescription("Number of runs", 1));
         put("alpha", new ParamDescription("Cutoff for p values (alpha)", 0.001));

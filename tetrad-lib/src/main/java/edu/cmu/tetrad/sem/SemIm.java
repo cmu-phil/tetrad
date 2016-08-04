@@ -287,7 +287,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * Constructs a new SEM IM from a SEM PM.
      */
     public SemIm(SemPm semPm) {
-        this(semPm, null, null);
+        this(semPm, null, new Parameters());
     }
 
     /**
@@ -308,8 +308,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             throw new NullPointerException("Sem PM must not be null.");
         }
 
-        if (params != null) {
-            this.setParams(params);
+        if (params == null) {
+            throw new NullPointerException();
         }
 
         this.params = parameters;
