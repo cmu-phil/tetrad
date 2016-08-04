@@ -38,14 +38,14 @@ public class ParameterPair implements TetradSerializable {
      *
      * @serial May be null.
      */
-    private Parameter a;
+    private SemParam a;
 
     /**
      * The second element of the ordered pair.  Can be null.
      *
      * @serial May be null.
      */
-    private Parameter b;
+    private SemParam b;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -63,7 +63,7 @@ public class ParameterPair implements TetradSerializable {
      * @param a the first element of the ordered pair.
      * @param b the second element of the ordered pair.
      */
-    public ParameterPair(Parameter a, Parameter b) {
+    public ParameterPair(SemParam a, SemParam b) {
         setPair(a, b);
     }
 
@@ -81,7 +81,7 @@ public class ParameterPair implements TetradSerializable {
      *
      * @return the first element of the ordered pair.
      */
-    public Parameter getA() {
+    public SemParam getA() {
         return a;
     }
 
@@ -90,7 +90,7 @@ public class ParameterPair implements TetradSerializable {
      *
      * @return the second element of the ordered pair.
      */
-    public Parameter getB() {
+    public SemParam getB() {
         return b;
     }
 
@@ -130,7 +130,7 @@ public class ParameterPair implements TetradSerializable {
      * @param a the new first element.
      * @param b the new seconde element.
      */
-    private void setPair(Parameter a, Parameter b) {
+    private void setPair(SemParam a, SemParam b) {
         this.a = a;
         this.b = b;
     }

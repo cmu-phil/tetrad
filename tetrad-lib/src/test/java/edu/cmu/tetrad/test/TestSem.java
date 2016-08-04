@@ -69,8 +69,8 @@ public class TestSem {
         SemPm semPm = new SemPm(graph);
         List parameters = semPm.getParameters();
 
-        Parameter a = (Parameter) parameters.get(0);
-        Parameter b = (Parameter) parameters.get(1);
+        SemParam a = (SemParam) parameters.get(0);
+        SemParam b = (SemParam) parameters.get(1);
         assertEquals(ParamComparison.NC, semPm.getParamComparison(a, b));
 
         semPm.setParamComparison(a, b, ParamComparison.EQ);

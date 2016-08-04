@@ -51,7 +51,7 @@ public class Mapping implements TetradSerializable {
      *
      * @serial Can't be null.
      */
-    private Parameter parameter;
+    private SemParam parameter;
 
     /**
      * The 2D double array whose element at (i, j) to be manipulated.
@@ -83,7 +83,7 @@ public class Mapping implements TetradSerializable {
      * @param i         Left coordinates of matrix[i][j].
      * @param j         Right coordinate of matrix[i][j].
      */
-    public Mapping(ISemIm semIm, Parameter parameter, TetradMatrix matrix,
+    public Mapping(ISemIm semIm, SemParam parameter, TetradMatrix matrix,
                    int i, int j) {
         if (semIm == null) {
             throw new NullPointerException("SemIm must not be null.");
@@ -113,7 +113,7 @@ public class Mapping implements TetradSerializable {
      */
     public static Mapping serializableInstance() {
         return new Mapping(SemIm.serializableInstance(),
-                Parameter.serializableInstance(), new TetradMatrix(0, 0),
+                SemParam.serializableInstance(), new TetradMatrix(0, 0),
                 1, 1);
     }
 
@@ -147,7 +147,7 @@ public class Mapping implements TetradSerializable {
     /**
      * @return the paramter that this mapping maps.
      */
-    public Parameter getParameter() {
+    public SemParam getParameter() {
         return this.parameter;
     }
 

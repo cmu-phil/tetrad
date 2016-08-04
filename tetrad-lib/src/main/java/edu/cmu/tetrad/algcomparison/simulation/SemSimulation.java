@@ -3,9 +3,6 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
-import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.bayes.BayesPm;
-import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -15,7 +12,6 @@ import edu.cmu.tetrad.sem.StandardizedSemIm;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author jdramsey
@@ -52,7 +48,7 @@ public class SemSimulation implements Simulation {
 
         dataSets = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
+        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             dataSets.add(dataSet);
@@ -75,11 +71,11 @@ public class SemSimulation implements Simulation {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> parameters = randomGraph.getParameters();
-        parameters.put("numRuns", 1);
-        parameters.put("sampleSize", 1000);
-        parameters.put("variance", 1.0);
+    public List<String> getParameters() {
+        List<String> parameters = randomGraph.getParameters();
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
+        parameters.add("variance");
         return parameters;
     }
 
@@ -97,7 +93,7 @@ public class SemSimulation implements Simulation {
         SemIm im = this.im;
 
         if (standardizedIm != null) {
-            return standardizedIm.simulateData(parameters.getInt("sampleSize", 1000), false);
+            return standardizedIm.simulateData(parameters.getInt("sampleSize"), false);
         } else {
             if (im == null) {
                 SemPm pm = this.pm;
@@ -109,7 +105,7 @@ public class SemSimulation implements Simulation {
                 im = new SemIm(pm);
             }
 
-            return im.simulateData(parameters.getInt("sampleSize", 1000), false);
+            return im.simulateData(parameters.getInt("sampleSize"), false);
         }
     }
 }

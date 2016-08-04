@@ -14,7 +14,6 @@ import edu.cmu.tetrad.search.TsDagToPag;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Wraps the IMaGES algorithm for continuous variables.
@@ -64,9 +63,9 @@ public class ImagesSemBic implements MultiDataSetAlgorithm {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> parameters = new Fgs(new SemBicScore()).getParameters();
-        parameters.put("randomSelection", 1);
+    public List<String> getParameters() {
+        List<String> parameters = new Fgs(new SemBicScore()).getParameters();
+        parameters.add("randomSelection");
         return parameters;
     }
 }

@@ -55,8 +55,8 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        return new LinkedHashMap<>();
+    public List<String> getParameters() {
+        return new ArrayList<>();
     }
 
     @Override

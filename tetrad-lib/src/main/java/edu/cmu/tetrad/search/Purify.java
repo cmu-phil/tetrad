@@ -1854,7 +1854,7 @@ public class Purify {
         List parameters = semIm.getFreeParameters();
         double paramValues[] = semIm.getFreeParamValues();
         for (int i = 0; i < parameters.size(); i++) {
-            Parameter parameter = (Parameter) parameters.get(i);
+            SemParam parameter = (SemParam) parameters.get(i);
             if (parameter.getType() == ParamType.COEF) {
                 Node from = parameter.getNodeA();
                 Node to = parameter.getNodeB();
@@ -2379,7 +2379,7 @@ public class Purify {
             }
         }
         for (Iterator it = semIm.getFreeParameters().iterator(); it.hasNext(); ) {
-            Parameter nextP = (Parameter) it.next();
+            SemParam nextP = (SemParam) it.next();
             if (nextP.getType() == ParamType.COEF) {
                 Node node1 = nextP.getNodeA();
                 Node node2 = nextP.getNodeB();

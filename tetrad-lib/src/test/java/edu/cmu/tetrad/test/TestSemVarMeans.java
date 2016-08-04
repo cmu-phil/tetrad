@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.Parameter;
+import edu.cmu.tetrad.sem.SemParam;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -53,9 +53,9 @@ public class TestSemVarMeans {
         Graph graph = constructGraph1();
         SemPm semPm1 = new SemPm(graph);
 
-        List<Parameter> parameters = semPm1.getParameters();
+        List<SemParam> parameters = semPm1.getParameters();
 
-        for (Parameter p : parameters) {
+        for (SemParam p : parameters) {
             p.setInitializedRandomly(false);
         }
 
@@ -88,9 +88,9 @@ public class TestSemVarMeans {
         Graph graph = constructGraph1();
         SemPm semPm1 = new SemPm(graph);
 
-        List<Parameter> parameters = semPm1.getParameters();
+        List<SemParam> parameters = semPm1.getParameters();
 
-        for (Parameter p : parameters) {
+        for (SemParam p : parameters) {
             p.setInitializedRandomly(false);
         }
 
@@ -123,9 +123,9 @@ public class TestSemVarMeans {
         Graph graph = constructGraph1();
         SemPm semPm1 = new SemPm(graph);
 
-        List<Parameter> parameters = semPm1.getParameters();
+        List<SemParam> parameters = semPm1.getParameters();
 
-        for (Parameter p : parameters) {
+        for (SemParam p : parameters) {
             p.setInitializedRandomly(false);
         }
 

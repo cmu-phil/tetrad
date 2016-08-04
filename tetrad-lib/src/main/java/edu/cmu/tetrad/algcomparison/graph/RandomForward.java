@@ -4,10 +4,7 @@ import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jdramsey on 7/29/16.
@@ -32,8 +29,8 @@ public class RandomForward implements RandomGraph {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> parameters = new LinkedHashMap<>();
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<String>();
         parameters.put("numMeasures", 10);
         parameters.put("numLatents", 0);
         parameters.put("avgDegree", 2);

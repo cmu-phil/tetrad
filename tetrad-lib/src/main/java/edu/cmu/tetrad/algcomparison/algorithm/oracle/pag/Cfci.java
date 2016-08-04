@@ -9,7 +9,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Conserative FCI.
@@ -45,7 +44,7 @@ public class Cfci implements Algorithm {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
+    public List<String> getParameters() {
         return test.getParameters();
     }
 }

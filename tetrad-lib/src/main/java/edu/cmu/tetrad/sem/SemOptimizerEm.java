@@ -89,7 +89,7 @@ public class SemOptimizerEm implements SemOptimizer {
             TetradLogger.getInstance().log("details", "Trial " + (count + 1));
             SemIm _sem2 = new SemIm(semIm);
 
-            List<Parameter> freeParameters = _sem2.getFreeParameters();
+            List<SemParam> freeParameters = _sem2.getFreeParameters();
 
             double[] p = new double[freeParameters.size()];
 
@@ -114,7 +114,7 @@ public class SemOptimizerEm implements SemOptimizer {
             }
         }
 
-        for (Parameter param : semIm.getFreeParameters()) {
+        for (SemParam param : semIm.getFreeParameters()) {
             try {
                 Node nodeA = param.getNodeA();
                 Node nodeB = param.getNodeB();

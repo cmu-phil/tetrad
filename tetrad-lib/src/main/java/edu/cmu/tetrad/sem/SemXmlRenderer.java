@@ -80,10 +80,10 @@ public class SemXmlRenderer {
 
     private static Element makeEdges(SemIm semIm) {
         Element edgesElement = new Element(SemXmlConstants.EDGES);
-        Parameter param;
+        SemParam param;
         Element edge;
 
-        for (Parameter parameter : semIm.getSemPm().getParameters()) {
+        for (SemParam parameter : semIm.getSemPm().getParameters()) {
             param = parameter;
             if (param.getType() == ParamType.COEF) {
                 edge = new Element(SemXmlConstants.EDGE);
@@ -129,9 +129,9 @@ public class SemXmlRenderer {
     private static Element makeJointErrorDistribution(SemIm semIm) {
         Element jointErrorElement = new Element(SemXmlConstants.JOINT_ERROR_DISTRIBUTION);
         Element normal;
-        Parameter param;
+        SemParam param;
 
-        for (Parameter parameter : semIm.getSemPm().getParameters()) {
+        for (SemParam parameter : semIm.getSemPm().getParameters()) {
             param = parameter;
             if (param.getType() == ParamType.COVAR) {
                 normal = new Element(SemXmlConstants.NORMAL);

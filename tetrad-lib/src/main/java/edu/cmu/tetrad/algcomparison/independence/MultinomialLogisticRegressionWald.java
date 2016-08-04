@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
     public edu.cmu.tetrad.search.IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
         return new IndTestMultinomialLogisticRegressionWald(
                 dataSet,
-                parameters.getDouble("alpha", .001),
+                parameters.getDouble("alpha"),
                 false);
     }
 
@@ -36,9 +36,9 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("alpha", 0.001);
+    public List<String> getParameters() {
+        List<String> params = new ArrayList<>();
+        params.add("alpha");
         return params;
     }
 }

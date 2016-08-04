@@ -10,7 +10,6 @@ import edu.cmu.tetrad.search.Lofs2;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * SkewE.
@@ -58,7 +57,7 @@ public class SkewE implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
+    public List<String> getParameters() {
         return initialGraph.getParameters();
     }
 }

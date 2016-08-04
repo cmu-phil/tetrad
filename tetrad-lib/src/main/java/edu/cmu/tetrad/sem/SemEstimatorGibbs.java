@@ -131,7 +131,7 @@ public final class SemEstimatorGibbs {
         //as brent, neglogpost, etc.
 
         // Initialize method variables
-        List<Parameter> parameters = this.semPm.getParameters();
+        List<SemParam> parameters = this.semPm.getParameters();
 
         int numParameters = parameters.size();
         double[][] parameterCovariances = new double[numParameters][numParameters];
@@ -144,7 +144,7 @@ public final class SemEstimatorGibbs {
         if (flatPrior) {
             // this is used to construct the prior covariance matrix, means
             for (int i = 0; i < numParameters; i++) {
-                Parameter param = parameters.get(i);
+                SemParam param = parameters.get(i);
 
                 this.parameterMeans[i] = (param.isFixed())
                         ? 0.0
@@ -184,7 +184,7 @@ public final class SemEstimatorGibbs {
 
             for (int param = 0; param < postFreeParams.size(); param++) {
 
-                Parameter p = parameters.get(param);
+                SemParam p = parameters.get(param);
                 ParamConstraint constraint = this.paramConstraints[param];
 
                 if (!p.isFixed()) {
@@ -283,7 +283,7 @@ public final class SemEstimatorGibbs {
                     //System.out.println("end of iteration");
 
                     //UPDATEPARM
-                    Parameter ppost = (Parameter) postFreeParams.get(param);
+                    SemParam ppost = (SemParam) postFreeParams.get(param);
                     if (ppost.isFixed())
                         posteriorIm.setFixedParamValue(ppost, cand);
                     else
@@ -297,7 +297,7 @@ public final class SemEstimatorGibbs {
 
             if (iter % subsampleStride == 0 && iter > 0) {
                 for (int i = 0; i < numParameters; i++) {
-                    Parameter ppost = (posteriorIm.getSemPm()).getParameters().get(i);
+                    SemParam ppost = (posteriorIm.getSemPm()).getParameters().get(i);
                     data.set(i, iter / subsampleStride - 1, posteriorIm.getParamValue(ppost));
                 }
             }
@@ -309,7 +309,7 @@ public final class SemEstimatorGibbs {
 
     }
 
-    private double brent(int param, double ax, double bx, double cx, double tol, double[] xmin, List<Parameter> parameters) {
+    private double brent(int param, double ax, double bx, double cx, double tol, double[] xmin, List<SemParam> parameters) {
 
         int ITMAX = 100, iter;
         double CGOLD = 0.3819660;
@@ -394,7 +394,7 @@ public final class SemEstimatorGibbs {
 
     }
 
-    private double neglogpost(int param, double x, List<Parameter> parameters) {
+    private double neglogpost(int param, double x, List<SemParam> parameters) {
         double a = negloglike(param, x);
         double b = 0.0;
 
@@ -407,7 +407,7 @@ public final class SemEstimatorGibbs {
     private double negloglike(int param, double x) {
         // Mark - I'm not entirely sure about this method
 
-        Parameter p = this.semPm.getParameters().get(param);
+        SemParam p = this.semPm.getParameters().get(param);
 
         double tparm = this.startIm.getParamValue(p);
 
@@ -426,7 +426,7 @@ public final class SemEstimatorGibbs {
 
     }
 
-    private double negchi2(int param, double x, List<Parameter> parameters) {
+    private double negchi2(int param, double x, List<SemParam> parameters) {
         // Mark - I modified some code in here that I thought to be inaccurate based on pascal code
         // this is only called when flatprior is false, which it will never be with the getModel code
 
@@ -437,7 +437,7 @@ public final class SemEstimatorGibbs {
         double[] temp = new double[numParameters];
 
         for (int i = 0; i < numParameters; i++) {
-            Parameter p = parameters.get(i);
+            SemParam p = parameters.get(i);
 
             if (p.isFixed()) continue;
 
@@ -462,7 +462,7 @@ public final class SemEstimatorGibbs {
         return -answer;
     }
 
-    private double neglogprior(int param, double x, List<Parameter> parameters) {
+    private double neglogprior(int param, double x, List<SemParam> parameters) {
         return -negchi2(param, x, parameters) / 2.0;
     }
 

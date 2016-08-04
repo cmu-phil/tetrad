@@ -5,7 +5,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * An interface to represent a random graph of some sort.
@@ -34,5 +33,5 @@ public interface RandomGraph extends TetradSerializable {
      *
      * @return A list of String names of parameters.
      */
-    Map<String, Object> getParameters();
+    List<String> getParameters();
 }

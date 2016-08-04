@@ -105,10 +105,10 @@ public class SemStdErrorEstimator {
         //information matrix.
         TetradMatrix hess = new TetradMatrix(n, n);
 
-        List<Parameter> freeParameters = estSem.getFreeParameters();
+        List<SemParam> freeParameters = estSem.getFreeParameters();
         boolean containsCovararianceParameter = false;
 
-        for (Parameter p : freeParameters) {
+        for (SemParam p : freeParameters) {
             if (p.getType() == ParamType.COVAR) {
                 containsCovararianceParameter = true;
                 break;
@@ -117,8 +117,8 @@ public class SemStdErrorEstimator {
 
         for (int i = 0; i < n; i++) {
             for (int j = i; j < n; j++) {
-                Parameter pi = freeParameters.get(i);
-                Parameter pj = freeParameters.get(j);
+                SemParam pi = freeParameters.get(i);
+                SemParam pj = freeParameters.get(j);
 
                 if (!containsCovararianceParameter) {
 
@@ -424,10 +424,10 @@ public class SemStdErrorEstimator {
          * to parameter values.
          */
         public double evaluate(double[] parameters) {
-            List<Parameter> _parameters = sem.getSemPm().getFreeParameters();
+            List<SemParam> _parameters = sem.getSemPm().getFreeParameters();
 
             for (int i = 0; i < _parameters.size(); i++) {
-                Parameter parameter = _parameters.get(i);
+                SemParam parameter = _parameters.get(i);
                 if (parameter.getType() == ParamType.VAR && parameters[i] < 0) {
                     parameters[i] = 0;
                 }

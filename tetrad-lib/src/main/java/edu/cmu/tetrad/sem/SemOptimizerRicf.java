@@ -137,7 +137,7 @@ public class SemOptimizerRicf implements SemOptimizer {
         TetradMatrix lHat = new TetradMatrix(result.getLhat().toArray());
         TetradMatrix oHat = new TetradMatrix(result.getOhat().toArray());
 
-        for (Parameter param : semIm.getFreeParameters()) {
+        for (SemParam param : semIm.getFreeParameters()) {
             if (param.getType() == ParamType.COEF) {
                 int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
                 int j = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeB());

@@ -21,7 +21,7 @@ public class SemBicTest implements IndependenceWrapper {
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
         List<DataModel> dataModels = new ArrayList<>();
         dataModels.add(dataSet);
-        return new IndTestScore(new SemBicScoreImages(dataModels), parameters.getDouble("alpha", .001));
+        return new IndTestScore(new SemBicScoreImages(dataModels), parameters.getDouble("alpha"));
     }
 
     @Override
@@ -35,9 +35,9 @@ public class SemBicTest implements IndependenceWrapper {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("alpha", 0.001);
+    public List<String> getParameters() {
+        List<String> params = new ArrayList<>();
+        params.add("alpha");
         return params;
     }
 }

@@ -38,7 +38,7 @@ import java.io.ObjectInputStream;
  * @author Don Crimbchin (djc2@andrew.cmu.edu)
  * @author Joseph Ramsey
  */
-public final class Parameter implements TetradSerializable {
+public final class SemParam implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
@@ -118,7 +118,7 @@ public final class Parameter implements TetradSerializable {
      *              same as the "from" node. For covariance freeParameters, it must
      *              be different from the "from" node.)
      */
-    public Parameter(String name, ParamType type, Node nodeA, Node nodeB) {
+    public SemParam(String name, ParamType type, Node nodeA, Node nodeB) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -153,8 +153,8 @@ public final class Parameter implements TetradSerializable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    public static Parameter serializableInstance() {
-        return new Parameter("X", ParamType.COEF, new GraphNode("X"),
+    public static SemParam serializableInstance() {
+        return new SemParam("X", ParamType.COEF, new GraphNode("X"),
                 new GraphNode("Y"));
     }
 

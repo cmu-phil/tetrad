@@ -20,7 +20,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
     private String path;
     private Graph graph;
     private List<DataSet> dataSets;
-    private Map<String, Object> parameterValues = new HashMap<>();
+    private List<String> usedParameters = new ArrayList<>();
 
     public LoadContinuousDataAndGraphs(String path) {
         this.path = path;
@@ -60,10 +60,10 @@ public class LoadContinuousDataAndGraphs implements Simulation {
 
                         try {
                             double _value = Double.parseDouble(value);
-                            parameterValues.put(key, _value);
+                            usedParameters.add(key);
                             parameters.set(key, _value);
                         } catch (NumberFormatException e) {
-                            parameterValues.put(key, value);
+                            usedParameters.add(key);
                             parameters.set(key, value);
                         }
                     }
@@ -108,8 +108,8 @@ public class LoadContinuousDataAndGraphs implements Simulation {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        return new LinkedHashMap<>(parameterValues);
+    public List<String> getParameters() {
+        return new ArrayList<>(usedParameters);
     }
 
     @Override

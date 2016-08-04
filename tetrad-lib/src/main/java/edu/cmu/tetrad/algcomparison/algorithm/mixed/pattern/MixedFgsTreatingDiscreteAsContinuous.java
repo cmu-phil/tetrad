@@ -26,7 +26,7 @@ public class MixedFgsTreatingDiscreteAsContinuous implements Algorithm {
     public Graph search(DataSet Dk, Parameters parameters) {
         Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
         SemBicScore score = new SemBicScore(new CovarianceMatrixOnTheFly(Dk));
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount", 4));
+        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         Fgs2 fgs = new Fgs2(score);
         Graph p = fgs.search();
         return convertBack(Dk, p);
@@ -70,9 +70,9 @@ public class MixedFgsTreatingDiscreteAsContinuous implements Algorithm {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> parameters = new LinkedHashMap<>();
-        parameters.put("penaltyDiscount", 4);
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<String>();
+        parameters.add("penaltyDiscount");
         return parameters;
     }
 }

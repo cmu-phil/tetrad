@@ -10,7 +10,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * FGS (the heuristic version).
@@ -64,7 +63,7 @@ public class Fgs implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
+    public List<String> getParameters() {
         return score.getParameters();
     }
 }

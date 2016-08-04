@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestGSquare;
 import edu.cmu.tetrad.search.IndependenceTest;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +20,7 @@ public class GSquare implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataSet dataSet, Parameters parameters) {
-        return new IndTestGSquare(dataSet, parameters.getDouble("alpha", 0.001));
+        return new IndTestGSquare(dataSet, parameters.getDouble("alpha"));
     }
 
     @Override
@@ -34,9 +34,9 @@ public class GSquare implements IndependenceWrapper {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("alpha", 0.001);
+    public List<String> getParameters() {
+        List<String> params = new ArrayList<>();
+        params.add("alpha");
         return params;
     }
 }

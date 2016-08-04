@@ -374,9 +374,9 @@ public final class SemEstimator implements TetradSerializable {
 
     private static boolean containsCovarParam(SemPm semPm) {
         boolean containsCovarParam = false;
-        List<Parameter> params = semPm.getParameters();
+        List<SemParam> params = semPm.getParameters();
 
-        for (Parameter param : params) {
+        for (SemParam param : params) {
             if (param.getType() == ParamType.COVAR) {
                 containsCovarParam = true;
                 break;

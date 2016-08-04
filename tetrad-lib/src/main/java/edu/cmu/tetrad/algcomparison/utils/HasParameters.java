@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.utils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Tags a gadget as having parameters
@@ -9,7 +8,8 @@ import java.util.Map;
 public interface HasParameters {
 
     /**
-     * @return Returns a map of parameter names to their defaults.
+     * @return Returns the list of parameter names that are used. These are looked up
+     * in ParamMap, so if they're not already defined they'll need to be defined there.
      */
-    public Map<String, Object> getParameters();
+    public List<String> getParameters();
 }

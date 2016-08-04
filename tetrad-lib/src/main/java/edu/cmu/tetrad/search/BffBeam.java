@@ -364,7 +364,7 @@ public final class BffBeam implements Bff {
             Score score = scoreGraph(graph);
             SemIm estSem = score.getEstimatedSem();
 
-            for (Parameter param : estSem.getSemPm().getParameters()) {
+            for (SemParam param : estSem.getSemPm().getParameters()) {
                 if (param.getType() != ParamType.COEF) {
                     continue;
                 }

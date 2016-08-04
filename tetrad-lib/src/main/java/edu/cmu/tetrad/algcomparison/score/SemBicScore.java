@@ -6,10 +6,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.Score;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Wrapper for Fisher Z test.
@@ -22,7 +20,7 @@ public class SemBicScore implements ScoreWrapper {
     public Score getScore(DataSet dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.SemBicScore semBicScore
                 = new edu.cmu.tetrad.search.SemBicScore(new CovarianceMatrixOnTheFly(dataSet));
-        semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount", 4));
+        semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         return semBicScore;
     }
 
@@ -37,10 +35,10 @@ public class SemBicScore implements ScoreWrapper {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("penaltyDiscount", 4);
-        return params;
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("penaltyDiscount");
+        return parameters;
     }
 
 }

@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * The interface that simulations must implement.
@@ -53,5 +52,5 @@ public interface Simulation extends HasParameters, TetradSerializable {
      * @return Returns the parameters used in the simulation. These are the
      * parameters whose values can be varied.
      */
-    Map<String, Object> getParameters();
+    List<String> getParameters();
 }

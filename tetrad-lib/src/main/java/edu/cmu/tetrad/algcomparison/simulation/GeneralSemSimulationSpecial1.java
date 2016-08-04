@@ -34,7 +34,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
+        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             this.dataSets.add(dataSet);
@@ -44,7 +44,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         GeneralizedSemPm pm = getPm(graph);
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
-        return im.simulateData(parameters.getInt("sampleSize", 1000), false);
+        return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 
     @Override
@@ -72,10 +72,10 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> parameters = randomGraph.getParameters();
-        parameters.put("numRuns", 1);
-        parameters.put("sampleSize", 1000);
+    public List<String> getParameters() {
+        List<String> parameters = randomGraph.getParameters();
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
         return parameters;
     }
 
@@ -86,7 +86,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
         List<Node> variablesNodes = pm.getVariableNodes();
         List<Node> errorNodes = pm.getErrorNodes();
 
-        Map<String, String> paramMap = new HashMap<String, String>();
+        Map<String, String> paramMap = new HashMap<>();
         String[] funcs = {"TSUM(NEW(B)*$)", "TSUM(NEW(B)*$+NEW(C)*sin(NEW(T)*$+NEW(A)))",
                 "TSUM(NEW(B)*(.5*$ + .5*(sqrt(abs(NEW(b)*$+NEW(exoErrorType))) ) ) )"};
         paramMap.put("s", "U(1,3)");

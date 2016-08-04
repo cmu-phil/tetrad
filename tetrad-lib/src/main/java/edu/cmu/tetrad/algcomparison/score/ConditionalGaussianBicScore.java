@@ -7,7 +7,7 @@ import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Experimental;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,9 +36,9 @@ public class ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> parameters = new LinkedHashMap<>();
-        parameters.put("penaltyDiscount", 4);
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<String>();
+        parameters.add("penaltyDiscount");
         return parameters;
     }
 }

@@ -107,7 +107,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
         // If there are any missing freeParameters, just ignore the sem IM.
         for (String parameter : parameters) {
-            Parameter paramObject = semPm.getParameter(parameter);
+            SemParam paramObject = semPm.getParameter(parameter);
 
             if (paramObject == null) {
                 return;
@@ -115,7 +115,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         }
 
         for (String parameter : parameters) {
-            Parameter paramObject = semPm.getParameter(parameter);
+            SemParam paramObject = semPm.getParameter(parameter);
 
             if (paramObject == null) {
                 throw new IllegalArgumentException("Parameter missing from Gaussian SEM IM: " + parameter);

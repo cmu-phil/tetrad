@@ -2,17 +2,13 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.utils.Parameters;
-import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.bayes.BayesPm;
-import edu.cmu.tetrad.bayes.MlBayesIm;
+import edu.cmu.tetrad.algcomparison.utils.*;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -49,7 +45,7 @@ public class GeneralSemSimulation implements Simulation {
 
         dataSets = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt("numRuns", 1); i++) {
+        for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
             DataSet dataSet = simulate(graph, parameters);
             dataSets.add(dataSet);
@@ -69,7 +65,7 @@ public class GeneralSemSimulation implements Simulation {
             im = new GeneralizedSemIm(pm);
         }
 
-        return im.simulateData(parameters.getInt("sampleSize", 1000), false);
+        return im.simulateData(parameters.getInt("sampleSize"), false);
     }
 
     @Override
@@ -97,13 +93,13 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> parameters = randomGraph.getParameters();
-        parameters.put("numRuns", 1);
-        parameters.put("sampleSize", 1000);
-        parameters.put("generalSemFunctionTemplateMeasured", "TSUM(NEW(B)*$)");
-        parameters.put("generalSemFunctionTemplateLatent", "TSUM(NEW(B)*$)");
-        parameters.put("generalSemErrorTemplate", "Beta(2, 5)");
+    public List<String> getParameters() {
+        List<String> parameters = randomGraph.getParameters();
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
+        parameters.add("generalSemFunctionTemplateMeasured");
+        parameters.add("generalSemFunctionTemplateLatent");
+        parameters.add("generalSemErrorTemplate");
         return parameters;
     }
 
@@ -113,9 +109,9 @@ public class GeneralSemSimulation implements Simulation {
         List<Node> variablesNodes = pm.getVariableNodes();
         List<Node> errorNodes = pm.getErrorNodes();
 
-        String measuredFunction = parameters.getString("generalSemFunctionTemplateMeasured", "TSUM(NEW(B)*$)");
-        String latentFunction = parameters.getString("generalSemFunctionTemplateLatent", "TSUM(NEW(B)*$)");
-        String error = parameters.getString("generalSemErrorTemplate", "Beta(2, 5)");
+        String measuredFunction = parameters.getString("generalSemFunctionTemplateMeasured");
+        String latentFunction = parameters.getString("generalSemFunctionTemplateLatent");
+        String error = parameters.getString("generalSemErrorTemplate");
 
         try {
             for (Node node : variablesNodes) {

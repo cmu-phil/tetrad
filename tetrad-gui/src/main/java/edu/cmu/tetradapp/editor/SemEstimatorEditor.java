@@ -212,7 +212,7 @@ public final class SemEstimatorEditor extends JPanel {
             SemIm estSem = estimator.getEstimatedSem();
             String dataName = estimator.getDataSet().getName();
 
-            for (Parameter parameter : estSem.getFreeParameters()) {
+            for (SemParam parameter : estSem.getFreeParameters()) {
                 builder.append("\n");
                 builder.append(dataName + "\t");
                 builder.append(parameter.getNodeA() + "\t");
@@ -264,7 +264,7 @@ public final class SemEstimatorEditor extends JPanel {
         }
     }
 
-    private String typeString(Parameter parameter) {
+    private String typeString(SemParam parameter) {
         ParamType type = parameter.getType();
 
         if (type == ParamType.COEF) {
@@ -293,7 +293,7 @@ public final class SemEstimatorEditor extends JPanel {
         throw new IllegalStateException("Unknown param type.");
     }
 
-    private double paramValue(SemIm im, Parameter parameter) {
+    private double paramValue(SemIm im, SemParam parameter) {
         double paramValue = im.getParamValue(parameter);
 
 //        if (editor.isEditCovariancesAsCorrelations()) {

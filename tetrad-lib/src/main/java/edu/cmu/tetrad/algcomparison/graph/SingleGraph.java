@@ -2,13 +2,9 @@ package edu.cmu.tetrad.algcomparison.graph;
 
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import org.apache.commons.math3.analysis.function.Sin;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jdramsey on 7/29/16.
@@ -32,7 +28,7 @@ public class SingleGraph implements RandomGraph {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
+    public List<String> getParameters() {
         return new LinkedHashMap<>();
     }
 }

@@ -38,8 +38,8 @@ public class ParamConstraint implements TetradSerializable {
 
 
     private double number;
-    private Parameter param1;
-    private Parameter param2;
+    private SemParam param1;
+    private SemParam param2;
     private ParamConstraintType type;
     private SemIm semIm;
 
@@ -48,7 +48,7 @@ public class ParamConstraint implements TetradSerializable {
      * of relation imposed by the constraint. The SemIm is required because the
      * freeParameters' values are determined by it.
      */
-    public ParamConstraint(SemIm semIm, Parameter param1,
+    public ParamConstraint(SemIm semIm, SemParam param1,
                            ParamConstraintType type, double number) {
         this.semIm = semIm;
         this.param1 = param1;
@@ -77,7 +77,7 @@ public class ParamConstraint implements TetradSerializable {
         //return new ParamConstraint(SemIm.serializableInstance(), new Parameter("X", ParamType.COEF, new GraphNode("X"),
         //        new GraphNode("Y")), ParamConstraintType.EQ, 1.0);
         return new ParamConstraint(SemIm.serializableInstance(),
-                Parameter.serializableInstance(), ParamConstraintType.EQ, 1.0);
+                SemParam.serializableInstance(), ParamConstraintType.EQ, 1.0);
     }
 
     public ParamConstraintType getType() {
@@ -96,7 +96,7 @@ public class ParamConstraint implements TetradSerializable {
 //        this.number = number;
 //    }
 
-    public Parameter getParam2() {
+    public SemParam getParam2() {
         return param2;
     }
 
@@ -150,7 +150,7 @@ public class ParamConstraint implements TetradSerializable {
 
     }
 
-    public Parameter getParam1() {
+    public SemParam getParam1() {
         return param1;
     }
 

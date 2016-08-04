@@ -1,13 +1,13 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
+import edu.cmu.tetrad.algcomparison.utils.ParamDescriptions;
+import edu.cmu.tetrad.algcomparison.utils.ParamDescription;
 import edu.cmu.tetrad.algcomparison.utils.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Returns a cyclic graph build up from small cyclic graph components.
@@ -18,8 +18,8 @@ public class Cyclic implements RandomGraph {
 
     @Override
     public Graph createGraph(Parameters parameters) {
-        return GraphUtils.cyclicGraph2(parameters.getInt("numMeasures", 10),
-                parameters.getInt("avgDegree", 2) * parameters.getInt("numMeasures", 10) / 2);
+        return GraphUtils.cyclicGraph2(parameters.getInt("numMeasures"),
+                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2);
 
     }
 
@@ -29,10 +29,10 @@ public class Cyclic implements RandomGraph {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
-        Map<String, Object> parameters = new LinkedHashMap<>();
-        parameters.put("numMeasures", 10);
-        parameters.put("avgDegree", 2);
-        return parameters;
+    public List<String> getParameters() {
+        List<String> paramDescriptions = new ArrayList<>();
+        paramDescriptions.add("numMeasured");
+        paramDescriptions.add("avgDegree");
+        return paramDescriptions;
     }
 }

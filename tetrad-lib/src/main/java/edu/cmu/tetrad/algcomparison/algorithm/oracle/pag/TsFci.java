@@ -12,7 +12,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.TsDagToPag;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * tsFCI.
@@ -68,7 +67,7 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge {
     }
 
     @Override
-    public Map<String, Object> getParameters() {
+    public List<String> getParameters() {
         return test.getParameters();
     }
 
