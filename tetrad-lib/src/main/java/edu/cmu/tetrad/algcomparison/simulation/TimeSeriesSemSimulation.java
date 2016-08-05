@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -98,12 +100,11 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("numMeasures");
-        parameters.add("numLatents");
-        parameters.add("avgDegree");
-        parameters.add("maxDegree");
-        parameters.add("maxIndegree");
-        parameters.add("maxOutdegree");
+
+        if (!(randomGraph instanceof SingleGraph)) {
+            parameters.addAll(randomGraph.getParameters());
+        }
+
         parameters.add("numRuns");
         parameters.add("sampleSize");
         return parameters;

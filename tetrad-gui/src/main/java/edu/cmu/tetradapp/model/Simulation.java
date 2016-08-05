@@ -52,6 +52,10 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     //============================CONSTRUCTORS=========================//
 
+    private Simulation() {
+
+    }
+
     public Simulation(Parameters parameters) {
         this.simulation = null;
         this.parameters = parameters;
@@ -62,10 +66,10 @@ public class Simulation extends DataWrapper implements SessionModel,
         this.parameters = parameters;
     }
 
-    public Simulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
-        this.simulation = simulation;
-        this.parameters = parameters;
-    }
+//    public Simulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
+//        this.simulation = simulation;
+//        this.parameters = parameters;
+//    }
 
     public Simulation(BayesImWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesIm());
@@ -186,7 +190,7 @@ public class Simulation extends DataWrapper implements SessionModel,
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
-        return new Simulation(new BayesNetSimulation(new RandomForward()), new Parameters());
+        return new Simulation();
     }
 
     public String getName() {
@@ -253,7 +257,7 @@ public class Simulation extends DataWrapper implements SessionModel,
         simulation.createData(parameters);
     }
 
-    public boolean isFixSimulation() {
+    public boolean isFixedSimulation() {
         return fixSimulation;
     }
 }

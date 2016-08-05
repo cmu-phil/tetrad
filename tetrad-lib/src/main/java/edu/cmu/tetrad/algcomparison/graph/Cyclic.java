@@ -30,7 +30,7 @@ public class Cyclic implements RandomGraph {
     @Override
     public List<String> getParameters() {
         List<String> paramDescriptions = new ArrayList<>();
-        paramDescriptions.add("numMeasured");
+        paramDescriptions.add("numMeasures");
         paramDescriptions.add("avgDegree");
         return paramDescriptions;
     }

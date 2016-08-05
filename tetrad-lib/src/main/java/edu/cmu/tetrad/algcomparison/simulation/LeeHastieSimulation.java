@@ -77,10 +77,10 @@ public class LeeHastieSimulation implements Simulation {
     @Override
     public List<String> getParameters() {
         List<String> parameters = randomGraph.getParameters();
-        parameters.add("numRuns");
-        parameters.add("sampleSize");
         parameters.add("numCategories");
         parameters.add("percentDiscrete");
+        parameters.add("numRuns");
+        parameters.add("sampleSize");
         return parameters;
     }
 

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,6 +63,8 @@ public class ParameterPanel extends JPanel {
                 p = getIntTextField(parameter, parameters, (Integer) defaultValue);
             } else if (defaultValue instanceof Boolean) {
                 p = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
+            } else if (defaultValue instanceof String) {
+                p = getStringField(parameter, parameters, (String) defaultValue);
             } else {
                 throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
             }
@@ -150,6 +153,28 @@ public class ParameterPanel extends JPanel {
         box.setMaximumSize(box.getPreferredSize());
 
         return box;
+    }
+
+    private StringTextField getStringField(final String parameter, final Parameters parameters, String defaultValue) {
+        final StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
+
+        field.setFilter(new StringTextField.Filter() {
+            public String filter(String value, String oldValue) {
+                if (value.equals(field.getValue().trim())) {
+                    return oldValue;
+                }
+
+                try {
+                    parameters.set(parameter, value);
+                } catch (Exception e) {
+                    // Ignore.
+                }
+
+                return value;
+            }
+        });
+
+        return field;
     }
 }
 

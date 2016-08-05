@@ -437,15 +437,20 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static GeneralizedSemPm serializableInstance() {
         Dag dag = new Dag();
         GraphNode node1 = new GraphNode("X");
         dag.addNode(node1);
         return new GeneralizedSemPm(Dag.serializableInstance());
+    }
+
+    public static List<String> getParameterNames() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("generalSemFunctionTemplateMeasured");
+        parameters.add("generalSemFunctionTemplateLatent");
+        parameters.add("generalSemErrorTemplate");
+        return parameters;
     }
 
     //============================PUBLIC METHODS========================//

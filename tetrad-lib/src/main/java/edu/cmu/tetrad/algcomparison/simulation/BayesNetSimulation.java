@@ -72,7 +72,7 @@ public class BayesNetSimulation implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        List<String> parameters = new ArrayList<>();
 
         if (!(randomGraph instanceof SingleGraph)) {
             parameters.addAll(randomGraph.getParameters());

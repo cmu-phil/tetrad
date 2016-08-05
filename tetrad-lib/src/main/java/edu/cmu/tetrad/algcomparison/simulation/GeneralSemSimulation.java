@@ -2,6 +2,8 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
+import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
@@ -37,6 +39,7 @@ public class GeneralSemSimulation implements Simulation {
     public GeneralSemSimulation(GeneralizedSemIm im) {
         this.randomGraph = new SingleGraph(im.getSemPm().getGraph());
         this.im = im;
+        this.pm = im.getGeneralizedSemPm();
     }
 
     @Override
@@ -95,12 +98,19 @@ public class GeneralSemSimulation implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        List<String> parameters = new ArrayList<>();
+
+        if (!(randomGraph instanceof SingleGraph)) {
+            parameters.addAll(randomGraph.getParameters());
+        }
+
+        if (pm == null) {
+            parameters.addAll(GeneralizedSemPm.getParameterNames());
+        }
+
         parameters.add("numRuns");
         parameters.add("sampleSize");
-        parameters.add("generalSemFunctionTemplateMeasured");
-        parameters.add("generalSemFunctionTemplateLatent");
-        parameters.add("generalSemErrorTemplate");
+
         return parameters;
     }
 
