@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
+import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
@@ -36,6 +37,7 @@ public class BayesNetSimulation implements Simulation {
     public BayesNetSimulation(BayesIm im ) {
         this.randomGraph = new SingleGraph(im.getDag());
         this.im = im;
+        this.pm = im.getBayesPm();
     }
 
     @Override
@@ -71,8 +73,19 @@ public class BayesNetSimulation implements Simulation {
     @Override
     public List<String> getParameters() {
         List<String> parameters = randomGraph.getParameters();
-        parameters.add("minCategories");
-        parameters.add("maxCategories");
+
+        if (!(randomGraph instanceof SingleGraph)) {
+            parameters.addAll(randomGraph.getParameters());
+        }
+
+        if (pm == null) {
+            parameters.addAll(BayesPm.getParameterNames());
+        }
+
+        if (im == null) {
+            parameters.addAll(MlBayesIm.getParameterNames());
+        }
+
         parameters.add("numRuns");
         parameters.add("sampleSize");
         return parameters;

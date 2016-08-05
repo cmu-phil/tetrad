@@ -179,6 +179,8 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
         return new BayesPm(Dag.serializableInstance());
     }
 
+
+
     //=========================PUBLIC METHODS=============================//
 
     /**
@@ -186,6 +188,13 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      */
     public Graph getDag() {
         return this.dag;
+    }
+
+    public static List<String> getParameterNames() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("minCategories");
+        parameters.add("maxCategories");
+        return parameters;
     }
 
     /**

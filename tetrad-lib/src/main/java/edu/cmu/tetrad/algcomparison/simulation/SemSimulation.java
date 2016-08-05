@@ -37,10 +37,12 @@ public class SemSimulation implements Simulation {
     public SemSimulation(SemIm im) {
         this.randomGraph = new SingleGraph(im.getSemPm().getGraph());
         this.im = im;
+        this.pm = im.getSemPm();
     }
 
     public SemSimulation(StandardizedSemIm im) {
         this.standardizedIm = im;
+        this.pm = im.getSemPm();
     }
 
     @Override
@@ -80,15 +82,12 @@ public class SemSimulation implements Simulation {
             parameters.addAll(randomGraph.getParameters());
         }
 
-        if (im == null) {
-            parameters.add("coefLow");
-            parameters.add("coefHigh");
-            parameters.add("covLow");
-            parameters.add("covHigh");
-            parameters.add("varLow");
-            parameters.add("varHigh");
-            parameters.add("coefSymmetric");
-            parameters.add("covSymmetric");
+//        if (pm == null) {
+//            parameters.addAll(SemPm.getParameterNames());
+//        }
+
+        if (im == null && standardizedIm == null) {
+            parameters.addAll(SemIm.getParameterNames());
         }
 
         parameters.add("numRuns");

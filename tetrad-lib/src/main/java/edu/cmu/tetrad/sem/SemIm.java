@@ -272,6 +272,20 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
     private Map<Node, Integer> variablesHash;
     private TetradMatrix sampleCovInv;
+    private static Collection<? extends String> parameterNames;
+
+    public static List<String> getParameterNames() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("coefLow");
+        parameters.add("coefHigh");
+        parameters.add("covLow");
+        parameters.add("covHigh");
+        parameters.add("varLow");
+        parameters.add("varHigh");
+        parameters.add("coefSymmetric");
+        parameters.add("covSymmetric");
+        return parameters;
+    }
 
     // Types of scores that yield a chi square value when minimized.
     // The Fgsl was a typo that unfortunately I had to keep for serialization.

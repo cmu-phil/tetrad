@@ -78,8 +78,8 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
             lowerBound = upperBound = 2;
         }
         else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
-            lowerBound = params.getInt("lowerBoundNumVals", 2);
-            upperBound = params.getInt("upperBoundNumVals", 2);
+            lowerBound = params.getInt("minCategories", 2);
+            upperBound = params.getInt("maxCategories", 2);
         }
         else {
             throw new IllegalStateException("Unrecognized type.");
@@ -105,8 +105,8 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
             this.bayesPm = new BayesPm(graph, bayesPm, lowerBound, upperBound);
         }
         else if (params.getString("initializationMode", "manualRetain").equals("automatic")) {
-            lowerBound = params.getInt("lowerBoundNumVals", 2);
-            upperBound = params.getInt("upperBoundNumVals", 2);
+            lowerBound = params.getInt("minCategories", 2);
+            upperBound = params.getInt("maxCategories", 2);
             this.bayesPm = new BayesPm(graph, lowerBound, upperBound);
         }
         else {
@@ -143,12 +143,12 @@ public class BayesPmWrapper implements SessionModel, GraphSource, KnowledgeBoxIn
 
         int lowerBound, upperBound;
 
-        if (params.getString("initializationMode", "manual").equals("manual")) {
+        if (params.getString("bayesPmInitializationMode", "automatic").equals("manual")) {
             lowerBound = upperBound = 2;
         }
-        else if (params.getString("initializationMode", "manual").equals("automatic")) {
-            lowerBound = params.getInt("lowerBoundNumVals", 2);
-            upperBound = params.getInt("upperBoundNumVals", 2);
+        else if (params.getString("bayesPmInitializationMode", "automatic").equals("automatic")) {
+            lowerBound = params.getInt("minCategories", 2);
+            upperBound = params.getInt("maxCategories", 2);
         }
         else {
             throw new IllegalStateException("Unrecognized type.");

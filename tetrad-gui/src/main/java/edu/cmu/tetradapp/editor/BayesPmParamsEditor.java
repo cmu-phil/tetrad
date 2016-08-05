@@ -166,7 +166,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
 
-        if (getParams().getString("initializationMode", "manualRetain").equals("manual")) {
+        if (getParams().getString("bayesPmInitializationMode", "automatic").equals("automatic")) {
             setUpManually.setSelected(true);
             lowerBoundField.setEnabled(false);
             upperBoundField.setEnabled(false);
@@ -179,7 +179,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
 
         setUpManually.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "manual");
+                getParams().set("bayesPmInitializationMode", "manual");
                 lowerBoundField.setEnabled(false);
                 upperBoundField.setEnabled(false);
             }
@@ -187,7 +187,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
 
         automaticallyAssigned.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "automatic");
+                getParams().set("bayesPmInitializationMode", "automatic");
                 lowerBoundField.setEnabled(true);
                 upperBoundField.setEnabled(true);
             }

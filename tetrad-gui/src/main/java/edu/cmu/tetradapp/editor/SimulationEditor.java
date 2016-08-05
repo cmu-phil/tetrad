@@ -22,6 +22,8 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -119,23 +121,31 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
                 String item = (String) box.getSelectedItem();
 
+                RandomGraph randomGraph;
+
+                if (simulation.getSimulation() != null) {
+                    randomGraph = new SingleGraph(simulation.getSimulation().getTrueGraph());
+                } else {
+                    randomGraph = new RandomForward();
+                }
+
                 if (!simulation.isFixSimulation()) {
                     edu.cmu.tetrad.algcomparison.simulation.Simulation dummySimulation;
 
                     if (item.equals(items[0])) {
-                        dummySimulation = new BayesNetSimulation(new RandomForward());
+                        dummySimulation = new BayesNetSimulation(randomGraph);
                     } else if (item.endsWith(items[1])) {
-                        dummySimulation = new SemSimulation(new RandomForward());
+                        dummySimulation = new SemSimulation(randomGraph);
                     } else if (item.endsWith(items[2])) {
-                        dummySimulation = new SemThenDiscretize(new RandomForward());
+                        dummySimulation = new SemThenDiscretize(randomGraph);
                     } else if (item.endsWith(items[3])) {
-                        dummySimulation = new GeneralSemSimulation(new RandomForward());
+                        dummySimulation = new GeneralSemSimulation(randomGraph);
                     } else if (item.endsWith(items[4])) {
-                        dummySimulation = new GeneralSemSimulationSpecial1(new RandomForward());
+                        dummySimulation = new GeneralSemSimulationSpecial1(randomGraph);
                     } else if (item.endsWith(items[5])) {
-                        dummySimulation = new LeeHastieSimulation(new RandomForward());
+                        dummySimulation = new LeeHastieSimulation(randomGraph);
                     } else if (item.endsWith(items[6])) {
-                        dummySimulation = new TimeSeriesSemSimulation();
+                        dummySimulation = new TimeSeriesSemSimulation(randomGraph);
                     } else {
                         throw new IllegalArgumentException("Unrecognized simulation type: " + item);
                     }
@@ -153,20 +163,28 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 if (!simulation.isFixSimulation()) {
                     String item = (String) box.getSelectedItem();
 
+                    RandomGraph randomGraph;
+
+                    if (simulation.getSimulation() != null) {
+                        randomGraph = new SingleGraph(simulation.getSimulation().getTrueGraph());
+                    } else {
+                        randomGraph = new RandomForward();
+                    }
+
                     if (item.equals(items[0])) {
-                        simulation.setSimulation(new BayesNetSimulation(new RandomForward()));
+                        simulation.setSimulation(new BayesNetSimulation(randomGraph));
                     } else if (item.endsWith(items[1])) {
-                        simulation.setSimulation(new SemSimulation(new RandomForward()));
+                        simulation.setSimulation(new SemSimulation(randomGraph));
                     } else if (item.endsWith(items[2])) {
-                        simulation.setSimulation(new SemThenDiscretize(new RandomForward()));
+                        simulation.setSimulation(new SemThenDiscretize(randomGraph));
                     } else if (item.endsWith(items[3])) {
-                        simulation.setSimulation(new GeneralSemSimulation(new RandomForward()));
+                        simulation.setSimulation(new GeneralSemSimulation(randomGraph));
                     } else if (item.endsWith(items[4])) {
-                        simulation.setSimulation(new GeneralSemSimulationSpecial1(new RandomForward()));
+                        simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph));
                     } else if (item.endsWith(items[5])) {
-                        simulation.setSimulation(new LeeHastieSimulation(new RandomForward()));
+                        simulation.setSimulation(new LeeHastieSimulation(randomGraph));
                     } else if (item.endsWith(items[6])) {
-                        simulation.setSimulation(new TimeSeriesSemSimulation());
+                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph));
                     } else {
                         throw new IllegalArgumentException("Unrecognized simulation type: " + item);
                     }

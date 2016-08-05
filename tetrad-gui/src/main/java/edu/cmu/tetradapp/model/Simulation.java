@@ -57,13 +57,18 @@ public class Simulation extends DataWrapper implements SessionModel,
         this.parameters = parameters;
     }
 
+    public Simulation(GraphWrapper graph, Parameters parameters) {
+        simulation = new BayesNetSimulation(new SingleGraph(graph.getGraph()));
+        this.parameters = parameters;
+    }
+
     public Simulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
         this.simulation = simulation;
         this.parameters = parameters;
     }
 
     public Simulation(BayesImWrapper wrapper, Parameters parameters) {
-        simulation = new BayesNetSimulation(new SingleGraph(wrapper.getGraph()));
+        simulation = new BayesNetSimulation(wrapper.getBayesIm());
         fixSimulation = true;
         this.parameters = parameters;
         createSimulation();
