@@ -59,6 +59,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * 'dataModel' currently.
      */
     private JTabbedPane tabbedPane = new JTabbedPane();
+    private boolean showMenus = true;
 
     //==========================CONSTUCTORS===============================//
 
@@ -68,19 +69,36 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     public DataEditor() {
     }
 
-    public DataEditor(TabularComparison comparison) {
-        this(new DataWrapper(comparison.getDataSet()));
-
+    /**
+     * Constructs the data editor with an empty list of data displays, showing
+     * menus optionally.
+     * @param showMenus True if menus should be shown.
+     */
+    public DataEditor(boolean showMenus) {
+        this.showMenus = showMenus;
     }
 
+    public DataEditor(DataWrapper dataWrapper) {
+        this(dataWrapper, true);
+    }
+
+    public DataEditor(TabularComparison comparison) {
+        this(new DataWrapper(comparison.getDataSet()));
+    }
+
+    public DataEditor(TabularComparison comparison, boolean showMenus) {
+        this(new DataWrapper(comparison.getDataSet()), showMenus);
+    }
 
     /**
      * Constructs a standalone data editor.
      */
-    public DataEditor(DataWrapper dataWrapper) {
+    public DataEditor(DataWrapper dataWrapper, boolean showMenus) {
         if (dataWrapper == null) {
             throw new NullPointerException("Data wrapper must not be null.");
         }
+
+        this.showMenus = showMenus;
 
         this.dataWrapper = dataWrapper;
         setLayout(new BorderLayout());
@@ -158,11 +176,18 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             }
 
             add(this.tabbedPane, BorderLayout.CENTER);
-            add(menuBar(), BorderLayout.NORTH);
+
+            if (showMenus) {
+                add(menuBar(), BorderLayout.NORTH);
+            }
         } else {
             this.tabbedPane.addTab(tabName(model, 1), dataDisplay(model));
             add(this.tabbedPane, BorderLayout.CENTER);
-            add(menuBar(), BorderLayout.NORTH);
+
+            if (showMenus) {
+                add(menuBar(), BorderLayout.NORTH);
+            }
+
             validate();
         }
 
@@ -210,7 +235,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         });
 
         add(tabbedPane(), BorderLayout.CENTER);
-        add(menuBar(), BorderLayout.NORTH);
+
+        if (showMenus) {
+            add(menuBar(), BorderLayout.NORTH);
+        }
+
         validate();
     }
 
@@ -234,7 +263,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         }
 
         add(tabbedPane(), BorderLayout.CENTER);
-        add(menuBar(), BorderLayout.NORTH);
+
+        if (showMenus) {
+            add(menuBar(), BorderLayout.NORTH);
+        }
+
         validate();
 
         firePropertyChange("modelChanged", null, null);
@@ -258,7 +291,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         }
 
         add(tabbedPane(), BorderLayout.CENTER);
-        add(menuBar(), BorderLayout.NORTH);
+
+        if (showMenus) {
+            add(menuBar(), BorderLayout.NORTH);
+        }
+
         validate();
 
         firePropertyChange("modelChanged", null, null);
@@ -831,7 +868,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             });
 
             add(tabbedPane(), BorderLayout.CENTER);
-            add(menuBar(), BorderLayout.NORTH);
+
+            if (showMenus) {
+                add(menuBar(), BorderLayout.NORTH);
+            }
+
             validate();
         }
     }

@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.Simulation;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -40,8 +41,11 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 /**
- * Displays data objects and allows users to edit these objects as well as load
- * and save them.
+ * Displays a simulation and lets the user create new simulations. A simulation is an ordered
+ * pair of a Graph and a list of DataSets. These can be created in a variety of ways, either
+ * standalone or taking graphs, IM's, or PM's as parents, and using the information those
+ * objects contain. For a Simulation you need a RandomGraph and you need to pick a particular
+ * style of Simulation.
  *
  * @author Joseph Ramsey
  */
@@ -51,7 +55,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     private final JButton simulateButton = new JButton("Simulate");
     private JComboBox<String> graphsDropdown = new JComboBox<>();
     private JComboBox<String> simulationsDropdown = new JComboBox<>();
-    public RandomGraph randomGraph = new RandomForward();
 
     //==========================CONSTUCTORS===============================//
 
@@ -67,15 +70,15 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             graphWorkbench = new GraphWorkbench(simulation.getSimulation().getTrueGraph());
             DataWrapper wrapper = new DataWrapper();
             wrapper.setDataModelList(simulation.getDataModelList());
-            dataEditor = new DataEditor(wrapper);
-            randomGraph = new SingleGraph(simulation.getSimulation().getTrueGraph());
+            dataEditor = new DataEditor(wrapper, false);
         } else {
             graphWorkbench = new GraphWorkbench();
             dataEditor = new DataEditor();
+            simulation.setSimulation(new BayesNetSimulation(new RandomForward()));
         }
 
         final JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Simulation Setup", getParametersPane(simulation.getSimulation(), simulation.getParams()));
+        tabbedPane.addTab("Simulation Setup", getParametersPane(simulation, simulation.getSimulation(), simulation.getParams()));
         tabbedPane.addTab("True Graph", graphWorkbench);
         tabbedPane.addTab("Data", dataEditor);
         tabbedPane.setPreferredSize(new Dimension(800, 600));
@@ -90,139 +93,89 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             graphsDropdown.addItem(item);
         }
 
-        graphsDropdown.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                if (!simulation.isFixedSimulation()) {
-                    String item = (String) graphsDropdown.getSelectedItem();
-
-                    if (!(randomGraph instanceof SingleGraph)) {
-                        if (item.equals(graphItems[0])) {
-                            randomGraph = new RandomForward();
-                        } else if (item.equals(graphItems[1])) {
-                            randomGraph = new Cyclic();
-                        } else if (item.equals(graphItems[2])) {
-                            randomGraph = new ScaleFree();
-                        } else {
-                            throw new IllegalArgumentException("Unrecognized graph type: " + item);
-                        }
-                    }
-
-                    JComboBox simulationsBox = simulationsDropdown;
-
-                    if (simulation.isFixedSimulation()) {
-                        String item2 = (String) simulationsBox.getSelectedItem();
-
-                        String[] simulationItems = getSimulationItems(simulation);
-
-                        edu.cmu.tetrad.algcomparison.simulation.Simulation dummySimulation;
-
-                        if (item2.equals(simulationItems[0])) {
-                            dummySimulation = new BayesNetSimulation(randomGraph);
-                        } else if (item2.equals(simulationItems[1])) {
-                            dummySimulation = new SemSimulation(randomGraph);
-                        } else if (item2.equals(simulationItems[2])) {
-                            dummySimulation = new SemThenDiscretize(randomGraph);
-//                    } else if (item2.equals(simulationItems[3])) {
-//                        dummySimulation = new GeneralSemSimulation(randomGraph);
-                        } else if (item2.equals(simulationItems[3])) {
-                            dummySimulation = new GeneralSemSimulationSpecial1(randomGraph);
-                        } else if (item2.equals(simulationItems[4])) {
-                            dummySimulation = new LeeHastieSimulation(randomGraph);
-                        } else if (item2.equals(simulationItems[5])) {
-                            dummySimulation = new TimeSeriesSemSimulation(randomGraph);
-                        } else {
-                            throw new IllegalArgumentException("Unrecognized simulation type: " + item2);
-                        }
-
-                        tabbedPane.setComponentAt(0, getParametersPane(dummySimulation, simulation.getParams()));
-                    }
-                }
-            }
-        });
-
-
         final String[] simulationItems = getSimulationItems(simulation);
 
         for (String item : simulationItems) {
             simulationsDropdown.addItem(item);
         }
 
+        graphsDropdown.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetPanel(simulation, graphItems, simulationItems, tabbedPane);
+            }
+        });
 
         simulationsDropdown.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String item = (String) simulationsDropdown.getSelectedItem();
-
-                if (!simulation.isFixedSimulation()) {
-                    if (item.equals(simulationItems[0])) {
-                        simulation.setSimulation(new BayesNetSimulation(randomGraph));
-                    } else if (item.equals(simulationItems[1])) {
-                        simulation.setSimulation(new SemSimulation(randomGraph));
-                    } else if (item.equals(simulationItems[2])) {
-                        simulation.setSimulation(new SemThenDiscretize(randomGraph));
-//                    } else if (item.equals(simulationItems[3])) {
-//                        simulation.setSimulation(new GeneralSemSimulation(randomGraph));
-                    } else if (item.equals(simulationItems[3])) {
-                        simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph));
-                    } else if (item.equals(simulationItems[4])) {
-                        simulation.setSimulation(new LeeHastieSimulation(randomGraph));
-                    } else if (item.equals(simulationItems[5])) {
-                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph));
-                    } else {
-                        throw new IllegalArgumentException("Unrecognized simulation type: " + item);
-                    }
-                }
-
-                tabbedPane.setComponentAt(0, getParametersPane(simulation.getSimulation(),
-                        simulation.getParams()));
-
+                resetPanel(simulation, graphItems, simulationItems, tabbedPane);
             }
         });
 
         simulateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox box = simulationsDropdown;
-
-                if (!simulation.isFixedSimulation()) {
-                    String item = (String) box.getSelectedItem();
-
-                    if (item.equals(simulationItems[0])) {
-                        simulation.setSimulation(new BayesNetSimulation(randomGraph));
-                    } else if (item.equals(simulationItems[1])) {
-                        simulation.setSimulation(new SemSimulation(randomGraph));
-                    } else if (item.equals(simulationItems[2])) {
-                        simulation.setSimulation(new SemThenDiscretize(randomGraph));
-//                    } else if (item.equals(simulationItems[3])) {
-//                        simulation.setSimulation(new GeneralSemSimulation(randomGraph));
-                    } else if (item.equals(simulationItems[3])) {
-                        simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph));
-                    } else if (item.equals(simulationItems[4])) {
-                        simulation.setSimulation(new LeeHastieSimulation(randomGraph));
-                    } else if (item.equals(simulationItems[5])) {
-                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph));
-                    } else {
-                        throw new IllegalArgumentException("Unrecognized simulation type: " + item);
+                new WatchedProcess((Window) getTopLevelAncestor()) {
+                    @Override
+                    public void watch() {
+                        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+                        _simulation.createData(simulation.getParams());
+                        graphWorkbench.setGraph(_simulation.getTrueGraph());
+                        DataWrapper wrapper = new DataWrapper();
+                        wrapper.setDataModelList(simulation.getDataModelList());
+                        tabbedPane.setComponentAt(2, new DataEditor(wrapper));
                     }
-                }
-
-                simulation.createSimulation();
-                graphWorkbench.setGraph(simulation.getSimulation().getTrueGraph());
-                DataWrapper wrapper = new DataWrapper();
-                wrapper.setDataModelList(simulation.getDataModelList());
-                DataEditor dataEditor = new DataEditor(wrapper);
-                tabbedPane.setComponentAt(2, dataEditor);
-
-                tabbedPane.setComponentAt(0, getParametersPane(simulation.getSimulation(),
-                        simulation.getParams()));
+                };
             }
         });
 
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
+        if (!simulation.isFixedSimulation()) {
+            RandomGraph randomGraph;
+
+            String graphItem = (String) graphsDropdown.getSelectedItem();
+
+            if (graphItem.equals(graphItems[0])) {
+                randomGraph = new RandomForward();
+            } else if (graphItem.equals(graphItems[1])) {
+                randomGraph = new Cyclic();
+            } else if (graphItem.equals(graphItems[2])) {
+                randomGraph = new ScaleFree();
+            } else {
+                randomGraph = new SingleGraph(simulation.getSimulation().getTrueGraph());
+            }
+
+            if (simulationItems.length > 1) {
+                String simulationItem = (String) simulationsDropdown.getSelectedItem();
+
+                if (simulationItem.equals(simulationItems[0])) {
+                    simulation.setSimulation(new BayesNetSimulation(randomGraph));
+                } else if (simulationItem.equals(simulationItems[1])) {
+                    simulation.setSimulation(new SemSimulation(randomGraph));
+                } else if (simulationItem.equals(simulationItems[2])) {
+                    simulation.setSimulation(new SemThenDiscretize(randomGraph));
+//                    } else if (graphItem.equals(simulationItems[3])) {
+//                        simulation.setSimulation(new GeneralSemSimulation(randomGraph));
+                } else if (simulationItem.equals(simulationItems[3])) {
+                    simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph));
+                } else if (simulationItem.equals(simulationItems[4])) {
+                    simulation.setSimulation(new LeeHastieSimulation(randomGraph));
+                } else if (simulationItem.equals(simulationItems[5])) {
+                    simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph));
+                } else {
+                    throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
+                }
+            }
+        }
+
+        tabbedPane.setComponentAt(0, getParametersPane(simulation, simulation.getSimulation(),
+                simulation.getParams()));
     }
 
     private String[] getSimulationItems(Simulation simulation) {
@@ -259,9 +212,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         return simulationItems;
     }
 
-    private Box getParametersPane(
-            edu.cmu.tetrad.algcomparison.simulation.Simulation simulation,
-            Parameters parameters) {
+    private Box getParametersPane(Simulation _simulation,
+                                  edu.cmu.tetrad.algcomparison.simulation.Simulation simulation,
+                                  Parameters parameters) {
         JScrollPane scroll;
 
         if (simulation != null) {
@@ -275,7 +228,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         Box c = Box.createVerticalBox();
 
-        if (!(randomGraph instanceof SingleGraph)) {
+        if (!(_simulation.isFixedSimulation())) {
             c.add(graphsDropdown);
         }
 

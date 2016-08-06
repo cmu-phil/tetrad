@@ -41,6 +41,7 @@ public class SemSimulation implements Simulation {
     }
 
     public SemSimulation(StandardizedSemIm im) {
+        this.randomGraph = new SingleGraph(im.getSemPm().getGraph());
         this.standardizedIm = im;
         this.pm = im.getSemPm();
     }
