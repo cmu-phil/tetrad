@@ -100,7 +100,6 @@ public class FgsCli {
         MAIN_OPTIONS.addOption(null, "graphml", false, "Create graphML output.");
         MAIN_OPTIONS.addOption(null, "json", false, "Create JSON output.");
 
-
         // output
         MAIN_OPTIONS.addOption("o", "out", true, "Output directory.");
         MAIN_OPTIONS.addOption(null, "output-prefix", true, "Prefix name of output files.");
@@ -174,7 +173,7 @@ public class FgsCli {
             }
 
             if (isSerializeJson) {
-                writeOutJson(graph,Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
+                writeOutJson(graph, Paths.get(dirOut.toString(), outputPrefix + "_graph.json"));
             }
 
         } catch (IOException exception) {
@@ -270,8 +269,8 @@ public class FgsCli {
         fmt.format("Dataset:%n");
         fmt.format("file = %s%n", dataFile.getFileName());
         fmt.format("delimiter = %s%n", Args.getDelimiterName(delimiter));
-        fmt.format("cases read in = %s%n", dataSet.getNumColumns());
-        fmt.format("variables read in = %s%n", dataSet.getNumRows());
+        fmt.format("cases read in = %s%n", dataSet.getNumRows());
+        fmt.format("variables read in = %s%n", dataSet.getNumColumns());
         fmt.format("%n");
 
         if (excludedVariableFile != null || knowledgeFile != null) {
