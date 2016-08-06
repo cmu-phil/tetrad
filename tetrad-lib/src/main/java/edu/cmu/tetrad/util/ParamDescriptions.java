@@ -60,6 +60,26 @@ public class ParamDescriptions {
         put("covSymmetric", new ParamDescription("Yes if negative covariance " +
                         "values should be considered", true));
         put("retainPreviousValues", new ParamDescription("Retain previous values", false));
+
+        // Boolean Glass parameters.
+        put("lagGraphVarsPerInd", new ParamDescription("Number of variables per individual", 5));
+        put("lagGraphMlag", new ParamDescription("Maximum lag of graph", 1));
+        put("lagGraphIndegree", new ParamDescription("Indegree of graph", 2));
+        put("numDishes", new ParamDescription("Number of dishes", 1));
+        put("numCellsPerDish",new ParamDescription("Number of cells per dish", 10000));
+        put("stepsGenerated",new ParamDescription("Number of steps generated", 4));
+        put("firstStepStored",new ParamDescription("The index of the first step stored", 1));
+        put("interval",new ParamDescription("The interval between steps stored", 1));
+        put("rawDataSaved",new ParamDescription("Yes if the raw data should be saved (otherwise tossed)", false));
+        put("measuredDataSaved",new ParamDescription("Yes if the measured data should be saved (otherwise tossed)", true));
+        put("initSync",new ParamDescription("Yes if cells should be initialized synchronously, otherwise randomly", true));
+        put("antilogCalculated",new ParamDescription("Yes if antilogs of data should be calculated", false));
+        put("dishDishVariability",new ParamDescription("Dish to dish variability", 10.0));
+        put("numSamplesPerDish",new ParamDescription("Number of samples per dish", 4));
+        put("sampleSampleVariability",new ParamDescription("Sample to sample variability", 0.025));
+        put("chipChipVariability",new ParamDescription("Chip to chip variability", 0.1));
+        put("pixelDigitalization",new ParamDescription("Pixel digitalization", 0.025));
+
     }
 
     public static ParamDescriptions instance() {

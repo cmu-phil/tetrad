@@ -76,6 +76,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             DataWrapper wrapper = new DataWrapper();
             wrapper.setDataModelList(simulation.getDataModelList());
             dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
+
+            if (simulation.getSimulation() instanceof BooleanGlassSimulation) {
+                simulation.setFixedGraph(true);
+            }
         } else {
             graphEditor = new GraphEditor(new EdgeListGraph());
             dataEditor = new DataEditor(JTabbedPane.LEFT);
@@ -326,6 +330,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         if (!simulation.isFixedSimulation()) {
             if (simulationItems.length > 1) {
                 String simulationItem = (String) simulationsDropdown.getSelectedItem();
+                simulation.setFixedGraph(false);
 
                 if (simulationItem.equals(simulationItems[0])) {
                     simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
@@ -341,6 +346,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                     simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
                 } else if (simulationItem.equals(simulationItems[5])) {
                     simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                } else if (simulationItem.equals(simulationItems[6])) {
+                    simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
+                    simulation.setFixedGraph(true);
                 } else {
                     throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
@@ -383,7 +391,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 //                    "General Structural Equation Model",
                     "General Structural Equation Model Special",
                     "Lee & Hastie",
-                    "Time Series"
+                    "Time Series",
+                    "Boolean Glass"
             };
         }
         return simulationItems;
@@ -395,7 +404,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         JScrollPane scroll;
 
         if (simulation != null) {
-            ParameterPanel comp = new ParameterPanel(simulation.getParameters(), parameters);
+            List<String> _params = simulation.getParameters();
+            ParameterPanel comp = new ParameterPanel(_params, parameters);
             scroll = new JScrollPane(comp);
         } else {
             scroll = new JScrollPane();
