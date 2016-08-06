@@ -26,6 +26,7 @@ import edu.cmu.tetrad.gene.tetrad.gene.history.BooleanGlassFunction;
 import edu.cmu.tetrad.gene.tetrad.gene.history.GeneHistory;
 import edu.cmu.tetrad.gene.tetrad.gene.simulation.MeasurementSimulator;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -35,7 +36,7 @@ import java.io.ObjectInputStream;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class MeasurementSimulatorParams {
+public class MeasurementSimulatorParams implements TetradSerializable{
     static final long serialVersionUID = 23L;
 
     /**
