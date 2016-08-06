@@ -69,9 +69,14 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     public DataEditor() {
     }
 
+    public DataEditor(int tabPlacement) {
+        tabbedPane = new JTabbedPane(tabPlacement);
+    }
+
     /**
      * Constructs the data editor with an empty list of data displays, showing
      * menus optionally.
+     *
      * @param showMenus True if menus should be shown.
      */
     public DataEditor(boolean showMenus) {
@@ -82,6 +87,10 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         this(dataWrapper, true);
     }
 
+    public DataEditor(DataWrapper dataWrapper, int tabPlacement) {
+        this(dataWrapper, true, tabPlacement);
+    }
+
     public DataEditor(TabularComparison comparison) {
         this(new DataWrapper(comparison.getDataSet()));
     }
@@ -90,13 +99,19 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         this(new DataWrapper(comparison.getDataSet()), showMenus);
     }
 
+    public DataEditor(DataWrapper dataWrapper, boolean showMenus) {
+        this(dataWrapper, showMenus, JTabbedPane.TOP);
+    }
+
     /**
      * Constructs a standalone data editor.
      */
-    public DataEditor(DataWrapper dataWrapper, boolean showMenus) {
+    public DataEditor(DataWrapper dataWrapper, boolean showMenus, int tabPlacement) {
         if (dataWrapper == null) {
             throw new NullPointerException("Data wrapper must not be null.");
         }
+
+        this.tabbedPane = new JTabbedPane(tabPlacement);
 
         this.showMenus = showMenus;
 
@@ -140,7 +155,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     }
 
     //==========================PUBLIC METHODS=============================//
-
 
     /**
      * Replaces the getModel Datamodels with the given one. Note, that by calling this

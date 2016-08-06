@@ -125,7 +125,7 @@ public final class GraphEditor extends JPanel
                 if ("graph".equals(propertyName)) {
                     Graph _graph = (Graph) evt.getNewValue();
 
-                    if (getWorkbench() != null) {
+                    if (getWorkbench() != null && getGraphWrapper() != null) {
                         getGraphWrapper().setGraph(_graph);
                     }
                 }

@@ -51,25 +51,26 @@ public class Simulation extends DataWrapper implements SessionModel,
     private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation;
     private Parameters parameters;
     private String name;
-    private boolean fixedGraph = false;
-    private boolean fixedSimulation = false;
+    private boolean fixedGraph = true;
+    private boolean fixedSimulation = true;
 
     //============================CONSTRUCTORS=========================//
 
     private Simulation() {
-
     }
 
     public Simulation(Parameters parameters) {
         this.simulation = null;
         this.parameters = parameters;
+        this.fixedGraph = false;
+        this.fixedSimulation = false;
     }
 
     public Simulation(GraphWrapper graph, Parameters parameters) {
         simulation = new BayesNetSimulation(new SingleGraph(graph.getGraph()));
+        this.fixedGraph = true;
         this.parameters = parameters;
-        fixedGraph = false;
-        fixedSimulation = false;
+        this.fixedSimulation = false;
     }
 
 //    public Simulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
@@ -79,8 +80,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(BayesImWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesIm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -88,8 +87,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(BayesPmWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesPm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -97,8 +94,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -106,8 +101,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -115,8 +108,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -124,8 +115,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -133,7 +122,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(SemPmWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getSemPm());
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -141,8 +129,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(SemImWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getSemIm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -150,8 +136,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getEstimatedSemIm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -159,8 +143,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -168,8 +150,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getStandardizedSemIm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -177,8 +157,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) {
         simulation = new GeneralSemSimulation(wrapper.getSemPm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -186,8 +164,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) {
         simulation = new GeneralSemSimulation(wrapper.getSemIm());
-        fixedGraph = true;
-        fixedSimulation = true;
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
@@ -197,8 +173,9 @@ public class Simulation extends DataWrapper implements SessionModel,
         return this.simulation;
     }
 
-    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
+    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
         this.simulation = simulation;
+        this.parameters = parameters;
         createSimulation();
     }
 
@@ -259,16 +236,26 @@ public class Simulation extends DataWrapper implements SessionModel,
         simulation.createData(parameters);
     }
 
-    public boolean isFixedGraph() {
-        return fixedGraph;
+    @Override
+    public Graph getGraph() {
+        return simulation.getTrueGraph();
     }
+
+
     public boolean isFixedSimulation() {
         return fixedSimulation;
     }
 
-    @Override
-    public Graph getGraph() {
-        return simulation.getTrueGraph();
+    public void setFixedSimulation(boolean fixedSimulation) {
+        this.fixedSimulation = fixedSimulation;
+    }
+
+    public boolean isFixedGraph() {
+        return fixedGraph;
+    }
+
+    public void setFixedGraph(boolean fixedGraph) {
+        this.fixedGraph = fixedGraph;
     }
 }
 

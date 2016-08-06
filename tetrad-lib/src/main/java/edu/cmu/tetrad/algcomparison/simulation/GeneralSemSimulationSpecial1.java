@@ -33,6 +33,8 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
+        this.graph = randomGraph.createGraph(parameters);
+
         this.dataSets = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {

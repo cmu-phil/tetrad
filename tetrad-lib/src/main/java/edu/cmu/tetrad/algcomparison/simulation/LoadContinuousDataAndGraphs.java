@@ -38,6 +38,8 @@ public class LoadContinuousDataAndGraphs implements Simulation {
             System.out.println("Loading graph from " + file2.getAbsolutePath());
             this.graph = GraphUtils.loadGraphTxt(file2);
 
+            edu.cmu.tetrad.graph.GraphUtils.circleLayout(this.graph, 225, 200, 150);
+
             try {
                 for (int i = 0; i < numDataSets; i++) {
                     File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
@@ -110,7 +112,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        return new ArrayList<>(usedParameters);
+        return new ArrayList<>();
     }
 
     @Override
