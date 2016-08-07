@@ -62,7 +62,7 @@ public class Parameters implements TetradSerializable {
      * @return The integer value of this parameter.
      */
     public int getInt(String name) {
-        return ((Number) get(name, ParamDescriptions.instance().get(name).getDefaultValue())).intValue();
+        return ((Number) get(name, null)).intValue();
     }
 
     /**
@@ -73,7 +73,7 @@ public class Parameters implements TetradSerializable {
      * @return The boolean value of this parameter.
      */
     public boolean getBoolean(String name) {
-        return (Boolean) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+        return (Boolean) get(name, null);
     }
 
     /**
@@ -84,7 +84,7 @@ public class Parameters implements TetradSerializable {
      * @return The double value of this parameter.
      */
     public double getDouble(String name) {
-        return ((Number) get(name, ParamDescriptions.instance().get(name).getDefaultValue())).doubleValue();
+        return ((Number) get(name, null)).doubleValue();
     }
 
     /**
@@ -95,7 +95,7 @@ public class Parameters implements TetradSerializable {
      * @return The string value of this parameter.
      */
     public String getString(String name) {
-        return (String) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+        return (String) get(name, null);
     }
 
     /**
@@ -106,7 +106,7 @@ public class Parameters implements TetradSerializable {
      * @return The object value of this parameter.
      */
     public Object get(String name) {
-        return get(name, ParamDescriptions.instance().get(name).getDefaultValue());
+        return get(name, null);
     }
 
     /**
@@ -154,7 +154,7 @@ public class Parameters implements TetradSerializable {
      * Returns the object value of the given parameter, using the given default.
      *
      * @param name The name parameter.
-     * @return The object value of this parameter.
+     * @return The object value of this parameter. Must be Object.
      */
     public Object get(String name, Object defaultValue) {
         if (overriddenParameters.containsKey(name)) {
@@ -205,7 +205,7 @@ public class Parameters implements TetradSerializable {
      * Sets the value(s) of the given parameter to a list of strings.
      *
      * @param name The name of the parameter.
-     * @param n    A list of values for the parameter.
+     * @param n    A list of values for the parameter. The must be Object.
      */
     public void set(String name, Object... n) {
         parameters.put(name, n);
@@ -239,7 +239,7 @@ public class Parameters implements TetradSerializable {
      * Sets the given parameter to the given value.
      *
      * @param name  The name of the parameter.
-     * @param value The value of the parameter (a single value).
+     * @param value The value of the parameter (a single value). Must be jec.
      */
     public void set(String name, Object value) {
         parameters.put(name, new Object[]{value});

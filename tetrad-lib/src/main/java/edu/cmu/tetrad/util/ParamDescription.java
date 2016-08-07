@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.util;
 
+import java.io.Serializable;
+
 /**
  * Describes a parameter.
  *
@@ -7,9 +9,9 @@ package edu.cmu.tetrad.util;
  */
 public class ParamDescription {
     private String description;
-    private Object defaultValue;
+    private Serializable defaultValue;
 
-    public ParamDescription(String description, Object defaultValue) {
+    public ParamDescription(String description, Serializable defaultValue) {
         if (description == null) {
             throw new NullPointerException("Description is null.");
         }
@@ -26,7 +28,7 @@ public class ParamDescription {
         return description;
     }
 
-    public Object getDefaultValue() {
+    public Serializable getDefaultValue() {
         return defaultValue;
     }
 }
