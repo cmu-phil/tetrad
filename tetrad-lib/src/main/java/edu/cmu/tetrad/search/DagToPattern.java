@@ -36,8 +36,9 @@ import java.util.Set;
  * Implements the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of Spirtes, Glymour, and Scheines, "Causation,
  * Prediction, and Search," 2nd edition, with a modified rule set in step D due to Chris Meek. For the modified rule
  * set, see Chris Meek (1995), "Causal inference and causal explanation with background knowledge."
- *
+ *  
  * @author Joseph Ramsey.
+ * @deprecated Use SearchGraphUtils.patternFromDag(dag);
  */
 public class DagToPattern {
 

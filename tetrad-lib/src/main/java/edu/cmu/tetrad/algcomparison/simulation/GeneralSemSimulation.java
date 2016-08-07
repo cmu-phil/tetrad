@@ -9,6 +9,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -32,12 +33,16 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     public GeneralSemSimulation(GeneralizedSemPm pm) {
-        this.randomGraph = new SingleGraph(pm.getGraph());
+        SemGraph graph = pm.getGraph();
+        graph.setShowErrorTerms(false);
+        this.randomGraph = new SingleGraph(graph);
         this.pm = pm;
     }
 
     public GeneralSemSimulation(GeneralizedSemIm im) {
-        this.randomGraph = new SingleGraph(im.getSemPm().getGraph());
+        SemGraph graph = im.getSemPm().getGraph();
+        graph.setShowErrorTerms(false);
+        this.randomGraph = new SingleGraph(graph);
         this.im = im;
         this.pm = im.getGeneralizedSemPm();
     }
@@ -63,7 +68,7 @@ public class GeneralSemSimulation implements Simulation {
             GeneralizedSemPm pm = this.pm;
 
             if (pm == null) {
-                pm = new GeneralizedSemPm(graph);
+                pm = getPm(graph, parameters);
             }
 
             im = new GeneralizedSemIm(pm);

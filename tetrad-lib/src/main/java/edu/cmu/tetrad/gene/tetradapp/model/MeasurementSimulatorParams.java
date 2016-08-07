@@ -43,6 +43,7 @@ public class MeasurementSimulatorParams implements TetradSerializable{
      * @serial Cannot be null.
      */
     private MeasurementSimulator simulator;
+    private boolean includeDishAndChipVariables;
 
     //==============================CONSTRUCTORS=========================//
 
@@ -217,6 +218,14 @@ public class MeasurementSimulatorParams implements TetradSerializable{
         if (simulator == null) {
             throw new NullPointerException();
         }
+    }
+
+    public boolean isIncludeDishAndChipVariables() {
+        return getSimulator().isIncludeDishAndChipColumns();
+    }
+
+    public void setIncludeDishAndChipVariables(boolean includeDishAndChipVariables) {
+        getSimulator().setIncludeDishAndChipColumns(includeDishAndChipVariables);
     }
 }
 

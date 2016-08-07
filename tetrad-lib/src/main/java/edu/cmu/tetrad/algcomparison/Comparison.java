@@ -358,7 +358,7 @@ public class Comparison {
 
                 PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
                 out.println(simulationWrapper.getDescription());
-                out.println();
+//                out.println();
                 out.println(parameters);
                 out.close();
             }

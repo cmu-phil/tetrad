@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by jdramsey on 8/3/16.
+ * Stores descriptions of the parameters for the simulation box. All parameters that go
+ * into the interface need to be described here.
+ * @author jdramsey
  */
 public class ParamDescriptions {
     private static ParamDescriptions instance = new ParamDescriptions();
@@ -46,8 +48,8 @@ public class ParamDescriptions {
         put("mgmParam2", new ParamDescription("MGM tuning parameter #2", 0.1));
         put("mgmParam3", new ParamDescription("MGM tuning parameter #3", 0.1));
         put("scaleFreeAlpha", new ParamDescription("For scale-free graphs, the parameter alpha", 0.05));
-        put("scaleFreeBeta", new ParamDescription("For scale-free graphs, the parameter beta", 0.05));
-        put("scaleFreeDeltaIn", new ParamDescription("For scale-free graphs, the parameter delta_in", 3));
+        put("scaleFreeBeta", new ParamDescription("For scale-free graphs, the parameter beta", 0.9));
+        put("scaleFreeDeltaIn", new ParamDescription("For scale-free graphs, the parameter      delta_in", 3));
         put("scaleFreeDeltaOut", new ParamDescription("For scale-free graphs, the parameter delta_out", 3));
         put("generalSemFunctionTemplateMeasured",
                 new ParamDescription("General function template for measured variables", "TSUM(NEW(B)*$)"));
@@ -75,10 +77,11 @@ public class ParamDescriptions {
         put("initSync",new ParamDescription("Yes if cells should be initialized synchronously, otherwise randomly", true));
         put("antilogCalculated",new ParamDescription("Yes if antilogs of data should be calculated", false));
         put("dishDishVariability",new ParamDescription("Dish to dish variability", 10.0));
-        put("numSamplesPerDish",new ParamDescription("Number of samples per dish", 4));
+        put("numChipsPerDish",new ParamDescription("Number of chips per dish", 4));
         put("sampleSampleVariability",new ParamDescription("Sample to sample variability", 0.025));
         put("chipChipVariability",new ParamDescription("Chip to chip variability", 0.1));
         put("pixelDigitalization",new ParamDescription("Pixel digitalization", 0.025));
+        put("includeDishAndChipColumns",new ParamDescription("Yes if Dish and Chip columns should be included in output", true));
 
     }
 
@@ -88,7 +91,8 @@ public class ParamDescriptions {
 
     public ParamDescription get(String name) {
         if (!map.containsKey(name)) {
-            throw new IllegalArgumentException("Expecting a default value for " + name);
+            return new ParamDescription("Please add a description to ParamDescriptions for " + name, 0);
+//            throw new IllegalArgumentException("Expecting a default value for " + name);
         }
 
         return map.get(name);

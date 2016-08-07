@@ -2,15 +2,14 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.SemGraph;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,30 +17,28 @@ import java.util.List;
 /**
  * @author jdramsey
  */
-public class SemSimulation implements Simulation {
+public class StandardizedSemSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private SemPm pm;
-    private SemIm im;
+    private StandardizedSemIm standardizedIm;
     private List<DataSet> dataSets;
     private Graph graph;
 
-    public SemSimulation(RandomGraph graph) {
+    public StandardizedSemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
-    public SemSimulation(SemPm pm) {
+    public StandardizedSemSimulation(SemPm pm) {
         SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
         this.randomGraph = new SingleGraph(graph);
         this.pm = pm;
     }
 
-    public SemSimulation(SemIm im) {
-        SemGraph graph = im.getSemPm().getGraph();
-        graph.setShowErrorTerms(false);
-        this.randomGraph = new SingleGraph(graph);
-        this.im = im;
+    public StandardizedSemSimulation(StandardizedSemIm im) {
+        this.randomGraph = new SingleGraph(im.getSemPm().getGraph());
+        this.standardizedIm = im;
         this.pm = im.getSemPm();
     }
 
@@ -82,14 +79,6 @@ public class SemSimulation implements Simulation {
             parameters.addAll(randomGraph.getParameters());
         }
 
-//        if (pm == null) {
-//            parameters.addAll(SemPm.getParameterNames());
-//        }
-
-        if (im == null) {
-            parameters.addAll(SemIm.getParameterNames());
-        }
-
         parameters.add("numRuns");
         parameters.add("sampleSize");
         return parameters;
@@ -106,18 +95,16 @@ public class SemSimulation implements Simulation {
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
-        SemIm im = this.im;
-
-        if (im == null) {
+        if (standardizedIm == null) {
             SemPm pm = this.pm;
 
             if (pm == null) {
                 pm = new SemPm(graph);
             }
 
-            im = new SemIm(pm, parameters);
+            standardizedIm = new StandardizedSemIm(new SemIm(pm));
         }
 
-        return im.simulateData(parameters.getInt("sampleSize"), false);
+        return standardizedIm.simulateData(parameters.getInt("sampleSize"), false);
     }
 }

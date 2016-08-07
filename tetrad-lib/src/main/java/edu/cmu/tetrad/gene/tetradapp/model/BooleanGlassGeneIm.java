@@ -211,11 +211,14 @@ public class BooleanGlassGeneIm implements SessionModel {
         DataModelList dataModelList = new DataModelList();
 
         List<Node> variables = new LinkedList<Node>();
-        DiscreteVariable dishVar = new DiscreteVariable("Dish");
-        DiscreteVariable chipVar = new DiscreteVariable("Chip");
 
-        variables.add(dishVar);
-        variables.add(chipVar);
+        if (simulator.isIncludeDishAndChipVariables()) {
+            DiscreteVariable dishVar = new DiscreteVariable("Dish");
+            DiscreteVariable chipVar = new DiscreteVariable("Chip");
+
+            variables.add(dishVar);
+            variables.add(chipVar);
+        }
 
         // Fetch the measured data and convert it.
         double[][][] measuredData = simulator.getMeasuredData();
@@ -256,10 +259,12 @@ public class BooleanGlassGeneIm implements SessionModel {
         measuredDataSet.setName("Measurement Data");
         dataModelList.add(measuredDataSet);
 
-        for (int i = 0; i < measuredData[0][0].length; i++) {
-            int samplesPerDish = simulator.getNumSamplesPerDish();
-            measuredDataSet.setInt(i, 0, i / samplesPerDish + 1);
-            measuredDataSet.setInt(i, 1, i + 1);
+        if (simulator.isIncludeDishAndChipVariables()) {
+            for (int i = 0; i < measuredData[0][0].length; i++) {
+                int samplesPerDish = simulator.getNumSamplesPerDish();
+                measuredDataSet.setInt(i, 0, i / samplesPerDish + 1);
+                measuredDataSet.setInt(i, 1, i + 1);
+            }
         }
 
         // Fetch the measured data and convert it.
@@ -293,14 +298,19 @@ public class BooleanGlassGeneIm implements SessionModel {
 
             int n = rawData[0][0].length;
             int cellsPerDish = simulator.getNumCellsPerDish();
-            DiscreteVariable dishVar2 =
-                    new DiscreteVariable("Dish", n / cellsPerDish + 1);
 
-            rawDataSet.addVariable(0, dishVar2);
+            if (simulator.isIncludeDishAndChipVariables()) {
+                DiscreteVariable dishVar2 =
+                        new DiscreteVariable("Dish", n / cellsPerDish + 1);
+
+                rawDataSet.addVariable(0, dishVar2);
+            }
             rawDataSet.setName("Raw Data");
 
-            for (int i = 0; i < n; i++) {
-                rawDataSet.setInt(i, 0, i / cellsPerDish + 1);
+            if (simulator.isIncludeDishAndChipVariables()) {
+                for (int i = 0; i < n; i++) {
+                    rawDataSet.setInt(i, 0, i / cellsPerDish + 1);
+                }
             }
 
             dataModelList.add(rawDataSet);

@@ -145,8 +145,9 @@ public class BooleanGlassSimulation implements Simulation {
         parameters.add("lagGraphVarsPerInd");
         parameters.add("lagGraphMlag");
         parameters.add("lagGraphIndegree");
-
         parameters.add("numDishes");
+        parameters.add("includeDishAndChipColumns");
+        parameters.add("numChipsPerDish");
         parameters.add("numCellsPerDish");
         parameters.add("stepsGenerated");
         parameters.add("firstStepStored");
@@ -156,7 +157,6 @@ public class BooleanGlassSimulation implements Simulation {
         parameters.add("initSync");
         parameters.add("antilogCalculated");
         parameters.add("dishDishVariability");
-        parameters.add("numSamplesPerDish");
         parameters.add("sampleSampleVariability");
         parameters.add("chipChipVariability");
         parameters.add("pixelDigitalization");

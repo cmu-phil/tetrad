@@ -92,6 +92,11 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         setDataModel(new ColtDataSet(0, new LinkedList<Node>()));
     }
 
+    public DataWrapper(Simulation wrapper) {
+        this.name = wrapper.getName();
+        this.dataModelList = wrapper.getDataModelList();
+    }
+
 
     /**
      * Copy constructor.

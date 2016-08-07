@@ -27,7 +27,7 @@ public class SingleGraph implements RandomGraph {
 
     @Override
     public String getDescription() {
-        return "Stores a single graph";
+        return "Graph supplied by user";
     }
 
     @Override

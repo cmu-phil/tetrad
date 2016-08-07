@@ -41,7 +41,14 @@ public class Parameters implements TetradSerializable {
 
         for (String param : usedParameters) {
             ParamDescription paramDescription = ParamDescriptions.instance().get(param);
-            builder.append("\n").append(paramDescription.getDescription()).append(" = ").append(parameters.get(param)[0]);
+            Object obj = parameters.get(param)[0];
+
+            if (obj instanceof Boolean) {
+                builder.append("\n").append(paramDescription.getDescription()).append(" = ").
+                        append(((Boolean) obj) ? "Yes" : "No");
+            } else {
+                builder.append("\n").append(paramDescription.getDescription()).append(" = ").append(obj);
+            }
         }
 
         return builder.toString();

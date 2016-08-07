@@ -130,6 +130,8 @@ public class MeasurementSimulator implements TetradSerializable {
      */
     private int cellNumber = -1;
 
+    private boolean includeDishAndChipColumns = true;
+
     //=============================CONSTRUCTORS============================//
 
     /**
@@ -192,8 +194,18 @@ public class MeasurementSimulator implements TetradSerializable {
      * Returns the number of dishes that are to be simulated.
      */
     public int getNumDishes() {
-        return parameters.getInt("numDishes");
+        return parameters.getInt("numDishes", numDishes);
 //        return numDishes;
+    }
+
+    public boolean isIncludeDishAndChipColumns() {
+        return parameters.getBoolean("includeDishAndChipColumns", includeDishAndChipColumns);
+//        return includeDishAndChipColumns;
+    }
+
+    public void setIncludeDishAndChipColumns(boolean includeDishAndChipColumns) {
+        parameters.set("includeDishAndChipColumns", includeDishAndChipColumns);
+//        this.includeDishAndChipColumns = includeDishAndChipColumns;
     }
 
     /**
@@ -217,7 +229,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * Returns the number of cells per dish.
      */
     public int getNumCellsPerDish() {
-        return parameters.getInt("numCellsPerDish");
+        return parameters.getInt("numCellsPerDish", numCellsPerDish);
 //        return this.numCellsPerDish;
     }
 
@@ -458,10 +470,10 @@ public class MeasurementSimulator implements TetradSerializable {
     public void setNumSamplesPerDish(int numSamplesPerDish) {
 
         if (numSamplesPerDish > 0) {
-            parameters.set("numSamplesPerDish", numSamplesPerDish);
+            parameters.set("numChipsPerDish", numSamplesPerDish);
 //            this.numSamplesPerDish = numSamplesPerDish;
         } else {
-            throw new IllegalArgumentException("Number of samples per dish " +
+            throw new IllegalArgumentException("Number of chips per dish " +
                     "must be > 0: " + numSamplesPerDish);
         }
     }
@@ -475,7 +487,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #setNumSamplesPerDish
      */
     public int getNumSamplesPerDish() {
-        return parameters.getInt("numSamplePerDish", numSamplesPerDish);
+        return parameters.getInt("numChipsPerDish", numSamplesPerDish);
 //        return this.numSamplesPerDish;
     }
 
@@ -989,6 +1001,8 @@ public class MeasurementSimulator implements TetradSerializable {
         }
 
     }
+
+
 }
 
 

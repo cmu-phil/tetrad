@@ -90,7 +90,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         final JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Simulation Setup", getParametersPane(simulation, simulation.getSimulation(),
                 simulation.getParams()));
-        tabbedPane.addTab("True Graph", graphEditor.getWorkbench());
+        tabbedPane.addTab("True Graph", new JScrollPane(graphEditor.getWorkbench()));
         tabbedPane.addTab("Data", dataEditor);
         tabbedPane.setPreferredSize(new Dimension(800, 600));
 
@@ -194,6 +194,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
                     for (File _file : files) {
                         File[] _files = _file.listFiles();
+
+                        if (_files == null) continue;
 
                         if (isCorrectStructure(_files)) {
                             count++;
@@ -370,6 +372,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             } else if (simulation.getSimulation() instanceof SemSimulation) {
                 simulationItems = new String[]{
                         "Structural Equation Model"
+                };
+            } else if (simulation.getSimulation() instanceof StandardizedSemSimulation) {
+                simulationItems = new String[]{
+                        "Standardized Structural Equation Model"
                 };
             } else if (simulation.getSimulation() instanceof GeneralSemSimulation) {
                 simulationItems = new String[]{

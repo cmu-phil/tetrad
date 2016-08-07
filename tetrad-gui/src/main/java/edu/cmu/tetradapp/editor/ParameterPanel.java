@@ -83,7 +83,7 @@ public class ParameterPanel extends JPanel {
 
     private DoubleTextField getDoubleField(final String parameter, final Parameters parameters, double defaultValue) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
-                8, new DecimalFormat(("0.0000")));
+                8, new DecimalFormat(("0.0")));
 
         field.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
@@ -105,7 +105,7 @@ public class ParameterPanel extends JPanel {
     }
 
     private IntTextField getIntTextField(final String parameter, final Parameters parameters, int defaultValue) {
-        final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 4);
+        final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
@@ -127,7 +127,7 @@ public class ParameterPanel extends JPanel {
     }
 
     private JComboBox getBooleanBox(final String parameter, final Parameters parameters, boolean defaultValue) {
-        JComboBox<String> box = new JComboBox<>(new String[]{"No", "Yes"});
+        JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
 
         boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
 

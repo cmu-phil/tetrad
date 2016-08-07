@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.StandardizedSemSimulation;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
@@ -134,6 +135,13 @@ public class Simulation extends DataWrapper implements SessionModel,
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
     }
 
+    public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
+        simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
+        this.parameters = parameters;
+        createSimulation();
+        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
+    }
+
     public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getEstimatedSemIm());
         this.parameters = parameters;
@@ -143,13 +151,6 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) {
         simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
-        this.parameters = parameters;
-        createSimulation();
-        LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
-    }
-
-    public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
-        simulation = new SemSimulation(wrapper.getStandardizedSemIm());
         this.parameters = parameters;
         createSimulation();
         LogDataUtils.logDataModelList("Data simulated from a Bayes net.", getDataModelList());
