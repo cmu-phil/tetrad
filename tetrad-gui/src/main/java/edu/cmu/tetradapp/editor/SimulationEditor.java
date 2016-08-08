@@ -72,7 +72,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         if (simulation.getSimulation() != null) {
             simulation.createSimulation();
-            graphEditor = new GraphEditor(simulation.getSimulation().getTrueGraph(i));
+            graphEditor = new GraphEditor(simulation.getSimulation().getTrueGraph());
             DataWrapper wrapper = new DataWrapper();
             wrapper.setDataModelList(simulation.getDataModelList());
             dataEditor = new DataEditor(wrapper, false, JTabbedPane.LEFT);
@@ -139,7 +139,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                                     "Exception in creating data. Check bounds on parameter values.");
                             return;
                         }
-                        graphEditor.getWorkbench().setGraph(_simulation.getTrueGraph(i));
+                        graphEditor.getWorkbench().setGraph(_simulation.getTrueGraph());
                         DataWrapper wrapper = new DataWrapper();
                         wrapper.setDataModelList(simulation.getDataModelList());
                         tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
@@ -226,7 +226,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                         = new LoadContinuousDataAndGraphs(file.getPath());
                 _simulation.createData(simulation.getParams());
 
-                Graph trueGraph = _simulation.getTrueGraph(i);
+                Graph trueGraph = _simulation.getTrueGraph();
                 edu.cmu.tetrad.graph.GraphUtils.circleLayout(trueGraph, 225, 200, 150);
                 graphEditor.setGraph(trueGraph);
                 DataWrapper wrapper = new DataWrapper();
@@ -313,7 +313,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     }
 
     private void resetPanel(Simulation simulation, String[] graphItems, String[] simulationItems, JTabbedPane tabbedPane) {
-        RandomGraph randomGraph = new SingleGraph(simulation.getSimulation().getTrueGraph(i));
+        RandomGraph randomGraph = new SingleGraph(simulation.getSimulation().getTrueGraph());
 
         if (!simulation.isFixedGraph()) {
             String graphItem = (String) graphsDropdown.getSelectedItem();

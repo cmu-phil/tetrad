@@ -3,19 +3,14 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.gene.tetrad.gene.graph.LagGraphParams;
-import edu.cmu.tetrad.gene.tetrad.gene.graph.ManualActiveLagGraph;
 import edu.cmu.tetrad.gene.tetrad.gene.graph.RandomActiveLagGraph;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LaggedFactor;
 import edu.cmu.tetrad.gene.tetradapp.model.BooleanGlassGeneIm;
 import edu.cmu.tetrad.gene.tetradapp.model.BooleanGlassGenePm;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
-import edu.cmu.tetrad.sem.GeneralizedSemIm;
-import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.csb.mgm.MixedUtils;
 
 import java.util.*;
 
