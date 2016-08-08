@@ -562,15 +562,15 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
         if (topGraphs == null) topGraphs = new ArrayList<>();
 
-        Graph latestWorkbenchGraph = (Graph) runner.getParams().get("sourceGraph", null);
+//        Graph latestWorkbenchGraph = (Graph) runner.getParams().get("sourceGraph", null);
         Graph sourceGraph = runner.getSourceGraph();
 
         boolean arrangedAll = false;
 
-        for (int i = 0; i < topGraphs.size(); i++) {
-            arrangedAll = GraphUtils.arrangeBySourceGraph(topGraphs.get(i).getGraph(),
-                    latestWorkbenchGraph);
-        }
+//        for (int i = 0; i < topGraphs.size(); i++) {
+//            arrangedAll = GraphUtils.arrangeBySourceGraph(topGraphs.get(i).getGraph(),
+//                    latestWorkbenchGraph);
+//        }
 
         if (!arrangedAll) {
             for (ScoredGraph topGraph : topGraphs) {

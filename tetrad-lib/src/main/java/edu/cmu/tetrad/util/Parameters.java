@@ -41,14 +41,7 @@ public class Parameters implements TetradSerializable {
 
         for (String param : usedParameters) {
             ParamDescription paramDescription = ParamDescriptions.instance().get(param);
-            Object obj = parameters.get(param)[0];
-
-            if (obj instanceof Boolean) {
-                builder.append("\n").append(paramDescription.getDescription()).append(" = ").
-                        append(((Boolean) obj) ? "Yes" : "No");
-            } else {
-                builder.append("\n").append(paramDescription.getDescription()).append(" = ").append(obj);
-            }
+            builder.append("\n").append(paramDescription.getDescription()).append(" = ").append(parameters.get(param)[0]);
         }
 
         return builder.toString();
@@ -62,7 +55,7 @@ public class Parameters implements TetradSerializable {
      * @return The integer value of this parameter.
      */
     public int getInt(String name) {
-        return ((Number) get(name, null)).intValue();
+        return ((Number) get(name, ParamDescriptions.instance().get(name).getDefaultValue())).intValue();
     }
 
     /**
@@ -73,7 +66,7 @@ public class Parameters implements TetradSerializable {
      * @return The boolean value of this parameter.
      */
     public boolean getBoolean(String name) {
-        return (Boolean) get(name, null);
+        return (Boolean) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
     }
 
     /**
@@ -84,7 +77,7 @@ public class Parameters implements TetradSerializable {
      * @return The double value of this parameter.
      */
     public double getDouble(String name) {
-        return ((Number) get(name, null)).doubleValue();
+        return ((Number) get(name, ParamDescriptions.instance().get(name).getDefaultValue())).doubleValue();
     }
 
     /**
@@ -95,7 +88,7 @@ public class Parameters implements TetradSerializable {
      * @return The string value of this parameter.
      */
     public String getString(String name) {
-        return (String) get(name, null);
+        return (String) get(name, ParamDescriptions.instance().get(name).getDefaultValue());
     }
 
     /**
@@ -106,7 +99,7 @@ public class Parameters implements TetradSerializable {
      * @return The object value of this parameter.
      */
     public Object get(String name) {
-        return get(name, null);
+        return get(name, ParamDescriptions.instance().get(name).getDefaultValue());
     }
 
     /**
@@ -154,7 +147,7 @@ public class Parameters implements TetradSerializable {
      * Returns the object value of the given parameter, using the given default.
      *
      * @param name The name parameter.
-     * @return The object value of this parameter. Must be Object.
+     * @return The object value of this parameter.
      */
     public Object get(String name, Object defaultValue) {
         if (overriddenParameters.containsKey(name)) {
@@ -165,8 +158,12 @@ public class Parameters implements TetradSerializable {
         Object[] objects = parameters.get(name);
 
         if (objects == null) {
+//            if (defaultValue != null) {
             set(name, defaultValue);
             return defaultValue;
+//            } else {
+//                throw new IllegalArgumentException("Parameter '" + name + "' has no default value.");
+//            }
         } else {
             if (getNumValues(name) != 1) {
                 throw new IllegalArgumentException("Parameter '" + name + "' has more than one value.");
@@ -205,7 +202,7 @@ public class Parameters implements TetradSerializable {
      * Sets the value(s) of the given parameter to a list of strings.
      *
      * @param name The name of the parameter.
-     * @param n    A list of values for the parameter. The must be Object.
+     * @param n    A list of values for the parameter.
      */
     public void set(String name, Object... n) {
         parameters.put(name, n);
@@ -239,9 +236,14 @@ public class Parameters implements TetradSerializable {
      * Sets the given parameter to the given value.
      *
      * @param name  The name of the parameter.
-     * @param value The value of the parameter (a single value). Must be jec.
+     * @param value The value of the parameter (a single value).
      */
     public void set(String name, Object value) {
+        if (value == null) {
+            return;
+//            throw new IllegalArgumentException("Parameter '" + name + "' has no default value.");
+        }
+
         parameters.put(name, new Object[]{value});
     }
 

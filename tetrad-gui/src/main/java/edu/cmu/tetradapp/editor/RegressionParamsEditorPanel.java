@@ -126,12 +126,11 @@ public class RegressionParamsEditorPanel extends JPanel {
         RESPONSE_FIELD = createResponse(getSourceList(), 100);
 
         // if regressors are already set use'em.
-        String[] regressors = (String[]) params.get("regressorNames", null);
+        List<String> regressors = (List<String>) params.get("regressorNames", null);
         if (regressors != null) {
-            List<String> elements = Arrays.asList(regressors);
-            predictorsModel.addAll(elements);
+            predictorsModel.addAll(regressors);
             List<String> initVars = new ArrayList<String>(variableNames);
-            initVars.removeAll(elements);
+            initVars.removeAll(regressors);
             variableModel.addAll(initVars);
         } else {
             variableModel.addAll(variableNames);

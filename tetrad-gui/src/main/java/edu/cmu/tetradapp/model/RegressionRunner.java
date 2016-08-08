@@ -105,9 +105,14 @@ public class RegressionRunner implements AlgorithmRunner {
             }
         }
 
+        this.dataSet = dataModel;
+
+        params.set("targetName", dataModel.getVariableNames().get(0));
+        params.set("regressorNames", new ArrayList<String>());
+        params.set("varNames", dataModel.getVariableNames());
+
         this.params = params;
         this.targetName = params.getString("targetName", null);
-        this.dataSet = dataModel;
 
         TetradLogger.getInstance().log("info", "Linear Regression");
 
@@ -178,13 +183,14 @@ public class RegressionRunner implements AlgorithmRunner {
      */
     public void execute() {
 
-        if (((String[]) params.get("regressorNames", null)).length == 0 ||
+        List<String> regressorNames = (List<String>) params.get("regressorNames", null);
+        if (regressorNames.size() == 0 ||
                 params.getString("targetName", null) == null) {
             outGraph = new EdgeListGraph();
             return;
         }
 
-        if (Arrays.asList((String[]) params.get("regressorNames", null)).contains(
+        if (regressorNames.contains(
                 params.getString("targetName", null))) {
             outGraph = new EdgeListGraph();
             return;
@@ -198,7 +204,6 @@ public class RegressionRunner implements AlgorithmRunner {
             DataSet _dataSet = (DataSet) dataSet;
             regression = new RegressionDataset(_dataSet);
             target = _dataSet.getVariable(params.getString("targetName", null));
-            String[] regressorNames = (String[]) params.get("regressorNames", null);
             regressors = new LinkedList<>();
 
             for (String regressorName : regressorNames) {
@@ -215,7 +220,6 @@ public class RegressionRunner implements AlgorithmRunner {
             ICovarianceMatrix covariances = (ICovarianceMatrix) dataSet;
             regression = new RegressionCovariance(covariances);
             target = covariances.getVariable(params.getString("targetName", null));
-            String[] regressorNames = (String[]) params.get("regressorNames", null);
             regressors = new LinkedList<>();
 
             for (String regressorName : regressorNames) {

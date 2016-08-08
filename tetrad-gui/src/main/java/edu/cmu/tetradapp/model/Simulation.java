@@ -239,7 +239,7 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     @Override
     public Graph getGraph() {
-        return simulation.getTrueGraph();
+        return simulation.getTrueGraph(i);
     }
 
 
