@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.TabularComparison;
@@ -60,6 +61,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     private JTabbedPane tabbedPane = new JTabbedPane();
     private boolean showMenus = true;
+    private final Parameters parameters;
 
     //==========================CONSTUCTORS===============================//
 
@@ -67,10 +69,12 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * Constructs the data editor with an empty list of data displays.
      */
     public DataEditor() {
+        this.parameters = new Parameters();
     }
 
     public DataEditor(int tabPlacement) {
         tabbedPane = new JTabbedPane(tabPlacement);
+        this.parameters = new Parameters();
     }
 
     /**
@@ -81,6 +85,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     public DataEditor(boolean showMenus) {
         this.showMenus = showMenus;
+        this.parameters = new Parameters();
     }
 
     public DataEditor(DataWrapper dataWrapper) {
@@ -110,6 +115,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         if (dataWrapper == null) {
             throw new NullPointerException("Data wrapper must not be null.");
         }
+
+        this.parameters = dataWrapper.getParams();
 
         this.tabbedPane = new JTabbedPane(tabPlacement);
 
@@ -691,7 +698,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         tools.add(new DescriptiveStatsAction(this));
 //        tools.add(new ConditionalIndependenceTestAction(this));
 
-//        final Parameters _params = dataWrapper.getParams();
+//        final Parameters _params = dataWrapper.getParameters();
 //
 //        if (_params instanceof Parameters || _params instanceof Parameters) {
 //            JMenuItem drawSample = new JMenuItem("Draw New Sample");
@@ -703,7 +710,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 //                        Parameters params = (Parameters) _params;
 //
 //                        BayesDataParamsEditor paramsEditor = new BayesDataParamsEditor();
-//                        paramsEditor.setParams(params);
+//                        paramsEditor.setParameters(params);
 //                        paramsEditor.setup();
 //
 //                        int ret = JOptionPane.showConfirmDialog(DataEditor.this, paramsEditor,
@@ -730,7 +737,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 //                        SemDataWrapper wrapper = (SemDataWrapper) dataWrapper;
 //
 //                        SemDataParamsEditor paramsEditor = new SemDataParamsEditor();
-//                        paramsEditor.setParams(params);
+//                        paramsEditor.setParameters(params);
 //                        paramsEditor.setup();
 //
 //                        int ret = JOptionPane.showConfirmDialog(DataEditor.this, paramsEditor,
@@ -926,6 +933,10 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
     public DataModelList getDataModelList() {
         return dataWrapper.getDataModelList();
+    }
+
+    public Parameters getParameters() {
+        return parameters;
     }
 }
 

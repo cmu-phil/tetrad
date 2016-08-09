@@ -57,6 +57,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
      */
     private Dag dag;
     private Map<String, String> allParamSettings;
+    private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -65,6 +66,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
             throw new NullPointerException("Tetrad dag must not be null.");
         }
         this.dag = graph;
+        this.parameters = new Parameters();
         log();
     }
 
@@ -291,6 +293,10 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     @Override
     public Map<String, String> getAllParamSettings() {
         return allParamSettings;
+    }
+
+    public Parameters getParameters() {
+        return parameters;
     }
 }
 

@@ -62,6 +62,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      */
     private Graph graph;
     private Map<String, String> allParamSettings;
+    private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -83,19 +84,20 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         this.graph = graph;
     }
 
-    // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-    public GraphWrapper(Parameters params) {
-        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
+    public GraphWrapper(Parameters parameters) {
+        this.parameters = parameters;
+
+        if (parameters.getString("newGraphInitializationMode", "manual").equals("manual")) {
             this.graph = new EdgeListGraph();
-        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
+        } else if (parameters.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
             Graph graph = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
 
-            boolean addCycles = params.getBoolean("randomAddCycles", false);
+            boolean addCycles = parameters.getBoolean("randomAddCycles", false);
 
             if (addCycles) {
-                int newGraphNumMeasuredNodes = params.getInt("newGraphNumMeasuredNodes", 10);
-                int newGraphNumEdges = params.getInt("newGraphNumEdges", 10);
+                int newGraphNumMeasuredNodes = parameters.getInt("newGraphNumMeasuredNodes", 10);
+                int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 10);
                 graph = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes ,newGraphNumEdges);
             }
 //            GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
@@ -105,10 +107,12 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         log();
     }
 
-    public GraphWrapper(GraphSource graphSource, Parameters params) {
+    public GraphWrapper(GraphSource graphSource, Parameters parameters) {
+        this.parameters = parameters;
+
         if (getGraph() != null) {
             this.graph = new EdgeListGraph(getGraph());
-        } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
+        } else if (parameters.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
             edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph());
         }
@@ -121,7 +125,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
                 e.printStackTrace();
                 this.graph = new EdgeListGraph();
             }
-        } else if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
+        } else if (parameters.getString("newGraphInitializationMode", "manual").equals("manual")) {
             this.graph = new EdgeListGraph();
         }
 
@@ -314,6 +318,10 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     @Override
     public Map<String, String> getAllParamSettings() {
         return allParamSettings;
+    }
+
+    public Parameters getParameters() {
+        return parameters;
     }
 }
 

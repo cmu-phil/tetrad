@@ -320,8 +320,8 @@ public class FgsSearchEditor extends AbstractSearchEditor
             b1.add(b3);
         }
 
-//        if (getAlgorithmRunner().getParams() instanceof Parameters) {
-//            Parameters params = (Parameters) getAlgorithmRunner().getParams();
+//        if (getAlgorithmRunner().getParameters() instanceof Parameters) {
+//            Parameters params = (Parameters) getAlgorithmRunner().getParameters();
 //            JCheckBox preventCycles = new JCheckBox("Aggressively Prevent Cycles");
 //            preventCycles.setHorizontalTextPosition(AbstractButton.RIGHT);
 //            preventCycles.setSelected(params.isAggressivelyPreventCycles());
@@ -329,7 +329,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
 //            preventCycles.addActionListener(new ActionListener() {
 //                public void actionPerformed(ActionEvent e) {
 //                    JCheckBox box = (JCheckBox) e.getSource();
-//                    Parameters params = (Parameters) getAlgorithmRunner().getParams();
+//                    Parameters params = (Parameters) getAlgorithmRunner().getParameters();
 //                    params.setAggressivelyPreventCycles(box.isSelected());
 //                }
 //            });
@@ -562,7 +562,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
 
         if (topGraphs == null) topGraphs = new ArrayList<>();
 
-//        Graph latestWorkbenchGraph = (Graph) runner.getParams().get("sourceGraph", null);
+//        Graph latestWorkbenchGraph = (Graph) runner.getParameters().get("sourceGraph", null);
         Graph sourceGraph = runner.getSourceGraph();
 
         boolean arrangedAll = false;

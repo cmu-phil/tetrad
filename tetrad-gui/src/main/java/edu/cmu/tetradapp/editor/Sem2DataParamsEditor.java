@@ -89,7 +89,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
 //        positiveOnlyBox.addActionListener(new ActionListener(){
 //            public void actionPerformed(ActionEvent e) {
 //                JCheckBox b = (JCheckBox)e.getSource();
-//                getParams().setPositiveDataOnly(b.isSelected());
+//                getParameters().setPositiveDataOnly(b.isSelected());
 //            }
 //        });
 

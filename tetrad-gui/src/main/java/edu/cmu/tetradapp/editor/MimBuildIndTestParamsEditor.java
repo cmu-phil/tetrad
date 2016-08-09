@@ -61,7 +61,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
             }
         });
 
-//        if (getParams().getAlgorithm() == 1) {
+//        if (getParameters().getAlgorithm() == 1) {
 //            alphaField.setEnabled(true);
 //        }
 //        else {
@@ -110,7 +110,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //                window.addComponentListener(new ComponentAdapter() {
 //                    @Override
 //                    public void componentHidden(ComponentEvent componentEvent) {
-//                        getParams().setKnowledge(editor.getKnowledge());
+//                        getParameters().setKnowledge(editor.getKnowledge());
 //                    }
 //                });
 //            }
@@ -124,9 +124,9 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //            public void actionPerformed(ActionEvent e) {
 //                JComboBox combo = (JComboBox) e.getSource();
 //                int index = combo.getSelectedIndex();
-//                getParams().setAlgorithm(index);
+//                getParameters().setAlgorithm(index);
 //
-//                if (getParams().getAlgorithm() == 1) {
+//                if (getParameters().getAlgorithm() == 1) {
 //                    alphaField.setEnabled(true);
 //                }
 //                else {

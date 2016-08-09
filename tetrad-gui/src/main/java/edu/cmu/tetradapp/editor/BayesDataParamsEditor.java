@@ -100,7 +100,7 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
 
 
 //        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-//                Preferences.userRoot().getBoolean("latentDataSaved", getParams().isIncludeLatents()));
+//                Preferences.userRoot().getBoolean("latentDataSaved", getParameters().isIncludeLatents()));
         JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
                 getParams().getBoolean("latentDataSaved", false));
 

@@ -57,8 +57,9 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	 */
 	private SemGraph semGraph;
     private Map<String, String> allParamSettings;
+	private Parameters parameters;
 
-    // =============================CONSTRUCTORS==========================//
+	// =============================CONSTRUCTORS==========================//
 
 	public SemGraphWrapper(SemGraph graph) {
 		if (graph == null) {
@@ -66,6 +67,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 		}
 		this.semGraph = graph;
 		this.semGraph.setShowErrorTerms(false);
+		this.parameters = new Parameters();
 		log();
 	}
 
@@ -78,10 +80,12 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 			RandomUtil.getInstance().setSeed(new Date().getTime());
 			this.semGraph = new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph()));
 		}
+		this.parameters = params;
 		log();
 	}
 
 	public SemGraphWrapper(SemGraphWrapper graphWrapper, Parameters params) {
+		this.parameters = params;
 		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             try {
 				this.semGraph = new SemGraph(graphWrapper.getSemGraph());
@@ -99,6 +103,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 	}
 
 	public SemGraphWrapper(DagWrapper graphWrapper, Parameters params) {
+		this.parameters = params;
 		if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
 			this.semGraph = new SemGraph(graphWrapper.getDag());
 			this.semGraph.setShowErrorTerms(false);
@@ -268,6 +273,10 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
     public Map<String, String> getAllParamSettings() {
         return allParamSettings;
     }
+
+	public Parameters getParameters() {
+		return parameters;
+	}
 }
 
 

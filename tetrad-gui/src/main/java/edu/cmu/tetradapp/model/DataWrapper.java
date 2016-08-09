@@ -78,9 +78,9 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     private List<Node> knownVariables;
 
     /**
-     * The params being edited.
+     * The parameters being edited.
      */
-    private Parameters params = null;
+    private Parameters parameters = null;
     private Map<String, String> allParamSettings;
 
     //==============================CONSTRUCTORS===========================//
@@ -425,11 +425,11 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * @return null
      */
     public Parameters getParams() {
-        return this.params;
+        return this.parameters;
     }
 
-    public void setParams(Parameters params) {
-        this.params = params;
+    public void setParameters(Parameters parameters) {
+        this.parameters = parameters;
     }
 
 

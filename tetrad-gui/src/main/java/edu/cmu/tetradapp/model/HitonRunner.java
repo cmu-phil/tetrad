@@ -100,11 +100,11 @@ public class HitonRunner extends AbstractAlgorithmRunner
         int pcDepth = ((Parameters) getParams()).getInt("depth", -1);
         HitonMb search =
                 new HitonMb(getIndependenceTest(), pcDepth, false);
-//        Parameters params = getParams();
+//        Parameters params = getParameters();
 //        if (params instanceof Parameters) {
 //            search.setAggressivelyPreventCycles(((Parameters) params).isAggressivelyPreventCycles());
 //        }
-//        Knowledge knowledge = getParams().getKnowledge();
+//        Knowledge knowledge = getParameters().getKnowledge();
 //        search.setKnowledge(knowledge);
         String targetName = ((Parameters) getParams()).getString("targetName", null);
         List<Node> nodes = search.findMb(targetName);

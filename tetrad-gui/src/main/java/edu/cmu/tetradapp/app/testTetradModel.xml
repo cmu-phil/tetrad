@@ -17,7 +17,7 @@
     <edge from="Education" to="Happiness"/>
     <edge from="Education" to="Income"/>
     <edge from="Income" to="Happiness"/>
-    <params>
+    <parameters>
         <param var="Education">
             <prob value="High School" p="0.7"/>
             <prob value="College" p="0.3"/>
@@ -70,5 +70,5 @@
             <prob value="Medium" p="0.6"/>
             <prob value="High" p="0.2"/>
         </param>
-    </params>
+    </parameters>
 </model>

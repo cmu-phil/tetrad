@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.IndTestProducer;
@@ -66,6 +67,7 @@ public final class TimeLagGraphEditor extends JPanel
     private TimeLagGraphWrapper graphWrapper;
     private LayoutEditable layoutEditable;
     private CopyLayoutAction copyLayoutAction;
+    private Parameters parameters;
 
     //===========================PUBLIC METHODS========================//
 
@@ -73,6 +75,7 @@ public final class TimeLagGraphEditor extends JPanel
         this((TimeLagGraph) graphWrapper.getGraph());
         this.graphWrapper = graphWrapper;
         this.layoutEditable = this;
+        this.parameters = graphWrapper.getParameters();
 
         getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -444,7 +447,7 @@ public final class TimeLagGraphEditor extends JPanel
 
         randomGraph.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), true);
+                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), true, parameters);
 
                 int ret = JOptionPane.showConfirmDialog(
                         TimeLagGraphEditor.this, editor,

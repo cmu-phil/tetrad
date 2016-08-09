@@ -81,6 +81,15 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.add(loadSession);
         fileMenu.add(closeSession);
         fileMenu.addSeparator();
+
+        // Need to implement these...
+        fileMenu.add(new JMenuItem("Load Data"));
+        fileMenu.add(new JMenuItem("Load Saved Simulation"));
+        fileMenu.add(new JMenuItem("Load Knowledge"));
+        fileMenu.add(new JMenuItem("Load Graph"));
+
+
+        fileMenu.addSeparator();
         fileMenu.add(saveSession);
         fileMenu.add(new SaveSessionAsAction());
         fileMenu.addSeparator();

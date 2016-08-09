@@ -144,9 +144,9 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	 * implemented in the extending class.
 	 */
 	public void execute() {
-//		int pcDepth = ((Parameters) getParams()).getMaxIndegree();
+//		int pcDepth = ((Parameters) getParameters()).getMaxIndegree();
 //		Mbfs mbfs = new Mbfs(getIndependenceTest(), pcDepth);
-//		Parameters params = getParams();
+//		Parameters params = getParameters();
 //		if (params instanceof Parameters) {
 //			mbfs.setAggressivelyPreventCycles(((Parameters) params)
 //					.isAggressivelyPreventCycles());

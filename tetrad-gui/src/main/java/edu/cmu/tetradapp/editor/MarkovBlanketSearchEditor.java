@@ -471,7 +471,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
 //        tTest.addActionListener(new ActionListener() {
 //            public void actionPerformed(ActionEvent e) {
-//                getParams().setIndTestType(IndTestType.CORRELATION_T);
+//                getParameters().setIndTestType(IndTestType.CORRELATION_T);
 //                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
 //                        "Using Cramer's T.");
 //            }

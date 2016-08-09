@@ -176,8 +176,8 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                 score.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
                 fgs = new FgsMb2(score);
             } else if (dataSet.isDiscrete()) {
-                double samplePrior = 1;//((Parameters) getParams()).getSamplePrior();
-                double structurePrior = 1;//((Parameters) getParams()).getStructurePrior();
+                double samplePrior = 1;//((Parameters) getParameters()).getSamplePrior();
+                double structurePrior = 1;//((Parameters) getParameters()).getStructurePrior();
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
@@ -258,11 +258,11 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //
 //                if (dataSet.isContinuous()) {
 //                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrixOnTheFly((DataSet) dataModel),
-//                            getParams().getAlpha());
+//                            getParameters().getAlpha());
 //                    fgs = new FgsMb(gesScore, target);
 //                } else if (dataSet.isDiscrete()) {
 //                    double structurePrior = 1;
-//                    double samplePrior = getParams().getAlpha();
+//                    double samplePrior = getParameters().getAlpha();
 //                    BDeuScore score = new BDeuScore(dataSet);
 //                    score.setSamplePrior(samplePrior);
 //                    score.setStructurePrior(structurePrior);
@@ -273,7 +273,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            } else if (dataModel instanceof ICovarianceMatrix) {
 //                cov = (ICovarianceMatrix) dataModel;
 //                SemBicScore score = new SemBicScore(cov,
-//                        getParams().getAlpha());
+//                        getParameters().getAlpha());
 //                target = cov.getVariable(targetName);
 //                fgs = new FgsMb(score, target);
 //            } else {
@@ -287,10 +287,10 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
 //            Node target = getIndependenceTest().getVariable(targetName);
 //            System.out.println("Target = " + target);
 //
-//            int depth = getParams().getMaxIndegree();
+//            int depth = getParameters().getMaxIndegree();
 //
 //            ScoredIndTest fgsScore = new ScoredIndTest(getIndependenceTest());
-//            fgsScore.setParameter1(getParams().getAlpha());
+//            fgsScore.setParameter1(getParameters().getAlpha());
 //            FgsMb search = new FgsMb(fgsScore, target);
 //            search.setKnowledge(knowledge);
 //            search.setMaxIndegree(depth);

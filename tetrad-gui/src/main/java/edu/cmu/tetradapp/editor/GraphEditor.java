@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.CompletedPatternWrapper;
@@ -63,12 +64,14 @@ public final class GraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
     private final GraphWorkbench workbench;
     private GraphWrapper graphWrapper;
+    private Parameters parameters;
 
     //===========================PUBLIC METHODS========================//
 
     public GraphEditor(GraphWrapper graphWrapper) {
         this(graphWrapper.getGraph());
         this.graphWrapper = graphWrapper;
+        this.parameters = graphWrapper.getParameters();
 
         getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -301,10 +304,8 @@ public final class GraphEditor extends JPanel
 
         graph.addSeparator();
 
-        JMenuItem correlateExogenous =
-                new JMenuItem("Correlate Exogenous Variables");
-        JMenuItem uncorrelateExogenous =
-                new JMenuItem("Uncorrelate Exogenous Variables");
+        JMenuItem correlateExogenous = new JMenuItem("Correlate Exogenous Variables");
+        JMenuItem uncorrelateExogenous = new JMenuItem("Uncorrelate Exogenous Variables");
         graph.add(correlateExogenous);
         graph.add(uncorrelateExogenous);
         graph.addSeparator();
@@ -330,7 +331,7 @@ public final class GraphEditor extends JPanel
 
         randomGraph.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), true);
+                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), true, parameters);
 
                 int ret = JOptionPane.showConfirmDialog(
                         GraphEditor.this, editor,
@@ -373,23 +374,16 @@ public final class GraphEditor extends JPanel
                                 JOptionPane.PLAIN_MESSAGE);
 
                         if (ret == JOptionPane.OK_OPTION) {
-                            int numFactors = Preferences.userRoot().getInt(
-                                    "randomMimNumFactors", 1);
-                            int numStructuralNodes = Preferences.userRoot().getInt(
-                                    "numStructuralNodes", 3);
-                            int maxStructuralEdges = Preferences.userRoot().getInt(
-                                    "numStructuralEdges", 3);
-                            int measurementModelDegree = Preferences.userRoot().getInt(
-                                    "measurementModelDegree", 3);
-                            int numLatentMeasuredImpureParents = Preferences.userRoot()
+                            int numFactors = parameters.getInt("randomMimNumFactors", 1);
+                            int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
+                            int maxStructuralEdges = parameters.getInt("numStructuralEdges", 3);
+                            int measurementModelDegree = parameters.getInt("measurementModelDegree", 3);
+                            int numLatentMeasuredImpureParents = parameters
                                     .getInt("latentMeasuredImpureParents", 0);
                             int numMeasuredMeasuredImpureParents =
-                                    Preferences.userRoot()
-                                            .getInt("measuredMeasuredImpureParents", 0);
+                                    parameters.getInt("measuredMeasuredImpureParents", 0);
                             int numMeasuredMeasuredImpureAssociations =
-                                    Preferences.userRoot()
-                                            .getInt("measuredMeasuredImpureAssociations",
-                                                    0);
+                                    parameters.getInt("measuredMeasuredImpureAssociations", 0);
 
                             Graph graph;
 
@@ -405,9 +399,8 @@ public final class GraphEditor extends JPanel
                                         numLatentMeasuredImpureParents,
                                         numMeasuredMeasuredImpureParents,
                                         numMeasuredMeasuredImpureAssociations);
-                            }
-                            else {
-                                throw new  IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
+                            } else {
+                                throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
                                         "sorry dude.");
                             }
 
@@ -420,27 +413,25 @@ public final class GraphEditor extends JPanel
                 new JMenuItem("Random Scale Free DAG");
         graph.add(randomDagScaleFree);
 
-        randomDagScaleFree.addActionListener(new
+        randomDagScaleFree.addActionListener(new ActionListener() {
+                                                 public void actionPerformed(ActionEvent e) {
+                                                     RandomDagScaleFreeEditor editor = new RandomDagScaleFreeEditor();
 
-                                                     ActionListener() {
-                                                         public void actionPerformed(ActionEvent e) {
-                                                             RandomDagScaleFreeEditor editor = new RandomDagScaleFreeEditor();
+                                                     int ret = JOptionPane.showConfirmDialog(
+                                                             GraphEditor.this, editor,
+                                                             "Edit Random DAG Parameters",
+                                                             JOptionPane.PLAIN_MESSAGE);
 
-                                                             int ret = JOptionPane.showConfirmDialog(
-                                                                     GraphEditor.this, editor,
-                                                                     "Edit Random DAG Parameters",
-                                                                     JOptionPane.PLAIN_MESSAGE);
-
-                                                             if (ret == JOptionPane.OK_OPTION) {
-                                                                 Graph graph = GraphUtils.scaleFreeGraph(editor.getNumNodes(), editor.getNumLatents(),
-                                                                         editor.getScaleFreeAlpha(),
-                                                                         editor.getScaleFreeBeta(),
-                                                                         editor.getScaleFreeDeltaIn(),
-                                                                         editor.getScaleFreeDeltaOut());
-                                                                 getWorkbench().setGraph(graph);
-                                                             }
-                                                         }
+                                                     if (ret == JOptionPane.OK_OPTION) {
+                                                         Graph graph = GraphUtils.scaleFreeGraph(editor.getNumNodes(), editor.getNumLatents(),
+                                                                 editor.getScaleFreeAlpha(),
+                                                                 editor.getScaleFreeBeta(),
+                                                                 editor.getScaleFreeDeltaIn(),
+                                                                 editor.getScaleFreeDeltaOut());
+                                                         getWorkbench().setGraph(graph);
                                                      }
+                                                 }
+                                             }
 
         );
 

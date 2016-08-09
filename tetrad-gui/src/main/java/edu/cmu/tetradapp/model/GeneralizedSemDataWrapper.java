@@ -68,12 +68,12 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
             throw new RuntimeException("Could not clone the Parameters.");
         }
 
-        setParams(params);
+        setParameters(params);
 
         setSeed();
 
         this.setSourceGraph(semIm.getSemPm().getGraph());
-        setParams(params);
+        setParameters(params);
         this.semIm = semIm;
         LogDataUtils.logDataModelList("Data simulated from a generalized SEM model.", getDataModelList());
     }
@@ -141,7 +141,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
 //        this.dataModelList = dataModelList;
     }
 
-    public void setParams(Parameters params) {
+    public void setParameters(Parameters params) {
         this.params = (Parameters) params;
     }
 

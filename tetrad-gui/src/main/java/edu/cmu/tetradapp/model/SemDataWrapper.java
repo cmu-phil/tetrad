@@ -71,11 +71,11 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
             throw new RuntimeException("Could not clone the Parameters.");
         }
 
-        setParams(params);
+        setParameters(params);
 
         setSeed();
 
-//        DataModelList dataModelList = simulateData((Parameters) getParams(), semIm);
+//        DataModelList dataModelList = simulateData((Parameters) getParameters(), semIm);
 //        setDataModel(dataModelList);
         setSourceGraph(semIm.getSemPm().getGraph());
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
@@ -97,14 +97,14 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
             throw new RuntimeException("Could not clone the Parameters.");
         }
 
-        setParams(params);
+        setParameters(params);
 
         setSeed();
 
-//        DataModelList dataModelList = simulateData((Parameters) getParams(), semIm);
+//        DataModelList dataModelList = simulateData((Parameters) getParameters(), semIm);
 //        setDataModel(dataModelList);
         setSourceGraph(wrapper.getSemEstimator().getEstimatedSem().getSemPm().getGraph());
-        setParams(params);
+        setParameters(params);
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
@@ -124,7 +124,7 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
             throw new RuntimeException("Could not clone the Parameters.");
         }
 
-        setParams(params);
+        setParameters(params);
 
         setSeed();
 
@@ -148,12 +148,12 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
             throw new RuntimeException("Could not clone the Parameters.");
         }
 
-        setParams(params);
+        setParameters(params);
 
         setSeed();
 
         setSourceGraph(wrapper.getStandardizedSemIm().getSemPm().getGraph());
-        setParams(params);
+        setParameters(params);
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
@@ -225,7 +225,7 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
         return new SemDataWrapper(SemImWrapper.serializableInstance(), new Parameters());
     }
 
-    public void setParams(Parameters params) {
+    public void setParameters(Parameters params) {
         this.params = (Parameters) params;
     }
 

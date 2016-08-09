@@ -224,7 +224,7 @@ public class Simulation extends DataWrapper implements SessionModel,
         throw new UnsupportedOperationException();
     }
 
-    public void setParams(Parameters parameters) {
+    public void setParameters(Parameters parameters) {
         this.parameters = parameters;
     }
 

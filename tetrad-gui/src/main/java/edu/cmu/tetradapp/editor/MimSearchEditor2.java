@@ -214,7 +214,7 @@ public class MimSearchEditor2 extends JPanel {
                 setErrorMessage(null);
 
                 try {
-//                    mimRunner.getParams().setClusters(clusterEditor.getClusters());
+//                    mimRunner.getParameters().setClusters(clusterEditor.getClusters());
                     getMimRunner().execute();
                 }
                 catch (Exception e) {

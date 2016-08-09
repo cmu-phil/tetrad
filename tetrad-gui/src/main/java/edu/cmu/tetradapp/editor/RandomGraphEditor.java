@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -40,6 +41,7 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 public class RandomGraphEditor extends JPanel {
+    private final Parameters parameters;
     private IntTextField numNodesField;
     private IntTextField numLatentsField;
     private IntTextField maxEdgesField;
@@ -61,8 +63,8 @@ public class RandomGraphEditor extends JPanel {
      * Constructs a dialog to edit the given workbench randomization
      * parameters.
      */
-    public RandomGraphEditor(boolean cyclicAllowed) {
-        this(new EdgeListGraph(), cyclicAllowed);
+    public RandomGraphEditor(boolean cyclicAllowed, Parameters parameters) {
+        this(new EdgeListGraph(), cyclicAllowed, parameters);
     }
 
     /**
@@ -72,8 +74,9 @@ public class RandomGraphEditor extends JPanel {
      * //     * number of edges,a nd number of latent nodes. Useful if the interface suggests a number of nodes
      * //     * that overrides the number of nodes set in the preferences.
      */
-    public RandomGraphEditor(Graph oldGraph, boolean cyclicAllowed) {
+    public RandomGraphEditor(Graph oldGraph, boolean cyclicAllowed, Parameters parameters) {
         this.cyclicAllowed = cyclicAllowed;
+        this.parameters = parameters;
 
         int oldNumMeasured = 0;
         int oldNumLatents = 0;
@@ -520,27 +523,27 @@ public class RandomGraphEditor extends JPanel {
     }
 
     public boolean isRandomForward() {
-        return Preferences.userRoot().getBoolean("graphRandomFoward", true);
+        return parameters.getBoolean("graphRandomFoward", true);
     }
 
     public boolean isUniformlySelected() {
-        return Preferences.userRoot().getBoolean("graphUniformlySelected", true);
+        return parameters.getBoolean("graphUniformlySelected", true);
     }
 
     public boolean isChooseFixed() {
-        return Preferences.userRoot().getBoolean("graphChooseFixed", true);
+        return parameters.getBoolean("graphChooseFixed", true);
     }
 
     public void setRandomForward(boolean randomFoward) {
-        Preferences.userRoot().putBoolean("graphRandomFoward", randomFoward);
+        parameters.set("graphRandomFoward", randomFoward);
     }
 
     public void setUniformlySelected(boolean uniformlySelected) {
-        Preferences.userRoot().putBoolean("graphUniformlySelected", uniformlySelected);
+        parameters.set("graphUniformlySelected", uniformlySelected);
     }
 
     public void setChooseFixed(boolean chooseFixed) {
-        Preferences.userRoot().putBoolean("graphChooseFixed", chooseFixed);
+        parameters.set("graphChooseFixed", chooseFixed);
     }
 
     public int getNumNodes() {
@@ -548,7 +551,7 @@ public class RandomGraphEditor extends JPanel {
     }
 
     public int getNumMeasuredNodes() {
-        return Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5);
+        return parameters.getInt("newGraphNumMeasuredNodes", 5);
     }
 
     private void setNumMeasuredNodes(int numMeasuredNodes) {
@@ -561,7 +564,7 @@ public class RandomGraphEditor extends JPanel {
 //                    "Number of nodes Must be greater than or equal to number " + "of latent nodes.");
 //        }
 
-        Preferences.userRoot().putInt("newGraphNumMeasuredNodes", numMeasuredNodes);
+        parameters.set("newGraphNumMeasuredNodes", numMeasuredNodes);
 
         if (isConnected()) {
             setMaxEdges(Math.max(getMaxEdges(), numMeasuredNodes + getNumLatents()));
@@ -569,7 +572,7 @@ public class RandomGraphEditor extends JPanel {
     }
 
     public int getNumLatents() {
-        return Preferences.userRoot().getInt("newGraphNumLatents", 0);
+        return parameters.getInt("newGraphNumLatents", 0);
     }
 
     private void setNumLatents(int numLatentNodes) {
@@ -584,11 +587,11 @@ public class RandomGraphEditor extends JPanel {
 //                    "Number of latent nodes must be " + "<= number of nodes.");
 //        }
 
-        Preferences.userRoot().putInt("newGraphNumLatents", numLatentNodes);
+        parameters.set("newGraphNumLatents", numLatentNodes);
     }
 
     public int getMaxEdges() {
-        return Preferences.userRoot().getInt("newGraphNumEdges", 3);
+        return parameters.getInt("newGraphNumEdges", 3);
     }
 
 
@@ -609,65 +612,65 @@ public class RandomGraphEditor extends JPanel {
             numEdges = maxNumEdges;
         }
 
-        Preferences.    userRoot().putInt("newGraphNumEdges", numEdges);
+        parameters.set("newGraphNumEdges", numEdges);
     }
 
     public int getMaxDegree() {
-        return Preferences.userRoot().getInt("randomGraphMaxDegree", 6);
+        return parameters.getInt("randomGraphMaxDegree", 6);
     }
 
     private void setMaxDegree(int maxDegree) {
         if (!isConnected() && maxDegree < 1) {
-            Preferences.userRoot().putInt("randomGraphMaxDegree", 1);
+            parameters.set("randomGraphMaxDegree", 1);
             return;
         }
 
         if (isConnected() && maxDegree < 3) {
-            Preferences.userRoot().putInt("randomGraphMaxDegree", 3);
+            parameters.set("randomGraphMaxDegree", 3);
             return;
         }
 
-        Preferences.userRoot().putInt("randomGraphMaxDegree", maxDegree);
+        parameters.set("randomGraphMaxDegree", maxDegree);
     }
 
     public int getMaxIndegree() {
-        return Preferences.userRoot().getInt("randomGraphMaxIndegree", 3);
+        return parameters.getInt("randomGraphMaxIndegree", 3);
     }
 
     private void setMaxIndegree(int maxIndegree) {
         if (!isConnected() && maxIndegree < 1) {
-            Preferences.userRoot().putInt("randomGraphMaxIndegree", 1);
+            parameters.set("randomGraphMaxIndegree", 1);
             return;
         }
 
         if (isConnected() && maxIndegree < 2) {
-            Preferences.userRoot().putInt("randomGraphMaxIndegree", 2);
+            parameters.set("randomGraphMaxIndegree", 2);
             return;
         }
 
-        Preferences.userRoot().putInt("randomGraphMaxIndegree", maxIndegree);
+        parameters.set("randomGraphMaxIndegree", maxIndegree);
     }
 
     public int getMaxOutdegree() {
-        return Preferences.userRoot().getInt("randomGraphMaxOutdegree", 3);
+        return parameters.getInt("randomGraphMaxOutdegree", 3);
     }
 
     private void setMaxOutdegree(int maxOutDegree) {
         if (!isConnected() && maxOutDegree < 1) {
-            Preferences.userRoot().putInt("randomGraphMaxOutdegree", 1);
+            parameters.set("randomGraphMaxOutdegree", 1);
             return;
         }
 
         if (isConnected() && maxOutDegree < 2) {
-            Preferences.userRoot().putInt("randomGraphMaxOutdegree", 2);
+            parameters.set("randomGraphMaxOutdegree", 2);
             return;
         }
 
-        Preferences.userRoot().putInt("randomGraphMaxOutdegree", maxOutDegree);
+        parameters.set("randomGraphMaxOutdegree", maxOutDegree);
     }
 
     private void setConnected(boolean connected) {
-        Preferences.userRoot().putBoolean("randomGraphConnected", connected);
+        parameters.set("randomGraphConnected", connected);
 
         if (connected) {
             if (getMaxIndegree() < 2) {
@@ -689,19 +692,19 @@ public class RandomGraphEditor extends JPanel {
     }
 
     public boolean isConnected() {
-        return Preferences.userRoot().getBoolean("randomGraphConnected", false);
+        return parameters.getBoolean("randomGraphConnected", false);
     }
 
     private void setAddCycles(boolean addCycles) {
-        Preferences.userRoot().putBoolean("randomGraphAddCycles", addCycles);
+        parameters.set("randomGraphAddCycles", addCycles);
     }
 
     public boolean isAddCycles() {
-        return Preferences.userRoot().getBoolean("randomGraphAddCycles", false);
+        return parameters.getBoolean("randomGraphAddCycles", false);
     }
 
     public int getMinNumCycles() {
-        int minNumCycles = Preferences.userRoot().getInt("randomGraphMinNumCycles", 0);
+        int minNumCycles = parameters.getInt("randomGraphMinNumCycles", 0);
         System.out.println("get min num cycles = " + minNumCycles);
 
         return minNumCycles;
@@ -712,24 +715,24 @@ public class RandomGraphEditor extends JPanel {
         System.out.println("set min num cycles = " + minNumCycles);
 
         if (minNumCycles < 0) {
-            Preferences.userRoot().putInt("randomGraphMinNumCycles", 0);
+            parameters.set("randomGraphMinNumCycles", 0);
             return;
         }
 
-        Preferences.userRoot().putInt("randomGraphMinNumCycles", minNumCycles);
+        parameters.set("randomGraphMinNumCycles", minNumCycles);
     }
 
     public int getMinCycleLength() {
-        return Preferences.userRoot().getInt("randomGraphMinCycleLength", 2);
+        return parameters.getInt("randomGraphMinCycleLength", 2);
     }
 
     private void setMinCycleLength(int minCycleLength) {
         if (minCycleLength < 2) {
-            Preferences.userRoot().putInt("randomGraphMinCycleLength", 2);
+            parameters.set("randomGraphMinCycleLength", 2);
             return;
         }
 
-        Preferences.userRoot().putInt("randomGraphMinCycleLength", minCycleLength);
+        parameters.set("randomGraphMinCycleLength", minCycleLength);
     }
 }
 

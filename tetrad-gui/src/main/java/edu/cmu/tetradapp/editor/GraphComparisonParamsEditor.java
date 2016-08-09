@@ -138,7 +138,7 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
 
 //        latents.addActionListener(new ActionListener() {
 //            public void actionPerformed(ActionEvent e) {
-//                getParams().setKeepLatents(false);
+//                getParameters().setKeepLatents(false);
 //            }
 //        });
 
@@ -156,11 +156,11 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
         group3.add(graph1);
         group3.add(graph2);
         
-//        getParams().setReferenceGraphName(model1.getNode());
-//        getParams().setTargetGraphName(model2.getNode());
+//        getParameters().setReferenceGraphName(model1.getNode());
+//        getParameters().setTargetGraphName(model2.getNode());
 
-//        getParams().setReferenceGraphName(getParams().getReferenceGraphName());
-//        getParams().setTargetGraphName(getParams().getTargetGraphName());
+//        getParameters().setReferenceGraphName(getParameters().getReferenceGraphName());
+//        getParameters().setTargetGraphName(getParameters().getTargetGraphName());
 
         graph1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

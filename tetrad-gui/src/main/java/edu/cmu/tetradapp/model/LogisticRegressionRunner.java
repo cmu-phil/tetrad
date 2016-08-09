@@ -214,7 +214,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         }
 
         //Regression regression = new Regression();
-        //String targetName = ((Parameters) getParams()).getTargetName();
+        //String targetName = ((Parameters) getParameters()).getTargetName();
         String targetName = params.getString("targetName", null);
         double alpha = params.getDouble("alpha", 0.001);
 

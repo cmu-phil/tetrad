@@ -49,14 +49,20 @@ final class ConstructTemplateAction extends AbstractAction {
      * The names of the templates supported by this action.
      */
     private static final String[] TEMPLATE_NAMES = new String[]{
-            "Simulate Data from IM", "Estimate from Simulated Data",
+            "Search from Loaded Data",
             "Search from Simulated Data",
-            "Search from Simulated Data with Edge Comparisons", "Update IM",
-            "--separator--", "Search from Loaded Data",
+            "Search from Simulated Data with Edge Comparisons",
+            "--separator--",
             "Estimate from Loaded Data (Bayes)",
             "Estimate from Loaded Data (SEM)",
             "Estimate from Search Result (Bayes)",
-            "Estimate from Search Result (SEM)",};
+            "Estimate from Search Result (SEM)",
+            "Estimate from Simulated Data",
+            "--separator--",
+            "Simulate Data from IM",
+            "--separator--",
+            "Update IM"
+    };
 
     /**
      * The name of the template.
@@ -111,38 +117,27 @@ final class ConstructTemplateAction extends AbstractAction {
 
         if (this.templateName.equals(getTemplateNames()[0])) {
             simulateData(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[1])) {
+        } else if (this.templateName.equals(getTemplateNames()[1])) {
             estimateFromSimulatedData(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[2])) {
+        } else if (this.templateName.equals(getTemplateNames()[2])) {
             searchFromSimulatedData(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[3])) {
+        } else if (this.templateName.equals(getTemplateNames()[3])) {
             searchFromSimulatedEdgeCompare(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[4])) {
+        } else if (this.templateName.equals(getTemplateNames()[4])) {
             updateFromSimulatedData(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[5])) {
+        } else if (this.templateName.equals(getTemplateNames()[5])) {
             throw new IllegalStateException("Separator!");
-        }
-        else if (this.templateName.equals(getTemplateNames()[6])) {
+        } else if (this.templateName.equals(getTemplateNames()[6])) {
             searchFromLoadedData(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[7])) {
+        } else if (this.templateName.equals(getTemplateNames()[7])) {
             estimateFromLoadedDataBayes(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[8])) {
+        } else if (this.templateName.equals(getTemplateNames()[8])) {
             estimateFromLoadedDataSem(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[9])) {
+        } else if (this.templateName.equals(getTemplateNames()[9])) {
             estimateUsingSearchResultBayes(leftX);
-        }
-        else if (this.templateName.equals(getTemplateNames()[10])) {
+        } else if (this.templateName.equals(getTemplateNames()[10])) {
             estimateUsingSearchResultSem(leftX);
-        }
-        else {
+        } else {
             throw new IllegalStateException(
                     "Unrecognized template name: " + this.templateName);
         }
@@ -548,7 +543,7 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private Node addNode(String nodeType, String nodeName, int centerX,
-            int centerY) {
+                         int centerY) {
         SessionNodeWrapper node = getNewModelNode(nodeType, nodeName);
         node.setCenter(centerX, centerY);
         getSessionWrapper().addNode(node);
@@ -585,7 +580,7 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private static SessionNodeWrapper getNewModelNode(String nextButtonType,
-            String name) {
+                                                      String name) {
         if (nextButtonType == null) {
             throw new NullPointerException(
                     "Next button type must be a " + "non-null string.");
@@ -601,14 +596,13 @@ final class ConstructTemplateAction extends AbstractAction {
 
     /**
      * @return the model classes associated with the given button type.
-     *
      * @throws NullPointerException if no classes are stored for the given
      *                              type.
      */
     private static Class[] getModelClasses(String nextButtonType) {
         TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
         SessionNodeConfig config = tetradConfig.getSessionNodeConfig(nextButtonType);
-        if(config == null){
+        if (config == null) {
             throw new NullPointerException("There is no configuration for button: " + nextButtonType);
         }
 

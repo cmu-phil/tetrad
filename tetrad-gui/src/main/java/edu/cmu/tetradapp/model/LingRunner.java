@@ -103,7 +103,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 //        }
 //
 //        Ling ling = new Ling(data);
-//        Parameters searchParams = (Parameters) getParams();
+//        Parameters searchParams = (Parameters) getParameters();
 //        ling.setThreshold(searchParams.getThreshold());
 //        Ling.StoredGraphs graphs = ling.search();
 //        Graph graph = null;

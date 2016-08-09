@@ -78,13 +78,13 @@ class PurifyIndTestParamsEditor extends JPanel {
 
 //            final TestType[] purifyDescriptions = TestType.getPurifyTestDescriptions();
 //            purifySelector = new JComboBox(purifyDescriptions);
-//            purifySelector.setSelectedItem(getParams().getPurifyTestType());
+//            purifySelector.setSelectedItem(getParameters().getPurifyTestType());
 //
 //            purifySelector.addActionListener(new ActionListener() {
 //                public void actionPerformed(ActionEvent e) {
 //                    JComboBox combo = (JComboBox) e.getSource();
 //                    TestType index = (TestType) combo.getSelectedItem();
-//                    getParams().setPurifyTestType(index);
+//                    getParameters().setPurifyTestType(index);
 //                }
 //            });
         }

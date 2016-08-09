@@ -26,7 +26,7 @@ import edu.cmu.tetrad.util.Parameters;
 /**
  * Implements an editor some specific type of parameter object. It is assumed
  * that the parameter editor implementing this class has a blank constructor,
- * that <code>setParams</code> is called first, followed by
+ * that <code>setParameters</code> is called first, followed by
  * <code>setParantModel</code>, then <code>setup</code>. It is also assumed
  * that the implementing class will implement JComponent.
  *

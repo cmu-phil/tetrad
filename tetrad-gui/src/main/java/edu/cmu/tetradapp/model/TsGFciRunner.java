@@ -319,8 +319,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
 //    public void execute() {
-//        IKnowledge knowledge = getParams().getKnowledge();
-//        Parameters searchParams = getParams();
+//        IKnowledge knowledge = getParameters().getKnowledge();
+//        Parameters searchParams = getParameters();
 //
 //        Parameters params = (Parameters) searchParams;
 //
@@ -398,8 +398,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                     gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
                 }
 //                else if (dataSet.isDiscrete()) {
-//                    double samplePrior = ((Parameters) getParams()).getSamplePrior();
-//                    double structurePrior = ((Parameters) getParams()).getStructurePrior();
+//                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
+//                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
 //                    BDeuScore score = new BDeuScore(dataSet);
 //                    score.setSamplePrior(samplePrior);
 //                    score.setStructurePrior(structurePrior);
@@ -429,7 +429,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
-//                Parameters Parameters = (Parameters) getParams();
+//                Parameters Parameters = (Parameters) getParameters();
 //                Parameters params = (Parameters) Parameters;
 
                 if (allContinuous(list)) {
@@ -441,8 +441,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                     gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
                 }
 //                else if (allDiscrete(list)) {
-//                    double structurePrior = ((Parameters) getParams()).getStructurePrior();
-//                    double samplePrior = ((Parameters) getParams()).getSamplePrior();
+//                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
+//                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
 //
 //                    BdeuScoreImages fgsScore = new BdeuScoreImages(list);
 //                    fgsScore.setSamplePrior(samplePrior);
@@ -459,7 +459,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
         }
 
 //        gfci.setInitialGraph(initialGraph);
-//        gfci.setKnowledge(getParams().getKnowledge());
+//        gfci.setKnowledge(getParameters().getKnowledge());
 //        gfci.setNumPatternsToStore(params.getNumPatternsToSave());
         gfci.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);

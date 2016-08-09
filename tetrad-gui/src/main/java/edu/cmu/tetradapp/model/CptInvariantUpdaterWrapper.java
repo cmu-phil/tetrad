@@ -126,7 +126,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
                     (Evidence) params.get("evidence", null));
         }
 
-//        Node node = getParams().getVariable();
+//        Node node = getParameters().getVariable();
 //
 //        if (node != null) {
 //            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -140,7 +140,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
 //
 //            TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
 //            TetradLogger.getInstance().log("details", "\nEvidence:");
-//            Evidence evidence = getParams().getEvidence();
+//            Evidence evidence = getParameters().getEvidence();
 //            Proposition proposition = evidence.getProposition();
 //
 //            for (int i = 0; i < proposition.getNumVariables(); i++) {

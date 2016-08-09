@@ -93,7 +93,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
         });
 
 //        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-//                Preferences.userRoot().getBoolean("latentDataSaved", getParams().isIncludeLatents()));
+//                Preferences.userRoot().getBoolean("latentDataSaved", getParameters().isIncludeLatents()));
         JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
                 getParams().getBoolean("latentDataSaved", false));
         latentDataSaved.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -105,12 +105,12 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
         });
 
 //        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only",
-//                getParams().isPositiveDataOnly());
+//                getParameters().isPositiveDataOnly());
 //        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
 //        positiveOnlyBox.addActionListener(new ActionListener(){
 //            public void actionPerformed(ActionEvent e) {
 //                JCheckBox b = (JCheckBox)e.getSource();
-//                getParams().setPositiveDataOnly(b.isSelected());
+//                getParameters().setPositiveDataOnly(b.isSelected());
 //            }
 //        });
 

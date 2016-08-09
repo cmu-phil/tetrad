@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.IndTestProducer;
@@ -62,6 +63,7 @@ public final class SemGraphEditor extends JPanel
     private final GraphWorkbench workbench;
     private SemGraphWrapper semGraphWrapper;
     private JMenuItem errorTerms;
+    private Parameters parameters;
 
     //===========================PUBLIC METHODS========================//
 
@@ -69,6 +71,8 @@ public final class SemGraphEditor extends JPanel
         if (semGraphWrapper == null) {
             throw new NullPointerException();
         }
+
+        this.parameters = new Parameters(semGraphWrapper.getParameters());
 
         this.semGraphWrapper = semGraphWrapper;
         this.workbench = new GraphWorkbench(semGraphWrapper.getGraph());
@@ -365,7 +369,7 @@ public final class SemGraphEditor extends JPanel
 
         randomGraph.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), true);
+                RandomGraphEditor editor = new RandomGraphEditor(workbench.getGraph(), true, parameters);
 
                 int ret = JOptionPane.showConfirmDialog(
                         SemGraphEditor.this, editor,
@@ -471,23 +475,17 @@ public final class SemGraphEditor extends JPanel
                         JOptionPane.PLAIN_MESSAGE);
 
                 if (ret == JOptionPane.OK_OPTION) {
-                    int numFactors = Preferences.userRoot().getInt(
-                            "randomMimNumFactors", 1);
-                    int numStructuralNodes = Preferences.userRoot().getInt(
-                            "numStructuralNodes", 3);
-                    int maxStructuralEdges = Preferences.userRoot().getInt(
-                            "numStructuralEdges", 3);
-                    int measurementModelDegree = Preferences.userRoot().getInt(
-                            "measurementModelDegree", 3);
-                    int numLatentMeasuredImpureParents = Preferences.userRoot()
+                    int numFactors = parameters.getInt("randomMimNumFactors", 1);
+                    int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
+                    int maxStructuralEdges = parameters.getInt("numStructuralEdges", 3);
+                    int measurementModelDegree = parameters.getInt("measurementModelDegree", 3);
+                    int numLatentMeasuredImpureParents = parameters
                             .getInt("latentMeasuredImpureParents", 0);
-                    int numMeasuredMeasuredImpureParents =
-                            Preferences.userRoot()
-                                    .getInt("measuredMeasuredImpureParents", 0);
-                    int numMeasuredMeasuredImpureAssociations =
-                            Preferences.userRoot()
-                                    .getInt("measuredMeasuredImpureAssociations",
-                                            0);
+                    int numMeasuredMeasuredImpureParents = parameters
+                            .getInt("measuredMeasuredImpureParents", 0);
+                    int numMeasuredMeasuredImpureAssociations = parameters
+                            .getInt("measuredMeasuredImpureAssociations",
+                                    0);
 
                     Graph graph;
 
