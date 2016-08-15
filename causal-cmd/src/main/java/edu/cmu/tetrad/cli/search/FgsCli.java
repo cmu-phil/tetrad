@@ -140,12 +140,12 @@ public class FgsCli {
         parseArgs(args);
 
         System.out.println("================================================================================");
-        System.out.printf("FGS Discrete (%s)%n", DateTime.printNow());
+        System.out.printf("FGS (%s)%n", DateTime.printNow());
         System.out.println("================================================================================");
 
         String argInfo = createArgsInfo();
         System.out.println(argInfo);
-        LOGGER.info("=== Starting FGS Discrete: " + Args.toString(args, ' '));
+        LOGGER.info("=== Starting FGS: " + Args.toString(args, ' '));
         LOGGER.info(argInfo.trim().replaceAll("\n", ",").replaceAll(" = ", "="));
 
         Set<String> excludedVariables = (excludedVariableFile == null) ? Collections.EMPTY_SET : getExcludedVariables();
