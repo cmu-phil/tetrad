@@ -58,7 +58,7 @@ public final class MagToPag {
      */
     private Graph graph;
 
-    /*
+    /**
      * The background knowledge.
      */
     private IKnowledge knowledge = new Knowledge2();
