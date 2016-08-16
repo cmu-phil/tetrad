@@ -694,31 +694,31 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem help = new JMenuItem("Help");
-        deleteBox.setToolTipText("<html>Shows help for this box.</html>");
+//        JMenuItem help = new JMenuItem("Help");
+//        deleteBox.setToolTipText("<html>Shows help for this box.</html>");
+//
+//        help.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                SessionNodeWrapper sessionNodeWrapper =
+//                        (SessionNodeWrapper) getModelNode();
+//                SessionNode sessionNode = sessionNodeWrapper.getSessionNode();
+//                showInfoBoxForModel(sessionNode, sessionNode.getModelClasses());
+//            }
+//        });
 
-        help.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                SessionNodeWrapper sessionNodeWrapper =
-                        (SessionNodeWrapper) getModelNode();
-                SessionNode sessionNode = sessionNodeWrapper.getSessionNode();
-                showInfoBoxForModel(sessionNode, sessionNode.getModelClasses());
-            }
-        });
+//        JMenuItem setRepetition =
+//                new JMenuItem("Set Repeat...");
+//        setRepetition.setToolTipText(
+//                "<html>Sets the number of times this node " +
+//                        "<br>will be repeated when executing," +
+//                        "<br>at each depth first traversal of the" +
+//                        "<br>node. Useful for simulation studies.</html>");
 
-        JMenuItem setRepetition =
-                new JMenuItem("Set Repeat...");
-        setRepetition.setToolTipText(
-                "<html>Sets the number of times this node " +
-                        "<br>will be repeated when executing," +
-                        "<br>at each depth first traversal of the" +
-                        "<br>node. Useful for simulation studies.</html>");
-
-        setRepetition.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                editRepetition();
-            }
-        });
+//        setRepetition.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                editRepetition();
+//            }
+//        });
 
         JMenuItem editSimulationParameters =
                 new JMenuItem("Edit Parameters...");
@@ -765,11 +765,11 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem simulate = new JMenuItem(new RunSimulationAction(this));
-        simulate.setToolTipText("<html>Runs a simulation study, visiting " +
-                "<br>nodes downstream recursively in depth first" +
-                "<br>order (with repetitions as noted), writing" +
-                "<br>output to a log file.</html>");
+//        JMenuItem simulate = new JMenuItem(new RunSimulationAction(this));
+//        simulate.setToolTipText("<html>Runs a simulation study, visiting " +
+//                "<br>nodes downstream recursively in depth first" +
+//                "<br>order (with repetitions as noted), writing" +
+//                "<br>output to a log file.</html>");
 
 
         popup.add(createModel);
@@ -787,13 +787,13 @@ public final class SessionEditorNode extends DisplayNode {
         addEditLoggerSettings(popup);
         popup.add(propagateDownstream);
 
-        popup.addSeparator();
+//        popup.addSeparator();
 
-        popup.add(setRepetition);
-        popup.add(simulate);
-
-        popup.addSeparator();
-        popup.add(help);
+//        popup.add(setRepetition);
+//        popup.add(simulate);
+//
+//        popup.addSeparator();
+//        popup.add(help);
 
         return popup;
     }
