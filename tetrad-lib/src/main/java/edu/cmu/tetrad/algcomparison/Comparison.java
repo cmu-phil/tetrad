@@ -346,7 +346,7 @@ public class Comparison {
                 dir2.mkdirs();
 
                 File file2 = new File(dir1, "graph.txt");
-                GraphUtils.saveGraph(simulationWrapper.getTrueGraph(), file2, false);
+                GraphUtils.saveGraph(simulationWrapper.getTrueGraph(index), file2, false);
 
                 for (int i = 0; i < simulationWrapper.getNumDataSets(); i++) {
                     File file = new File(dir2, "data." + (i + 1) + ".txt");
@@ -747,7 +747,7 @@ public class Comparison {
         AlgorithmWrapper algorithmWrapper = algorithmSimulationWrapper.getAlgorithmWrapper();
         SimulationWrapper simulationWrapper = algorithmSimulationWrapper.getSimulationWrapper();
         DataSet data = simulationWrapper.getDataSet(run.getRunIndex());
-        Graph trueGraph = simulationWrapper.getTrueGraph();
+        Graph trueGraph = simulationWrapper.getTrueGraph(run.getRunIndex());
 
         System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
@@ -1319,7 +1319,7 @@ public class Comparison {
     private class SimulationWrapper implements Simulation {
         static final long serialVersionUID = 23L;
         private Simulation simulation;
-        private Graph graph;
+        private List<Graph> graphs;
         private List<DataSet> dataSets;
         private Parameters parameters;
 
@@ -1331,9 +1331,10 @@ public class Comparison {
         @Override
         public void createData(Parameters parameters) {
             simulation.createData(parameters);
-            this.graph = simulation.getTrueGraph();
+            this.graphs = new ArrayList<>();
             this.dataSets = new ArrayList<>();
             for (int i = 0; i < simulation.getNumDataSets(); i++) {
+                this.graphs.add(simulation.getTrueGraph(i));
                 this.dataSets.add(simulation.getDataSet(i));
             }
         }
@@ -1344,9 +1345,9 @@ public class Comparison {
         }
 
         @Override
-        public Graph getTrueGraph() {
-            if (graph == null) return null;
-            else return new EdgeListGraph(graph);
+        public Graph getTrueGraph(int index) {
+            if (graphs == null) return null;
+            else return new EdgeListGraph(graphs.get(index));
         }
 
         @Override

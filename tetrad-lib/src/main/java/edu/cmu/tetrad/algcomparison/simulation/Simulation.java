@@ -29,8 +29,9 @@ public interface Simulation extends HasParameters, TetradSerializable {
 
     /**
      * @return That graph.
+     * @param index
      */
-    Graph getTrueGraph();
+    Graph getTrueGraph(int index);
 
     /**
      * @param index The index of the desired simulated data set.

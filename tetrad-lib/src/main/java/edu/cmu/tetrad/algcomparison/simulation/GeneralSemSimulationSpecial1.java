@@ -24,7 +24,7 @@ import java.util.*;
 public class GeneralSemSimulationSpecial1 implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
-    private Graph graph;
+    private List<Graph> graphs;
     private List<DataSet> dataSets;
 
     public GeneralSemSimulationSpecial1(RandomGraph randomGraph) {
@@ -33,17 +33,24 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        this.graph = randomGraph.createGraph(parameters);
+        Graph graph = randomGraph.createGraph(parameters);
 
-        this.dataSets = new ArrayList<>();
+        dataSets = new ArrayList<>();
+        graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
-            DataSet dataSet = simulate(randomGraph.createGraph(parameters), parameters);
-            dataSet.setName("" + (i + 1));
-            this.dataSets.add(dataSet);
-        }
 
+            if (parameters.getBoolean("differentGraphs") && i > 0) {
+                graph = randomGraph.createGraph(parameters);
+            }
+
+            graphs.add(graph);
+
+            DataSet dataSet = simulate(graph, parameters);
+            dataSet.setName("" + (i + 1));
+            dataSets.add(dataSet);
+        }
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
@@ -53,8 +60,8 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     }
 
     @Override
-    public Graph getTrueGraph() {
-        return graph;
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     @Override
@@ -80,6 +87,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     public List<String> getParameters() {
         List<String> parameters = randomGraph.getParameters();
         parameters.add("numRuns");
+        parameters.add("differentGraphs");
         parameters.add("sampleSize");
         return parameters;
     }

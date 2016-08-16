@@ -22,7 +22,7 @@ public class LeeHastieSimulation implements Simulation {
     static final long serialVersionUID = 23L;
     private RandomGraph randomGraph;
     private List<DataSet> dataSets;
-    private Graph graph;
+    private List<Graph> graphs;
     private DataType dataType;
     private List<Node> shuffledOrder;
 
@@ -32,8 +32,6 @@ public class LeeHastieSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
-        this.graph = randomGraph.createGraph(parameters);
-
         double percentDiscrete = parameters.getDouble("percentDiscrete");
 
         boolean discrete = parameters.getString("dataType").equals("discrete");
@@ -48,11 +46,22 @@ public class LeeHastieSimulation implements Simulation {
         if (discrete) this.dataType = DataType.Discrete;
         if (continuous) this.dataType = DataType.Continuous;
 
-        this.dataSets = new ArrayList<>();
         this.shuffledOrder = null;
+
+        Graph graph = randomGraph.createGraph(parameters);
+
+        dataSets = new ArrayList<>();
+        graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
+
+            if (parameters.getBoolean("differentGraphs") && i > 0) {
+                graph = randomGraph.createGraph(parameters);
+            }
+
+            graphs.add(graph);
+
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
             dataSets.add(dataSet);
@@ -60,8 +69,8 @@ public class LeeHastieSimulation implements Simulation {
     }
 
     @Override
-    public Graph getTrueGraph() {
-        return graph;
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     @Override
@@ -80,6 +89,7 @@ public class LeeHastieSimulation implements Simulation {
         parameters.add("numCategories");
         parameters.add("percentDiscrete");
         parameters.add("numRuns");
+        parameters.add("differentGraphs");
         parameters.add("sampleSize");
         return parameters;
     }

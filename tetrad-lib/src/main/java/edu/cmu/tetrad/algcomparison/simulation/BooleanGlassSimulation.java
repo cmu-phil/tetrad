@@ -120,7 +120,7 @@ public class BooleanGlassSimulation implements Simulation {
     }
 
     @Override
-    public Graph getTrueGraph() {
+    public Graph getTrueGraph(int index) {
         return graph;
     }
 

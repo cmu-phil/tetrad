@@ -22,6 +22,7 @@ public class ParamDescriptions {
         put("connected", new ParamDescription("Yes if graph should be connected", false));
         put("sampleSize", new ParamDescription("Sample size", 1000));
         put("numRuns", new ParamDescription("Number of runs", 1));
+        put("differentGraphs", new ParamDescription("Yes if a different graph should be used for each run", false));
         put("alpha", new ParamDescription("Cutoff for p values (alpha)", 0.001));
         put("penaltyDiscount", new ParamDescription("Penalty discount", 4));
         put("fgsDepth", new ParamDescription("Maximum number of new colliders", -1));

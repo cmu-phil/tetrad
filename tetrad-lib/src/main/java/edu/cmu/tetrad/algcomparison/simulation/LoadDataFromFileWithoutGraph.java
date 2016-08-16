@@ -41,7 +41,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     }
 
     @Override
-    public Graph getTrueGraph() {
+    public Graph getTrueGraph(int index) {
         return null;
     }
 
