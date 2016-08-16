@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.GraphSource;
+import edu.cmu.tetradapp.model.Simulation;
 
 import javax.swing.*;
 import java.awt.*;
@@ -152,10 +153,20 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
         // True graph?
         JRadioButton graph1 = new JRadioButton(model1.getName());
         JRadioButton graph2 = new JRadioButton(model2.getName());
+
         ButtonGroup group3 = new ButtonGroup();
         group3.add(graph1);
         group3.add(graph2);
-        
+
+        if (model1 instanceof Simulation) {
+            graph1.setSelected(true);
+        }
+
+        if (model2 instanceof Simulation) {
+            graph2.setSelected(true);
+        }
+
+
 //        getParameters().setReferenceGraphName(model1.getNode());
 //        getParameters().setTargetGraphName(model2.getNode());
 

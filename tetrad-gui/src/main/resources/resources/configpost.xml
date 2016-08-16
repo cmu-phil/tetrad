@@ -348,12 +348,12 @@
     </session-node>
     <session-node id="Data">
         <models>
-            <model name="Data" acronym="Data" help="data" category="Loaded Data">
+            <model name="Loaded Data" acronym="Data" help="data" category="Data">
                 <model-class>edu.cmu.tetradapp.model.DataWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
             <model name="Simulation" acronym="Simulation"
-                   help="data" category="Simulated Data">
+                   help="data" category="Data">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="data" description="Data"/>

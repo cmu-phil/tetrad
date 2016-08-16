@@ -49,7 +49,7 @@ final class TetradMenuBar extends JMenuBar {
     /**
      * Creates the main menubar for Tetrad.
      */
-    public  TetradMenuBar(TetradDesktop desktop) {
+    public TetradMenuBar(TetradDesktop desktop) {
         this.desktop = desktop;
         setBorder(new EtchedBorder());
 
@@ -57,14 +57,14 @@ final class TetradMenuBar extends JMenuBar {
         JMenu fileMenu = new JMenu("File");
         JMenu editMenu = new JMenu("Edit");
         JMenu loggingMenu = new JMenu("Logging");
-        JMenu templateMenu = new JMenu("Template");
+//        JMenu templateMenu = new JMenu("Template");
         JMenu windowMenu = new JMenu("Window");
         JMenu helpMenu = new JMenu("Help");
 
         add(fileMenu);
         add(editMenu);
         add(loggingMenu);
-        add(templateMenu);
+//        add(templateMenu);
         add(windowMenu);
         add(helpMenu);
 
@@ -82,12 +82,19 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.add(closeSession);
         fileMenu.addSeparator();
 
-        // Need to implement these...
-        fileMenu.add(new JMenuItem("Load Data"));
-        fileMenu.add(new JMenuItem("Load Saved Simulation"));
-        fileMenu.add(new JMenuItem("Load Knowledge"));
-        fileMenu.add(new JMenuItem("Load Graph"));
-
+        //=======================EXAMPLES MENU=========================//
+        // Build a LoadTemplateAction for each file name in
+        // this.exampleFiles.
+        String[] templateNames = ConstructTemplateAction.getTemplateNames();
+        for (String templateName : templateNames) {
+            if ("--separator--".equals(templateName)) {
+                fileMenu.addSeparator();
+            } else {
+                ConstructTemplateAction action =
+                        new ConstructTemplateAction(templateName);
+                fileMenu.add(action);
+            }
+        }
 
         fileMenu.addSeparator();
         fileMenu.add(saveSession);
@@ -151,19 +158,19 @@ final class TetradMenuBar extends JMenuBar {
                 new WindowMenuListener(windowMenu, pane);
         windowMenu.addMenuListener(windowMenuListener);
 
-        //=======================EXAMPLES MENU=========================//
-        // Build a LoadTemplateAction for each file name in
-        // this.exampleFiles.
-        String[] templateNames = ConstructTemplateAction.getTemplateNames();
-        for (String templateName : templateNames) {
-            if ("--separator--".equals(templateName)) {
-                templateMenu.addSeparator();
-            } else {
-                ConstructTemplateAction action =
-                        new ConstructTemplateAction(templateName);
-                templateMenu.add(action);
-            }
-        }
+//        //=======================EXAMPLES MENU=========================//
+//        // Build a LoadTemplateAction for each file name in
+//        // this.exampleFiles.
+//        String[] templateNames = ConstructTemplateAction.getTemplateNames();
+//        for (String templateName : templateNames) {
+//            if ("--separator--".equals(templateName)) {
+//                templateMenu.addSeparator();
+//            } else {
+//                ConstructTemplateAction action =
+//                        new ConstructTemplateAction(templateName);
+//                templateMenu.add(action);
+//            }
+//        }
 
         //=======================HELP MENU=========================//
         // A reference to the help item is stored at class level so that

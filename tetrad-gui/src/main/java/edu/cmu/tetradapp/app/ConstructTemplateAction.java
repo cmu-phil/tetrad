@@ -49,17 +49,17 @@ final class ConstructTemplateAction extends AbstractAction {
      * The names of the templates supported by this action.
      */
     private static final String[] TEMPLATE_NAMES = new String[]{
-            "Search from Loaded Data",
+            "Load or Simulate Data",
+            "Search from Loaded/Simulated Data",
             "--separator--",
             "Estimate from Search Result",
             "Estimate then Update from Loaded Data",
             "--separator--",
-            "Simulate Data",
             "Simulate Data with Fixed Graph",
             "Simulate Data with Fixed PM",
             "Simulate Data with Fixed IM",
             "--separator--",
-            "Search from Simulated Data",
+            "Search from Simulated Data and Compare",
             "Estimate from Simulated Data",
             "Estimate then Update from Simulated Data",
     };
@@ -116,17 +116,17 @@ final class ConstructTemplateAction extends AbstractAction {
         int leftX = getLeftX();
 
         if (this.templateName.equals(getTemplateNames()[0])) {
-            searchFromLoadedData(leftX);
+            loadOrSimulateData(leftX);
         } else if (this.templateName.equals(getTemplateNames()[1])) {
-            throw new IllegalStateException("Separator!");
+            searchFromLoadedOrSimulatedData(leftX);
         } else if (this.templateName.equals(getTemplateNames()[2])) {
-            estimateUsingSearchResult(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[3])) {
-            estimateThenUpdateUsingSearchResult(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[4])) {
             throw new IllegalStateException("Separator!");
+        } else if (this.templateName.equals(getTemplateNames()[3])) {
+            estimateUsingSearchResult(leftX);
+        } else if (this.templateName.equals(getTemplateNames()[4])) {
+            estimateThenUpdateUsingSearchResult(leftX);
         } else if (this.templateName.equals(getTemplateNames()[5])) {
-            simulateData(leftX);
+            throw new IllegalStateException("Separator!");
         } else if (this.templateName.equals(getTemplateNames()[6])) {
             simulateDataFixedGraph(leftX);
         } else if (this.templateName.equals(getTemplateNames()[7])) {
@@ -136,7 +136,7 @@ final class ConstructTemplateAction extends AbstractAction {
         } else if (this.templateName.equals(getTemplateNames()[9])) {
             throw new IllegalStateException("Separator!");
         } else if (this.templateName.equals(getTemplateNames()[10])) {
-            searchFromSimulatedData(leftX);
+            searchFromSimulatedDataWithCompare(leftX);
         } else if (this.templateName.equals(getTemplateNames()[11])) {
             estimateFromSimulatedData(leftX);
         } else if (this.templateName.equals(getTemplateNames()[12])) {
@@ -165,7 +165,7 @@ final class ConstructTemplateAction extends AbstractAction {
         return leftX;
     }
 
-    private void searchFromLoadedData(int leftX) {
+    private void searchFromLoadedOrSimulatedData(int leftX) {
         SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
@@ -186,7 +186,7 @@ final class ConstructTemplateAction extends AbstractAction {
         selectSubgraph(nodes);
     }
 
-    private void simulateData(int leftX) {
+    private void loadOrSimulateData(int leftX) {
         getSessionWorkbench().deselectAll();
 
         List<Node> nodes = new LinkedList<>();
@@ -257,7 +257,7 @@ final class ConstructTemplateAction extends AbstractAction {
         selectSubgraph(nodes);
     }
 
-    private void searchFromSimulatedData(int leftX) {
+    private void searchFromSimulatedDataWithCompare(int leftX) {
         SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
         SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
