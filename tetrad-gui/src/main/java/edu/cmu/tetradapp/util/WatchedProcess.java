@@ -178,6 +178,7 @@ public abstract class WatchedProcess {
 
                     setErrorMessage(message);
                 }
+
             }
         };
 

@@ -361,20 +361,20 @@
                 <model-class>edu.cmu.tetradapp.model.Simulation</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.SimulationEditor</editor-class>
             </model>
-        <!--</models>-->
-        <!--<display-component image="dataIcon.gif"/>-->
-        <!--<model-chooser title="Types of data Objects"/>-->
-        <!--<tooltip>-->
+            <!--</models>-->
+            <!--<display-component image="dataIcon.gif"/>-->
+            <!--<model-chooser title="Types of data Objects"/>-->
+            <!--<tooltip>-->
             <!--<![CDATA[-->
-               <!--<html> Allowable Input Node:-->
-                 <!--<br> (1) No inputs (standalone data set), OR-->
-                 <!--<br> (2) IM (Bayes or SEM, to simulate data)-->
-               <!--</html>-->
+            <!--<html> Allowable Input Node:-->
+            <!--<br> (1) No inputs (standalone data set), OR-->
+            <!--<br> (2) IM (Bayes or SEM, to simulate data)-->
+            <!--</html>-->
             <!--]]>-->
-        <!--</tooltip>-->
-    <!--</session-node>-->
-    <!--<session-node id="DataManip">-->
-        <!--<models>-->
+            <!--</tooltip>-->
+            <!--</session-node>-->
+            <!--<session-node id="DataManip">-->
+            <!--<models>-->
             <model name="Discretize Dataset" acronym="Discretize" help="data"
                    category="Manipulation of Data">
                 <logger>
@@ -1016,6 +1016,21 @@
     </session-node>
     <session-node id="Search">
         <models>
+            <model name="General Algorithm" acronym="Algorithm" help="algorithm" category="General">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <!--<event id="independencies" description="Independen cies" default="on"/>-->
+                    <!--<event id="dependencies" description="Dependencies"/>-->
+                    <!--<event id="knowledgeOrientations" description="Knowledge orientations"/>-->
+                    <!--<event id="colliderOrientations"-->
+                           <!--description="Collider Orientations" default="on"/>-->
+                    <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
+                    <!--<event id="graph" description="Graph" default="on"/>-->
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.GeneralAlgorithmRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.GeneralAlgorithmEditor
+                </editor-class>
+            </model>
             <model name="PC" acronym="PC" help="pc" category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>

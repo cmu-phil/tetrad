@@ -55,4 +55,6 @@ public interface Simulation extends HasParameters, TetradSerializable {
      * parameters whose values can be varied.
      */
     List<String> getParameters();
+
+
 }

@@ -1011,8 +1011,7 @@ public class SessionNode implements TetradSerializable {
 
             for (Constructor constructor : constructors) {
                 Class[] parameterTypes = constructor.getParameterTypes();
-                Object[] arguments =
-                        assignParameters(parameterTypes, parentModels);
+                Object[] arguments = assignParameters(parameterTypes, parentModels);
 
                 if (arguments != null) {
                     return true;
@@ -1340,9 +1339,13 @@ public class SessionNode implements TetradSerializable {
                     this.model = (SessionModel) constructor.newInstance(arguments);
                     this.model.setName(getDisplayName());
                 } catch (InstantiationException e) {
-                    throw e;
+                    e.printStackTrace();
+                    continue;
+//                    throw e;
                 } catch (IllegalAccessException e) {
-                    throw e;
+                    e.printStackTrace();
+                    continue;
+//                    throw e;
                 } catch (InvocationTargetException e) {
                     String packagePath = modelClass.getName();
                     int begin = packagePath.lastIndexOf('.') + 1;
@@ -1365,7 +1368,8 @@ public class SessionNode implements TetradSerializable {
                 this.lastModelClass = modelClass;
 
                 getSessionSupport().fireModelCreated(this);
-                break;
+//                continue;
+//                break;
             }
         }
     }

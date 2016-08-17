@@ -980,8 +980,7 @@ public final class SessionEditorNode extends DisplayNode {
         // constructor of the model.)
         if (sessionNode.existsParameterizedConstructor(modelClass)) {
             Parameters params = sessionNode.getParam(modelClass);
-            Object[] arguments = sessionNode.getModelConstructorArguments(
-                    modelClass);
+            Object[] arguments = sessionNode.getModelConstructorArguments(modelClass);
 
             if (params != null) {
                 boolean edited = editParameters(modelClass, params, arguments);

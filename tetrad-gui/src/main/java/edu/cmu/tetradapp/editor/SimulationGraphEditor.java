@@ -63,7 +63,8 @@ public final class SimulationGraphEditor extends JPanel {
 
     //==========================PUBLIC METHODS=============================//
 
-    /**2
+    /**
+     * 2
      * Replaces the getModel Datamodels with the given one. Note, that by calling this
      * you are removing ALL the getModel data-models, they will be lost forever!
      *
@@ -76,7 +77,9 @@ public final class SimulationGraphEditor extends JPanel {
         // now rebuild
         removeAll();
 
-        if (graphs.size() > 1) {
+        if (graphs.isEmpty()) {
+            validate();
+        } else if (graphs.size() > 1) {
             for (int i = 0; i < graphs.size(); i++) {
                 this.tabbedPane.addTab(tabName(i + 1), graphDisplay(graphs.get(i)));
             }

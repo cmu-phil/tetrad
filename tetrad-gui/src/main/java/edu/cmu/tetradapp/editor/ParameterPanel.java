@@ -83,7 +83,7 @@ public class ParameterPanel extends JPanel {
 
     private DoubleTextField getDoubleField(final String parameter, final Parameters parameters, double defaultValue) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
-                8, new DecimalFormat(("0.0")));
+                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
         field.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
