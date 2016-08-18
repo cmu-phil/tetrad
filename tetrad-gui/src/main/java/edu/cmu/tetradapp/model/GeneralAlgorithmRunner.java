@@ -129,13 +129,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         this.dataWrapper = dataWrapper;
 
-        //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
-        if (knowledgeBoxModel == null) {
-            getParameters().set("knowledge", dataWrapper.getKnowledge());
-        } else {
-            getParameters().set("knowledge", knowledgeBoxModel.getKnowledge());
-        }
-
         getParameters().set("independenceFacts", facts.getFacts());
         List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
@@ -146,6 +139,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             knowledge = new Knowledge2();
         }
     }
+
 
 
     /**
@@ -270,7 +264,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         } else {
 
             // Do not throw an exception here!
-            return null;
+            return new ColtDataSet(0, new ArrayList<Node>());
         }
     }
 

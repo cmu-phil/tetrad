@@ -42,7 +42,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
 
 //    private String name;
 //    private Parameters params;
-//    private KnowledgeBoxInput knowledgeBoxInput1;
+//    private KnowledgeBoxInput knowledgeBoxInput;
 //    private List<String> varNames = new ArrayList<String>();
 
     /**

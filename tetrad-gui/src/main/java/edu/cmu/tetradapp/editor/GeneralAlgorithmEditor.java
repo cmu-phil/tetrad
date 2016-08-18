@@ -248,8 +248,10 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         JPanel knowledgePanel = new JPanel();
         knowledgePanel.setLayout(new BorderLayout());
+        KnowledgeBoxModel knowledgeBoxModel = new KnowledgeBoxModel(parameters, myKnowledgeInput);
+        knowledgeBoxModel.setKnowledge(runner.getKnowledge());
         KnowledgeBoxEditor knowledgeEditor = new KnowledgeBoxEditor(
-                new KnowledgeBoxModel(parameters, myKnowledgeInput));
+                knowledgeBoxModel);
         Box f = Box.createVerticalBox();
         f.add(knowledgeEditor);
         Box g = Box.createHorizontalBox();

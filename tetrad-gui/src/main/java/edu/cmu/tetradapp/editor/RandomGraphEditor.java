@@ -553,11 +553,6 @@ class RandomGraphEditor extends JPanel {
             throw new IllegalArgumentException("Number of nodes Must be greater than or equal to 2.");
         }
 
-//        if (numNodes < getNumLatents()) {
-//            throw new IllegalArgumentException(
-//                    "Number of nodes Must be greater than or equal to number " + "of latent nodes.");
-//        }
-
         parameters.set("newGraphNumMeasuredNodes", numMeasuredNodes);
 
         if (isConnected()) {

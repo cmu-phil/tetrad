@@ -31,7 +31,6 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.ForbiddenGraphModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
-import edu.cmu.tetradapp.model.KnowledgeBoxNotifiable;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -66,20 +65,17 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean showRequiredByGroups = true;
     private boolean showForbiddenByGroups = true;
     private JTextArea textArea;
-    private IKnowledge knowledge;
     private int numTiers = 2;
-    private KnowledgeBoxNotifiable knowledgeBoxModel;
+    private final KnowledgeBoxModel knowledgeBoxModel;
     private JTabbedPane tabbedPane = null;
     private Graph sourceGraph;
 
     public KnowledgeBoxEditor(final KnowledgeBoxModel knowledgeBoxModel) {
-        this(knowledgeBoxModel.getKnowledge(), knowledgeBoxModel.getVarNames());
-        this.knowledgeBoxModel = knowledgeBoxModel;
+        this(knowledgeBoxModel, knowledgeBoxModel.getVarNames());
     }
 
     public KnowledgeBoxEditor(final ForbiddenGraphModel knowledgeBoxModel) {
-        this(knowledgeBoxModel.getKnowledge(), knowledgeBoxModel.getVarNames());
-        this.knowledgeBoxModel = knowledgeBoxModel;
+        this(knowledgeBoxModel, knowledgeBoxModel.getVarNames());
     }
 
     /**
@@ -88,8 +84,8 @@ public class KnowledgeBoxEditor extends JPanel {
      * from object to object even for the same knowledge), and possible source
      * graph. The source graph is used only to arrange nodes in the edge panel.
      */
-    private KnowledgeBoxEditor(IKnowledge knowledge, List<String> varNames) {
-        if (knowledge == null) {
+    private KnowledgeBoxEditor(final KnowledgeBoxModel knowledgeBoxModel, List<String> varNames) {
+        if (knowledgeBoxModel == null) {
             throw new NullPointerException();
         }
 
@@ -97,8 +93,8 @@ public class KnowledgeBoxEditor extends JPanel {
             varNames = new ArrayList<>();
         }
 
-        this.knowledge = knowledge;
         this.varNames = varNames;
+        this.knowledgeBoxModel = knowledgeBoxModel;
 
         setLayout(new BorderLayout());
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -113,7 +109,7 @@ public class KnowledgeBoxEditor extends JPanel {
             @Override
             public void componentHidden(ComponentEvent e) {
                 TetradLogger.getInstance().log("knowledge", "Edited Knowledge:");
-                TetradLogger.getInstance().log("knowledge", KnowledgeBoxEditor.this.knowledge.toString());
+                TetradLogger.getInstance().log("knowledge", knowledgeBoxModel.getKnowledge().toString());
             }
         });
     }
@@ -193,7 +189,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
                 try {
-                    Knowledge.saveKnowledge(knowledge, new FileWriter(file));
+                    Knowledge.saveKnowledge(knowledgeBoxModel.getKnowledge(), new FileWriter(file));
                 } catch (Exception e1) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             e1.getMessage());
@@ -207,7 +203,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private void resetTabbedPane(JTabbedPane tabbedPane) {
         tabbedPane.removeAll();
         tabbedPane.add("Tiers", tierDisplay());
-        tabbedPane.add("Other Groups", new OtherGroupsEditor(this.knowledge, this.varNames));
+        tabbedPane.add("Other Groups", new OtherGroupsEditor(knowledgeBoxModel.getKnowledge(), this.varNames));
         tabbedPane.add("Edges", edgeDisplay());
 //        tabbedPane.add("Text", textDisplay());
 
@@ -248,20 +244,23 @@ public class KnowledgeBoxEditor extends JPanel {
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("# Tiers = "));
         SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(
-                getNumTiers(), 0, 100, 1);
+                getNumTiers(), 2, 100, 1);
         spinnerNumberModel.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
                 int numTiers = model.getNumber().intValue();
-                int knowledgeNumTiers = getKnowledge().getNumTiers();
 
-                if (numTiers >= knowledgeNumTiers) {
+//                int knowledgeNumTiers = getKnowledge().getNumTiers();
+//
+//                if (numTiers >= knowledgeNumTiers) {
                     setNumDisplayTiers(numTiers);
                     setNumTiers(numTiers);
-                } else {
-                    model.setValue(knowledgeNumTiers);
-                    setNumTiers(knowledgeNumTiers);
-                }
+                    model.setValue(numTiers);
+//                } else {
+//                    model.setValue(numTiers);
+//                    setNumTiers(knowledgeNumTiers);
+//                    model.setValue(numTiers);
+//                }
 
                 for (int i = getNumTiers(); i <= getKnowledge()
                         .getMaxTierForbiddenWithin(); i++) {
@@ -292,7 +291,7 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     private void setNumDisplayTiers(int numTiers) {
-        if (numTiers < 0) {
+        if (numTiers < 2) {
             int knowledgeTiers = getKnowledge().getNumTiers();
             int defaultTiers = (int) (Math.pow(getVarNames().size(), 0.5) + 1);
             numTiers = knowledgeTiers < defaultTiers ? defaultTiers
@@ -300,6 +299,14 @@ public class KnowledgeBoxEditor extends JPanel {
             setNumTiers(numTiers);
         } else {
             setNumTiers(numTiers);
+        }
+
+        for (int i = numTiers; i < getKnowledge().getNumTiers(); i++) {
+            List<String> vars = getKnowledge().getTier(i);
+
+            for (String var : vars) {
+                getKnowledge().removeFromTiers(var);
+            }
         }
 
         tiersPanel.removeAll();
@@ -715,14 +722,10 @@ public class KnowledgeBoxEditor extends JPanel {
             throw new NullPointerException();
         }
 
-        this.knowledge = knowledge;
+        knowledgeBoxModel.setKnowledge(knowledge);
     }
 
     private void notifyKnowledge() {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-        knowledgeBoxModel.setKnowledge(knowledge);
         firePropertyChange("modelChanged", null, null);
     }
 
@@ -766,38 +769,26 @@ public class KnowledgeBoxEditor extends JPanel {
 
             System.out.println(new String(chars));
 
-            this.knowledge = reader.parseKnowledge(chars);
+            knowledgeBoxModel.setKnowledge(reader.parseKnowledge(chars));
         } catch (Exception e) {
             throw new RuntimeException("Couldn't read knowledge.");
         }
     }
 
     private IKnowledge getKnowledge() {
-        return knowledge;
+        return knowledgeBoxModel.getKnowledge();
     }
 
     private List<String> getVarNames() {
         return varNames;
     }
 
-    public boolean isShowForbiddenExplicitly() {
-        return showForbiddenExplicitly;
-    }
-
     private void setShowForbiddenExplicitly(boolean showForbiddenExplicitly) {
         this.showForbiddenExplicitly = showForbiddenExplicitly;
     }
 
-    public boolean isShowRequired() {
-        return showRequired;
-    }
-
     private void setShowRequired(boolean showRequired) {
         this.showRequired = showRequired;
-    }
-
-    public boolean isShowForbiddenByTiers() {
-        return showForbiddenByTiers;
     }
 
     private void setShowForbiddenByTiers(boolean showForbiddenByTiers) {
