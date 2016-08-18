@@ -52,8 +52,6 @@ import java.util.Map;
 public class GlassoSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable {
 
-    private JTextArea modelStatsText;
-    private JTabbedPane tabbedPane;
     private boolean alreadyLaidOut = false;
 
     //=========================CONSTRUCTORS============================//
@@ -106,8 +104,8 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     protected void setup(String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
-        modelStatsText = new JTextArea();
-        tabbedPane = new JTabbedPane();
+        JTextArea modelStatsText = new JTextArea();
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Pattern", workbenchScroll(resultLabel));
         add(tabbedPane, BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);
@@ -208,7 +206,7 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        final Parameters params = (Parameters) getAlgorithmRunner().getParams();
+        final Parameters params = getAlgorithmRunner().getParams();
 
         IntTextField maxItField = new IntTextField((int) params.get("maxit", 10000), 6);
         maxItField.setFilter(new IntTextField.Filter() {

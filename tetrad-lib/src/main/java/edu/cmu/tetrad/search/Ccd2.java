@@ -281,7 +281,7 @@ public final class Ccd2 implements GraphSearch {
                     int[] choice;
 
                     while ((choice = generator.next()) != null) {
-                        Set<Node> setT = new LinkedHashSet<Node>();
+                        Set<Node> setT = new LinkedHashSet<>();
                         for (int i = 0; i < m; i++) {
                             setT.add((Node) v[choice[i]]);
                         }
@@ -291,7 +291,7 @@ public final class Ccd2 implements GraphSearch {
                         if (sepset == null && fasSepsets != null) sepset = fasSepsets.get(a, c);
                         setT.addAll(sepset);
 
-                        List<Node> listT = new ArrayList<Node>(setT);
+                        List<Node> listT = new ArrayList<>(setT);
 
                         //Note:  B is a collider between A and C (see above).
                         //If anode and cnode are d-separated given T union

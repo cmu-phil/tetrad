@@ -56,11 +56,10 @@ import java.util.Map;
 public class PValueImproverEditor extends JPanel implements LayoutEditable {
     private GraphWorkbench graphWorkbench;
     private PValueImproverWrapper wrapper;
-    private Parameters params;
+    private final Parameters params;
 
-    private DoubleTextField alphaField;
-    private IntTextField beamWidthField;
-    private DoubleTextField zeroEdgePField;
+    private final DoubleTextField alphaField;
+    private final IntTextField beamWidthField;
 
     private JPanel panel = new JPanel();
     private SemIm originalSemIm;
@@ -68,7 +67,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
 
     public PValueImproverEditor(final PValueImproverWrapper wrapper) {
         this.setWrapper(wrapper);
-        this.params = (Parameters) wrapper.getParams();
+        this.params = wrapper.getParams();
 
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -89,7 +88,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
             setNewSemIm(im2);
         }
 
-        final Parameters params = (Parameters) getParams();
+        final Parameters params = getParams();
         double alpha = params.getDouble("alpha", 0.001);
         int beamWidth = params.getInt("beamWidth", 5);
         double zeroEdgeP = params.getDouble("zeroEdgeP", 0.05);
@@ -120,7 +119,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         });
 
 
-        zeroEdgePField = new DoubleTextField(zeroEdgeP, 6,
+        DoubleTextField zeroEdgePField = new DoubleTextField(zeroEdgeP, 6,
                 new DecimalFormat("0.0########"));
         zeroEdgePField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
@@ -313,11 +312,11 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         getGraphWorkbench().layoutByKnowledge();
     }
 
-    public PValueImproverWrapper getWrapper() {
+    private PValueImproverWrapper getWrapper() {
         return wrapper;
     }
 
-    public void setWrapper(PValueImproverWrapper wrapper) {
+    private void setWrapper(PValueImproverWrapper wrapper) {
         this.wrapper = wrapper;
     }
 
@@ -325,7 +324,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         return graphWorkbench;
     }
 
-    public void setGraphWorkbench(final GraphWorkbench graphWorkbench) {
+    private void setGraphWorkbench(final GraphWorkbench graphWorkbench) {
         JTabbedPane tabbedPane = new JTabbedPane();
 
         this.graphWorkbench = graphWorkbench;
@@ -382,15 +381,15 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         firePropertyChange("modelChanged", null, null);
     }
 
-    public Parameters getParams() {
+    private Parameters getParams() {
         return params;
     }
 
-    public SemIm getOriginalSemIm() {
+    private SemIm getOriginalSemIm() {
         return originalSemIm;
     }
 
-    public SemIm getNewSemIm() {
+    private SemIm getNewSemIm() {
         return newSemIm;
     }
 }

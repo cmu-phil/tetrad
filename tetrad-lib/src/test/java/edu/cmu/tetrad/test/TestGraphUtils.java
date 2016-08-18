@@ -43,7 +43,7 @@ public final class TestGraphUtils {
 
     @Test
     public void testCreateRandomDag() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 50; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -58,7 +58,7 @@ public final class TestGraphUtils {
 
     @Test
     public void testDirectedPaths() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i1 = 0; i1 < 6; i1++) {
             nodes.add(new ContinuousVariable("X" + (i1 + 1)));
@@ -83,7 +83,7 @@ public final class TestGraphUtils {
 
     @Test
     public void testTreks() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i1 = 0; i1 < 10; i1++) {
             nodes.add(new ContinuousVariable("X" + (i1 + 1)));
@@ -125,7 +125,7 @@ public final class TestGraphUtils {
         long seed = 28583848283L;
         RandomUtil.getInstance().setSeed(seed);
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));

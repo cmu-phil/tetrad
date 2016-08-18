@@ -35,12 +35,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public final class SimulationGraphEditor extends JPanel {
+final class SimulationGraphEditor extends JPanel {
 
     /**
      * The data wrapper being displayed.
      */
-    private List<Graph> graphs;
+    private final List<Graph> graphs;
 
     /**
      * A tabbed pane containing displays for all data models and displaying
@@ -99,7 +99,7 @@ public final class SimulationGraphEditor extends JPanel {
     /**
      * Sets this editor to display contents of the given data model wrapper.
      */
-    public final void reset() {
+    private void reset() {
         tabbedPane().removeAll();
         setPreferredSize(new Dimension(600, 400));
 

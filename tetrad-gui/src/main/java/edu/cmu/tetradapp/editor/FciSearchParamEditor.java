@@ -65,11 +65,6 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
      */
     private Object[] parentModels;
 
-    /**
-     * The variable names from the object being searched over (usually data).
-     */
-    private List varNames;
-
     //=============================CONSTRUCTORS===========================//
 
     /**
@@ -84,7 +79,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
             throw new NullPointerException();
         }
 
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -96,7 +91,10 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
     }
 
     public void setup() {
-        this.varNames = (List<String>) params.get("varNames", null);
+        /*
+      The variable names from the object being searched over (usually data).
+     */
+        List varNames = (List<String>) params.get("varNames", null);
 
         DataModel dataModel1 = null;
         Graph graph = null;

@@ -42,8 +42,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class NeighborhoodsAction extends AbstractAction implements ClipboardOwner {
-    private GraphWorkbench workbench;
+class NeighborhoodsAction extends AbstractAction implements ClipboardOwner {
+    private final GraphWorkbench workbench;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and

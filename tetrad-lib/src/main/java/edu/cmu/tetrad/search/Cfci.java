@@ -63,7 +63,7 @@ public final class Cfci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<Node>();
+    private List<Node> variables = new ArrayList<>();
 
     /**
      * The independence test.
@@ -192,7 +192,7 @@ public final class Cfci implements GraphSearch {
         setMaxReachablePathLength(maxReachablePathLength);
 
         //List<Node> variables = independenceTest.getVariables();       - Robert Tillman 2008
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
 
         for (Node variable : variables) {
             nodes.add(variable);
@@ -328,15 +328,15 @@ public final class Cfci implements GraphSearch {
     }
 
     public Set<Triple> getColliderTriples() {
-        return new HashSet<Triple>(colliderTriples);
+        return new HashSet<>(colliderTriples);
     }
 
     public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<Triple>(noncolliderTriples);
+        return new HashSet<>(noncolliderTriples);
     }
 
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<Triple>(ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     //===========================PRIVATE METHODS=========================//
@@ -352,9 +352,9 @@ public final class Cfci implements GraphSearch {
         /*
       The list of all unshielded triples.
      */
-        colliderTriples = new HashSet<Triple>();
-        noncolliderTriples = new HashSet<Triple>();
-        ambiguousTriples = new HashSet<Triple>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
 
         for (Node y : getGraph().getNodes()) {
             List<Node> adjacentNodes = getGraph().getAdjacentNodes(y);
@@ -414,10 +414,10 @@ public final class Cfci implements GraphSearch {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
-        Set<Node> __nodes = new HashSet<Node>(this.getGraph().getAdjacentNodes(x));
+        Set<Node> __nodes = new HashSet<>(this.getGraph().getAdjacentNodes(x));
         __nodes.remove(z);
 
-        List<Node> _nodes = new LinkedList<Node>(__nodes);
+        List<Node> _nodes = new LinkedList<>(__nodes);
 
         int _depth = depth;
         if (_depth == -1) {
@@ -442,10 +442,10 @@ public final class Cfci implements GraphSearch {
             }
         }
 
-        __nodes = new HashSet<Node>(this.getGraph().getAdjacentNodes(z));
+        __nodes = new HashSet<>(this.getGraph().getAdjacentNodes(z));
         __nodes.remove(x);
 
-        _nodes = new LinkedList<Node>(__nodes);
+        _nodes = new LinkedList<>(__nodes);
 
         _depth = depth;
         if (_depth == -1) {
@@ -493,7 +493,7 @@ public final class Cfci implements GraphSearch {
     }
 
     private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<Node>();
+        List<Node> list = new LinkedList<>();
 
         for (int i : indices) {
             list.add(nodes.get(i));
@@ -740,7 +740,7 @@ public final class Cfci implements GraphSearch {
                         continue;
                     }
 
-                    LinkedList<Node> reachable = new LinkedList<Node>();
+                    LinkedList<Node> reachable = new LinkedList<>();
                     reachable.add(a);
                     reachablePathFind(a, b, c, reachable);
                 }
@@ -755,10 +755,10 @@ public final class Cfci implements GraphSearch {
      */
     private void reachablePathFind(Node a, Node b, Node c,
                                    LinkedList<Node> reachable) {
-        Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
+        Set<Node> cParents = new HashSet<>(graph.getParents(c));
 
         // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<Node>();
+        Set<Node> visited = new HashSet<>();
         visited.add(b);
         visited.add(c);
 
@@ -892,7 +892,7 @@ public final class Cfci implements GraphSearch {
                         continue;
                     }
 
-                    List<Node> u2 = new ArrayList<Node>();
+                    List<Node> u2 = new ArrayList<>();
 
                     u2.add(a);
                     u2.addAll(u);
@@ -1081,7 +1081,7 @@ public final class Cfci implements GraphSearch {
 
         if (curr.equals(end)) {
             // We've reached the goal! Save soFar as a path.
-            ucPdPaths.add(new LinkedList<Node>(soFar));
+            ucPdPaths.add(new LinkedList<>(soFar));
         } else {
             // Otherwise, try each node adjacent to the getModel one.
             List<Node> adjacents = graph.getAdjacentNodes(curr);
@@ -1104,7 +1104,7 @@ public final class Cfci implements GraphSearch {
      * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
     private List<List<Node>> getUcCirclePaths(Node n1, Node n2) {
-        List<List<Node>> ucCirclePaths = new LinkedList<List<Node>>();
+        List<List<Node>> ucCirclePaths = new LinkedList<>();
         List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2);
 
         for (List<Node> path : ucPdPaths) {

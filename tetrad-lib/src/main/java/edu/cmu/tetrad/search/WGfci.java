@@ -16,7 +16,7 @@ import java.util.*;
 public class WGfci implements GraphSearch {
 
     private List<Node> searchVariables;
-    private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
+    private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
     private GFci gfci;
     private double penaltyDiscount;
     private SemBicScore score;
@@ -48,7 +48,7 @@ public class WGfci implements GraphSearch {
             return Collections.singletonList(node);
         }
 
-        List<String> varCats = new ArrayList<String>(((DiscreteVariable) node).getCategories());
+        List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
 
         List<Node> variables = new ArrayList<>();
 

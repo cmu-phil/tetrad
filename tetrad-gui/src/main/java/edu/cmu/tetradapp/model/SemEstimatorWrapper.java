@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
@@ -60,7 +59,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 
     private boolean multipleResults = false;
 
-    private List<SemEstimator> multipleResultList = new ArrayList<SemEstimator>();
+    private List<SemEstimator> multipleResultList = new ArrayList<>();
     private Parameters params;
 
     //==============================CONSTRUCTORS==========================//
@@ -212,7 +211,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
      * @see TetradSerializableUtils
      */
     public static SemEstimatorWrapper serializableInstance() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         ContinuousVariable x = new ContinuousVariable("X");
         variables.add(x);
         DataSet dataSet = new ColtDataSet(10, variables);
@@ -407,7 +406,7 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
 
-    public SemOptimizer getDefaultOptimization() {
+    private SemOptimizer getDefaultOptimization() {
         if (semPm == null) throw new NullPointerException();
 
         boolean containsLatent = false;

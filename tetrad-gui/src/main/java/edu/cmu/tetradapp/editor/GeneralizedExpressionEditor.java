@@ -47,7 +47,7 @@ import java.util.prefs.Preferences;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedExpressionEditor extends JComponent {
+class GeneralizedExpressionEditor extends JComponent {
     /**
      * The color that selected text is being rendered. Either black or red.
      */
@@ -161,7 +161,7 @@ public class GeneralizedExpressionEditor extends JComponent {
             throw new RuntimeException("Couldn't construct editor", e);
         }
 
-        this.otherVariables = new LinkedHashSet<String>();
+        this.otherVariables = new LinkedHashSet<>();
 
         for (Node _node : semPm.getNodes()) {
             if (semPm.getParents(node).contains(_node)) {
@@ -322,7 +322,7 @@ public class GeneralizedExpressionEditor extends JComponent {
             public void scheduleStop() {
                 this.stop = true;
             }
-        };
+        }
 
         final ColorThread thread = new ColorThread();
         thread.start();
@@ -391,7 +391,7 @@ public class GeneralizedExpressionEditor extends JComponent {
             System.exit(1);
         }
 
-        this.otherVariables = new LinkedHashSet<String>();
+        this.otherVariables = new LinkedHashSet<>();
 
         for (Node _node : semPm.getNodes()) {
             this.otherVariables.add(_node.getName());
@@ -541,7 +541,7 @@ public class GeneralizedExpressionEditor extends JComponent {
             public void scheduleStop() {
                 this.stop = true;
             }
-        };
+        }
 
         final ColorThread thread = new ColorThread();
         thread.start();
@@ -571,7 +571,7 @@ public class GeneralizedExpressionEditor extends JComponent {
      * @return the next parameter in the sequence base1, base2,... that's not already being used by the SEM PM.
      * @param base The base of the paramter name.
      */
-    public String nextParameterName(String base) {
+    private String nextParameterName(String base) {
         Set<String> parameters = semPm.getParameters();
         parameters.addAll(latestParser.getParameters());
 
@@ -600,13 +600,13 @@ public class GeneralizedExpressionEditor extends JComponent {
     //==================================================PRIVATE METHODS=========================================//
 
     private String niceParentsList(List<Node> nodes) {
-        List<String> nodeNames = new ArrayList<String>();
+        List<String> nodeNames = new ArrayList<>();
 
         for (Node node : nodes) {
             nodeNames.add(node.getName());
         }
 
-        List<String> _nodeNames = new ArrayList<String>(nodeNames);
+        List<String> _nodeNames = new ArrayList<>(nodeNames);
 
         StringBuilder buf = new StringBuilder();
 
@@ -678,13 +678,13 @@ public class GeneralizedExpressionEditor extends JComponent {
     }
 
     private String parameterString(ExpressionParser parser) {
-        Set<String> parameters = new LinkedHashSet<String>(parser.getParameters());
+        Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
 
         for (Node _node : semPm.getNodes()) {
             parameters.remove(_node.getName());
         }
 
-        List<String> parametersList = new ArrayList<String>(parameters);
+        List<String> parametersList = new ArrayList<>(parameters);
         StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < parametersList.size(); i++) {
@@ -706,7 +706,7 @@ public class GeneralizedExpressionEditor extends JComponent {
     }
 
     private String[] getExpressionTokens(GeneralizedSemPm semPm, Node node, Map<String, String> expressionsMap) {
-        List<String> _tokens = new ArrayList<String>(expressionsMap.keySet());
+        List<String> _tokens = new ArrayList<>(expressionsMap.keySet());
 
         if (node != null) {
             _tokens.add(semPm.getParents(node).size(), "-New Parameter-");
@@ -777,7 +777,7 @@ public class GeneralizedExpressionEditor extends JComponent {
                 {"Mixture(a1, dist1, b1, dist2, ...)", "Mixture(%, Normal(%, %), %, Normal(%, %))"},
         };
 
-        final Map<String, String> expressionsMap = new LinkedHashMap<String, String>();
+        final Map<String, String> expressionsMap = new LinkedHashMap<>();
 
         if (node != null) {
             List<Node> parents = semPm.getParents(node);

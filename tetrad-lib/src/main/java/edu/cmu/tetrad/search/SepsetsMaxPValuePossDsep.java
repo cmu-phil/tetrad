@@ -87,8 +87,8 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
 
 //        List<Node> adji = graph.getAdjacentNodes(i);
 //        List<Node> adjk = graph.getAdjacentNodes(k);
-        List<Node> adji = new ArrayList<Node>(possibleDsep(i, k, graph, maxPathLength));
-        List<Node> adjk = new ArrayList<Node>(possibleDsep(k, i, graph, maxPathLength));
+        List<Node> adji = new ArrayList<>(possibleDsep(i, k, graph, maxPathLength));
+        List<Node> adjk = new ArrayList<>(possibleDsep(k, i, graph, maxPathLength));
         adji.remove(k);
         adjk.remove(i);
 
@@ -226,8 +226,8 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
     }
 
     public static boolean existsSemidirectedPath(Node from, Node to, Graph G) {
-        Queue<Node> Q = new LinkedList<Node>();
-        Set<Node> V = new HashSet<Node>();
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
         Q.offer(from);
         V.add(from);
 

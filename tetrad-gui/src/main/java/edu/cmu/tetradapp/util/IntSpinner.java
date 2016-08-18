@@ -39,7 +39,7 @@ public class IntSpinner extends JSpinner {
     /**
      * The eidtor
      */
-    private IntTextField editor;
+    private final IntTextField editor;
 
     /**
      * Filter to use.
@@ -180,9 +180,9 @@ public class IntSpinner extends JSpinner {
     //============================ Inner classer ====================================//
 
 
-    public static interface Filter {
+    public interface Filter {
 
-        public int filter(int oldValue, int newValue);
+        int filter(int oldValue, int newValue);
 
     }
 

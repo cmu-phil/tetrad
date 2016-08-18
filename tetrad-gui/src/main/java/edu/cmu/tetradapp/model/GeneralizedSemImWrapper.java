@@ -53,7 +53,7 @@ public class GeneralizedSemImWrapper implements SessionModel, GraphSource, Knowl
      *
      * @serial Cannot be null.
      */
-    GeneralizedSemIm semIm = null;
+    private GeneralizedSemIm semIm = null;
 
     /**
      * True just in case errors should be shown in the interface.

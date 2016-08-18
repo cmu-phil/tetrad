@@ -76,12 +76,12 @@ public class AverageOverClusters extends DataWrapper {
         return new CorrMatrixConverter(wrapper);
     }
 
-    public DataModel calcAveragesOverClusters(DataModel dataModel, MeasurementModelWrapper measurementModelWrapper) {
+    private DataModel calcAveragesOverClusters(DataModel dataModel, MeasurementModelWrapper measurementModelWrapper) {
         if (dataModel instanceof DataSet) {
             DataSet data = (DataSet) dataModel;
             Clusters clusters = measurementModelWrapper.getClusters();
 
-            List<Node> avgVars = new ArrayList<Node>();
+            List<Node> avgVars = new ArrayList<>();
 
             for (int j = 0; j < clusters.getNumClusters(); j++) {
                 Node latent = null;
@@ -188,7 +188,7 @@ public class AverageOverClusters extends DataWrapper {
 
                 List<Node> trueChildren = trueGraph.getChildren(_latent);
 
-                for (Node node2 : new ArrayList<Node>(trueChildren)) {
+                for (Node node2 : new ArrayList<>(trueChildren)) {
                     if (node2.getNodeType() == NodeType.LATENT) {
                         trueChildren.remove(node2);
                     }

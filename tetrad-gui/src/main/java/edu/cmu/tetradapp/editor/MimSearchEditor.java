@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -49,7 +48,7 @@ import java.util.prefs.Preferences;
  *
  * @author Joseph Ramsey
  */
-public class MimSearchEditor extends JPanel {
+class MimSearchEditor extends JPanel {
 
     /**
      * The algorithm wrapper being viewed.
@@ -80,7 +79,7 @@ public class MimSearchEditor extends JPanel {
     /**
      * The button one clicks to executeButton the algorithm.
      */
-    private JButton executeButton = new JButton();
+    private final JButton executeButton = new JButton();
 
     /**
      * The label for the result graph workbench.
@@ -92,8 +91,6 @@ public class MimSearchEditor extends JPanel {
      */
     private JScrollPane workbenchScroll;
     private JPanel displayPanel;
-    private GraphWorkbench structureWorkbench;
-    private ClusterEditor clusterEditor;
 
     //============================CONSTRUCTORS===========================//
 
@@ -386,7 +383,7 @@ public class MimSearchEditor extends JPanel {
 //                DataGraphUtils.circleLayout(structureGraph, 200, 200, 150);
                 Graph structureGraph = getMimRunner().getStructureGraph();
                 doDefaultArrangement(structureGraph);
-                structureWorkbench = new GraphWorkbench(structureGraph);
+                GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
                 structureWorkbench.setAllowDoubleClickActions(false);
 
                 tabbedPane.add("Structure Model",
@@ -397,7 +394,7 @@ public class MimSearchEditor extends JPanel {
         if (getMimRunner().getClusters() != null) {
             ClusterEditor editor =  new ClusterEditor(getMimRunner().getClusters(),
                     getMimRunner().getData().getVariableNames());
-            this.clusterEditor = editor;
+            ClusterEditor clusterEditor = editor;
             tabbedPane.add("Measurement Model", editor);
         }
 
@@ -499,7 +496,7 @@ public class MimSearchEditor extends JPanel {
         }
 
         try {
-            Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();
+            Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
             getMimRunner().getParams().set("sourceGraph", graph);
         }
         catch (IOException e) {
@@ -537,7 +534,7 @@ public class MimSearchEditor extends JPanel {
 
         if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            params.set("varNames", (java.util.List<String>) runner.getParams().get("varNames", null));
+            params.set("varNames", runner.getParams().get("varNames", null));
             DataModel dataModel = runner.getData();
 
             if (dataModel instanceof DataSet) {
@@ -553,7 +550,7 @@ public class MimSearchEditor extends JPanel {
 
         if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            params.set("varNames", (java.util.List<String>) runner.getParams().get("varNames", null));
+            params.set("varNames", runner.getParams().get("varNames", null));
 
             boolean discreteData = false;
 
@@ -566,7 +563,7 @@ public class MimSearchEditor extends JPanel {
 
         if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            params.set("varNames", (java.util.List<String>) runner.getParams().get("varNames", null));
+            params.set("varNames", runner.getParams().get("varNames", null));
             return new MimBuildIndTestParamsEditor(params);
         }
 

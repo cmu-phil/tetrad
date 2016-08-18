@@ -48,7 +48,7 @@ public class InverseCorrelationRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public InverseCorrelationRunner(DataWrapper dataWrapper) {
+    private InverseCorrelationRunner(DataWrapper dataWrapper) {
         super(dataWrapper, new Parameters(), null);
     }
 

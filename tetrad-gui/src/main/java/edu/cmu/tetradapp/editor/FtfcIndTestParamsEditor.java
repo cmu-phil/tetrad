@@ -38,7 +38,7 @@ import java.text.NumberFormat;
  * @author Joseph Ramsey
  */
 class FtfcIndTestParamsEditor extends JComponent {
-    private Parameters FtfcParams;
+    private final Parameters FtfcParams;
 
     public FtfcIndTestParamsEditor(Parameters paramsPureClusters) {
         this.FtfcParams = paramsPureClusters;

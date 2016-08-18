@@ -37,12 +37,12 @@ public final class IndependenceResult implements TetradSerializable {
         INDEPENDENT, DEPENDENT, UNDETERMINED
     }
 
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-    private int index;
-    private String fact;
-    private Type indep;
-    private double pValue;
+    private final int index;
+    private final String fact;
+    private final Type indep;
+    private final double pValue;
 
     public IndependenceResult(int index, String fact, Type indep, double pValue) {
         this.index = index;

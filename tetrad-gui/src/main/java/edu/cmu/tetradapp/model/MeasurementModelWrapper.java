@@ -77,7 +77,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
             Graph mim = graphWrapper.getGraph();
 
             Clusters clusters = ClusterUtils.mimClusters(mim);
-            List<String> nodeNames = new ArrayList<String>();
+            List<String> nodeNames = new ArrayList<>();
 
             for (Node node : mim.getNodes()) {
                 if (node.getNodeType() != NodeType.LATENT) {
@@ -141,7 +141,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         return clusters;
     }
 
-    public void setClusters(Clusters clusters) {
+    private void setClusters(Clusters clusters) {
         this.clusters = clusters;
     }
 
@@ -149,7 +149,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         return varNames;
     }
 
-    public void setVarNames(List<String> varNames) {
+    private void setVarNames(List<String> varNames) {
         this.varNames = varNames;
     }
 
@@ -165,7 +165,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         return sourceGraph;
     }
 
-    public Parameters getParams() {
+    private Parameters getParams() {
         return params;
     }
 

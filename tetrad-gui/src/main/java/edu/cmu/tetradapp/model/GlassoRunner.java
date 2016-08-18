@@ -53,7 +53,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public GlassoRunner(DataWrapper dataWrapper, Parameters params) {
+    private GlassoRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -83,7 +83,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         Object dataModel = getDataModel();
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
 
         if (dataModel instanceof DataSet) {
             DataSet dataSet = (DataSet) dataModel;
@@ -136,7 +136,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         return names;
@@ -147,7 +147,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -163,7 +163,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     private boolean isAggressivelyPreventCycles(){
         Parameters params = getParams();
         if(params instanceof Parameters){
-            return ((Parameters)params).getBoolean("aggressivelyPreventCycles", false);
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

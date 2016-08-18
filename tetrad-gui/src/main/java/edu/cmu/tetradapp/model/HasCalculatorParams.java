@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public interface HasCalculatorParams {
 
-    public Parameters getCalculatorParams();
+    Parameters getCalculatorParams();
 }
 
 

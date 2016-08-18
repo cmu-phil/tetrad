@@ -53,7 +53,7 @@ public class FactorAnalysisAction extends AbstractAction {
     /**
      * The data edtitor that action is attached to.                        
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
 
     /**
@@ -90,7 +90,7 @@ public class FactorAnalysisAction extends AbstractAction {
         */
     }
 
-    public JPanel createDialog(FactorAnalysis analysis)
+    private JPanel createDialog(FactorAnalysis analysis)
     {
         double threshold = .2;
 
@@ -128,7 +128,7 @@ public class FactorAnalysisAction extends AbstractAction {
 
         SemGraph graph = new SemGraph();
 
-        Vector<Node> observedVariables = new Vector<Node>();
+        Vector<Node> observedVariables = new Vector<>();
 
         for(Node a : dataSet.getVariables())
         {
@@ -136,7 +136,7 @@ public class FactorAnalysisAction extends AbstractAction {
             observedVariables.add(a);
         }
 
-        Vector<Node> factors = new Vector<Node>();
+        Vector<Node> factors = new Vector<>();
 
         for(int i = 0; i < rotatedSolution.columns(); i++)
         {
@@ -219,7 +219,7 @@ public class FactorAnalysisAction extends AbstractAction {
     }
 
     public static void main(String[] args) {
-        java.util.List<Node> nodes = new ArrayList<Node>();
+        java.util.List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 9; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));

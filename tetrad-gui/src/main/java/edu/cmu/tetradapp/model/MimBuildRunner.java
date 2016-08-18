@@ -46,10 +46,9 @@ import java.util.List;
  */
 public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     static final long serialVersionUID = 23L;
-    private DataSet dataSet;
+    private final DataSet dataSet;
     private Graph fullGraph;
     private ICovarianceMatrix covMatrix;
-    private double p = -1;
 
     //============================CONSTRUCTORS===========================//
 
@@ -216,7 +215,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         Clusters clusters = (Clusters) getParams().get("clusters", null);
 
         List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, data.getVariables());
-        List<String> latentNames = new ArrayList<String>();
+        List<String> latentNames = new ArrayList<>();
 
         for (int i = 0; i < clusters.getNumClusters(); i++) {
             latentNames.add(clusters.getClusterName(i));
@@ -244,11 +243,11 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
         setStructureGraph(structureGraph);
 
-        getParams().set("latentVariableNames", new ArrayList<String>(latentNames));
+        getParams().set("latentVariableNames", new ArrayList<>(latentNames));
 
         this.covMatrix = latentsCov;
 
-        this.p = mimbuild.getpValue();
+        double p = mimbuild.getpValue();
 
         TetradLogger.getInstance().log("details", "\nStructure graph = " + structureGraph);
         TetradLogger.getInstance().log("details", getLatentClustersString(fullGraph).toString());
@@ -265,12 +264,12 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
             setStructureGraph((Graph) getParams().get("maxStructureGraph", null));
             setFullGraph((Graph) getParams().get("maxFullGraph", null));
-            if ((Clusters) getParams().get("maxClusters", null) != null) {
+            if (getParams().get("maxClusters", null) != null) {
                 setClusters((Clusters) getParams().get("maxClusters", null));
             }
             setResultGraph((Graph) getParams().get("maxFullGraph", null));
 
-            TetradLogger.getInstance().log("maxmodel", "\nMAX Graph = " + (Graph) getParams().get("maxStructureGraph", null));
+            TetradLogger.getInstance().log("maxmodel", "\nMAX Graph = " + getParams().get("maxStructureGraph", null));
             TetradLogger.getInstance().log("maxmodel", getLatentClustersString((Graph) getParams().get("maxFullGraph", null)).toString());
             TetradLogger.getInstance().log("maxmodel", "MAX P = " + getParams().getDouble("maxP", 1.0));
         }

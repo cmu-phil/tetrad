@@ -53,13 +53,13 @@ public class LogisticRegressionEditor extends JPanel {
     /**
      * Text area for display output.
      */
-    private JTextArea modelParameters;
+    private final JTextArea modelParameters;
 
 
     /**
      * The number formatter used for printing reports.
      */
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
 
     public LogisticRegressionEditor(LogisticRegressionRunner regressionRunner) {

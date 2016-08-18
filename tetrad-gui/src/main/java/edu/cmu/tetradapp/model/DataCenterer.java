@@ -39,7 +39,7 @@ public class DataCenterer extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    public DataCenterer(DataWrapper wrapper) {
+    private DataCenterer(DataWrapper wrapper) {
         DataModelList inList1 = wrapper.getDataModelList();
         DataModelList outList = new DataModelList();
 
@@ -56,7 +56,7 @@ public class DataCenterer extends DataWrapper {
 
             TetradMatrix data2 = DataUtils.centerData(dataSet.getDoubleData());
             List<Node> list = dataSet.getVariables();
-            List<Node> list2 = new ArrayList<Node>();
+            List<Node> list2 = new ArrayList<>();
 
             for (Node node: list) {
                 list2.add(node);

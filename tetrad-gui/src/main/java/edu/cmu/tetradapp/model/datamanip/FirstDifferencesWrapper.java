@@ -36,7 +36,7 @@ public class FirstDifferencesWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    public FirstDifferencesWrapper(DataWrapper wrapper) {
+    private FirstDifferencesWrapper(DataWrapper wrapper) {
         LogDataUtils.logDataModelList("Parent data in which rows have been randomly permuted.", getDataModelList());
 
         DataModelList inList = wrapper.getDataModelList();

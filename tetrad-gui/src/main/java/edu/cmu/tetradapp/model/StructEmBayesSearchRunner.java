@@ -66,8 +66,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
 
     //===============================CONSTRUCTORS============================//
 
-    public StructEmBayesSearchRunner(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper) {
+    private StructEmBayesSearchRunner(DataWrapper dataWrapper,
+                                      BayesPmWrapper bayesPmWrapper) {
         if (dataWrapper == null) {
             throw new NullPointerException(
                     "BayesDataWrapper must not be null.");

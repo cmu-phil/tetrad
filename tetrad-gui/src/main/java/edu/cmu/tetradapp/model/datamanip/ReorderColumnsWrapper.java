@@ -39,7 +39,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public ReorderColumnsWrapper(DataWrapper data) {
+    private ReorderColumnsWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
@@ -49,7 +49,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
         List<Node> variables = dataModelList.get(0).getVariables();
 
         DataModelList newData = new DataModelList();
-        variables = new ArrayList<Node>(variables);
+        variables = new ArrayList<>(variables);
         Collections.shuffle(variables);
 
         if (dataModelList.get(0) instanceof DataSet) {
@@ -69,7 +69,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
                 if (dataModel instanceof CovarianceMatrix) {
                     CovarianceMatrix cov = (CovarianceMatrix) dataModel;
 
-                    List<String> vars = new ArrayList<String>();
+                    List<String> vars = new ArrayList<>();
 
                     for (Node node : variables) {
                         vars.add(node.getName());
@@ -91,7 +91,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
     public static DataSet reorderColumns(DataSet dataModel) {
         DataSet dataSet = dataModel;
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (Node node : dataSet.getVariables()) {
             Node _node = dataSet.getVariable(node.getName());

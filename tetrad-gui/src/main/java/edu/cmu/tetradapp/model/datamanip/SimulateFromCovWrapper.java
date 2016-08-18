@@ -36,7 +36,7 @@ public class SimulateFromCovWrapper extends DataWrapper {
     /**
      * Splits the given data set by collinear columns.
      */
-    public SimulateFromCovWrapper(DataWrapper wrapper) {
+    private SimulateFromCovWrapper(DataWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }

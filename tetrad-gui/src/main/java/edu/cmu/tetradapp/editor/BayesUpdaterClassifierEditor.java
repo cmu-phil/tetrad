@@ -32,7 +32,6 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RocCalculator;
 import edu.cmu.tetradapp.model.BayesUpdaterClassifierWrapper;
-import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -286,7 +285,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
             }
         }
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         DiscreteVariable targetVariable = classifier.getTargetVariable();
         DiscreteVariable classVar =

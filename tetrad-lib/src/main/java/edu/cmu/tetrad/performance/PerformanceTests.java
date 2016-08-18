@@ -56,7 +56,7 @@ public class PerformanceTests {
 
         System.out.println("Making list of vars");
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -272,7 +272,7 @@ public class PerformanceTests {
 
         System.out.println("Making list of vars");
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -446,7 +446,7 @@ public class PerformanceTests {
 
         System.out.println("Making list of vars");
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -539,7 +539,7 @@ public class PerformanceTests {
 
         System.out.println("Making list of vars");
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -639,7 +639,7 @@ public class PerformanceTests {
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();
         List<Double> degrees = new ArrayList<>();
-        List<Long> elapsedTimes = new ArrayList<Long>();
+        List<Long> elapsedTimes = new ArrayList<>();
 
         if (continuous) {
             init(new File("fgs.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
@@ -895,7 +895,7 @@ public class PerformanceTests {
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();
         List<Double> degrees = new ArrayList<>();
-        List<Long> elapsedTimes = new ArrayList<Long>();
+        List<Long> elapsedTimes = new ArrayList<>();
 
         System.out.println("Making dag");
 
@@ -1179,9 +1179,9 @@ public class PerformanceTests {
         out.println();
 
         List<GraphUtils.GraphComparison> ffciCounts = new ArrayList<>();
-        List<double[]> ffciArrowStats = new ArrayList<double[]>();
-        List<double[]> ffciTailStats = new ArrayList<double[]>();
-        List<Long> ffciElapsedTimes = new ArrayList<Long>();
+        List<double[]> ffciArrowStats = new ArrayList<>();
+        List<double[]> ffciTailStats = new ArrayList<>();
+        List<Long> ffciElapsedTimes = new ArrayList<>();
 
         for (int run = 0; run < numRuns; run++) {
 
@@ -1189,7 +1189,7 @@ public class PerformanceTests {
 
             System.out.println("Making list of vars");
 
-            List<Node> vars = new ArrayList<Node>();
+            List<Node> vars = new ArrayList<>();
 
             for (int i = 0; i < numVars; i++) {
                 vars.add(new ContinuousVariable("X" + (i + 1)));
@@ -1373,7 +1373,7 @@ public class PerformanceTests {
 //        RandomUtil.getInstance().setSeed(1429287454751L);
 //        RandomUtil.getInstance().setSeed(1429309942146L);
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -1643,7 +1643,7 @@ public class PerformanceTests {
     private Graph makeDag(int numVars, double edgeFactor) {
         System.out.println("Making list of vars");
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));

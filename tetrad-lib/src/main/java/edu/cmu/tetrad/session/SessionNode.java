@@ -133,7 +133,7 @@ public class SessionNode implements TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Set<SessionNode> parents = new HashSet<SessionNode>();
+    private Set<SessionNode> parents = new HashSet<>();
 
     /**
      * The set of children of this node--a Set of SessionNodes. Must be kept in
@@ -141,7 +141,7 @@ public class SessionNode implements TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Set<SessionNode> children = new HashSet<SessionNode>();
+    private Set<SessionNode> children = new HashSet<>();
 
     /**
      * True iff the next edge should not be added. (Included for GUI user
@@ -272,7 +272,7 @@ public class SessionNode implements TetradSerializable {
 
         // Construct a list of the parents of this node
         // (SessionNode's) together with the new putative parent.
-        List<SessionNode> newParents = new ArrayList<SessionNode>(this.parents);
+        List<SessionNode> newParents = new ArrayList<>(this.parents);
         newParents.add(parent);
 
         for (Class modelClass : this.modelClasses) {
@@ -328,7 +328,7 @@ public class SessionNode implements TetradSerializable {
 
         // Construct a list of the parents of this node
         // (SessionNode's) together with the new putative parent.
-        List<SessionNode> newParents = new ArrayList<SessionNode>(this.parents);
+        List<SessionNode> newParents = new ArrayList<>(this.parents);
         newParents.add(parent);
 
         for (Class modelClass : this.modelClasses) {
@@ -402,7 +402,7 @@ public class SessionNode implements TetradSerializable {
      * @return the set of parents.
      */
     public Set<SessionNode> getParents() {
-        return new HashSet<SessionNode>(this.parents);
+        return new HashSet<>(this.parents);
     }
 
     /**
@@ -457,7 +457,7 @@ public class SessionNode implements TetradSerializable {
      * @return the set of children.
      */
     public Set<SessionNode> getChildren() {
-        return new HashSet<SessionNode>(this.children);
+        return new HashSet<>(this.children);
     }
 
     /**
@@ -528,7 +528,7 @@ public class SessionNode implements TetradSerializable {
         Object param = getParam(modelClass);
         this.model = null;
 
-        List<Object> expandedModels = new ArrayList<Object>(parentModels);
+        List<Object> expandedModels = new ArrayList<>(parentModels);
 
         if (oldModel != null && (!(DoNotAddOldModel.class.isAssignableFrom(modelClass)))) {
             expandedModels.add(oldModel);
@@ -541,7 +541,7 @@ public class SessionNode implements TetradSerializable {
         createModelUsingArguments(modelClass, expandedModels);
 
         if (this.model == null) {
-            expandedModels = new ArrayList<Object>(parentModels);
+            expandedModels = new ArrayList<>(parentModels);
 
             if (param != null) {
                 expandedModels.add(param);
@@ -677,8 +677,8 @@ public class SessionNode implements TetradSerializable {
      * using the parent models as arguments to some constructor in that class.
      */
     public Class[] getConsistentModelClasses() {
-        List<Class> classes = new ArrayList<Class>();
-        List<SessionNode> parents = new ArrayList<SessionNode>(this.parents);
+        List<Class> classes = new ArrayList<>();
+        List<SessionNode> parents = new ArrayList<>(this.parents);
         Class[][] parentModelClasses = new Class[parents.size()][1];
 
         // Construct the parent model classes; they must all be
@@ -757,9 +757,9 @@ public class SessionNode implements TetradSerializable {
      */
     public void resetToFreshlyCreated() {
         if (!isFreshlyCreated()) {
-            Set<SessionNode> _parents = new HashSet<SessionNode>(this.parents);
+            Set<SessionNode> _parents = new HashSet<>(this.parents);
             Set<SessionNode> _children =
-                    new HashSet<SessionNode>(this.children);
+                    new HashSet<>(this.children);
 
             for (SessionNode _parent : _parents) {
                 removeParent(_parent);
@@ -771,8 +771,8 @@ public class SessionNode implements TetradSerializable {
 
             destroyModel();
 
-            this.parents = new HashSet<SessionNode>();
-            this.children = new HashSet<SessionNode>();
+            this.parents = new HashSet<>();
+            this.children = new HashSet<>();
             this.sessionSupport = null;
             this.sessionHandler = null;
         }
@@ -827,9 +827,9 @@ public class SessionNode implements TetradSerializable {
         }
 
         // Check equality of possible model classes.
-        Set<Class> set1 = new HashSet<Class>(Arrays.asList(getModelClasses()));
+        Set<Class> set1 = new HashSet<>(Arrays.asList(getModelClasses()));
         Set<Class> set2 =
-                new HashSet<Class>(Arrays.asList(node.getModelClasses()));
+                new HashSet<>(Arrays.asList(node.getModelClasses()));
 
         if (!set1.equals(set2)) {
             return false;
@@ -1056,7 +1056,7 @@ public class SessionNode implements TetradSerializable {
             }
 
             SessionModel temp = model;
-            this.model = new MarshalledObject<SessionModel>(model).get();
+            this.model = new MarshalledObject<>(model).get();
             this.model.setName(getDisplayName());
 
             if (this.model instanceof ParamsResettable &&
@@ -1132,7 +1132,7 @@ public class SessionNode implements TetradSerializable {
         for (Constructor constructor : constructors) {
             Class[] parameterTypes = constructor.getParameterTypes();
             List<Class> remainingParameterTypes =
-                    new ArrayList<Class>(Arrays.asList(parameterTypes));
+                    new ArrayList<>(Arrays.asList(parameterTypes));
 
             loop2:
             for (Class argumentType : argumentTypes) {
@@ -1283,7 +1283,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     private List<Object> getParentModels() {
-        List<Object> models = new ArrayList<Object>();
+        List<Object> models = new ArrayList<>();
 
         for (SessionNode node : this.parents) {
             SessionModel model = node.getModel();
@@ -1299,7 +1299,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     private List<Object> listParentModels() {
-        List<Object> models = new ArrayList<Object>();
+        List<Object> models = new ArrayList<>();
 
         for (SessionNode node : this.parents) {
             Object model = node.getModel();
@@ -1460,7 +1460,7 @@ public class SessionNode implements TetradSerializable {
     }
 
     private List removeNulls(List objects) {
-        List<Object> _objects = new ArrayList<Object>();
+        List<Object> _objects = new ArrayList<>();
 
         for (Object o : objects) {
             if (o != null) {
@@ -1481,7 +1481,7 @@ public class SessionNode implements TetradSerializable {
 
         // Collect up the model types from the parents.
         List<Class<? extends Object>> list1 =
-                new ArrayList<Class<? extends Object>>();
+                new ArrayList<>();
 
         for (SessionNode node : this.parents) {
             Object model = node.getModel();

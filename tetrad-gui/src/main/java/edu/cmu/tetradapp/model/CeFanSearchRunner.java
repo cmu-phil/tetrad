@@ -109,14 +109,14 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((Parameters) getParams()).getInt("depth", -1);
+        int pcDepth = getParams().getInt("depth", -1);
         Cefs search =
                 new Cefs(getIndependenceTest(), pcDepth);
         Parameters params = getParams();
         if(params instanceof Parameters){
             search.setAggressivelyPreventCycles(params.getBoolean("aggressivelyPreventCycles", false));
         }
-        String targetName = ((Parameters) getParams()).getString("targetName", null);
+        String targetName = getParams().getString("targetName", null);
         Graph graph = search.search(targetName);
         setResultGraph(graph);
 
@@ -138,7 +138,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
         IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
@@ -151,14 +151,14 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     @Override

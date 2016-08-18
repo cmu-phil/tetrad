@@ -119,7 +119,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        final Parameters searchParams = (Parameters) getAlgorithmRunner().getParams();
+        final Parameters searchParams = getAlgorithmRunner().getParams();
 
         strongerDirection = new JCheckBox("Stronger Direction");
 
@@ -678,14 +678,14 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 
         if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof LingamPatternRunner) {
-                return new PcLingamIndTestParamsEditor((Parameters) params);
+                return new PcLingamIndTestParamsEditor(params);
             }
 
             if (getAlgorithmRunner() instanceof LofsRunner) {
-                return new PcLingamIndTestParamsEditor((Parameters) params);
+                return new PcLingamIndTestParamsEditor(params);
             }
 
-            return new PcIndTestParamsEditor((Parameters) params);
+            return new PcIndTestParamsEditor(params);
         }
 
         return new IndTestParamsEditor(params);

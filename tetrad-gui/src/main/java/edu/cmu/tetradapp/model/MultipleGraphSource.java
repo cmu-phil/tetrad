@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public interface MultipleGraphSource {
+interface MultipleGraphSource {
     List<Graph> getGraphs();
 }
 

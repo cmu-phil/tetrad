@@ -46,7 +46,7 @@ public class ShiftDataWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    public ShiftDataWrapper(DataWrapper data, Parameters params) {
+    private ShiftDataWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -77,7 +77,7 @@ public class ShiftDataWrapper extends DataWrapper {
 //            }
         }
 
-        List<DataSet> dataSets = new ArrayList<DataSet>();
+        List<DataSet> dataSets = new ArrayList<>();
 
         for (int i = 0; i < dataModelList.size(); i++) {
             dataSets.add((DataSet) dataModelList.get(i));
@@ -105,7 +105,7 @@ public class ShiftDataWrapper extends DataWrapper {
     }
 
     private List<DataSet> shiftDataSets(List<DataSet> dataSets, int[] shifts) {
-        List<DataSet> shiftedDataSets = new ArrayList<DataSet>();
+        List<DataSet> shiftedDataSets = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             shiftedDataSets.add(TimeSeriesUtils.createShiftedData(dataSet, shifts));

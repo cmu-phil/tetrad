@@ -87,7 +87,7 @@ public class RegressionRunner implements AlgorithmRunner {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public RegressionRunner(DataWrapper dataWrapper, Parameters params) {
+    private RegressionRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -168,7 +168,7 @@ public class RegressionRunner implements AlgorithmRunner {
         return outGraph;
     }
 
-    public void setResultGraph(Graph graph) {
+    private void setResultGraph(Graph graph) {
         this.outGraph = graph;
     }
 

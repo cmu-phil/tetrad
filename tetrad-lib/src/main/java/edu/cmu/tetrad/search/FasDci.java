@@ -55,7 +55,7 @@ public class FasDci {
     /**
      * The variables in the dataset.
      */
-    private Set<Node> variables = new HashSet<Node>();
+    private Set<Node> variables = new HashSet<>();
 
     /**
      * The independence tests for each dataset. This should be appropriate to the data.
@@ -244,7 +244,7 @@ public class FasDci {
      */
     private List<Node> possibleParents(Node x, List<Node> adjx,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {
@@ -282,7 +282,7 @@ public class FasDci {
         boolean more = false;
 
         for (Node x : variables) {
-            List<Node> b = new LinkedList<Node>();
+            List<Node> b = new LinkedList<>();
             for (Node node : graph.getAdjacentNodes(x)) {
                 if (variables.contains(node)) {
                     b.add(node);
@@ -293,7 +293,7 @@ public class FasDci {
             for (Node y : b) {
 
                 // This is the standard algorithm, without the v1 bias.
-                List<Node> adjx = new ArrayList<Node>(b);
+                List<Node> adjx = new ArrayList<>(b);
                 adjx.remove(y);
                 List<Node> ppx = possibleParents(x, adjx, knowledge);
 
@@ -332,7 +332,7 @@ public class FasDci {
                         if (!known) {
                             independent = independenceTest.isIndependent(x, y, condSet);
                             if (method != null) {
-                                List<IndependenceTest> testsWithVars = new ArrayList<IndependenceTest>();
+                                List<IndependenceTest> testsWithVars = new ArrayList<>();
                                 for (int k = 0; k < marginalVars.size(); k++) {
                                     Set<Node> marginalSet = marginalVars.get(k);
                                     if (marginalSet.contains(x) && marginalSet.contains(y) &&
@@ -358,7 +358,7 @@ public class FasDci {
                         if (independent && noEdgeRequired) {
 //                            Edge edge = graph.getEdge(x, y);
                             graph.removeEdge(x, y);
-                            sepset.set(x, y, new LinkedList<Node>(condSet));
+                            sepset.set(x, y, new LinkedList<>(condSet));
                             continue nextEdge;
                         }
                     }

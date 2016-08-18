@@ -49,7 +49,7 @@ import java.util.List;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  * @author Frank Wimberly adapted for EM Bayes estimation.
  */
-public final class EMBayesEstimatorEditorWizard extends JPanel {
+final class EMBayesEstimatorEditorWizard extends JPanel {
     private BayesIm bayesIm;
     private JComboBox varNamesComboBox;
     private GraphWorkbench workbench;

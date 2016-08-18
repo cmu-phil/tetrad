@@ -48,7 +48,7 @@ public class SemUpdaterWrapper implements SessionModel {
 
     //=============================CONSTRUCTORS============================//
 
-    public SemUpdaterWrapper(SemImWrapper wrapper) {
+    private SemUpdaterWrapper(SemImWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
         }

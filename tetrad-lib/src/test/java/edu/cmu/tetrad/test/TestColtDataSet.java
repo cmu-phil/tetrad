@@ -54,7 +54,7 @@ public final class TestColtDataSet {
     public final void testContinuous() {
         int rows = 10;
         int cols = 5;
-        List<Node> _variables = new LinkedList<Node>();
+        List<Node> _variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
             _variables.add(new ContinuousVariable("X" + i));
@@ -70,7 +70,7 @@ public final class TestColtDataSet {
         }
 
         List<Node> variables = dataSet.getVariables();
-        List<Node> newVars = new LinkedList<Node>();
+        List<Node> newVars = new LinkedList<>();
         newVars.add(variables.get(2));
         newVars.add(variables.get(4));
 
@@ -85,7 +85,7 @@ public final class TestColtDataSet {
         int rows = 10;
         int cols = 5;
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
             DiscreteVariable variable = new DiscreteVariable("X" + (i + 1), 3);
@@ -131,7 +131,7 @@ public final class TestColtDataSet {
 
     @Test
     public void testMixed() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         DiscreteVariable x1 = new DiscreteVariable("X1");
         variables.add(x1);
@@ -152,7 +152,7 @@ public final class TestColtDataSet {
         int rows = 10;
         int cols = 5;
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
             variables.add(new ContinuousVariable("X" + i));
@@ -185,7 +185,7 @@ public final class TestColtDataSet {
         int rows = 10;
         int cols = 5;
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
             variables.add(new ContinuousVariable("X" + i));
@@ -218,7 +218,7 @@ public final class TestColtDataSet {
         int rows = 10;
         int cols = 5;
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
             variables.add(new ContinuousVariable("X" + i));

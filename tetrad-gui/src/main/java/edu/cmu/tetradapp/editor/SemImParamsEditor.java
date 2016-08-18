@@ -274,7 +274,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
     }
 
     final static class BigLabel extends JLabel {
-        private static Font FONT = new Font("Dialog", Font.BOLD, 20);
+        private static final Font FONT = new Font("Dialog", Font.BOLD, 20);
 
         public BigLabel(String text) {
             super(text);

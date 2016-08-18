@@ -46,7 +46,7 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
     }
 
     public void setParams(Parameters params) {
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {

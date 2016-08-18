@@ -42,11 +42,11 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
     /**
      * @serial Cannot be null.
      */
-    private DataSet outputDataSet;
+    private final DataSet outputDataSet;
 
     //============================CONSTRUCTORS=============================//
 
-    public ReplaceMissingWithRandomWrapper(DataWrapper wrapper) {
+    private ReplaceMissingWithRandomWrapper(DataWrapper wrapper) {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 

@@ -83,7 +83,7 @@ class LoadTimeSeriesDataAction extends AbstractAction {
             StringTokenizer st;
 
             // read in variable name and set up DataSet.
-            List<Node> variables = new LinkedList<Node>();
+            List<Node> variables = new LinkedList<>();
 
             st = new StringTokenizer(in.readLine());
 

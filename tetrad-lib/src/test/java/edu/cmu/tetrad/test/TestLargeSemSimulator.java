@@ -42,7 +42,7 @@ public class TestLargeSemSimulator {
 
     @Test
     public void test1() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         for (int i = 1; i <= 10; i++) nodes.add(new ContinuousVariable("X" + i));
 
         Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 5, 5, 5, false);

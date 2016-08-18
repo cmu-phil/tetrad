@@ -64,11 +64,6 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
      */
     private String id;
 
-    /**(
-     * The session node for the getModel node.
-     */
-    private SessionNode sessionNode;
-
 
     /**
      * Constructs the chooser.
@@ -94,7 +89,7 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     }
 
     public void setModelConfigs(List<SessionNodeModelConfig> configs) {
-        List<ClassWrapper> wrapperList = new LinkedList<ClassWrapper>();
+        List<ClassWrapper> wrapperList = new LinkedList<>();
 
         for (SessionNodeModelConfig config : configs) {
             Class modelClass = config.getModel();
@@ -134,7 +129,10 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     }
 
     public void setSessionNode(SessionNode sessionNode) {
-        this.sessionNode = sessionNode;
+        /*(
+      The session node for the getModel node.
+     */
+        SessionNode sessionNode1 = sessionNode;
         this.nodeName = sessionNode.getDisplayName();
     }
 

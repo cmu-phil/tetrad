@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
@@ -49,7 +48,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for
@@ -154,7 +152,7 @@ public final class SemGraphEditor extends JPanel
      */
     public List getSelectedModelComponents() {
         List<Component> selectedComponents = getWorkbench().getSelectedComponents();
-        List<TetradSerializable> selectedModelComponents = new ArrayList<TetradSerializable>();
+        List<TetradSerializable> selectedModelComponents = new ArrayList<>();
 
         for (Object comp : selectedComponents) {
             if (comp instanceof DisplayNode) {
@@ -397,7 +395,7 @@ public final class SemGraphEditor extends JPanel
 
                                 GraphUtils.arrangeByLayout(dag, layout);
                             } else {
-                                List<Node> nodes = new ArrayList<Node>();
+                                List<Node> nodes = new ArrayList<>();
 
                                 for (int i = 0; i < editor.getNumNodes(); i++) {
                                     nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -416,7 +414,7 @@ public final class SemGraphEditor extends JPanel
 
                                     GraphUtils.arrangeByLayout(dag, layout);
                                 } else {
-                                    List<Node> nodes = new ArrayList<Node>();
+                                    List<Node> nodes = new ArrayList<>();
 
                                     for (int i = 0; i < editor.getNumNodes(); i++) {
                                         nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -544,7 +542,7 @@ public final class SemGraphEditor extends JPanel
 
         List<Node> nodes = graph.getNodes();
 
-        List<Node> exoNodes = new LinkedList<Node>();
+        List<Node> exoNodes = new LinkedList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             Node node = nodes.get(i);

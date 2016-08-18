@@ -54,8 +54,8 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * @deprecated
      */
 //    private List<Knowledge> knowledgeList;
-    private List<Node> variables = new ArrayList<Node>();
-    private List<String> variableNames = new ArrayList<String>();
+    private List<Node> variables = new ArrayList<>();
+    private List<String> variableNames = new ArrayList<>();
     private Graph resultGraph = new EdgeListGraph();
 
     public ForbiddenGraphModel(BayesPmWrapper wrapper, Parameters params) {
@@ -145,18 +145,18 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
             throw new NullPointerException();
         }
 
-        SortedSet<Node> variableNodes = new TreeSet<Node>();
-        SortedSet<String> variableNames = new TreeSet<String>();
+        SortedSet<Node> variableNodes = new TreeSet<>();
+        SortedSet<String> variableNames = new TreeSet<>();
 
         variableNodes.addAll(input.getVariables());
         variableNames.addAll(input.getVariableNames());
 
-        this.variables = new ArrayList<Node>(variableNodes);
-        this.variableNames = new ArrayList<String>(variableNames);
+        this.variables = new ArrayList<>(variableNodes);
+        this.variableNames = new ArrayList<>(variableNames);
 
         setKnowledgeBoxInput(input);
 
-        this.resultGraph = input.getResultGraph();;
+        this.resultGraph = input.getResultGraph();
 
         createKnowledge(params);
 
@@ -167,7 +167,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         // If not, I should wait for resetParams to be called. For now I'm
         // printing the knowledge if it's not empty.
         if (!((IKnowledge) params.get("knowledge", new Knowledge2())).isEmpty()) {
-            TetradLogger.getInstance().log("knowledge", ((IKnowledge) params.get("knowledge", new Knowledge2())).toString());
+            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge2()).toString());
         }
     }
 

@@ -278,7 +278,7 @@ public class MbSearchEditor extends AbstractSearchEditor
 
         Box b = Box.createHorizontalBox();
         Parameters params =
-                (Parameters) getAlgorithmRunner().getParams();
+                getAlgorithmRunner().getParams();
         MbSearchParamEditor comp = new MbSearchParamEditor();
         comp.setParams(params);
 

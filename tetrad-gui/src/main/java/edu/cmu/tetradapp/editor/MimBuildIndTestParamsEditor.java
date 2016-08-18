@@ -40,7 +40,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 class MimBuildIndTestParamsEditor extends JComponent {
-    private Parameters params;
+    private final Parameters params;
 
     public MimBuildIndTestParamsEditor(final Parameters params) {
         this.params = params;

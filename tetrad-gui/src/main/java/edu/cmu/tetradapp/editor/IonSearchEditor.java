@@ -163,7 +163,7 @@ public class IonSearchEditor extends AbstractSearchEditor
         IonRunner runner = (IonRunner) getAlgorithmRunner();
 
         List<Graph> storedGraphs = runner.getStoredGraphs();
-        if (storedGraphs == null) storedGraphs = new ArrayList<Graph>();
+        if (storedGraphs == null) storedGraphs = new ArrayList<>();
 
         for (Graph storedGraph : storedGraphs) {
             GraphUtils.circleLayout(storedGraph, 200, 200, 150);

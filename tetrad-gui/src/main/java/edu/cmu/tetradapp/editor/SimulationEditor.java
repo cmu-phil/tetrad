@@ -59,8 +59,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         PropertyChangeListener {
 
     private final JButton simulateButton = new JButton("Simulate");
-    private JComboBox<String> graphsDropdown = new JComboBox<>();
-    private JComboBox<String> simulationsDropdown = new JComboBox<>();
+    private final JComboBox<String> graphsDropdown = new JComboBox<>();
+    private final JComboBox<String> simulationsDropdown = new JComboBox<>();
 
     //==========================CONSTUCTORS===============================//
 

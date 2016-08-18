@@ -47,7 +47,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public final class DirichletBayesImProbsWizard extends JPanel {
+final class DirichletBayesImProbsWizard extends JPanel {
     private DirichletBayesIm bayesIm;
     private JComboBox varNamesComboBox;
     private GraphWorkbench workbench;

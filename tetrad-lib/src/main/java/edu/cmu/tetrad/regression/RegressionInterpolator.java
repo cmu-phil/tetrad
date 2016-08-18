@@ -70,7 +70,7 @@ public final class RegressionInterpolator implements DataFilter {
 //            double[][] regressors = new double[numVars - 1][numCases];
             String[] regressorNames = new String[numVars - 1];
 
-            List<Node> _regressors = new ArrayList<Node>();
+            List<Node> _regressors = new ArrayList<>();
 
             int k = -1;
 

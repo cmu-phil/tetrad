@@ -32,7 +32,6 @@ import javax.swing.*;
  */
 public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params = new Parameters();
-    private Object[] parentModels = new Object[0];
 
     /**
      * Constructs a dialog to edit the given workbench randomization
@@ -50,7 +49,7 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setParentModels(Object[] parentModels) {
-        this.parentModels = parentModels;
+        Object[] parentModels1 = parentModels;
     }
 
     public void setup() {

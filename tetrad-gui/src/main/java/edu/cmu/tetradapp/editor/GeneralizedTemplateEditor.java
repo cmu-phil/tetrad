@@ -47,7 +47,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedTemplateEditor extends JComponent {
+class GeneralizedTemplateEditor extends JComponent {
 
     /**
      * The color that selected text is being rendered. Either black or red.
@@ -99,7 +99,7 @@ public class GeneralizedTemplateEditor extends JComponent {
     /**
      *
      */
-    private JComboBox<String> combo = new JComboBox<>();
+    private final JComboBox<String> combo = new JComboBox<>();
 
 //    /**
 //     * If this is selected, then variables are listed in the box. Exclusive with <code>errorsCheckBox</code> and
@@ -569,7 +569,7 @@ public class GeneralizedTemplateEditor extends JComponent {
 
         List<Node> nodes = semPm.getNodes();
 
-        final Map<String, String> expressionsMap = new LinkedHashMap<String, String>();
+        final Map<String, String> expressionsMap = new LinkedHashMap<>();
 
         for (int i = 0; i < templateExpressions.length; i++) {
             expressionsMap.put(templateExpressions[i][0], templateExpressions[i][1]);
@@ -587,7 +587,7 @@ public class GeneralizedTemplateEditor extends JComponent {
 
     //===============================================PUBLIC METHODS===========================================//
 
-    public String nextParameterName(String base) {
+    private String nextParameterName(String base) {
         Set<String> parameters = getSemPm().getParameters();
         parameters.addAll(latestParser.getParameters());
 
@@ -629,8 +629,8 @@ public class GeneralizedTemplateEditor extends JComponent {
     }
 
     private void applyChanges() {
-        List<Node> nodes = new ArrayList<Node>();
-        List<String> parameters = new ArrayList<String>();
+        List<Node> nodes = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         String startWith = startsWithField.getText();
 
         if ("Variables".equals(combo.getSelectedItem())) {
@@ -688,7 +688,7 @@ public class GeneralizedTemplateEditor extends JComponent {
                 nodes.add(node);
             }
         } else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
-            List<String> _parameters = new ArrayList<String>(getSemPm().getParameters());
+            List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
             Collections.sort(_parameters);
 
             for (String parameter : _parameters) {
@@ -715,7 +715,7 @@ public class GeneralizedTemplateEditor extends JComponent {
                 parameters.add(parameter);
             }
         } else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
-            List<String> _parameters = new ArrayList<String>(getSemPm().getParameters());
+            List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
             Collections.sort(_parameters);
 
             for (String parameter : _parameters) {
@@ -775,7 +775,7 @@ public class GeneralizedTemplateEditor extends JComponent {
                 equationsBox.add(Box.createVerticalStrut(5));
             }
         } else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
-            List<String> _parameters = new ArrayList<String>(getSemPm().getParameters());
+            List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
             Collections.sort(_parameters);
 
             for (String parameter : _parameters) {
@@ -789,7 +789,7 @@ public class GeneralizedTemplateEditor extends JComponent {
                 equationsBox.add(Box.createVerticalStrut(5));
             }
         } else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
-            List<String> _parameters = new ArrayList<String>(getSemPm().getParameters());
+            List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
             Collections.sort(_parameters);
 
             for (String parameter : _parameters) {

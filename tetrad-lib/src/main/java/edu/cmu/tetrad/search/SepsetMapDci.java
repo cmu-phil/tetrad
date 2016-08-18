@@ -49,12 +49,12 @@ public final class SepsetMapDci {
      * @serial
      */
     private Map<Set<Node>, List<Node>> sepsets =
-            new HashMap<Set<Node>, List<Node>>();
+            new HashMap<>();
 
     private Map<Set<Node>, List<List<Node>>> sepsetSets =
-            new HashMap<Set<Node>, List<List<Node>>>();
+            new HashMap<>();
 
-    private Map<Node, LinkedHashSet<Node>> parents = new HashMap<Node, LinkedHashSet<Node>>();
+    private Map<Node, LinkedHashSet<Node>> parents = new HashMap<>();
 
     //=============================CONSTRUCTORS===========================//
 
@@ -62,8 +62,8 @@ public final class SepsetMapDci {
     }
 
     public SepsetMapDci(SepsetMapDci map) {
-        this.sepsets = new HashMap<Set<Node>, List<Node>>(map.sepsets);
-        this.sepsetSets = new HashMap<Set<Node>, List<List<Node>>>(map.sepsetSets);
+        this.sepsets = new HashMap<>(map.sepsets);
+        this.sepsetSets = new HashMap<>(map.sepsetSets);
     }
 
     /**
@@ -79,21 +79,21 @@ public final class SepsetMapDci {
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
      */
     public void set(Node x, Node y, List<Node> z) {
-        Set<Node> pair = new HashSet<Node>(2);
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         if (sepsets.get(pair) == null) {
             sepsets.put(pair, z);
         } else {
-            List<Node> newSet = new ArrayList<Node>(sepsets.get(pair));
+            List<Node> newSet = new ArrayList<>(sepsets.get(pair));
             newSet.addAll(z);
             sepsets.put(pair, newSet);
         }
         if (sepsetSets.containsKey(pair)) {
-            sepsetSets.get(pair).add(new ArrayList<Node>(z));
+            sepsetSets.get(pair).add(new ArrayList<>(z));
         } else {
-            List<List<Node>> condSets = new ArrayList<List<Node>>();
-            condSets.add(new ArrayList<Node>(z));
+            List<List<Node>> condSets = new ArrayList<>();
+            condSets.add(new ArrayList<>(z));
             sepsetSets.put(pair, condSets);
         }
     }
@@ -103,7 +103,7 @@ public final class SepsetMapDci {
      * was previously set.
      */
     public List<Node> get(Node x, Node y) {
-        Set<Node> pair = new HashSet<Node>(2);
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         return sepsets.get(pair);
@@ -114,7 +114,7 @@ public final class SepsetMapDci {
      * set was ever set
      */
     public List<List<Node>> getSet(Node x, Node y) {
-        Set<Node> pair = new HashSet<Node>(2);
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         return sepsetSets.get(pair);

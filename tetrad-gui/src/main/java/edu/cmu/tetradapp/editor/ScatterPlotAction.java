@@ -39,13 +39,13 @@ import java.beans.PropertyChangeListener;
  * @author Michael Freenor
  */
 
-public class ScatterPlotAction extends AbstractAction {
+class ScatterPlotAction extends AbstractAction {
 
 
     /**
      * The data edtitor that action is attached to.
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
 
     /**
@@ -165,7 +165,7 @@ public class ScatterPlotAction extends AbstractAction {
      */
     private static class ScatterPlotListener implements PropertyChangeListener {
 
-        private ScatterPlotDisplayPanelOld display;
+        private final ScatterPlotDisplayPanelOld display;
 
 
         public ScatterPlotListener(ScatterPlotDisplayPanelOld display) {

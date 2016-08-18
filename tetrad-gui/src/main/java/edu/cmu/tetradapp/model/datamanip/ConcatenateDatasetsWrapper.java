@@ -85,7 +85,7 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
             }
         }
 
-        List<DataSet> dataSets = new ArrayList<DataSet>();
+        List<DataSet> dataSets = new ArrayList<>();
 
         for (DataWrapper wrapper : dataWrappers) {
             for (DataModel model : wrapper.getDataModelList()) {

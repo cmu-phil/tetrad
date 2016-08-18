@@ -32,7 +32,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Ricardo Silva
  */
-public final class ExpandCaseMultipliersAction extends AbstractAction {
+final class ExpandCaseMultipliersAction extends AbstractAction {
 
     /**
      * The data editor.                         -

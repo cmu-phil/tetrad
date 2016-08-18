@@ -41,9 +41,9 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
     private Graph initialGraph = null;
 //    private PC pc = null;
 
-    Set<Edge> pcAdjacent;
-    Set<Edge> pcNonadjacent;
-    List<Node> pcNodes;
+    private Set<Edge> pcAdjacent;
+    private Set<Edge> pcNonadjacent;
+    private List<Node> pcNodes;
 
 
     //============================CONSTRUCTORS============================//
@@ -177,7 +177,7 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         return names;
@@ -188,7 +188,7 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -196,11 +196,11 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<Edge>(pcAdjacent);
+        return new HashSet<>(pcAdjacent);
     }
 
     public Set<Edge> getNonAdj() {
-        return new HashSet<Edge>(pcNonadjacent);
+        return new HashSet<>(pcNonadjacent);
     }
 
     public boolean supportsKnowledge() {
@@ -219,7 +219,7 @@ public class PcMaxRunner extends AbstractAlgorithmRunner
     private boolean isAggressivelyPreventCycles() {
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            return ((Parameters) params).getBoolean("aggressivelyPreventCycles", false);
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

@@ -41,23 +41,23 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     /**
      * The SemIm whose implied covariance matrices this model is displaying.
      */
-    private StandardizedSemIm semIm;
+    private final StandardizedSemIm semIm;
 
     /**
      * True iff the matrices for the observed variables ony should be
      * displayed.
      */
-    private boolean measured;
+    private final boolean measured;
 
     /**
      * True iff correlations (rather than covariances) should be displayed.
      */
-    private boolean correlations;
+    private final boolean correlations;
 
     /**
      * Formats numbers so that they have 4 digits after the decimal place.
      */
-    private NumberFormat nf;
+    private final NumberFormat nf;
 
     /**
      * The matrix being displayed. (This varies.)

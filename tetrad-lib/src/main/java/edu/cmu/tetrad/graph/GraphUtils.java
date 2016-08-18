@@ -4010,7 +4010,7 @@ public final class GraphUtils {
 
     // Depth first.
     public static boolean isDConnectedTo2(Node x, Node y, List<Node> z, Graph graph) {
-        LinkedList<Node> path = new LinkedList<Node>();
+        LinkedList<Node> path = new LinkedList<>();
 
         path.add(x);
 
@@ -4069,14 +4069,14 @@ public final class GraphUtils {
     }
 
     private static Set<Node> reachableDConnectedNodes(Node x, List<Node> z, Graph graph) {
-        Set<Node> R = new HashSet<Node>();
+        Set<Node> R = new HashSet<>();
         R.add(x);
 
-        Queue<OrderedPair<Node>> Q = new ArrayDeque<OrderedPair<Node>>();
-        Set<OrderedPair<Node>> V = new HashSet<OrderedPair<Node>>();
+        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
+        Set<OrderedPair<Node>> V = new HashSet<>();
 
         for (Node node : graph.getAdjacentNodes(x)) {
-            OrderedPair<Node> edge = new OrderedPair<Node>(x, node);
+            OrderedPair<Node> edge = new OrderedPair<>(x, node);
             Q.offer(edge);
             V.add(edge);
             R.add(node);
@@ -4097,7 +4097,7 @@ public final class GraphUtils {
                 }
                 R.add(c);
 
-                OrderedPair<Node> u = new OrderedPair<Node>(b, c);
+                OrderedPair<Node> u = new OrderedPair<>(b, c);
                 if (V.contains(u)) {
                     continue;
                 }

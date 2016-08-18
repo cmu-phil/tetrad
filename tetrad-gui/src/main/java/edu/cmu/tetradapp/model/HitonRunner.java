@@ -50,7 +50,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public HitonRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    private HitonRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -97,7 +97,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((Parameters) getParams()).getInt("depth", -1);
+        int pcDepth = getParams().getInt("depth", -1);
         HitonMb search =
                 new HitonMb(getIndependenceTest(), pcDepth, false);
 //        Parameters params = getParameters();
@@ -106,7 +106,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
 //        }
 //        Knowledge knowledge = getParameters().getKnowledge();
 //        search.setKnowledge(knowledge);
-        String targetName = ((Parameters) getParams()).getString("targetName", null);
+        String targetName = getParams().getString("targetName", null);
         List<Node> nodes = search.findMb(targetName);
 
         Graph graph = new EdgeListGraph();
@@ -132,7 +132,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
         IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
@@ -163,7 +163,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -173,7 +173,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     public boolean supportsKnowledge() {

@@ -237,7 +237,7 @@ public class Simulation extends DataWrapper implements SessionModel,
         return new HashMap<>();
     }
 
-    public void createSimulation() {
+    private void createSimulation() {
         simulation.createData(parameters);
     }
 

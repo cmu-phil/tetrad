@@ -52,7 +52,7 @@ import java.util.List;
  * @author Mike Freenor ripping off Tyler Gibson
  */
 @SuppressWarnings({"unchecked"})
-public class ConditionalIndependenceParamsPanel extends JPanel {
+class ConditionalIndependenceParamsPanel extends JPanel {
 
 
     /**
@@ -84,13 +84,13 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
      * A mapping between variable names and what sort of variable they are:
      * 1 - binary, 2- discrete, 3 - continuous.
      */
-    private static Map<String, Integer> VAR_MAP = new HashMap<>();
+    private static final Map<String, Integer> VAR_MAP = new HashMap<>();
 
 
     /**
      * The font to render fields in.
      */
-    private static Font FONT = new Font("Dialog", Font.PLAIN, 12);
+    private static final Font FONT = new Font("Dialog", Font.PLAIN, 12);
 
 
 
@@ -469,7 +469,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
         return VAR_MAP;
     }
 
-    public static JList getPredictorsList() {
+    private static JList getPredictorsList() {
         return PREDICTORS_LIST;
     }
 
@@ -477,15 +477,15 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
         return SOURCE_LIST;
     }
 
-    public static JTextField getXField() {
+    private static JTextField getXField() {
         return X_FIELD;
     }
 
-    public static JTextField getYField() {
+    private static JTextField getYField() {
         return Y_FIELD;
     }
 
-    public static Font getFONT() {
+    private static Font getFONT() {
         return FONT;
     }
 
@@ -633,7 +633,7 @@ public class ConditionalIndependenceParamsPanel extends JPanel {
      */
     private static class VariableListModel extends AbstractListModel {
 
-        private Vector<Comparable> delegate = new Vector<Comparable>();
+        private final Vector<Comparable> delegate = new Vector<>();
 
         public int getSize() {
             return this.delegate.size();

@@ -43,7 +43,7 @@ class PcLingamIndTestParamsEditor extends JComponent {
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private DoubleTextField alphaField;
+    private final DoubleTextField alphaField;
 
 //    /**
 //     * A text field to allow the user to enter the number of dishes to

@@ -37,7 +37,7 @@ import java.awt.event.ActionListener;
  *
  * @author Joseph Ramsey
  */
-public class IndTestMenuItems {
+class IndTestMenuItems {
     static void addIndependenceTestChoices(JMenu test, IndTestTypeSetter setter) {
         DataModel dataModel = setter.getDataModel();
 
@@ -213,7 +213,7 @@ public class IndTestMenuItems {
 
     }
 
-    static void addMultiTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
+    private static void addMultiTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.POOL_RESIDUALS_FISHER_Z
                 && testType != IndTestType.TIPPETT
@@ -291,7 +291,7 @@ public class IndTestMenuItems {
         });
     }
 
-    static void addCovMatrixTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
+    private static void addCovMatrixTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.FISHER_Z
 //                &&
@@ -389,7 +389,7 @@ public class IndTestMenuItems {
         });
     }
 
-    static void addMixedTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
+    private static void addMixedTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.MIXED_MLR) {
             setter.setTestType(IndTestType.MIXED_MLR);
@@ -408,7 +408,7 @@ public class IndTestMenuItems {
         });
     }
 
-    public static void addGraphTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
+    private static void addGraphTestMenuItems(JMenu test, final IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.D_SEPARATION) {
             setter.setTestType(IndTestType.D_SEPARATION);

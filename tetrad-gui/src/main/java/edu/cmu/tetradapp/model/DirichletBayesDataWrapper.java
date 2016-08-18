@@ -36,8 +36,8 @@ public class DirichletBayesDataWrapper extends DataWrapper
         implements SessionModel, UnlistedSessionModel {
     static final long serialVersionUID = 23L;
 
-    public DirichletBayesDataWrapper(DirichletBayesImWrapper wrapper,
-            Parameters params) {
+    private DirichletBayesDataWrapper(DirichletBayesImWrapper wrapper,
+                                      Parameters params) {
         int sampleSize = params.getInt("sampleSize", 1000);
         boolean latentDataSaved = params.getBoolean("latentDataSaved", false);
         setDataModel(wrapper.getDirichletBayesIm().simulateData(sampleSize, latentDataSaved));

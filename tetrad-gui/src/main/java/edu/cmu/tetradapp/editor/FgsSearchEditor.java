@@ -56,9 +56,6 @@ import java.util.List;
 public class FgsSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, Indexable, DoNotScroll {
 
-    //    private JTextArea modelStatsText;
-    private JTextArea logBayesFactorsScroll;
-    private JTextArea modelStatisticsScroll;
     //    private JTextArea bootstrapEdgeCountsScroll;
     private JTabbedPane tabbedPane;
     private boolean alreadyLaidOut = false;
@@ -647,7 +644,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
             JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
 
 //            modelStatsText = new JTextArea();
-            logBayesFactorsScroll = new JTextArea();
+            JTextArea logBayesFactorsScroll = new JTextArea();
 //            bootstrapEdgeCountsScroll = new JTextArea();
 
 //            modelStatsText.setLineWrap(true);
@@ -666,7 +663,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
 //            bootstrapPanel.setLayout(new BorderLayout());
 //            bootstrapPanel.add(bootstrapEdgeCountsScroll, BorderLayout.CENTER);
 
-            modelStatisticsScroll = new JTextArea();
+            JTextArea modelStatisticsScroll = new JTextArea();
 //            bootstrapEdgeCountsScroll = new JTextArea();
 
 //            modelStatsText.setLineWrap(true);
@@ -724,7 +721,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
     private String reportIfDiscrete(Graph dag, DataSet dataSet) {
         List vars = dataSet.getVariables();
         Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<String, DiscreteVariable>();
+                new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             DiscreteVariable var = (DiscreteVariable) vars.get(i);
             String name = var.getName();
@@ -741,7 +738,7 @@ public class FgsSearchEditor extends AbstractSearchEditor
             if (var instanceof DiscreteVariable) {
                 DiscreteVariable var2 = nodesToVars.get(node.getName());
                 int numCategories = var2.getNumCategories();
-                List<String> categories = new ArrayList<String>();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }

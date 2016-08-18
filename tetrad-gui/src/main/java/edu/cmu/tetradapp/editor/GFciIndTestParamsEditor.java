@@ -48,38 +48,38 @@ class GFciIndTestParamsEditor extends JComponent {
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private DoubleTextField alphaField;
+    private final DoubleTextField alphaField;
 
     /**
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private IntTextField depthField;
+    private final IntTextField depthField;
 
-    private DoubleTextField penaltyDiscount;
-    private DoubleTextField samplePrior;
-    private DoubleTextField structurePrior;
+    private final DoubleTextField penaltyDiscount;
+    private final DoubleTextField samplePrior;
+    private final DoubleTextField structurePrior;
 
     /**
      * A checkbox to allow the user to specify whether the complete rule set should be used.
      */
-    private JCheckBox completeRuleSetCheckBox;
+    private final JCheckBox completeRuleSetCheckBox;
 
     /**
      * A checkbox to allow the user to specify whether possible DSEP should be done.
      */
-    private JCheckBox possibleDsepCheckBox;
+    private final JCheckBox possibleDsepCheckBox;
 
     /**
      * An int field to specify the maximum length of reachable undirectedPaths (in discriminating path orientation and
      * possible dsep).
      */
-    private IntTextField maxReachablePathLengthField;
+    private final IntTextField maxReachablePathLengthField;
 
     /**
      * A checkbox to allow the user to specify whether to use RFCI
      */
-    private JCheckBox faithfulnessAssumed;
+    private final JCheckBox faithfulnessAssumed;
 
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.

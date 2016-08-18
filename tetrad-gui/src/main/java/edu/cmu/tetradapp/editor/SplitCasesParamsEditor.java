@@ -84,7 +84,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
     //================================PUBLIC METHODS=======================//
 
-    public void setNumSplits(int numSplits) {
+    private void setNumSplits(int numSplits) {
         if (numSplits < 1) {
             throw new IllegalArgumentException("Number of splits must be " +
                     "at least 1.");
@@ -177,7 +177,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
 
     public void setParams(Parameters params) {
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
 
@@ -211,7 +211,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
     private static SplitCasesSpec getDefaultSpec(int sampleSize, int numSplits) {
         int[] breakpoints = defaultBreakpoints(sampleSize, numSplits);
-        List<String> splitNames = new LinkedList<String>();
+        List<String> splitNames = new LinkedList<>();
 
         if (numSplits == 1) {
             splitNames.add("same_data");
@@ -246,10 +246,10 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         private IntTextField[] leftSplitFields;
         private IntTextField[] rightSplitFields;
 
-        private LinkedList<JTextField> focusTraveralOrder =
-                new LinkedList<JTextField>();
-        private Map<Object, Integer> labels = new HashMap<Object, Integer>();
-        private int sampleSize;
+        private final LinkedList<JTextField> focusTraveralOrder =
+                new LinkedList<>();
+        private final Map<Object, Integer> labels = new HashMap<>();
+        private final int sampleSize;
 
         public SplitEditor(SplitCasesSpec spec) {
             this.sampleSize = spec.getSampleSize();

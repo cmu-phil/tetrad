@@ -65,7 +65,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
 
         this.params = params;
 
-        if ((Graph) params.get("graph", null) != null) {
+        if (params.get("graph", null) != null) {
             graph = GraphUtils.replaceNodes(graph, ((Graph) params.get("graph", null)).getNodes());
         }
 

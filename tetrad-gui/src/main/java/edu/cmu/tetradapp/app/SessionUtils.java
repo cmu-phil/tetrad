@@ -144,8 +144,8 @@ final class SessionUtils {
      * given model class. The item at [i][j] is the jth parent model description
      * of the ith parent model combination.
      */
-    public static String[][] possibleParentCombinations(Class modelClass) {
-        List<List<String>> parentCombinations = new LinkedList<List<String>>();
+    private static String[][] possibleParentCombinations(Class modelClass) {
+        List<List<String>> parentCombinations = new LinkedList<>();
 
         Constructor[] constructors = modelClass.getConstructors();
         boolean foundNull = false;
@@ -175,7 +175,7 @@ final class SessionUtils {
                 continue;
             }
 
-            List<String> combination = new LinkedList<String>();
+            List<String> combination = new LinkedList<>();
 
             for (Object parameterType1 : parameterTypes) {
                 Class parameterType = (Class) parameterType1;

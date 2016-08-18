@@ -432,7 +432,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 List<DisplayNode> displayNodes = workbench.getSelectedNodes();
-                List<Node> newSelected = new ArrayList<Node>();
+                List<Node> newSelected = new ArrayList<>();
                 for (DisplayNode node : displayNodes) {
                     newSelected.add(node.getModelNode());
                 }
@@ -520,7 +520,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         List<Component> selectedComponents =
                 getWorkbench().getSelectedComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Component comp : selectedComponents) {
             if (comp instanceof DisplayNode) {
@@ -595,7 +595,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         private JList<Node> selectedList;
 
         // The font to render fields in.
-        private Font _font = new Font("Dialog", Font.PLAIN, 12);
+        private final Font _font = new Font("Dialog", Font.PLAIN, 12);
 
         // Stores all information for this component.
         private final GraphSelectionWrapper wrapper;
@@ -752,7 +752,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
 
         private List<Node> getSelected(JList list) {
             List selected = list.getSelectedValuesList();
-            List<Node> selectedList = new ArrayList<Node>(selected == null ? 0 : selected.size());
+            List<Node> selectedList = new ArrayList<>(selected == null ? 0 : selected.size());
             if (selected != null) {
                 for (Object o : selected) {
                     selectedList.add((Node) o);
@@ -1016,7 +1016,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
          */
         public class VariableListModel extends AbstractListModel {
 
-            private List<Node> delegate = new ArrayList<>();
+            private final List<Node> delegate = new ArrayList<>();
 
             public int getSize() {
                 return this.delegate.size();
@@ -1113,7 +1113,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable {
         private final GraphSelectionWrapper wrapper;
         private final JList sourceList;
         private final JList selectedList;
-        private JComponent component;
+        private final JComponent component;
         private JTextArea textArea;
 
         /**

@@ -61,7 +61,7 @@ public class KpcRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public KpcRunner(Graph graph, Parameters params) {
+    private KpcRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
@@ -155,7 +155,7 @@ public class KpcRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         return names;
@@ -166,7 +166,7 @@ public class KpcRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -182,7 +182,7 @@ public class KpcRunner extends AbstractAlgorithmRunner
     private boolean isAggressivelyPreventCycles(){
         Parameters params = getParams();
         if(params instanceof Parameters){
-            return ((Parameters)params).getBoolean("aggressivelyPreventCycles", false);
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

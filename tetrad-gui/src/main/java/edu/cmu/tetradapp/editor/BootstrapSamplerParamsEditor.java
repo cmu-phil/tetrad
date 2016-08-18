@@ -42,11 +42,10 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
      * The parameters object being edited.
      */
     private Parameters params = null;
-    private DataSet parentDataSet;
 
 
     public void setParams(Parameters params) {
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -57,7 +56,7 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
                 DataModel dataModel = ((DataWrapper) parentModel).getSelectedDataModel();
                 //
                 if (dataModel instanceof DataSet) {
-                    this.parentDataSet = (DataSet) dataModel;
+                    DataSet parentDataSet = (DataSet) dataModel;
                 }
             }
         }

@@ -38,7 +38,7 @@ public class GraphComparisonEditor extends JPanel {
     /**
      * The model for the note.
      */
-    private GraphComparison comparison;
+    private final GraphComparison comparison;
 
 
     /**

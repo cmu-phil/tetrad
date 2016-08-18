@@ -42,7 +42,7 @@ public class TimeSeriesWrapper2 extends DataWrapper {
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public TimeSeriesWrapper2(DataWrapper data, Parameters params) {
+    private TimeSeriesWrapper2(DataWrapper data, Parameters params) {
         DataModelList dataSets = data.getDataModelList();
         DataModelList timeSeriesDataSets = new DataModelList();
 

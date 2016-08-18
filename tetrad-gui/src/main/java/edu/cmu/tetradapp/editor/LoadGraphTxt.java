@@ -35,7 +35,7 @@ import java.util.prefs.Preferences;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class LoadGraphTxt extends AbstractAction {
+class LoadGraphTxt extends AbstractAction {
 
     /**
      * The component whose image is to be saved.

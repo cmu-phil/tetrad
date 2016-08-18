@@ -34,7 +34,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public interface MarkovBlanketSearchRunner extends Executable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @return the search params.

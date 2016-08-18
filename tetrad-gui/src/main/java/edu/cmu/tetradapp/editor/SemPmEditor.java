@@ -351,12 +351,12 @@ class SemPmGraphicalEditor extends JPanel {
     /**
      * Font size for parameter values in the graph.
      */
-    private static Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
+    private static final Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
 
     /**
      * The SemPm being edited.
      */
-    private SemPm semPm;
+    private final SemPm semPm;
 
     /**
      * Workbench for the graphical editor.
@@ -560,7 +560,7 @@ class SemPmGraphicalEditor extends JPanel {
      * @throws IllegalArgumentException if the edge is neither directed nor
      *                                  bidirected.
      */
-    public Parameter getEdgeParameter(Edge edge) {
+    private Parameter getEdgeParameter(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {
             return semPm().getCoefficientParameter(edge.getNode1(), edge.getNode2());
         } else if (Edges.isBidirectedEdge(edge)) {
@@ -626,8 +626,8 @@ class SemPmGraphicalEditor extends JPanel {
     //=======================PRIVATE INNER CLASSES==========================//
 
     private final static class EdgeMouseListener extends MouseAdapter {
-        private Edge edge;
-        private SemPmGraphicalEditor editor;
+        private final Edge edge;
+        private final SemPmGraphicalEditor editor;
 
         public EdgeMouseListener(Edge edge, SemPmGraphicalEditor editor) {
             this.edge = edge;
@@ -650,8 +650,8 @@ class SemPmGraphicalEditor extends JPanel {
     }
 
     private final static class NodeMouseListener extends MouseAdapter {
-        private Node node;
-        private SemPmGraphicalEditor editor;
+        private final Node node;
+        private final SemPmGraphicalEditor editor;
 
         public NodeMouseListener(Node node, SemPmGraphicalEditor editor) {
             this.node = node;

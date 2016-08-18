@@ -61,10 +61,6 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
      */
     private String targetName;
 
-    /**
-     * The variable names from the object being searched over (usually data).
-     */
-    private List<String> varNames;
     private Object[] parentModels;
 
     /**
@@ -78,7 +74,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
             throw new NullPointerException();
         }
 
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -90,16 +86,19 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
     }
 
     public void setup() {
-        this.varNames = (List<String>) params().get("varNames", null);
+        /*
+      The variable names from the object being searched over (usually data).
+     */
+        List<String> varNames = (List<String>) params().get("varNames", null);
 
-        if (this.varNames == null) {
-            this.varNames = getVarsFromData(parentModels);
+        if (varNames == null) {
+            varNames = getVarsFromData(parentModels);
 
-            if (this.varNames == null) {
-                this.varNames = getVarsFromGraph(parentModels);
+            if (varNames == null) {
+                varNames = getVarsFromGraph(parentModels);
             }
 
-            if (this.varNames == null) {
+            if (varNames == null) {
                 throw new IllegalStateException(
                         "Variables are not accessible.");
             }
@@ -248,7 +247,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         if (dataModel == null) {
             return null;
         } else {
-            return new ArrayList<String>(dataModel.getVariableNames());
+            return new ArrayList<>(dataModel.getVariableNames());
         }
     }
 

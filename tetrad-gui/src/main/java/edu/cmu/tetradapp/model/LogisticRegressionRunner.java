@@ -83,7 +83,6 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
 
 
     private double[] coefficients;
-    private Map<String, String> allParamsSettings;
 
     //=========================CONSTRUCTORS===============================//
 
@@ -92,8 +91,8 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public LogisticRegressionRunner(DataWrapper dataWrapper,
-                                    Parameters params) {
+    private LogisticRegressionRunner(DataWrapper dataWrapper,
+                                     Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -129,7 +128,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * @see TetradSerializableUtils
      */
     public static LogisticRegressionRunner serializableInstance() {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         ContinuousVariable var1 = new ContinuousVariable("X");
         ContinuousVariable var2 = new ContinuousVariable("Y");
 
@@ -233,7 +232,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
         String[] regressorNames = (String[]) params.get("regressorNames", null);
         List regressorNamesList = Arrays.asList(regressorNames);
 
-        List<Node> regressorNodes = new ArrayList<Node>();
+        List<Node> regressorNodes = new ArrayList<>();
 
         for (String s : regressorNames) {
             regressorNodes.add(dataSet.getVariable(s));
@@ -370,7 +369,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -380,7 +379,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     @Override
@@ -392,7 +391,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner {
 
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
-        this.allParamsSettings = paramSettings;
+        Map<String, String> allParamsSettings = paramSettings;
     }
 
     @Override

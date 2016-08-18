@@ -113,7 +113,7 @@ public class BooleanGlassGeneIm implements SessionModel {
      * Returns the list of factors in the history.
      */
     public List<String> getFactors() {
-        List<String> factors = new ArrayList<String>();
+        List<String> factors = new ArrayList<>();
         IndexedLagGraph connectivity = this.glassFunction.getIndexedLagGraph();
 
         for (int i = 0; i < connectivity.getNumFactors(); i++) {
@@ -134,7 +134,7 @@ public class BooleanGlassGeneIm implements SessionModel {
     public List<String> getParents(int factor) {
         IndexedLagGraph connectivity = getBooleanGlassFunction()
                 .getIndexedLagGraph();
-        List<String> displayParents = new ArrayList<String>();
+        List<String> displayParents = new ArrayList<>();
 
         for (int i = 0; i < connectivity.getNumParents(factor); i++) {
             IndexedParent parent = connectivity.getParent(factor, i);
@@ -210,7 +210,7 @@ public class BooleanGlassGeneIm implements SessionModel {
         // multiple data sets.
         DataModelList dataModelList = new DataModelList();
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         if (simulator.isIncludeDishAndChipVariables()) {
             DiscreteVariable dishVar = new DiscreteVariable("Dish");
@@ -224,7 +224,7 @@ public class BooleanGlassGeneIm implements SessionModel {
         double[][][] measuredData = simulator.getMeasuredData();
         int[] timeSteps = simulator.getTimeSteps();
         List<String> factors =
-                new ArrayList<String>(genePm.getLagGraph().getFactors());
+                new ArrayList<>(genePm.getLagGraph().getFactors());
 
         // Order: G1:t1, G2:t1, G3:t1, G1:t1, G2:t2, G3:t2,...
         for (int i = 0; i < measuredData[0].length; i++) {
@@ -270,7 +270,7 @@ public class BooleanGlassGeneIm implements SessionModel {
         // Fetch the measured data and convert it.
         if (simulator.isRawDataSaved()) {
             double[][][] rawData = simulator.getRawData();
-            List<Node> _variables = new LinkedList<Node>();
+            List<Node> _variables = new LinkedList<>();
 
             // Order: G0:t1, G1:t1, G2:t1, G0:t1, G1:t2, G2:t2,...
             for (int i = 0; i < rawData[0].length; i++) {
@@ -335,7 +335,7 @@ public class BooleanGlassGeneIm implements SessionModel {
             }
         }
 
-        List<String> varNames = new ArrayList<String>();
+        List<String> varNames = new ArrayList<>();
         for (int i = 0; i < numFactors; i++) {
             varNames.add(factors.get(i));
         }

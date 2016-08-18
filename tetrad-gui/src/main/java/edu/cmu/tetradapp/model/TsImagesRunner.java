@@ -351,7 +351,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 //                        "as input. For multiple data sets as input, use IMaGES.");
 //            }
 
-            Parameters Parameters = (Parameters) getParams();
+            Parameters Parameters = getParams();
 
             if (allContinuous(list)) {
                 double penalty = penaltyDiscount;
@@ -411,7 +411,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-    public FgsRunner.Type computeType() {
+    private FgsRunner.Type computeType() {
         Object model = getDataModel();
 
         if (model == null && getSourceGraph() != null) {
@@ -499,14 +499,14 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new ArrayList<List<Triple>>();
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -536,7 +536,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgsRunne
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

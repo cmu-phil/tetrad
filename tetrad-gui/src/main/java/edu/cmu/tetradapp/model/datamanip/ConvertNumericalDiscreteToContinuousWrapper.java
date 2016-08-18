@@ -33,7 +33,7 @@ import edu.cmu.tetradapp.model.DataWrapper;
 public class ConvertNumericalDiscreteToContinuousWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public ConvertNumericalDiscreteToContinuousWrapper(DataWrapper data) {
+    private ConvertNumericalDiscreteToContinuousWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }

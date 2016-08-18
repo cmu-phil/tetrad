@@ -44,7 +44,7 @@ public class TestFdr {
                 .8, .01, .2, .07, .003, .9, .05, .03, .0001
         };
 
-        List<Double> pValues = new ArrayList<Double>();
+        List<Double> pValues = new ArrayList<>();
         for (double _p : p) pValues.add(_p);
 
         double alpha = 0.05;

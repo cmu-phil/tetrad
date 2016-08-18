@@ -44,8 +44,6 @@ public final class BayesImEditorWizardObs extends JPanel {
     private BayesIm bayesIm;
     private JComboBox varNamesComboBox;
     private GraphWorkbench workbench;
-    private BayesImNodeEditingTableObs editingTable;
-    private JPanel tablePanel;
 
     public BayesImEditorWizardObs(BayesIm bayesIm, GraphWorkbench workbench) {
         if (bayesIm == null) {
@@ -59,9 +57,9 @@ public final class BayesImEditorWizardObs extends JPanel {
         workbench.setAllowDoubleClickActions(false);
         setBorder(new MatteBorder(10, 10, 10, 10, getBackground()));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setFont(new Font("SanSerif", Font.BOLD, 12));		
+        setFont(new Font("SanSerif", Font.BOLD, 12));
 
-        editingTable = new BayesImNodeEditingTableObs(bayesIm);
+        BayesImNodeEditingTableObs editingTable = new BayesImNodeEditingTableObs(bayesIm);
         editingTable.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("modelChanged".equals(evt.getPropertyName())) {
@@ -72,7 +70,7 @@ public final class BayesImEditorWizardObs extends JPanel {
 
         JScrollPane scroll = new JScrollPane(editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
-        tablePanel = new JPanel();
+        JPanel tablePanel = new JPanel();
         tablePanel.setLayout(new BorderLayout());
         tablePanel.add(scroll, BorderLayout.CENTER);
         editingTable.grabFocus();

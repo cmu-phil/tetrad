@@ -83,7 +83,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @param source - The source data the search is acting on.
      * @param params - The params for the search.
      */
-    public AbstractMBSearchRunner(DataModel source, Parameters params) {
+    AbstractMBSearchRunner(DataModel source, Parameters params) {
         super(castData(source));
         if (source == null) {
             throw new NullPointerException("The source data was null.");
@@ -149,7 +149,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     /**
      * Makes sure the data is not empty.
      */
-    protected void validate() {
+    void validate() {
         if (this.source.getNumColumns() == 0 || this.source.getNumRows() == 0) {
             throw new IllegalStateException("Cannot run algorithm on an empty data set.");
         }
@@ -159,11 +159,11 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     /**
      * Sets the results of the search.
      */
-    protected void setSearchResults(List<Node> nodes) {
+    void setSearchResults(List<Node> nodes) {
         if (nodes == null) {
             throw new NullPointerException("nodes were null.");
         }
-        this.variables = new ArrayList<Node>(nodes);
+        this.variables = new ArrayList<>(nodes);
         if (nodes.isEmpty()) {
             this.dataModel = new ColtDataSet(source.getNumRows(), nodes);
         } else {
@@ -177,7 +177,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @return an appropriate independence test given the type of data set and values
      * in the params.
      */
-    protected IndependenceTest getIndependenceTest() {
+    IndependenceTest getIndependenceTest() {
         IndTestType type = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         if (this.source.isContinuous() || this.source.getNumColumns() == 0) {
 //            if (IndTestType.CORRELATION_T == type) {

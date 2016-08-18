@@ -39,7 +39,7 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class PurifyIndTestParamsEditor extends JPanel {
-    private Parameters params;
+    private final Parameters params;
 
     public PurifyIndTestParamsEditor(Parameters params, boolean discreteData) {
         this.params = params;
@@ -66,7 +66,7 @@ class PurifyIndTestParamsEditor extends JPanel {
         if (!discreteData) {
             final TestType[] descriptions = TestType.getTestDescriptions();
             testSelector = new JComboBox(descriptions);
-            testSelector.setSelectedItem((TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART));
+            testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
             testSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

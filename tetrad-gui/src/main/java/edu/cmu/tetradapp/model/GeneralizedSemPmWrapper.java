@@ -95,7 +95,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
             this.semPm.setErrorsTemplate(oldPm.getErrorsTemplate());
 
             for (Node node : semPm.getNodes()) {
-                Set<String> parents = new HashSet<String>();
+                Set<String> parents = new HashSet<>();
 
                 for (Node parent : semPm.getParents(node)) {
                     parents.add(parent.getName());
@@ -104,7 +104,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, GraphSource, Knowl
                 Node _node = oldPm.getNode(node.getName());
 
                 Set<Node> oldReferencedNodes = oldPm.getReferencedNodes(_node);
-                Set<String> oldReferencedNames = new HashSet<String>();
+                Set<String> oldReferencedNames = new HashSet<>();
 
                 for (Node node2 : oldReferencedNodes) {
                     oldReferencedNames.add(node2.getName());

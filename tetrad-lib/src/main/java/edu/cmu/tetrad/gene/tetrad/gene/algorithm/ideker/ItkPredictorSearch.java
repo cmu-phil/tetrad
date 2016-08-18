@@ -158,7 +158,7 @@ public class ItkPredictorSearch {
 
     public SortedSet[] minCoveringSet(SortedSet[][] sets) {
 
-        SortedSet<Gene> union = new TreeSet<Gene>();
+        SortedSet<Gene> union = new TreeSet<>();
 
         //Compute the union of all input sets
         for (SortedSet<Gene>[] set : sets) {
@@ -201,7 +201,7 @@ public class ItkPredictorSearch {
         for (int subSetIndex = 1; subSetIndex < sizePowerSet; subSetIndex++) {
             byte[] bool = booleanRepresentation(subSetIndex, total);
             //System.out.println("bool = " + bool[0] + bool[1] + bool[2]);
-            SortedSet<Gene> subSet = new TreeSet<Gene>();
+            SortedSet<Gene> subSet = new TreeSet<>();
             for (int i = 0; i < total; i++) {
                 if (bool[i] == 1) {
                     subSet.add(geneArray[i]);
@@ -251,7 +251,7 @@ public class ItkPredictorSearch {
         for (int i = 0; i < sizePowerSet; i++) {
             if (sizes[i] == minSize && covers[i]) {
                 byte[] bool = booleanRepresentation(i, total);
-                SortedSet<Gene> subSet = new TreeSet<Gene>();
+                SortedSet<Gene> subSet = new TreeSet<>();
                 for (int j = 0; j < total; j++) {
                     if (bool[j] == 1) {
                         subSet.add(geneArray[j]);

@@ -144,9 +144,9 @@ public class DMSearch {
         knowledge.setTierForbiddenWithin(0, true);
         knowledge.setTierForbiddenWithin(1, true);
 
-        Set<String> inputString = new HashSet<String>();
+        Set<String> inputString = new HashSet<>();
 
-        HashSet actualInputs = new HashSet<Integer>();
+        HashSet actualInputs = new HashSet<>();
         for (int i = 0; i < trueInputs.length; i++) {
             actualInputs.add(trueInputs[i]);
         }
@@ -216,7 +216,7 @@ public class DMSearch {
 
     public LatentStructure applyDmSearch(Graph pattern, Set<String> inputString, double penalty) {
 
-        List<Set<Node>> outputParentsList = new ArrayList<Set<Node>>();
+        List<Set<Node>> outputParentsList = new ArrayList<>();
         final List<Node> patternNodes = pattern.getNodes();
 
 //        2DO: add testcase to see how sort compares 10, 11, 1, etc.
@@ -240,7 +240,7 @@ public class DMSearch {
             System.out.println("Sorted patternNodes");
         }
         //constructing treeSet of output nodes.
-        SortedSet<Node> outputNodes = new TreeSet<Node>();
+        SortedSet<Node> outputNodes = new TreeSet<>();
         for (int i : getOutputs()) {
 
 //            System.out.println("patternNodes");
@@ -259,7 +259,7 @@ public class DMSearch {
 
         //Constructing list of output node parents.
         for (Node node : outputNodes) {
-            outputParentsList.add(new TreeSet<Node>(getInputParents(node, inputString, pattern)));
+            outputParentsList.add(new TreeSet<>(getInputParents(node, inputString, pattern)));
         }
 
         if (verbose) {
@@ -274,7 +274,7 @@ public class DMSearch {
         // And adding both inputs and outputs to their respective latents.
         for (Set<Node> set1 : outputParentsList) {
 
-            TreeSet<Node> sameSetParents = new TreeSet<Node>(new Comparator<Node>() {
+            TreeSet<Node> sameSetParents = new TreeSet<>(new Comparator<Node>() {
                 public int compare(Node node1, Node node2) {
 
                     if (node1.getName().length() > node2.getName().length()) {
@@ -323,11 +323,11 @@ public class DMSearch {
                 //Adding Outputs to their Map.
                 for (Node node : outputNodes) {
 
-                    if (new TreeSet<Node>(getInputParents(node, inputString, pattern)).equals(sameSetParents)) {
+                    if (new TreeSet<>(getInputParents(node, inputString, pattern)).equals(sameSetParents)) {
 
                         //If haven't created latent, then do so.
                         if (structure.outputs.get(tempLatent) == null) {
-                            TreeSet<Node> outputNode = new TreeSet<Node>();
+                            TreeSet<Node> outputNode = new TreeSet<>();
                             outputNode.add(node);
                             structure.outputs.put(tempLatent, outputNode);
                         }
@@ -361,7 +361,7 @@ public class DMSearch {
 //        System.out.println(latentsSortedByInputSetSize);
 
 
-        TreeSet<Node> inputs1 = new TreeSet<Node>(new Comparator<Node>() {
+        TreeSet<Node> inputs1 = new TreeSet<>(new Comparator<Node>() {
             public int compare(Node node1, Node node2) {
 
                 if (node1.getName().length() > node2.getName().length()) {
@@ -376,7 +376,7 @@ public class DMSearch {
             }
         });
 
-        TreeSet<Node> inputs2 = new TreeSet<Node>(new Comparator<Node>() {
+        TreeSet<Node> inputs2 = new TreeSet<>(new Comparator<Node>() {
             public int compare(Node node1, Node node2) {
 
                 if (node1.getName().length() > node2.getName().length()) {
@@ -399,7 +399,7 @@ public class DMSearch {
 //          2DO: Need to only perform this test if haven't already looked at latent. (for latent 1).
 
 
-            TreeSet<TreeSet<Node>> sortedInputs = new TreeSet<TreeSet<Node>>(new Comparator<TreeSet<Node>>() {
+            TreeSet<TreeSet<Node>> sortedInputs = new TreeSet<>(new Comparator<TreeSet<Node>>() {
                 public int compare(TreeSet<Node> o1, TreeSet<Node> o2) {
                     int size = o1.size() - o2.size();
                     if (size == 0) {
@@ -429,7 +429,7 @@ public class DMSearch {
             for (int j = 0; j <= latentsSortedByInputSetSize.keySet().size(); j++) {
 
 
-                TreeSet temp2 = new TreeSet<TreeSet<Node>>(new Comparator<TreeSet<Node>>() {
+                TreeSet temp2 = new TreeSet<>(new Comparator<TreeSet<Node>>() {
                     public int compare(TreeSet<Node> o1, TreeSet<Node> o2) {
                         int size = o1.size() - o2.size();
                         if (size == 0) {
@@ -464,7 +464,7 @@ public class DMSearch {
                 //if latent1 is a subset of latent2...
                 if (structure.getInputs(latent2).containsAll(structure.getInputs(latent1))) {
                     if (structure.latentEffects.get(latent1) == null) {
-                        TreeSet<Node> latentEffects = new TreeSet<Node>(new Comparator<Node>() {
+                        TreeSet<Node> latentEffects = new TreeSet<>(new Comparator<Node>() {
                             public int compare(Node node1, Node node2) {
 
                                 if (node1.getName().length() > node2.getName().length()) {
@@ -497,7 +497,7 @@ public class DMSearch {
 
 
 //        Ensuring no nulls in latenteffects map.
-        SortedSet<Node> emptyTreeSet = new TreeSet<Node>(new Comparator<Node>() {
+        SortedSet<Node> emptyTreeSet = new TreeSet<>(new Comparator<Node>() {
             public int compare(Node node1, Node node2) {
 
                 if (node1.getName().length() > node2.getName().length()) {
@@ -674,7 +674,7 @@ public class DMSearch {
                                  SortedSet<Node> outputsLatent, SortedSet<Node> outputsLatentEffect,
                                  Graph pattern, LatentStructure structure, Node latent, Node latentEffect) {
 
-        List<Node> latentList = new ArrayList<Node>();
+        List<Node> latentList = new ArrayList<>();
 
         latentList.addAll(inputsLatent);
 
@@ -753,7 +753,7 @@ public class DMSearch {
 
     private TreeMap<TreeSet<Node>, Node> sortMapByValue(Map<Node, SortedSet<Node>> inputMap, List<Node> latents, LatentStructure structure) {
 
-        TreeMap<TreeSet<Node>, Node> sortedInputSets = new TreeMap<TreeSet<Node>, Node>(new Comparator<SortedSet<Node>>() {
+        TreeMap<TreeSet<Node>, Node> sortedInputSets = new TreeMap<>(new Comparator<SortedSet<Node>>() {
             public int compare(SortedSet o1, SortedSet o2) {
                 int size = o1.size() - o2.size();
                 if (size == 0) {
@@ -794,7 +794,7 @@ public class DMSearch {
 
     //Making sure found nodes are actually inputs before adding as knowledge is now disabled.
     private Set<Node> getInputParents(Node node, Set inputString, Graph pattern) {
-        Set<Node> actualInputs = new HashSet<Node>();
+        Set<Node> actualInputs = new HashSet<>();
         for (Node posInput : pattern.getAdjacentNodes(node)) {
             if (inputString.contains(posInput.getName())) {
                 actualInputs.add(posInput);
@@ -812,10 +812,10 @@ public class DMSearch {
     }
 
     public class LatentStructure {
-        List<Node> latents = new ArrayList<Node>();
-        Map<Node, SortedSet<Node>> inputs = new TreeMap<Node, SortedSet<Node>>();
-        Map<Node, SortedSet<Node>> outputs = new TreeMap<Node, SortedSet<Node>>();
-        Map<Node, SortedSet<Node>> latentEffects = new TreeMap<Node, SortedSet<Node>>();
+        List<Node> latents = new ArrayList<>();
+        Map<Node, SortedSet<Node>> inputs = new TreeMap<>();
+        Map<Node, SortedSet<Node>> outputs = new TreeMap<>();
+        Map<Node, SortedSet<Node>> latentEffects = new TreeMap<>();
 
 
         public LatentStructure() {
@@ -838,7 +838,7 @@ public class DMSearch {
         }
 
         public List<Node> getLatents() {
-            return new ArrayList<Node>(latents);
+            return new ArrayList<>(latents);
         }
 
         public boolean containsLatent(Node latent) {
@@ -846,15 +846,15 @@ public class DMSearch {
         }
 
         public SortedSet<Node> getInputs(Node latent) {
-            return new TreeSet<Node>(inputs.get(latent));
+            return new TreeSet<>(inputs.get(latent));
         }
 
         public SortedSet<Node> getOutputs(Node latent) {
-            return new TreeSet<Node>(outputs.get(latent));
+            return new TreeSet<>(outputs.get(latent));
         }
 
         public SortedSet<Node> getLatentEffects(Node latent) {
-            return new TreeSet<Node>(latentEffects.get(latent));
+            return new TreeSet<>(latentEffects.get(latent));
         }
 
         public String toString() {

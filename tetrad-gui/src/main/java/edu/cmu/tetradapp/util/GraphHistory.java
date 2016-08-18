@@ -36,7 +36,7 @@ public class GraphHistory {
     /**
      * The history.
      */
-    private LinkedList<Graph> graphs;
+    private final LinkedList<Graph> graphs;
 
     /**
      * The index of the getModel graph.
@@ -47,7 +47,7 @@ public class GraphHistory {
      * Constructs a graph history.
      */
     public GraphHistory() {
-        graphs = new LinkedList<Graph>();
+        graphs = new LinkedList<>();
         index = -1;
     }
 

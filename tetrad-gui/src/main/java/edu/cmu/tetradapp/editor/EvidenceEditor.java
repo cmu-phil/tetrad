@@ -46,14 +46,14 @@ class EvidenceEditor extends JPanel {
     private Evidence evidence;
     private JToggleButton[][] buttons;
 
-    private HashMap<JToggleButton, Integer> buttonsToVariables =
-            new HashMap<JToggleButton, Integer>();
-    private HashMap<JToggleButton, Integer> buttonsToCategories =
-            new HashMap<JToggleButton, Integer>();
-    private HashMap<JCheckBox, Integer> checkBoxesToVariables =
-            new HashMap<JCheckBox, Integer>();
-    private HashMap<Integer, JCheckBox> variablesToCheckboxes =
-            new HashMap<Integer, JCheckBox>();
+    private final HashMap<JToggleButton, Integer> buttonsToVariables =
+            new HashMap<>();
+    private final HashMap<JToggleButton, Integer> buttonsToCategories =
+            new HashMap<>();
+    private final HashMap<JCheckBox, Integer> checkBoxesToVariables =
+            new HashMap<>();
+    private final HashMap<Integer, JCheckBox> variablesToCheckboxes =
+            new HashMap<>();
 
     public EvidenceEditor(Evidence evidence) {
         if (evidence == null) {

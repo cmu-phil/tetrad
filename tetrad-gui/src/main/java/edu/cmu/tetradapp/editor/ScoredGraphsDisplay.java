@@ -53,7 +53,7 @@ import java.util.List;
 public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
     private GraphWorkbench workbench;
     private boolean showHighestScoreOnly;
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private Map<Graph, Double> dagsToScores;
     private List<Graph> dags;
     private JLabel scoreLabel;
@@ -97,7 +97,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
             if (dagsToScores.get(dag) > max) max = dagsToScores.get(dag);
         }
 
-        final List<Graph> dags = new ArrayList<Graph>();
+        final List<Graph> dags = new ArrayList<>();
 
         if (max != Double.NEGATIVE_INFINITY && showHighestScoreOnly) {
             for (Graph dag : dagsToScores.keySet()) {
@@ -219,7 +219,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Component comp : components) {
             if (comp instanceof DisplayNode) {

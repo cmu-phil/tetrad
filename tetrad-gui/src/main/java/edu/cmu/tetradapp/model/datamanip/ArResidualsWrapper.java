@@ -42,7 +42,7 @@ public class ArResidualsWrapper extends DataWrapper {
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public ArResidualsWrapper(DataWrapper data, Parameters params) {
+    private ArResidualsWrapper(DataWrapper data, Parameters params) {
         DataModelList list = data.getDataModelList();
         DataModelList convertedList = new DataModelList();
         DataModelList dataSets = data.getDataModelList();

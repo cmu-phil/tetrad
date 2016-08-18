@@ -162,7 +162,7 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         return names;
@@ -173,7 +173,7 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -188,7 +188,7 @@ public class PcPatternRunner extends AbstractAlgorithmRunner
     private boolean isAggressivelyPreventCycles(){
         Parameters params = getParams();
         if(params instanceof Parameters){
-            return ((Parameters)params).getBoolean("aggressivelyPreventCycles", false);
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

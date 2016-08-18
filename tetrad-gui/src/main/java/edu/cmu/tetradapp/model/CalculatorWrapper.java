@@ -44,7 +44,7 @@ public class CalculatorWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      */
-    public CalculatorWrapper(DataWrapper data, Parameters params) {
+    private CalculatorWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -59,7 +59,7 @@ public class CalculatorWrapper extends DataWrapper {
         for (DataModel model : originals) {
             DataSet copy = copy((DataSet) model);
 
-            List<String> equations = new ArrayList<String>();
+            List<String> equations = new ArrayList<>();
 
             int size = ((List<String>) params.get("equations", null)).size();
             String[] displayEquations = ((List<String>) params.get("equations", null)).toArray(new String[size]);

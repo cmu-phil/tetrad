@@ -118,7 +118,7 @@ public final class DagToPag {
 
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<Node>();
+        List<Node> measured = new ArrayList<>();
 
         for (Node node : allNodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
@@ -199,7 +199,7 @@ public final class DagToPag {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<Node>();
+        List<Node> measured = new ArrayList<>();
 
         for (Node node : allNodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
@@ -245,7 +245,7 @@ public final class DagToPag {
 //        graph.reorientAllWith(Endpoint.CIRCLE);
 
         List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<Node>();
+        List<Node> measured = new ArrayList<>();
 
         for (Node node : allNodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
@@ -315,7 +315,7 @@ public final class DagToPag {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
         if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
 
-        final LinkedList<Node> path = new LinkedList<Node>();
+        final LinkedList<Node> path = new LinkedList<>();
         path.add(x);
 
         for (Node b : graph.getAdjacentNodes(x)) {

@@ -199,8 +199,8 @@ public class IonRunner extends AbstractAlgorithmRunner
 
         IonJoeModifications ion = new IonJoeModifications(getGraphs());
 
-        ion.setAdjacencySearch(((Parameters) getParams()).getBoolean("pruneByAdjacencies", true));
-        ion.setPathLengthSearch(((Parameters) getParams()).getBoolean("pruneByPathLength", true));
+        ion.setAdjacencySearch(getParams().getBoolean("pruneByAdjacencies", true));
+        ion.setPathLengthSearch(getParams().getBoolean("pruneByPathLength", true));
         ion.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         
         List<Graph> graphs = ion.search();
@@ -245,7 +245,7 @@ public class IonRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Definite Colliders");
 //        names.add("Definite Noncolliders");
         return names;
@@ -255,7 +255,7 @@ public class IonRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
         return triplesList;
@@ -272,10 +272,10 @@ public class IonRunner extends AbstractAlgorithmRunner
 
     public List<Graph> getStoredGraphs() {
         if (graphs == null) {
-            return new ArrayList<Graph>();
+            return new ArrayList<>();
         }
 
-        return new ArrayList<Graph>(graphs);
+        return new ArrayList<>(graphs);
     }
 }
 

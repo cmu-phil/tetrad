@@ -41,7 +41,6 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
     private Graph initialGraph = null;
     private Set<Edge> pcAdjacent;
     private Set<Edge> pcNonadjacent;
-    private List<Node> pcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -116,7 +115,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public DataAlgorithmRunner(GraphWrapper graphWrapper, Parameters params) {
+    private DataAlgorithmRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
@@ -207,7 +206,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         return names;
@@ -218,7 +217,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -226,11 +225,11 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<Edge>(pcAdjacent);
+        return new HashSet<>(pcAdjacent);
     }
 
     public Set<Edge> getNonAdj() {
-        return new HashSet<Edge>(pcNonadjacent);
+        return new HashSet<>(pcNonadjacent);
     }
 
     public boolean supportsKnowledge() {
@@ -253,7 +252,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
     private void setPcFields(Pc pc) {
         pcAdjacent = pc.getAdjacencies();
         pcNonadjacent = pc.getNonadjacencies();
-        pcNodes = getGraph().getNodes();
+        List<Node> pcNodes = getGraph().getNodes();
     }
 }
 

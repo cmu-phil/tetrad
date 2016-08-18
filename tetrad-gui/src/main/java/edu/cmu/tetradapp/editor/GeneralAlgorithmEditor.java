@@ -60,15 +60,15 @@ import java.util.List;
  */
 public class GeneralAlgorithmEditor extends JPanel {
     private final HashMap<AlgName, AlgorithmDescription> mappedDescriptions;
-    private GeneralAlgorithmRunner runner;
+    private final GeneralAlgorithmRunner runner;
     private final JButton searchButton = new JButton("Search");
     private final JTabbedPane pane;
-    private JComboBox<TestType> testDropdown = new JComboBox<>();
-    private JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
-    private JComboBox<AlgType> algTypesDropdown = new JComboBox<>();
-    private JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
+    private final JComboBox<TestType> testDropdown = new JComboBox<>();
+    private final JComboBox<ScoreType> scoreDropdown = new JComboBox<>();
+    private final JComboBox<AlgType> algTypesDropdown = new JComboBox<>();
+    private final JComboBox<AlgName> algNamesDropdown = new JComboBox<>();
     private final SimulationGraphEditor graphEditor;
-    private Parameters parameters;
+    private final Parameters parameters;
     private JLabel whatYouChose;
 
     //=========================CONSTRUCTORS============================//
@@ -423,39 +423,39 @@ public class GeneralAlgorithmEditor extends JPanel {
         return b;
     }
 
-    public Parameters getParameters() {
+    private Parameters getParameters() {
         return parameters;
     }
 
-    public AlgType getAlgType() {
+    private AlgType getAlgType() {
         return AlgType.valueOf(parameters.getString("algType", "Pattern"));
     }
 
-    public void setAlgType(AlgType algType) {
+    private void setAlgType(AlgType algType) {
         parameters.set("algType", algType.toString());
     }
 
-    public AlgName getAlgName() {
+    private AlgName getAlgName() {
         return AlgName.valueOf(parameters.getString("algName", "PC"));
     }
 
-    public void setAlgName(AlgName algName) {
+    private void setAlgName(AlgName algName) {
         parameters.set("algName", algName.toString());
     }
 
-    public Object getTestType() {
+    private Object getTestType() {
         return TestType.valueOf(parameters.getString("testType", "ChiSquare"));
     }
 
-    public void setTestType(TestType testType) {
+    private void setTestType(TestType testType) {
         parameters.set("testType", testType.toString());
     }
 
-    public Object getScoreType() {
+    private Object getScoreType() {
         return ScoreType.valueOf(parameters.getString("scoreType", "BDeu"));
     }
 
-    public void setScoreType(ScoreType scoreType) {
+    private void setScoreType(ScoreType scoreType) {
         parameters.set("scoreType", scoreType.toString());
     }
 

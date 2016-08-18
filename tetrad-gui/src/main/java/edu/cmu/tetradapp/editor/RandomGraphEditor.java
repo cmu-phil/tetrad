@@ -33,31 +33,25 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.prefs.Preferences;
 
 /**
  * Edits the parameters for generating random graphs.
  *
  * @author Joseph Ramsey
  */
-public class RandomGraphEditor extends JPanel {
+class RandomGraphEditor extends JPanel {
     private final Parameters parameters;
-    private IntTextField numNodesField;
-    private IntTextField numLatentsField;
-    private IntTextField maxEdgesField;
-    private IntTextField maxIndegreeField;
-    private IntTextField maxOutdegreeField;
-    private IntTextField maxDegreeField;
-    private JRadioButton randomForward;
-    private JRadioButton chooseUniform;
-    private JRadioButton chooseFixed;
-    private JComboBox connectedBox;
-    private JComboBox addCyclesBox;
-    private IntTextField numTwoCyclesField;
-    private IntTextField minCycleLengthField;
-
-    // If true, the parameters for adding cycles will be displayed.
-    private boolean cyclicAllowed = false;
+    private final IntTextField numNodesField;
+    private final IntTextField numLatentsField;
+    private final IntTextField maxEdgesField;
+    private final IntTextField maxIndegreeField;
+    private final IntTextField maxOutdegreeField;
+    private final IntTextField maxDegreeField;
+    private final JRadioButton chooseUniform;
+    private final JRadioButton chooseFixed;
+    private final JComboBox connectedBox;
+    private final IntTextField numTwoCyclesField;
+    private final IntTextField minCycleLengthField;
 
     /**
      * Constructs a dialog to edit the given workbench randomization
@@ -75,7 +69,7 @@ public class RandomGraphEditor extends JPanel {
      * //     * that overrides the number of nodes set in the preferences.
      */
     public RandomGraphEditor(Graph oldGraph, boolean cyclicAllowed, Parameters parameters) {
-        this.cyclicAllowed = cyclicAllowed;
+        boolean cyclicAllowed1 = cyclicAllowed;
         this.parameters = parameters;
 
         int oldNumMeasured = 0;
@@ -106,11 +100,11 @@ public class RandomGraphEditor extends JPanel {
         maxIndegreeField = new IntTextField(getMaxIndegree(), 4);
         maxOutdegreeField = new IntTextField(getMaxOutdegree(), 4);
         maxDegreeField = new IntTextField(getMaxDegree(), 4);
-        randomForward = new JRadioButton("Add random forward edges");
+        JRadioButton randomForward = new JRadioButton("Add random forward edges");
         chooseUniform = new JRadioButton("Draw uniformly from all such DAGs");
         chooseFixed = new JRadioButton("Guarantee maximum number of edges");
         connectedBox = new JComboBox(new String[]{"No", "Yes"});
-        addCyclesBox = new JComboBox(new String[]{"No", "Yes"});
+        JComboBox addCyclesBox = new JComboBox(new String[]{"No", "Yes"});
         numTwoCyclesField = new IntTextField(getMinNumCycles(), 4);
         minCycleLengthField = new IntTextField(getMinCycleLength(), 4);
 
@@ -457,7 +451,7 @@ public class RandomGraphEditor extends JPanel {
         b1.setBorder(new TitledBorder(""));
         d.add(b1);
 
-        if (this.cyclicAllowed) {
+        if (cyclicAllowed1) {
             Box c1 = Box.createVerticalBox();
 
             Box c2 = Box.createHorizontalBox();
@@ -534,15 +528,15 @@ public class RandomGraphEditor extends JPanel {
         return parameters.getBoolean("graphChooseFixed", true);
     }
 
-    public void setRandomForward(boolean randomFoward) {
+    private void setRandomForward(boolean randomFoward) {
         parameters.set("graphRandomFoward", randomFoward);
     }
 
-    public void setUniformlySelected(boolean uniformlySelected) {
+    private void setUniformlySelected(boolean uniformlySelected) {
         parameters.set("graphUniformlySelected", uniformlySelected);
     }
 
-    public void setChooseFixed(boolean chooseFixed) {
+    private void setChooseFixed(boolean chooseFixed) {
         parameters.set("graphChooseFixed", chooseFixed);
     }
 
@@ -550,7 +544,7 @@ public class RandomGraphEditor extends JPanel {
         return getNumMeasuredNodes() + getNumLatents();
     }
 
-    public int getNumMeasuredNodes() {
+    private int getNumMeasuredNodes() {
         return parameters.getInt("newGraphNumMeasuredNodes", 5);
     }
 

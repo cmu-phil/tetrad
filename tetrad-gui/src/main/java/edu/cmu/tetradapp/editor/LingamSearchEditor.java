@@ -51,8 +51,6 @@ import java.util.Map;
 public class LingamSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, DoNotScroll {
 
-    private JTabbedPane tabbedPane;
-
     //=========================CONSTRUCTORS============================//
 
     public LingamSearchEditor(LingamRunner runner) {
@@ -100,7 +98,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
         //JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Result", workbenchScroll(resultLabel));
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
@@ -130,7 +128,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
 
         Box b211 = Box.createHorizontalBox();
         b211.add(new JLabel("Prune Factor "));
-        Parameters params = (Parameters) getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         double pruneFactor = params.getDouble("pruneFactor", 1.0);
         DoubleTextField field = new DoubleTextField(pruneFactor, 8, NumberFormatUtil.getInstance().getNumberFormat());
 

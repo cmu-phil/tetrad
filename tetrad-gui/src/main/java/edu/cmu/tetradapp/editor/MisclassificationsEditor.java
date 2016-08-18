@@ -38,7 +38,7 @@ public class MisclassificationsEditor extends JPanel {
     /**
      * The model for the note.
      */
-    private Misclassifications comparison;
+    private final Misclassifications comparison;
 
 
     /**

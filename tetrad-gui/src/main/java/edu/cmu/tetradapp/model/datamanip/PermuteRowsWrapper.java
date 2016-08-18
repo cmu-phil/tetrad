@@ -38,7 +38,7 @@ public class PermuteRowsWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    public PermuteRowsWrapper(DataWrapper data) {
+    private PermuteRowsWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }

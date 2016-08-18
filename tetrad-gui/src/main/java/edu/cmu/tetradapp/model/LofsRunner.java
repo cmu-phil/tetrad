@@ -248,7 +248,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     }
 
     private Graph lingamPatternEdgeVote(DataModelList dataSets, Graph pattern) {
-        List<Graph> lingamPatternGraphs = new ArrayList<Graph>();
+        List<Graph> lingamPatternGraphs = new ArrayList<>();
 
         // Images plus lingam orientation on multiple subjects.
         for (DataModel dataModel : dataSets) {
@@ -292,8 +292,8 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     }
 
     private Graph applyLofs(DataModelList dataSets, Graph pattern) {
-        final Parameters params = (Parameters) getParams();
-        List<DataSet> _dataSets = new ArrayList<DataSet>();
+        final Parameters params = getParams();
+        List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataModel dataModel : dataSets) {
             _dataSets.add((DataSet) dataModel);
@@ -322,7 +322,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         names.add("Colliders");
         names.add("Noncolliders");
         return names;
@@ -332,7 +332,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
         triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));
@@ -366,7 +366,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

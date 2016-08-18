@@ -306,7 +306,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
@@ -319,8 +319,8 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
                 gesScore.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
                 fgs = new Fgs(gesScore);
             } else if (dataSet.isDiscrete()) {
-                double samplePrior = ((Parameters) getParams()).getDouble("samplePrior", 1);
-                double structurePrior = ((Parameters) getParams()).getDouble("structurePrior", 1);
+                double samplePrior = getParams().getDouble("samplePrior", 1);
+                double structurePrior = getParams().getDouble("structurePrior", 1);
                 BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
@@ -414,7 +414,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-    public FgsRunner.Type computeType() {
+    private FgsRunner.Type computeType() {
         Object model = getDataModel();
 
         if (model == null && getSourceGraph() != null) {
@@ -539,7 +539,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgsRunner,
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

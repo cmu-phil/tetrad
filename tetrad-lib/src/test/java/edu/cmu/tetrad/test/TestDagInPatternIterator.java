@@ -162,7 +162,7 @@ public class TestDagInPatternIterator {
     public void test5() {
         RandomUtil.getInstance().setSeed(34828384L);
 
-        List<Node> nodes1 = new ArrayList<Node>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));

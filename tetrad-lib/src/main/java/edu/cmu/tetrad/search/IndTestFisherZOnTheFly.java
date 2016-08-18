@@ -100,7 +100,7 @@ public final class IndTestFisherZOnTheFly implements IndependenceTest {
         this.dataSet = dataSet;
         this._dataSet = dataSet.getDoubleData();
 
-        this.indices = new HashMap<Node, Integer>();
+        this.indices = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indices.put(variables.get(i), i);
@@ -128,7 +128,7 @@ public final class IndTestFisherZOnTheFly implements IndependenceTest {
         this.variables = variables;
         this.alpha = alpha;
 
-        this.indices = new HashMap<Node, Integer>();
+        this.indices = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indices.put(variables.get(i), i);
@@ -197,7 +197,7 @@ public final class IndTestFisherZOnTheFly implements IndependenceTest {
 
             while ((choice = gen.next()) != null) {
                 try {
-                    List<Node> z2 = new ArrayList<Node>(z);
+                    List<Node> z2 = new ArrayList<>(z);
                     z2.removeAll(GraphUtils.asList(choice, z));
                     submatrix = getSubmatrix(x, y, z2);
                     r = StatUtils.partialCorrelation(submatrix);
@@ -354,7 +354,7 @@ public final class IndTestFisherZOnTheFly implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }

@@ -92,7 +92,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
 
         this.params = params;
 
-        if ((List<String>) params.get("varNames", null) != null) {
+        if (params.get("varNames", null) != null) {
             this.varNames = (List<String>) params.get("varNames", null);
         }
 
@@ -302,7 +302,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             return null;
         }
         else {
-            return new ArrayList<String>(dataModel.getVariableNames());
+            return new ArrayList<>(dataModel.getVariableNames());
         }
     }
 
@@ -332,7 +332,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             }
 
             List<Node> nodes = graph.getNodes();
-            List<String> nodeNames = new LinkedList<String>();
+            List<String> nodeNames = new LinkedList<>();
 
             for (Node node : nodes) {
                 nodeNames.add(node.getName());

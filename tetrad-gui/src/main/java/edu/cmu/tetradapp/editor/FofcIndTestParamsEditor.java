@@ -39,7 +39,7 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class FofcIndTestParamsEditor extends JComponent {
-    private Parameters fofcParams;
+    private final Parameters fofcParams;
 
     public FofcIndTestParamsEditor(Parameters params) {
         this.fofcParams = params;

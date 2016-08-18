@@ -65,11 +65,6 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     private Object[] parentModels;
 
     /**
-     * The variable names from the object being searched over (usually data).
-     */
-    private List<String> varNames;
-
-    /**
      * Opens up an editor to let the user view the given PcRunner.
      */
     public PcSearchParamEditor() {
@@ -80,7 +75,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
             throw new NullPointerException();
         }
 
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -92,7 +87,10 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     }
 
     public void setup() {
-        this.varNames = (List<String>) params.get("varNames", null);
+        /*
+      The variable names from the object being searched over (usually data).
+     */
+        List<String> varNames = (List<String>) params.get("varNames", null);
 
         DataModel dataModel1 = null;
         Graph graph = null;
@@ -120,7 +118,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
         }
 
         if (dataModel1 != null) {
-            varNames = new ArrayList<String>(dataModel1.getVariableNames());
+            varNames = new ArrayList<>(dataModel1.getVariableNames());
         }
         else if (graph != null) {
             Iterator<Node> it = graph.getNodes().iterator();

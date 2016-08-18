@@ -39,18 +39,18 @@ import java.util.LinkedList;
  *
  * @author Michael Freenor
  */
-public class QQPlotEditorPanel extends JPanel {
+class QQPlotEditorPanel extends JPanel {
 
 
     /**
      * Combo box of all the variables.
      */
-    private JComboBox variableBox;
+    private final JComboBox variableBox;
 
     /**
      * The dataset being viewed.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     private QQPlot qqPlot;
 
@@ -58,7 +58,7 @@ public class QQPlotEditorPanel extends JPanel {
     /**
      * The discrete variables of the data set (may be empty).
      */
-    private LinkedList<DiscreteVariable> variables = new LinkedList<DiscreteVariable>();
+    private LinkedList<DiscreteVariable> variables = new LinkedList<>();
 
 
     /**

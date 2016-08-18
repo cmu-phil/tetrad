@@ -73,13 +73,13 @@ public final class TetradDesktop extends JPanel
     /**
      * A map from components in the desktop to the frames they're embedded in.
      */
-    private final Map<SessionEditor, JInternalFrame> framesMap = new HashMap<SessionEditor, JInternalFrame>();
+    private final Map<SessionEditor, JInternalFrame> framesMap = new HashMap<>();
 
     /**
      * A map from SessionWrapper to TetradMetadata, storing metadata for
      * sessions that have been loaded in.
      */
-    private final Map<SessionWrapper, TetradMetadata> metadataMap = new HashMap<SessionWrapper, TetradMetadata>();
+    private final Map<SessionWrapper, TetradMetadata> metadataMap = new HashMap<>();
 
 
     /**

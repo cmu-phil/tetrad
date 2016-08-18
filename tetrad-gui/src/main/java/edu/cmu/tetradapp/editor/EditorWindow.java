@@ -173,7 +173,7 @@ public class EditorWindow extends JInternalFrame
         return canceled;
     }
 
-    public JComponent getEditor() {
+    private JComponent getEditor() {
         return editor;
     }
 
@@ -181,13 +181,13 @@ public class EditorWindow extends JInternalFrame
         return centeringComp;
     }
 
-    class OkListener implements ActionListener {
+    private class OkListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             closeDialog();
         }
     }
 
-    class CancelListener implements ActionListener {
+    private class CancelListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             canceled = true;
             closeDialog();

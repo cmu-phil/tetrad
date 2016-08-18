@@ -35,7 +35,7 @@ public class ConditionalGaussianBicScore implements ScoreWrapper, Experimental {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<String>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         return parameters;
     }

@@ -72,7 +72,7 @@ public class RegressionEditor extends JPanel {
      * Presents the same information in reportText as a text preamble with a
      * table of coefficients etc.
      */
-    private JComponent textWithTable = TextWithTable.emptyCompoenent();
+    private final JComponent textWithTable = TextWithTable.emptyCompoenent();
 
     /**
      * The gadget that does the regression.

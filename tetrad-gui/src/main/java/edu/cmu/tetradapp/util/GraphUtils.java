@@ -70,16 +70,16 @@ public class GraphUtils {
         throw new IllegalStateException("Unrecognized graph type: " + type);
     }
 
-    public static Graph makeRandomDag(Graph _graph, int newGraphNumMeasuredNodes,
-                                      int newGraphNumLatents,
-                                      int newGraphNumEdges, int randomGraphMaxDegree,
-                                      int randomGraphMaxIndegree,
-                                      int randomGraphMaxOutdegree,
-                                      boolean graphRandomFoward,
-                                      boolean graphUniformlySelected,
-                                      boolean randomGraphConnected,
-                                      boolean graphChooseFixed,
-                                      boolean addCycles) {
+    private static Graph makeRandomDag(Graph _graph, int newGraphNumMeasuredNodes,
+                                       int newGraphNumLatents,
+                                       int newGraphNumEdges, int randomGraphMaxDegree,
+                                       int randomGraphMaxIndegree,
+                                       int randomGraphMaxOutdegree,
+                                       boolean graphRandomFoward,
+                                       boolean graphUniformlySelected,
+                                       boolean randomGraphConnected,
+                                       boolean graphChooseFixed,
+                                       boolean addCycles) {
         Graph graph = null;
 
 
@@ -150,9 +150,9 @@ public class GraphUtils {
         return graph;
     }
 
-    public static Graph makeRandomMim(int numFactors, int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
-                                      int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
-                                      int numMeasuredMeasuredImpureAssociations) {
+    private static Graph makeRandomMim(int numFactors, int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
+                                       int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
+                                       int numMeasuredMeasuredImpureAssociations) {
 
         Graph graph;
 
@@ -177,8 +177,8 @@ public class GraphUtils {
         return graph;
     }
 
-    public static Graph makeRandomScaleFree(int numNodes, int numLatents, double alpha,
-                                            double beta, double deltaIn, double deltaOut) {
+    private static Graph makeRandomScaleFree(int numNodes, int numLatents, double alpha,
+                                             double beta, double deltaIn, double deltaOut) {
         Graph graph = edu.cmu.tetrad.graph.GraphUtils.scaleFreeGraph(numNodes, numLatents,
                 alpha, beta, deltaIn, deltaOut);
         return graph;

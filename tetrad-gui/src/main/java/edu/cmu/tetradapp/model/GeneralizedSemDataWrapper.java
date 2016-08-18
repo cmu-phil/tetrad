@@ -51,7 +51,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
 
     //==============================CONSTRUCTORS=============================//
 
-    public GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, Parameters params) {
+    private GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, Parameters params) {
         GeneralizedSemIm semIm = null;
 
         try {
@@ -142,7 +142,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
     }
 
     public void setParameters(Parameters params) {
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     private void setSeed() {

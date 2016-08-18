@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
@@ -52,7 +51,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FactorAnalysisRunner(DataWrapper dataWrapper, Parameters pc) {
+    private FactorAnalysisRunner(DataWrapper dataWrapper, Parameters pc) {
         super(dataWrapper, pc, null);
     }
 
@@ -175,11 +174,11 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
         return output;
     }
 
-    public TetradMatrix getRotatedSolution() {
+    private TetradMatrix getRotatedSolution() {
         return rotatedSolution;
     }
 
-    public double getThreshold() {
+    private double getThreshold() {
         return threshold;
     }
 }

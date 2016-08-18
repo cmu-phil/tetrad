@@ -44,11 +44,11 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class IonDisplay extends JPanel implements GraphEditable {
-    private GraphWorkbench workbench;
+    private final GraphWorkbench workbench;
     private List<Graph> storedGraphs;
-    private List<Integer> indices;
-    private JSpinner spinner;
-    private JLabel totalLabel;
+    private final List<Integer> indices;
+    private final JSpinner spinner;
+    private final JLabel totalLabel;
 
     public IonDisplay(final List<Graph> storedGraphs, final IonRunner runner) {
         this.storedGraphs = storedGraphs;
@@ -147,7 +147,7 @@ public class IonDisplay extends JPanel implements GraphEditable {
     }
 
     private List<Integer> getAllIndices(List<Graph> storedGraphs) {
-        List<Integer> indices = new ArrayList<Integer>();
+        List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.size(); i++) {
             indices.add(i);
@@ -159,7 +159,7 @@ public class IonDisplay extends JPanel implements GraphEditable {
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Component comp : components) {
             if (comp instanceof DisplayNode) {
@@ -203,7 +203,7 @@ public class IonDisplay extends JPanel implements GraphEditable {
         workbench.setGraph(graph);
     }
 
-    public List<Graph> getStoredGraphs() {
+    private List<Graph> getStoredGraphs() {
         return storedGraphs;
     }
 }

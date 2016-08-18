@@ -552,7 +552,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
                 String[] tokens = variables.split(" ");
 
-                Set _tokens = new HashSet<String>();
+                Set _tokens = new HashSet<>();
 
                 for (String token : tokens) {
                     _tokens.add(token);

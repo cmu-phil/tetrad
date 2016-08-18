@@ -123,7 +123,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
         JCheckBox doRuleR1CheckBox = new JCheckBox("R1");
         JCheckBox doRuleR2CheckBox = new JCheckBox("R2");
 
-        final Parameters searchParams = (Parameters) getAlgorithmRunner().getParams();
+        final Parameters searchParams = getAlgorithmRunner().getParams();
 
         JRadioButton B = new JRadioButton("B");
         JRadioButton A = new JRadioButton("A");
@@ -549,19 +549,19 @@ public class LofsSearchEditor extends AbstractSearchEditor
 
         if (params instanceof Parameters) {
             return new DiscDetIndepParamsEditor(
-                    (Parameters) params);
+                    params);
         }
 
         if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof LingamPatternRunner) {
-                return new PcLingamIndTestParamsEditor((Parameters) params);
+                return new PcLingamIndTestParamsEditor(params);
             }
 
             if (getAlgorithmRunner() instanceof LofsRunner) {
-                return new PcLingamIndTestParamsEditor((Parameters) params);
+                return new PcLingamIndTestParamsEditor(params);
             }
 
-            return new PcIndTestParamsEditor((Parameters) params);
+            return new PcIndTestParamsEditor(params);
         }
 
         return new IndTestParamsEditor(params);

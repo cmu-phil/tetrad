@@ -80,7 +80,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zz = new ArrayList<Node>();
+        List<Node> zz = new ArrayList<>();
 
         for (Node node : z) {
             zz.add(node);

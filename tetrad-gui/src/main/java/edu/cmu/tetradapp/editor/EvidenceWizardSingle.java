@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -42,7 +41,7 @@ import java.awt.event.ActionListener;
  * @author William Taysom -- Jun 14, 2003
  * @author Joseph Ramsey
  */
-public class EvidenceWizardSingle extends JPanel {
+class EvidenceWizardSingle extends JPanel {
     private UpdaterWrapper updaterWrapper;
     private GraphWorkbench workbench;
     private final EvidenceEditor evidenceEditor;
@@ -114,8 +113,7 @@ public class EvidenceWizardSingle extends JPanel {
                 String selectedNodeName = tetradNode.getName();
 
                 getUpdaterWrapper().getParams().set("evidence", evidenceEditor.getEvidence());
-                getUpdaterWrapper().getParams().set("variable", (DiscreteVariable)
-                        (updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode)));
+                getUpdaterWrapper().getParams().set("variable", updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode));
                 getUpdaterWrapper().getBayesUpdater().setEvidence(evidenceEditor.getEvidence());
 
 

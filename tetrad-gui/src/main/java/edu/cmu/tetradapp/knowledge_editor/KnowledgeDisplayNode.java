@@ -70,7 +70,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
     /**
      * @return the shape of the component.
      */
-    public Shape getShape() {
+    private Shape getShape() {
         return new Rectangle2D.Double(0, 0,
                     getPreferredSize().width - 1,
                     getPreferredSize().height - 1);

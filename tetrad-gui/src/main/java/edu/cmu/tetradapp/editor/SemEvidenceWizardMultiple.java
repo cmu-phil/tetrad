@@ -46,7 +46,7 @@ import java.util.List;
  * @author William Taysom -- Jun 14, 2003
  * @author Joseph Ramsey
  */
-public class SemEvidenceWizardMultiple extends JPanel {
+class SemEvidenceWizardMultiple extends JPanel {
     private SemUpdater semUpdater;
     private GraphWorkbench workbench;
     private final SemEvidenceEditor evidenceEditor;

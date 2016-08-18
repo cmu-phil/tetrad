@@ -111,7 +111,7 @@ public class PerformanceTestsDan {
             out1.println("Depth = " + depth);
             out1.println("Maximum reachable path length for dsep search and discriminating undirectedPaths = " + maxPathLength);
 
-            List<Node> vars = new ArrayList<Node>();
+            List<Node> vars = new ArrayList<>();
             for (int i = 0; i < numVars; i++) vars.add(new GraphNode("X" + (i + 1)));
 
 //        Graph dag = DataGraphUtils.randomDagQuick2(varsWithLatents, 0, (int) (varsWithLatents.size() * edgesPerNode));
@@ -152,7 +152,7 @@ public class PerformanceTestsDan {
             vars_temp = vars_temp.replace("X","");
             out2.println(vars_temp);
 
-            List<Node> _vars = new ArrayList<Node>();
+            List<Node> _vars = new ArrayList<>();
 
             for (Node node : vars) {
                 if (node.getNodeType() == NodeType.MEASURED) {

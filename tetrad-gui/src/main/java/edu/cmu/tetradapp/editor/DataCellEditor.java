@@ -35,8 +35,8 @@ import java.util.EventObject;
  * @author Joseph Ramsey
  */
 class DataCellEditor extends DefaultCellEditor {
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private JTextField textField;
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final JTextField textField;
 
     /**
      * Constructs a new number cell editor.

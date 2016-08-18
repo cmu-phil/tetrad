@@ -48,22 +48,10 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private String name;
     private Parameters params;
     private KnowledgeBoxInput knowledgeBoxInput;
-    private List<String> varNames = new ArrayList<String>();
-
-    /**
-     * @serial
-     * @deprecated
-     */
-    private IKnowledge knowledge;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-//    private List<Knowledge> knowledgeList;
-    private List<Node> variables = new ArrayList<Node>();
-    private List<String> variableNames = new ArrayList<String>();
-    private Graph sourceGraph = new EdgeListGraph();
+    private List<String> varNames = new ArrayList<>();
+    private List<Node> variables = new ArrayList<>();
+    private List<String> variableNames = new ArrayList<>();
+    private final Graph sourceGraph = new EdgeListGraph();
 
     public KnowledgeBoxModel(BayesPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -207,16 +195,16 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
             }
         }
 
-        SortedSet<Node> variableNodes = new TreeSet<Node>();
-        SortedSet<String> variableNames = new TreeSet<String>();
+        SortedSet<Node> variableNodes = new TreeSet<>();
+        SortedSet<String> variableNames = new TreeSet<>();
 
         for (KnowledgeBoxInput input : inputs) {
             variableNodes.addAll(input.getVariables());
             variableNames.addAll(input.getVariableNames());
         }
 
-        this.variables = new ArrayList<Node>(variableNodes);
-        this.variableNames = new ArrayList<String>(variableNames);
+        this.variables = new ArrayList<>(variableNodes);
+        this.variableNames = new ArrayList<>(variableNames);
 
         this.params = params;
         this.setKnowledgeBoxInput(this);
@@ -247,7 +235,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         // If not, I should wait for resetParams to be called. For now I'm
         // printing the knowledge if it's not empty.
         if (!((IKnowledge) params.get("knowledge", new Knowledge2())).isEmpty()) {
-            TetradLogger.getInstance().log("knowledge", ((IKnowledge) params.get("knowledge", new Knowledge2())).toString());
+            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge2()).toString());
         }
     }
 
@@ -313,7 +301,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     public void resetParams(Object params) {
         this.params = (Parameters) params;
         freshenKnowledgeIfEmpty(this.params);
-        TetradLogger.getInstance().log("knowledge", ((IKnowledge) this.params.get("knowledge", new Knowledge2())).toString());
+        TetradLogger.getInstance().log("knowledge", this.params.get("knowledge", new Knowledge2()).toString());
     }
 
     public Object getResettableParams() {
@@ -328,7 +316,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         return variableNames;
     }
 
-    public KnowledgeBoxInput getKnowledgeBoxInput() {
+    KnowledgeBoxInput getKnowledgeBoxInput() {
         if (knowledgeBoxInput == null) {
             return this;
         }
@@ -337,7 +325,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
     }
 
-    public void setKnowledgeBoxInput(KnowledgeBoxInput knowledgeBoxInput) {
+    void setKnowledgeBoxInput(KnowledgeBoxInput knowledgeBoxInput) {
         this.knowledgeBoxInput = knowledgeBoxInput;
     }
 }

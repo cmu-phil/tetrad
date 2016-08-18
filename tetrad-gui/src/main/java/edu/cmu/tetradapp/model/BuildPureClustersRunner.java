@@ -280,7 +280,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
         try
 
         {
-            Graph graph = new MarshalledObject<Graph>(searchGraph).get();
+            Graph graph = new MarshalledObject<>(searchGraph).get();
             GraphUtils.circleLayout(graph, 200, 200, 150);
             GraphUtils.fruchtermanReingoldLayout(graph);
             setResultGraph(graph);
@@ -301,7 +301,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
             children.removeAll(ReidentifyVariables.getLatents(searchGraph));
 
             for (int i = 0; i < partition.size(); i++) {
-                if (new HashSet<Node>(partition.get(i)).equals(new HashSet<Node>(children))) {
+                if (new HashSet<>(partition.get(i)).equals(new HashSet<>(children))) {
                     node.setName(variableNames.get(i));
                 }
             }
@@ -534,7 +534,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     }
 
     public java.util.List<Node> getVariables() {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (String name : getVariableNames()) {
             Node node = new ContinuousVariable(name);

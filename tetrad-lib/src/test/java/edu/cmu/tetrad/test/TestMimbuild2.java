@@ -578,7 +578,7 @@ public class TestMimbuild2 {
 
                 List<String> childNames = getNames(_children);
 
-                if (new HashSet<String>(childNames).equals(new HashSet<String>(d))) {
+                if (new HashSet<>(childNames).equals(new HashSet<>(d))) {
                     g2.getNode(node.getName()).setName(latentName);
                 }
             }
@@ -588,7 +588,7 @@ public class TestMimbuild2 {
     }
 
     private List<String> getNames(List<Node> nodes) {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (Node node : nodes) {
             names.add(node.getName());
         }
@@ -611,7 +611,7 @@ public class TestMimbuild2 {
     }
 
     private Graph structure(Graph mim) {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (Node node : mim.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {

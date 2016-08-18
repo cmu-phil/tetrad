@@ -44,11 +44,11 @@ class FciIndTestParamsEditor extends JComponent {
      */
     private Parameters params = null;
 
-    private DoubleTextField alphaField;
+    private final DoubleTextField alphaField;
 
-    private IntTextField depthField;
+    private final IntTextField depthField;
 
-    private JCheckBox completeRuleSetCheckBox;
+    private final JCheckBox completeRuleSetCheckBox;
 
     /**
      * A checkbox to allow the user to specify whether possible DSEP should be done.
@@ -59,7 +59,7 @@ class FciIndTestParamsEditor extends JComponent {
      * An int field to specify the maximum length of reachable undirectedPaths (in discriminating path orientation and
      * possible dsep).
      */
-    private IntTextField maxReachablePathLengthField;
+    private final IntTextField maxReachablePathLengthField;
 
     /**
      * A checkbox to allow the user to specify whether to use RFCI

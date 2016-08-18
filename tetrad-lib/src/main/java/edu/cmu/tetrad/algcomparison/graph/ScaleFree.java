@@ -33,7 +33,7 @@ public class ScaleFree implements RandomGraph {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<String>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("numMeasures");
         parameters.add("numLatents");
         parameters.add("scaleFreeAlpha");

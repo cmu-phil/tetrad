@@ -40,7 +40,7 @@ public class PreviousStepOnly implements GraphInitializer {
 
         lagGraph.clearEdges();
 
-        List<String> factors = new ArrayList<String>(lagGraph.getFactors());
+        List<String> factors = new ArrayList<>(lagGraph.getFactors());
 
         // Add edges one time step back.
         for (String factor1 : factors) {

@@ -270,7 +270,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         }
 
         if (getAlgorithmRunner().getParams() instanceof Parameters) {
-            Parameters params = (Parameters) getAlgorithmRunner().getParams();
+            Parameters params = getAlgorithmRunner().getParams();
             JCheckBox preventCycles = new JCheckBox("Aggressively Prevent Cycles");
             preventCycles.setHorizontalTextPosition(AbstractButton.RIGHT);
             preventCycles.setSelected(params.getBoolean("aggressivelyPreventCycles", false));
@@ -278,7 +278,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             preventCycles.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     JCheckBox box = (JCheckBox) e.getSource();
-                    Parameters params = (Parameters) getAlgorithmRunner().getParams();
+                    Parameters params = getAlgorithmRunner().getParams();
                     params.set("aggressivelyPreventCycles", box.isSelected());
                 }
             });
@@ -468,7 +468,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     private String reportIfDiscrete(Graph dag, DataSet dataSet) {
         List vars = dataSet.getVariables();
         Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<String, DiscreteVariable>();
+                new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             DiscreteVariable var = (DiscreteVariable) vars.get(i);
             String name = var.getName();
@@ -485,7 +485,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             if (var instanceof DiscreteVariable) {
                 DiscreteVariable var2 = nodesToVars.get(node.getName());
                 int numCategories = var2.getNumCategories();
-                List<String> categories = new ArrayList<String>();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -791,19 +791,19 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
         if (params instanceof Parameters) {
             return new DiscDetIndepParamsEditor(
-                    (Parameters) params);
+                    params);
         }
 
         if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof LingamPatternRunner) {
-                return new PcLingamIndTestParamsEditor((Parameters) params);
+                return new PcLingamIndTestParamsEditor(params);
             }
 
             if (getAlgorithmRunner() instanceof LofsRunner) {
-                return new PcLingamIndTestParamsEditor((Parameters) params);
+                return new PcLingamIndTestParamsEditor(params);
             }
 
-            return new PcIndTestParamsEditor((Parameters) params);
+            return new PcIndTestParamsEditor(params);
         }
 
         return new IndTestParamsEditor(params);

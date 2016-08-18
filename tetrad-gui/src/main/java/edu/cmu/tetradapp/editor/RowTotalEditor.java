@@ -37,7 +37,7 @@ class RowTotalEditor extends JPanel {
     /**
      * Lets the user edit the number of nodes.
      */
-    private DoubleTextField rowTotalField;
+    private final DoubleTextField rowTotalField;
 
     /**
      * Constructs a dialog to input a row total for randomly generating

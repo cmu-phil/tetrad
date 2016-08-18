@@ -62,7 +62,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     /**
      * The button one clicks to executeButton the algorithm.
      */
-    private JButton executeButton = new JButton();
+    private final JButton executeButton = new JButton();
 
 
     /**
@@ -122,7 +122,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     }
 
     public Object getSourceGraph() {
-        return (Graph) getParams().get("sourceGraph", null);
+        return getParams().get("sourceGraph", null);
     }
 
     //===========================PRIVATE METHODS==========================//
@@ -506,9 +506,9 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         group.add(gSquare);
         test.add(gSquare);
 
-        if ((IndTestType) getParams().get("indTestType", IndTestType.FISHER_Z) == IndTestType.CHI_SQUARE) {
+        if (getParams().get("indTestType", IndTestType.FISHER_Z) == IndTestType.CHI_SQUARE) {
             chiSquare.setSelected(true);
-        } else if ((IndTestType) getParams().get("indTestType", IndTestType.FISHER_Z) == IndTestType.G_SQUARE) {
+        } else if (getParams().get("indTestType", IndTestType.FISHER_Z) == IndTestType.G_SQUARE) {
             gSquare.setSelected(true);
         }
 

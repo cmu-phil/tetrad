@@ -33,7 +33,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Ricardo Silva
  */
-public final class RegressionInterpolatorAction extends AbstractAction {
+final class RegressionInterpolatorAction extends AbstractAction {
 
     /**
      * The data editor.                         -

@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -151,7 +150,7 @@ public final class TimeLagGraphEditor extends JPanel
         List<Component> selectedComponents =
                 getWorkbench().getSelectedComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Iterator<Component> it =
              selectedComponents.iterator(); it.hasNext(); ) {
@@ -475,7 +474,7 @@ public final class TimeLagGraphEditor extends JPanel
 
                                 GraphUtils.arrangeByLayout(dag, layout);
                             } else {
-                                List<Node> nodes = new ArrayList<Node>();
+                                List<Node> nodes = new ArrayList<>();
 
                                 for (int i = 0; i < editor.getNumNodes(); i++) {
                                     nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -497,7 +496,7 @@ public final class TimeLagGraphEditor extends JPanel
 
                                     GraphUtils.arrangeByLayout(dag, layout);
                                 } else {
-                                    List<Node> nodes = new ArrayList<Node>();
+                                    List<Node> nodes = new ArrayList<>();
 
                                     for (int i = 0; i < editor.getNumNodes(); i++) {
                                         nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -619,7 +618,7 @@ public final class TimeLagGraphEditor extends JPanel
 
         List<Node> nodes = graph.getNodes();
 
-        List<Node> exoNodes = new LinkedList<Node>();
+        List<Node> exoNodes = new LinkedList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             Node node = nodes.get(i);

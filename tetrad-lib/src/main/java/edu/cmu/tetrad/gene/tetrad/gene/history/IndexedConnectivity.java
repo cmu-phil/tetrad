@@ -79,13 +79,13 @@ public class IndexedConnectivity implements TetradSerializable {
         }
 
         // Construct factor and parent lists in fixed order.
-        this.factors = new ArrayList<String>(lagGraph.getFactors());
+        this.factors = new ArrayList<>(lagGraph.getFactors());
         this.parents = new IndexedParent[this.factors.size()][];
 
         for (int i = 0; i < this.factors.size(); i++) {
             String factor = this.factors.get(i);
             SortedSet<LaggedFactor> factorParents = lagGraph.getParents(factor);
-            List<IndexedParent> list = new ArrayList<IndexedParent>();
+            List<IndexedParent> list = new ArrayList<>();
 
             for (LaggedFactor factorParent1 : factorParents) {
                 int index = this.factors.indexOf(factorParent1.getFactor());

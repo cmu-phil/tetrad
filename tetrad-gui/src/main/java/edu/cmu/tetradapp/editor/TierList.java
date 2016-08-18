@@ -31,16 +31,16 @@ import java.util.List;
  *
  * @author Shane Harwood
  */
-public class TierList extends JScrollPane {
+class TierList extends JScrollPane {
     private IKnowledge knowledge;
-    private JPanel constList = new JPanel();
+    private final JPanel constList = new JPanel();
 
     /**
      * Field TierListEditor
      */
     private TemporalTierEditor tierListEditor;
 
-    private List<String> vNames;
+    private final List<String> vNames;
 
     private Tier[] tiers;
 

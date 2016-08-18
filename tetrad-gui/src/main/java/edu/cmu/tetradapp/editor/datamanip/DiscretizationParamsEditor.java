@@ -57,7 +57,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     /**
      * A map from nodes to their editors.
      */
-    private final Map<Node, DiscretizationEditor> nodeEditors = new HashMap<Node, DiscretizationEditor>();
+    private final Map<Node, DiscretizationEditor> nodeEditors = new HashMap<>();
 
 
     /**
@@ -91,8 +91,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         System.out.println("setup");
 
         final List<Node> variables = this.sourceDataSet.getVariables();
-        List<Node> allVariables = new LinkedList<Node>();
-        List<Node> discretizeVars = new LinkedList<Node>();
+        List<Node> allVariables = new LinkedList<>();
+        List<Node> discretizeVars = new LinkedList<>();
 
         for (Node node : variables) {
             discretizeVars.add(node);
@@ -241,7 +241,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         if (this.nodeEditors.isEmpty()) {
             return false;
         }
-        Map<Node, DiscretizationSpec> map = new HashMap<Node, DiscretizationSpec>();
+        Map<Node, DiscretizationSpec> map = new HashMap<>();
         for (Node node : this.nodeEditors.keySet()) {
             DiscretizationEditor editor = this.nodeEditors.get(node);
             map.put(node, editor.getDiscretizationSpec());
@@ -294,7 +294,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     private static List<Node> getSelected(JList list) {
         List selected = list.getSelectedValuesList();
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
         if (selected != null) {
             for (Object o : selected) {
                 nodes.add((Node) o);
@@ -511,7 +511,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
 
         public VariableListModel(List<Node> variables) {
-            this.variables = new Vector<Node>(variables);
+            this.variables = new Vector<>(variables);
         }
 
 

@@ -39,7 +39,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class ParameterPanel extends JPanel {
+class ParameterPanel extends JPanel {
     public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
         Box a = Box.createHorizontalBox();
         Box b = Box.createVerticalBox();

@@ -102,7 +102,7 @@ public final class TestDiscretizer {
 
     @Test
     public void testManualDiscretize2() {
-        List<Node> nodes1 = new ArrayList<Node>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
@@ -135,7 +135,7 @@ public final class TestDiscretizer {
 
     @Test
     public void testManualDiscretize3() {
-        List<Node> nodes1 = new ArrayList<Node>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));

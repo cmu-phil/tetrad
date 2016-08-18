@@ -97,7 +97,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
 
         Lingam lingam = new Lingam();
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
         lingam.setPruneFactor(params.getDouble("pruneFactor", 1.0));
         Graph graph = lingam.search(data);
 
@@ -121,7 +121,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -131,7 +131,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -152,7 +152,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
     private boolean isAggressivelyPreventCycles() {
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            return ((Parameters) params).getBoolean("aggressivelyPreventCycles", false);
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }
@@ -169,7 +169,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements Gr
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

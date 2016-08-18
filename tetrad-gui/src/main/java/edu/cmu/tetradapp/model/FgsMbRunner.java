@@ -142,7 +142,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      */
     public void execute() {
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        String targetName = ((Parameters) getParams()).getString("targetName", null);
+        String targetName = getParams().getString("targetName", null);
 
         Object model = getDataModel();
 
@@ -157,7 +157,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
         Node target = null;
 
         if (model instanceof Graph) {
@@ -396,7 +396,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         names.add("Colliders");
         names.add("Noncolliders");
         names.add("Ambiguous Triples");
@@ -408,7 +408,7 @@ public class FgsMbRunner extends AbstractAlgorithmRunner implements
      * <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
         triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));

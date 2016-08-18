@@ -38,7 +38,7 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public SubsetDiscreteVariablesWrapper(DataWrapper data) {
+    private SubsetDiscreteVariablesWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }

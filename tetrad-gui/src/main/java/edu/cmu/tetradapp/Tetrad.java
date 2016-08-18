@@ -32,14 +32,11 @@ import edu.cmu.tetrad.util.Version;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Locale;
-import java.util.prefs.Preferences;
 
 /**
  * <p>Launches Tetrad as an application.  The intended class path in either case
@@ -231,7 +228,7 @@ public final class Tetrad implements PropertyChangeListener {
         return frame;
     }
 
-    public TetradDesktop getDesktop() {
+    private TetradDesktop getDesktop() {
         return desktop;
     }
 }

@@ -40,7 +40,7 @@ import edu.cmu.tetrad.session.SimulationParamsSource;
  */
 public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
         TripleClassifier, SimulationParamsSource {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @return the data used to execute this algorithm. Might possibly be a

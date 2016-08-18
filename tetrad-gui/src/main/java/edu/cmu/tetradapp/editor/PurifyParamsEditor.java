@@ -63,7 +63,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
             throw new NullPointerException();
         }
 
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -87,7 +87,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
 
         final TestType[] descriptions = TestType.getTestDescriptions();
         JComboBox testSelector = new JComboBox(descriptions);
-        testSelector.setSelectedItem((TestType) params.get("tetradTestType", TestType.TETRAD_WISHART));
+        testSelector.setSelectedItem(params.get("tetradTestType", TestType.TETRAD_WISHART));
 
         testSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -168,7 +168,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
 //            }
         }
 
-        getParams().set("varNames", (java.util.List<String>) params.get("varNames", null));
+        getParams().set("varNames", params.get("varNames", null));
         return discreteModel;
     }
 

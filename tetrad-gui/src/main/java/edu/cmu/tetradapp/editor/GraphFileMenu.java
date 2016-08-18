@@ -31,7 +31,7 @@ import javax.swing.*;
  * @author Aaron Powers
  * @author Joseph Ramsey
  */
-public final class GraphFileMenu extends JMenu {
+final class GraphFileMenu extends JMenu {
 
     public GraphFileMenu(GraphEditable editable, JComponent comp) {
         super("File");

@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
@@ -49,12 +48,11 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
     private Simulator semIm = null;
     private long seed;
     private transient DataModelList dataModelList;
-    private LinkedHashMap<String, String> allParamSettings;
 
 
     //==============================CONSTRUCTORS=============================//
 
-    public SemDataWrapper(SemImWrapper wrapper, Parameters params) {
+    private SemDataWrapper(SemImWrapper wrapper, Parameters params) {
         SemIm semIm = null;
 
         try {
@@ -226,7 +224,7 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
     }
 
     public void setParameters(Parameters params) {
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     @Override
@@ -260,7 +258,7 @@ public class SemDataWrapper extends DataWrapper implements SessionModel,
 
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
-        this.allParamSettings = new LinkedHashMap<>(paramSettings);
+        LinkedHashMap<String, String> allParamSettings = new LinkedHashMap<>(paramSettings);
     }
 }
 

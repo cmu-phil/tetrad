@@ -98,7 +98,7 @@ public class Vcfas {
      */
     //  private SepsetMap sepset = new SepsetMap();
 
-    private Map<Edge, List<Node>> apparentlyNonadjacencies = new HashMap<Edge, List<Node>>();
+    private Map<Edge, List<Node>> apparentlyNonadjacencies = new HashMap<>();
 
     /**
      * True if this is being run by FCI--need to skip the knowledge forbid step.
@@ -158,7 +158,7 @@ public class Vcfas {
             _depth = 1000;
         }
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -222,7 +222,7 @@ public class Vcfas {
         }
 
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
+        Map<Node, Set<Node>> adjacencies = new HashMap<>();
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
@@ -375,7 +375,7 @@ public class Vcfas {
             Set<Node> opposites = adjacencies.get(x);
 
             for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<Node>(opposites);
+                Set<Node> adjx = new HashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -409,11 +409,11 @@ public class Vcfas {
         for (Node x : nodes) {
             if (++count % 100 == 0) System.out.println("count " + count + " of " + nodes.size());
 
-            List<Node> adjx = new ArrayList<Node>(adjacencies.get(x));
+            List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
             EDGE:
             for (Node y : adjx) {
-                List<Node> _adjx = new ArrayList<Node>(adjacencies.get(x));
+                List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
                 _adjx.remove(y);
                 List<Node> ppx = possibleParents(x, _adjx, knowledge);
 //                final Node _x = x;
@@ -479,7 +479,7 @@ public class Vcfas {
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
                                        IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<Node>();
+        List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {

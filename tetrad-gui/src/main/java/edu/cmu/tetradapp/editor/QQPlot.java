@@ -35,7 +35,7 @@ import javax.swing.*;
  *
  * @author Michael Freenor
  */
-public class QQPlot {
+class QQPlot {
 
 
     /**
@@ -338,7 +338,7 @@ public class QQPlot {
      * @param n Normal distribution generated from the dataset.
      * @param data Dataset that n is generated from, and whose normality is in question.
      */
-    public void calculateComparisonSet(cern.jet.random.Normal n, DataSet data)
+    private void calculateComparisonSet(cern.jet.random.Normal n, DataSet data)
     {
         //this.comparisonVariable = new ContinuousVariable("comparisonVariable");
         //data.addVariable(this.comparisonVariable);
@@ -374,7 +374,7 @@ public class QQPlot {
      * @param count Feed this zero -- ensures the stack doesn't fill up
      * @param searchCap Desired maximum number of searches -- too high and the stack might overflow!
      */
-    public static double findQuantile(double quantile, double low, double high, cern.jet.random.Normal n, double precision, int count, int searchCap)
+    private static double findQuantile(double quantile, double low, double high, cern.jet.random.Normal n, double precision, int count, int searchCap)
     {
         //System.out.println("Low: " + low + "High: " + high);
         double mid = low + ((high - low) / 2.);

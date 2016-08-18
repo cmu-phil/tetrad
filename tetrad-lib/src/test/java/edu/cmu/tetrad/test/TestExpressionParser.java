@@ -43,7 +43,7 @@ public class TestExpressionParser {
 
     @Test
     public void test1() {
-        final Map<String, Double> values = new HashMap<String, Double>();
+        final Map<String, Double> values = new HashMap<>();
 
         values.put("b11", 1.0);
         values.put("X1", 2.0);
@@ -68,7 +68,7 @@ public class TestExpressionParser {
         };
 
 
-        Map<String, Double> formulasToEvaluations = new HashMap<String, Double>();
+        Map<String, Double> formulasToEvaluations = new HashMap<>();
 
         formulasToEvaluations.put("0", 0.0);
         formulasToEvaluations.put("b11*X1 + sin(X2) + B22*X2 + B12*X4+b13*X5", 100.14);
@@ -162,7 +162,7 @@ public class TestExpressionParser {
     }
 
     public void test2() {
-        final Map<String, Double> values = new HashMap<String, Double>();
+        final Map<String, Double> values = new HashMap<>();
 
         values.put("b11", 1.0);
         values.put("X1", 2.0);
@@ -188,7 +188,7 @@ public class TestExpressionParser {
             }
         };
 
-        List<String> formulas = new ArrayList<String>();
+        List<String> formulas = new ArrayList<>();
 //
         formulas.add("ChiSquare(s3)");
         formulas.add("Gamma(1, 1)");
@@ -290,7 +290,7 @@ public class TestExpressionParser {
     // Formulas that should and should not fail.
     @Test
     public void test4() {
-        Map<String, Integer> formulasToOffsets = new LinkedHashMap<String, Integer>();
+        Map<String, Integer> formulasToOffsets = new LinkedHashMap<>();
 
         // -1 means it should parse.
         formulasToOffsets.put("X X", 2);
@@ -305,7 +305,7 @@ public class TestExpressionParser {
         formulasToOffsets.put("b1*X1 +@**!! b2 * X2", 7);
         formulasToOffsets.put("X7", 0);
         
-        List<String> otherNodes = new ArrayList<String>();
+        List<String> otherNodes = new ArrayList<>();
         otherNodes.add("X7");
 
         ExpressionParser parser = new ExpressionParser(otherNodes, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
@@ -324,7 +324,7 @@ public class TestExpressionParser {
     // Test distribution means.
     @Test
     public void test5() {
-        final Map<String, Double> values = new HashMap<String, Double>();
+        final Map<String, Double> values = new HashMap<>();
 
         Context context = new Context() {
             public Double getValue(String var) {
@@ -332,7 +332,7 @@ public class TestExpressionParser {
             }
         };
 
-        Map<String, Double> formulas = new LinkedHashMap<String, Double>();
+        Map<String, Double> formulas = new LinkedHashMap<>();
 
         formulas.put("ChiSquare(1)", 1.0);
         formulas.put("Gamma(2, .5)", 1.0);

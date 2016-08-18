@@ -54,7 +54,7 @@ public class ArResidualsParamsEditor extends JPanel implements ParameterEditor {
      * @param params
      */
     public void setParams(Parameters params) {
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     /**

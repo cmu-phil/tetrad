@@ -41,7 +41,7 @@ public class SplitCasesWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    public SplitCasesWrapper(DataWrapper data, Parameters params) {
+    private SplitCasesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -78,8 +78,8 @@ public class SplitCasesWrapper extends DataWrapper {
     /**
      * @return the splitNames selected by the editor.
      */
-    public static DataModel createSplits(DataSet dataSet, Parameters params) {
-        List<Integer> indices = new ArrayList<Integer>(dataSet.getNumRows());
+    private static DataModel createSplits(DataSet dataSet, Parameters params) {
+        List<Integer> indices = new ArrayList<>(dataSet.getNumRows());
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             indices.add(i);
         }

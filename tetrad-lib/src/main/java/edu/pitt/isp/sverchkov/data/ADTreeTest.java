@@ -45,8 +45,8 @@ public class ADTreeTest {
         int numEdges = 40;
         int rows = 500;
 
-        List<Node> variables = new ArrayList<Node>();
-        List<String> varNames = new ArrayList<String>();
+        List<Node> variables = new ArrayList<>();
+        List<String> varNames = new ArrayList<>();
 
         for (int i = 0; i < columns; i++) {
             final String name = "X" + (i + 1);
@@ -63,10 +63,10 @@ public class ADTreeTest {
         // This implementation uses a DataTable to represent the data
         // The first type parameter is the type for the variables
         // The second type parameter is the type for the values of the variables
-        DataTableImpl<Node, Short> dataTable = new DataTableImpl<Node, Short>(variables);
+        DataTableImpl<Node, Short> dataTable = new DataTableImpl<>(variables);
 
         for (int i = 0; i < rows; i++) {
-            ArrayList<Short> intArray = new ArrayList<Short>();
+            ArrayList<Short> intArray = new ArrayList<>();
             for (int j = 0; j < columns; j++) {
                 intArray.add((short) data.getInt(i, j));
             }
@@ -75,11 +75,11 @@ public class ADTreeTest {
 
         // create the tree
         long start = System.currentTimeMillis();
-        ADTree<Node, Short> adTree = new ADTree<Node, Short>(dataTable);
+        ADTree<Node, Short> adTree = new ADTree<>(dataTable);
         System.out.println(String.format("Generated tree in %s millis", System.currentTimeMillis() - start));
 
         // the query is an arbitrary map of vars and their values
-        TreeMap<Node, Short> query = new TreeMap<Node, Short>();
+        TreeMap<Node, Short> query = new TreeMap<>();
         query.put(node(pm, "X1"), (short) 1);
         query.put(node(pm, "X5"), (short) 0);
         start = System.currentTimeMillis();

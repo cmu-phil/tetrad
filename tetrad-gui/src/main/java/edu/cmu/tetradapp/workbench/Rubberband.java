@@ -30,12 +30,12 @@ import java.awt.geom.RoundRectangle2D;
  *
  * @author Joseph Ramsey
  */
-public class Rubberband extends JComponent {
+class Rubberband extends JComponent {
 
     /**
      * The shape itself, whose outline makes the rubberband.
      */
-    private Shape shape = new RoundRectangle2D.Double();
+    private final Shape shape = new RoundRectangle2D.Double();
 
     /**
      * The dashed stoke that forms the outline of the rubberband.

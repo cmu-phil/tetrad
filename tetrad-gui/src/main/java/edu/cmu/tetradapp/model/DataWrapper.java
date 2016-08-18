@@ -60,7 +60,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      *
      * @serial Cannot be null.
      */
-    private Map discretizationSpecs = new HashMap();
+    private final Map discretizationSpecs = new HashMap();
 
     /**
      * Stores a reference to the source workbench, if there is one.
@@ -128,7 +128,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
 
         if(wrapper.knownVariables != null){
-            this.knownVariables = new ArrayList<Node>(wrapper.knownVariables);
+            this.knownVariables = new ArrayList<>(wrapper.knownVariables);
         }
 
         this.dataModelList = dataModelList;
@@ -150,7 +150,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         }
 
         List<Node> nodes = graph.getNodes();
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (Object node1 : nodes) {
             Node node = (Node) node1;
@@ -242,7 +242,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * @param base the base string.
      * @return the first string in the sequence not already being used.
      */
-    public String nextVariableName(String base, DataSet data) {
+    private String nextVariableName(String base, DataSet data) {
 
         // Variable names should start with "1."
         int i = -1;
@@ -358,7 +358,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     /**
      * Sets the source graph.
      */
-    public void setSourceGraph(Graph sourceGraph) {
+    protected void setSourceGraph(Graph sourceGraph) {
         this.sourceGraph = sourceGraph;
     }
 
@@ -434,7 +434,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
 
 	public List<String> getVariableNames() {
-		List<String> variableNames = new ArrayList<String>();
+		List<String> variableNames = new ArrayList<>();
 		for (Node n: getVariables()) {
 			variableNames.add(n.getName());
 		}

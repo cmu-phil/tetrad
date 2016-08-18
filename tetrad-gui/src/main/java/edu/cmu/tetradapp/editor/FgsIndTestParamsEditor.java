@@ -41,17 +41,17 @@ import java.text.NumberFormat;
 
 class FgsIndTestParamsEditor extends JComponent {
     private final FgsRunner.Type type;
-    private Parameters params;
+    private final Parameters params;
     private DoubleTextField cellPriorField, structurePriorField;
     private JButton uniformStructurePrior;
     private DoubleTextField penaltyDiscount;
-    private IntTextField numPatternsToSave;
-    private IntTextField depth;
+    private final IntTextField numPatternsToSave;
+    private final IntTextField depth;
 
     /**
      * A checkbox to allow the user to specify whether to use RFCI
      */
-    private JCheckBox faithfulnessAssumed;
+    private final JCheckBox faithfulnessAssumed;
 
     public FgsIndTestParamsEditor(Parameters params, FgsRunner.Type type) {
         this.params = params;

@@ -24,14 +24,12 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Unmarshallable;
-import edu.cmu.tetradapp.editor.GeneralAlgorithmEditor;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -297,7 +295,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * Find the dataModel model. (If it's a list, take the one that's
      * selected.)
      */
-    public DataModel getSelectedDataModel(DataWrapper dataWrapper) {
+    private DataModel getSelectedDataModel(DataWrapper dataWrapper) {
         DataModelList dataModelList = dataWrapper.getDataModelList();
 
         if (dataModelList.size() > 1) {

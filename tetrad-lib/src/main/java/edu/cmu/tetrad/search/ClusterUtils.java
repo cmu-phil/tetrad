@@ -54,7 +54,7 @@ public class ClusterUtils {
             if (clusterIndices.get(i) > max) max = clusterIndices.get(i);
         }
 
-        List<List<Integer>> clusters = new ArrayList<List<Integer>>();
+        List<List<Integer>> clusters = new ArrayList<>();
 
         for (int i = 0; i <= max; i++) {
             clusters.add(new LinkedList<Integer>());
@@ -512,7 +512,7 @@ public class ClusterUtils {
 //    }
 
     public static List<int[]> convertListToInt(List<List<Node>> partition, List<Node> nodes) {
-        List<int[]> _partition = new ArrayList<int[]>();
+        List<int[]> _partition = new ArrayList<>();
 
         for (List<Node> cluster : partition) {
             int[] _cluster = new int[cluster.size()];
@@ -532,10 +532,10 @@ public class ClusterUtils {
     }
 
     public static List<List<Node>> convertIntToList(List<int[]> partition, List<Node> nodes) {
-        List<List<Node>> _partition = new ArrayList<List<Node>>();
+        List<List<Node>> _partition = new ArrayList<>();
 
         for (int[] cluster : partition) {
-            List<Node> _cluster = new ArrayList<Node>();
+            List<Node> _cluster = new ArrayList<>();
 
             for (int aCluster : cluster) {
                 _cluster.add(nodes.get(aCluster));
@@ -548,10 +548,10 @@ public class ClusterUtils {
     }
 
     public static List<List<Node>> clustersToPartition(Clusters clusters, List<Node> variables) {
-        List<List<Node>> inputPartition = new ArrayList<List<Node>>();
+        List<List<Node>> inputPartition = new ArrayList<>();
 
         for (int i = 0; i < clusters.getNumClusters(); i++) {
-            List<Node> cluster = new ArrayList<Node>();
+            List<Node> cluster = new ArrayList<>();
 
             for (String nodeName : clusters.getCluster(i)) {
                 for (Node variable : variables) {
@@ -582,7 +582,7 @@ public class ClusterUtils {
     }
 
     public static Graph convertSearchGraph(List<int[]> clusters, String[] varNames) {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         if (clusters == null) {
             nodes.add(new GraphNode("No_model."));
@@ -599,7 +599,7 @@ public class ClusterUtils {
 //            return new EdgeListGraph(nodes);
 //        }
 
-        Set<Node> latentsSet = new HashSet<Node>();
+        Set<Node> latentsSet = new HashSet<>();
         for (int i = 0; i < clusters.size(); i++) {
             Node latent = new GraphNode(LATENT_PREFIX + (i + 1));
             latent.setNodeType(NodeType.LATENT);
@@ -695,7 +695,7 @@ public class ClusterUtils {
 //    }
 
     public static List<List<Node>> mimClustering(Graph mim, List<Node> variables) {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (Node node : mim.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
@@ -703,7 +703,7 @@ public class ClusterUtils {
             }
         }
 
-        List<Node> errors = new ArrayList<Node>();
+        List<Node> errors = new ArrayList<>();
 
         for (Node node : mim.getNodes()) {
             if (node.getNodeType() == NodeType.ERROR) {
@@ -711,7 +711,7 @@ public class ClusterUtils {
             }
         }
 
-        List<List<Node>> clustering = new ArrayList<List<Node>>();
+        List<List<Node>> clustering = new ArrayList<>();
 
         for (Node _latent : latents) {
             List<Node> adj = mim.getAdjacentNodes(_latent);
@@ -728,7 +728,7 @@ public class ClusterUtils {
     }
 
     public static Clusters mimClusters(Graph mim) {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (Node node : mim.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
@@ -773,7 +773,7 @@ public class ClusterUtils {
         for (Set<Integer> indices : clusters) {
             buf.append(num++).append(": ");
 
-            List<Node> _c = new ArrayList<Node>();
+            List<Node> _c = new ArrayList<>();
 
             for (int i : indices) {
                 _c.add(variables.get(i));
@@ -792,7 +792,7 @@ public class ClusterUtils {
     }
 
     public static List<String> generateLatentNames(int total) {
-        List<String> output = new ArrayList<String>();
+        List<String> output = new ArrayList<>();
         for (int i = 0; i < total; i++) {
             output.add(LATENT_PREFIX + (i + 1));
         }

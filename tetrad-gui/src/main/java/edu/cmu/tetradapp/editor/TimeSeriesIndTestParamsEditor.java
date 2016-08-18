@@ -43,12 +43,12 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
     /**
      * Edits the alpha value, in [0, 1].
      */
-    private DoubleTextField alphaField;
+    private final DoubleTextField alphaField;
 
     /**
      * Edits the number of lags.
      */
-    private IntTextField numLagsField;
+    private final IntTextField numLagsField;
 
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.

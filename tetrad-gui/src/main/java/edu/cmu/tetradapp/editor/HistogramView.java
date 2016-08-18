@@ -48,7 +48,7 @@ import java.util.List;
  */
 public class HistogramView extends JPanel {
     private final HistogramPanel histogramPanel;
-    private static String[] tiles = new String[]{"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
+    private static final String[] tiles = new String[]{"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
 
     /**
@@ -98,12 +98,12 @@ public class HistogramView extends JPanel {
         /**
          * The line color around the histogram.
          */
-        private static Color LINE_COLOR = Color.GRAY.darker();
+        private static final Color LINE_COLOR = Color.GRAY.darker();
 
         /**
          * Bar colors for the histogram (ripped from causality lab)
          */
-        private static Color BAR_COLORS[] = {
+        private static final Color[] BAR_COLORS = {
                 new Color(153, 102, 102), new Color(102, 102, 153), new Color(102, 153, 102), new Color(153, 102, 153),
                 new Color(153, 153, 102), new Color(102, 153, 153), new Color(204, 153, 153), new Color(153, 153, 204),
                 new Color(153, 204, 153), new Color(204, 153, 204),
@@ -130,12 +130,12 @@ public class HistogramView extends JPanel {
         /**
          * The default size of the component.
          */
-        private Dimension size = new Dimension(WIDTH + 2 * SPACE, HEIGHT);
+        private final Dimension size = new Dimension(WIDTH + 2 * SPACE, HEIGHT);
 
         /**
          * Format for continuous data.
          */
-        private NumberFormat format = new DecimalFormat("0.#");// NumberFormatUtil.getInstance().getNumberFormat();
+        private final NumberFormat format = new DecimalFormat("0.#");// NumberFormatUtil.getInstance().getNumberFormat();
 
 //        /**
 //         * A cached string displaying what is being viewed in the histogram.
@@ -145,7 +145,7 @@ public class HistogramView extends JPanel {
         /**
          * A map from the rectangles that define the bars, to the number of units in the bar.
          */
-        private Map<Rectangle, Integer> rectMap = new LinkedHashMap<Rectangle, Integer>();
+        private final Map<Rectangle, Integer> rectMap = new LinkedHashMap<>();
 
         /**
          * Constructs the histogram display panel given the initial histogram to display.
@@ -291,7 +291,7 @@ public class HistogramView extends JPanel {
         private Map<Integer, Double> pickGoodPointsAndValues(int min, int max, double minValue, double maxValue) {
             double range = maxValue - minValue;
             int powerOfTen = (int) Math.floor(Math.log(range) / Math.log(10));
-            Map<Integer, Double> points = new HashMap<Integer, Double>();
+            Map<Integer, Double> points = new HashMap<>();
 
             int low = (int) Math.floor(minValue / Math.pow(10, powerOfTen));
             int high = (int) Math.ceil(maxValue / Math.pow(10, powerOfTen));
@@ -368,25 +368,25 @@ public class HistogramView extends JPanel {
         /**
          * The histogram we are working on.
          */
-        private Histogram histogram;
+        private final Histogram histogram;
 
         /**
          * Combo box of all the variables.
          */
-        private JComboBox targetSelector;
+        private final JComboBox targetSelector;
 
         /**
          * A spinner that deals with category selection.
          */
         private IntSpinner numBarsSelector;
 
-        private JComboBox newConditioningVariableSelector;
-        private JButton newConditioningVariableButton;
-        private JButton removeConditioningVariableButton;
-        private List<ConditioningPanel> conditioningPanels = new ArrayList<ConditioningPanel>();
+        private final JComboBox newConditioningVariableSelector;
+        private final JButton newConditioningVariableButton;
+        private final JButton removeConditioningVariableButton;
+        private final List<ConditioningPanel> conditioningPanels = new ArrayList<>();
 
         // To provide some memory of previous settings for the inquiry dialogs.
-        private Map<Node, ConditioningPanel> conditioningPanelMap = new HashMap<Node, ConditioningPanel>();
+        private final Map<Node, ConditioningPanel> conditioningPanelMap = new HashMap<>();
 
         /**
          * Constructs the editor panel given the initial histogram and the dataset.
@@ -437,7 +437,7 @@ public class HistogramView extends JPanel {
                             }
                         });
 
-                        for (ConditioningPanel panel : new ArrayList<ConditioningPanel>(conditioningPanels)) {
+                        for (ConditioningPanel panel : new ArrayList<>(conditioningPanels)) {
                             conditioningPanels.remove(panel);
                         }
 
@@ -557,7 +557,7 @@ public class HistogramView extends JPanel {
 
             this.removeConditioningVariableButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    for (ConditioningPanel panel : new ArrayList<ConditioningPanel>(conditioningPanels)) {
+                    for (ConditioningPanel panel : new ArrayList<>(conditioningPanels)) {
                         if (panel.isSelected()) {
                             panel.setSelected(false);
                             conditioningPanels.remove(panel);
@@ -895,8 +895,8 @@ public class HistogramView extends JPanel {
         private DoubleTextField field1;
         private DoubleTextField field2;
         private HistogramController.ContinuousConditioningPanel.Type type;
-        private final Map<String, Integer> ntileMap = new HashMap<String, Integer>();
-        private double[] data;
+        private final Map<String, Integer> ntileMap = new HashMap<>();
+        private final double[] data;
 
         /**
          * @param variable          This is the variable being conditioned on. Must be continuous and one of the variables
@@ -1110,7 +1110,7 @@ public class HistogramView extends JPanel {
 
             // first sort the _data.
             Arrays.sort(_data);
-            List<Chunk> chunks = new ArrayList<Chunk>(_data.length);
+            List<Chunk> chunks = new ArrayList<>(_data.length);
             int startChunkCount = 0;
             double lastValue = _data[0];
 
@@ -1166,8 +1166,8 @@ public class HistogramView extends JPanel {
          */
         private static class Chunk {
 
-            private int valuesInChunk;
-            private double value;
+            private final int valuesInChunk;
+            private final double value;
 
             public Chunk(int low, int high, double value) {
                 this.valuesInChunk = (high - low);
@@ -1182,7 +1182,7 @@ public class HistogramView extends JPanel {
     }
 
     private static class DiscreteInquiryPanel extends JPanel {
-        private JComboBox valuesDropdown;
+        private final JComboBox valuesDropdown;
 
         public DiscreteInquiryPanel(DiscreteVariable var, HistogramController.DiscreteConditioningPanel panel) {
             valuesDropdown = new JComboBox();

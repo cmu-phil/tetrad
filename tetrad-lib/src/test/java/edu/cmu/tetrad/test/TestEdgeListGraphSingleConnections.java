@@ -130,7 +130,7 @@ public final class TestEdgeListGraphSingleConnections {
 
     @Test
     public void testSequence3() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i1 = 0; i1 < 50; i1++) {
             nodes.add(new ContinuousVariable("X" + (i1 + 1)));
@@ -141,7 +141,7 @@ public final class TestEdgeListGraphSingleConnections {
 
         Node node1 = graph.getNodes().get(0);
         Node node2 = graph.getNodes().get(1);
-        List<Node> cond = new ArrayList<Node>();
+        List<Node> cond = new ArrayList<>();
         for (int i= 2; i < 5; i++) {
             cond.add(graph.getNodes().get(i));
         }
@@ -160,7 +160,7 @@ public final class TestEdgeListGraphSingleConnections {
 
         graph.addUndirectedEdge(x1, x2);
 
-        List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
 
         Edge e1 = edges.get(0);
 
@@ -172,12 +172,12 @@ public final class TestEdgeListGraphSingleConnections {
 
         graph.removeEdge(e2);
 
-        edges = new ArrayList<Edge>(graph.getEdges());
+        edges = new ArrayList<>(graph.getEdges());
     }
 
     @Test
     public void testSepsets() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < 50; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
         Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, nodes.size(), 30, 15, 15, false, true);

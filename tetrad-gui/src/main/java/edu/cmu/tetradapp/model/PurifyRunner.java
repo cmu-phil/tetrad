@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -112,7 +111,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         TetradTest test;
 
 
-        System.out.println("Clusters " + (Clusters) getParams().get("clusters", null));
+        System.out.println("Clusters " + getParams().get("clusters", null));
 
         if (source instanceof ICovarianceMatrix) {
             ICovarianceMatrix covMatrix = (ICovarianceMatrix) source;
@@ -156,7 +155,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         return super.getClusters();
     }
 
-    public void setClusters(Clusters clusters) {
+    protected void setClusters(Clusters clusters) {
         super.setClusters(clusters);
     }
 
@@ -165,7 +164,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
     }
 
     public java.util.List<Node> getVariables() {
-        List<Node> latents = new ArrayList<Node>();
+        List<Node> latents = new ArrayList<>();
 
         for (String name : getVariableNames()) {
             Node node = new ContinuousVariable(name);

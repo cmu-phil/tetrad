@@ -78,7 +78,7 @@ public final class BasicLagGraph implements LagGraph {
      * therefore no edges).
      */
     public BasicLagGraph() {
-        this.connectivity = new TreeMap<String, SortedSet<LaggedFactor>>();
+        this.connectivity = new TreeMap<>();
     }
 
     /**
@@ -160,7 +160,7 @@ public final class BasicLagGraph implements LagGraph {
         }
 
         if (!connectivity.containsKey(factor)) {
-            SortedSet<LaggedFactor> laggedFactors = new TreeSet<LaggedFactor>();
+            SortedSet<LaggedFactor> laggedFactors = new TreeSet<>();
             connectivity.put(factor, laggedFactors);
         }
     }
@@ -302,7 +302,7 @@ public final class BasicLagGraph implements LagGraph {
      * @return this sorted map.
      */
     public SortedMap<String, SortedSet<LaggedFactor>> getConnectivity() {
-        return new TreeMap<String, SortedSet<LaggedFactor>>(connectivity);
+        return new TreeMap<>(connectivity);
     }
 
     /**
@@ -347,7 +347,7 @@ public final class BasicLagGraph implements LagGraph {
      * @return this set.
      */
     public SortedSet<String> getFactors() {
-        return new TreeSet<String>(connectivity.keySet());
+        return new TreeSet<>(connectivity.keySet());
     }
 
     /**
@@ -423,7 +423,7 @@ public final class BasicLagGraph implements LagGraph {
 
         // This is to accomodate folks using a previous version.
         if (this.locations == null) {
-            this.locations = new HashMap<String, PointXy>();
+            this.locations = new HashMap<>();
         }
         return locations;
     }

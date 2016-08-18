@@ -118,7 +118,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
     private void setup(BayesIm bayesIm, Parameters params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
-        if ((Evidence) params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
+        if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
             bayesUpdater = new CptInvariantUpdater(bayesIm);
         }
         else {

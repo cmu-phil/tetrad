@@ -59,13 +59,13 @@ public class TestDataWrapper {
     public void testDataModelList() {
         DataModelList modelList = new DataModelList();
 
-        List<Node> variables1 = new ArrayList<Node>();
+        List<Node> variables1 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             variables1.add(new ContinuousVariable("X" + i));
         }
 
-        List<Node> variables2 = new ArrayList<Node>();
+        List<Node> variables2 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             variables2.add(new ContinuousVariable("X" + i));

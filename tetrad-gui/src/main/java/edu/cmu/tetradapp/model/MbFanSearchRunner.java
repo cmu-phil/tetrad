@@ -122,16 +122,16 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = ((Parameters) getParams()).getInt("depth", -1);
+        int pcDepth = getParams().getInt("depth", -1);
         Mbfs mbfs =
                 new Mbfs(getIndependenceTest(), pcDepth);
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            mbfs.setAggressivelyPreventCycles(((Parameters) params).getBoolean("aggressivelyPreventCycles", false));
+            mbfs.setAggressivelyPreventCycles(params.getBoolean("aggressivelyPreventCycles", false));
         }
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         mbfs.setKnowledge(knowledge);
-        String targetName = ((Parameters) getParams()).getString("targetName", null);
+        String targetName = getParams().getString("targetName", null);
         Graph graph = mbfs.search(targetName);
         setResultGraph(graph);
 
@@ -155,7 +155,7 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
         IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
@@ -194,7 +194,7 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -204,7 +204,7 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     public boolean supportsKnowledge() {

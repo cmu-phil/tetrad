@@ -95,7 +95,7 @@ public class AdjustCopyrights {
             throw new IllegalArgumentException("Not a directory: " + directory);
         }
 
-        List<File> javaFiles = new LinkedList<File>();
+        List<File> javaFiles = new LinkedList<>();
         File[] files = directory.listFiles();
 
         for (File file : files) {

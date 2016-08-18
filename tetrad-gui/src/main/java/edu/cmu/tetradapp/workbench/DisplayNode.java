@@ -58,13 +58,13 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
 
     //===========================CONSTRUCTORS==============================//
 
-    public DisplayNode() {
+    protected DisplayNode() {
         setName("");
     }
 
     //===========================PUBLIC METHODS============================//
 
-    public final void setModelNode(Node modelNode) {
+    protected final void setModelNode(Node modelNode) {
         if (modelNode == null) {
             throw new NullPointerException();
         }
@@ -160,11 +160,11 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     public void doDoubleClickAction(Graph graph) {
     }
 
-    public DisplayComp getDisplayComp() {
+    protected DisplayComp getDisplayComp() {
         return displayComp;
     }
 
-    public void setDisplayComp(DisplayComp displayComp) {
+    protected void setDisplayComp(DisplayComp displayComp) {
         this.displayComp = displayComp;
 
         removeAll();

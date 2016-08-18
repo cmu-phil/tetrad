@@ -52,7 +52,7 @@ public class TestLingamPattern {
 
         int sampleSize = 1000;
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 6; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -61,7 +61,7 @@ public class TestLingamPattern {
         Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
                 4, 4, 4, false));
 
-        List<Distribution> variableDistributions = new ArrayList<Distribution>();
+        List<Distribution> variableDistributions = new ArrayList<>();
 
         variableDistributions.add(new Normal(0, 1));
         variableDistributions.add(new Normal(0, 1));
@@ -98,7 +98,7 @@ public class TestLingamPattern {
      */
     private DataSet simulateDataNonNormal(SemIm semIm, int sampleSize,
                                           List<Distribution> distributions) {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         List<Node> variableNodes = semIm.getSemPm().getVariableNodes();
 
         for (Node node : variableNodes) {

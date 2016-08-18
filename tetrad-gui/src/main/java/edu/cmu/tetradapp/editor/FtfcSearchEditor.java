@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -79,7 +78,7 @@ public class FtfcSearchEditor extends JPanel {
     /**
      * The button one clicks to executeButton the algorithm.
      */
-    private JButton executeButton = new JButton();
+    private final JButton executeButton = new JButton();
 
     /**
      * The label for the result graph workbench.
@@ -91,7 +90,6 @@ public class FtfcSearchEditor extends JPanel {
      */
     private JScrollPane workbenchScroll;
     private JPanel displayPanel;
-    private GraphWorkbench structureWorkbench;
 
     //============================CONSTRUCTORS===========================//
 
@@ -346,7 +344,7 @@ public class FtfcSearchEditor extends JPanel {
 //                DataGraphUtils.circleLayout(structureGraph, 200, 200, 150);
                 Graph structureGraph = getMimRunner().getStructureGraph();
                 doDefaultArrangement(structureGraph);
-                structureWorkbench = new GraphWorkbench(structureGraph);
+                GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
                 structureWorkbench.setAllowDoubleClickActions(false);
 
                 tabbedPane.add("Structure Model",
@@ -458,7 +456,7 @@ public class FtfcSearchEditor extends JPanel {
         }
 
         try {
-            Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();
+            Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
             getMimRunner().getParams().set("sourceGraph", graph);
         } catch (IOException e) {
             getMimRunner().getParams().set("sourceGraph", (Graph) null);
@@ -493,7 +491,7 @@ public class FtfcSearchEditor extends JPanel {
         }
 
         MimRunner runner = getMimRunner();
-        params.set("varNames", (java.util.List<String>) runner.getParams().get("varNames", null));
+        params.set("varNames", runner.getParams().get("varNames", null));
         return new FtfcIndTestParamsEditor(params);
     }
 }

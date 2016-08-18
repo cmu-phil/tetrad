@@ -63,7 +63,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     /**
      * List of all editors.
      */
-    private List<ExpressionEditor> editors = new LinkedList<ExpressionEditor>();
+    private final List<ExpressionEditor> editors = new LinkedList<>();
 
 
     /**
@@ -118,7 +118,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * @param params
      */
     public void setParams(Parameters params) {
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
 
@@ -248,7 +248,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * the parsed equations are returned.
      */
     private List<Equation> parseEquations() {
-        List<Equation> equations = new ArrayList<Equation>();
+        List<Equation> equations = new ArrayList<>();
         for (ExpressionEditor editor : editors) {
             try {
                 System.out.println(editor.getEquation());

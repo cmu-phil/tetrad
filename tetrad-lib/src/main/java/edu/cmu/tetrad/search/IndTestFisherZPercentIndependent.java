@@ -64,7 +64,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        data = new ArrayList<TetradMatrix>();
+        data = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             dataSet = DataUtils.center(dataSet);
@@ -72,19 +72,19 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             data.add(_data);
         }
 
-        ncov = new ArrayList<TetradMatrix>();
+        ncov = new ArrayList<>();
         for (TetradMatrix d : this.data) ncov.add(d.transpose().times(d).scalarMult(1.0 / d.rows()));
 
         setAlpha(alpha);
         rows = new int[dataSets.get(0).getNumRows()];
         for (int i = 0; i < getRows().length; i++) getRows()[i] = i;
 
-        variablesMap = new HashMap<Node, Integer>();
+        variablesMap = new HashMap<>();
         for (int i = 0; i < variables.size(); i++) {
             variablesMap.put(variables.get(i), i);
         }
 
-        this.recursivePartialCorrelation = new ArrayList<RecursivePartialCorrelation>();
+        this.recursivePartialCorrelation = new ArrayList<>();
         for (TetradMatrix covMatrix : ncov) {
             recursivePartialCorrelation.add(new RecursivePartialCorrelation(getVariables(), covMatrix));
         }
@@ -105,7 +105,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         }
 
         int sampleSize = data.get(0).rows();
-        List<Double> pValues = new ArrayList<Double>();
+        List<Double> pValues = new ArrayList<>();
 
         for (int m = 0; m < ncov.size(); m++) {
             TetradMatrix _ncov = ncov.get(m).getSelection(all, all);
@@ -221,7 +221,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
@@ -243,7 +243,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     public ICovarianceMatrix getCov() {
-        List<DataSet> _dataSets = new ArrayList<DataSet>();
+        List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataSet d : dataSets) {
             _dataSets.add(DataUtils.standardizeData(d));

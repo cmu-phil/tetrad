@@ -39,7 +39,7 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class BuildPureClustersIndTestParamsEditor extends JComponent {
-    private Parameters paramsPureClusters;
+    private final Parameters paramsPureClusters;
 
     public BuildPureClustersIndTestParamsEditor(
             final Parameters paramsPureClusters,
@@ -71,7 +71,7 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
                 testSelector.addItem(descriptions[i]);
             }
 
-            testSelector.setSelectedItem((TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART));
+            testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
             testSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -87,7 +87,7 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
 //        final BpcAlgorithmType[] descriptions = BpcAlgorithmType.getAlgorithmDescriptions();
         final BpcAlgorithmType[] descriptions = new BpcAlgorithmType[]{BpcAlgorithmType.BUILD_PURE_CLUSTERS};
         algorithmSelector = new JComboBox(descriptions);
-        algorithmSelector.setSelectedItem((BpcAlgorithmType) getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS));
+        algorithmSelector.setSelectedItem(getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS));
 
         algorithmSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -110,7 +110,7 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
                 }
 
 
-                if ((TestType) paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
+                if (paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
                     testSelector.setSelectedItem(TestType.TETRAD_WISHART);
                 }
                 else {

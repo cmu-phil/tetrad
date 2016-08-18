@@ -55,11 +55,6 @@ public class EmBayesEstimatorEditor extends JPanel {
     private EMBayesEstimatorEditorWizard wizard;
 
     /**
-     * Formats numbers.
-     */
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-    /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
     private EmBayesEstimatorEditor(BayesIm bayesIm,
@@ -105,6 +100,10 @@ public class EmBayesEstimatorEditor extends JPanel {
         StringBuilder buf = new StringBuilder();
         buf.append("\nP-value = ").append(scorer.getLikelihoodRatioP());
         buf.append("\nDf = ").append(scorer.getPValueDf());
+        /*
+      Formats numbers.
+     */
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         buf.append("\nChi square = ").append(
                 nf.format(scorer.getPValueChisq()));
         buf.append("\nBIC score = ").append(nf.format(scorer.getBic()));

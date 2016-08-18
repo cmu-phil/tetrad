@@ -34,7 +34,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Ricardo Silva
  */
-public final class SplitByCollinearColumnsAction extends AbstractAction {
+final class SplitByCollinearColumnsAction extends AbstractAction {
 
     /**
      * The data editor.                         -

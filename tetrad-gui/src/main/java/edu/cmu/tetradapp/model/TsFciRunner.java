@@ -116,7 +116,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         } /*else {knowledge = this.knowledge;}*/
         Parameters searchParams = getParams();
 
-        Parameters params = (Parameters) searchParams;
+        Parameters params = searchParams;
 
 //            Cfci fciSearch =
 //                    new Cfci(getIndependenceTest(), knowledge);
@@ -171,10 +171,10 @@ public class TsFciRunner extends AbstractAlgorithmRunner
         IndTestType testType;
 
         if (getParams() instanceof Parameters) {
-            Parameters _params = (Parameters) params;
+            Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         } else {
-            Parameters _params = (Parameters) params;
+            Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
@@ -190,7 +190,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Definite Colliders");
 //        names.add("Definite Noncolliders");
         return names;
@@ -200,7 +200,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));

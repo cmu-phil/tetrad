@@ -150,7 +150,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         GeneralizedSemPm pm = im.getGeneralizedSemPm();
         Graph imGraph = im.getGeneralizedSemPm().getGraph();
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (Node node : imGraph.getNodes()) {
             if (!(node.getNodeType() == NodeType.ERROR)) {

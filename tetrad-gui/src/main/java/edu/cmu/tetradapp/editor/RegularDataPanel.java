@@ -22,14 +22,12 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.util.TextAreaOutputStream;
-import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -82,7 +80,7 @@ final class RegularDataPanel extends JPanel {
     private JLabel maxIntegralLabel1;
     private JLabel maxIntegralLabel2;
 
-    private int fileIndex = 0;
+    private final int fileIndex = 0;
 
     //================================CONSTRUCTOR=======================//
 
@@ -659,7 +657,7 @@ final class RegularDataPanel extends JPanel {
         }
     }
 
-    public String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
+    private String getProgressString(int fileIndex, int numFiles, DataModel[] dataModels) {
         return (dataModels[fileIndex] == null ? "" : "*") + (fileIndex + 1) + " / " + numFiles;
     }
 

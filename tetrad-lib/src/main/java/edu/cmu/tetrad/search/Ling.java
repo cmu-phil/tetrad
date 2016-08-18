@@ -296,7 +296,7 @@ public class Ling {
     }
 
     private double[] removeNaN(double[] data) {
-        List<Double> _leaveOutMissing = new ArrayList<Double>();
+        List<Double> _leaveOutMissing = new ArrayList<>();
 
         for (int i = 0; i < data.length; i++) {
             if (!Double.isNaN(data[i])) {
@@ -312,7 +312,7 @@ public class Ling {
     }
 
     private List<Mapping> mappingsForRow(int rowIndex, List<Mapping> allMappings) {
-        final List<Mapping> mappings = new ArrayList<Mapping>();
+        final List<Mapping> mappings = new ArrayList<>();
 
         for (Mapping mapping : allMappings) {
             if (mapping.getI() == rowIndex) mappings.add(mapping);
@@ -340,7 +340,7 @@ public class Ling {
     private List<Mapping> createMappings(Graph graph, List<Node> nodes, int numNodes) {
 
         // Mark as parameters all non-adjacencies from the graph, excluding self edges.
-        final List<Mapping> allMappings = new ArrayList<Mapping>();
+        final List<Mapping> allMappings = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
             for (int j = 0; j < numNodes; j++) {
@@ -416,9 +416,9 @@ public class Ling {
         int rows = X.rows();
         int piecesize = (int) Math.floor(cols / npieces);
 
-        List<TetradMatrix> bpieces = new ArrayList<TetradMatrix>();
-        List<TetradVector> diststdpieces = new ArrayList<TetradVector>();
-        List<TetradVector> cpieces = new ArrayList<TetradVector>();
+        List<TetradMatrix> bpieces = new ArrayList<>();
+        List<TetradVector> diststdpieces = new ArrayList<>();
+        List<TetradVector> cpieces = new ArrayList<>();
 
         for (int p = 0; p < npieces; p++) {
 
@@ -796,7 +796,7 @@ public class Ling {
     private List<PermutationMatrixPair> zerolessDiagonalPermutations(TetradMatrix ica_W, boolean approximateZeros,
                                                                      List<Node> vars, DataSet dataSet) {
 
-        List<PermutationMatrixPair> permutations = new Vector<PermutationMatrixPair>();
+        List<PermutationMatrixPair> permutations = new Vector<>();
 
         if (approximateZeros) {
 //            setInsignificantEntriesToZero(ica_W);
@@ -823,7 +823,7 @@ public class Ling {
     private List<PermutationMatrixPair> zerolessDiagonalPermutation(TetradMatrix ica_W, boolean approximateZeros,
                                                                     List<Node> vars, DataSet dataSet) {
 
-        List<PermutationMatrixPair> permutations = new Vector<PermutationMatrixPair>();
+        List<PermutationMatrixPair> permutations = new Vector<>();
 
         if (approximateZeros) {
 //            setInsignificantEntriesToZero(ica_W);
@@ -833,7 +833,7 @@ public class Ling {
 
 //        List<PermutationMatrixPair > zldPerms = new ArrayList<PermutationMatrixPair >();
 
-        List<Integer> perm = new ArrayList<Integer>();
+        List<Integer> perm = new ArrayList<>();
 
         for (int i = 0; i < vars.size(); i++) perm.add(i);
 
@@ -863,8 +863,8 @@ public class Ling {
     private TetradMatrix removeZeroRowsAndCols(TetradMatrix w, List<Node> variables) {
 
         TetradMatrix _W = w.copy();
-        List<Node> _variables = new ArrayList<Node>(variables);
-        List<Integer> remove = new ArrayList<Integer>();
+        List<Node> _variables = new ArrayList<>(variables);
+        List<Integer> remove = new ArrayList<>();
 
         ROW:
         for (int i = 0; i < _W.rows(); i++) {
@@ -923,7 +923,7 @@ public class Ling {
     }
 
     private static List<Integer> makeAllRows(int n) {
-        List<Integer> l = new ArrayList<Integer>();
+        List<Integer> l = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             l.add(i);
         }
@@ -931,7 +931,7 @@ public class Ling {
     }
 
     private static List<List<Integer>> nRookColumnAssignments(TetradMatrix mat, List<Integer> availableRows) {
-        List<List<Integer>> concats = new ArrayList<List<Integer>>();
+        List<List<Integer>> concats = new ArrayList<>();
 
         System.out.println("mat = " + mat);
 
@@ -942,7 +942,7 @@ public class Ling {
 
             if (mat.get(currentRowIndex, 0) != 0) {
                 if (mat.columns() > 1) {
-                    Vector<Integer> newAvailableRows = (new Vector<Integer>(availableRows));
+                    Vector<Integer> newAvailableRows = (new Vector<>(availableRows));
                     newAvailableRows.removeElement(currentRowIndex);
                     TetradMatrix subMat = mat.getPart(0, mat.rows() - 1, 1, mat.columns() - 2);
                     List<List<Integer>> allLater = nRookColumnAssignments(subMat, newAvailableRows);
@@ -952,7 +952,7 @@ public class Ling {
                         concats.add(laterPerm);
                     }
                 } else {
-                    List<Integer> l = new ArrayList<Integer>();
+                    List<Integer> l = new ArrayList<>();
                     l.add(currentRowIndex);
                     concats.add(l);
                 }
@@ -1047,18 +1047,18 @@ public class Ling {
         /**
          * Graph permutations are stored here.
          */
-        private List<Graph> graphs = new ArrayList<Graph>();
+        private List<Graph> graphs = new ArrayList<>();
 
         /**
          * Store data for each graph in case the data is needed later
          */
-        private List<DataSet> dataSet = new ArrayList<DataSet>();
+        private List<DataSet> dataSet = new ArrayList<>();
 
         /**
          * Boolean valued vector that contains the stability information for its corresponding graph. stable = true
          * means the graph has all eigenvalues with modulus < 1.
          */
-        private List<Boolean> stable = new ArrayList<Boolean>();
+        private List<Boolean> stable = new ArrayList<>();
 
         /**
          * Gets the number of graphs stored by the class.

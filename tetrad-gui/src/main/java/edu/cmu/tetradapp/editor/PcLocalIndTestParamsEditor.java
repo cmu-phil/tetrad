@@ -46,13 +46,7 @@ class PcLocalIndTestParamsEditor extends JComponent {
      * A text field to allow the user to enter the number of dishes to
      * generate.
      */
-    private DoubleTextField alphaField;
-
-    /**
-     * A text field to allow the user to enter the number of dishes to
-     * generate.
-     */
-    private IntTextField depthField;
+    private final DoubleTextField alphaField;
 
 
     /**
@@ -78,7 +72,11 @@ class PcLocalIndTestParamsEditor extends JComponent {
             }
         });
 
-        depthField = new IntTextField(params().getInt("depth", -1), 4);
+        /*
+      A text field to allow the user to enter the number of dishes to
+      generate.
+     */
+        IntTextField depthField = new IntTextField(params().getInt("depth", -1), 4);
         depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {

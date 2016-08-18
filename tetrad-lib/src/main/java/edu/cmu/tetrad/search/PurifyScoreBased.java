@@ -87,7 +87,7 @@ public class PurifyScoreBased implements IPurify {
 
         Clusters clusters = MimUtils.convertToClusters(_graph);
 
-        List<int[]> _partition1 = new ArrayList<int[]>();
+        List<int[]> _partition1 = new ArrayList<>();
         List<Node> nodes = tetradTest.getVariables();
 
         for (int i = 0; i < clusters.getNumClusters(); i++) {
@@ -132,7 +132,7 @@ public class PurifyScoreBased implements IPurify {
 
     private List<int[]> convertListToInt(List<List<Node>> partition) {
         List<Node> nodes = tetradTest.getVariables();
-        List<int[]> _partition = new ArrayList<int[]>();
+        List<int[]> _partition = new ArrayList<>();
 
         for (int i = 0; i < partition.size(); i++) {
             List<Node> cluster = partition.get(i);
@@ -154,11 +154,11 @@ public class PurifyScoreBased implements IPurify {
 
     private List<List<Node>> convertIntToList(List<int[]> partition) {
         List<Node> nodes = tetradTest.getVariables();
-        List<List<Node>> _partition = new ArrayList<List<Node>>();
+        List<List<Node>> _partition = new ArrayList<>();
 
         for (int i = 0; i < partition.size(); i++) {
             int[] cluster = partition.get(i);
-            List<Node> _cluster = new ArrayList<Node>();
+            List<Node> _cluster = new ArrayList<>();
 
             for (int j = 0; j < cluster.length; j++) {
                 _cluster.add(nodes.get(cluster[j]));

@@ -100,7 +100,7 @@ public class DirichletBayesImWrapper implements SessionModel, GraphSource, Knowl
 
         DirichletEstimator estimator = new DirichletEstimator();
 
-        this.dirichletBayesIm = estimator.estimate(emptyPrior, dataSet);
+        this.dirichletBayesIm = DirichletEstimator.estimate(emptyPrior, dataSet);
 
         log(this.dirichletBayesIm);
     }

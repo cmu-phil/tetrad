@@ -88,7 +88,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        List<Node> _vars = new ArrayList<Node>();
+        List<Node> _vars = new ArrayList<>();
 
         for (Node var : vars) {
             Node _var = getVariable(var.getName());
@@ -116,7 +116,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
         if (keepLatents) {
             return graph.getNodes();
         } else {
-            List<Node> observedVars = new ArrayList<Node>();
+            List<Node> observedVars = new ArrayList<>();
 
             for (Node node : graph.getNodes()) {
                 if (node.getNodeType() == NodeType.MEASURED) {
@@ -241,7 +241,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> nodes = _observedVars;
-        List<String> nodeNames = new ArrayList<String>();
+        List<String> nodeNames = new ArrayList<>();
         for (Node var : nodes) {
             nodeNames.add(var.getName());
         }
@@ -272,7 +272,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
 
     // Depth first.
     public boolean isDConnectedTo4(Node x, Node y, List<Node> z, Graph graph, double alpha) {
-        LinkedList<Node> path = new LinkedList<Node>();
+        LinkedList<Node> path = new LinkedList<>();
 
         path.add(x);
 
@@ -422,7 +422,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     }
 
     public void startRecordingFacts() {
-        this.facts = new HashSet<IndependenceFact>();
+        this.facts = new HashSet<>();
     }
 
     public HashSet<IndependenceFact> getFacts() {

@@ -146,7 +146,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         TetradLogger.getInstance().log("info", "Graph Comparison");
     }
 
-    public final void newExecution() {
+    private void newExecution() {
         statistics = new ArrayList<>();
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -169,7 +169,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         dataSet.setNumberFormat(new DecimalFormat("0.00"));
     }
 
-    public void addRecord(int i) {
+    private void addRecord(int i) {
         int newRow = dataSet.getNumRows();
 
         for (int j = 0; j < statistics.size(); j++) {

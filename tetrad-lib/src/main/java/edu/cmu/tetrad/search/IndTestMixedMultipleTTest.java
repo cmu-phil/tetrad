@@ -61,7 +61,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     private DataSet internalData;
     private double alpha;
     private double lastP;
-    private Map<Node, List<Node>> variablesPerNode = new HashMap<Node, List<Node>>();
+    private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
     private LogisticRegression logisticRegression;
     private RegressionDataset regression;
     private boolean verbose = false;
@@ -166,11 +166,11 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             throw new IllegalArgumentException();
         }
 
-        List<String> varCats = new ArrayList<String>(((DiscreteVariable) node).getCategories());
+        List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
 
         // first category is reference
         varCats.remove(0);
-        List<Node> variables = new ArrayList<Node>();
+        List<Node> variables = new ArrayList<>();
 
         for (String cat : varCats) {
 
@@ -216,7 +216,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        List<Double> pValues = new ArrayList<Double>();
+        List<Double> pValues = new ArrayList<>();
 
         int[] _rows = getNonMissingRows(x, y, z);
         logisticRegression.setRows(_rows);
@@ -499,7 +499,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<String>();
+        List<String> variableNames = new ArrayList<>();
         for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }

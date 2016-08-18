@@ -43,19 +43,7 @@ import java.util.regex.Pattern;
 /**
  * Implements basic cut and paste operations for DataDisplay.
  */
-public class TabularDataTransferHandler extends TransferHandler {
-
-    /**
-     * The number of initial "special" columns not used to display the data
-     * set.
-     */
-    private int numLeadingCols = 2;
-
-    /**
-     * The number of initial "special" rows not used to display the data
-     * set.
-     */
-    private int numLeadingRows = 2;
+class TabularDataTransferHandler extends TransferHandler {
 
     public int getSourceActions(JComponent c) {
         return COPY_OR_MOVE;
@@ -293,7 +281,7 @@ public class TabularDataTransferHandler extends TransferHandler {
     }
 
     private boolean checkRanges(String s, int startCol,
-                                TabularDataJTable tabularData) throws IOException {
+                                TabularDataJTable tabularData) {
         RegexTokenizer lines = new RegexTokenizer(s, Pattern.compile("\n"), '"');
         lines.nextToken();
 
@@ -325,8 +313,7 @@ public class TabularDataTransferHandler extends TransferHandler {
     }
 
     private void doPaste(String s, int startRow, int startCol,
-                         boolean shiftDown, TabularDataJTable tabularData)
-            throws IOException {
+                         boolean shiftDown, TabularDataJTable tabularData) {
 
         startRow -= getNumLeadingRows();
         startCol -= getNumLeadingCols();
@@ -344,7 +331,7 @@ public class TabularDataTransferHandler extends TransferHandler {
         // Read the variable names.
         String line = lines.nextToken();
         RegexTokenizer _names = new RegexTokenizer(line, Pattern.compile("\t"), '"');
-        List<String> varNames = new ArrayList<String>();
+        List<String> varNames = new ArrayList<>();
 
         while (_names.hasMoreTokens()) {
             varNames.add(_names.nextToken());
@@ -478,10 +465,20 @@ public class TabularDataTransferHandler extends TransferHandler {
     }
 
     private int getNumLeadingCols() {
+        /*
+      The number of initial "special" columns not used to display the data
+      set.
+     */
+        int numLeadingCols = 2;
         return numLeadingCols;
     }
 
     private int getNumLeadingRows() {
+        /*
+      The number of initial "special" rows not used to display the data
+      set.
+     */
+        int numLeadingRows = 2;
         return numLeadingRows;
     }
 }

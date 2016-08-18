@@ -94,7 +94,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public AbstractMimRunner(DataWrapper dataWrapper, Clusters clusters, Parameters params) {
+    AbstractMimRunner(DataWrapper dataWrapper, Clusters clusters, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -115,7 +115,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.dataModel = data;
     }
 
-    public AbstractMimRunner(MeasurementModelWrapper wrapper, Clusters clusters, Parameters params) {
+    AbstractMimRunner(MeasurementModelWrapper wrapper, Clusters clusters, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -133,7 +133,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.dataModel = data;
     }
 
-    public AbstractMimRunner(MimRunner runner, Parameters params) {
+    AbstractMimRunner(MimRunner runner, Parameters params) {
         if (runner == null) {
             throw new NullPointerException();
         }
@@ -200,11 +200,11 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
     //===========================PROTECTED METHODS========================//
 
-    protected void setResultGraph(Graph graph) {
+    void setResultGraph(Graph graph) {
         this.resultGraph = graph;
     }
 
-    protected void setClusters(Clusters clusters) {
+    void setClusters(Clusters clusters) {
         if (clusters == null) {
             throw new NullPointerException();
         }
@@ -212,7 +212,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.clusters = clusters;
     }
 
-    protected void setStructureGraph(Graph graph) {
+    void setStructureGraph(Graph graph) {
         this.structureGraph = graph;
     }
 

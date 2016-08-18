@@ -48,12 +48,11 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
-    private transient WFgs fgs;
     private transient Graph initialGraph;
 
     //============================CONSTRUCTORS============================//
 
-    public WFgsRunner(DataWrapper dataWrapper, Parameters params) {
+    private WFgsRunner(DataWrapper dataWrapper, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrapper), params, null);
     }
 
@@ -77,11 +76,11 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
         DataSet dataSet = (DataSet) getDataModel();
 
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
 
         double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
-        fgs = new WFgs(dataSet);
+        WFgs fgs = new WFgs(dataSet);
         fgs.setPenaltyDiscount(penaltyDiscount);
         Graph graph = fgs.search();
 
@@ -206,14 +205,14 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new ArrayList<List<Triple>>();
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -229,7 +228,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
         paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
         return paramSettings;
     }
@@ -251,7 +250,7 @@ public class WFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, G
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

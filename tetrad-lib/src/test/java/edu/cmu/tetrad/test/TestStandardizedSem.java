@@ -48,7 +48,7 @@ public class TestStandardizedSem {
     // Test the code that standardizes a data set.
     @Test
     public void test1() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -159,7 +159,7 @@ public class TestStandardizedSem {
     // This tests what the user is going to try to do in the GUI.
     @Test
     public void test4() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i1 = 0; i1 < 10; i1++) {
             nodes.add(new ContinuousVariable("X" + (i1 + 1)));
@@ -172,7 +172,7 @@ public class TestStandardizedSem {
         StandardizedSemIm sem = new StandardizedSemIm(im);
 
         for (int i = 0; i < 20; i++) {
-            List<Edge> edges = new ArrayList<Edge>(graph.getEdges());
+            List<Edge> edges = new ArrayList<>(graph.getEdges());
             RandomUtil random = RandomUtil.getInstance();
             int index = random.nextInt(edges.size());
             Edge edge = edges.get(index);
@@ -291,7 +291,7 @@ public class TestStandardizedSem {
         RandomUtil random = RandomUtil.getInstance();
         random.setSeed(9394929393L);
 
-        List<Node> nodes1 = new ArrayList<Node>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 5; i1++) {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));

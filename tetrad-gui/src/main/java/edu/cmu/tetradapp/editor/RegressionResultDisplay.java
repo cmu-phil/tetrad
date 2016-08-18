@@ -28,7 +28,7 @@ package edu.cmu.tetradapp.editor;
  *
  * @author Joseph Ramsey
  */
-public class RegressionResultDisplay {
+class RegressionResultDisplay {
 }
 
 

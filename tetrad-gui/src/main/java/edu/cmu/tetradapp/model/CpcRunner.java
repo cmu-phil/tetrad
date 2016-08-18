@@ -41,9 +41,9 @@ public class CpcRunner extends AbstractAlgorithmRunner
     private Graph trueGraph;
 //    private CPC cpc = null;
 
-    Set<Edge> pcAdjacent;
-    Set<Edge> pcNonadjacent;
-    List<Node> pcNodes;
+    private Set<Edge> pcAdjacent;
+    private Set<Edge> pcNonadjacent;
+    private List<Node> pcNodes;
 
     //============================CONSTRUCTORS============================//
 

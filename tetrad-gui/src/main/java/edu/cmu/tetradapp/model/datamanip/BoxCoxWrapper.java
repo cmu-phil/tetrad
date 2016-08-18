@@ -38,7 +38,7 @@ public class BoxCoxWrapper extends DataWrapper {
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public BoxCoxWrapper(DataWrapper data, Parameters params) {
+    private BoxCoxWrapper(DataWrapper data, Parameters params) {
         DataModelList list = data.getDataModelList();
         DataModelList convertedList = new DataModelList();
         DataModelList dataSets = data.getDataModelList();

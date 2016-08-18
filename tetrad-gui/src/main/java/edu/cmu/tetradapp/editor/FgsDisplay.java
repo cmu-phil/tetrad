@@ -48,12 +48,12 @@ import java.util.List;
  */
 public class FgsDisplay extends JPanel implements GraphEditable {
     private final Graph resultGraph;
-    private GraphWorkbench workbench;
+    private final GraphWorkbench workbench;
     private List<ScoredGraph> topGraphs;
-    private JSpinner spinner = new JSpinner();
-    private JLabel totalLabel;
-    private NumberFormat nf;
-    private JLabel scoreLabel;
+    private final JSpinner spinner = new JSpinner();
+    private final JLabel totalLabel;
+    private final NumberFormat nf;
+    private final JLabel scoreLabel;
     private Indexable indexable;
 
     public FgsDisplay(Graph resultGraph, final List<ScoredGraph> topGraphs, Indexable indexable) {
@@ -177,7 +177,7 @@ public class FgsDisplay extends JPanel implements GraphEditable {
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Component comp : components) {
             if (comp instanceof DisplayNode) {

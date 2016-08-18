@@ -39,7 +39,7 @@ import java.text.NumberFormat;
  * @author Ricardo Silva
  */
 class BuildPureClustersIndTestParamsEditor2 extends JComponent {
-    private Parameters paramsPureClusters;
+    private final Parameters paramsPureClusters;
 
     public BuildPureClustersIndTestParamsEditor2(
             Parameters paramsPureClusters,
@@ -88,9 +88,9 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
 
         final BpcAlgorithmType[] descriptions = BpcAlgorithmType.getAlgorithmDescriptions();
         algorithmSelector = new JComboBox(descriptions);
-        algorithmSelector.setSelectedItem((BpcAlgorithmType) getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS));
+        algorithmSelector.setSelectedItem(getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS));
 
-        if ((BpcAlgorithmType) getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS) == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
+        if (getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS) == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
             testSelector.removeAllItems();
             testSelector.addItem(TestType.SAG);
             testSelector.addItem(TestType.GAP);
@@ -109,7 +109,7 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
         TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
         testSelector.setSelectedItem(tetradTestType);
 
-        if ((TestType) paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
+        if (paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
             testSelector.setSelectedItem(TestType.TETRAD_WISHART);
             getParams().set("tetradTestType", TestType.TETRAD_WISHART);
         } else {
@@ -133,7 +133,7 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
                     testSelector.addItem(TestType.TETRAD_WISHART);
                     testSelector.addItem(TestType.TETRAD_DELTA);
 
-                    if ((TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
+                    if (getParams().get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
                         testSelector.setSelectedItem(TestType.TETRAD_WISHART);
                         getParams().set("tetradTestType", TestType.TETRAD_WISHART);
                     } else {

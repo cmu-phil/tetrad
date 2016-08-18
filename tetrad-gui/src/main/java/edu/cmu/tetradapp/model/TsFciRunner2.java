@@ -61,7 +61,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public TsFciRunner2(Graph graph, Parameters params) {
+    private TsFciRunner2(Graph graph, Parameters params) {
         super(graph, params);
     }
 
@@ -106,7 +106,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         Parameters searchParams = getParams();
 
-        Parameters params = (Parameters) searchParams;
+        Parameters params = searchParams;
 
         Graph graph;
 
@@ -155,11 +155,11 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
         IndTestType testType;
 
         if (getParams() instanceof Parameters) {
-            Parameters _params = (Parameters) params;
+            Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
         else {
-            Parameters _params = (Parameters) params;
+            Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
@@ -174,7 +174,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Definite Colliders");
 //        names.add("Definite Noncolliders");
         names.add("Ambiguous Triples");
@@ -185,7 +185,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));

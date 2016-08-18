@@ -153,7 +153,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 //		}
 		IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 //		mbfs.setKnowledge(knowledge);
-		String targetName = ((Parameters) getParams()).getString("targetName", null);
+		String targetName = getParams().getString("targetName", null);
 //		Graph searchGraph = mbfs.search(targetName);
 //		setResultGraph(searchGraph);
 
@@ -187,7 +187,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 			dataModel = getSourceGraph();
 		}
 
-		Parameters params = (Parameters) getParams();
+		Parameters params = getParams();
 		IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
 		return new IndTestChooser().getTest(dataModel, params, testType);
 	}
@@ -226,7 +226,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	 * @return the names of the triple classifications. Coordinates with
 	 */
 	public List<String> getTriplesClassificationTypes() {
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		names.add("Colliders");
 		names.add("Noncolliders");
 		names.add("Ambiguous Triples");
@@ -238,7 +238,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	 *         <code>getTripleClassificationNames</code>.
 	 */
 	public List<List<Triple>> getTriplesLists(Node node) {
-		List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+		List<List<Triple>> triplesList = new ArrayList<>();
 		Graph graph = getGraph();
 		triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
 		triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));

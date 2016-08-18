@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.session.Session;
-import edu.cmu.tetradapp.app.SessionEditor;
 
 /**
  * Interface for desktop controller methods, to allow app components to control

@@ -52,10 +52,10 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     private SemIm semIm;
 
 
-    Set<Edge>sVcpcAdjacent;
-    Set<Edge>sVcpcApparent;
-    Set<Edge>sVcpcDefinite;
-    List<Node>sVcpcNodes;
+    private Set<Edge>sVcpcAdjacent;
+    private Set<Edge>sVcpcApparent;
+    private Set<Edge>sVcpcDefinite;
+    private List<Node>sVcpcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -173,10 +173,10 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        Parameters searchParams = (Parameters) getParams();
+        Parameters searchParams = getParams();
 
         Parameters params =
-                (Parameters) searchParams;
+                searchParams;
 
 
         SampleVcpc svcpc = new SampleVcpc(getIndependenceTest());
@@ -239,7 +239,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         names.add("Ambiguous Triples");
@@ -250,7 +250,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -259,15 +259,15 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<Edge>(sVcpcAdjacent);
+        return new HashSet<>(sVcpcAdjacent);
     }
 
     public Set<Edge> getAppNon() {
-        return new HashSet<Edge>(sVcpcApparent);
+        return new HashSet<>(sVcpcApparent);
     }
 
     public Set<Edge> getDefNon() {
-        return new HashSet<Edge>(sVcpcDefinite);
+        return new HashSet<>(sVcpcDefinite);
     }
 
     public boolean supportsKnowledge() {
@@ -297,7 +297,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     private boolean isAggressivelyPreventCycles() {
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            return ((Parameters) params).getBoolean("aggressivelyPreventCycles", false);
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

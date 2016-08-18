@@ -43,7 +43,7 @@ public class TestFas {
         int numVars = 10;
         double edgesPerNode = 1.0;
 
-        List<Node> vars = new ArrayList<Node>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));

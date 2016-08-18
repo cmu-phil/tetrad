@@ -46,7 +46,7 @@ class KnowledgeSelection implements Transferable {
     /**
      * Supported dataflavors--only one.
      */
-    private DataFlavor[] dataFlavors = new DataFlavor[]{
+    private final DataFlavor[] dataFlavors = new DataFlavor[]{
             new DataFlavor(KnowledgeSelection.class, "Knowledge")};
 
     /**

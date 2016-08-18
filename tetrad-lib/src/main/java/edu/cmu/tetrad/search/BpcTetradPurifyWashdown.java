@@ -63,8 +63,8 @@ public class BpcTetradPurifyWashdown {
 
     public Graph search() {
         IPurify purify = new PurifyTetradBased2(test);
-        List<Node> variables = new ArrayList<Node>(this.variables);
-        List<List<Node>> clustering = new ArrayList<List<Node>>();
+        List<Node> variables = new ArrayList<>(this.variables);
+        List<List<Node>> clustering = new ArrayList<>();
         List<Node> disgards;
         List<Node> _disgards;
 
@@ -73,11 +73,11 @@ public class BpcTetradPurifyWashdown {
             clustering.add(_disgards);
             clustering = purify.purify(clustering);
             disgards = calculateDisgards(clustering, variables);
-        } while (!new HashSet<Node>(disgards).equals(new HashSet<Node>(_disgards)));
+        } while (!new HashSet<>(disgards).equals(new HashSet<>(_disgards)));
 
         Graph graph = new EdgeListGraph();
 
-        for (List<Node> cluster : new ArrayList<List<Node>>(clustering)) {
+        for (List<Node> cluster : new ArrayList<>(clustering)) {
             if (cluster.size() < 3) {
                 clustering.remove(cluster);
             }
@@ -100,7 +100,7 @@ public class BpcTetradPurifyWashdown {
     }
 
     private List<Node> calculateDisgards(List<List<Node>> clustering, List<Node> variables) {
-        List<Node> disgards = new ArrayList<Node>();
+        List<Node> disgards = new ArrayList<>();
 
         NODE:
         for (Node node : variables) {

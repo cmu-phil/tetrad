@@ -301,7 +301,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
@@ -323,8 +323,8 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                     System.out.println("Score done");
                     fgs = new TsFgs2(gesScore);
                 } else if (dataSet.isDiscrete()) {
-                    double samplePrior = ((Parameters) getParams()).getDouble("samplePrior", 1);
-                    double structurePrior = ((Parameters) getParams()).getDouble("structurePrior", 1);
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
                     BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
@@ -368,8 +368,8 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
                         fgs = new TsFgs2(fgsScore);
                     }
                 } else if (allDiscrete(list)) {
-                    double structurePrior = ((Parameters) getParams()).getDouble("structurePrior", 1);
-                    double samplePrior = ((Parameters) getParams()).getDouble("samplePrior", 1);
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
 
                     BdeuScoreImages fgsScore = new BdeuScoreImages(list);
                     fgsScore.setSamplePrior(samplePrior);
@@ -519,14 +519,14 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new ArrayList<List<Triple>>();
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -542,7 +542,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
         paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
         return paramSettings;
     }
@@ -564,7 +564,7 @@ public class TsFgsRunner extends AbstractAlgorithmRunner implements IFgsRunner, 
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

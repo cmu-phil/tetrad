@@ -133,7 +133,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     }
 
     private void calcAverage(List<DataWrapper> wrappers) {
-        List<TetradMatrix> cov = new ArrayList<TetradMatrix>();
+        List<TetradMatrix> cov = new ArrayList<>();
 
         for (int i = 0; i < wrappers.size(); i++) {
             DataModel selectedDataModel = wrappers.get(i).getSelectedDataModel();

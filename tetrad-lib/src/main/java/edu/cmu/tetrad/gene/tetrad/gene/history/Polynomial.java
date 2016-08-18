@@ -55,7 +55,7 @@ public final class Polynomial implements TetradSerializable {
             throw new NullPointerException("Terms list cannot be null.");
         }
 
-        this.terms = new ArrayList<PolynomialTerm>(terms);
+        this.terms = new ArrayList<>(terms);
     }
 
     /**

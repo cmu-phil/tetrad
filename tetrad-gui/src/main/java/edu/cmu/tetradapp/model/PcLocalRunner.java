@@ -125,7 +125,7 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 
         IndependenceTest independenceTest = getIndependenceTest();
-        Parameters testParams = (Parameters) getParams();
+        Parameters testParams = getParams();
 
         PcLocal search = new PcLocal(independenceTest);
 
@@ -183,7 +183,7 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 //        names.add("Colliders");
 //        names.add("Noncolliders");
         names.add("Ambiguous Triples");
@@ -194,7 +194,7 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -214,14 +214,14 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
      * @return the underline triples for the given node. Non-null.
      */
     public List<Triple> getUnderlineTriples(Node node) {
-        return new ArrayList<Triple>();
+        return new ArrayList<>();
     }
 
     /**
      * @return the dotted underline triples for the given node. Non-null.
      */
     public List<Triple> getDottedUnderlineTriples(Node node) {
-        return new ArrayList<Triple>();
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -240,7 +240,7 @@ public class PcLocalRunner extends AbstractAlgorithmRunner
     private boolean isAggressivelyPreventCycles() {
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            return ((Parameters) params).getBoolean("aggressivelyPreventCycles", false);
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

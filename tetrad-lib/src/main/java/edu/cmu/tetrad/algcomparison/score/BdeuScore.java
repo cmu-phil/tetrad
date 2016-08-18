@@ -37,7 +37,7 @@ public class BdeuScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<String>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("samplePrior");
         parameters.add("structurePrior");
         return parameters;

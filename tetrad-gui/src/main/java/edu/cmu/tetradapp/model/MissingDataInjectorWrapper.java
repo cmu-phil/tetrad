@@ -43,12 +43,12 @@ public class MissingDataInjectorWrapper extends DataWrapper {
     /**
      * @serial Cannot be null.
      */
-    private DataSet outputDataSet;
+    private final DataSet outputDataSet;
 
     //============================CONSTRUCTORS=============================//
 
-    public MissingDataInjectorWrapper(DataWrapper wrapper,
-            Parameters params) {
+    private MissingDataInjectorWrapper(DataWrapper wrapper,
+                                       Parameters params) {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 

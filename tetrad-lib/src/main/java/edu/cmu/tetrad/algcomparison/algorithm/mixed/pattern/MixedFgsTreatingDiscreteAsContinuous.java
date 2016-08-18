@@ -70,7 +70,7 @@ public class MixedFgsTreatingDiscreteAsContinuous implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<String>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         return parameters;
     }

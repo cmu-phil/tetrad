@@ -39,13 +39,13 @@ import java.beans.PropertyChangeListener;
  * @author Michael Freenor
  */
 
-public class QQPlotAction extends AbstractAction {
+class QQPlotAction extends AbstractAction {
 
 
     /**
      * The data edtitor that action is attached to.
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
 
     /**
@@ -209,7 +209,7 @@ public class QQPlotAction extends AbstractAction {
      */
     private static class QQPlotListener implements PropertyChangeListener {
 
-        private QQPlotDisplayPanel display;
+        private final QQPlotDisplayPanel display;
 
 
         public QQPlotListener(QQPlotDisplayPanel display) {

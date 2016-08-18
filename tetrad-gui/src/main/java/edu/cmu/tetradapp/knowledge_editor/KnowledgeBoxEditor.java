@@ -94,7 +94,7 @@ public class KnowledgeBoxEditor extends JPanel {
         }
 
         if (varNames == null) {
-            varNames = new ArrayList<String>();
+            varNames = new ArrayList<>();
         }
 
         this.knowledge = knowledge;
@@ -726,7 +726,7 @@ public class KnowledgeBoxEditor extends JPanel {
         firePropertyChange("modelChanged", null, null);
     }
 
-    public void resetTextDisplay() {
+    private void resetTextDisplay() {
         getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 12));
         getTextArea().setBorder(
                 new CompoundBorder(new LineBorder(Color.black),
@@ -772,11 +772,11 @@ public class KnowledgeBoxEditor extends JPanel {
         }
     }
 
-    public IKnowledge getKnowledge() {
+    private IKnowledge getKnowledge() {
         return knowledge;
     }
 
-    public List<String> getVarNames() {
+    private List<String> getVarNames() {
         return varNames;
     }
 
@@ -784,7 +784,7 @@ public class KnowledgeBoxEditor extends JPanel {
         return showForbiddenExplicitly;
     }
 
-    public void setShowForbiddenExplicitly(boolean showForbiddenExplicitly) {
+    private void setShowForbiddenExplicitly(boolean showForbiddenExplicitly) {
         this.showForbiddenExplicitly = showForbiddenExplicitly;
     }
 
@@ -792,7 +792,7 @@ public class KnowledgeBoxEditor extends JPanel {
         return showRequired;
     }
 
-    public void setShowRequired(boolean showRequired) {
+    private void setShowRequired(boolean showRequired) {
         this.showRequired = showRequired;
     }
 
@@ -800,23 +800,23 @@ public class KnowledgeBoxEditor extends JPanel {
         return showForbiddenByTiers;
     }
 
-    public void setShowForbiddenByTiers(boolean showForbiddenByTiers) {
+    private void setShowForbiddenByTiers(boolean showForbiddenByTiers) {
         this.showForbiddenByTiers = showForbiddenByTiers;
     }
 
-    public JTextArea getTextArea() {
+    private JTextArea getTextArea() {
         return textArea;
     }
 
-    public int getNumTiers() {
+    private int getNumTiers() {
         return numTiers;
     }
 
-    public void setNumTiers(int numTiers) {
+    private void setNumTiers(int numTiers) {
         this.numTiers = numTiers;
     }
 
-    public Graph getSourceGraph() {
+    private Graph getSourceGraph() {
         return sourceGraph;
     }
 
@@ -978,7 +978,7 @@ public class KnowledgeBoxEditor extends JPanel {
         private void sort(DefaultListModel model) {
             Object[] elements = model.toArray();
 
-            List<String> strings = new ArrayList<String>();
+            List<String> strings = new ArrayList<>();
             for (Object e : elements) {
                 strings.add((String) e);
             }
@@ -1017,7 +1017,7 @@ public class KnowledgeBoxEditor extends JPanel {
         }
     }
 
-    public static final class MyDragGestureRecognizer extends
+    private static final class MyDragGestureRecognizer extends
             DragGestureRecognizer {
         public MyDragGestureRecognizer(DragSource ds) {
             super(ds);

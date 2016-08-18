@@ -354,7 +354,7 @@ public class FindTwoFactorClusters {
                 // This takes out all pure clusters that are subsets of _cluster.
                 ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
                 int[] choice2;
-                List<Integer> _cluster3 = new ArrayList<Integer>(_cluster);
+                List<Integer> _cluster3 = new ArrayList<>(_cluster);
 
                 while ((choice2 = gen2.next()) != null) {
                     int n1 = _cluster3.get(choice2[0]);
@@ -374,7 +374,7 @@ public class FindTwoFactorClusters {
                 }
 
                 if (verbose) {
-                    System.out.println("Grown " + (++count) + " of " + total + ": " + variablesForIndices(new ArrayList<Integer>(_cluster)));
+                    System.out.println("Grown " + (++count) + " of " + total + ": " + variablesForIndices(new ArrayList<>(_cluster)));
                 }
                 grown.add(_cluster);
             } while (!purePentads.isEmpty());
@@ -533,7 +533,7 @@ public class FindTwoFactorClusters {
         log("Choosing among grown clusters.", true);
 
         for (List<Integer> l : grown) {
-            ArrayList<Integer> _l = new ArrayList<Integer>(l);
+            ArrayList<Integer> _l = new ArrayList<>(l);
             Collections.sort(_l);
             if (verbose) {
                 log("Grown: " + variablesForIndices(_l), false);
@@ -1070,7 +1070,7 @@ public class FindTwoFactorClusters {
 
 //            IntSextad[] independents = {t2, t5, t10, t3, t6};
 
-        List<IntSextad[]> independents = new ArrayList<IntSextad[]>();
+        List<IntSextad[]> independents = new ArrayList<>();
         independents.add(new IntSextad[]{t1, t2, t3, t5, t6});
 //        independents.add(new IntSextad[]{t1, t2, t3, t9, t10});
 //        independents.add(new IntSextad[]{t6, t7, t8, t9, t10});

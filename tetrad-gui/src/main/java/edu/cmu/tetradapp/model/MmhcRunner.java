@@ -49,7 +49,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
 
     //============================CONSTRUCTORS============================//
 
-    public MmhcRunner(DataWrapper dataWrapper, Parameters params) {
+    private MmhcRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -98,7 +98,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -108,7 +108,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -126,7 +126,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
         return "MMHC";
     }
 
-    public IndependenceTest getIndependenceTest() {
+    private IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
 
         if (dataModel == null) {

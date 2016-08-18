@@ -415,7 +415,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
 
     private static List<String> defaultCategories(int numCategories) {
-        List<String> categories = new LinkedList<String>();
+        List<String> categories = new LinkedList<>();
         for (int i = 0; i < numCategories; i++) {
             categories.add(DataUtils.defaultCategory(i));
         }

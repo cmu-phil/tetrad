@@ -80,7 +80,7 @@ public final class MimAdjacencySearch {
      */
     private Object[] forbidFilter(Set<String> set1, String x, IKnowledge bk) {
         Iterator<String> it = set1.iterator();
-        List<String> arr = new LinkedList<String>();
+        List<String> arr = new LinkedList<>();
 
         while (it.hasNext()) {
             String z = it.next();
@@ -114,12 +114,12 @@ public final class MimAdjacencySearch {
         // to the state.  There is no need to pass them in every time.
         Iterator<Node> it = latents.iterator();
         boolean result = false;
-        List<Node> visited = new LinkedList<Node>();    //list of visited nodes
+        List<Node> visited = new LinkedList<>();    //list of visited nodes
 
         // for each node x...
         while (it.hasNext()) {
             Node nodeX = it.next();
-            Set<Node> set = new HashSet<Node>();
+            Set<Node> set = new HashSet<>();
 
             for (Node node : graph.getAdjacentNodes(nodeX)) {
                 if (latents.contains(node)) {
@@ -134,20 +134,20 @@ public final class MimAdjacencySearch {
 
             visited.add(nodeX);
 
-            Iterator<Node> it1 = (new HashSet<Node>(set)).iterator();
+            Iterator<Node> it1 = (new HashSet<>(set)).iterator();
 
             // for each node y connected to x ...
             while (it1.hasNext()) {
                 Node nodeY = it1.next();
 
-                Set<String> set1 = new HashSet<String>();
+                Set<String> set1 = new HashSet<>();
                 for (Node node : graph.getAdjacentNodes(nodeX)) {
                     if (latents.contains(node)) {
                         set1.add(node.toString());
                     }
                 }
 
-                Set<String> set2 = new HashSet<String>();    //find parents of Y
+                Set<String> set2 = new HashSet<>();    //find parents of Y
                 for (Node node : graph.getAdjacentNodes(nodeY)) {
                     if (latents.contains(node)) {
                         set2.add(node.toString());

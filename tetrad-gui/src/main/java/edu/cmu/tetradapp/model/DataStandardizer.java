@@ -38,7 +38,7 @@ public class DataStandardizer extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    public DataStandardizer(DataWrapper wrapper) {
+    private DataStandardizer(DataWrapper wrapper) {
         DataModelList inList = wrapper.getDataModelList();
         DataModelList outList = new DataModelList();
 

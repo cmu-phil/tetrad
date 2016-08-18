@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.*;
@@ -70,12 +69,6 @@ public final class SessionEditorNode extends DisplayNode {
     private EditorWindow spawnedEditor;
 
     /**
-     * Keeps track of whether the last model class for this node should be
-     * remembered. (But why??)
-     */
-    private boolean rememberLastClass = false;
-
-    /**
      * The simulation study (used to edit the repetition values).
      */
     private SimulationStudy simulationStudy;
@@ -89,7 +82,7 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * The configuration for this editor node.
      */
-    private SessionNodeConfig config;
+    private final SessionNodeConfig config;
 
     //===========================CONSTRUCTORS==============================//
 
@@ -184,7 +177,7 @@ public final class SessionEditorNode extends DisplayNode {
         if (model == null) {
             return "No model";
         } else {
-            Class<? extends Object> modelClass = model.getClass();
+            Class<?> modelClass = model.getClass();
             SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
 
             if (modelConfig == null) {
@@ -235,7 +228,7 @@ public final class SessionEditorNode extends DisplayNode {
             boolean cloned = getSessionNode().useClonedModel();
 
             SessionModel model = getSessionNode().getModel();
-            Class<? extends Object> modelClass = model.getClass();
+            Class<?> modelClass = model.getClass();
             SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
             JPanel editor;
             if (model instanceof SessionAppModule) {
@@ -1008,6 +1001,11 @@ public final class SessionEditorNode extends DisplayNode {
         loadModelClassesFromConfig(sessionNode);
 
         // Must first ascertain the class to create.
+        /*
+      Keeps track of whether the last model class for this node should be
+      remembered. (But why??)
+     */
+        boolean rememberLastClass = false;
         Class[] modelClasses = rememberLastClass ? new Class[]{
                 sessionNode.getLastModelClass()} :
                 sessionNode.getConsistentModelClasses();
@@ -1035,7 +1033,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         // Count the number of model classes that can be listed for the user;
         // if there's only one, don't ask the user for input.
-        List<Class> reducedList = new LinkedList<Class>();
+        List<Class> reducedList = new LinkedList<>();
 
         for (Class modelClass : modelClasses) {
             if (!(UnlistedSessionModel.class.isAssignableFrom(modelClass))) {
@@ -1079,7 +1077,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         // Count the number of model classes that can be listed for the user;
         // if there's only one, don't ask the user for input.
-        List<Class> reducedList = new LinkedList<Class>();
+        List<Class> reducedList = new LinkedList<>();
         String buttonType;
 
         for (Class modelClass : modelClasses) {
@@ -1190,8 +1188,7 @@ public final class SessionEditorNode extends DisplayNode {
      * Tries to edit the parameters, returns true if successfully otherwise false is returned
      */
     private boolean editParameters(final Class modelClass, Parameters params,
-                                   Object[] parentModels)
-            throws Exception {
+                                   Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException("Parent models array is null.");
         }
@@ -1359,7 +1356,7 @@ public final class SessionEditorNode extends DisplayNode {
         return sessionWrapper;
     }
 
-    public SessionDisplayComp getSessionDisplayComp() {
+    private SessionDisplayComp getSessionDisplayComp() {
         return (SessionDisplayComp) getDisplayComp();
     }
 
@@ -1416,7 +1413,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
 
         private int getRepetition() {
-            return simulationStudy().getRepetition(getSessionNode());
+            return SimulationStudy.getRepetition(getSessionNode());
         }
 
         public SessionNodeWrapper getWrapper() {

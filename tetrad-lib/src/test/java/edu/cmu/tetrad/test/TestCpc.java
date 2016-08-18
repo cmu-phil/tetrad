@@ -82,7 +82,7 @@ public class TestCpc {
         int numVars = 6;
         int numEdges = 6;
 
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));

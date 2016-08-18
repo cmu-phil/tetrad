@@ -38,7 +38,6 @@ import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
-import javax.security.auth.login.Configuration;
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
@@ -161,7 +160,7 @@ public final class DagEditor extends JPanel
         List<Component> selectedComponents =
                 getWorkbench().getSelectedComponents();
         List<TetradSerializable> selectedModelComponents =
-                new ArrayList<TetradSerializable>();
+                new ArrayList<>();
 
         for (Object comp : selectedComponents) {
             if (comp instanceof DisplayNode) {
@@ -335,7 +334,7 @@ public final class DagEditor extends JPanel
                             GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
                             GraphUtils.arrangeByLayout(dag, layout);
                         } else {
-                            List<Node> nodes = new ArrayList<Node>();
+                            List<Node> nodes = new ArrayList<>();
 
                             for (int i = 0; i < editor.getNumNodes(); i++) {
                                 nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -354,7 +353,7 @@ public final class DagEditor extends JPanel
 
                                 GraphUtils.arrangeByLayout(dag, layout);
                             } else {
-                                List<Node> nodes = new ArrayList<Node>();
+                                List<Node> nodes = new ArrayList<>();
 
                                 for (int i = 0; i < editor.getNumNodes(); i++) {
                                     nodes.add(new ContinuousVariable("X" + (i + 1)));

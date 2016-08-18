@@ -50,7 +50,7 @@ public final class TestCellProbabilities {
         DiscreteVariable z = new DiscreteVariable("Z", 3);
         DiscreteVariable w = new DiscreteVariable("W", 2);
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         variables.add(x);
         variables.add(y);
         variables.add(z);

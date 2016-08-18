@@ -63,7 +63,7 @@ public class IambnPc implements MbSearch {
 
     public List<Node> findMb(String targetName) {
         Node target = getVariableForName(targetName);
-        List<Node> cmb = new LinkedList<Node>();
+        List<Node> cmb = new LinkedList<>();
         Pc pc = new Pc(independenceTest);
         boolean cont = true;
 
@@ -71,7 +71,7 @@ public class IambnPc implements MbSearch {
         while (cont) {
             cont = false;
 
-            List<Node> remaining = new LinkedList<Node>(variables);
+            List<Node> remaining = new LinkedList<>(variables);
             remaining.removeAll(cmb);
             remaining.remove(target);
 

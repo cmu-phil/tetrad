@@ -98,7 +98,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
      * zero to turn  off statistics calculations (which can be problematic
      * sometimes).
      */
-    private int maxFreeParamsForStatistics = 1000;
+    private final int maxFreeParamsForStatistics = 1000;
 
     /**
      * True iff covariance parameters are edited as correlations.
@@ -499,7 +499,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         return editIntercepts;
     }
 
-    public void setEditIntercepts(boolean editIntercepts) {
+    private void setEditIntercepts(boolean editIntercepts) {
         this.editIntercepts = editIntercepts;
         graphicalEditor().resetLabels();
         tabularEditor().getTableModel().fireTableDataChanged();
@@ -535,7 +535,7 @@ final class SemImGraphicalEditor extends JPanel {
     /**
      * Font size for parameter values in the graph.
      */
-    private static Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
+    private static final Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
 
     /**
      * Background color of the edit panel when you click on the parameters.
@@ -545,7 +545,7 @@ final class SemImGraphicalEditor extends JPanel {
     /**
      * The SemIM being edited.
      */
-    private ISemIm semIm;
+    private final ISemIm semIm;
 
     /**
      * Workbench for the graphical editor.
@@ -572,7 +572,7 @@ final class SemImGraphicalEditor extends JPanel {
      * Maximum number of free parameters for which model statistics will be
      * calculated. The algorithm for calculating these is expensive.
      */
-    private int maxFreeParamsForStatistics;
+    private final int maxFreeParamsForStatistics;
 
     /**
      * True iff this graphical display is editable.
@@ -1120,7 +1120,7 @@ final class SemImGraphicalEditor extends JPanel {
      * @throws IllegalArgumentException if the edge is neither directed nor
      *                                  bidirected.
      */
-    public Parameter getEdgeParameter(Edge edge) {
+    private Parameter getEdgeParameter(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {
             return semIm().getSemPm().getCoefficientParameter(edge.getNode1(), edge.getNode2());
         } else if (Edges.isBidirectedEdge(edge)) {
@@ -1293,8 +1293,8 @@ final class SemImGraphicalEditor extends JPanel {
     }
 
     final static class EdgeMouseListener extends MouseAdapter {
-        private Edge edge;
-        private SemImGraphicalEditor editor;
+        private final Edge edge;
+        private final SemImGraphicalEditor editor;
 
         public EdgeMouseListener(Edge edge, SemImGraphicalEditor editor) {
             this.edge = edge;
@@ -1315,8 +1315,8 @@ final class SemImGraphicalEditor extends JPanel {
     }
 
     final static class NodeMouseListener extends MouseAdapter {
-        private Node node;
-        private SemImGraphicalEditor editor;
+        private final Node node;
+        private final SemImGraphicalEditor editor;
 
         public NodeMouseListener(Node node, SemImGraphicalEditor editor) {
             this.node = node;
@@ -1337,8 +1337,8 @@ final class SemImGraphicalEditor extends JPanel {
     }
 
     final static class EdgeActionListener implements ActionListener {
-        private SemImGraphicalEditor editor;
-        private Edge edge;
+        private final SemImGraphicalEditor editor;
+        private final Edge edge;
 
         public EdgeActionListener(SemImGraphicalEditor editor, Edge edge) {
             this.editor = editor;
@@ -1361,8 +1361,8 @@ final class SemImGraphicalEditor extends JPanel {
     }
 
     final static class NodeActionListener implements ActionListener {
-        private SemImGraphicalEditor editor;
-        private Node node;
+        private final SemImGraphicalEditor editor;
+        private final Node node;
 
         public NodeActionListener(SemImGraphicalEditor editor, Node node) {
             this.editor = editor;
@@ -1389,7 +1389,7 @@ final class SemImGraphicalEditor extends JPanel {
  * Edits parameter values for a SemIm as a simple list.
  */
 final class SemImTabularEditor extends JPanel {
-    private ParamTableModel tableModel;
+    private final ParamTableModel tableModel;
     private boolean editable = true;
 
     public SemImTabularEditor(ISemIm semIm, SemImEditor editor,
@@ -1436,7 +1436,7 @@ final class SemImTabularEditor extends JPanel {
 
 final class ParamTableModel extends AbstractTableModel {
     private ISemIm semIm;
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private SemImEditor editor = null;
     private int maxFreeParamsForStatistics = 50;
     private boolean editable = true;
@@ -1494,7 +1494,7 @@ final class ParamTableModel extends AbstractTableModel {
 
     public Object getValueAt(int row, int column) {
         List nodes = semIm().getVariableNodes();
-        List parameters = new ArrayList<Parameter>(semIm().getFreeParameters());
+        List parameters = new ArrayList<>(semIm().getFreeParameters());
         parameters.addAll(semIm().getFixedParameters());
 
         int numParams = semIm.getNumFreeParams() + semIm().getFixedParameters().size();
@@ -1717,7 +1717,7 @@ final class ParamTableModel extends AbstractTableModel {
  * Dispays the implied covariance and correlation matrices for the given SemIm.
  */
 class ImpliedMatricesPanel extends JPanel {
-    private ISemIm semIm;
+    private final ISemIm semIm;
     private JTable impliedJTable;
     private int matrixSelection = 0;
     private JComboBox selector;
@@ -1822,7 +1822,7 @@ class ImpliedMatricesPanel extends JPanel {
     }
 
     private static List<String> getImpliedSelections() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("Implied covariance matrix (all variables)");
         list.add("Implied covariance matrix (measured variables only)");
         list.add("Implied correlation matrix (all variables)");
@@ -1849,23 +1849,23 @@ final class ImpliedCovTable extends AbstractTableModel {
     /**
      * The SemIm whose implied covariance matrices this model is displaying.
      */
-    private ISemIm semIm;
+    private final ISemIm semIm;
 
     /**
      * True iff the matrices for the observed variables ony should be
      * displayed.
      */
-    private boolean measured;
+    private final boolean measured;
 
     /**
      * True iff correlations (rather than covariances) should be displayed.
      */
-    private boolean correlations;
+    private final boolean correlations;
 
     /**
      * Formats numbers so that they have 4 digits after the decimal place.
      */
-    private NumberFormat nf;
+    private final NumberFormat nf;
 
     /**
      * The matrix being displayed. (This varies.)
@@ -2014,8 +2014,8 @@ final class ImpliedCovTable extends AbstractTableModel {
 }
 
 final class ModelStatisticsPanel extends JTextArea {
-    private ISemIm semIm;
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final ISemIm semIm;
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     public ModelStatisticsPanel(ISemIm semIm) {
         this.semIm = semIm;

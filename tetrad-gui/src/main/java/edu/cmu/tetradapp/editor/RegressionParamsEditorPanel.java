@@ -52,7 +52,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 @SuppressWarnings({"unchecked"})
-public class RegressionParamsEditorPanel extends JPanel {
+class RegressionParamsEditorPanel extends JPanel {
 
 
     /**
@@ -82,13 +82,13 @@ public class RegressionParamsEditorPanel extends JPanel {
      * A mapping between variable names and what sort of variable they are:
      * 1 - binary, 2- discrete, 3 - continuous.
      */
-    private static Map<String, Integer> VAR_MAP = new HashMap<String, Integer>();
+    private static final Map<String, Integer> VAR_MAP = new HashMap<>();
 
 
     /**
      * The font to render fields in.
      */
-    private static Font FONT = new Font("Dialog", Font.PLAIN, 12);
+    private static final Font FONT = new Font("Dialog", Font.PLAIN, 12);
 
 
 
@@ -129,7 +129,7 @@ public class RegressionParamsEditorPanel extends JPanel {
         List<String> regressors = (List<String>) params.get("regressorNames", null);
         if (regressors != null) {
             predictorsModel.addAll(regressors);
-            List<String> initVars = new ArrayList<String>(variableNames);
+            List<String> initVars = new ArrayList<>(variableNames);
             initVars.removeAll(regressors);
             variableModel.addAll(initVars);
         } else {
@@ -196,7 +196,7 @@ public class RegressionParamsEditorPanel extends JPanel {
 
     private static List<Comparable> getSelected(JList list) {
         List selected = list.getSelectedValuesList();
-        List<Comparable> selectedList = new ArrayList<Comparable>(selected == null ? 0 : selected.size());
+        List<Comparable> selectedList = new ArrayList<>(selected == null ? 0 : selected.size());
         if (selected != null) {
             for (Object o : selected) {
                 selectedList.add((Comparable) o);
@@ -442,7 +442,7 @@ public class RegressionParamsEditorPanel extends JPanel {
         return RESPONSE_FIELD;
     }
 
-    public static Font getFONT() {
+    private static Font getFONT() {
         return FONT;
     }
 
@@ -590,7 +590,7 @@ public class RegressionParamsEditorPanel extends JPanel {
      */
     private static class VariableListModel extends AbstractListModel {
 
-        private Vector<Comparable> delegate = new Vector<Comparable>();
+        private final Vector<Comparable> delegate = new Vector<>();
 
         public int getSize() {
             return this.delegate.size();

@@ -107,7 +107,7 @@ class BayesImNodeEditingTableObs extends JTable {
                     public void valueChanged(ListSelectionEvent e) {
                         ListSelectionModel m =
                                 (ListSelectionModel) (e.getSource());
-                        setFocusColumn(m.getAnchorSelectionIndex());
+                        setFocusColumn();
                     }
                 });
 
@@ -120,7 +120,7 @@ class BayesImNodeEditingTableObs extends JTable {
         });
 
         setFocusRow(0);
-        setFocusColumn(0);
+        setFocusColumn();
     }
 
     public void createDefaultColumnsFromModel() {
@@ -254,12 +254,12 @@ class BayesImNodeEditingTableObs extends JTable {
     /**
      * Sets the focus column to the anchor column currently being selected.
      */
-    private void setFocusColumn(int col) {
+    private void setFocusColumn() {
         Model editingTableModel = (Model) getModel();
         int failedCol = editingTableModel.getFailedCol();
 
         if (failedCol != -1) {
-            col = failedCol;
+            int col = failedCol;
             editingTableModel.resetFailedCol();
         }
 
@@ -314,7 +314,7 @@ class BayesImNodeEditingTableObs extends JTable {
         private int failedCol = -1;
         private PropertyChangeSupport pcs;
 
-		private java.util.List<Node> obsNodes = new ArrayList<Node>();
+		private final java.util.List<Node> obsNodes = new ArrayList<>();
 		
         /////////////////////////////////////////////////////////////
 		// construct a new editing table model for a given bayesIm

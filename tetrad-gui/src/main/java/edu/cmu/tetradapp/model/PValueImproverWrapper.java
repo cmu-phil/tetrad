@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -50,13 +49,12 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     }
 
     private AlgorithmType algorithmType = AlgorithmType.BEAM;
-    private boolean shuffleMoves = false;
 
     private String name;
     private Graph initialGraph;
     private Graph graph;
     private transient List<PropertyChangeListener> listeners;
-    private DataWrapper dataWrapper;
+    private final DataWrapper dataWrapper;
 
     /**
      * @deprecated
@@ -200,7 +198,8 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     }
 
     public boolean isShuffleMoves() {
-        return this.shuffleMoves;
+        boolean shuffleMoves = false;
+        return shuffleMoves;
     }
 
     /**
@@ -250,7 +249,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             throw new IllegalStateException();
         }
 
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
 
         search.setAlpha(params.getDouble("alpha", 0.001));
         search.setBeamWidth(params.getInt("beamWidth", 5));
@@ -315,7 +314,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -324,26 +323,26 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }
 
 
     public DataSet simulateDataCholesky(int sampleSize, TetradMatrix covar, List<Node> variableNodes) {
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
 
         for (Node node : variableNodes) {
             variables.add(node);
         }
 
-        List<Node> newVariables = new ArrayList<Node>();
+        List<Node> newVariables = new ArrayList<>();
 
         for (Node node : variables) {
             ContinuousVariable continuousVariable = new ContinuousVariable(node.getName());
@@ -358,7 +357,6 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
         // Simulate the data by repeatedly calling the Cholesky.exogenousData
         // method. Store only the data for the measured variables.
-        ROW:
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
@@ -399,7 +397,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
         return DataUtils.restrictToMeasured(fullDataSet);
     }
 
-    public void setOriginalSemIm(SemIm originalSemIm) {
+    private void setOriginalSemIm(SemIm originalSemIm) {
         if (this.originalSemIm == null) {
             this.originalSemIm = originalSemIm;
         }

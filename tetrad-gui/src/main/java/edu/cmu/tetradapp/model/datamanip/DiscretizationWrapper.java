@@ -52,7 +52,7 @@ public class DiscretizationWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      */
-    public DiscretizationWrapper(DataWrapper data, Parameters params) {
+    private DiscretizationWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }

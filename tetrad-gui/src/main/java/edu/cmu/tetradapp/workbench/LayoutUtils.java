@@ -42,7 +42,7 @@ import java.util.prefs.Preferences;
  * @author Tyler
  */
 public class LayoutUtils {
-    public static enum Layout {
+    public enum Layout {
         lag0TopToBottom, lag0BottomToTop, lag0LeftToRight, lag0RightToLeft,
         topToBottom, bottomToTop, leftToRight, rightToLeft, layered, source, knowledge, circle,
         kamadaKawai, fruchtermReingold, distanceFromSelected
@@ -488,7 +488,7 @@ public class LayoutUtils {
     public static void layeredDrawingLayout(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 
-        for (Node node : new ArrayList<Node>(graph.getNodes())) {
+        for (Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 graph.removeNode(node);
             }
@@ -499,10 +499,10 @@ public class LayoutUtils {
         layout = Layout.layered;
     }
 
-    public static void sourceGraphLayout(LayoutEditable layoutEditable) {
+    private static void sourceGraphLayout(LayoutEditable layoutEditable) {
         Graph graph = new EdgeListGraph(layoutEditable.getGraph());
 
-        for (Node node : new ArrayList<Node>(graph.getNodes())) {
+        for (Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 graph.removeNode(node);
             }
@@ -519,7 +519,7 @@ public class LayoutUtils {
 
         try {
 
-            for (Node node : new ArrayList<Node>(graph.getNodes())) {
+            for (Node node : new ArrayList<>(graph.getNodes())) {
                 if (node.getNodeType() == NodeType.ERROR) {
                     graph.removeNode(node);
                 }
@@ -538,7 +538,7 @@ public class LayoutUtils {
     public static void circleLayout(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 
-        for (Node node : new ArrayList<Node>(graph.getNodes())) {
+        for (Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 graph.removeNode(node);
             }
@@ -563,7 +563,7 @@ public class LayoutUtils {
         Runnable runnable = new Runnable() {
             public void run() {
 
-                for (Node node : new ArrayList<Node>(graph.getNodes())) {
+                for (Node node : new ArrayList<>(graph.getNodes())) {
                     if (node.getNodeType() == NodeType.ERROR) {
                         graph.removeNode(node);
                     }
@@ -598,7 +598,7 @@ public class LayoutUtils {
     public static void fruchtermanReingoldLayout(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 
-        for (Node node : new ArrayList<Node>(graph.getNodes())) {
+        for (Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 graph.removeNode(node);
             }
@@ -612,7 +612,7 @@ public class LayoutUtils {
     public static void distanceFromSelectedLayout(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 
-        for (Node node : new ArrayList<Node>(graph.getNodes())) {
+        for (Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 graph.removeNode(node);
             }

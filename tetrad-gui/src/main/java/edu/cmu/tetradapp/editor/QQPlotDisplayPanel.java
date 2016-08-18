@@ -40,13 +40,13 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Michael Freenor
  */
-public class QQPlotDisplayPanel extends JPanel {
+class QQPlotDisplayPanel extends JPanel {
 
 
     /**
      * The line color around the histogram.
      */
-    private static Color LINE_COLOR = Color.GRAY.darker();
+    private static final Color LINE_COLOR = Color.GRAY.darker();
 
 
     /**
@@ -63,12 +63,12 @@ public class QQPlotDisplayPanel extends JPanel {
     /**
      * The default size of the component.
      */
-    private Dimension size = new Dimension(WIDTH + 2 * SPACE, HEIGHT);
+    private final Dimension size = new Dimension(WIDTH + 2 * SPACE, HEIGHT);
 
     /**
      * Format for continuous data.
      */
-    private NumberFormat format = NumberFormatUtil.getInstance().getNumberFormat();
+    private final NumberFormat format = NumberFormatUtil.getInstance().getNumberFormat();
 
 
     /**
@@ -84,14 +84,9 @@ public class QQPlotDisplayPanel extends JPanel {
 
 
     /**
-     * A cache value that stores the top frequency.
-     */
-    private int topFreq = -1;
-
-    /**
      * A map from the rectangles that define the bars, to the number of units in the bar.
      */
-    private Map<Rectangle, Integer> rectMap = new ConcurrentHashMap<Rectangle, Integer>();
+    private final Map<Rectangle, Integer> rectMap = new ConcurrentHashMap<>();
 
 
     /**
@@ -119,7 +114,10 @@ public class QQPlotDisplayPanel extends JPanel {
         }
         this.displayString = null;
         this.qqPlot = qqPlot;
-        this.topFreq = -1;
+        /*
+      A cache value that stores the top frequency.
+     */
+        int topFreq = -1;
         this.repaint();
     }
 
@@ -226,7 +224,7 @@ public class QQPlotDisplayPanel extends JPanel {
         return this.displayString;
     }
 
-    public double[] plotPoint(double x, double y, double minRange, double maxRange) {
+    private double[] plotPoint(double x, double y, double minRange, double maxRange) {
         double[] result = new double[2];
         double range = maxRange - minRange;
         result[0] = (WIDTH - 50) * ((y - minRange) / range) - 2 + 50;

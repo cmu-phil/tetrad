@@ -88,7 +88,7 @@ public class GraphComparisonParams extends SessionAdapter
     /**
      * Constructs a getMappings object with no file set.
      */
-    public GraphComparisonParams() {
+    private GraphComparisonParams() {
         newExecution();
     }
 
@@ -124,7 +124,7 @@ public class GraphComparisonParams extends SessionAdapter
 //        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
 //        ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
 
-        List<Node> variables = new LinkedList<Node>();
+        List<Node> variables = new LinkedList<>();
         variables.add(adjCorrect);
         variables.add(adjFn);
         variables.add(adjFp);

@@ -81,7 +81,7 @@ public class FofcSearchEditor extends JPanel {
     /**
      * The button one clicks to executeButton the algorithm.
      */
-    private JButton executeButton = new JButton();
+    private final JButton executeButton = new JButton();
 
     /**
      * The label for the result graph workbench.
@@ -93,7 +93,6 @@ public class FofcSearchEditor extends JPanel {
      */
     private JScrollPane workbenchScroll;
     private JPanel displayPanel;
-    private GraphWorkbench structureWorkbench;
 
     //============================CONSTRUCTORS===========================//
 
@@ -349,7 +348,7 @@ public class FofcSearchEditor extends JPanel {
 //                DataGraphUtils.circleLayout(structureGraph, 200, 200, 150);
                 Graph structureGraph = getMimRunner().getStructureGraph();
                 doDefaultArrangement(structureGraph);
-                structureWorkbench = new GraphWorkbench(structureGraph);
+                GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
                 structureWorkbench.setAllowDoubleClickActions(false);
 
                 tabbedPane.add("Structure Model",
@@ -461,7 +460,7 @@ public class FofcSearchEditor extends JPanel {
         }
 
         try {
-            Graph graph = new MarshalledObject<Graph>(latestWorkbenchGraph).get();
+            Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
             getMimRunner().getParams().set("sourceGraph", graph);
         }
         catch (IOException e) {
@@ -499,7 +498,7 @@ public class FofcSearchEditor extends JPanel {
 
         if (params instanceof Parameters) {
             MimRunner runner = getMimRunner();
-            params.set("varNames", (java.util.List<String>) runner.getParams().get("varNames", null));
+            params.set("varNames", runner.getParams().get("varNames", null));
             return new FofcIndTestParamsEditor(params);
         }
 

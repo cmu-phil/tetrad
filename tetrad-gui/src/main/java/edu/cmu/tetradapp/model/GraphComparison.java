@@ -224,7 +224,7 @@ public final class GraphComparison implements SessionModel {
         this.trueGraph = trueGraph;
     }
 
-    public Parameters getParams() {
+    private Parameters getParams() {
         return params;
     }
 

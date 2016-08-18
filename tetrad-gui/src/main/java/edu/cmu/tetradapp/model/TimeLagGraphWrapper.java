@@ -55,7 +55,6 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
      * @serial Cannot be null.
      */
     private TimeLagGraph graph;
-    private IKnowledge knowledge;
     private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
@@ -134,7 +133,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         }
 
         System.out.println("Knowledge in graph = " + knowledge1);
-        this.knowledge = knowledge1;
+        IKnowledge knowledge = knowledge1;
     }
 
     public TimeLagGraphWrapper() {

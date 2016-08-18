@@ -38,7 +38,7 @@ public class RemoveMissingValueCasesWrapper extends DataWrapper {
     /**
      * Constructs the missing value cases wrapper.
      */
-    public RemoveMissingValueCasesWrapper(DataWrapper data){
+    private RemoveMissingValueCasesWrapper(DataWrapper data){
         if(data == null){
             throw new NullPointerException("The givan data must not be null");
         }

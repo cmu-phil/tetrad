@@ -111,7 +111,7 @@ public class StabilityUtils {
 
                     return;
                 } else {
-                    List<StabilityAction> tasks = new ArrayList<StabilityAction>();
+                    List<StabilityAction> tasks = new ArrayList<>();
 
                     final int mid = (to + from) / 2;
 
@@ -193,7 +193,7 @@ public class StabilityUtils {
             throw new IllegalArgumentException("Sample size must be > 0.");
         }
 
-        List<Integer> indices = new ArrayList<Integer>(sampSize);
+        List<Integer> indices = new ArrayList<>(sampSize);
         for (int i = 0; i < sampSize; i++) {
             indices.add(i);
         }
@@ -220,7 +220,7 @@ public class StabilityUtils {
     }
 
     private static int[] subSampleIndices(int N, int subSize){
-        List<Integer> indices = new ArrayList<Integer>(N);
+        List<Integer> indices = new ArrayList<>(N);
         for (int i = 0; i < N; i++) {
             indices.add(i);
         }

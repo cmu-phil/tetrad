@@ -41,7 +41,7 @@ public class IndTestModel implements SessionModel {
 
     private List<IndTestProducer> indTestProducers;
     private String name = "";
-    private LinkedList<String> vars = new LinkedList<String>();
+    private LinkedList<String> vars = new LinkedList<>();
     private List<List<IndependenceResult>> results;
 
     public IndTestModel() {
@@ -58,25 +58,25 @@ public class IndTestModel implements SessionModel {
     }
 
     public IndTestModel(IndTestProducer producer) {
-        indTestProducers = new ArrayList<IndTestProducer>();
+        indTestProducers = new ArrayList<>();
         indTestProducers.add(producer);
     }
 
     public IndTestModel(IndTestProducer producer1, IndTestProducer producer2) {
-        indTestProducers = new ArrayList<IndTestProducer>();
+        indTestProducers = new ArrayList<>();
         indTestProducers.add(producer1);
         indTestProducers.add(producer2);
     }
 
     public IndTestModel(IndTestProducer producer1, IndTestProducer producer2, IndTestProducer producer3) {
-        indTestProducers = new ArrayList<IndTestProducer>();
+        indTestProducers = new ArrayList<>();
         indTestProducers.add(producer1);
         indTestProducers.add(producer2);
         indTestProducers.add(producer3);
     }
 
     public IndTestModel(IndTestProducer producer1, IndTestProducer producer2, IndTestProducer producer3, IndTestProducer producer4) {
-        indTestProducers = new ArrayList<IndTestProducer>();
+        indTestProducers = new ArrayList<>();
         indTestProducers.add(producer1);
         indTestProducers.add(producer2);
         indTestProducers.add(producer3);

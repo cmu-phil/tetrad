@@ -56,11 +56,7 @@ import java.util.Map;
  */
 public class TabularDataJTable extends JTable implements DataModelContainer,
 		PropertyChangeListener {
-	Map<String, String> columnToTooltip;
-	/**
-	 * The number of initial "special" columns not used to display the data set.
-	 */
-	private int numLeadingCols = 2;
+	private Map<String, String> columnToTooltip;
 
 	/**
 	 * States whether edits are allowed.
@@ -438,6 +434,10 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 	}
 
 	private int getNumLeadingCols() {
+		/*
+	  The number of initial "special" columns not used to display the data set.
+	 */
+		int numLeadingCols = 2;
 		return numLeadingCols;
 	}
 
@@ -515,7 +515,7 @@ class MultiplierRenderer extends DefaultTableCellRenderer {
 }
 
 class MultiplierEditor extends DefaultCellEditor {
-	private JTextField textField;
+	private final JTextField textField;
 
 	/**
 	 * Constructs a new number cell editor.
@@ -577,7 +577,7 @@ class DoNothingEditor extends DefaultCellEditor {
 }
 
 class VariableNameEditor extends DefaultCellEditor {
-	private JTextField textField;
+	private final JTextField textField;
 
 	/**
 	 * Constructs a new number cell editor.
@@ -623,9 +623,9 @@ class VariableNameEditor extends DefaultCellEditor {
 }
 
 class DataCellRenderer extends DefaultTableCellRenderer {
-    private NumberFormat nf;
-	private DataSet dataSet;
-	private int numLeadingCols;
+    private final NumberFormat nf;
+	private final DataSet dataSet;
+	private final int numLeadingCols;
 
 	public DataCellRenderer(TabularDataJTable tableTabular, int numLeadingCols) {
 		this.dataSet = ((TabularDataTable) tableTabular.getModel()).getDataSet();

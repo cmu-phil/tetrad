@@ -31,8 +31,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Puts up a panel showing some graph properties, e.g., number of nodes and
@@ -40,8 +38,8 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
-    private GraphWorkbench workbench;
+class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
+    private final GraphWorkbench workbench;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and

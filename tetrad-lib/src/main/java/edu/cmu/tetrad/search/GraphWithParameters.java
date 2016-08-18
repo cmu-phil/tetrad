@@ -85,7 +85,7 @@ public class GraphWithParameters {
 
     public GraphWithParameters(Graph graph) {
         this.graph = graph;
-        weightHash = new HashMap<Edge, Double>();
+        weightHash = new HashMap<>();
     }
 
 //	public PatternWithParameters(ColtDataSet B) {
@@ -112,7 +112,7 @@ public class GraphWithParameters {
 //    	List<Node> variables = Bmatrix.getVariables();
 
         this.graph = new EdgeListGraph();
-        weightHash = new HashMap<Edge, Double>();
+        weightHash = new HashMap<>();
 
         int n = Bmatrix.rows();
 //		System.out.println("n = " + n);

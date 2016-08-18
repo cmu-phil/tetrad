@@ -42,7 +42,7 @@ public class StructEMBayesSearchParamsEditor extends JPanel implements Parameter
     private Parameters params = null;
 
     public void setParams(Parameters params) {
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {

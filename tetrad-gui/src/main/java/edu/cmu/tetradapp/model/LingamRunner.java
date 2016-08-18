@@ -122,7 +122,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
 //        Graph graph = lingam.lingam(data).getGraph();
 
         Lingam lingam = new Lingam();
-        Parameters params = (Parameters) getParams();
+        Parameters params = getParams();
         lingam.setPruneFactor(params.getDouble("pruneFactor", 1.0));
         Graph graph = lingam.search(data);
 
@@ -145,7 +145,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         names.add("Colliders");
         names.add("Noncolliders");
         return names;
@@ -156,7 +156,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
+        List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
         triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));
@@ -190,7 +190,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
 
     private List<PropertyChangeListener> getListeners() {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         return listeners;
     }

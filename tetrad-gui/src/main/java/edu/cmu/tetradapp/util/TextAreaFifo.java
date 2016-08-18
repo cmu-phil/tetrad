@@ -30,8 +30,8 @@ import javax.swing.text.Element;
 /**
  * Text area that removes lines from the top as the line limit is exceeded.
  */
-public class TextAreaFifo extends JTextArea implements DocumentListener {
-    private int maxLines;
+class TextAreaFifo extends JTextArea implements DocumentListener {
+    private final int maxLines;
 
     public TextAreaFifo(int maxLines) {
         this.maxLines = maxLines;
@@ -52,7 +52,7 @@ public class TextAreaFifo extends JTextArea implements DocumentListener {
     public void changedUpdate(DocumentEvent e) {
     }
 
-    public void removeLines() {
+    private void removeLines() {
         Element root = getDocument().getDefaultRootElement();
 
         while (root.getElementCount() > maxLines) {
@@ -62,7 +62,7 @@ public class TextAreaFifo extends JTextArea implements DocumentListener {
                 getDocument().remove(0, firstLine.getEndOffset());
             }
             catch (BadLocationException ble) {
-                System.out.println(ble);
+                ble.printStackTrace();
             }
         }
     }

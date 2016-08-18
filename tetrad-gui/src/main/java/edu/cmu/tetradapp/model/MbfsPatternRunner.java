@@ -148,7 +148,7 @@ public class MbfsPatternRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        return new LinkedList<String>();
+        return new LinkedList<>();
     }
 
     /**
@@ -158,7 +158,7 @@ public class MbfsPatternRunner extends AbstractAlgorithmRunner
      * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        return new LinkedList<List<Triple>>();
+        return new LinkedList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -170,7 +170,7 @@ public class MbfsPatternRunner extends AbstractAlgorithmRunner
     private boolean isAggressivelyPreventCycles(){
         Parameters params = getParams();
         if(params instanceof Parameters){
-            return ((Parameters)params).getBoolean("aggressivelyPreventCycles", false);
+            return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }

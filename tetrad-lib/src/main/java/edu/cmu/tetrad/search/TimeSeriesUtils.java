@@ -51,7 +51,7 @@ public class TimeSeriesUtils {
      */
     public static DataSet ar(DataSet timeSeries, int numLags) {
         DataSet timeLags = createLagData(timeSeries, numLags);
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (int i = timeSeries.getNumColumns(); i < timeLags.getNumColumns(); i++) {
             regressors.add(timeLags.getVariable(i));
@@ -74,7 +74,7 @@ public class TimeSeriesUtils {
     }
 
     public static DataSet ar2(DataSet timeSeries, int numLags) {
-        List<Node> missingVariables = new ArrayList<Node>();
+        List<Node> missingVariables = new ArrayList<>();
 
         for (Node node : timeSeries.getVariables()) {
             int index = timeSeries.getVariables().indexOf(node);
@@ -110,7 +110,7 @@ public class TimeSeriesUtils {
                 continue;
             }
 
-            List<Node> regressors = new ArrayList<Node>();
+            List<Node> regressors = new ArrayList<>();
 
             for (int i2 = timeSeries.getNumColumns(); i2 < timeLags.getNumColumns(); i2++) {
                 int varIndex = i2 % timeSeries.getNumColumns();
@@ -133,7 +133,7 @@ public class TimeSeriesUtils {
     }
 
     private int[] eliminateMissing(int[] parents, int dataIndex, DataSet dataSet, List<Node> missingVariables) {
-        List<Integer> _parents = new ArrayList<Integer>();
+        List<Integer> _parents = new ArrayList<>();
 
         for (int k : parents) {
             if (!missingVariables.contains(dataSet.getVariable(k))) {
@@ -200,7 +200,7 @@ public class TimeSeriesUtils {
         for (int i = 0; i < timeSeries.getNumColumns(); i++) {
             Node target = timeLags.getVariable(i);
 
-            List<Node> regressors = new ArrayList<Node>();
+            List<Node> regressors = new ArrayList<>();
 
             // Collect up parents from each lagged variable behind
             // timelags.getVariable(i).
@@ -294,7 +294,7 @@ public class TimeSeriesUtils {
 
     public static double sumOfArCoefficients(DataSet timeSeries, int numLags) {
         DataSet timeLags = createLagData(timeSeries, numLags);
-        List<Node> regressors = new ArrayList<Node>();
+        List<Node> regressors = new ArrayList<>();
 
         for (int i = timeSeries.getNumColumns(); i < timeLags.getNumColumns(); i++) {
             regressors.add(timeLags.getVariable(i));
@@ -364,7 +364,7 @@ public class TimeSeriesUtils {
         int laggedRows = data.getNumRows() - numLags;
         IKnowledge knowledge = new Knowledge2();
         Node[][] laggedNodes = new Node[numLags + 1][dataSize];
-        List<Node> newVariables = new ArrayList<Node>((numLags + 1) * dataSize + 1);
+        List<Node> newVariables = new ArrayList<>((numLags + 1) * dataSize + 1);
 
         for (int lag = 0; lag <= numLags; lag++) {
             for (int col = 0; col < dataSize; col++) {
@@ -477,7 +477,7 @@ public class TimeSeriesUtils {
         int laggedRows = data.getNumRows() - numLags;
         IKnowledge knowledge = new Knowledge2();
         Node[][] laggedNodes = new Node[numLags + 1][dataSize];
-        List<Node> newVariables = new ArrayList<Node>((numLags + 1) * dataSize + 2); // added 1 to this
+        List<Node> newVariables = new ArrayList<>((numLags + 1) * dataSize + 2); // added 1 to this
 
         for (int lag = 0; lag <= numLags; lag++) {
             for (int col = 0; col < dataSize; col++) {

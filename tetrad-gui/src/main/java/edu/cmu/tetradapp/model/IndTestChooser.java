@@ -35,7 +35,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class IndTestChooser {
+final class IndTestChooser {
     public IndependenceTest getTest(Object dataSource, Parameters params) {
         return getTest(dataSource, params, IndTestType.DEFAULT);
     }

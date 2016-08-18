@@ -158,7 +158,7 @@ public class Sextad implements TetradSerializable {
     }
 
     public List<Node> getNodes() {
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         nodes.add(i);
         nodes.add(j);
         nodes.add(k);

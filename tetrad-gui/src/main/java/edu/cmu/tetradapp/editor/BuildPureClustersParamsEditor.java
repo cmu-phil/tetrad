@@ -92,7 +92,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
 
         final TestType[] descriptions = TestType.getTestDescriptions();
         JComboBox testSelector = new JComboBox(descriptions);
-        testSelector.setSelectedItem((TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART));
+        testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
         testSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -104,7 +104,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
 
         final TestType[] purifyDescriptions = TestType.getPurifyTestDescriptions();
         JComboBox purifySelector = new JComboBox(purifyDescriptions);
-        purifySelector.setSelectedItem((TestType) getParams().get("purifyTestType", TestType.NONE));
+        purifySelector.setSelectedItem(getParams().get("purifyTestType", TestType.NONE));
 
         purifySelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -129,7 +129,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         }
 
         List<String> varNames =
-                new ArrayList<String>(dataModel.getVariableNames());
+                new ArrayList<>(dataModel.getVariableNames());
 
         boolean isDiscreteModel;
         if (dataModel instanceof ICovarianceMatrix) {

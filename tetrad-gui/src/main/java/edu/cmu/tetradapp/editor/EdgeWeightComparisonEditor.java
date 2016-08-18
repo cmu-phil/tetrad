@@ -33,7 +33,7 @@ public class EdgeWeightComparisonEditor extends JPanel {
     /**
      * The model for the note.
      */
-    private EdgeWeightComparison comparison;
+    private final EdgeWeightComparison comparison;
 
 
     /**

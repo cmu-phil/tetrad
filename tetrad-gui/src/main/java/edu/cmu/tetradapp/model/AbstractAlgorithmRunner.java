@@ -92,7 +92,7 @@ public abstract class AbstractAlgorithmRunner
      */
     private List<Graph> graphs = null;
     private Map<String, String> allParamSettings;
-    protected Map<String, String> paramSettings = new LinkedHashMap<>();
+    final Map<String, String> paramSettings = new LinkedHashMap<>();
 
     //===========================CONSTRUCTORS===========================//
 
@@ -314,7 +314,7 @@ public abstract class AbstractAlgorithmRunner
         }
     }
 
-    public final DataModelList getDataModelList() {
+    final DataModelList getDataModelList() {
         if (dataWrapper == null) return null;
         return dataWrapper.getDataModelList();
     }
@@ -341,7 +341,7 @@ public abstract class AbstractAlgorithmRunner
      * Find the dataModel model. (If it's a list, take the one that's
      * selected.)
      */
-    public DataModel getSelectedDataModel(DataWrapper dataWrapper) {
+    private DataModel getSelectedDataModel(DataWrapper dataWrapper) {
         DataModelList dataModelList = dataWrapper.getDataModelList();
 
         if (dataModelList.size() > 1) {
@@ -419,7 +419,7 @@ public abstract class AbstractAlgorithmRunner
         this.name = name;
     }
 
-    public List<Graph> getGraphs() {
+    List<Graph> getGraphs() {
         return graphs;
     }
 
