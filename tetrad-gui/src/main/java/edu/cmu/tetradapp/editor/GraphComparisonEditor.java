@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.GraphComparison;
 
 import javax.swing.*;
@@ -50,42 +51,65 @@ public class GraphComparisonEditor extends JPanel {
 
     //============================ Private Methods =========================//
 
-
-    private boolean isLegal(String text) {
-//        if (!NamingProtocol.isLegalName(text)) {
-//            JOptionPane.showMessageDialog(this, NamingProtocol.getProtocolDescription() + ": " + text);
-//            return false;
-//        }
-        return true;
-    }
-
     private void setup() {
-        String compareString = comparison.getComparisonString();
+//        String compareString = comparison.getComparisonString();
+//
+//        Font font = new Font("Monospaced", Font.PLAIN, 14);
+//        final JTextArea textPane = new JTextArea();
+//        textPane.setText(compareString);
+//
+//        textPane.setFont(font);
+//
+//        JScrollPane scroll = new JScrollPane(textPane);
+//        scroll.setPreferredSize(new Dimension(400, 400));
+//
+//        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+//        this.add(Box.createVerticalStrut(10));
+//
+//        Box box = Box.createHorizontalBox();
+//        this.add(box);
+//        this.add(Box.createVerticalStrut(10));
+//
+//        Box box1 = Box.createHorizontalBox();
+//        box1.add(new JLabel("Graph Comparison: "));
+//        box1.add(Box.createHorizontalGlue());
+//
+//        add(box1);
+//        setLayout(new BorderLayout());
+//        add(scroll);
 
-        Font font = new Font("Monospaced", Font.PLAIN, 14);
-        final JTextArea textPane = new JTextArea();
-        textPane.setText(compareString);
+        java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
+        JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
 
-        textPane.setFont(font);
-//        textPane.setCaretPosition(textPane.getStyledDocument().getLength());
+        for (int i = 0; i < referenceGraphs.size(); i++) {
+            String compareString = comparison.getComparisonString(i);
 
-        JScrollPane scroll = new JScrollPane(textPane);
-        scroll.setPreferredSize(new Dimension(400, 400));
+            Font font = new Font("Monospaced", Font.PLAIN, 14);
+            final JTextArea textPane = new JTextArea();
+            textPane.setText(compareString);
 
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.add(Box.createVerticalStrut(10));
+            textPane.setFont(font);
 
-        Box box = Box.createHorizontalBox();
-        this.add(box);
-        this.add(Box.createVerticalStrut(10));
+            JScrollPane scroll = new JScrollPane(textPane);
+            scroll.setPreferredSize(new Dimension(400, 400));
 
-        Box box1 = Box.createHorizontalBox();
-        box1.add(new JLabel("Graph Comparison: "));
-        box1.add(Box.createHorizontalGlue());
+            this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+            this.add(Box.createVerticalStrut(10));
 
-        add(box1);
-        setLayout(new BorderLayout());
-        add(scroll);
+            Box box = Box.createHorizontalBox();
+            this.add(box);
+            this.add(Box.createVerticalStrut(10));
+
+            Box box1 = Box.createHorizontalBox();
+            box1.add(new JLabel("Graph Comparison: "));
+            box1.add(Box.createHorizontalGlue());
+
+            add(box1);
+            setLayout(new BorderLayout());
+            pane.add("" + (i + 1), scroll);
+        }
+
+        add(pane);
     }
 
 }

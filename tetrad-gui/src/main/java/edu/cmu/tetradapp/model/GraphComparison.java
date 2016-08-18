@@ -22,7 +22,8 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -31,7 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -44,33 +45,11 @@ import java.util.List;
  */
 public final class GraphComparison implements SessionModel {
     static final long serialVersionUID = 23L;
-    /**
-     * @serial Can be null.
-     */
+
     private String name;
-
-    /**
-     * @serial Cannot be null.
-     */
     private Parameters params;
-
-    /**
-     * The target workbench.
-     *
-     * @serial Cannot be null.
-     */
-    private final Graph targetGraph;
-
-    /**
-     * The workbench to which the target workbench is being compared.
-     *
-     * @serial Cannot be null.
-     */
-    private final Graph referenceGraph;
-
-    /**
-     * The true DAG, if available. (May be null.)
-     */
+    private List<Graph> targetGraphs;
+    private List<Graph> referenceGraphs;
     private Graph trueGraph;
 
     //=============================CONSTRUCTORS==========================//
@@ -107,41 +86,55 @@ public final class GraphComparison implements SessionModel {
 
         if (referenceName == null) {
             throw new IllegalArgumentException("Must specify a reference graph.");
-//            this.referenceGraph = ((GraphSource) model1).getGraph();
-//            this.targetGraph = ((GraphSource) model2).getGraph();
-//            this.params.setReferenceGraphName(model1.getNode());
-        } else if (referenceName.equals(model1.getName())) {
-            this.referenceGraph = ((GraphSource) model1).getGraph();
-            this.targetGraph = ((GraphSource) model2).getGraph();
-        } else if (referenceName.equals(model2.getName())) {
-            this.referenceGraph = ((GraphSource) model2).getGraph();
-            this.targetGraph = ((GraphSource) model1).getGraph();
         } else {
-            throw new IllegalArgumentException(
-                    "Neither of the supplied session " + "models is named '" +
-                            referenceName + "'.");
+            GraphSource model11 = (GraphSource) model1;
+            GraphSource model21 = (GraphSource) model2;
+
+            if (referenceName.equals(model1.getName())) {
+                if (model11 instanceof MultipleGraphSource) {
+                    this.referenceGraphs = ((MultipleGraphSource) model11).getGraphs();
+                }
+
+                if (model21 instanceof MultipleGraphSource) {
+                    this.targetGraphs = ((MultipleGraphSource) model21).getGraphs();
+                }
+
+                if (referenceGraphs == null) {
+                    this.referenceGraphs = Collections.singletonList(model11.getGraph());
+                }
+
+                if (targetGraphs == null) {
+                    this.targetGraphs = Collections.singletonList(model21.getGraph());
+                }
+            } else if (referenceName.equals(model2.getName())) {
+                if (model21 instanceof MultipleGraphSource) {
+                    this.referenceGraphs = ((MultipleGraphSource) model21).getGraphs();
+                }
+
+                if (model11 instanceof MultipleGraphSource) {
+                    this.targetGraphs = ((MultipleGraphSource) model11).getGraphs();
+                }
+
+                if (referenceGraphs == null) {
+                    this.referenceGraphs = Collections.singletonList(model21.getGraph());
+                }
+
+                if (targetGraphs == null) {
+                    this.targetGraphs = Collections.singletonList(model11.getGraph());
+                }
+            } else {
+                throw new IllegalArgumentException(
+                        "Neither of the supplied session models is named '" +
+                                referenceName + "'.");
+            }
         }
-
-        Graph alteredRefGraph;
-
-        //Normally, one's target graph won't have latents, so we'll want to
-        // remove them from the ref graph to compare, but algorithm like
-        // MimBuild might not want to do this.
-        if (this.params != null && this.params.getBoolean("keepLatents", false)) {
-            alteredRefGraph = this.referenceGraph;
-        } else {
-            alteredRefGraph = removeLatent(this.referenceGraph);
-        }
-
-        GraphUtils.GraphComparison comparison = SearchGraphUtils.
-                getGraphComparison(targetGraph, alteredRefGraph);
-
-//        if (this.params != null) {
-//            this.params.addRecord(comparison);
-//        }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
-        TetradLogger.getInstance().log("comparison", getComparisonString());
+
+        for (int i = 0; i < referenceGraphs.size(); i++) {
+            TetradLogger.getInstance().log("comparison", "\nModel " + (i + 1));
+            TetradLogger.getInstance().log("comparison", getComparisonString(i));
+        }
     }
 
     public GraphComparison(GraphWrapper referenceGraph,
@@ -175,6 +168,7 @@ public final class GraphComparison implements SessionModel {
      *
      * @see TetradSerializableUtils
      */
+
     public static GraphComparison serializableInstance() {
         DagWrapper wrapper1 = DagWrapper.serializableInstance();
         wrapper1.setName("Ref");
@@ -197,42 +191,11 @@ public final class GraphComparison implements SessionModel {
         this.name = name;
     }
 
-    public String getComparisonString() {
+    public String getComparisonString(int i) {
         String refName = getParams().getString("referenceGraphName", null);
         String targetName = getParams().getString("targetGraphName", null);
-        return SearchGraphUtils.graphComparisonString(targetName, targetGraph,
-                refName, referenceGraph, false);
-    }
-
-    //adjacent to the latent node with an undirected edge (edge type doesnt matter).
-    private static Graph removeLatent(Graph g) {
-        Graph result = new EdgeListGraph(g);
-        result.setGraphConstraintsChecked(false);
-
-        List<Node> allNodes = g.getNodes();
-        LinkedList<Node> toBeRemoved = new LinkedList<Node>();
-
-        for (Node curr : allNodes) {
-            if (curr.getNodeType() == NodeType.LATENT) {
-                List<Node> adj = result.getAdjacentNodes(curr);
-
-                for (int i = 0; i < adj.size(); i++) {
-                    Node a = adj.get(i);
-                    for (int j = i + 1; j < adj.size(); j++) {
-                        Node b = adj.get(j);
-
-                        if (!result.isAdjacentTo(a, b)) {
-                            result.addEdge(Edges.undirectedEdge(a, b));
-                        }
-                    }
-                }
-
-                toBeRemoved.add(curr);
-            }
-        }
-
-        result.removeNodes(toBeRemoved);
-        return result;
+        return SearchGraphUtils.graphComparisonString(targetName, targetGraphs.get(i),
+                refName, referenceGraphs.get(i), false);
     }
 
     /**
@@ -251,18 +214,6 @@ public final class GraphComparison implements SessionModel {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        if (targetGraph == null) {
-            throw new NullPointerException();
-        }
-
-        if (referenceGraph == null) {
-            throw new NullPointerException();
-        }
     }
 
     public Graph getTrueGraph() {
@@ -275,6 +226,14 @@ public final class GraphComparison implements SessionModel {
 
     public Parameters getParams() {
         return params;
+    }
+
+    public List<Graph> getReferenceGraphs() {
+        return referenceGraphs;
+    }
+
+    public void setReferenceGraphs(List<Graph> referenceGraphs) {
+        this.referenceGraphs = referenceGraphs;
     }
 }
 
