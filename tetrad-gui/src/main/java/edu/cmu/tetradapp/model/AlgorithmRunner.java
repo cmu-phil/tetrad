@@ -38,8 +38,8 @@ import edu.cmu.tetrad.session.SimulationParamsSource;
  *
  * @author Joseph Ramsey
  */
-public interface AlgorithmRunner extends SessionModel, Executable, GraphSource, TripleClassifier,
-        SimulationParamsSource {
+public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
+        TripleClassifier, SimulationParamsSource {
     static final long serialVersionUID = 23L;
 
     /**

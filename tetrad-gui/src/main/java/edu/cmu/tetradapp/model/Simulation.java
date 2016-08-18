@@ -34,7 +34,9 @@ import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,7 +49,7 @@ import java.util.Map;
  * @author jdramsey
  */
 public class Simulation extends DataWrapper implements SessionModel,
-        SimulationParamsSource, GraphSource {
+        SimulationParamsSource, GraphSource, MultipleGraphSource {
     static final long serialVersionUID = 23L;
 
     private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation
@@ -240,10 +242,26 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     @Override
+    /**
+     * Returns the first graph in the simulation.
+     */
     public Graph getGraph() {
         return simulation.getTrueGraph(0);
     }
 
+    @Override
+    /**
+     * Returns all of the graphs in the simulation, in order.
+     */
+    public List<Graph> getGraphs() {
+        List<Graph> graphs = new ArrayList<>();
+
+        for (int i = 0; i < simulation.getNumDataSets(); i++) {
+            graphs.add(simulation.getTrueGraph(i));
+        }
+
+        return graphs;
+    }
 
     public boolean isFixedSimulation() {
         return fixedSimulation;

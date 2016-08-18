@@ -109,7 +109,7 @@ public class GeneralAlgorithmEditor extends JPanel {
 
         this.parameters = runner.getParameters();
         graphEditor = new SimulationGraphEditor(new ArrayList<Graph>(), JTabbedPane.LEFT);
-        graphEditor.replace(runner.getGraphList());
+        graphEditor.replace(runner.getGraphs());
         setLayout(new BorderLayout());
 
         whatYouChose = new JLabel();

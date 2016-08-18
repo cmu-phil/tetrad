@@ -23,13 +23,15 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.Graph;
 
+import java.util.List;
+
 /**
  * Indicates a class that is capable of producing a graph on demand.
  *
  * @author Joseph Ramsey
  */
-public interface GraphSource {
-    Graph getGraph();
+public interface MultipleGraphSource {
+    List<Graph> getGraphs();
 }
 
 

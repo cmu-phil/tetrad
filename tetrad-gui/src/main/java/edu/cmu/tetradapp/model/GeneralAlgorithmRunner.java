@@ -44,7 +44,8 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable, Unmarshallable {
+public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable,
+        MultipleGraphSource, Unmarshallable {
 
     static final long serialVersionUID = 23L;
     private DataWrapper dataWrapper;
@@ -413,7 +414,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         this.graphList = graphList;
     }
 
-    public List<Graph> getGraphList() {
+    public List<Graph> getGraphs() {
         return graphList;
     }
 }
