@@ -238,9 +238,9 @@ public final class Misclassifications implements SessionModel {
                             referenceName + "'.");
         }
 
-        this.targetGraph = GraphUtils.replaceNodes(targetGraph, this.referenceGraph.getNodes());
+        this.targetGraph = GraphUtils.replaceNodes(targetGraph, referenceGraph.getNodes());
 
-        Set<Node> _nodes = new HashSet<Node>(this.referenceGraph.getNodes());
+        Set<Node> _nodes = new HashSet<Node>(referenceGraph.getNodes());
         _nodes.addAll(this.targetGraph.getNodes());
         this.nodes = new ArrayList<Node>(_nodes);
 

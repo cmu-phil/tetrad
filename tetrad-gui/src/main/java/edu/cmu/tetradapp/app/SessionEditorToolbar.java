@@ -84,30 +84,14 @@ final class SessionEditorToolbar extends JPanel {
                     "<html>Add a node for a parametric model.</html>"),
             new ButtonInfo("IM", "Instantiated Model", "im",
                     "<html>Add a node for an instantiated model.</html>"),
-//            new ButtonInfo("GraphManip", "Graph Manipulation", "graph",
-//                    "<html>Add a node for graph manipulations</html>"),
-//            new ButtonInfo("DataManip",
-//                "Data Manipulation", "data",
-//                "<html>Add a node for manipulated data.</html>"),
             new ButtonInfo("Estimator", "Estimator", "estimator",
                     "<html>Add a node for an estimator.</html>"),
             new ButtonInfo("Updater", "Updater", "updater",
                     "<html>Add a node for an updater.</html>"),
-            //        new ButtonInfo("MB", "Markov Blanket", "search",
-            //                "<html>Add a node for a Markov blanket.</html>"),
             new ButtonInfo("Classify", "Classify", "search",
                     "<html>Add a node for a classifier.</html>"),
-
-//            new ButtonInfo("FS", "Feature Selection", "fs", "<html>Add a node for a Markov Blanket search.</html>"),
             new ButtonInfo("Regression", "Regression", "regression",
                     "<html>Add a node for a regression.</html>"),
-//        new ButtonInfo("Predict",
-//                "Predict",
-//                "predict",
-//                "<html>Add a node for a prediction algorithm.</html>"),
-//            new ButtonInfo("Knowledge", "Knowledge", "knowledge",
-//                    "<html>Store knowledge for use by multiple algorithm." +
-//                            "</html>"),
             new ButtonInfo("Edge", "Draw Edge", "flow",
                     "<html>Add an edge from one node to another to declare" +
                             "<br>that the object in the first node should be used " +
@@ -119,7 +103,7 @@ final class SessionEditorToolbar extends JPanel {
     };
 
 
-    /**
+    /**\
      * The map from JToggleButtons to String node types.
      */
     private final Map<JToggleButton, String> nodeTypes = new HashMap<JToggleButton, String>();

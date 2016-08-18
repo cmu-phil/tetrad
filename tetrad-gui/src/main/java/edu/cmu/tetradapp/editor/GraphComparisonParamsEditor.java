@@ -54,20 +54,18 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
      * The second graph source.
      */
     private SessionModel model2;
-    private Object[] parentModels;
 
     /**
-     *
+     * The parent models. These should be graph sources.
      */
-    public GraphComparisonParamsEditor() {
-    }
+    private Object[] parentModels;
 
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = (Parameters) params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -79,18 +77,16 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
     }
 
     public void setup() {
-        List graphSources = new LinkedList();
+        List<GraphSource> graphSources = new LinkedList<>();
 
         for (Object parentModel : parentModels) {
             if (parentModel instanceof GraphSource) {
-                graphSources.add(parentModel);
+                graphSources.add((GraphSource) parentModel);
             }
         }
 
         if (graphSources.size() != 2) {
             return;
-//            throw new IllegalArgumentException(
-//                    "Expecting exactly two graph " + "sources.");
         }
 
         model1 = (SessionModel) graphSources.get(0);
@@ -137,12 +133,6 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
             }
         });
 
-//        latents.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                getParameters().setKeepLatents(false);
-//            }
-//        });
-
         if (getParams().getBoolean("keepLatents", false)) {
             latents.setSelected(true);
         }
@@ -158,20 +148,38 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
         group3.add(graph1);
         group3.add(graph2);
 
+        boolean alreadySet = false;
+
         if (model1 instanceof Simulation) {
             graph1.setSelected(true);
+            getParams().set("referenceGraphName", model1.getName());
+            getParams().set("targetGraphName", model2.getName());
+            alreadySet = true;
         }
 
         if (model2 instanceof Simulation) {
             graph2.setSelected(true);
+            getParams().set("referenceGraphName", model2.getName());
+            getParams().set("targetGraphName", model1.getName());
+            alreadySet = true;
         }
 
+        if (!alreadySet) {
+            String refName = getParams().getString("referenceGraphName", null);
 
-//        getParameters().setReferenceGraphName(model1.getNode());
-//        getParameters().setTargetGraphName(model2.getNode());
-
-//        getParameters().setReferenceGraphName(getParameters().getReferenceGraphName());
-//        getParameters().setTargetGraphName(getParameters().getTargetGraphName());
+            if (refName == null) {
+                getParams().set("referenceGraphName", model1.getName());
+                getParams().set("targetGraphName", model2.getName());
+                graph1.setSelected(true);
+            } else {
+                String targetName = getParams().getString("targetGraphName", null);
+                if (refName.equals(model1.getName())) {
+                    graph1.setSelected(true);
+                } else if (targetName.equals(model2.getName())) {
+                    graph2.setSelected(true);
+                }
+            }
+        }
 
         graph1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -186,23 +194,6 @@ public class GraphComparisonParamsEditor extends JPanel implements ParameterEdit
                 getParams().set("targetGraphName", model1.getName());
             }
         });
-
-        String refName = getParams().getString("referenceGraphName", null);
-        if (refName == null) {
-            getParams().set("referenceGraphName", model1.getName());
-            getParams().set("targetGraphName", model2.getName());
-            graph1.setSelected(true);
-        }
-        else {
-            String targetName = getParams().getString("targetGraphName", null);
-            if (refName.equals(model1.getName())) {
-                graph1.setSelected(true);
-            }
-            else
-            if (targetName.equals(model2.getName())) {
-                graph2.setSelected(true);
-            }
-        }
 
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();

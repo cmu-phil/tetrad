@@ -52,7 +52,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private String name;
     private Algorithm algorithm = new Pc(new ChiSquare());
     private Parameters parameters;
-    private transient DataModel dataModel;
+    private DataModel dataModel;
     private Graph sourceGraph;
     private Graph resultGraph = new EdgeListGraph();
     private Graph initialGraph;
@@ -381,7 +381,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public Graph getGraph() {
-        return null;
+        return graphList.get(0);
     }
 
     @Override

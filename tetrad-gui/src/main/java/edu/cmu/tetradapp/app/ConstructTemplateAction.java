@@ -49,19 +49,19 @@ final class ConstructTemplateAction extends AbstractAction {
      * The names of the templates supported by this action.
      */
     private static final String[] TEMPLATE_NAMES = new String[]{
-            "Load or Simulate Data",
-            "Search from Loaded/Simulated Data",
-            "--separator--",
-            "Estimate from Search Result",
-            "Estimate then Update from Loaded Data",
-            "--separator--",
+            "Load/Simulate Data",
+            "Search",
+//            "--separator--",
+            "Estimate",
+            "Update",
+//            "--separator--",
             "Simulate Data with Fixed Graph",
             "Simulate Data with Fixed PM",
             "Simulate Data with Fixed IM",
-            "--separator--",
-            "Search from Simulated Data and Compare",
+//            "--separator--",
+            "Compare",
             "Estimate from Simulated Data",
-            "Estimate then Update from Simulated Data",
+            "Update from Simulated Data",
     };
 
     /**
@@ -119,27 +119,27 @@ final class ConstructTemplateAction extends AbstractAction {
             loadOrSimulateData(leftX);
         } else if (this.templateName.equals(getTemplateNames()[1])) {
             searchFromLoadedOrSimulatedData(leftX);
+//        } else if (this.templateName.equals(getTemplateNames()[2])) {
+//            throw new IllegalStateException("Separator!");
         } else if (this.templateName.equals(getTemplateNames()[2])) {
-            throw new IllegalStateException("Separator!");
-        } else if (this.templateName.equals(getTemplateNames()[3])) {
             estimateUsingSearchResult(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[4])) {
+        } else if (this.templateName.equals(getTemplateNames()[3])) {
             estimateThenUpdateUsingSearchResult(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[5])) {
-            throw new IllegalStateException("Separator!");
-        } else if (this.templateName.equals(getTemplateNames()[6])) {
+//        } else if (this.templateName.equals(getTemplateNames()[5])) {
+//            throw new IllegalStateException("Separator!");
+        } else if (this.templateName.equals(getTemplateNames()[4])) {
             simulateDataFixedGraph(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[7])) {
+        } else if (this.templateName.equals(getTemplateNames()[5])) {
             simulateDataFixedPM(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[8])) {
+        } else if (this.templateName.equals(getTemplateNames()[6])) {
             simulateDataFixedIM(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[9])) {
-            throw new IllegalStateException("Separator!");
-        } else if (this.templateName.equals(getTemplateNames()[10])) {
+//        } else if (this.templateName.equals(getTemplateNames()[9])) {
+//            throw new IllegalStateException("Separator!");
+        } else if (this.templateName.equals(getTemplateNames()[7])) {
             searchFromSimulatedDataWithCompare(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[11])) {
+        } else if (this.templateName.equals(getTemplateNames()[8])) {
             estimateFromSimulatedData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[12])) {
+        } else if (this.templateName.equals(getTemplateNames()[9])) {
             estimateThenUpdateFromSimulatedData(leftX);
         } else {
             throw new IllegalStateException(

@@ -57,14 +57,12 @@ final class TetradMenuBar extends JMenuBar {
         JMenu fileMenu = new JMenu("File");
         JMenu editMenu = new JMenu("Edit");
         JMenu loggingMenu = new JMenu("Logging");
-//        JMenu templateMenu = new JMenu("Template");
         JMenu windowMenu = new JMenu("Window");
         JMenu helpMenu = new JMenu("Help");
 
         add(fileMenu);
         add(editMenu);
         add(loggingMenu);
-//        add(templateMenu);
         add(windowMenu);
         add(helpMenu);
 
